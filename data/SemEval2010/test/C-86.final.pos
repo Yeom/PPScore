@@ -1,0 +1,355 @@
+Addressing_VBG Strategic_NNP Behavior_NNP in_IN a_DT Deployed_NNP Microeconomic_NNP Resource_NNP Allocator_NNP Chaki_NNP Ng_NNP ,_, Philip_NNP Buonadonna_NNP ,_, Brent_NNP N_NNP ._.
+Chun_NNP ,_, Alex_NNP C_NNP ._.
+Snoeren_NNP ,_, Amin_NNP Vahdat_NNP Harvard_NNP Intel_NNP Research_NNP Berkeley_NNP UC_NN San_NNP Diego_NNP markets_NNS @_IN eecs_NNS ._.
+harvard_NN ._.
+edu_NN ABSTRACT_NN While_IN market-based_JJ systems_NNS have_VBP long_RB been_VBN proposed_VBN as_IN solutions_NNS for_IN distributed_VBN resource_NN allocation_NN ,_, few_JJ have_VBP been_VBN deployed_VBN for_IN production_NN use_NN in_IN real_JJ computer_NN systems_NNS ._.
+Towards_IN this_DT end_NN ,_, we_PRP present_VBP our_PRP$ initial_JJ experience_NN using_VBG Mirage_NNP ,_, a_DT microeconomic_JJ resource_NN allocation_NN system_NN based_VBN on_IN a_DT repeated_VBN combinatorial_JJ auction_NN ._.
+Mirage_NNP allocates_VBZ time_NN on_IN a_DT heavily-used_JJ 148-node_JJ wireless_JJ sensor_NN network_NN testbed_VBD ._.
+In_IN particular_JJ ,_, we_PRP focus_VBP on_IN observed_VBN strategic_JJ user_NN behavior_NN over_IN a_DT four-month_JJ period_NN in_IN which_WDT ###_NN ,_, ###_CD node_NN hours_NNS were_VBD allocated_VBN across_IN ##_CD research_NN projects_NNS ._.
+Based_VBN on_IN these_DT results_NNS ,_, we_PRP present_VBP a_DT set_NN of_IN key_JJ challenges_NNS for_IN market-based_JJ resource_NN allocation_NN systems_NNS based_VBN on_IN repeated_VBN combinatorial_JJ auctions_NNS ._.
+Finally_RB ,_, we_PRP propose_VBP refinements_NNS to_TO the_DT system_NN ''_'' s_NNS current_JJ auction_NN scheme_NN to_TO mitigate_VB the_DT strategies_NNS observed_VBN to_TO date_NN and_CC also_RB comment_VB on_IN some_DT initial_JJ steps_NNS toward_IN building_VBG an_DT approximately_RB strategyproof_JJ repeated_VBN combinatorial_JJ auction_NN ._.
+Categories_NNS and_CC Subject_NNP Descriptors_NNPS C_NNP ._.
+#_# ._.
+#_# -LSB-_-LRB- Distributed_VBN Systems_NNPS -RSB-_-RRB- :_: Distributed_VBN Applications_NNS General_NNP Terms_NNS Measurement_NNP ,_, Design_NNP ,_, Economics_NNP ,_, Experimentation_NN 1_CD ._.
+INTRODUCTION_NN Market-based_JJ systems_NNS have_VBP long_RB been_VBN proposed_VBN as_IN solutions_NNS for_IN resource_NN allocation_NN in_IN distributed_VBN systems_NNS including_VBG computational_JJ Grids_NNS -LSB-_-LRB- #_# ,_, ##_NN -RSB-_-RRB- ,_, wide-area_JJ network_NN testbeds_NNS -LSB-_-LRB- #_# -RSB-_-RRB- ,_, and_CC peer-to-peer_NN systems_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Yet_RB ,_, while_IN the_DT theoretical_JJ underpinnings_NNS of_IN market-based_JJ schemes_NNS have_VBP made_VBN significant_JJ strides_NNS in_IN recent_JJ years_NNS ,_, practical_JJ integration_NN of_IN market-based_JJ mechanisms_NNS into_IN real_JJ computer_NN systems_NNS and_CC empirical_JJ observations_NNS of_IN such_JJ systems_NNS under_IN real_JJ workloads_NNS has_VBZ remained_VBN an_DT elusive_JJ goal_NN ._.
+Towards_IN this_DT end_NN ,_, we_PRP have_VBP designed_VBN ,_, implemented_VBN ,_, and_CC deployed_VBD a_DT microeconomic_JJ resource_NN allocation_NN system_NN called_VBN Mirage_NNP -LSB-_-LRB- #_# -RSB-_-RRB- for_IN scheduling_NN testbed_VBN time_NN on_IN a_DT 148-node_JJ wireless_JJ sensor_NN network_NN -LRB-_-LRB- SensorNet_NN -RRB-_-RRB- testbed_VBD at_IN Intel_NNP Research_NNP ._.
+The_DT system_NN ,_, which_WDT employs_VBZ a_DT repeated_VBN combinatorial_JJ auction_NN -LSB-_-LRB- #_# ,_, ##_NN -RSB-_-RRB- to_TO schedule_VB allocations_NNS ,_, has_VBZ been_VBN in_IN production_NN use_NN for_IN over_IN four_CD months_NNS and_CC has_VBZ scheduled_VBN over_IN 312_CD ,_, ###_CD node_NN hours_NNS across_IN ##_CD research_NN projects_NNS to_TO date_NN ._.
+In_IN designing_VBG and_CC deploying_VBG Mirage_NNP ,_, we_PRP had_VBD three_CD primary_JJ goals_NNS ._.
+First_RB ,_, we_PRP wanted_VBD to_TO validate_VB whether_IN a_DT market-based_JJ resource_NN allocation_NN scheme_NN was_VBD necessary_JJ at_IN all_DT ._.
+An_DT economic_JJ problem_NN only_RB exists_VBZ when_WRB resources_NNS are_VBP scarce_JJ ._.
+Therefore_RB ,_, a_DT key_JJ goal_NN was_VBD to_TO first_JJ measure_NN both_CC resource_NN contention_NN and_CC the_DT range_NN of_IN underlying_VBG valuations_NNS users_NNS place_VBP on_IN the_DT resources_NNS during_IN periods_NNS of_IN resource_NN scarcity_NN ._.
+Second_RB ,_, we_PRP wanted_VBD to_TO observe_VB how_WRB users_NNS would_MD actually_RB behave_VB in_IN a_DT market-based_JJ environment_NN ._.
+Much_JJ of_IN economic_JJ theory_NN is_VBZ predicated_VBN on_IN rational_JJ user_NN behavior_NN ,_, which_WDT forms_VBZ the_DT basis_NN for_IN motivating_VBG research_NN efforts_NNS such_JJ as_IN strategyproof_JJ mechanism_NN design_NN -LSB-_-LRB- #_# ,_, #_# ,_, ##_NN ,_, ##_NN ,_, ##_NN -RSB-_-RRB- ._.
+With_IN Mirage_NNP ,_, we_PRP wanted_VBD to_TO observe_VB to_TO what_WP extent_NN rationality_NN held_VBD and_CC in_IN what_WP ways_NNS users_NNS would_MD attempt_VB to_TO strategize_VB and_CC game_NN the_DT system_NN ._.
+Finally_RB ,_, we_PRP wanted_VBD to_TO identify_VB what_WP other_JJ practical_JJ problems_NNS would_MD emerge_VB in_IN a_DT deployment_NN of_IN a_DT market_NN based_VBN system_NN ._.
+In_IN this_DT paper_NN ,_, we_PRP report_VBP briefly_RB on_IN our_PRP$ first_JJ goal_NN while_IN focusing_VBG primarily_RB on_IN the_DT second_JJ ._.
+The_DT third_JJ is_VBZ left_VBN for_IN future_JJ work_NN ._.
+Empirical_JJ results_NNS based_VBN on_IN four_CD months_NNS of_IN usage_NN have_VBP validated_VBN the_DT key_JJ motivating_VBG factors_NNS in_IN using_VBG an_DT auction-based_JJ scheme_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, significant_JJ resource_NN contention_NN and_CC widely_RB varying_VBG valuations_NNS -RRB-_-RRB- but_CC have_VBP also_RB pointed_VBN to_TO real-world_JJ observations_NNS of_IN strategic_JJ user_NN behavior_NN ._.
+In_IN deploying_VBG Mirage_NNP ,_, we_PRP made_VBD the_DT early_JJ decision_NN to_TO base_VB the_DT system_NN on_IN a_DT repeated_VBN combinatorial_JJ auction_NN known_VBN not_RB to_TO be_VB strategyproof_JJ ._.
+That_DT is_VBZ ,_, self-interested_JJ users_NNS could_MD attempt_VB to_TO increase_VB their_PRP$ personal_JJ gain_NN ,_, at_IN the_DT expense_NN of_IN others_NNS ,_, by_IN not_RB revealing_VBG their_PRP$ true_JJ value_NN to_TO the_DT system_NN ._.
+We_PRP made_VBD this_DT decision_NN mainly_RB because_IN designing_VBG a_DT strategyproof_JJ mechanism_NN remains_VBZ an_DT open_JJ ,_, challenging_JJ problem_NN and_CC we_PRP wanted_VBD to_TO deploy_VB a_DT working_VBG system_NN and_CC gain_NN experience_NN with_IN real_JJ users_NNS to_TO address_VB our_PRP$ three_CD goals_NNS in_IN a_DT timely_JJ manner_NN ._.
+Deploying_VBG a_DT non-strategyproof_JJ mechanism_NN also_RB had_VBD the_DT benefit_NN of_IN testing_NN rationality_NN and_CC seeing_VBG how_WRB and_CC to_TO what_WP extent_NN users_NNS would_MD try_VB to_TO game_NN the_DT system_NN ._.
+The_DT key_JJ contribution_NN of_IN this_DT paper_NN is_VBZ an_DT analysis_NN of_IN such_JJ strategic_JJ behavior_NN as_IN observed_VBN over_IN a_DT four-month_JJ time_NN period_NN and_CC proposed_VBD refinements_NNS for_IN mitigating_VBG such_JJ behavior_NN en_IN route_NN to_TO building_VBG an_DT approximately_RB strategyproof_JJ repeated_VBN combinatorial_JJ auction_NN ._.
+The_DT rest_NN of_IN this_DT paper_NN is_VBZ organized_VBN as_IN follows_VBZ ._.
+In_IN Section_NN #_# ,_, 99_CD we_PRP present_VBP an_DT overview_NN of_IN Mirage_NNP including_VBG high-level_JJ observations_NNS on_IN usage_NN over_IN a_DT four-month_JJ period_NN ._.
+In_IN Section_NN #_# ,_, we_PRP examine_VBP strategic_JJ user_NN behavior_NN ,_, focusing_VBG on_IN the_DT four_CD primary_JJ types_NNS of_IN strategies_NNS employed_VBN by_IN users_NNS in_IN the_DT system_NN ._.
+Based_VBN on_IN these_DT results_NNS ,_, Section_NN #_# presents_VBZ a_DT set_NN of_IN key_JJ challenges_NNS for_IN market-based_JJ resource_NN allocation_NN systems_NNS based_VBN on_IN repeated_VBN combinatorial_JJ auctions_NNS ._.
+As_IN a_DT first_JJ step_NN in_IN addressing_VBG some_DT of_IN these_DT challenges_NNS ,_, we_PRP describe_VBP refinements_NNS to_TO Mirage_NNP ''_'' s_VBZ current_JJ auction_NN scheme_NN that_WDT mitigate_VBP the_DT strategies_NNS observed_VBN to_TO date_NN and_CC also_RB comment_VB on_IN some_DT initial_JJ steps_NNS towards_IN building_VBG an_DT approximately_RB strategyproof_JJ repeated_VBN combinatorial_JJ auction_NN for_IN Mirage_NNP ._.
+Finally_RB ,_, in_IN Section_NN #_# ,_, we_PRP conclude_VBP the_DT paper_NN ._.
+2_LS ._.
+THE_DT MIRAGE_NNP SYSTEM_NNP SensorNet_NNP testbeds_NNS are_VBP a_DT critical_JJ tool_NN for_IN developing_VBG and_CC evaluating_VBG SensorNet_NNP technology_NN in_IN a_DT controlled_JJ and_CC instrumented_JJ environment_NN ._.
+As_IN with_IN many_JJ large-scale_JJ systems_NNS ,_, however_RB ,_, resource_NN management_NN is_VBZ a_DT key_JJ problem_NN given_VBN that_IN it_PRP is_VBZ not_RB economical_JJ for_IN users_NNS to_TO each_DT build_VB and_CC operate_VB their_PRP$ own_JJ testbed_NN ._.
+In_IN Mirage_NNP -LSB-_-LRB- #_# -RSB-_-RRB- ,_, testbed_VBN resources_NNS are_VBP spaceshared_VBN and_CC allocated_VBN using_VBG a_DT repeated_VBN combinatorial_JJ auction_NN in_IN a_DT closed_JJ virtual_JJ currency_NN environment_NN ._.
+Users_NNS compete_VBP for_IN testbed_JJ resources_NNS by_IN submitting_VBG bids_NNS which_WDT specify_VBP resource_NN combinations_NNS of_IN interest_NN in_IN space_NN /_: time_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, any_DT ##_NN MICA2_NN motes_NNS for_IN #_# hours_NNS anytime_RB in_IN the_DT next_JJ two_CD days_NNS -RRB-_-RRB- along_IN with_IN a_DT maximum_NN value_NN amount_VB the_DT user_NN is_VBZ willing_JJ to_TO pay_VB ._.
+A_DT combinatorial_JJ auction_NN is_VBZ then_RB periodically_RB run_VB to_TO determine_VB the_DT winning_VBG bids_NNS based_VBN on_IN supply_NN and_CC demand_NN while_IN maximizing_VBG aggregate_JJ utility_NN delivered_VBN to_TO users_NNS ._.
+0_CD 20_CD 40_CD 60_CD 80_CD 100_CD 0_CD ##_CD ##_CD ##_CD ##_CD ###_CD ###_CD TotalMICA2Utilization_NN -LRB-_-LRB- %_NN -RRB-_-RRB- Days_NNS since_IN Dec_NNP #_# ,_, ####_CD Figure_NN #_# :_: Testbed_JJ utilization_NN for_IN ##_CD MICA2_NN motes_NNS ._.
+In_IN Mirage_NNP ,_, resources_NNS are_VBP allocated_VBN using_VBG a_DT first-price_JJ combinatorial_JJ auction_NN which_WDT clears_VBZ every_DT hour_NN ._.
+In_IN each_DT round_NN of_IN the_DT auction_NN ,_, a_DT rolling_NN window_NN of_IN future_JJ testbed_JJ resources_NNS is_VBZ available_JJ for_IN allocation_NN with_IN subsets_NNS of_IN that_DT window_NN being_VBG removed_VBN from_IN the_DT pool_NN as_IN resources_NNS get_VBP allocated_VBN ._.
+In_IN our_PRP$ initial_JJ deployment_NN ,_, we_PRP used_VBD a_DT 72-hour_JJ window_NN and_CC deployed_VBD the_DT system_NN on_IN a_DT testbed_JJ consisting_VBG of_IN ###_CD nodes_NNS -LRB-_-LRB- ##_CD MICA2_NN -LSB-_-LRB- #_# -RSB-_-RRB- and_CC ##_NN MICA2DOT_NN sensor_NN nodes_NNS or_CC motes_NNS -RRB-_-RRB- ._.
+In_IN each_DT round_NN of_IN the_DT auction_NN ,_, users_NNS bid_VB for_IN subsets_NNS of_IN resources_NNS available_JJ in_IN the_DT current_JJ window_NN ._.
+When_WRB the_DT system_NN is_VBZ first_JJ brought_VBN online_NN ,_, a_DT full_JJ 148-node_JJ 72-hour_JJ window_NN is_VBZ available_JJ ,_, where_WRB each_DT row_NN of_IN the_DT window_NN represents_VBZ the_DT availability_NN of_IN a_DT particular_JJ node_NN across_IN time_NN ,_, and_CC each_DT column_NN represents_VBZ the_DT availability_NN of_IN the_DT testbed_VBN for_IN a_DT given_VBN hour_NN ._.
+The_DT leftmost_JJ column_NN of_IN the_DT window_NN represents_VBZ node_NN availability_NN for_IN the_DT hour_NN immediately_RB following_VBG the_DT auction_NN ;_: these_DT node_NN /_: hours_NNS will_MD never_RB again_RB be_VB available_JJ for_IN auction_NN ._.
+All_DT other_JJ node_NN /_: hours_NNS not_RB allocated_VBN at_IN this_DT or_CC previous_JJ auctions_NNS continue_VBP to_TO be_VB offered_VBN for_IN sale_NN at_IN subsequent_JJ auctions_NNS ._.
+In_IN each_DT subsequent_JJ round_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, every_DT hour_NN -RRB-_-RRB- ,_, portions_NNS of_IN the_DT current_JJ window_NN are_VBP allocated_VBN as_IN bids_NNS are_VBP matched_VBN to_TO available_JJ resources_NNS and_CC a_DT new_JJ rightmost_JJ 148-node_JJ 1-hour_JJ column_NN of_IN resources_NNS rolls_NNS in_IN and_CC replaces_VBZ the_DT leftmost_JJS column_NN of_IN resources_NNS which_WDT expires_VBZ ._.
+There_EX is_VBZ no_DT time_NN sharing_NN of_IN nodes_NNS :_: given_VBN limited_JJ local_JJ computation_NN and_CC communication_NN power_NN ,_, once_RB a_DT sensor_NN is_VBZ allocated_VBN to_TO a_DT user_NN for_IN a_DT particular_JJ time_NN period_NN ,_, it_PRP is_VBZ unavailable_JJ to_TO all_DT other_JJ users_NNS ._.
+In_IN Mirage_NNP ,_, users_NNS place_VBP combinatorial_JJ bids_NNS specifying_VBG resource_NN combinations_NNS of_IN interest_NN in_IN space_NN /_: time_NN along_RP with_IN a_DT maximum_NN value_NN amount_VB the_DT user_NN is_VBZ willing_JJ to_TO pay_VB ._.
+More_RBR specifically_RB ,_, a_DT bid_NN bi_NN =_JJ -LRB-_-LRB- vi_LS ,_, si_FW ,_, ti_NN ,_, di_FW ,_, fmin_NN ,_, fmax_NN ,_, ni_NNS ,_, oki_NNS -RRB-_-RRB- indicates_VBZ the_DT user_NN wants_VBZ any_DT combination_NN of_IN ni_NNS motes_NNS from_IN the_DT set_VBN oki_NNS simultaneously_RB for_IN a_DT duration_NN of_IN di_FW hours_NNS -LRB-_-LRB- di_FW -LCB-_-LRB- #_# ,_, #_# ,_, ..._: ,_, ##_CD -RCB-_-RRB- -RRB-_-RRB- ,_, a_DT start_NN time_NN anywhere_RB between_IN si_NNS and_CC ti_NNS ,_, and_CC a_DT radio_NN frequency_NN in_IN the_DT range_NN -LSB-_-LRB- fmin_NN ,_, fmax_NN -RSB-_-RRB- ._.
+#_# The_DT user_NN also_RB is_VBZ willing_JJ to_TO pay_VB up_RP to_TO vi_LS units_NNS of_IN virtual_JJ currency_NN for_IN these_DT resources_NNS ._.
+In_IN essence_NN ,_, each_DT bid_NN specifies_VBZ in_IN a_DT succinct_JJ manner_NN what_WDT subsets_NNS of_IN the_DT resource_NN window_NN would_MD serve_VB as_IN acceptable_JJ resources_NNS that_WDT meet_VBP the_DT user_NN ''_'' s_NNS constraints_NNS and_CC how_WRB important_JJ the_DT desired_VBN resource_NN allocation_NN is_VBZ to_TO the_DT user_NN ._.
+We_PRP deployed_VBD Mirage_NNP on_IN December_NNP #_# ,_, ####_CD and_CC the_DT system_NN has_VBZ been_VBN in_IN continuous_JJ production_NN use_NN for_IN over_IN four_CD months_NNS ._.
+In_IN the_DT process_NN ,_, its_PRP$ lifetime_NN has_VBZ overlapped_VBN with_IN several_JJ periods_NNS of_IN significant_JJ resource_NN contention_NN including_VBG the_DT SIGCOMM_NNP ''_'' ##_NN and_CC SenSys_NNS ''_'' ##_CD conference_NN deadlines_NNS ._.
+Overall_RB ,_, the_DT system_NN has_VBZ ##_CD research_NN projects_NNS registered_VBN to_TO use_VB the_DT system_NN spanning_VBG a_DT variety_NN of_IN academic_JJ and_CC commercial_JJ institutions_NNS ._.
+Of_IN these_DT ,_, ##_NNS have_VBP actively_RB bid_NN and_CC received_VBD time_NN on_IN the_DT system_NN ._.
+As_IN of_IN April_NNP #_# ,_, ####_CD ,_, the_DT system_NN has_VBZ received_VBN 322_CD bids_NNS ,_, and_CC allocated_VBN ###_CD ,_, ###_CD node_NN hours_NNS over_IN the_DT testbed_VBN ''_'' s_VBZ 148_CD nodes_NNS ._.
+0_CD 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 1_CD 0_CD ._.
+####_NN #_# ._.
+###_NN #_# ._.
+##_NN #_# ._.
+#_# #_# ##_CD ###_CD Cumulativefractionofbids_NNS Bid_NN value_NN per_IN node_NN hour_NN U1_NN U2_NN U3_NN U4_NN U5_NN U6_NN U7_NN Figure_NN #_# :_: Bid_NN value_NN distributions_NNS by_IN user_NN ._.
+As_IN a_DT measure_NN of_IN contention_NN ,_, Figure_NNP #_# shows_VBZ the_DT utilization_NN of_IN the_DT ##_CD MICA2_NN motes_NNS over_IN the_DT past_JJ four_CD months_NNS ._.
+It_PRP depicts_VBZ periods_NNS of_IN significant_JJ contention_NN extending_VBG over_IN multiple_JJ consecutive_JJ days_NNS ,_, in_IN particular_JJ near_IN major_JJ deadlines_NNS ._.
+#_# To_TO quantify_VB user_NN valuations_NNS for_IN resources_NNS ,_, Figure_NNP #_# 1_CD The_DT frequency_NN constraints_NNS are_VBP used_VBN to_TO schedule_VB testbed_JJ allocations_NNS such_JJ that_IN allocations_NNS co-scheduled_VBN in_IN time_NN do_VBP not_RB collide_VB by_IN using_VBG the_DT same_JJ radio_NN frequency_NN ._.
+In_IN practice_NN ,_, distinct_JJ frequencies_NNS have_VBP not_RB been_VBN a_DT scarce_JJ resource_NN ._.
+2_CD Results_NNS for_IN the_DT ##_CD MICA2DOT_NN motes_NNS are_VBP similar_JJ and_CC omitted_VBN for_IN space_NN ._.
+100_CD plots_NNS distributions_NNS of_IN bid_NN values_NNS per_IN node_NN hour_NN for_IN the_DT seven_CD most_RBS active_JJ users_NNS in_IN the_DT system_NN ._.
+This_DT graph_NN shows_VBZ that_IN user_NN valuations_NNS for_IN testbed_JJ resources_NNS varied_VBD substantially_RB ,_, spanning_VBG over_IN four_CD orders_NNS of_IN magnitude_NN ._.
+Valuations_NNS are_VBP also_RB distributed_VBN relatively_RB evenly_RB across_IN each_DT order_NN of_IN magnitude_NN ,_, suggesting_VBG that_IN these_DT ranges_NNS are_VBP not_RB due_JJ to_TO a_DT few_JJ anomalous_JJ bids_NNS but_CC rather_RB to_TO a_DT wide_JJ range_NN of_IN underlying_VBG user_NN valuations_NNS for_IN testbed_JJ resources_NNS ._.
+These_DT dual_JJ observations-significant_JJ resource_NN contention_NN and_CC a_DT wide_JJ range_NN of_IN valuations-support_NN the_DT use_NN of_IN an_DT auction_NN ,_, which_WDT is_VBZ designed_VBN precisely_RB to_TO harness_NN such_JJ widely_RB varying_VBG valuations_NNS to_TO compute_VB an_DT efficient_JJ and_CC user_NN utility-maximizing_JJ node_NN allocation_NN ._.
+Lastly_RB ,_, as_IN another_DT measure_NN of_IN resource_NN contention_NN and_CC the_DT utility_NN of_IN driving_VBG resource_NN allocation_NN via_IN user-specified_JJ valuations_NNS ,_, Figure_NNP #_# plots_NNS the_DT median_JJ per-node_JJ clearing_NN price_NN for_IN both_DT MICA2_NN and_CC MICA2DOT_NN motes_NNS over_IN time_NN ._.
+To_TO compute_VB these_DT prices_NNS ,_, we_PRP price_VBP an_DT allocated_VBN node-hour_NN for_IN a_DT winning_VBG bid_NN with_IN value_NN v_LS for_IN n_NN nodes_NNS for_IN k_NN hours_NNS as_IN v_LS /_: nk_NN ._.
+Unallocated_JJ node-hours_NNS are_VBP assigned_VBN a_DT price_NN of_IN #_# ._.
+For_IN a_DT given_VBN hour_NN ,_, we_PRP examine_VBP all_DT MICA2_NN motes_NNS and_CC plot_VB the_DT median_JJ node-hour_JJ price_NN for_IN that_DT hour_NN and_CC do_VBP the_DT same_JJ for_IN MICA2DOT_NN motes_NNS ._.
+Of_IN particular_JJ interest_NN in_IN this_DT graph_NN are_VBP the_DT sequence_NN of_IN prices_NNS from_IN days_NNS 45-60_CD and_CC days_NNS 105-120_CD -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, periods_NNS leading_VBG up_RP to_TO conference_NN deadlines_NNS -RRB-_-RRB- ._.
+These_DT sequences_NNS show_VBP that_IN the_DT value_NN of_IN testbed_JJ resources_NNS ,_, as_IN measured_VBN by_IN market_NN prices_NNS for_IN motes_NNS ,_, increases_VBZ exponentially_RB -LRB-_-LRB- logarithmic_JJ y-axis_NN -RRB-_-RRB- during_IN times_NNS of_IN peak_NN contention_NN ._.
+This_DT suggests_VBZ that_IN allowing_VBG users_NNS to_TO express_VB valuations_NNS for_IN resources_NNS to_TO drive_VB the_DT resource_NN allocation_NN process_NN is_VBZ important_JJ for_IN making_VBG effective_JJ use_NN of_IN the_DT testbed_VBN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, to_TO distinguish_VB important_JJ use_NN from_IN low_JJ priority_NN activities_NNS -RRB-_-RRB- ._.
+However_RB ,_, it_PRP also_RB suggests_VBZ that_IN users_NNS become_VBP exponentially_RB desperate_JJ to_TO acquire_VB resources_NNS as_IN deadlines_NNS approach_NN ._.
+As_IN it_PRP turns_VBZ out_RP ,_, it_PRP is_VBZ precisely_RB during_IN these_DT times_NNS that_WDT users_NNS will_MD try_VB their_PRP$ hardest_RBS to_TO game_NN the_DT system_NN and_CC ,_, therefore_RB ,_, when_WRB the_DT efficacy_NN of_IN a_DT market-based_JJ mechanism_NN can_MD be_VB best_JJS evaluated_VBN ._.
+1e-05_NN 0_CD ._.
+####_NN 0_CD ._.
+###_NN 0_CD ._.
+##_NN 0_CD ._.
+#_# 1_CD 10_CD 0_CD ##_CD ##_CD ##_CD ##_CD ###_CD ###_CD Valuepernodehour_NNP Days_NNS since_IN Dec_NNP #_# ,_, ####_CD MICA2_NN MICA2DOT_NN Figure_NN #_# :_: Median_JJ node-hour_JJ market_NN prices_NNS ._.
+3_LS ._.
+OBSERVED_VBN STRATEGIC_JJ BEHAVIOR_NN During_IN the_DT past_JJ four_CD months_NNS of_IN operation_NN ,_, Mirage_NNP has_VBZ employed_VBN two_CD distinct_JJ auction_NN mechanisms_NNS and_CC observed_VBN four_CD primary_JJ types_NNS of_IN strategic_JJ behavior_NN from_IN users_NNS ._.
+The_DT first_JJ auction_NN mechanism_NN ,_, A1_NN ,_, was_VBD deployed_VBN from_IN December_NNP #_# ,_, 2004_CD to_TO March_NNP ##_CD ,_, ####_CD ._.
+During_IN this_DT time_NN period_NN ,_, we_PRP observed_VBD three_CD different_JJ types_NNS of_IN strategic_JJ behavior_NN -LRB-_-LRB- S1-S3_NN -RRB-_-RRB- ,_, the_DT most_RBS recent_JJ of_IN which_WDT -LRB-_-LRB- S3_NN -RRB-_-RRB- resulted_VBD in_IN significant_JJ gaming_NN of_IN the_DT system_NN ._.
+In_IN response_NN to_TO the_DT impact_NN of_IN S3_NN ,_, we_PRP deployed_VBD a_DT second_JJ mechanism_NN ,_, A2_NN ,_, on_IN March_NNP ##_CD ,_, ####_CD -LRB-_-LRB- Day_NN ###_CD in_IN Figures_NNS #_# and_CC #_# -RRB-_-RRB- ._.
+While_IN A2_NN mitigated_VBN or_CC eliminated_VBN the_DT known_JJ shortcomings_NNS of_IN A1-in_NN particular_JJ the_DT vulnerability_NN strategy_NN S3_NN exploited_VBD that_IN prompted_VBD the_DT change_NN in_IN the_DT first_JJ place-it_NN was_VBD soon_RB discovered_VBN that_IN A2_NN remained_VBD vulnerable_JJ to_TO another_DT strategy_NN ,_, S4_NN ,_, which_WDT was_VBD predictably_RB discovered_VBN and_CC exploited_VBN by_IN a_DT motivated_JJ user_NN community_NN ._.
+We_PRP are_VBP currently_RB in_IN the_DT process_NN of_IN designing_VBG a_DT mechanism_NN to_TO address_VB the_DT weakness_NN in_IN A2_NN that_WDT is_VBZ abused_VBN by_IN S4_NN ._.
+Of_IN course_NN ,_, ideally_RB we_PRP would_MD develop_VB a_DT provably_RB strategyproof_JJ mechanism_NN ._.
+However_RB ,_, this_DT remains_VBZ an_DT open_JJ research_NN problem_NN for_IN repeated_VBN combinatorial_JJ auctions_NNS ._.
+In_IN this_DT section_NN ,_, we_PRP describe_VBP the_DT two_CD auction_NN mechanisms_NNS A1_NN and_CC A2_NN ,_, Mirage_NNP ''_'' s_VBZ virtual_JJ currency_NN policy_NN ,_, the_DT four_CD types_NNS of_IN observed_VBN strategic_JJ behavior_NN S1-S4_NN ,_, and_CC their_PRP$ impact_NN on_IN aggregate_JJ utility_NN delivered_VBN ._.
+3_LS ._.
+#_# Auctions_NNS and_CC virtual_JJ currency_NN Our_PRP$ first_JJ auction_NN mechanism_NN ,_, A1_NN was_VBD a_DT first-price_NN ,_, openbid_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, users_NNS can_MD see_VB all_DT outstanding_JJ bids_NNS from_IN competing_VBG users_NNS -RRB-_-RRB- combinatorial_JJ auction_NN that_WDT cleared_VBD every_DT hour_NN based_VBN on_IN a_DT greedy_JJ algorithm_NN ._.
+In_IN each_DT round_NN of_IN auction_NN ,_, the_DT current_JJ set_NN of_IN bids_NNS was_VBD sorted_VBN by_IN value_NN per_IN node_NN hour_NN and_CC bids_NNS were_VBD greedily_RB fit_VBN into_IN the_DT remaining_VBG portion_NN of_IN the_DT current_JJ window_NN of_IN available_JJ resources_NNS ._.
+Like_IN A1_NN ,_, our_PRP$ second_JJ auction_NN ,_, A2_NN ,_, was_VBD also_RB based_VBN on_IN a_DT greedy_JJ clearing_NN algorithm_NN ._.
+Its_PRP$ key_JJ differences_NNS were_VBD that_IN -LRB-_-LRB- i_LS -RRB-_-RRB- it_PRP was_VBD a_DT sealed-bid_JJ auction_NN and_CC -LRB-_-LRB- ii_LS -RRB-_-RRB- it_PRP allocated_VBD resources_NNS over_IN a_DT 148-node_JJ 104-hour_JJ window_NN with_IN bid_NN start_NN times_NNS constrained_VBD to_TO be_VB within_IN the_DT next_JJ ##_NN hours_NNS -LRB-_-LRB- the_DT reason_NN for_IN this_DT will_MD become_VB apparent_JJ when_WRB we_PRP discuss_VBP strategy_NN S3_NN -RRB-_-RRB- ._.
+In_IN both_DT auctions_NNS ,_, winning_VBG bids_NNS from_IN previous_JJ auctions_NNS were_VBD publicly_RB visible_JJ for_IN price_NN feedback_NN and_CC the_DT same_JJ virtual_JJ currency_NN policy_NN was_VBD used_VBN ._.
+Our_PRP$ virtual_JJ currency_NN policy_NN assigns_VBZ two_CD numbers_NNS to_TO each_DT user_NN ''_'' s_NNS bank_NN account_NN :_: a_DT baseline_NN value_NN and_CC a_DT number_NN of_IN shares_NNS ._.
+When_WRB created_VBN ,_, each_DT bank_NN account_NN is_VBZ initialized_VBN to_TO its_PRP$ baseline_NN value_NN ._.
+Once_RB funded_VBN ,_, a_DT user_NN can_MD then_RB begin_VB to_TO bid_VB and_CC acquire_VB testbed_JJ resources_NNS through_IN Mirage_NNP ._.
+In_IN each_DT round_NN of_IN the_DT auction_NN ,_, accounts_NNS for_IN winning_VBG bids_NNS are_VBP debited_VBN and_CC the_DT proceeds_NNS are_VBP redistributed_VBN through_IN a_DT proportional_JJ profit-sharing_NN policy_NN based_VBN on_IN bank_NN account_NN share_NN values_NNS ._.
+The_DT primary_JJ purpose_NN of_IN this_DT policy_NN is_VBZ to_TO reward_VB users_NNS who_WP refrain_VBP from_IN using_VBG the_DT system_NN during_IN times_NNS of_IN peak_JJ demand_NN and_CC penalize_VB those_DT who_WP use_VBP resources_NNS aggressively_RB during_IN periods_NNS of_IN scarcity_NN ._.
+These_DT rewards_NNS result_VBP in_IN transient_JJ bursts_NNS of_IN credit_NN and_CC are_VBP balanced_VBN by_IN another_DT mechanism_NN ,_, a_DT savings_NNS tax_NN ,_, to_TO prevent_VB idle_JJ users_NNS from_IN sitting_VBG on_IN large_JJ amounts_NNS of_IN excess_JJ credit_NN forever_RB -LRB-_-LRB- a_DT use_NN it_PRP or_CC lose_VB it_PRP policy_NN -RRB-_-RRB- ._.
+In_IN our_PRP$ deployment_NN ,_, an_DT administrator_NN set_VBD the_DT virtual_JJ currency_NN policy_NN ._.
+Bank_NNP accounts_VBZ for_IN external_JJ users_NNS were_VBD assigned_VBN baseline_NN and_CC shares_NNS value_NN set_VBN to_TO ####_CD ,_, while_IN bank_NN accounts_NNS for_IN internal_JJ users_NNS -LRB-_-LRB- U4_NN and_CC U5_NN -RRB-_-RRB- were_VBD assigned_VBN larger_JJR allocations_NNS with_IN baseline_NN and_CC share_NN values_NNS set_VBN to_TO ####_CD ._.
+3_LS ._.
+#_# Strategic_NNP behavior_NN The_DT following_VBG are_VBP descriptions_NNS of_IN the_DT four_CD primary_JJ bidding_NN strategies_NNS observed_VBN over_IN the_DT past_JJ four-months_NNS ._.
+S1_NN :_: underbidding_VBG based_VBN on_IN current_JJ demand_NN ._.
+In_IN A1_NN ,_, all_DT outstanding_JJ bids_NNS were_VBD publicly_RB visible_JJ ._.
+Consequently_RB ,_, when_WRB users_NNS would_MD observe_VB a_DT lack_NN of_IN demand_NN ,_, some_DT users_NNS would_MD bid_VB correspondingly_RB low_JJ amounts_NNS rather_RB than_IN their_PRP$ true_JJ values_NNS ._.
+For_IN example_NN ,_, one_CD user_NN would_MD frequently_RB bid_VB #_# or_CC #_# when_WRB no_DT other_JJ bids_NNS were_VBD present_JJ ._.
+While_IN underbidding_VBG in_IN the_DT absence_NN of_IN competition_NN is_VBZ not_RB a_DT problem_NN per_FW se_FW ,_, it_PRP does_VBZ raise_VB two_CD 101_CD issues_NNS ._.
+First_RB ,_, if_IN a_DT seller_NN was_VBD collecting_VBG revenue_NN for_IN profit_NN ,_, such_JJ bidding_NN leads_VBZ to_TO suboptimal_JJ outcomes_NNS for_IN the_DT seller_NN ._.
+Second_RB ,_, should_MD other_JJ users_NNS enter_VBP competing_VBG bids_NNS before_IN the_DT auction_NN clears_VBZ ,_, users_NNS will_MD need_VB to_TO refine_VB their_PRP$ bids_NNS to_TO allow_VB the_DT system_NN to_TO compute_VB an_DT allocation_NN that_WDT maximizes_VBZ aggregate_JJ utility_NN ._.
+This_DT second_JJ problem_NN then_RB leads_VBZ to_TO strategy_NN S2_NN ._.
+S2_NN :_: iterative_JJ bidding_NN ._.
+Because_IN users_NNS are_VBP allowed_VBN to_TO modify_VB their_PRP$ bids_NNS and_CC A1_NN was_VBD an_DT open_JJ auction_NN ,_, iteratively_RB refining_VBG one_CD ''_'' s_VBZ bid_NN value_NN in_IN response_NN to_TO other_JJ users_NNS ''_'' bid_NN values_NNS should_MD ,_, in_IN theory_NN ,_, have_VBP no_DT effect_NN on_IN who_WP wins_VBZ the_DT auction_NN ;_: users_NNS with_IN higher_JJR valuations-who_NN may_MD also_RB be_VB underbiddingshould_JJ eventually_RB outbid_VBP those_DT with_IN lower_JJR valuations_NNS after_IN sufficient_JJ iteration_NN ._.
+The_DT problem_NN is_VBZ that_IN users_NNS do_VBP not_RB behave_VB this_DT -LRB-_-LRB- rational_JJ -RRB-_-RRB- way_NN ._.
+Usability_NN overhead_NN matters_NNS :_: users_NNS in_IN Mirage_NNP bid_NN once_RB and_CC perhaps_RB modify_VB their_PRP$ bid_NN a_DT second_JJ time_NN ._.
+The_DT end_NN result_NN is_VBZ that_IN inefficiencies_NNS may_MD arise_VB since_IN the_DT auction_NN may_MD clear_VB with_IN bid_NN values_NNS that_WDT are_VBP understated_VBN ._.
+While_IN bidding_NN proxies_NNS that_WDT automatically_RB adjust_VBP user_NN bids_NNS in_IN response_NN to_TO other_JJ bids_NNS are_VBP effective_JJ in_IN single-good_JJ auctions_NNS ,_, it_PRP is_VBZ unclear_JJ how_WRB such_JJ proxies_NNS could_MD be_VB generally_RB effective_JJ in_IN a_DT combinatorial_JJ auction_NN without_IN actually_RB implementing_VBG the_DT same_JJ clearing_NN algorithm_NN used_VBN by_IN Mirage_NNP -LRB-_-LRB- which_WDT could_MD be_VB computationally_RB expensive_JJ -RRB-_-RRB- ._.
+In_IN summary_NN ,_, S1_NN and_CC S2_NN both_DT point_NN toward_IN the_DT need_NN for_IN a_DT strategyproof_JJ auction_NN mechanism_NN in_IN Mirage_NNP ._.
+In_IN such_PDT an_DT auction_NN ,_, a_DT user_NN ''_'' s_NNS optimal_JJ strategy_NN is_VBZ always_RB to_TO bid_VB truthfully_RB the_DT first_JJ time_NN ._.
+Thus_RB ,_, rational_JJ users_NNS will_MD never_RB underbid_VB and_CC iterative_JJ bidding_NN is_VBZ unnecessary_JJ ._.
+S3_NN :_: rolling_VBG window_NN manipulation_NN ._.
+Unlike_IN auctions_NNS for_IN tangible_JJ goods_NNS ,_, resource_NN allocation_NN in_IN computer_NN systems_NNS fundamentally_RB involves_VBZ time_NN ,_, since_IN sharing_NN of_IN resources_NNS implies_VBZ that_IN a_DT resource_NN can_MD not_RB be_VB assigned_VBN to_TO a_DT given_VBN user_NN /_: process_NN forever_RB ._.
+In_IN Mirage_NNP ,_, we_PRP addressed_VBD the_DT issue_NN of_IN time_NN by_IN selling_VBG resources_NNS over_IN a_DT rolling_NN window_NN ##_CD hours_NNS into_IN the_DT future_NN with_IN users_NNS able_JJ to_TO bid_VB for_IN blocks_NNS #_# ,_, #_# ,_, ..._: ,_, or_CC ##_CD hours_NNS in_IN length_NN ._.
+What_WP we_PRP did_VBD not_RB anticipate_VB ,_, however_RB ,_, was_VBD what_WP would_MD happen_VB when_WRB the_DT entire_JJ window_NN of_IN resources_NNS becomes_VBZ fully_RB allocated_VBN ._.
+In_IN this_DT scenario_NN ,_, which_WDT was_VBD the_DT norm_NN near_IN the_DT recent_JJ SenSys_NNP ''_'' ##_CD deadline_NN ,_, the_DT entire_JJ 148-node_JJ 72hour_NN window_NN is_VBZ allocated_VBN ._.
+A_DT user_NN bidding_NN for_IN ,_, say_VB ,_, ##_CD hours_NNS thus_RB needs_VBZ to_TO minimally_RB wait_VB ##_CD hours_NNS for_IN ##_CD new_JJ 148-node_JJ 1-hour_JJ columns_NNS of_IN resources_NNS to_TO become_VB available_JJ ._.
+The_DT problem_NN here_RB is_VBZ that_IN a_DT user_NN can_MD game_NN the_DT system_NN by_IN observing_VBG other_JJ bids_NNS and_CC simply_RB requesting_VBG fewer_JJR hours_NNS ._.
+Since_IN ##_CD columns_NNS will_MD roll_VB into_IN the_DT resource_NN window_NN before_IN 32_CD columns_NNS ,_, a_DT user_NN bidding_NN for_IN ##_CD hours_NNS outbids_VBZ a_DT 32-hour_JJ bid_NN independent_JJ of_IN each_DT bid_NN ''_'' s_NNS value_NN because_IN resources_NNS for_IN the_DT 32-hour_JJ bid_NN are_VBP not_RB available_JJ when_WRB the_DT auction_NN clears_VBZ ._.
+Of_IN course_NN ,_, if_IN other_JJ users_NNS also_RB begin_VBP bidding_VBG for_IN ##_CD hours_NNS ,_, this_DT opportunity_NN disappears_VBZ but_CC then_RB moves_VBZ to_TO durations_NNS shorter_JJR than_IN ##_CD hours_NNS ._.
+In_IN the_DT limit_NN ,_, all_DT users_NNS bid_VB for_IN 1-hour_JJ blocks_NNS ,_, thereby_RB eliminating_VBG the_DT possibility_NN of_IN obtaining_VBG longer_JJR resource_NN allocations_NNS which_WDT may_MD be_VB critical_JJ to_TO the_DT underlying_VBG SensorNet_NNP experiment_NN ._.
+In_IN practice_NN ,_, we_PRP observed_VBD this_DT type_NN of_IN gaming_NN push_NN winning_VBG bid_NN durations_NNS down_IN to_TO #_# hours_NNS ._.
+With_IN rampant_JJ gaming_NN of_IN the_DT system_NN occurring_VBG through_IN S3_NN ,_, we_PRP responded_VBD by_IN implementing_VBG and_CC deploying_VBG auction_NN A2_NN ._.
+As_IN mentioned_VBN ,_, a_DT key_JJ difference_NN of_IN A2_NN compared_VBN to_TO A1_NN is_VBZ that_IN it_PRP allocates_VBZ resources_NNS over_IN a_DT 104-hour_JJ window_NN with_IN bid_NN start_NN times_NNS constrained_VBD to_TO be_VB within_IN the_DT next_JJ ##_NN hours_NNS ._.
+In_IN expanding_VBG the_DT window_NN and_CC expanding_VBG -LRB-_-LRB- while_IN still_RB constraining_VBG -RRB-_-RRB- the_DT range_NN of_IN start_NN times_NNS ,_, A2_NN eliminates_VBZ strategy_NN S3_NN ._.
+When_WRB the_DT entire_JJ 148-node_JJ 72-hour_JJ window_NN is_VBZ allocated_VBN ,_, a_DT pending_VBG 16-hour_JJ bid_NN and_CC a_DT pending_VBG 32-hour_JJ bid_NN will_MD both_CC Time_NNP Project_NNP Value_NNP Nodes_NNP Hours_NNS 04-02-2005_CD ##_CD :_: ##_CD :_: ##_CD U2_NN ####_CD ##_CD ##_NN 04-02-2005_CD ##_CD :_: ##_CD :_: ##_CD U1_NN #_# ##_CD #_# 04-02-2005_CD ##_CD :_: ##_CD :_: ##_CD U1_NN ###_CD ##_CD #_# 04-02-2005_CD ##_CD :_: ##_CD :_: ##_CD U1_NN #_# ##_CD #_# Table_NNP #_# :_: Strategy_NNP S4_NN on_IN ##_CD MICA2_NN motes_NNS ._.
+have_VB their_PRP$ first_JJ opportunity_NN for_IN an_DT allocation_NN when_WRB ##_RB new_JJ columns_NNS become_VBP available_JJ ._.
+At_IN that_DT point_NN ,_, both_CC the_DT 16-hour_JJ bid_NN and_CC the_DT 32-hour_JJ bid_NN will_MD have_VB an_DT opportunity_NN to_TO obtain_VB an_DT allocation_NN ._.
+Such_JJ allocations_NNS are_VBP then_RB determined_VBN by_IN the_DT usual_JJ greedy_JJ clearing_NN algorithm_NN ._.
+S4_NN :_: auction_NN sandwich_NN attack_NN ._.
+While_IN A2_NN eliminated_VBD S3_NN and_CC significantly_RB reduced_VBD S1_NN and_CC S2_NN ,_, it_PRP still_RB retained_VBD a_DT weakness_NN of_IN A1_NN that_WDT had_VBD yet_RB to_TO be_VB discovered_VBN and_CC exploited_VBN ._.
+In_IN the_DT auction_NN sandwich_NN attack_NN ,_, a_DT user_NN exploits_VBZ two_CD pieces_NNS of_IN information_NN :_: -LRB-_-LRB- i_LS -RRB-_-RRB- historical_JJ information_NN on_IN previous_JJ winning_VBG bids_NNS to_TO estimate_VB the_DT current_JJ workload_NN and_CC -LRB-_-LRB- ii_LS -RRB-_-RRB- the_DT greedy_JJ nature_NN of_IN the_DT auction_NN clearing_NN algorithm_NN ._.
+In_IN this_DT particular_JJ case_NN ,_, a_DT user_NN employs_VBZ a_DT strategy_NN of_IN splitting_NN a_DT bid_NN for_IN ##_CD MICA2_NN motes_NNS across_IN several_JJ bids_NNS ,_, only_RB one_CD of_IN which_WDT has_VBZ a_DT high_JJ value_NN per_IN node_NN hour_NN ._.
+Since_IN the_DT high_JJ value_NN bid_NN is_VBZ likely_JJ to_TO win_VB due_JJ to_TO the_DT greedy_JJ nature_NN of_IN the_DT auction_NN clearing_NN algorithm_NN and_CC since_IN all_DT other_JJ users_NNS at_IN the_DT time_NN were_VBD all_DT requesting_VBG ##_NN motes_NNS -LRB-_-LRB- based_VBN on_IN the_DT historical_JJ information_NN and_CC the_DT fact_NN that_IN the_DT SenSys_NNPS ''_'' ##_CD deadline_NN was_VBD imminent_JJ requiring_VBG experiments_NNS at_IN scale_NN -RRB-_-RRB- ,_, no_DT other_JJ bids_NNS could_MD backfill_VB the_DT remaining_VBG slots_NNS ;_: the_DT user_NN ''_'' s_NNS remaining_VBG bids_NNS would_MD then_RB fit_VB those_DT slots_NNS at_IN a_DT low_JJ price_NN ._.
+An_DT actual_JJ occurrence_NN is_VBZ shown_VBN in_IN Table_NNP #_# ._.
+Here_RB ,_, user_NN U1_NN uses_VBZ three_CD bids_NNS ,_, the_DT main_JJ one_CD being_VBG a_DT bid_NN with_IN value_NN 130_CD -LRB-_-LRB- value_NN per_IN node_NN hour_NN ###_CD /_: -LRB-_-LRB- #_# ##_CD -RRB-_-RRB- =_JJ #_# ._.
+###_NN -RRB-_-RRB- which_WDT is_VBZ used_VBN to_TO outbid_VB a_DT bid_NN with_IN value_NN ####_CD -LRB-_-LRB- value_NN per_IN node_NN hour_NN 1590_CD /_: -LRB-_-LRB- ##_CD ##_NN -RRB-_-RRB- =_JJ #_# ._.
+####_NN -RRB-_-RRB- ._.
+Once_RB the_DT high_JJ valued_VBN 40-node_JJ bid_NN has_VBZ occupied_VBN its_PRP$ portion_NN of_IN the_DT resource_NN window_NN ,_, no_DT other_JJ 97-node_JJ bids_NNS can_MD be_VB matched_VBN ._.
+Consequently_RB ,_, the_DT user_NN backfills_NNS on_IN the_DT remaining_VBG ##_CD nodes_NNS using_VBG two_CD bids_NNS :_: a_DT 24-node_JJ bid_NN and_CC a_DT 33-node_JJ bid_NN ,_, both_CC at_IN low_JJ valuations_NNS ._.
+4_LS ._.
+CHALLENGES_NNS AND_CC REFINEMENTS_NNS Designing_NNP an_DT appropriate_JJ auction_NN mechanism_NN is_VBZ key_JJ to_TO addressing_VBG the_DT above_JJ strategies_NNS ._.
+Specifically_RB ,_, our_PRP$ goals_NNS for_IN such_PDT a_DT mechanism_NN include_VBP :_: -LRB-_-LRB- i_LS -RRB-_-RRB- strategyproofness_NN ,_, -LRB-_-LRB- ii_LS -RRB-_-RRB- computational_JJ tractability_NN ,_, and_CC -LRB-_-LRB- iii_LS -RRB-_-RRB- optimal_JJ allocation_NN ._.
+The_DT Generalized_NNP Vickrey_NNP Auction_NN -LRB-_-LRB- GVA_NN -RRB-_-RRB- -LSB-_-LRB- #_# ,_, ##_NN -RSB-_-RRB- is_VBZ the_DT only_RB known_JJ combinatorial_JJ mechanism_NN that_WDT provides_VBZ both_DT strategyproofness_NN and_CC optimal_JJ allocation_NN ._.
+However_RB ,_, it_PRP also_RB is_VBZ computationally_RB intractable_JJ as_IN it_PRP is_VBZ NP-hard_JJ to_TO calculate_VB the_DT allocations_NNS as_RB well_RB as_IN individual_JJ payments_NNS ._.
+Other_JJ VCG-based_JJ mechanisms_NNS exist_VBP that_IN replace_VB the_DT allocation_NN algorithms_NNS in_IN GVA_NN with_IN approximate_JJ ones_NNS to_TO provide_VB tractability_NN ._.
+In_IN this_DT case_NN ,_, however_RB ,_, strategyproofness_NN is_VBZ no_RB longer_RB available_JJ -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+These_DT goals_NNS are_VBP in_IN conflict_NN for_IN VCG_NNP and_CC in_IN general_JJ -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+We_PRP thus_RB must_MD make_VB certain_JJ trade-offs_NNS ._.
+With_IN this_DT in_IN mind_NN ,_, we_PRP now_RB present_VBP a_DT two-phase_JJ roadmap_NN for_IN improving_VBG Mirage_NNP :_: -LRB-_-LRB- i_LS -RRB-_-RRB- short-term_JJ improvements_NNS to_TO the_DT current_JJ mechanism_NN that_WDT mitigate_VBP the_DT effects_NNS of_IN existing_VBG strategies_NNS ;_: and_CC -LRB-_-LRB- ii_LS -RRB-_-RRB- designing_VBG a_DT new_JJ mechanism_NN that_WDT approximately_RB achieves_VBZ our_PRP$ three_CD goals_NNS simultaneously_RB ._.
+4_LS ._.
+#_# Ongoing_JJ improvements_NNS Our_PRP$ first_JJ improvement_NN is_VBZ a_DT mixed-integer_JJ programming_NN 102_CD -LRB-_-LRB- MIP_NN -RRB-_-RRB- formulation_NN as_IN an_DT alternative_NN to_TO the_DT greedy_JJ algorithm_NN ._.
+This_DT is_VBZ aimed_VBN directly_RB at_IN eliminating_VBG strategy_NN S4_NN ._.
+While_IN the_DT MIP_NN does_VBZ not_RB provide_VB strategyproofness_NN ,_, it_PRP is_VBZ able_JJ to_TO compute_VB approximately-optimal_JJ allocations_NNS ._.
+Like_IN the_DT GVA_NNP ,_, however_RB ,_, the_DT MIP_NN is_VBZ computationally_RB demanding_VBG and_CC thus_RB careful_JJ formulation_NN of_IN the_DT MIP_NN and_CC optimizations_NNS based_VBN on_IN the_DT observed_VBN workloads_NNS from_IN Mirage_NNP will_MD be_VB required_VBN to_TO ensure_VB timely_JJ clearing_NN of_IN the_DT auction_NN ._.
+Our_PRP$ first_JJ step_NN is_VBZ to_TO test_VB and_CC optimize_VB our_PRP$ MIP-based_JJ algorithm_NN on_IN auction_NN data_NNS from_IN the_DT past_JJ four_CD months_NNS ._.
+We_PRP can_MD then_RB run_VB both_CC the_DT MIP_NN alongside_IN the_DT greedy_JJ algorithm_NN in_IN parallel_NN and_CC select_VB the_DT higher_JJR quality_NN result_VBP each_DT time_NN the_DT auction_NN clears_VBZ ._.
+Second_RB ,_, we_PRP can_MD also_RB augment_VB the_DT auction_NN with_IN additional_JJ rules_NNS and_CC fees_NNS to_TO further_JJ mitigate_VB strategic_JJ behavior_NN ._.
+To_TO eliminate_VB S4_NN ,_, two_CD possibilities_NNS are_VBP to_TO restrict_VB each_DT user_NN to_TO having_VBG either_DT one_CD outstanding_JJ bid_NN at_IN a_DT time_NN or_CC to_TO mandate_VB that_IN users_NNS are_VBP not_RB allowed_VBN to_TO have_VB multiple_JJ overlapping_VBG allocations_NNS in_IN time_NN ._.
+To_TO mitigate_VB S1_NN and_CC S2_NN ,_, we_PRP could_MD add_VB transaction_NN fees_NNS ._.
+With_IN such_JJ fees_NNS in_IN place_NN ,_, a_DT user_NN who_WP understates_VBZ a_DT bid_NN and_CC intends_VBZ to_TO iteratively_RB refine_VB it_PRP will_MD have_VB a_DT disincentive_NN to_TO do_VB so_RB given_VBN that_IN each_DT iteration_NN incurs_VBZ a_DT fee_NN ._.
+Finally_RB ,_, another_DT approach_NN to_TO eliminating_VBG S4_NN is_VBZ to_TO modify_VB the_DT greedy_JJ algorithm_NN such_JJ that_IN if_IN users_NNS do_VBP have_VB bids_NNS whose_WP$ allocations_NNS could_MD overlap_VB in_IN time_NN ,_, then_RB those_DT potential_JJ allocations_NNS are_VBP considered_VBN from_IN lowest_JJS to_TO highest_JJS value_NN per_IN node_NN hour_NN ._.
+In_IN effect_NN ,_, this_DT allows_VBZ bids_NNS for_IN overlapping_VBG allocations_NNS but_CC creates_VBZ a_DT disincentive_NN for_IN users_NNS to_TO place_VB such_JJ bids_NNS ._.
+4_LS ._.
+#_# Towards_IN a_DT strategyproof_JJ mechanism_NN Clearly_RB ,_, we_PRP need_VBP to_TO evaluate_VB our_PRP$ goals_NNS and_CC identify_VB where_WRB we_PRP can_MD make_VB trade-offs_NNS in_IN designing_VBG a_DT new_JJ mechanism_NN ._.
+Computational_JJ tractability_NN is_VBZ a_DT fundamental_JJ requirement_NN for_IN operational_JJ reasons_NNS ._.
+Strategyproofness_NN or_CC ,_, minimally_RB ,_, making_VBG the_DT system_NN hard_JJ to_TO manipulate_VB is_VBZ also_RB key_JJ given_VBN the_DT behavior_NN we_PRP have_VBP observed_VBN ._.
+Finally_RB ,_, our_PRP$ mechanism_NN should_MD compute_VB near-optimal_JJ allocations_NNS given_VBN our_PRP$ compute_VB time_NN budget_NN ._.
+Among_IN the_DT potential_JJ mechanisms_NNS we_PRP can_MD extend_VB ,_, the_DT LOS_NNP scheme_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- seems_VBZ to_TO be_VB a_DT good_JJ starting_VBG point_NN ._.
+It_PRP is_VBZ a_DT fast_JJ algorithm_NN as_IN the_DT allocation_NN rule_NN is_VBZ a_DT greedy_JJ mechanism_NN ,_, ranking_JJ bids_NNS with_IN some_DT norm_NN such_JJ as_IN value_NN per_IN node_NN hour_NN ._.
+The_DT advantage_NN of_IN LOS_NNP is_VBZ its_PRP$ special_JJ payment_NN scheme_NN that_WDT is_VBZ tightly_RB linked_VBN to_TO the_DT greedy_JJ allocation_NN ._.
+Essentially_RB ,_, a_DT winner_NN i_FW pays_VBZ the_DT norm_NN of_IN the_DT first_JJ bidder_NN denied_VBD access_NN times_NNS the_DT amount_NN of_IN units_NNS -LRB-_-LRB- i_FW ._.
+e_LS ._.
+node_NN hours_NNS -RRB-_-RRB- that_WDT i_FW won_VBD ._.
+This_DT feature_NN makes_VBZ it_PRP strategyproof_NN ._.
+The_DT main_JJ downside_NN ,_, however_RB ,_, is_VBZ that_IN it_PRP assumes_VBZ users_NNS are_VBP single-minded_JJ ,_, meaning_VBG that_IN each_DT bidder_NN only_RB cares_VBZ about_IN a_DT specific_JJ set_NN of_IN goods_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, a_DT specific_JJ list_NN of_IN nodes_NNS for_IN specific_JJ durations_NNS -RRB-_-RRB- and_CC they_PRP do_VBP not_RB value_NN anything_NN else_RB ._.
+Unfortunately_RB ,_, this_DT is_VBZ highly_RB restrictive_JJ and_CC contradicts_VBZ what_WP Mirage_NNP currently_RB offers_VBZ its_PRP$ users_NNS ,_, namely_RB the_DT ability_NN to_TO select_VB any_DT subset_NN of_IN nodes_NNS for_IN any_DT slots_NNS and_CC submit_VB multiple_JJ bids_NNS ._.
+Thus_RB ,_, LOS_NNP is_VBZ vulnerable_JJ to_TO S4_NN and_CC to_TO avoid_VB it_PRP we_PRP must_MD find_VB a_DT way_NN to_TO extend_VB LOS_NNP and_CC its_PRP$ strategyproof_JJ property_NN to_TO satisfy_VB complex-bidders_NNS ._.
+Realistically_RB ,_, even_RB with_IN a_DT strategyproof_JJ LOS_NNP scheme_NN for_IN complex_JJ bidders_NNS there_RB will_MD likely_RB be_VB further_JJ strategies_NNS we_PRP have_VBP yet_RB to_TO encounter_VB and_CC that_IN we_PRP should_MD consider_VB in_IN our_PRP$ design_NN ._.
+For_IN instance_NN ,_, our_PRP$ discussion_NN so_RB far_RB focuses_VBZ on_IN strategyproofness_NN within_IN a_DT single_JJ auction_NN ._.
+Across_IN auctions_NNS ,_, however_RB ,_, there_EX may_MD be_VB temporal_JJ strategies_NNS that_WDT are_VBP possible_JJ ._.
+For_IN example_NN ,_, in_IN a_DT particular_JJ auction_NN ,_, suppose_VBP the_DT highest_JJS bidder_NN wants_VBZ all_DT nodes_NNS and_CC pays_VBZ ,_, using_VBG GVA_NNP payment_NN scheme_NN for_IN simplicity_NN ,_, the_DT next_JJ bidder_NN ''_'' s_NNS value_NN ._.
+This_DT same_JJ bidder_NN may_MD be_VB better_JJR off_RP by_IN waiting_VBG until_IN the_DT next_JJ auction_NN ,_, if_IN the_DT user_NN can_MD still_RB win_VB and_CC face_VB bidders_NNS that_WDT have_VBP even_RB lower_JJR values_NNS ._.
+In_IN this_DT case_NN ,_, the_DT user_NN will_MD gain_VB additional_JJ utility_NN due_JJ to_TO a_DT lower_JJR payment_NN ._.
+This_DT ,_, however_RB ,_, may_MD create_VB various_JJ problems_NNS as_IN total_JJ revenue_NN ,_, total_JJ value_NN ,_, as_RB well_RB as_IN allocative_JJ efficiency_NN across_IN the_DT auctions_NNS may_MD be_VB adversely_RB affected_VBN ._.
+There_EX are_VBP two_CD techniques_NNS we_PRP can_MD use_VB to_TO address_VB temporal_JJ strategies_NNS ._.
+The_DT first_JJ is_VBZ a_DT wrapper_NN scheme_NN such_JJ as_IN the_DT one_CD employed_VBN by_IN Virtual_JJ Worlds_NNS -LRB-_-LRB- VW_NNP -RRB-_-RRB- -LSB-_-LRB- ##_CD -RSB-_-RRB- that_WDT makes_VBZ sequences_NNS of_IN individually_RB strategyproof_JJ auctions_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, LOS_NNP -RRB-_-RRB- strategyproof_NN ._.
+What_WDT VW_NNP does_VBZ is_VBZ ,_, after_IN bidder_NN i_FW wins_VBZ ,_, it_PRP tracks_VBZ what_WP would_MD have_VB happened_VBN if_IN i_FW had_VBD submitted_VBN in_IN a_DT subsequent_JJ auction_NN instead_RB ._.
+Specifically_RB ,_, it_PRP tracks_VBZ what_WP i_FW would_MD have_VB paid_VBN in_IN all_DT following_VBG auctions_NNS during_IN i_FW ''_'' s_VBZ patience_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, the_DT maximum_JJ time_NN i_FW is_VBZ willing_JJ to_TO wait_VB for_IN an_DT allocation_NN -RRB-_-RRB- and_CC keeps_VBZ track_NN of_IN the_DT lowest_JJS possible_JJ payment_NN ._.
+i_LS will_MD instead_RB be_VB charged_VBN the_DT lowest_JJS payment_NN and_CC will_MD thus_RB have_VB no_DT incentive_NN to_TO temporally_RB game_NN the_DT system_NN ._.
+Alternatively_RB ,_, the_DT new_JJ class_NN of_IN online_JJ mechanisms_NNS -LSB-_-LRB- #_# ,_, ##_NN -RSB-_-RRB- assumes_VBZ dynamic_JJ arrival_NN and_CC departure_NN of_IN bidders_NNS and_CC does_VBZ not_RB hold_VB auctions_NNS at_IN fixed_VBN intervals_NNS ._.
+Instead_RB ,_, the_DT mechanism_NN is_VBZ a_DT continuous_JJ scheme_NN that_WDT accepts_VBZ bids_NNS as_IN they_PRP arrive_VBP and_CC makes_VBZ allocation_NN decisions_NNS immediately_RB ,_, thus_RB removing_VBG any_DT need_NN to_TO clear_JJ auctions_NNS ._.
+The_DT challenge_NN is_VBZ that_IN the_DT current_JJ literature_NN is_VBZ still_RB restricted_JJ to_TO non-combinatorial_JJ settings_NNS ._.
+5_CD ._.
+CONCLUSION_NN Despite_IN initially_RB using_VBG a_DT repeated_VBN combinatorial_JJ auction_NN known_VBN not_RB to_TO be_VB strategyproof_JJ ,_, Mirage_NNP has_VBZ shown_VBN significant_JJ promise_NN as_IN a_DT vehicle_NN for_IN SensorNet_NNP testbed_VBD allocation_NN ._.
+The_DT dual_JJ observations_NNS of_IN significant_JJ resource_NN contention_NN and_CC a_DT wide_JJ range_NN of_IN valuations_NNS suggest_VBP that_IN auction-based_JJ schemes_NNS can_MD deliver_VB large_JJ improvements_NNS in_IN aggregate_JJ utility_NN when_WRB compared_VBN to_TO traditional_JJ approaches_NNS such_JJ as_IN proportional_JJ share_NN allocation_NN or_CC batch_NN scheduling_NN ._.
+Fully_RB realizing_VBG these_DT gains_NNS ,_, however_RB ,_, requires_VBZ addressing_VBG key_JJ problems_NNS in_IN strategyproof_JJ mechanism_NN design_NN and_CC combinatorial_JJ optimization_NN ._.
+The_DT temporal_JJ nature_NN of_IN computational_JJ resources_NNS and_CC the_DT combinatorial_JJ resource_NN demands_NNS of_IN distributed_VBN applications_NNS adds_VBZ an_DT additional_JJ layer_NN of_IN complexity_NN ._.
+Nevertheless_RB ,_, we_PRP remain_VBP optimistic_JJ and_CC believe_VBP that_IN a_DT pragmatic_JJ mix_NN of_IN theory_NN and_CC practice_NN combined_VBN with_IN iterative_JJ improvements_NNS on_IN real_JJ deployments_NNS provides_VBZ one_CD promising_JJ avenue_NN toward_IN bringing_VBG market-based_JJ resource_NN allocation_NN into_IN the_DT mainstream_NN ._.
+6_CD ._.
+REFERENCES_NNS -LSB-_-LRB- #_# -RSB-_-RRB- Crossbow_NNP corporation_NN ._.
+http_NN :_: /_: /_: www_NN ._.
+xbow_NN ._.
+com_NN ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- Buyya_NNP ,_, R_NN ._.
+,_, Abramson_NNP ,_, D_NNP ._.
+,_, and_CC Giddy_NNP ,_, J_NNP ._.
+NimrodG_NNP :_: An_DT Architecture_NNP of_IN a_DT Resource_NNP Management_NNP and_CC Scheduling_NNP System_NNP in_IN a_DT Global_JJ Computational_JJ Grid_NNP ._.
+In_IN Proceedings_NNP of_IN the_DT 4th_JJ International_NNP Conference_NN on_IN High_JJ Performance_NNP Computing_NNP in_IN Asia-Pacific_NNP Region_NNP -LRB-_-LRB- May_NNP ####_CD -RRB-_-RRB- ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- Chun_NNP ,_, B_NN ._.
+N_NN ._.
+,_, Buonadonna_NNP ,_, P_NN ._.
+,_, AuYoung_NNP ,_, A_NNP ._.
+,_, Ng_NN ,_, C_NN ._.
+,_, Parkes_NN ,_, D_NN ._.
+C_NN ._.
+,_, Shneidman_NNP ,_, J_NNP ._.
+,_, Snoeren_NNP ,_, A_NNP ._.
+C_NN ._.
+,_, and_CC Vahdat_NNP ,_, A_NNP ._.
+Mirage_NNP :_: A_NNP Microeconomic_NNP Resource_NNP Allocation_NNP System_NNP for_IN SensorNet_NNP Testbeds_NNPS ._.
+In_IN Proceedings_NNP of_IN the_DT 2nd_JJ IEEE_NNP Workshop_NNP on_IN Embedded_VBN Networked_NNP Sensors_NNP -LRB-_-LRB- May_NNP ####_CD -RRB-_-RRB- ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- Clarke_NNP ,_, E_NNP ._.
+H_NN ._.
+Multipart_JJ pricing_NN of_IN public_JJ goods_NNS ._.
+Public_NNP Choice_NNP #_# -LRB-_-LRB- ####_CD -RRB-_-RRB- ,_, 19-33_CD ._.
+103_CD -LSB-_-LRB- #_# -RSB-_-RRB- de_FW Vries_NNP ,_, S_NN ._.
+,_, and_CC Vohra_NNP ,_, R_NN ._.
+V_NN ._.
+Combinatorial_JJ Auctions_NNS :_: A_DT Survey_NN ._.
+INFORMS_NNP Journal_NNP on_IN Computing_NNP ##_NN -LRB-_-LRB- ####_CD -RRB-_-RRB- ,_, 284-309_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- Groves_NNPS ,_, T_NN ._.
+Incentives_NNS in_IN Teams_NNS ._.
+Econometrica_NNP ##_NN -LRB-_-LRB- ####_CD -RRB-_-RRB- ,_, 617-631_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- Hajiaghayi_NNP ,_, M_NN ._.
+T_NN ._.
+,_, Kleinberg_NNP ,_, R_NN ._.
+,_, and_CC Parkes_NNP ,_, D_NNP ._.
+C_NN ._.
+Adaptive_JJ Limited-Supply_NNP Online_NNP Auctions_NNS ._.
+In_IN Proceedings_NNP of_IN the_DT 5th_JJ ACM_NNP Conference_NN on_IN Electronic_JJ Commerce_NNP -LRB-_-LRB- ####_CD -RRB-_-RRB- ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- Jackson_NNP ,_, M_NN ._.
+O_NN ._.
+Mechanism_NN Theory_NNP ._.
+In_IN The_DT Encyclopedia_NN of_IN Life_NNP Support_NN Systems_NNPS ._.
+EOLSS_NNP Publishers_NNPS ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- Lai_NNP ,_, K_NNP ._.
+,_, Huberman_NNP ,_, B_NN ._.
+A_DT ._.
+,_, and_CC Fine_NNP ,_, L_NNP ._.
+Tycoon_NN :_: A_DT Distributed_VBN Market-based_JJ Resource_NNP Allocation_NNP System_NNP ._.
+Tech_NNP ._.
+rep_NN ._.
+,_, Hewlett_NNP Packard_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Lavi_NNP ,_, R_NN ._.
+,_, Mu_NN ''_'' alem_NN ,_, A_DT ._.
+,_, and_CC Nisan_NNP ,_, N_NNP ._.
+Towards_IN a_DT Characterization_NN of_IN Truthful_NNP Combinatorial_NNP Auctions_NNS ._.
+In_IN Proceedings_NNP of_IN the_DT 44th_JJ Annual_JJ Symposium_NN on_IN Foundations_NNS of_IN Computer_NNP Science_NNP -LRB-_-LRB- ####_CD -RRB-_-RRB- ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Lavi_NNP ,_, R_NN ._.
+,_, and_CC Nisan_NNP ,_, N_NNP ._.
+Competitive_JJ Analysis_NN of_IN Incentive_NNP Compatible_NNP On-line_NNP Auctions_NNS ._.
+In_IN Proceedings_NNP of_IN the_DT 2nd_JJ ACM_NNP Conference_NN on_IN Electronic_JJ Commerce_NNP -LRB-_-LRB- ####_CD -RRB-_-RRB- ,_, pp_NN ._.
+233-241_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Lehmann_NNP ,_, D_NNP ._.
+,_, O_NN ''_'' Callaghan_NNP ,_, L_NNP ._.
+I_PRP ._.
+,_, and_CC Shoham_NNP ,_, Y_NN ._.
+Truth_NN Revelation_NN in_IN Approximately_RB Efficient_JJ Combinatorial_JJ Auctions_NNS ._.
+Journal_NNP of_IN the_DT ACM_NNP ##_NN ,_, #_# -LRB-_-LRB- September_NNP ####_CD -RRB-_-RRB- ,_, 577-602_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Ng_NN ,_, C_NN ._.
+,_, Parkes_NN ,_, D_NN ._.
+C_NN ._.
+,_, and_CC Seltzer_NNP ,_, M_NN ._.
+Virtual_JJ Worlds_NNS :_: Fast_JJ and_CC Strategyproof_JJ Auctions_NNS for_IN Dynamic_NNP Resou_NNP rce_NN Allocation_NN ._.
+In_IN Proceedings_NNP of_IN the_DT 4th_JJ ACM_NNP Conference_NN on_IN Electronic_JJ Commerce_NNP -LRB-_-LRB- ####_CD -RRB-_-RRB- ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Nisan_NNP ,_, N_NNP ._.
+Bidding_NN and_CC Allocation_NN in_IN Combinatorial_NNP Auctions_NNS ._.
+In_IN Proceedings_NNP of_IN the_DT 2nd_JJ ACM_NNP Conference_NN on_IN Electronic_JJ Commerce_NNP -LRB-_-LRB- ####_CD -RRB-_-RRB- ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Nisan_NNP ,_, N_NNP ._.
+,_, and_CC Ronen_NNP ,_, A_NNP ._.
+Algorithmic_JJ Mechanism_NN Design_NN ._.
+In_IN Proceedings_NNP of_IN the_DT 31st_CD Annual_JJ ACM_NNP Symposium_NNP on_IN Theory_NNP of_IN Computing_NNP -LRB-_-LRB- May_NNP ####_CD -RRB-_-RRB- ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Nisan_NNP ,_, N_NNP ._.
+,_, and_CC Ronen_NNP ,_, A_NNP ._.
+Computationally_RB Feasible_JJ VCG_NNP Mechanisms_NNS ._.
+In_IN Proceedings_NNP of_IN the_DT 2nd_JJ ACM_NNP Conference_NN on_IN Electronic_JJ Commerce_NNP -LRB-_-LRB- October_NNP ####_CD -RRB-_-RRB- ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Regev_NNP ,_, O_NNP ._.
+,_, and_CC Nisan_NNP ,_, N_NNP ._.
+The_DT POPCORN_NNP Market_NN -_: an_DT Online_NNP Market_NNP for_IN Computational_NNP Resources_NNPS ._.
+In_IN Proceedings_NNP of_IN the_DT 1st_CD International_NNP Conference_NNP on_IN Information_NNP and_CC Computation_NNP Economies_NNP -LRB-_-LRB- October_NNP 1998_CD -RRB-_-RRB- ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Varian_NNP ,_, H_NN ._.
+,_, and_CC MacKie-Mason_NNP ,_, J_NNP ._.
+K_NN ._.
+Generalized_NNP Vickrey_NNP auctions_NNS ._.
+Tech_NNP ._.
+rep_NN ._.
+,_, University_NNP of_IN Michigan_NNP ,_, 1995_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Vickrey_NNP ,_, W_NNP ._.
+Counterspeculation_NNP ,_, Auctions_NNS and_CC Competitive_JJ Sealed_NNP Tenders_NNS ._.
+Journal_NNP of_IN Finance_NNP -LRB-_-LRB- ####_CD -RRB-_-RRB- ,_, 8-37_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Wolski_NNP ,_, R_NN ._.
+,_, Plank_NNP ,_, J_NNP ._.
+S_NN ._.
+,_, Brevik_NNP ,_, J_NNP ._.
+,_, and_CC Bryan_NNP ,_, T_NN ._.
+Analyzing_VBG Market-based_JJ Resource_NNP Allocation_NNP Strategies_NNS for_IN the_DT Computational_NNP Grid_NNP ._.
+International_NNP Journal_NNP of_IN High_NNP Performance_NNP Computing_NNP Applications_NNS -LRB-_-LRB- ####_CD -RRB-_-RRB- ,_, 258-281_CD ._.
+104_CD

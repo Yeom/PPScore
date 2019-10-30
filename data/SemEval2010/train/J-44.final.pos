@@ -1,0 +1,603 @@
+Scouts_NNS ,_, Promoters_NNS ,_, and_CC Connectors_NNPS :_: The_DT Roles_NNS of_IN Ratings_NNS in_IN Nearest_NNP Neighbor_NNP Collaborative_NNP Filtering_NNP Bharath_NNP Kumar_NNP Mohan_NNP Dept_NNP ._.
+of_IN CSA_NNP Indian_NNP Institute_NNP of_IN Science_NNP Bangalore_NNP ###_CD ###_CD ,_, India_NNP mbk_NNP @_IN csa_NN ._.
+iisc_NN ._.
+ernet_NN ._.
+in_IN Benjamin_NNP J_NNP ._.
+Keller_NNP Dept_NNP ._.
+of_IN Computer_NNP Science_NNP Eastern_NNP Michigan_NNP University_NNP Ypsilanti_NNP ,_, MI_NNP #####_NNP ,_, USA_NNP bkeller_NN @_IN emich_NN ._.
+edu_NN Naren_NNP Ramakrishnan_NNP Dept_NNP ._.
+of_IN Computer_NNP Science_NNP Virginia_NNP Tech_NNP ,_, Blacksburg_NNP VA_NNP #####_NNP ,_, USA_NNP naren_NNS @_IN cs_NNS ._.
+vt_NN ._.
+edu_NN ABSTRACT_NN Recommender_NN systems_NNS aggregate_JJ individual_JJ user_NN ratings_NNS into_IN predictions_NNS of_IN products_NNS or_CC services_NNS that_WDT might_MD interest_VB visitors_NNS ._.
+The_DT quality_NN of_IN this_DT aggregation_NN process_NN crucially_RB affects_VBZ the_DT user_NN experience_NN and_CC hence_RB the_DT effectiveness_NN of_IN recommenders_NNS in_IN e-commerce_NN ._.
+We_PRP present_VBP a_DT novel_JJ study_NN that_WDT disaggregates_VBZ global_JJ recommender_NN performance_NN metrics_NNS into_IN contributions_NNS made_VBN by_IN each_DT individual_JJ rating_NN ,_, allowing_VBG us_PRP to_TO characterize_VB the_DT many_JJ roles_NNS played_VBN by_IN ratings_NNS in_IN nearestneighbor_NN collaborative_JJ filtering_VBG ._.
+In_IN particular_JJ ,_, we_PRP formulate_VBP three_CD roles-scouts_NNS ,_, promoters_NNS ,_, and_CC connectors-that_NN capture_NN how_WRB users_NNS receive_VBP recommendations_NNS ,_, how_WRB items_NNS get_VB recommended_VBN ,_, and_CC how_WRB ratings_NNS of_IN these_DT two_CD types_NNS are_VBP themselves_PRP connected_VBN -LRB-_-LRB- resp_NN ._. -RRB-_-RRB- ._.
+These_DT roles_NNS find_VBP direct_JJ uses_NNS in_IN improving_VBG recommendations_NNS for_IN users_NNS ,_, in_IN better_JJR targeting_NN of_IN items_NNS and_CC ,_, most_RBS importantly_RB ,_, in_IN helping_VBG monitor_VB the_DT health_NN of_IN the_DT system_NN as_IN a_DT whole_NN ._.
+For_IN instance_NN ,_, they_PRP can_MD be_VB used_VBN to_TO track_VB the_DT evolution_NN of_IN neighborhoods_NNS ,_, to_TO identify_VB rating_NN subspaces_NNS that_WDT do_VBP not_RB contribute_VB -LRB-_-LRB- or_CC contribute_VBP negatively_RB -RRB-_-RRB- to_TO system_NN performance_NN ,_, to_TO enumerate_VB users_NNS who_WP are_VBP in_IN danger_NN of_IN leaving_VBG ,_, and_CC to_TO assess_VB the_DT susceptibility_NN of_IN the_DT system_NN to_TO attacks_NNS such_JJ as_IN shilling_NN ._.
+We_PRP argue_VBP that_IN the_DT three_CD rating_NN roles_NNS presented_VBN here_RB provide_VBP broad_JJ primitives_NNS to_TO manage_VB a_DT recommender_NN system_NN and_CC its_PRP$ community_NN ._.
+Categories_NNS and_CC Subject_NNP Descriptors_NNPS H_NN ._.
+#_# ._.
+#_# -LSB-_-LRB- Information_NNP Systems_NNP Applications_NNS -RSB-_-RRB- :_: Types_NNS of_IN Systems-Decision_NNP support_NN ;_: J_NN ._.
+#_# -LSB-_-LRB- Computer_NNP Applications_NNS -RSB-_-RRB- :_: Social_NNP and_CC Behavioral_NNP Sciences_NNP General_NNP Terms_NNS Algorithms_NNS ,_, Human_JJ Factors_NNS 1_CD ._.
+INTRODUCTION_NNP Recommender_NNP systems_NNS have_VBP become_VBN integral_JJ to_TO e-commerce_NN ,_, providing_VBG technology_NN that_WDT suggests_VBZ products_NNS to_TO a_DT visitor_NN based_VBN on_IN previous_JJ purchases_NNS or_CC rating_NN history_NN ._.
+Collaborative_JJ filtering_VBG ,_, a_DT common_JJ form_NN of_IN recommendation_NN ,_, predicts_VBZ a_DT user_NN ''_'' s_NNS rating_NN for_IN an_DT item_NN by_IN combining_VBG -LRB-_-LRB- other_JJ -RRB-_-RRB- ratings_NNS of_IN that_DT user_NN with_IN other_JJ users_NNS ''_'' ratings_NNS ._.
+Significant_JJ research_NN has_VBZ been_VBN conducted_VBN in_IN implementing_VBG fast_JJ and_CC accurate_JJ collaborative_JJ filtering_VBG algorithms_NNS -LSB-_-LRB- #_# ,_, #_# -RSB-_-RRB- ,_, designing_VBG interfaces_NNS for_IN presenting_VBG recommendations_NNS to_TO users_NNS -LSB-_-LRB- #_# -RSB-_-RRB- ,_, and_CC studying_VBG the_DT robustness_NN of_IN these_DT algorithms_NNS -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+However_RB ,_, with_IN the_DT exception_NN of_IN a_DT few_JJ studies_NNS on_IN the_DT influence_NN of_IN users_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, little_JJ attention_NN has_VBZ been_VBN paid_VBN to_TO unraveling_VBG the_DT inner_JJ workings_NNS of_IN a_DT recommender_NN in_IN terms_NNS of_IN the_DT individual_JJ ratings_NNS and_CC the_DT roles_NNS they_PRP play_VBP in_IN making_VBG -LRB-_-LRB- good_JJ -RRB-_-RRB- recommendations_NNS ._.
+Such_PDT an_DT understanding_NN will_MD give_VB an_DT important_JJ handle_VB to_TO monitoring_NN and_CC managing_VBG a_DT recommender_NN system_NN ,_, to_TO engineer_NN mechanisms_NNS to_TO sustain_VB the_DT recommender_NN ,_, and_CC thereby_RB ensure_VB its_PRP$ continued_JJ success_NN ._.
+Our_PRP$ motivation_NN here_RB is_VBZ to_TO disaggregate_VB global_JJ recommender_NN performance_NN metrics_NNS into_IN contributions_NNS made_VBN by_IN each_DT individual_JJ rating_NN ,_, allowing_VBG us_PRP to_TO characterize_VB the_DT many_JJ roles_NNS played_VBN by_IN ratings_NNS in_IN nearest-neighbor_JJ collaborative_JJ filtering_VBG ._.
+We_PRP identify_VBP three_CD possible_JJ roles_NNS :_: -LRB-_-LRB- scouts_NNS -RRB-_-RRB- to_TO connect_VB the_DT user_NN into_IN the_DT system_NN to_TO receive_VB recommendations_NNS ,_, -LRB-_-LRB- promoters_NNS -RRB-_-RRB- to_TO connect_VB an_DT item_NN into_IN the_DT system_NN to_TO be_VB recommended_VBN ,_, and_CC -LRB-_-LRB- connectors_NNS -RRB-_-RRB- to_TO connect_VB ratings_NNS of_IN these_DT two_CD kinds_NNS ._.
+Viewing_VBG ratings_NNS in_IN this_DT way_NN ,_, we_PRP can_MD define_VB the_DT contribution_NN of_IN a_DT rating_NN in_IN each_DT role_NN ,_, both_CC in_IN terms_NNS of_IN allowing_VBG recommendations_NNS to_TO occur_VB ,_, and_CC in_IN terms_NNS of_IN influence_NN on_IN the_DT quality_NN of_IN recommendations_NNS ._.
+In_IN turn_NN ,_, this_DT capability_NN helps_VBZ support_VB scenarios_NNS such_JJ as_IN :_: 1_LS ._.
+Situating_VBG users_NNS in_IN better_JJR neighborhoods_NNS :_: A_DT user_NN ''_'' s_NNS ratings_NNS may_MD inadvertently_RB connect_VB the_DT user_NN to_TO a_DT neighborhood_NN for_IN which_WDT the_DT user_NN ''_'' s_NNS tastes_NNS may_MD not_RB be_VB a_DT perfect_JJ match_NN ._.
+Identifying_VBG ratings_NNS responsible_JJ for_IN such_JJ bad_JJ recommendations_NNS and_CC suggesting_VBG new_JJ items_NNS to_TO rate_NN can_MD help_VB situate_VB the_DT user_NN in_IN a_DT better_JJR neighborhood_NN ._.
+2_LS ._.
+Targeting_NN items_NNS :_: Recommender_NN systems_NNS suffer_VBP from_IN lack_NN of_IN user_NN participation_NN ,_, especially_RB in_IN cold-start_JJ scenarios_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- involving_VBG newly_RB arrived_VBN items_NNS ._.
+Identifying_VBG users_NNS who_WP can_MD be_VB encouraged_VBN to_TO rate_NN specific_JJ items_NNS helps_VBZ ensure_VB coverage_NN of_IN the_DT recommender_NN system_NN ._.
+3_LS ._.
+Monitoring_VBG the_DT evolution_NN of_IN the_DT recommender_NN system_NN and_CC its_PRP$ stakeholders_NNS :_: A_DT recommender_NN system_NN is_VBZ constantly_RB under_IN change_NN :_: growing_VBG with_IN new_JJ users_NNS and_CC 250_CD items_NNS ,_, shrinking_VBG with_IN users_NNS leaving_VBG the_DT system_NN ,_, items_NNS becoming_VBG irrelevant_JJ ,_, and_CC parts_NNS of_IN the_DT system_NN under_IN attack_NN ._.
+Tracking_VBG the_DT roles_NNS of_IN a_DT rating_NN and_CC its_PRP$ evolution_NN over_IN time_NN provides_VBZ many_JJ insights_NNS into_IN the_DT health_NN of_IN the_DT system_NN ,_, and_CC how_WRB it_PRP could_MD be_VB managed_VBN and_CC improved_VBN ._.
+These_DT include_VBP being_VBG able_JJ to_TO identify_VB rating_NN subspaces_NNS that_WDT do_VBP not_RB contribute_VB -LRB-_-LRB- or_CC contribute_VBP negatively_RB -RRB-_-RRB- to_TO system_NN performance_NN ,_, and_CC could_MD be_VB removed_VBN ;_: to_TO enumerate_VB users_NNS who_WP are_VBP in_IN danger_NN of_IN leaving_VBG ,_, or_CC have_VB left_VBN the_DT system_NN ;_: and_CC to_TO assess_VB the_DT susceptibility_NN of_IN the_DT system_NN to_TO attacks_NNS such_JJ as_IN shilling_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+As_IN we_PRP show_VBP ,_, the_DT characterization_NN of_IN rating_NN roles_NNS presented_VBN here_RB provides_VBZ broad_JJ primitives_NNS to_TO manage_VB a_DT recommender_NN system_NN and_CC its_PRP$ community_NN ._.
+The_DT rest_NN of_IN the_DT paper_NN is_VBZ organized_VBN as_IN follows_VBZ ._.
+Background_NN on_IN nearest-neighbor_JJ collaborative_JJ filtering_VBG and_CC algorithm_NN evaluation_NN is_VBZ discussed_VBN in_IN Section_NN #_# ._.
+Section_NN #_# defines_VBZ and_CC discusses_VBZ the_DT roles_NNS of_IN a_DT rating_NN ,_, and_CC Section_NN #_# defines_VBZ measures_NNS of_IN the_DT contribution_NN of_IN a_DT rating_NN in_IN each_DT of_IN these_DT roles_NNS ._.
+In_IN Section_NN #_# ,_, we_PRP illustrate_VBP the_DT use_NN of_IN these_DT roles_NNS to_TO address_VB the_DT goals_NNS outlined_VBN above_IN ._.
+2_LS ._.
+BACKGROUND_NN 2_CD ._.
+#_# Algorithms_NNPS Nearest-neighbor_JJ collaborative_JJ filtering_VBG algorithms_NNS either_CC use_NN neighborhoods_NNS of_IN users_NNS or_CC neighborhoods_NNS of_IN items_NNS to_TO compute_VB a_DT prediction_NN ._.
+An_DT algorithm_NN of_IN the_DT first_JJ kind_NN is_VBZ called_VBN user-based_JJ ,_, and_CC one_CD of_IN the_DT second_JJ kind_NN is_VBZ called_VBN itembased_JJ -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+In_IN both_DT families_NNS of_IN algorithms_NNS ,_, neighborhoods_NNS are_VBP formed_VBN by_IN first_JJ computing_VBG the_DT similarity_NN between_IN all_DT pairs_NNS of_IN users_NNS -LRB-_-LRB- for_IN user-based_JJ -RRB-_-RRB- or_CC items_NNS -LRB-_-LRB- for_IN item-based_JJ -RRB-_-RRB- ._.
+Predictions_NNS are_VBP then_RB computed_VBN by_IN aggregating_VBG ratings_NNS ,_, which_WDT in_IN a_DT user-based_JJ algorithm_NN involves_VBZ aggregating_VBG the_DT ratings_NNS of_IN the_DT target_NN item_NN by_IN the_DT user_NN ''_'' s_NNS neighbors_NNS and_CC ,_, in_IN an_DT item-based_JJ algorithm_NN ,_, involves_VBZ aggregating_VBG the_DT user_NN ''_'' s_NNS ratings_NNS of_IN items_NNS that_WDT are_VBP neighbors_NNS of_IN the_DT target_NN item_NN ._.
+Algorithms_NNS within_IN these_DT families_NNS differ_VBP in_IN the_DT definition_NN of_IN similarity_NN ,_, formation_NN of_IN neighborhoods_NNS ,_, and_CC the_DT computation_NN of_IN predictions_NNS ._.
+We_PRP consider_VBP a_DT user-based_JJ algorithm_NN based_VBN on_IN that_DT defined_VBN for_IN GroupLens_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- with_IN variations_NNS from_IN Herlocker_NNP et_FW al_FW ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- ,_, and_CC an_DT item-based_JJ algorithm_NN similar_JJ to_TO that_DT of_IN Sarwar_NNP et_FW al_FW ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- ._.
+The_DT algorithm_NN used_VBN by_IN Resnick_NNP et_FW al_FW ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- defines_VBZ the_DT similarity_NN of_IN two_CD users_NNS u_NN and_CC v_LS as_IN the_DT Pearson_NNP correlation_NN of_IN their_PRP$ common_JJ ratings_NNS :_: sim_NN -LRB-_-LRB- u_NN ,_, v_LS -RRB-_-RRB- =_JJ P_NN iIuIv_NN -LRB-_-LRB- ru_NN ,_, i_FW ru_FW -RRB-_-RRB- -LRB-_-LRB- rv_NN ,_, i_FW rv_FW -RRB-_-RRB- qP_NN iIu_NN -LRB-_-LRB- ru_NN ,_, i_FW ru_FW -RRB-_-RRB- #_# qP_NN iIv_NN -LRB-_-LRB- rv_NN ,_, i_FW rv_FW -RRB-_-RRB- #_# ,_, where_WRB Iu_NN is_VBZ the_DT set_NN of_IN items_NNS rated_VBN by_IN user_NN u_NN ,_, ru_NN ,_, i_FW is_VBZ user_NN u_NN ''_'' s_NNS rating_NN for_IN item_NN i_FW ,_, and_CC ru_NN is_VBZ the_DT average_JJ rating_NN of_IN user_NN u_NN -LRB-_-LRB- similarly_RB for_IN v_LS -RRB-_-RRB- ._.
+Similarity_NN computed_VBD in_IN this_DT manner_NN is_VBZ typically_RB scaled_VBN by_IN a_DT factor_NN proportional_JJ to_TO the_DT number_NN of_IN common_JJ ratings_NNS ,_, to_TO reduce_VB the_DT chance_NN of_IN making_VBG a_DT recommendation_NN made_VBN on_IN weak_JJ connections_NNS :_: sim_NN -LRB-_-LRB- u_NN ,_, v_LS -RRB-_-RRB- =_JJ max_NN -LRB-_-LRB- |_CD Iu_NN Iv_NN |_NN ,_, -RRB-_-RRB- sim_NN -LRB-_-LRB- u_NN ,_, v_LS -RRB-_-RRB- ,_, where_WRB #_# is_VBZ a_DT constant_JJ used_VBN as_IN a_DT lower_JJR limit_NN in_IN scaling_VBG -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+These_DT new_JJ similarities_NNS are_VBP then_RB used_VBN to_TO define_VB a_DT static_JJ neighborhood_NN Nu_NN for_IN each_DT user_NN u_NN consisting_VBG of_IN the_DT top_JJ K_NN users_NNS most_RBS similar_JJ to_TO user_NN u_NN ._.
+A_DT prediction_NN for_IN user_NN u_NN and_CC item_NN i_FW is_VBZ computed_VBN by_IN a_DT weighted_JJ average_NN of_IN the_DT ratings_NNS by_IN the_DT neighbors_NNS pu_NN ,_, i_FW =_JJ ru_NN +_CC P_NN vV_NN sim_NN -LRB-_-LRB- u_NN ,_, v_LS -RRB-_-RRB- -LRB-_-LRB- rv_NN ,_, i_FW rv_FW -RRB-_-RRB- P_NN vV_NN sim_NN -LRB-_-LRB- u_NN ,_, v_LS -RRB-_-RRB- -LRB-_-LRB- #_# -RRB-_-RRB- where_WRB V_NN =_JJ Nu_NN Ui_NN is_VBZ the_DT set_NN of_IN users_NNS most_RBS similar_JJ to_TO u_VB who_WP have_VBP rated_VBN i_LS ._.
+The_DT item-based_JJ algorithm_NN we_PRP use_VBP is_VBZ the_DT one_CD defined_VBN by_IN Sarwar_NNP et_FW al_FW ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- ._.
+In_IN this_DT algorithm_NN ,_, similarity_NN is_VBZ defined_VBN as_IN the_DT adjusted_VBN cosine_NN measure_NN sim_NN -LRB-_-LRB- i_FW ,_, j_NN -RRB-_-RRB- =_JJ P_NN uUiUj_NN -LRB-_-LRB- ru_NN ,_, i_FW ru_FW -RRB-_-RRB- -LRB-_-LRB- ru_NN ,_, j_NN ru_NN -RRB-_-RRB- qP_NN uUi_NN -LRB-_-LRB- ru_NN ,_, i_FW ru_FW -RRB-_-RRB- #_# qP_NN uUj_NN -LRB-_-LRB- ru_NN ,_, j_NN ru_NN -RRB-_-RRB- #_# -LRB-_-LRB- #_# -RRB-_-RRB- where_WRB Ui_NNP is_VBZ the_DT set_NN of_IN users_NNS who_WP have_VBP rated_VBN item_NN i_FW ._.
+As_IN for_IN the_DT user-based_JJ algorithm_NN ,_, the_DT similarity_NN weights_NNS are_VBP adjusted_VBN proportionally_RB to_TO the_DT number_NN of_IN users_NNS that_WDT have_VBP rated_VBN the_DT items_NNS in_IN common_JJ sim_NN -LRB-_-LRB- i_FW ,_, j_NN -RRB-_-RRB- =_JJ max_NN -LRB-_-LRB- |_CD Ui_NN Uj_NN |_NN ,_, -RRB-_-RRB- sim_NN -LRB-_-LRB- i_FW ,_, j_NN -RRB-_-RRB- ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- Given_VBN the_DT similarities_NNS ,_, the_DT neighborhood_NN Ni_NN of_IN an_DT item_NN i_FW is_VBZ defined_VBN as_IN the_DT top_JJ K_NN most_RBS similar_JJ items_NNS for_IN that_DT item_NN ._.
+A_DT prediction_NN for_IN user_NN u_NN and_CC item_NN i_FW is_VBZ computed_VBN as_IN the_DT weighted_JJ average_JJ pu_NN ,_, i_FW =_JJ ri_NN +_CC P_NN jJ_NN sim_NN -LRB-_-LRB- i_FW ,_, j_NN -RRB-_-RRB- -LRB-_-LRB- ru_NN ,_, j_NN rj_NN -RRB-_-RRB- P_NN jJ_NN sim_NN -LRB-_-LRB- i_FW ,_, j_NN -RRB-_-RRB- -LRB-_-LRB- #_# -RRB-_-RRB- where_WRB J_NN =_JJ Ni_NN Iu_NN is_VBZ the_DT set_NN of_IN items_NNS rated_VBN by_IN u_NN that_WDT are_VBP most_RBS similar_JJ to_TO i_LS ._.
+2_LS ._.
+#_# Evaluation_NN Recommender_NN algorithms_NNS have_VBP typically_RB been_VBN evaluated_VBN using_VBG measures_NNS of_IN predictive_JJ accuracy_NN and_CC coverage_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+Studies_NNS on_IN recommender_NN algorithms_NNS ,_, notably_RB Herlocker_NNP et_FW al_FW ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- and_CC Sarwar_NNP et_FW al_FW ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- ,_, typically_RB compute_VBP predictive_JJ accuracy_NN by_IN dividing_VBG a_DT set_NN of_IN ratings_NNS into_IN training_NN and_CC test_NN sets_NNS ,_, and_CC compute_VB the_DT prediction_NN for_IN an_DT item_NN in_IN the_DT test_NN set_VBN using_VBG the_DT ratings_NNS in_IN the_DT training_NN set_NN ._.
+A_DT standard_JJ measure_NN of_IN predictive_JJ accuracy_NN is_VBZ mean_JJ absolute_JJ error_NN -LRB-_-LRB- MAE_NN -RRB-_-RRB- ,_, which_WDT for_IN a_DT test_NN set_VBN T_NN =_JJ -LCB-_-LRB- -LRB-_-LRB- u_FW ,_, i_LS -RRB-_-RRB- -RCB-_-RRB- is_VBZ defined_VBN as_RB ,_, MAE_NN =_JJ P_NN -LRB-_-LRB- u_NN ,_, i_LS -RRB-_-RRB- T_NN |_CD pu_NN ,_, i_FW ru_FW ,_, i_FW |_FW |_FW T_NN |_NN ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- Coverage_NNP has_VBZ a_DT number_NN of_IN definitions_NNS ,_, but_CC generally_RB refers_VBZ to_TO the_DT proportion_NN of_IN items_NNS that_WDT can_MD be_VB predicted_VBN by_IN the_DT algorithm_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+A_DT practical_JJ issue_NN with_IN predictive_JJ accuracy_NN is_VBZ that_IN users_NNS typically_RB are_VBP presented_VBN with_IN recommendation_NN lists_NNS ,_, and_CC not_RB individual_JJ numeric_JJ predictions_NNS ._.
+Recommendation_NN lists_NNS are_VBP lists_NNS of_IN items_NNS in_IN decreasing_VBG order_NN of_IN prediction_NN -LRB-_-LRB- sometimes_RB stated_VBN in_IN terms_NNS of_IN star-ratings_NNS -RRB-_-RRB- ,_, and_CC so_RB predictive_JJ accuracy_NN may_MD not_RB be_VB reflective_JJ of_IN the_DT accuracy_NN of_IN the_DT list_NN ._.
+So_RB ,_, instead_RB we_PRP can_MD measure_VB recommendation_NN or_CC rank_NN accuracy_NN ,_, which_WDT indicates_VBZ the_DT extent_NN to_TO which_WDT the_DT list_NN is_VBZ in_IN the_DT correct_JJ order_NN ._.
+Herlocker_NNP et_FW al_FW ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- discuss_VBP a_DT number_NN of_IN rank_NN accuracy_NN measures_NNS ,_, which_WDT range_VBP from_IN Kendall_NNP ''_'' s_VBZ Tau_NNP to_TO measures_NNS that_WDT consider_VBP the_DT fact_NN that_IN users_NNS tend_VB to_TO only_RB look_VB at_IN a_DT prefix_NN of_IN the_DT list_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+Kendall_NNP ''_'' s_VBZ Tau_NNP measures_VBZ the_DT number_NN of_IN inversions_NNS when_WRB comparing_VBG ordered_VBN pairs_NNS in_IN the_DT true_JJ user_NN ordering_VBG of_IN 251_CD Jim_NNP Tom_NNP Jeff_NNP My_PRP$ Cousin_NNP Vinny_NNP The_NNP Matrix_NNP Star_NNP Wars_NNP The_NNP Mask_NNP Figure_NNP #_# :_: Ratings_NNS in_IN simple_JJ movie_NN recommender_NN ._.
+items_NNS and_CC the_DT recommended_VBN order_NN ,_, and_CC is_VBZ defined_VBN as_IN =_JJ C_NN D_NN p_NN -LRB-_-LRB- C_NN +_CC D_NN +_CC TR_NN -RRB-_-RRB- -LRB-_-LRB- C_NN +_CC D_NN +_CC TP_NN -RRB-_-RRB- -LRB-_-LRB- #_# -RRB-_-RRB- where_WRB C_NN is_VBZ the_DT number_NN of_IN pairs_NNS that_IN the_DT system_NN predicts_VBZ in_IN the_DT correct_JJ order_NN ,_, D_NN the_DT number_NN of_IN pairs_NNS the_DT system_NN predicts_VBZ in_IN the_DT wrong_JJ order_NN ,_, TR_NN the_DT number_NN of_IN pairs_NNS in_IN the_DT true_JJ ordering_VBG that_DT have_VBP the_DT same_JJ ratings_NNS ,_, and_CC TP_NN is_VBZ the_DT number_NN of_IN pairs_NNS in_IN the_DT predicted_VBN ordering_VBG that_DT have_VBP the_DT same_JJ ratings_NNS -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+A_DT shortcoming_NN of_IN the_DT Tau_NNP metric_NN is_VBZ that_IN it_PRP is_VBZ oblivious_JJ to_TO the_DT position_NN in_IN the_DT ordered_VBN list_NN where_WRB the_DT inversion_NN occurs_VBZ -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+For_IN instance_NN ,_, an_DT inversion_NN toward_IN the_DT end_NN of_IN the_DT list_NN is_VBZ given_VBN the_DT same_JJ weight_NN as_IN one_CD in_IN the_DT beginning_NN ._.
+One_CD solution_NN is_VBZ to_TO consider_VB inversions_NNS only_RB in_IN the_DT top_JJ few_JJ items_NNS in_IN the_DT recommended_VBN list_NN or_CC to_TO weight_NN inversions_NNS based_VBN on_IN their_PRP$ position_NN in_IN the_DT list_NN ._.
+3_LS ._.
+ROLES_NNS OF_IN A_DT RATING_NN Our_PRP$ basic_JJ observation_NN is_VBZ that_IN each_DT rating_NN plays_VBZ a_DT different_JJ role_NN in_IN each_DT prediction_NN in_IN which_WDT it_PRP is_VBZ used_VBN ._.
+Consider_VB a_DT simplified_VBN movie_NN recommender_NN system_NN with_IN three_CD users_NNS Jim_NNP ,_, Jeff_NNP ,_, and_CC Tom_NNP and_CC their_PRP$ ratings_NNS for_IN a_DT few_JJ movies_NNS ,_, as_IN shown_VBN in_IN Fig_NN ._.
+#_# ._.
+-LRB-_-LRB- For_IN this_DT initial_JJ discussion_NN we_PRP will_MD not_RB consider_VB the_DT rating_NN values_NNS involved_VBN ._. -RRB-_-RRB-
+The_DT recommender_NN predicts_VBZ whether_IN Tom_NNP will_MD like_VB The_DT Mask_NN using_VBG the_DT other_JJ already_RB available_JJ ratings_NNS ._.
+How_WRB this_DT is_VBZ done_VBN depends_VBZ on_IN the_DT algorithm_NN :_: 1_CD ._.
+An_DT item-based_JJ collaborative_JJ filtering_VBG algorithm_NN constructs_NNS a_DT neighborhood_NN of_IN movies_NNS around_IN The_DT Mask_NN by_IN using_VBG the_DT ratings_NNS of_IN users_NNS who_WP rated_VBD The_DT Mask_NN and_CC other_JJ movies_NNS similarly_RB -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, Jim_NNP ''_'' s_VBZ ratings_NNS of_IN The_DT Matrix_NNP and_CC The_DT Mask_NN ;_: and_CC Jeff_NNP ''_'' s_VBZ ratings_NNS of_IN Star_NNP Wars_NNP and_CC The_DT Mask_NN -RRB-_-RRB- ._.
+Tom_NNP ''_'' s_VBZ ratings_NNS of_IN those_DT movies_NNS are_VBP then_RB used_VBN to_TO make_VB a_DT prediction_NN for_IN The_DT Mask_NN ._.
+2_LS ._.
+A_DT user-based_JJ collaborative_JJ filtering_VBG algorithm_NN would_MD construct_VB a_DT neighborhood_NN around_IN Tom_NNP by_IN tracking_VBG other_JJ users_NNS whose_WP$ rating_NN behaviors_NNS are_VBP similar_JJ to_TO Tom_NNP ''_'' s_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, Tom_NNP and_CC Jeff_NNP have_VBP rated_VBN Star_NNP Wars_NNP ;_: Tom_NNP and_CC Jim_NNP have_VBP rated_VBN The_DT Matrix_NNP -RRB-_-RRB- ._.
+The_DT prediction_NN of_IN Tom_NNP ''_'' s_VBZ rating_NN for_IN The_DT Mask_NN is_VBZ then_RB based_VBN on_IN the_DT ratings_NNS of_IN Jeff_NNP and_CC Tim_NNP ._.
+Although_IN the_DT nearest-neighbor_JJ algorithms_NNS aggregate_NN the_DT ratings_NNS to_TO form_VB neighborhoods_NNS used_VBN to_TO compute_VB predictions_NNS ,_, we_PRP can_MD disaggregate_VB the_DT similarities_NNS to_TO view_VB the_DT computation_NN of_IN a_DT prediction_NN as_IN simultaneously_RB following_VBG parallel_JJ paths_NNS of_IN ratings_NNS ._.
+So_RB ,_, irrespective_RB of_IN the_DT collaborative_JJ filtering_VBG algorithm_NN used_VBN ,_, we_PRP can_MD visualize_VB the_DT prediction_NN of_IN Tom_NNP ''_'' s_VBZ rating_NN of_IN The_DT Mask_NN as_IN walking_VBG through_IN a_DT sequence_NN of_IN ratings_NNS ._.
+In_IN Jim_NNP Tom_NNP Jeff_NNP The_NNP Matrix_NNP Star_NNP Wars_NNP The_NNP Mask_NNP q1_NN q2_NN q3_NN p1_NN p2_NN p3_NN Figure_NN #_# :_: Ratings_NNS used_VBN to_TO predict_VB The_DT Mask_NN for_IN Tom_NNP ._.
+Jim_NNP Tom_NNP Jeff_NNP The_NNP Matrix_NNP Star_NNP Wars_NNP The_NNP Mask_NNP q1_NN q2_NN q3_NN p1_NN p2_NN p3_NN Jerry_NNP r2_NN r3_NN Figure_NN #_# :_: Prediction_NN of_IN The_DT Mask_NN for_IN Tom_NNP in_IN which_WDT a_DT rating_NN is_VBZ used_VBN more_JJR than_IN once_RB ._.
+this_DT example_NN ,_, two_CD paths_NNS were_VBD used_VBN for_IN this_DT prediction_NN as_IN depicted_VBN in_IN Fig_NN ._.
+#_# :_: -LRB-_-LRB- p1_NN ,_, p2_NN ,_, p3_NN -RRB-_-RRB- and_CC -LRB-_-LRB- q1_NN ,_, q2_NN ,_, q3_NN -RRB-_-RRB- ._.
+Note_VB that_IN these_DT paths_NNS are_VBP undirected_JJ ,_, and_CC are_VBP all_DT of_IN length_NN #_# ._.
+Only_RB the_DT order_NN in_IN which_WDT the_DT ratings_NNS are_VBP traversed_VBN is_VBZ different_JJ between_IN the_DT item-based_JJ algorithm_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, -LRB-_-LRB- p3_NN ,_, p2_NN ,_, p1_NN -RRB-_-RRB- ,_, -LRB-_-LRB- q3_NN ,_, q2_NN ,_, q1_NN -RRB-_-RRB- -RRB-_-RRB- and_CC the_DT user-based_JJ algorithm_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, -LRB-_-LRB- p1_NN ,_, p2_NN ,_, p3_NN -RRB-_-RRB- ,_, -LRB-_-LRB- q1_NN ,_, q2_NN ,_, q3_NN -RRB-_-RRB- ._. -RRB-_-RRB-
+A_DT rating_NN can_MD be_VB part_NN of_IN many_JJ paths_NNS for_IN a_DT single_JJ prediction_NN as_IN shown_VBN in_IN Fig_NN ._.
+#_# ,_, where_WRB three_CD paths_NNS are_VBP used_VBN for_IN a_DT prediction_NN ,_, two_CD of_IN which_WDT follow_VBP p1_NN :_: -LRB-_-LRB- p1_NN ,_, p2_NN ,_, p3_NN -RRB-_-RRB- and_CC -LRB-_-LRB- p1_NN ,_, r2_NN ,_, r3_NN -RRB-_-RRB- ._.
+Predictions_NNS in_IN a_DT collaborative_JJ filtering_VBG algorithms_NNS may_MD involve_VB thousands_NNS of_IN such_JJ walks_VBZ in_IN parallel_NN ,_, each_DT playing_VBG a_DT part_NN in_IN influencing_VBG the_DT predicted_VBN value_NN ._.
+Each_DT prediction_NN path_NN consists_VBZ of_IN three_CD ratings_NNS ,_, playing_VBG roles_NNS that_IN we_PRP call_VBP scouts_NNS ,_, promoters_NNS ,_, and_CC connectors_NNS ._.
+To_TO illustrate_VB these_DT roles_NNS ,_, consider_VBP the_DT path_NN -LRB-_-LRB- p1_NN ,_, p2_NN ,_, p3_NN -RRB-_-RRB- in_IN Fig_NN ._.
+#_# used_VBN to_TO make_VB a_DT prediction_NN of_IN The_DT Mask_NN for_IN Tom_NNP :_: 1_CD ._.
+The_DT rating_NN p1_NN -LRB-_-LRB- Tom_NNP Star_NNP Wars_NNP -RRB-_-RRB- makes_VBZ a_DT connection_NN from_IN Tom_NNP to_TO other_JJ ratings_NNS that_WDT can_MD be_VB used_VBN to_TO predict_VB Tom_NNP ''_'' s_VBZ rating_NN for_IN The_DT Mask_NN ._.
+This_DT rating_NN serves_VBZ as_IN a_DT scout_NN in_IN the_DT bipartite_JJ graph_NN of_IN ratings_NNS to_TO find_VB a_DT path_NN that_WDT leads_VBZ to_TO The_DT Mask_NN ._.
+2_LS ._.
+The_DT rating_NN p2_NN -LRB-_-LRB- Jeff_NNP Star_NNP Wars_NNP -RRB-_-RRB- helps_VBZ the_DT system_NN recommend_VB The_DT Mask_NN to_TO Tom_NNP by_IN connecting_VBG the_DT scout_NN to_TO the_DT promoter_NN ._.
+3_LS ._.
+The_DT rating_NN p3_NN -LRB-_-LRB- Jeff_NNP The_DT Mask_NN -RRB-_-RRB- allows_VBZ connections_NNS to_TO The_DT Mask_NN ,_, and_CC ,_, therefore_RB ,_, promotes_VBZ this_DT movie_NN to_TO Tom_NNP ._.
+Formally_RB ,_, given_VBN a_DT prediction_NN pu_NN ,_, a_DT of_IN a_DT target_NN item_NN a_DT for_IN user_NN u_NN ,_, a_DT scout_NN for_IN pu_NN ,_, a_DT is_VBZ a_DT rating_NN ru_NN ,_, i_FW such_JJ that_IN there_EX exists_VBZ a_DT user_NN v_LS with_IN ratings_NNS rv_NN ,_, a_DT and_CC rv_NN ,_, i_FW for_IN some_DT item_NN i_FW ;_: a_DT promoter_NN for_IN pu_NN ,_, a_DT is_VBZ a_DT rating_NN rv_NN ,_, a_DT for_IN some_DT user_NN v_LS ,_, such_JJ that_IN there_EX exist_VBP ratings_NNS rv_NN ,_, i_FW and_CC ru_FW ,_, i_FW for_IN an_DT item_NN i_FW ,_, and_CC ;_: a_DT connector_NN for_IN pu_NN ,_, a_DT 252_CD Jim_NNP Tom_NNP Jeff_NNP Jerry_NNP My_PRP$ Cousin_NNP Vinny_NNP The_NNP Matrix_NNP Star_NNP Wars_NNP The_NNP Mask_NNP Jurasic_NNP Park_NNP Figure_NNP #_# :_: Scouts_NNS ,_, promoters_NNS ,_, and_CC connectors_NNS ._.
+is_VBZ a_DT rating_NN rv_NN ,_, i_FW by_IN some_DT user_NN v_LS and_CC rating_NN i_FW ,_, such_JJ that_IN there_EX exists_VBZ ratings_NNS ru_NN ,_, i_FW and_CC rv_NN ,_, a_DT ._.
+The_DT scouts_NNS ,_, connectors_NNS ,_, and_CC promoters_NNS for_IN the_DT prediction_NN of_IN Tom_NNP ''_'' s_VBZ rating_NN of_IN The_DT Mask_NN are_VBP p1_NN and_CC q1_NN ,_, p2_NN and_CC q2_NN ,_, and_CC p3_NN and_CC q3_NN -LRB-_-LRB- respectively_RB -RRB-_-RRB- ._.
+Each_DT of_IN these_DT roles_NNS has_VBZ a_DT value_NN in_IN the_DT recommender_NN to_TO the_DT user_NN ,_, the_DT user_NN ''_'' s_NNS neighborhood_NN ,_, and_CC the_DT system_NN in_IN terms_NNS of_IN allowing_VBG recommendations_NNS to_TO be_VB made_VBN ._.
+3_LS ._.
+#_# Roles_NNPS in_IN Detail_NNP Ratings_NNS that_WDT act_VBP as_IN scouts_NNS tend_VBP to_TO help_VB the_DT recommender_NN system_NN suggest_VBP more_JJR movies_NNS to_TO the_DT user_NN ,_, though_IN the_DT extent_NN to_TO which_WDT this_DT is_VBZ true_JJ depends_VBZ on_IN the_DT rating_NN behavior_NN of_IN other_JJ users_NNS ._.
+For_IN example_NN ,_, in_IN Fig_NN ._.
+#_# the_DT rating_NN Tom_NNP Star_NNP Wars_NNP helps_VBZ the_DT system_NN recommend_VB only_RB The_DT Mask_NN to_TO him_PRP ,_, while_IN Tom_NNP The_NNP Matrix_NNP helps_VBZ recommend_VB The_DT Mask_NN ,_, Jurassic_JJ Park_NN ,_, and_CC My_PRP$ Cousin_NNP Vinny_NNP ._.
+Tom_NNP makes_VBZ a_DT connection_NN to_TO Jim_NNP who_WP is_VBZ a_DT prolific_JJ user_NN of_IN the_DT system_NN ,_, by_IN rating_NN The_DT Matrix_NNP ._.
+However_RB ,_, this_DT does_VBZ not_RB make_VB The_DT Matrix_NNP the_DT best_JJS movie_NN to_TO rate_NN for_IN everyone_NN ._.
+For_IN example_NN ,_, Jim_NNP is_VBZ benefited_VBN equally_RB by_IN both_CC The_DT Mask_NN and_CC The_DT Matrix_NNP ,_, which_WDT allow_VBP the_DT system_NN to_TO recommend_VB Star_NNP Wars_NNP to_TO him_PRP ._.
+His_PRP$ rating_NN of_IN The_DT Mask_NN is_VBZ the_DT best_JJS scout_NN for_IN Jeff_NNP ,_, and_CC Jerry_NNP ''_'' s_VBZ only_RB scout_NN is_VBZ his_PRP$ rating_NN of_IN Star_NNP Wars_NNP ._.
+This_DT suggests_VBZ that_IN good_JJ scouts_NNS allow_VBP a_DT user_NN to_TO build_VB similarity_NN with_IN prolific_JJ users_NNS ,_, and_CC thereby_RB ensure_VB they_PRP get_VB more_RBR from_IN the_DT system_NN ._.
+While_IN scouts_NNS represent_VBP beneficial_JJ ratings_NNS from_IN the_DT perspective_NN of_IN a_DT user_NN ,_, promoters_NNS are_VBP their_PRP$ duals_NNS ,_, and_CC are_VBP of_IN benefit_NN to_TO items_NNS ._.
+In_IN Fig_NN ._.
+#_# ,_, My_PRP$ Cousin_NN Vinny_NNP benefits_NNS from_IN Jim_NNP ''_'' s_VBZ rating_NN ,_, since_IN it_PRP allows_VBZ recommendations_NNS to_TO Jeff_NNP and_CC Tom_NNP ._.
+The_DT Mask_NN is_VBZ not_RB so_RB dependent_JJ on_IN just_RB one_CD rating_NN ,_, since_IN the_DT ratings_NNS by_IN Jim_NNP and_CC Jeff_NNP help_VBP it_PRP ._.
+On_IN the_DT other_JJ hand_NN ,_, Jerry_NNP ''_'' s_VBZ rating_NN of_IN Star_NNP Wars_NNP does_VBZ not_RB help_VB promote_VB it_PRP to_TO any_DT other_JJ user_NN ._.
+We_PRP conclude_VBP that_IN a_DT good_JJ promoter_NN connects_VBZ an_DT item_NN to_TO a_DT broader_JJR neighborhood_NN of_IN other_JJ items_NNS ,_, and_CC thereby_RB ensures_VBZ that_IN it_PRP is_VBZ recommended_VBN to_TO more_JJR users_NNS ._.
+Connectors_NNPS serve_VBP a_DT crucial_JJ role_NN in_IN a_DT recommender_NN system_NN that_WDT is_VBZ not_RB as_IN obvious_JJ ._.
+The_DT movies_NNS My_PRP$ Cousin_NNP Vinny_NNP and_CC Jurassic_JJ Park_NN have_VBP the_DT highest_JJS recommendation_NN potential_NN since_IN they_PRP can_MD be_VB recommended_VBN to_TO Jeff_NNP ,_, Jerry_NNP and_CC Tom_NNP based_VBN on_IN the_DT linkage_NN structure_NN illustrated_VBD in_IN Fig_NN ._.
+#_# ._.
+Beside_IN the_DT fact_NN that_IN Jim_NNP rated_VBD these_DT movies_NNS ,_, these_DT recommendations_NNS are_VBP possible_JJ only_RB because_IN of_IN the_DT ratings_NNS Jim_NNP The_DT Matrix_NNP and_CC Jim_NNP The_NNP Mask_NNP ,_, which_WDT are_VBP the_DT best_JJS connectors_NNS ._.
+A_DT connector_NN improves_VBZ the_DT system_NN ''_'' s_NNS ability_NN to_TO make_VB recommendations_NNS with_IN no_DT explicit_JJ gain_NN for_IN the_DT user_NN ._.
+Note_VB that_IN every_DT rating_NN can_MD be_VB of_IN varied_JJ benefit_NN in_IN each_DT of_IN these_DT roles_NNS ._.
+The_DT rating_NN Jim_NNP My_PRP$ Cousin_NNP Vinny_NNP is_VBZ a_DT poor_JJ scout_NN and_CC connector_NN ,_, but_CC is_VBZ a_DT very_RB good_JJ promoter_NN ._.
+The_DT rating_NN Jim_NNP The_NNP Mask_NNP is_VBZ a_DT reasonably_RB good_JJ scout_NN ,_, a_DT very_RB good_JJ connector_NN ,_, and_CC a_DT good_JJ promoter_NN ._.
+Finally_RB ,_, the_DT rating_NN Jerry_NNP Star_NNP Wars_NNP is_VBZ a_DT very_RB good_JJ scout_NN ,_, but_CC is_VBZ of_IN no_DT value_NN as_IN a_DT connector_NN or_CC promoter_NN ._.
+As_IN illustrated_VBN here_RB ,_, a_DT rating_NN can_MD have_VB different_JJ value_NN in_IN each_DT of_IN the_DT three_CD roles_NNS in_IN terms_NNS of_IN whether_IN a_DT recommendation_NN can_MD be_VB made_VBN or_CC not_RB ._.
+We_PRP could_MD measure_VB this_DT value_NN by_IN simply_RB counting_VBG the_DT number_NN of_IN times_NNS a_DT rating_NN is_VBZ used_VBN in_IN each_DT role_NN ,_, which_WDT alone_RB would_MD be_VB helpful_JJ in_IN characterizing_VBG the_DT behavior_NN of_IN a_DT system_NN ._.
+But_CC we_PRP can_MD also_RB measure_VB the_DT contribution_NN of_IN each_DT rating_NN to_TO the_DT quality_NN of_IN recommendations_NNS or_CC health_NN of_IN the_DT system_NN ._.
+Since_IN every_DT prediction_NN is_VBZ a_DT combined_JJ effort_NN of_IN several_JJ recommendation_NN paths_NNS ,_, we_PRP are_VBP interested_JJ in_IN discerning_JJ the_DT influence_NN of_IN each_DT rating_NN -LRB-_-LRB- and_CC ,_, hence_RB ,_, each_DT path_NN -RRB-_-RRB- in_IN the_DT system_NN towards_IN the_DT system_NN ''_'' s_NNS overall_JJ error_NN ._.
+We_PRP can_MD understand_VB the_DT dynamics_NNS of_IN the_DT system_NN at_IN a_DT finer_NN granularity_NN by_IN tracking_VBG the_DT influence_NN of_IN a_DT rating_NN according_VBG to_TO the_DT role_NN played_VBD ._.
+The_DT next_JJ section_NN describes_VBZ the_DT approach_NN to_TO measuring_VBG the_DT values_NNS of_IN a_DT rating_NN in_IN each_DT role_NN ._.
+4_LS ._.
+CONTRIBUTIONS_NNS OF_IN RATINGS_NNS As_IN we_PRP ''_'' ve_FW seen_VBN ,_, a_DT rating_NN may_MD play_VB different_JJ roles_NNS in_IN different_JJ predictions_NNS and_CC ,_, in_IN each_DT prediction_NN ,_, contribute_VBP to_TO the_DT quality_NN of_IN a_DT prediction_NN in_IN different_JJ ways_NNS ._.
+Our_PRP$ approach_NN can_MD use_VB any_DT numeric_JJ measure_NN of_IN a_DT property_NN of_IN system_NN health_NN ,_, and_CC assigns_VBZ credit_NN -LRB-_-LRB- or_CC blame_NN -RRB-_-RRB- to_TO each_DT rating_NN proportional_JJ to_TO its_PRP$ influence_NN in_IN the_DT prediction_NN ._.
+By_IN tracking_VBG the_DT role_NN of_IN each_DT rating_NN in_IN a_DT prediction_NN ,_, we_PRP can_MD accumulate_VB the_DT credit_NN for_IN a_DT rating_NN in_IN each_DT of_IN the_DT three_CD roles_NNS ,_, and_CC also_RB track_VBP the_DT evolution_NN of_IN the_DT roles_NNS of_IN rating_NN over_IN time_NN in_IN the_DT system_NN ._.
+This_DT section_NN defines_VBZ the_DT methodology_NN for_IN computing_VBG the_DT contribution_NN of_IN ratings_NNS by_IN first_JJ defining_VBG the_DT influence_NN of_IN a_DT rating_NN ,_, and_CC then_RB instantiating_VBG the_DT approach_NN for_IN predictive_JJ accuracy_NN ,_, and_CC then_RB rank_VB accuracy_NN ._.
+We_PRP also_RB demonstrate_VBP how_WRB these_DT contributions_NNS can_MD be_VB aggregated_VBN to_TO study_VB the_DT neighborhood_NN of_IN ratings_NNS involved_VBN in_IN computing_VBG a_DT user_NN ''_'' s_NNS recommendations_NNS ._.
+Note_VB that_IN although_IN our_PRP$ general_JJ formulation_NN for_IN rating_NN influence_NN is_VBZ algorithm_NN independent_JJ ,_, due_JJ to_TO space_NN considerations_NNS ,_, we_PRP present_VBP the_DT approach_NN for_IN only_RB item-based_JJ collaborative_JJ filtering_VBG ._.
+The_DT definition_NN for_IN user-based_JJ algorithms_NNS is_VBZ similar_JJ and_CC will_MD be_VB presented_VBN in_IN an_DT expanded_VBN version_NN of_IN this_DT paper_NN ._.
+4_LS ._.
+#_# Influence_NN of_IN Ratings_NNS Recall_VBP that_IN an_DT item-based_JJ approach_NN to_TO collaborative_JJ filtering_VBG relies_VBZ on_IN building_VBG item_NN neighborhoods_NNS using_VBG the_DT similarity_NN of_IN ratings_NNS by_IN the_DT same_JJ user_NN ._.
+As_IN described_VBN earlier_RBR ,_, similarity_NN is_VBZ defined_VBN by_IN the_DT adjusted_VBN cosine_NN measure_NN -LRB-_-LRB- Equations_NNS -LRB-_-LRB- #_# -RRB-_-RRB- and_CC -LRB-_-LRB- #_# -RRB-_-RRB- -RRB-_-RRB- ._.
+A_DT set_NN of_IN the_DT top_JJ K_NN neighbors_NNS is_VBZ maintained_VBN for_IN all_DT items_NNS for_IN space_NN and_CC computational_JJ efficiency_NN ._.
+A_DT prediction_NN of_IN item_NN i_FW for_IN a_DT user_NN u_NN is_VBZ computed_VBN as_IN the_DT weighted_JJ deviation_NN from_IN the_DT item_NN ''_'' s_NNS mean_VBP rating_NN as_IN shown_VBN in_IN Equation_NN -LRB-_-LRB- #_# -RRB-_-RRB- ._.
+The_DT list_NN of_IN recommendations_NNS for_IN a_DT user_NN is_VBZ then_RB the_DT list_NN of_IN items_NNS sorted_VBN in_IN descending_VBG order_NN of_IN their_PRP$ predicted_VBN values_NNS ._.
+We_PRP first_RB define_VB impact_NN -LRB-_-LRB- a_DT ,_, i_FW ,_, j_NN -RRB-_-RRB- ,_, the_DT impact_NN a_DT user_NN a_DT has_VBZ in_IN determining_VBG the_DT similarity_NN between_IN two_CD items_NNS i_FW and_CC j_FW ._.
+This_DT is_VBZ the_DT change_NN in_IN the_DT similarity_NN between_IN i_FW and_CC j_FW when_WRB a_DT ''_'' s_VBZ rating_NN is_VBZ removed_VBN ,_, and_CC is_VBZ defined_VBN as_IN impact_NN -LRB-_-LRB- a_DT ,_, i_FW ,_, j_NN -RRB-_-RRB- =_JJ |_CD sim_NN -LRB-_-LRB- i_FW ,_, j_NN -RRB-_-RRB- sima_NN -LRB-_-LRB- i_FW ,_, j_NN -RRB-_-RRB- |_CD P_NN wCij_NN |_CD sim_NN -LRB-_-LRB- i_FW ,_, j_NN -RRB-_-RRB- sim_NN w_NN -LRB-_-LRB- i_FW ,_, j_NN -RRB-_-RRB- |_CD where_WRB Cij_NN =_JJ -LCB-_-LRB- u_NN U_NN |_CD ru_NN ,_, i_FW ,_, ru_NN ,_, j_NN R_NN -LRB-_-LRB- u_NN -RRB-_-RRB- -RCB-_-RRB- is_VBZ the_DT set_NN of_IN coraters_NN 253_CD of_IN items_NNS i_FW and_CC j_FW -LRB-_-LRB- users_NNS who_WP rate_VBP both_DT i_FW and_CC j_FW -RRB-_-RRB- ,_, R_NN -LRB-_-LRB- u_NN -RRB-_-RRB- is_VBZ the_DT set_NN of_IN ratings_NNS provided_VBN by_IN user_NN u_NN ,_, and_CC sima_NN -LRB-_-LRB- i_FW ,_, j_NN -RRB-_-RRB- is_VBZ the_DT similarity_NN of_IN i_FW and_CC j_FW when_WRB the_DT ratings_NNS of_IN user_NN a_DT are_VBP removed_VBN sima_NN -LRB-_-LRB- i_FW ,_, j_NN -RRB-_-RRB- =_JJ P_NN vU_NN \_CD -LCB-_-LRB- a_DT -RCB-_-RRB- -LRB-_-LRB- ru_NN ,_, i_FW ru_FW -RRB-_-RRB- -LRB-_-LRB- ru_NN ,_, j_NN ru_NN -RRB-_-RRB- qP_NN uU_NN \_CD -LCB-_-LRB- a_DT -RCB-_-RRB- -LRB-_-LRB- ru_NN ,_, i_FW ru_FW -RRB-_-RRB- #_# qP_NN uU_NN \_CD -LCB-_-LRB- a_DT -RCB-_-RRB- -LRB-_-LRB- ru_NN ,_, j_NN ru_NN -RRB-_-RRB- #_# ,_, and_CC adjusted_VBN for_IN the_DT number_NN of_IN raters_NNS sima_NN -LRB-_-LRB- i_FW ,_, j_NN -RRB-_-RRB- =_JJ max_NN -LRB-_-LRB- |_CD Ui_NN Uj_NN |_CD #_# ,_, -RRB-_-RRB- sim_NN -LRB-_-LRB- i_FW ,_, j_NN -RRB-_-RRB- ._.
+If_IN all_DT coraters_NNS of_IN i_FW and_CC j_FW rate_NN them_PRP identically_RB ,_, we_PRP define_VBP the_DT impact_NN as_IN impact_NN -LRB-_-LRB- a_DT ,_, i_FW ,_, j_NN -RRB-_-RRB- =_JJ 1_CD |_CD Cij_NNP |_CD since_IN P_NN wCij_NN |_CD sim_NN -LRB-_-LRB- i_FW ,_, j_NN -RRB-_-RRB- sim_NN w_NN -LRB-_-LRB- i_FW ,_, j_NN -RRB-_-RRB- |_NN =_JJ #_# ._.
+The_DT influence_NN of_IN each_DT path_NN -LRB-_-LRB- u_NN ,_, j_NN ,_, v_LS ,_, i_LS -RRB-_-RRB- =_JJ -LSB-_-LRB- ru_NN ,_, j_NN ,_, rv_NN ,_, j_NN ,_, rv_NN ,_, i_FW -RSB-_-RRB- in_IN the_DT prediction_NN of_IN pu_NN ,_, i_FW is_VBZ given_VBN by_IN influence_NN -LRB-_-LRB- u_NN ,_, j_NN ,_, v_LS ,_, i_LS -RRB-_-RRB- =_JJ sim_NN -LRB-_-LRB- i_FW ,_, j_NN -RRB-_-RRB- P_NN lNiIu_NN sim_NN -LRB-_-LRB- i_FW ,_, l_NN -RRB-_-RRB- impact_NN -LRB-_-LRB- v_LS ,_, i_FW ,_, j_NN -RRB-_-RRB- It_PRP follows_VBZ that_IN the_DT sum_NN of_IN influences_NNS over_IN all_DT such_JJ paths_NNS ,_, for_IN a_DT given_VBN set_NN of_IN endpoints_NNS ,_, is_VBZ #_# ._.
+4_LS ._.
+#_# Role_NN Values_NNS for_IN Predictive_JJ Accuracy_NNP The_DT value_NN of_IN a_DT rating_NN in_IN each_DT role_NN is_VBZ computed_VBN from_IN the_DT influence_NN depending_VBG on_IN the_DT evaluation_NN measure_NN employed_VBN ._.
+Here_RB we_PRP illustrate_VBP the_DT approach_NN using_VBG predictive_JJ accuracy_NN as_IN the_DT evaluation_NN metric_NN ._.
+In_IN general_JJ ,_, the_DT goodness_NN of_IN a_DT prediction_NN decides_VBZ whether_IN the_DT ratings_NNS involved_VBN must_MD be_VB credited_VBN or_CC discredited_VBN for_IN their_PRP$ role_NN ._.
+For_IN predictive_JJ accuracy_NN ,_, the_DT error_NN in_IN prediction_NN e_SYM =_SYM |_CD pu_NN ,_, i_FW ru_FW ,_, i_FW |_FW is_VBZ mapped_VBN to_TO a_DT comfort_NN level_NN using_VBG a_DT mapping_NN function_NN M_NN -LRB-_-LRB- e_LS -RRB-_-RRB- ._.
+Anecdotal_JJ evidence_NN suggests_VBZ that_IN users_NNS are_VBP unable_JJ to_TO discern_VB errors_NNS less_JJR than_IN #_# ._.
+#_# -LRB-_-LRB- for_IN a_DT rating_NN scale_NN of_IN #_# to_TO #_# -RRB-_-RRB- -LSB-_-LRB- #_# -RSB-_-RRB- ,_, and_CC so_RB an_DT error_NN less_RBR than_IN #_# ._.
+#_# is_VBZ considered_VBN acceptable_JJ ,_, but_CC anything_NN larger_JJR is_VBZ not_RB ._.
+We_PRP hence_RB define_VBP M_NN -LRB-_-LRB- e_LS -RRB-_-RRB- as_IN -LRB-_-LRB- #_# e_LS -RRB-_-RRB- binned_VBN to_TO an_DT appropriate_JJ value_NN in_IN -LSB-_-LRB- #_# ,_, #_# ._.
+#_# ,_, #_# ._.
+#_# ,_, #_# -RSB-_-RRB- ._.
+For_IN each_DT prediction_NN pu_NN ,_, i_FW ,_, M_NN -LRB-_-LRB- e_LS -RRB-_-RRB- is_VBZ attributed_VBN to_TO all_PDT the_DT paths_NNS that_WDT assisted_VBD the_DT computation_NN of_IN pu_NN ,_, i_FW ,_, proportional_JJ to_TO their_PRP$ influences_NNS ._.
+This_DT tribute_NN ,_, M_NN -LRB-_-LRB- e_LS -RRB-_-RRB- influence_NN -LRB-_-LRB- u_NN ,_, j_NN ,_, v_LS ,_, i_LS -RRB-_-RRB- ,_, is_VBZ in_IN turn_NN inherited_VBN by_IN each_DT of_IN the_DT ratings_NNS in_IN the_DT path_NN -LSB-_-LRB- ru_NN ,_, j_NN ,_, rv_NN ,_, j_NN ,_, rv_NN ,_, i_FW -RSB-_-RRB- ,_, with_IN the_DT credit_NN /_: blame_VB accumulating_VBG to_TO the_DT respective_JJ roles_NNS of_IN ru_NN ,_, j_NN as_IN a_DT scout_NN ,_, rv_NN ,_, j_NN as_IN a_DT connector_NN ,_, and_CC rv_NN ,_, i_FW as_IN a_DT promoter_NN ._.
+In_IN other_JJ words_NNS ,_, the_DT scout_NN value_NN SF_NN -LRB-_-LRB- ru_NN ,_, j_NN -RRB-_-RRB- ,_, the_DT connector_NN value_NN CF_NN -LRB-_-LRB- rv_NN ,_, j_NN -RRB-_-RRB- and_CC the_DT promoter_NN value_NN PF_NN -LRB-_-LRB- rv_NN ,_, i_LS -RRB-_-RRB- are_VBP all_DT incremented_VBN by_IN the_DT tribute_NN amount_NN ._.
+Over_IN a_DT large_JJ number_NN of_IN predictions_NNS ,_, scouts_NNS that_WDT have_VBP repeatedly_RB resulted_VBN in_IN big_JJ error_NN rates_NNS have_VBP a_DT big_JJ negative_JJ scout_NN value_NN ,_, and_CC vice_NN versa_RB -LRB-_-LRB- similarly_RB with_IN the_DT other_JJ roles_NNS -RRB-_-RRB- ._.
+Every_DT rating_NN is_VBZ thus_RB summarized_VBN by_IN its_PRP$ triple_JJ -LSB-_-LRB- SF_NN ,_, CF_NN ,_, PF_NN -RSB-_-RRB- ._.
+4_LS ._.
+#_# Role_NN Values_NNS for_IN Rank_NNP Accuracy_NNP We_PRP now_RB define_VBP the_DT computation_NN of_IN the_DT contribution_NN of_IN ratings_NNS to_TO observed_VBN rank_NN accuracy_NN ._.
+For_IN this_DT computation_NN ,_, we_PRP must_MD know_VB the_DT user_NN ''_'' s_NNS preference_NN order_NN for_IN a_DT set_NN of_IN items_NNS for_IN which_WDT predictions_NNS can_MD be_VB computed_VBN ._.
+We_PRP assume_VBP that_IN we_PRP have_VBP a_DT test_NN set_NN of_IN the_DT users_NNS ''_'' ratings_NNS of_IN the_DT items_NNS presented_VBN in_IN the_DT recommendation_NN list_NN ._.
+For_IN every_DT pair_NN of_IN items_NNS rated_VBN by_IN a_DT user_NN in_IN the_DT test_NN data_NNS ,_, we_PRP check_VBP whether_IN the_DT predicted_VBN order_NN is_VBZ concordant_JJ with_IN his_PRP$ preference_NN ._.
+We_PRP say_VBP a_DT pair_NN -LRB-_-LRB- i_FW ,_, j_NN -RRB-_-RRB- is_VBZ concordant_JJ -LRB-_-LRB- with_IN error_NN -RRB-_-RRB- whenever_WRB one_CD of_IN the_DT following_VBG holds_VBZ :_: if_IN -LRB-_-LRB- ru_NN ,_, i_FW <_JJR ru_NN ,_, j_NN -RRB-_-RRB- then_RB -LRB-_-LRB- pu_NN ,_, i_FW pu_FW ,_, j_NN <_JJR -RRB-_-RRB- ;_: if_IN -LRB-_-LRB- ru_NN ,_, i_FW >_JJR ru_NN ,_, j_NN -RRB-_-RRB- then_RB -LRB-_-LRB- pu_NN ,_, i_FW pu_FW ,_, j_NN >_JJR -RRB-_-RRB- ;_: or_CC if_IN -LRB-_-LRB- ru_NN ,_, i_FW =_JJ ru_NN ,_, j_NN -RRB-_-RRB- then_RB -LRB-_-LRB- |_CD pu_NN ,_, i_FW pu_FW ,_, j_NN |_NN -RRB-_-RRB- ._.
+Similarly_RB ,_, a_DT pair_NN -LRB-_-LRB- i_FW ,_, j_NN -RRB-_-RRB- is_VBZ discordant_JJ -LRB-_-LRB- with_IN error_NN -RRB-_-RRB- if_IN it_PRP is_VBZ not_RB concordant_JJ ._.
+Our_PRP$ experiments_NNS described_VBN below_IN use_NN an_DT error_NN tolerance_NN of_IN =_JJ #_# ._.
+#_# ._.
+All_DT paths_NNS involved_VBN in_IN the_DT prediction_NN of_IN the_DT two_CD items_NNS in_IN a_DT concordant_JJ pair_NN are_VBP credited_VBN ,_, and_CC the_DT paths_NNS involved_VBN in_IN a_DT discordant_JJ pair_NN are_VBP discredited_VBN ._.
+The_DT credit_NN assigned_VBN to_TO a_DT pair_NN of_IN items_NNS -LRB-_-LRB- i_FW ,_, j_NN -RRB-_-RRB- in_IN the_DT recommendation_NN list_NN for_IN user_NN u_NN is_VBZ computed_VBN as_IN c_NN -LRB-_-LRB- i_FW ,_, j_NN -RRB-_-RRB- =_JJ -LRB-_-LRB- t_NN T_NN #_# C_NN +_CC D_NN if_IN -LRB-_-LRB- i_FW ,_, j_NN -RRB-_-RRB- are_VBP concordant_JJ t_NN T_NN #_# C_NN +_CC D_NN if_IN -LRB-_-LRB- i_FW ,_, j_NN -RRB-_-RRB- are_VBP discordant_JJ -LRB-_-LRB- #_# -RRB-_-RRB- where_WRB t_NN is_VBZ the_DT number_NN of_IN items_NNS in_IN the_DT user_NN ''_'' s_NNS test_NN set_NN whose_WP$ ratings_NNS could_MD be_VB predicted_VBN ,_, T_NN is_VBZ the_DT number_NN of_IN items_NNS rated_VBN by_IN user_NN u_NN in_IN the_DT test_NN set_NN ,_, C_NN is_VBZ the_DT number_NN of_IN concordances_NNS and_CC D_NN is_VBZ the_DT number_NN of_IN discordances_NNS ._.
+The_DT credit_NN c_NN is_VBZ then_RB divided_VBN among_IN all_DT paths_NNS responsible_JJ for_IN predicting_VBG pu_NN ,_, i_FW and_CC pu_FW ,_, j_NN proportional_JJ to_TO their_PRP$ influences_NNS ._.
+We_PRP again_RB add_VBP the_DT role_NN values_NNS obtained_VBN from_IN all_DT the_DT experiments_NNS to_TO form_VB a_DT triple_JJ -LSB-_-LRB- SF_NN ,_, CF_NN ,_, PF_NN -RSB-_-RRB- for_IN each_DT rating_NN ._.
+4_LS ._.
+#_# Aggregating_VBG rating_NN roles_NNS After_IN calculating_VBG the_DT role_NN values_NNS for_IN individual_JJ ratings_NNS ,_, we_PRP can_MD also_RB use_VB these_DT values_NNS to_TO study_VB neighborhoods_NNS and_CC the_DT system_NN ._.
+Here_RB we_PRP consider_VBP how_WRB we_PRP can_MD use_VB the_DT role_NN values_NNS to_TO characterize_VB the_DT health_NN of_IN a_DT neighborhood_NN ._.
+Consider_VB the_DT list_NN of_IN top_JJ recommendations_NNS presented_VBN to_TO a_DT user_NN at_IN a_DT specific_JJ point_NN in_IN time_NN ._.
+The_DT collaborative_JJ filtering_VBG algorithm_NN traversed_VBD many_JJ paths_NNS in_IN his_PRP$ neighborhood_NN through_IN his_PRP$ scouts_NNS and_CC other_JJ connectors_NNS and_CC promoters_NNS to_TO make_VB these_DT recommendations_NNS ._.
+We_PRP call_VBP these_DT ratings_NNS the_DT recommender_NN neighborhood_NN of_IN the_DT user_NN ._.
+The_DT user_NN implicitly_RB chooses_VBZ this_DT neighborhood_NN of_IN ratings_NNS through_IN the_DT items_NNS he_PRP rates_NNS ._.
+Apart_RB from_IN the_DT collaborative_JJ filtering_VBG algorithm_NN ,_, the_DT health_NN of_IN this_DT neighborhood_NN completely_RB influences_VBZ a_DT user_NN ''_'' s_NNS satisfaction_NN with_IN the_DT system_NN ._.
+We_PRP can_MD characterize_VB a_DT user_NN ''_'' s_NNS recommender_NN neighborhood_NN by_IN aggregating_VBG the_DT individual_JJ role_NN values_NNS of_IN the_DT ratings_NNS involved_VBN ,_, weighted_VBN by_IN the_DT influence_NN of_IN individual_JJ ratings_NNS in_IN determining_VBG his_PRP$ recommended_JJ list_NN ._.
+Different_JJ sections_NNS of_IN the_DT user_NN ''_'' s_NNS neighborhood_NN wield_VBP varied_JJ influence_NN on_IN his_PRP$ recommendation_NN list_NN ._.
+For_IN instance_NN ,_, ratings_NNS reachable_VBP through_IN highly_RB rated_VBN items_NNS have_VBP a_DT bigger_JJR say_VB in_IN the_DT recommended_VBN items_NNS ._.
+Our_PRP$ aim_NN is_VBZ to_TO study_VB the_DT system_NN and_CC classify_VB users_NNS with_IN respect_NN to_TO their_PRP$ positioning_VBG in_IN a_DT healthy_JJ or_CC unhealthy_JJ neighborhood_NN ._.
+A_DT user_NN can_MD have_VB a_DT good_JJ set_NN of_IN scouts_NNS ,_, but_CC may_MD be_VB exposed_VBN to_TO a_DT neighborhood_NN with_IN bad_JJ connectors_NNS and_CC promoters_NNS ._.
+He_PRP can_MD have_VB a_DT good_JJ neighborhood_NN ,_, but_CC his_PRP$ bad_JJ scouts_NNS may_MD ensure_VB the_DT neighborhood_NN ''_'' s_NNS potential_JJ is_VBZ rendered_VBN useless_JJ ._.
+We_PRP expect_VBP that_IN users_NNS with_IN good_JJ scouts_NNS and_CC good_JJ neighborhoods_NNS will_MD be_VB most_RBS satisfied_JJ with_IN the_DT system_NN in_IN the_DT future_NN ._.
+A_DT user_NN ''_'' s_NNS neighborhood_NN is_VBZ characterized_VBN by_IN a_DT triple_JJ that_IN represents_VBZ the_DT weighted_JJ sum_NN of_IN the_DT role_NN values_NNS of_IN individual_JJ ratings_NNS involved_VBN in_IN making_VBG recommendations_NNS ._.
+Consider_VB a_DT user_NN u_NN and_CC his_PRP$ ordered_VBN list_NN of_IN recommendations_NNS L_NN ._.
+An_DT item_NN i_FW 254_CD in_IN the_DT list_NN is_VBZ weighted_JJ inversely_RB ,_, as_IN K_NN -LRB-_-LRB- i_LS -RRB-_-RRB- ,_, depending_VBG on_IN its_PRP$ position_NN in_IN the_DT list_NN ._.
+In_IN our_PRP$ studies_NNS we_PRP use_VBP K_NN -LRB-_-LRB- i_LS -RRB-_-RRB- =_JJ p_NN position_NN -LRB-_-LRB- i_LS -RRB-_-RRB- ._.
+Several_JJ paths_NNS of_IN ratings_NNS -LSB-_-LRB- ru_NN ,_, j_NN ,_, rv_NN ,_, j_NN ,_, rv_NN ,_, i_FW -RSB-_-RRB- are_VBP involved_VBN in_IN predicting_VBG pu_NN ,_, i_FW which_WDT ultimately_RB decides_VBZ its_PRP$ position_NN in_IN L_NN ,_, each_DT with_IN influence_NN -LRB-_-LRB- u_NN ,_, j_NN ,_, v_LS ,_, i_LS -RRB-_-RRB- ._.
+The_DT recommender_NN neighborhood_NN of_IN a_DT user_NN u_NN is_VBZ characterized_VBN by_IN the_DT triple_JJ ,_, -LSB-_-LRB- SFN_NNP -LRB-_-LRB- u_FW -RRB-_-RRB- ,_, CFN_NNP -LRB-_-LRB- u_FW -RRB-_-RRB- ,_, PFN_NN -LRB-_-LRB- u_NN -RRB-_-RRB- -RSB-_-RRB- where_WRB SFN_NN -LRB-_-LRB- u_NN -RRB-_-RRB- =_JJ X_NN iL_NN P_NN -LSB-_-LRB- ru_NN ,_, j_NN ,_, rv_NN ,_, j_NN ,_, rv_NN ,_, i_FW -RSB-_-RRB- SF_NN -LRB-_-LRB- ru_NN ,_, j_NN -RRB-_-RRB- influence_NN -LRB-_-LRB- u_NN ,_, j_NN ,_, v_LS ,_, i_LS -RRB-_-RRB- K_NN -LRB-_-LRB- i_LS -RRB-_-RRB- !_.
+CFN_NNP -LRB-_-LRB- u_FW -RRB-_-RRB- and_CC PFN_NN -LRB-_-LRB- u_NN -RRB-_-RRB- are_VBP defined_VBN similarly_RB ._.
+This_DT triple_JJ estimates_NNS the_DT quality_NN of_IN u_FW ''_'' s_VBZ recommendations_NNS based_VBN on_IN the_DT past_JJ track_NN record_NN of_IN the_DT ratings_NNS involved_VBN in_IN their_PRP$ respective_JJ roles_NNS ._.
+5_CD ._.
+EXPERIMENTATION_NN As_IN we_PRP have_VBP seen_VBN ,_, we_PRP can_MD assign_VB role_NN values_NNS to_TO each_DT rating_NN when_WRB evaluating_VBG a_DT collaborative_JJ filtering_VBG system_NN ._.
+In_IN this_DT section_NN ,_, we_PRP demonstrate_VBP the_DT use_NN of_IN this_DT approach_NN to_TO our_PRP$ overall_JJ goal_NN of_IN defining_VBG an_DT approach_NN to_TO monitor_VB and_CC manage_VB the_DT health_NN of_IN a_DT recommender_NN system_NN through_IN experiments_NNS done_VBN on_IN the_DT MovieLens_NNP million_CD rating_NN dataset_NN ._.
+In_IN particular_JJ ,_, we_PRP discuss_VBP results_NNS relating_VBG to_TO identifying_VBG good_JJ scouts_NNS ,_, promoters_NNS ,_, and_CC connectors_NNS ;_: the_DT evolution_NN of_IN rating_NN roles_NNS ;_: and_CC the_DT characterization_NN of_IN user_NN neighborhoods_NNS ._.
+5_CD ._.
+#_# Methodology_NNP Our_PRP$ experiments_NNS use_VBP the_DT MovieLens_NNPS million_CD rating_NN dataset_NN ,_, which_WDT consists_VBZ of_IN ratings_NNS by_IN ####_CD users_NNS of_IN ####_CD movies_NNS ._.
+The_DT ratings_NNS are_VBP in_IN the_DT range_NN #_# to_TO #_# ,_, and_CC are_VBP labeled_VBN with_IN the_DT time_NN the_DT rating_NN was_VBD given_VBN ._.
+As_IN discussed_VBN before_RB ,_, we_PRP consider_VBP only_RB the_DT item-based_JJ algorithm_NN here_RB -LRB-_-LRB- with_IN item_NN neighborhoods_NNS of_IN size_NN ##_NN -RRB-_-RRB- and_CC ,_, due_JJ to_TO space_NN considerations_NNS ,_, only_RB present_JJ role_NN value_NN results_VBZ for_IN rank_NN accuracy_NN ._.
+Since_IN we_PRP are_VBP interested_JJ in_IN the_DT evolution_NN of_IN the_DT rating_NN role_NN values_NNS over_IN time_NN ,_, the_DT model_NN of_IN the_DT recommender_NN system_NN is_VBZ built_VBN by_IN processing_VBG ratings_NNS in_IN their_PRP$ arrival_NN order_NN ._.
+The_DT timestamping_VBG provided_VBN by_IN MovieLens_NNP is_VBZ hence_RB crucial_JJ for_IN the_DT analyses_NNS presented_VBN here_RB ._.
+We_PRP make_VBP assessments_NNS of_IN rating_NN roles_NNS at_IN intervals_NNS of_IN ##_NN ,_, ###_CD ratings_NNS and_CC processed_VBN the_DT first_JJ ###_NN ,_, ###_CD ratings_NNS in_IN the_DT dataset_NN -LRB-_-LRB- giving_VBG rise_NN to_TO ##_CD snapshots_NNS -RRB-_-RRB- ._.
+We_PRP incrementally_RB update_VBP the_DT role_NN values_NNS as_IN the_DT time_NN ordered_VBD ratings_NNS are_VBP merged_VBN into_IN the_DT model_NN ._.
+To_TO keep_VB the_DT experiment_NN computationally_RB manageable_JJ ,_, we_PRP define_VBP a_DT test_NN dataset_NN for_IN each_DT user_NN ._.
+As_IN the_DT time_NN ordered_VBD ratings_NNS are_VBP merged_VBN into_IN the_DT model_NN ,_, we_PRP label_VBP a_DT small_JJ randomly_RB selected_VBN percentage_NN -LRB-_-LRB- ##_CD %_NN -RRB-_-RRB- as_IN test_NN data_NNS ._.
+At_IN discrete_JJ epochs_NNS ,_, i_FW ._.
+e_LS ._.
+,_, after_IN processing_VBG every_DT 10_CD ,_, ###_CD ratings_NNS ,_, we_PRP compute_VBP the_DT predictions_NNS for_IN the_DT ratings_NNS in_IN the_DT test_NN data_NNS ,_, and_CC then_RB compute_VB the_DT role_NN values_NNS for_IN the_DT ratings_NNS used_VBN in_IN the_DT predictions_NNS ._.
+One_CD potential_JJ criticism_NN of_IN this_DT methodology_NN is_VBZ that_IN the_DT ratings_NNS in_IN the_DT test_NN set_NN are_VBP never_RB evaluated_VBN for_IN their_PRP$ roles_NNS ._.
+We_PRP overcome_VBP this_DT concern_NN by_IN repeating_VBG the_DT experiment_NN ,_, using_VBG different_JJ random_JJ seeds_NNS ._.
+The_DT probability_NN that_IN every_DT rating_NN is_VBZ considered_VBN for_IN evaluation_NN is_VBZ then_RB considerably_RB high_JJ :_: #_# #_# ._.
+2n_NN ,_, where_WRB n_NN is_VBZ the_DT number_NN of_IN times_NNS the_DT experiment_NN is_VBZ repeated_VBN with_IN different_JJ random_JJ seeds_NNS ._.
+The_DT results_NNS here_RB are_VBP based_VBN on_IN n_NN =_JJ #_# repetitions_NNS ._.
+The_DT item-based_JJ collaborative_JJ filtering_VBG algorithm_NN ''_'' s_NNS performance_NN was_VBD ordinary_JJ with_IN respect_NN to_TO rank_VB accuracy_NN ._.
+Fig_NN ._.
+#_# shows_VBZ a_DT plot_NN of_IN the_DT precision_NN and_CC recall_NN as_IN ratings_NNS were_VBD merged_VBN in_IN time_NN order_NN into_IN the_DT model_NN ._.
+The_DT recall_NN was_VBD always_RB high_JJ ,_, but_CC the_DT average_JJ precision_NN was_VBD just_RB about_IN ##_CD %_NN ._.
+0_CD 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 1_CD 1_CD ._.
+#_# 10000_CD 30000_CD 50000_CD 70000_CD 90000110000130000150000_CD Ratings_NNS merged_VBD into_IN model_NN Value_NN Precision_NN Recall_VB Figure_NNP #_# :_: Precision_NN and_CC recall_NN for_IN the_DT item-based_JJ collaborative_JJ filtering_VBG algorithm_NN ._.
+5_CD ._.
+#_# Inducing_VBG good_JJ scouts_NNS The_DT ratings_NNS of_IN a_DT user_NN that_WDT serve_VBP as_IN scouts_NNS are_VBP those_DT that_WDT allow_VBP the_DT user_NN to_TO receive_VB recommendations_NNS ._.
+We_PRP claim_VBP that_IN users_NNS with_IN ratings_NNS that_WDT have_VBP respectable_JJ scout_NN values_NNS will_MD be_VB happier_JJR with_IN the_DT system_NN than_IN those_DT with_IN ratings_NNS with_IN low_JJ scout_NN values_NNS ._.
+Note_VB that_IN the_DT item-based_JJ algorithm_NN discussed_VBN here_RB produces_VBZ recommendation_NN lists_NNS with_IN nearly_RB half_NN of_IN the_DT pairs_NNS in_IN the_DT list_NN discordant_JJ from_IN the_DT user_NN ''_'' s_NNS preference_NN ._.
+Whether_IN all_DT of_IN these_DT discordant_JJ pairs_NNS are_VBP observable_JJ by_IN the_DT user_NN is_VBZ unclear_JJ ,_, however_RB ,_, certainly_RB this_DT suggests_VBZ that_IN there_EX is_VBZ a_DT need_NN to_TO be_VB able_JJ to_TO direct_VB users_NNS to_TO items_NNS whose_WP$ ratings_NNS would_MD improve_VB the_DT lists_NNS ._.
+The_DT distribution_NN of_IN the_DT scout_NN values_NNS for_IN most_JJS users_NNS ''_'' ratings_NNS are_VBP Gaussian_JJ with_IN mean_NN zero_CD ._.
+Fig_NN ._.
+#_# shows_VBZ the_DT frequency_NN distribution_NN of_IN scout_NN values_NNS for_IN a_DT sample_NN user_NN at_IN a_DT given_VBN snapshot_NN ._.
+We_PRP observe_VBP that_IN a_DT large_JJ number_NN of_IN ratings_NNS never_RB serve_VBP as_IN scouts_NNS for_IN their_PRP$ users_NNS ._.
+A_DT relatable_JJ scenario_NN is_VBZ when_WRB Amazon_NNP ''_'' s_VBZ recommender_NN makes_VBZ suggestions_NNS of_IN books_NNS or_CC items_NNS based_VBN on_IN other_JJ items_NNS that_WDT were_VBD purchased_VBN as_IN gifts_NNS ._.
+With_IN simple_JJ relevance_NN feedback_NN from_IN the_DT user_NN ,_, such_JJ ratings_NNS can_MD be_VB isolated_VBN as_IN bad_JJ scouts_NNS and_CC discounted_VBN from_IN future_JJ predictions_NNS ._.
+Removing_VBG bad_JJ scouts_NNS was_VBD found_VBN to_TO be_VB worthwhile_JJ for_IN individual_JJ users_NNS but_CC the_DT overall_JJ performance_NN improvement_NN was_VBD only_RB marginal_JJ ._.
+An_DT obvious_JJ question_NN is_VBZ whether_IN good_JJ scouts_NNS can_MD be_VB formed_VBN by_IN merely_RB rating_NN popular_JJ movies_NNS as_IN suggested_VBN by_IN Rashid_NNP et_FW al_FW ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- ._.
+They_PRP show_VBP that_IN a_DT mix_NN of_IN popularity_NN and_CC rating_NN entropy_NN identifies_VBZ the_DT best_JJS items_NNS to_TO suggest_VB to_TO new_JJ users_NNS when_WRB evaluated_VBN using_VBG MAE_NNP ._.
+Following_VBG their_PRP$ intuition_NN ,_, we_PRP would_MD expect_VB to_TO see_VB a_DT higher_JJR correlation_NN between_IN popularityentropy_NN and_CC good_JJ scouts_NNS ._.
+We_PRP measured_VBD the_DT Pearson_NNP correlation_NN coefficient_NN between_IN aggregated_JJ scout_NN values_NNS for_IN a_DT movie_NN with_IN the_DT popularity_NN of_IN a_DT movie_NN -LRB-_-LRB- number_NN of_IN times_NNS it_PRP is_VBZ rated_VBN -RRB-_-RRB- ;_: and_CC with_IN its_PRP$ popularity_NN *_SYM variance_NN measure_NN at_IN different_JJ snapshots_NNS of_IN the_DT system_NN ._.
+Note_VB that_IN the_DT scout_NN values_NNS were_VBD initially_RB anti-correlated_JJ with_IN popularity_NN -LRB-_-LRB- Fig_NN ._.
+#_# -RRB-_-RRB- ,_, but_CC became_VBD moderately_RB correlated_VBN as_IN the_DT system_NN evolved_VBD ._.
+Both_DT popularity_NN and_CC popularity_NN *_SYM variance_NN performed_VBN similarly_RB ._.
+A_DT possible_JJ explanation_NN is_VBZ that_IN there_EX has_VBZ been_VBN insufficient_JJ time_NN for_IN the_DT popular_JJ movies_NNS to_TO accumulate_VB ratings_NNS ._.
+255_CD -10_CD 0_CD 10_CD 20_CD 30_CD 40_CD 50_CD 60_CD -0_CD ._.
+##_SYM -_: #_# ._.
+##_NN -0_CD ._.
+##_NN -0_CD ._.
+##_NN #_# #_# ._.
+##_NN #_# ._.
+##_NNP Scout_NNP Value_NNP Frequency_NNP Figure_NNP #_# :_: Distribution_NN of_IN scout_NN values_NNS for_IN a_DT sample_NN user_NN ._.
+-0_CD ._.
+#_# -0_CD ._.
+#_# 0_CD 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 30000_CD #####_CD #####_CD ######_CD ######_CD ######_CD Popularity_NN Pop_NN *_SYM Var_NNP Figure_NNP #_# :_: Correlation_NN between_IN aggregated_JJ scout_NN value_NN and_CC item_NN popularity_NN -LRB-_-LRB- computed_VBN at_IN different_JJ intervals_NNS -RRB-_-RRB- ._.
+-0_CD ._.
+#_# -0_CD ._.
+#_# -0_CD ._.
+#_# 0_CD 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 1_CD 30000_CD #####_CD #####_CD ######_CD ######_CD ######_CD Figure_NNP #_# :_: Correlation_NN between_IN aggregated_JJ promoter_NN value_NN and_CC user_NN prolificity_NN -LRB-_-LRB- computed_VBN at_IN different_JJ intervals_NNS -RRB-_-RRB- ._.
+Table_NNP #_# :_: Movies_NNS forming_VBG the_DT best_JJS scouts_NNS ._.
+Best_JJS Scouts_NNS Conf_NNP ._.
+Pop_NN ._.
+Being_VBG John_NNP Malkovich_NNP -LRB-_-LRB- ####_CD -RRB-_-RRB- #_# ._.
+##_CD ###_CD Star_NNP Wars_NNP :_: Episode_NNP IV_NNP -_: A_NNP New_NNP Hope_NNP -LRB-_-LRB- ####_CD -RRB-_-RRB- #_# ._.
+##_CD ###_CD Princess_NNP Bride_NNP ,_, The_DT -LRB-_-LRB- ####_CD -RRB-_-RRB- #_# ._.
+##_CD ###_CD Sixth_NNP Sense_NN ,_, The_DT -LRB-_-LRB- ####_CD -RRB-_-RRB- #_# ._.
+##_CD ###_CD Matrix_NNP ,_, The_DT -LRB-_-LRB- ####_CD -RRB-_-RRB- #_# ._.
+##_CD ###_CD Ghostbusters_NNS -LRB-_-LRB- ####_CD -RRB-_-RRB- #_# ._.
+##_CD ###_CD Casablanca_NNP -LRB-_-LRB- ####_CD -RRB-_-RRB- #_# ._.
+##_CD ###_CD Insider_NNP ,_, The_DT -LRB-_-LRB- ####_CD -RRB-_-RRB- #_# ._.
+##_CD ###_CD American_JJ Beauty_NN -LRB-_-LRB- ####_CD -RRB-_-RRB- #_# ._.
+##_CD ###_CD Terminator_NNP #_# :_: Judgment_NN Day_NN -LRB-_-LRB- ####_CD -RRB-_-RRB- #_# ._.
+##_CD ###_CD Fight_NN Club_NNP -LRB-_-LRB- ####_CD -RRB-_-RRB- #_# ._.
+##_CD ###_CD Shawshank_NNP Redemption_NNP ,_, The_DT -LRB-_-LRB- ####_CD -RRB-_-RRB- #_# ._.
+##_CD ###_CD Run_NNP Lola_NNP Run_NNP -LRB-_-LRB- Lola_NNP rennt_NN -RRB-_-RRB- -LRB-_-LRB- ####_CD -RRB-_-RRB- #_# ._.
+##_CD ###_CD Terminator_NNP ,_, The_DT -LRB-_-LRB- ####_CD -RRB-_-RRB- #_# ._.
+##_CD ###_CD Usual_JJ Suspects_NNS ,_, The_DT -LRB-_-LRB- ####_CD -RRB-_-RRB- #_# ._.
+##_CD ###_CD Aliens_NNS -LRB-_-LRB- ####_CD -RRB-_-RRB- #_# ._.
+##_CD ###_CD North_NNP by_IN Northwest_NNP -LRB-_-LRB- ####_CD -RRB-_-RRB- #_# ._.
+##_CD ###_CD Fugitive_JJ ,_, The_DT -LRB-_-LRB- ####_CD -RRB-_-RRB- #_# ._.
+##_CD ###_CD End_NN of_IN Days_NNS -LRB-_-LRB- ####_CD -RRB-_-RRB- #_# ._.
+##_CD ###_CD Raiders_NNPS of_IN the_DT Lost_NNP Ark_NNP -LRB-_-LRB- ####_CD -RRB-_-RRB- #_# ._.
+##_CD ###_CD Schindler_NNP ''_'' s_VBZ List_NN -LRB-_-LRB- ####_CD -RRB-_-RRB- #_# ._.
+##_CD ###_CD Back_RB to_TO the_DT Future_NNP -LRB-_-LRB- ####_CD -RRB-_-RRB- #_# ._.
+##_CD ###_CD Toy_NNP Story_NNP -LRB-_-LRB- ####_CD -RRB-_-RRB- #_# ._.
+##_CD ###_CD Alien_NNP -LRB-_-LRB- ####_CD -RRB-_-RRB- #_# ._.
+##_CD ###_CD Abyss_NNP ,_, The_DT -LRB-_-LRB- ####_CD -RRB-_-RRB- #_# ._.
+##_CD ###_CD 2001_CD :_: A_DT Space_NN Odyssey_NN -LRB-_-LRB- ####_CD -RRB-_-RRB- #_# ._.
+##_CD ###_CD Dogma_NN -LRB-_-LRB- ####_CD -RRB-_-RRB- #_# ._.
+##_CD ###_CD Little_JJ Mermaid_NN ,_, The_DT -LRB-_-LRB- ####_CD -RRB-_-RRB- #_# ._.
+##_CD ###_CD Table_NNP #_# :_: Movies_NNS forming_VBG the_DT worst_JJS scouts_NNS ._.
+Worst_JJS scouts_NNS Conf_NNP ._.
+Pop_NN ._.
+Harold_NNP and_CC Maude_NNP -LRB-_-LRB- ####_CD -RRB-_-RRB- #_# ._.
+##_CD ###_CD Grifters_NNS ,_, The_DT -LRB-_-LRB- ####_CD -RRB-_-RRB- #_# ._.
+##_CD ###_CD Sting_NN ,_, The_DT -LRB-_-LRB- ####_CD -RRB-_-RRB- #_# ._.
+##_CD ###_CD Godfather_NNP :_: Part_NNP III_NNP ,_, The_DT -LRB-_-LRB- ####_CD -RRB-_-RRB- #_# ._.
+##_CD ###_CD Lawrence_NNP of_IN Arabia_NNP -LRB-_-LRB- ####_CD -RRB-_-RRB- #_# ._.
+##_CD ###_CD High_JJ Noon_NN -LRB-_-LRB- ####_CD -RRB-_-RRB- #_# ._.
+##_NN ##_CD Women_NNS on_IN the_DT Verge_NNP of_IN a_DT ..._: -LRB-_-LRB- ####_CD -RRB-_-RRB- #_# ._.
+##_CD ###_CD Grapes_NNS of_IN Wrath_NN ,_, The_DT -LRB-_-LRB- ####_CD -RRB-_-RRB- #_# ._.
+##_CD ###_CD Duck_NN Soup_NNP -LRB-_-LRB- ####_CD -RRB-_-RRB- #_# ._.
+##_CD ###_CD Arsenic_JJ and_CC Old_JJ Lace_NN -LRB-_-LRB- ####_CD -RRB-_-RRB- #_# ._.
+##_CD ###_CD Midnight_NNP Cowboy_NNP -LRB-_-LRB- ####_CD -RRB-_-RRB- #_# ._.
+##_CD ###_CD To_TO Kill_VB a_DT Mockingbird_NN -LRB-_-LRB- ####_CD -RRB-_-RRB- #_# ._.
+##_CD ###_CD Four_CD Weddings_NNS and_CC a_DT Funeral_NNP -LRB-_-LRB- ####_CD -RRB-_-RRB- #_# ._.
+##_CD ###_CD Good_JJ ,_, The_DT Bad_JJ and_CC The_DT Ugly_NNP ,_, The_DT -LRB-_-LRB- ####_CD -RRB-_-RRB- #_# ._.
+##_CD ###_CD It_PRP ''_'' s_VBZ a_DT Wonderful_JJ Life_NN -LRB-_-LRB- ####_CD -RRB-_-RRB- #_# ._.
+##_CD ###_CD Player_NNP ,_, The_DT -LRB-_-LRB- ####_CD -RRB-_-RRB- #_# ._.
+##_CD ###_CD Jackie_NNP Brown_NNP -LRB-_-LRB- ####_CD -RRB-_-RRB- #_# ._.
+##_CD ###_CD Boat_NNP ,_, The_NNP -LRB-_-LRB- Das_NNP Boot_NNP -RRB-_-RRB- -LRB-_-LRB- ####_CD -RRB-_-RRB- #_# ._.
+##_CD ###_CD Manhattan_NNP -LRB-_-LRB- ####_CD -RRB-_-RRB- #_# ._.
+##_CD ###_CD Truth_NNP About_IN Cats_NNP &_CC Dogs_NNP ,_, The_DT -LRB-_-LRB- ####_CD -RRB-_-RRB- #_# ._.
+##_CD ###_CD Ghost_NN -LRB-_-LRB- ####_CD -RRB-_-RRB- #_# ._.
+##_CD ###_CD Lone_NNP Star_NNP -LRB-_-LRB- ####_CD -RRB-_-RRB- #_# ._.
+##_CD ###_CD Big_JJ Chill_NNP ,_, The_DT -LRB-_-LRB- ####_CD -RRB-_-RRB- #_# ._.
+##_CD ###_CD 256_CD By_IN studying_VBG the_DT evolution_NN of_IN scout_NN values_NNS ,_, we_PRP can_MD identify_VB movies_NNS that_WDT consistently_RB feature_VBP in_IN good_JJ scouts_NNS over_IN time_NN ._.
+We_PRP claim_VBP these_DT movies_NNS will_MD make_VB viable_JJ scouts_NNS for_IN other_JJ users_NNS ._.
+We_PRP found_VBD the_DT aggregated_JJ scout_NN values_NNS for_IN all_DT movies_NNS in_IN intervals_NNS of_IN ##_NN ,_, ###_CD ratings_NNS each_DT ._.
+A_DT movie_NN is_VBZ said_VBN to_TO induce_VB a_DT good_JJ scout_NN if_IN the_DT movie_NN was_VBD in_IN the_DT top_JJ ###_CD of_IN the_DT sorted_VBN list_NN ,_, and_CC to_TO induce_VB a_DT bad_JJ scout_NN if_IN it_PRP was_VBD in_IN bottom_JJ ###_NN of_IN the_DT same_JJ list_NN ._.
+Movies_NNS appearing_VBG consistently_RB high_JJ over_IN time_NN are_VBP expected_VBN to_TO remain_VB up_RP there_EX in_IN the_DT future_NN ._.
+The_DT effective_JJ confidence_NN in_IN a_DT movie_NN m_NN is_VBZ Cm_NN =_JJ Tm_NN Bm_NN N_NN -LRB-_-LRB- #_# -RRB-_-RRB- where_WRB Tm_NN is_VBZ the_DT number_NN of_IN times_NNS it_PRP appeared_VBD in_IN the_DT top_JJ 100_CD ,_, Bm_NN the_DT number_NN of_IN times_NNS it_PRP appeared_VBD in_IN the_DT bottom_JJ 100_CD ,_, and_CC N_NN is_VBZ the_DT number_NN of_IN intervals_NNS considered_VBN ._.
+Using_VBG this_DT measure_NN ,_, the_DT top_JJ few_JJ movies_NNS expected_VBN to_TO induce_VB the_DT best_JJS scouts_NNS are_VBP shown_VBN in_IN Table_NNP #_# ._.
+Movies_NNS that_WDT would_MD be_VB bad_JJ scout_NN choices_NNS are_VBP shown_VBN in_IN Table_NNP #_# with_IN their_PRP$ associated_VBN confidences_NNS ._.
+The_DT popularities_NNS of_IN the_DT movies_NNS are_VBP also_RB displayed_VBN ._.
+Although_IN more_JJR popular_JJ movies_NNS appear_VBP in_IN the_DT list_NN of_IN good_JJ scouts_NNS ,_, these_DT tables_NNS show_VBP that_IN a_DT blind_JJ choice_NN of_IN scout_NN based_VBN on_IN popularity_NN alone_RB can_MD be_VB potentially_RB dangerous_JJ ._.
+Interestingly_RB ,_, the_DT best_JJS scout-Being_JJ John_NNP Malkovich_NNP ''_'' -_: is_VBZ about_IN a_DT puppeteer_NN who_WP discovers_VBZ a_DT portal_NN into_IN a_DT movie_NN star_NN ,_, a_DT movie_NN that_WDT has_VBZ been_VBN described_VBN variously_RB on_IN amazon_NN ._.
+com_NN as_IN makes_NNS you_PRP feel_VBP giddy_JJ ,_, ''_'' seriously_RB weird_JJ ,_, ''_'' comedy_NN with_IN depth_NN ,_, ''_'' silly_RB ,_, ''_'' strange_JJ ,_, ''_'' and_CC inventive_JJ ._. ''_''
+Indicating_VBG whether_IN someone_NN likes_VBZ this_DT movie_NN or_CC not_RB goes_VBZ a_DT long_JJ way_NN toward_IN situating_VBG the_DT user_NN in_IN a_DT suitable_JJ neighborhood_NN ,_, with_IN similar_JJ preferences_NNS ._.
+On_IN the_DT other_JJ hand_NN ,_, several_JJ factors_NNS may_MD have_VB made_VBN a_DT movie_NN a_DT bad_JJ scout_NN ,_, like_IN the_DT sharp_JJ variance_NN in_IN user_NN preferences_NNS in_IN the_DT neighborhood_NN of_IN a_DT movie_NN ._.
+Two_CD users_NNS may_MD have_VB the_DT same_JJ opinion_NN about_IN Lawrence_NNP of_IN Arabia_NNP ,_, but_CC they_PRP may_MD differ_VB sharply_RB about_IN how_WRB they_PRP felt_VBD about_IN the_DT other_JJ movies_NNS they_PRP saw_VBD ._.
+Bad_JJ scouts_NNS ensue_VBP when_WRB there_EX is_VBZ deviation_NN in_IN behavior_NN around_IN a_DT common_JJ synchronization_NN point_NN ._.
+5_CD ._.
+#_# Inducing_VBG good_JJ promoters_NNS Ratings_NNS that_WDT serve_VBP to_TO promote_VB items_NNS in_IN a_DT collaborative_JJ filtering_VBG system_NN are_VBP critical_JJ to_TO allowing_VBG a_DT new_JJ item_NN be_VB recommended_VBN to_TO users_NNS ._.
+So_RB ,_, inducing_VBG good_JJ promoters_NNS is_VBZ important_JJ for_IN cold-start_JJ recommendation_NN ._.
+We_PRP note_VBP that_IN the_DT frequency_NN distribution_NN of_IN promoter_NN values_NNS for_IN a_DT sample_NN movie_NN ''_'' s_NNS ratings_NNS is_VBZ also_RB Gaussian_JJ -LRB-_-LRB- similar_JJ to_TO Fig_NN ._.
+#_# -RRB-_-RRB- ._.
+This_DT indicates_VBZ that_IN the_DT promotion_NN of_IN a_DT movie_NN is_VBZ benefited_VBN most_RBS by_IN the_DT ratings_NNS of_IN a_DT few_JJ users_NNS ,_, and_CC are_VBP unaffected_JJ by_IN the_DT ratings_NNS of_IN most_JJS users_NNS ._.
+We_PRP find_VBP a_DT strong_JJ correlation_NN between_IN a_DT user_NN ''_'' s_NNS number_NN of_IN ratings_NNS and_CC his_PRP$ aggregated_JJ promoter_NN value_NN ._.
+Fig_NN ._.
+#_# depicts_VBZ the_DT evolution_NN of_IN the_DT Pearson_NNP correlation_NN co-efficient_JJ between_IN the_DT prolificity_NN of_IN a_DT user_NN -LRB-_-LRB- number_NN of_IN ratings_NNS -RRB-_-RRB- versus_CC his_PRP$ aggregated_JJ promoter_NN value_NN ._.
+We_PRP expect_VBP that_IN conspicuous_JJ shills_NNS ,_, by_IN recommending_VBG wrong_JJ movies_NNS to_TO users_NNS ,_, will_MD be_VB discredited_VBN with_IN negative_JJ aggregate_NN promoter_NN values_NNS and_CC should_MD be_VB identifiable_JJ easily_RB ._.
+Given_VBN this_DT observation_NN ,_, the_DT obvious_JJ rule_NN to_TO follow_VB when_WRB introducing_VBG a_DT new_JJ movie_NN is_VBZ to_TO have_VB it_PRP rated_VBN directly_RB by_IN prolific_JJ users_NNS who_WP posses_VBZ high_JJ aggregated_JJ promoter_NN values_NNS ._.
+A_DT new_JJ movie_NN is_VBZ thus_RB cast_VBN into_IN the_DT neighborhood_NN of_IN many_JJ other_JJ movies_NNS improving_VBG its_PRP$ visibility_NN ._.
+Note_VB ,_, though_RB ,_, that_IN a_DT user_NN may_MD have_VB long_JJ stopped_VBD using_VBG the_DT system_NN ._.
+Tracking_VBG promoter_NN values_NNS consistently_RB allows_VBZ only_RB the_DT most_RBS active_JJ recent_JJ users_NNS to_TO be_VB considered_VBN ._.
+5_CD ._.
+#_# Inducing_VBG good_JJ connectors_NNS Given_VBN the_DT way_NN scouts_NNS ,_, connectors_NNS ,_, and_CC promoters_NNS are_VBP characterized_VBN ,_, it_PRP follows_VBZ that_IN the_DT movies_NNS that_WDT are_VBP part_NN of_IN the_DT best_JJS scouts_NNS are_VBP also_RB part_NN of_IN the_DT best_JJS connectors_NNS ._.
+Similarly_RB ,_, the_DT users_NNS that_WDT constitute_VBP the_DT best_JJS promoters_NNS are_VBP also_RB part_NN of_IN the_DT best_JJS connectors_NNS ._.
+Good_JJ connectors_NNS are_VBP induced_VBN by_IN ensuring_VBG a_DT user_NN with_IN a_DT high_JJ promoter_NN value_NN rates_NNS a_DT movie_NN with_IN a_DT high_JJ scout_NN value_NN ._.
+In_IN our_PRP$ experiments_NNS ,_, we_PRP find_VBP that_IN a_DT rating_NN ''_'' s_NNS longest_JJS standing_VBG role_NN is_VBZ often_RB as_IN a_DT connector_NN ._.
+A_DT rating_NN with_IN a_DT poor_JJ connector_NN value_NN is_VBZ often_RB seen_VBN due_JJ to_TO its_PRP$ user_NN being_VBG a_DT bad_JJ promoter_NN ,_, or_CC its_PRP$ movie_NN being_VBG a_DT bad_JJ scout_NN ._.
+Such_JJ ratings_NNS can_MD be_VB removed_VBN from_IN the_DT prediction_NN process_NN to_TO bring_VB marginal_JJ improvements_NNS to_TO recommendations_NNS ._.
+In_IN some_DT selected_VBN experiments_NNS ,_, we_PRP observed_VBD that_IN removing_VBG a_DT set_NN of_IN badly_RB behaving_VBG connectors_NNS helped_VBD improve_VB the_DT system_NN ''_'' s_NNS overall_JJ performance_NN by_IN #_# ._.
+#_# %_NN ._.
+The_DT effect_NN was_VBD even_RB higher_JJR on_IN a_DT few_JJ select_JJ users_NNS who_WP observed_VBD an_DT improvement_NN of_IN above_JJ ##_CD %_NN in_IN precision_NN without_IN much_JJ loss_NN in_IN recall_NN ._.
+5_CD ._.
+#_# Monitoring_VBG the_DT evolution_NN of_IN rating_NN roles_NNS One_CD of_IN the_DT more_RBR significant_JJ contributions_NNS of_IN our_PRP$ work_NN is_VBZ the_DT ability_NN to_TO model_VB the_DT evolution_NN of_IN recommender_NN systems_NNS ,_, by_IN studying_VBG the_DT changing_VBG roles_NNS of_IN ratings_NNS over_IN time_NN ._.
+The_DT role_NN and_CC value_NN of_IN a_DT rating_NN can_MD change_VB depending_VBG on_IN many_JJ factors_NNS like_IN user_NN behavior_NN ,_, redundancy_NN ,_, shilling_NN effects_NNS or_CC properties_NNS of_IN the_DT collaborative_JJ filtering_VBG algorithm_NN used_VBN ._.
+Studying_VBG the_DT dynamics_NNS of_IN rating_NN roles_NNS in_IN terms_NNS of_IN transitions_NNS between_IN good_JJ ,_, bad_JJ ,_, and_CC negligible_JJ values_NNS can_MD provide_VB insights_NNS into_IN the_DT functioning_NN of_IN the_DT recommender_NN system_NN ._.
+We_PRP believe_VBP that_IN a_DT continuous_JJ visualization_NN of_IN these_DT transitions_NNS will_MD improve_VB the_DT ability_NN to_TO manage_VB a_DT recommender_NN system_NN ._.
+We_PRP classify_VBP different_JJ rating_NN states_NNS as_IN good_JJ ,_, bad_JJ ,_, or_CC negligible_JJ ._.
+Consider_VB a_DT user_NN who_WP has_VBZ rated_VBN ###_JJ movies_NNS in_IN a_DT particular_JJ interval_NN ,_, of_IN which_WDT ##_NN are_VBP part_NN of_IN the_DT test_NN set_NN ._.
+If_IN a_DT scout_NN has_VBZ a_DT value_NN greater_JJR than_IN #_# ._.
+###_NN ,_, it_PRP indicates_VBZ that_IN it_PRP is_VBZ uniquely_RB involved_VBN in_IN at_IN least_JJS #_# concordant_JJ predictions_NNS ,_, which_WDT we_PRP will_MD say_VB is_VBZ good_JJ ._.
+Thus_RB ,_, a_DT threshold_NN of_IN #_# ._.
+###_NN is_VBZ chosen_VBN to_TO bin_NN a_DT rating_NN as_IN good_JJ ,_, bad_JJ or_CC negligible_JJ in_IN terms_NNS of_IN its_PRP$ scout_NN ,_, connector_NN and_CC promoter_NN value_NN ._.
+For_IN instance_NN ,_, a_DT rating_NN r_NN ,_, at_IN time_NN t_NN with_IN role_NN value_NN triple_JJ -LSB-_-LRB- #_# ._.
+#_# ,_, #_# ._.
+###_NN ,_, #_# ._.
+##_NN -RSB-_-RRB- is_VBZ classified_VBN as_IN -LSB-_-LRB- scout_NN +_CC ,_, connector_NN #_# ,_, promoter_NN -RSB-_-RRB- ,_, where_WRB +_CC indicates_VBZ good_JJ ,_, 0_CD indicates_VBZ negligible_JJ ,_, and_CC indicates_VBZ bad_JJ ._.
+The_DT positive_JJ credit_NN held_VBN by_IN a_DT rating_NN is_VBZ a_DT measure_NN of_IN its_PRP$ contribution_NN to_TO the_DT betterment_NN of_IN the_DT system_NN ,_, and_CC the_DT discredit_VB is_VBZ a_DT measure_NN of_IN its_PRP$ contribution_NN to_TO the_DT detriment_NN of_IN the_DT system_NN ._.
+Even_RB though_IN the_DT positive_JJ roles_NNS -LRB-_-LRB- and_CC the_DT negative_JJ roles_NNS -RRB-_-RRB- make_VBP up_RP a_DT very_RB small_JJ percentage_NN of_IN all_DT ratings_NNS ,_, their_PRP$ contribution_NN supersedes_VBZ their_PRP$ size_NN ._.
+For_IN example_NN ,_, even_RB though_IN only_RB 1_CD ._.
+#_# %_NN of_IN all_DT ratings_NNS were_VBD classified_VBN as_IN good_JJ scouts_NNS ,_, they_PRP hold_VBP 79_CD %_NN of_IN all_DT positive_JJ credit_NN in_IN the_DT system_NN !_.
+Similarly_RB ,_, the_DT bad_JJ scouts_NNS were_VBD just_RB #_# ._.
+#_# %_NN of_IN all_DT ratings_NNS but_CC hold_VBP ##_CD %_NN of_IN all_DT discredit_VBP ._.
+Note_VB that_DT good_JJ and_CC bad_JJ scouts_NNS ,_, together_RB ,_, comprise_VBP only_RB #_# ._.
+#_# %_NN +_CC #_# ._.
+#_# %_NN =_JJ #_# ._.
+#_# %_NN of_IN the_DT ratings_NNS ,_, implying_VBG that_IN the_DT majority_NN of_IN the_DT ratings_NNS are_VBP negligible_JJ role_NN players_NNS as_IN scouts_NNS -LRB-_-LRB- more_RBR on_IN this_DT later_JJ -RRB-_-RRB- ._.
+Likewise_RB ,_, good_JJ connectors_NNS were_VBD #_# ._.
+#_# %_NN of_IN the_DT system_NN ,_, and_CC hold_VB ##_CD %_NN of_IN all_DT positive_JJ credit_NN ._.
+The_DT bad_JJ connectors_NNS -LRB-_-LRB- #_# ._.
+#_# %_NN of_IN the_DT system_NN -RRB-_-RRB- hold_VBP ##_CD %_NN of_IN all_DT discredit_VBP ._.
+Good_JJ promoters_NNS -LRB-_-LRB- #_# %_NN of_IN the_DT system_NN -RRB-_-RRB- hold_VBP ##_CD %_NN of_IN all_DT credit_NN ,_, while_IN bad_JJ promoters_NNS -LRB-_-LRB- #_# %_NN -RRB-_-RRB- hold_VBP ##_CD %_NN of_IN all_DT discredit_VBP ._.
+This_DT reiterates_VBZ that_IN a_DT few_JJ ratings_NNS influence_VBP most_JJS of_IN the_DT system_NN ''_'' s_NNS performance_NN ._.
+Hence_RB it_PRP is_VBZ important_JJ to_TO track_VB transitions_NNS between_IN them_PRP regardless_RB of_IN their_PRP$ small_JJ numbers_NNS ._.
+257_CD Across_IN different_JJ snapshots_NNS ,_, a_DT rating_NN can_MD remain_VB in_IN the_DT same_JJ state_NN or_CC change_NN ._.
+A_DT good_JJ scout_NN can_MD become_VB a_DT bad_JJ scout_NN ,_, a_DT good_JJ promoter_NN can_MD become_VB a_DT good_JJ connector_NN ,_, good_JJ and_CC bad_JJ scouts_NNS can_MD become_VB vestigial_JJ ,_, and_CC so_RB on_IN ._.
+It_PRP is_VBZ not_RB practical_JJ to_TO expect_VB a_DT recommender_NN system_NN to_TO have_VB no_DT ratings_NNS in_IN bad_JJ roles_NNS ._.
+However_RB ,_, it_PRP suffices_VBZ to_TO see_VB ratings_NNS in_IN bad_JJ roles_NNS either_CC convert_VB to_TO good_JJ or_CC vestigial_JJ roles_NNS ._.
+Similarly_RB ,_, observing_VBG a_DT large_JJ number_NN of_IN good_JJ roles_NNS become_VBP bad_JJ ones_NNS is_VBZ a_DT sign_NN of_IN imminent_JJ failure_NN of_IN the_DT system_NN ._.
+We_PRP employ_VBP the_DT principle_NN of_IN non-overlapping_JJ episodes_NNS -LSB-_-LRB- #_# -RSB-_-RRB- to_TO count_VB such_JJ transitions_NNS ._.
+A_DT sequence_NN such_JJ as_IN :_: -LSB-_-LRB- +_CC ,_, #_# ,_, #_# -RSB-_-RRB- -LSB-_-LRB- +_CC ,_, #_# ,_, #_# -RSB-_-RRB- -LSB-_-LRB- #_# ,_, +_CC ,_, #_# -RSB-_-RRB- -LSB-_-LRB- #_# ,_, #_# ,_, #_# -RSB-_-RRB- is_VBZ interpreted_VBN as_IN the_DT transitions_NNS -LSB-_-LRB- +_CC ,_, #_# ,_, #_# -RSB-_-RRB- ;_: -LSB-_-LRB- #_# ,_, +_CC ,_, #_# -RSB-_-RRB- :_: #_# -LSB-_-LRB- +_CC ,_, #_# ,_, #_# -RSB-_-RRB- ;_: -LSB-_-LRB- #_# ,_, #_# ,_, #_# -RSB-_-RRB- :_: #_# -LSB-_-LRB- #_# ,_, +_CC ,_, #_# -RSB-_-RRB- ;_: -LSB-_-LRB- #_# ,_, #_# ,_, #_# -RSB-_-RRB- :_: #_# instead_RB of_IN -LSB-_-LRB- +_CC ,_, #_# ,_, #_# -RSB-_-RRB- ;_: -LSB-_-LRB- #_# ,_, +_CC ,_, #_# -RSB-_-RRB- :_: #_# -LSB-_-LRB- +_CC ,_, #_# ,_, #_# -RSB-_-RRB- ;_: -LSB-_-LRB- #_# ,_, #_# ,_, #_# -RSB-_-RRB- :_: #_# -LSB-_-LRB- #_# ,_, +_CC ,_, #_# -RSB-_-RRB- ;_: -LSB-_-LRB- #_# ,_, #_# ,_, #_# -RSB-_-RRB- :_: #_# ._.
+See_VB -LSB-_-LRB- #_# -RSB-_-RRB- for_IN further_JJ details_NNS about_IN this_DT counting_VBG procedure_NN ._.
+Thus_RB ,_, a_DT rating_NN can_MD be_VB in_IN one_CD of_IN ##_CD possible_JJ states_NNS ,_, and_CC there_EX are_VBP about_IN ###_CD possible_JJ transitions_NNS ._.
+We_PRP make_VBP a_DT further_JJ simplification_NN and_CC utilize_VB only_RB #_# states_NNS ,_, indicating_VBG whether_IN the_DT rating_NN is_VBZ a_DT scout_NN ,_, promoter_NN ,_, or_CC connector_NN ,_, and_CC whether_IN it_PRP has_VBZ a_DT positive_JJ ,_, negative_JJ ,_, or_CC negligible_JJ role_NN ._.
+Ratings_NNS that_WDT serve_VBP multiple_JJ purposes_NNS are_VBP counted_VBN using_VBG multiple_JJ episode_NN instantiations_NNS but_CC the_DT states_NNS themselves_PRP are_VBP not_RB duplicated_JJ beyond_IN the_DT #_# restricted_JJ states_NNS ._.
+In_IN this_DT model_NN ,_, a_DT transition_NN such_JJ as_IN -LSB-_-LRB- +_CC ,_, #_# ,_, +_CC -RSB-_-RRB- ;_: -LSB-_-LRB- #_# ,_, +_CC ,_, #_# -RSB-_-RRB- :_: #_# is_VBZ counted_VBN as_IN -LSB-_-LRB- scout_NN +_CC -RSB-_-RRB- ;_: -LSB-_-LRB- scout0_NN -RSB-_-RRB- :_: #_# -LSB-_-LRB- scout_NN +_CC -RSB-_-RRB- ;_: -LSB-_-LRB- connector_NN +_CC -RSB-_-RRB- :_: #_# -LSB-_-LRB- scout_NN +_CC -RSB-_-RRB- ;_: -LSB-_-LRB- promoter0_NN -RSB-_-RRB- :_: #_# -LSB-_-LRB- connector0_NN -RSB-_-RRB- ;_: -LSB-_-LRB- scout0_NN -RSB-_-RRB- :_: #_# -LSB-_-LRB- connector0_NN -RSB-_-RRB- ;_: -LSB-_-LRB- scout_NN +_CC -RSB-_-RRB- :_: #_# -LSB-_-LRB- connector0_NN -RSB-_-RRB- ;_: -LSB-_-LRB- promoter0_NN -RSB-_-RRB- :_: #_# -LSB-_-LRB- promoter_NN +_CC -RSB-_-RRB- ;_: -LSB-_-LRB- scout0_NN -RSB-_-RRB- :_: #_# -LSB-_-LRB- promoter_NN +_CC -RSB-_-RRB- ;_: -LSB-_-LRB- connector_NN +_CC -RSB-_-RRB- :_: #_# -LSB-_-LRB- promoter_NN +_CC -RSB-_-RRB- ;_: -LSB-_-LRB- promoter0_NN -RSB-_-RRB- :_: #_# Of_IN these_DT ,_, transitions_NNS like_IN -LSB-_-LRB- pX_NN -RSB-_-RRB- ;_: -LSB-_-LRB- q0_NN -RSB-_-RRB- where_WRB p_NN =_JJ q_NN ,_, X_NN -LCB-_-LRB- +_CC ,_, #_# ,_, -RCB-_-RRB- are_VBP considered_VBN uninteresting_JJ ,_, and_CC only_RB the_DT rest_NN are_VBP counted_VBN ._.
+Fig_NN ._.
+#_# depicts_VBZ the_DT major_JJ transitions_NNS counted_VBN while_IN processing_VBG the_DT first_JJ ###_NN ,_, ###_CD ratings_NNS from_IN the_DT MovieLens_NNP dataset_NN ._.
+Only_RB transitions_NNS with_IN frequency_NN greater_JJR than_IN or_CC equal_JJ to_TO #_# %_NN are_VBP shown_VBN ._.
+The_DT percentages_NNS for_IN each_DT state_NN indicates_VBZ the_DT number_NN of_IN ratings_NNS that_WDT were_VBD found_VBN to_TO be_VB in_IN those_DT states_NNS ._.
+We_PRP consider_VBP transitions_NNS from_IN any_DT state_NN to_TO a_DT good_JJ state_NN as_IN healthy_JJ ,_, from_IN any_DT state_NN to_TO a_DT bad_JJ state_NN as_IN unhealthy_JJ ,_, and_CC from_IN any_DT state_NN to_TO a_DT vestigial_JJ state_NN as_IN decaying_JJ ._.
+From_IN Fig_NN ._.
+#_# ,_, we_PRP can_MD observe_VB :_: The_DT bulk_NN of_IN the_DT ratings_NNS have_VBP negligible_JJ values_NNS ,_, irrespective_RB of_IN their_PRP$ role_NN ._.
+The_DT majority_NN of_IN the_DT transitions_NNS involve_VBP both_DT good_JJ and_CC bad_JJ ratings_NNS becoming_VBG negligible_JJ ._.
+Scout_NN +_CC -LRB-_-LRB- #_# %_NN -RRB-_-RRB- Scout_NN -LRB-_-LRB- #_# ._.
+#_# %_NN -RRB-_-RRB- Scout_NN #_# -LRB-_-LRB- ##_CD ._.
+#_# %_NN -RRB-_-RRB- Connector_NN +_CC -LRB-_-LRB- #_# ._.
+#_# %_NN -RRB-_-RRB- Connector_NN -LRB-_-LRB- #_# ._.
+#_# %_NN -RRB-_-RRB- Connector_NN #_# -LRB-_-LRB- ##_CD %_NN -RRB-_-RRB- Promoter_NN +_CC -LRB-_-LRB- #_# %_NN -RRB-_-RRB- Promoter_NN -LRB-_-LRB- #_# %_NN -RRB-_-RRB- Promoter_NN #_# -LRB-_-LRB- ##_CD %_NN -RRB-_-RRB- 84_CD %_NN 84_CD %_NN 81_CD %_NN 74_CD %_NN 10_CD %_NN 6_CD %_NN 11_CD %_NN 77_CD %_NN 8_CD %_NN 7_CD %_NN 8_CD %_NN 82_CD %_NN 4_CD %_NN 86_CD %_NN 4_CD %_NN 68_CD %_NN 15_CD %_NN 13_CD %_NN 5_CD %_NN 5_CD %_NN 77_CD %_NN 11_CD %_NN 7_CD %_NN 5_CD %_NN 4_CD %_NN 3_CD %_NN 3_CD %_NN 3_CD %_NN Healthy_JJ Unhealthy_NNP Decaying_NNP Figure_NNP #_# :_: Transitions_NNS among_IN rating_NN roles_NNS ._.
+The_DT number_NN of_IN good_JJ ratings_NNS is_VBZ comparable_JJ to_TO the_DT bad_JJ ratings_NNS ,_, and_CC ratings_NNS are_VBP seen_VBN to_TO switch_VB states_NNS often_RB ,_, except_IN in_IN the_DT case_NN of_IN scouts_NNS ._.
+The_DT negative_JJ and_CC positive_JJ scout_NN states_NNS are_VBP not_RB reachable_VB through_IN any_DT transition_NN ,_, indicating_VBG that_IN these_DT ratings_NNS must_MD begin_VB as_IN such_JJ ,_, and_CC can_MD not_RB be_VB coerced_VBN into_IN these_DT roles_NNS ._.
+Good_JJ promoters_NNS and_CC good_JJ connectors_NNS have_VBP a_DT much_RB longer_JJR survival_NN period_NN than_IN scouts_NNS ._.
+Transitions_NNS that_WDT recur_VBP to_TO these_DT states_NNS have_VBP frequencies_NNS of_IN ##_CD %_NN and_CC ##_CD %_NN when_WRB compared_VBN to_TO just_RB #_# %_NN for_IN scouts_NNS ._.
+Good_JJ connectors_NNS are_VBP the_DT slowest_JJS to_TO decay_NN whereas_IN -LRB-_-LRB- good_JJ -RRB-_-RRB- scouts_NNS decay_NN the_DT fastest_JJS ._.
+Healthy_JJ percentages_NNS are_VBP seen_VBN on_IN transitions_NNS between_IN promoters_NNS and_CC connectors_NNS ._.
+As_IN indicated_VBN earlier_RBR ,_, there_EX are_VBP hardly_RB any_DT transitions_NNS from_IN promoters_NNS /_: connectors_NNS to_TO scouts_NNS ._.
+This_DT indicates_VBZ that_IN ,_, over_IN the_DT long_JJ run_NN ,_, a_DT user_NN ''_'' s_NNS rating_NN is_VBZ more_RBR useful_JJ to_TO others_NNS -LRB-_-LRB- movies_NNS or_CC other_JJ users_NNS -RRB-_-RRB- than_IN to_TO the_DT user_NN himself_PRP ._.
+The_DT percentages_NNS of_IN healthy_JJ transitions_NNS outweigh_VBP the_DT unhealthy_JJ ones_NNS -_: this_DT hints_NNS that_IN the_DT system_NN is_VBZ healthy_JJ ,_, albeit_IN only_RB marginally_RB ._.
+Note_VB that_IN these_DT results_NNS are_VBP conditioned_VBN by_IN the_DT static_JJ nature_NN of_IN the_DT dataset_NN ,_, which_WDT is_VBZ a_DT set_NN of_IN ratings_NNS over_IN a_DT fixed_VBN window_NN of_IN time_NN ._.
+However_RB a_DT diagram_NN such_JJ as_IN Fig_NN ._.
+#_# is_VBZ clearly_RB useful_JJ for_IN monitoring_VBG the_DT health_NN of_IN a_DT recommender_NN system_NN ._.
+For_IN instance_NN ,_, acceptable_JJ limits_NNS can_MD be_VB imposed_VBN on_IN different_JJ types_NNS of_IN transitions_NNS and_CC ,_, if_IN a_DT transition_NN fails_VBZ to_TO meet_VB the_DT threshold_NN ,_, the_DT recommender_NN system_NN or_CC a_DT part_NN of_IN it_PRP can_MD be_VB brought_VBN under_IN closer_JJR scrutiny_NN ._.
+Furthermore_RB ,_, the_DT role_NN state_NN transition_NN diagram_NN would_MD also_RB be_VB the_DT ideal_JJ place_NN to_TO study_VB the_DT effects_NNS of_IN shilling_NN ,_, a_DT topic_NN we_PRP will_MD consider_VB in_IN future_JJ research_NN ._.
+5_CD ._.
+#_# Characterizing_VBG neighborhoods_NNS Earlier_RBR we_PRP saw_VBD that_IN we_PRP can_MD characterize_VB the_DT neighborhood_NN of_IN ratings_NNS involved_VBN in_IN creating_VBG a_DT recommendation_NN list_NN L_NN for_IN 258_CD a_DT user_NN ._.
+In_IN our_PRP$ experiment_NN ,_, we_PRP consider_VBP lists_NNS of_IN length_NN ##_NN ,_, and_CC sample_NN the_DT lists_NNS of_IN about_RB #_# %_NN of_IN users_NNS through_IN the_DT evolution_NN of_IN the_DT model_NN -LRB-_-LRB- at_IN intervals_NNS of_IN ##_NN ,_, ###_CD ratings_NNS each_DT -RRB-_-RRB- and_CC compute_VB their_PRP$ neighborhood_NN characteristics_NNS ._.
+To_TO simplify_VB our_PRP$ presentation_NN ,_, we_PRP consider_VBP the_DT percentage_NN of_IN the_DT sample_NN that_WDT fall_VBP into_IN one_CD of_IN the_DT following_VBG categories_NNS :_: 1_CD ._.
+Inactive_JJ user_NN :_: -LRB-_-LRB- SFN_NN -LRB-_-LRB- u_NN -RRB-_-RRB- =_JJ #_# -RRB-_-RRB- 2_CD ._.
+Good_JJ scouts_NNS ,_, Good_JJ neighborhood_NN :_: -LRB-_-LRB- SFN_NN -LRB-_-LRB- u_NN -RRB-_-RRB- >_JJR #_# -RRB-_-RRB- -LRB-_-LRB- CFN_NNP -LRB-_-LRB- u_FW -RRB-_-RRB- >_JJR #_# PFN_NNP -LRB-_-LRB- u_FW -RRB-_-RRB- >_JJR #_# -RRB-_-RRB- 3_CD ._.
+Good_JJ scouts_NNS ,_, Bad_JJ neighborhood_NN :_: -LRB-_-LRB- SFN_NN -LRB-_-LRB- u_NN -RRB-_-RRB- >_JJR #_# -RRB-_-RRB- -LRB-_-LRB- CFN_NNP -LRB-_-LRB- u_FW -RRB-_-RRB- <_JJR #_# PFN_NNP -LRB-_-LRB- u_FW -RRB-_-RRB- <_JJR #_# -RRB-_-RRB- 4_CD ._.
+Bad_JJ scouts_NNS ,_, Good_JJ neighborhood_NN :_: -LRB-_-LRB- SFN_NN -LRB-_-LRB- u_NN -RRB-_-RRB- #_# PFN_NNP -LRB-_-LRB- u_FW -RRB-_-RRB- >_JJR #_# -RRB-_-RRB- 5_CD ._.
+Bad_JJ scouts_NNS ,_, Bad_JJ neighborhood_NN :_: -LRB-_-LRB- SFN_NN -LRB-_-LRB- u_NN -RRB-_-RRB- <_JJR #_# -RRB-_-RRB- -LRB-_-LRB- CFN_NNP -LRB-_-LRB- u_FW -RRB-_-RRB- <_JJR #_# PFN_NNP -LRB-_-LRB- u_FW -RRB-_-RRB- <_JJR #_# -RRB-_-RRB- From_IN our_PRP$ sample_NN set_NN of_IN ###_CD users_NNS ,_, we_PRP found_VBD that_IN ###_CD users_NNS were_VBD inactive_JJ ._.
+Of_IN the_DT remaining_VBG ##_CD users_NNS ,_, we_PRP found_VBD ##_CD users_NNS had_VBD good_JJ scouts_NNS and_CC a_DT good_JJ neighborhood_NN ,_, #_# had_VBD bad_JJ scouts_NNS and_CC a_DT good_JJ neighborhood_NN ,_, ##_NN had_VBD good_JJ scouts_NNS and_CC a_DT bad_JJ neighborhood_NN ,_, and_CC ##_NN had_VBD bad_JJ scouts_NNS and_CC a_DT bad_JJ neighborhood_NN ._.
+Thus_RB ,_, we_PRP conjecture_NN that_WDT ##_VBD users_NNS -LRB-_-LRB- ##_CD +_CC ##_CD +_CC #_# -RRB-_-RRB- are_VBP in_IN danger_NN of_IN leaving_VBG the_DT system_NN ._.
+As_IN a_DT remedy_NN ,_, users_NNS with_IN bad_JJ scouts_NNS and_CC a_DT good_JJ neighborhood_NN can_MD be_VB asked_VBN to_TO reconsider_VB rating_NN of_IN some_DT movies_NNS hoping_VBG to_TO improve_VB the_DT system_NN ''_'' s_NNS recommendations_NNS ._.
+The_DT system_NN can_MD be_VB expected_VBN to_TO deliver_VB more_JJR if_IN they_PRP engineer_VBP some_DT good_JJ scouts_NNS ._.
+Users_NNS with_IN good_JJ scouts_NNS and_CC a_DT bad_JJ neighborhood_NN are_VBP harder_JJR to_TO address_VB ;_: this_DT situation_NN might_MD entail_VB selectively_RB removing_VBG some_DT connector-promoter_NN pairs_NNS that_WDT are_VBP causing_VBG the_DT damage_NN ._.
+Handling_VBG users_NNS with_IN bad_JJ scouts_NNS and_CC bad_JJ neighborhoods_NNS is_VBZ a_DT more_RBR difficult_JJ challenge_NN ._.
+Such_PDT a_DT classification_NN allows_VBZ the_DT use_NN of_IN different_JJ strategies_NNS to_TO better_JJR a_DT user_NN ''_'' s_NNS experience_VBP with_IN the_DT system_NN depending_VBG on_IN his_PRP$ context_NN ._.
+In_IN future_JJ work_NN ,_, we_PRP intend_VBP to_TO conduct_VB field_NN studies_NNS and_CC study_VB the_DT improvement_NN in_IN performance_NN of_IN different_JJ strategies_NNS for_IN different_JJ contexts_NNS ._.
+6_CD ._.
+CONCLUSIONS_NNS To_TO further_RBR recommender_NN system_NN acceptance_NN and_CC deployment_NN ,_, we_PRP require_VBP new_JJ tools_NNS and_CC methodologies_NNS to_TO manage_VB an_DT installed_VBN recommender_NN and_CC develop_VB insights_NNS into_IN the_DT roles_NNS played_VBN by_IN ratings_NNS ._.
+A_DT fine-grained_JJ characterization_NN in_IN terms_NNS of_IN rating_NN roles_NNS such_JJ as_IN scouts_NNS ,_, promoters_NNS ,_, and_CC connectors_NNS ,_, as_IN done_VBN here_RB ,_, helps_VBZ such_PDT an_DT endeavor_NN ._.
+Although_IN we_PRP have_VBP presented_VBN results_NNS on_IN only_RB the_DT item-based_JJ algorithm_NN with_IN list_NN rank_NN accuracy_NN as_IN the_DT metric_JJ ,_, the_DT same_JJ approach_NN outlined_VBN here_RB applies_VBZ to_TO user-based_JJ algorithms_NNS and_CC other_JJ metrics_NNS ._.
+In_IN future_JJ research_NN ,_, we_PRP plan_VBP to_TO systematically_RB study_VB the_DT many_JJ algorithmic_JJ parameters_NNS ,_, tolerances_NNS ,_, and_CC cutoff_NN thresholds_NNS employed_VBN here_RB and_CC reason_NN about_IN their_PRP$ effects_NNS on_IN the_DT downstream_JJ conclusions_NNS ._.
+We_PRP also_RB aim_VBP to_TO extend_VB our_PRP$ formulation_NN to_TO other_JJ collaborative_JJ filtering_VBG algorithms_NNS ,_, study_VB the_DT effect_NN of_IN shilling_NN in_IN altering_VBG rating_NN roles_NNS ,_, conduct_VB field_NN studies_NNS ,_, and_CC evaluate_VB improvements_NNS in_IN user_NN experience_NN by_IN tweaking_NN ratings_NNS based_VBN on_IN their_PRP$ role_NN values_NNS ._.
+Finally_RB ,_, we_PRP plan_VBP to_TO develop_VB the_DT idea_NN of_IN mining_VBG the_DT evolution_NN of_IN rating_NN role_NN patterns_NNS into_IN a_DT reporting_NN and_CC tracking_NN system_NN for_IN all_DT aspects_NNS of_IN recommender_NN system_NN health_NN ._.
+7_CD ._.
+REFERENCES_NNS -LSB-_-LRB- #_# -RSB-_-RRB- Cosley_NNP ,_, D_NNP ._.
+,_, Lam_NNP ,_, S_NN ._.
+,_, Albert_NNP ,_, I_PRP ._.
+,_, Konstan_NNP ,_, J_NNP ._.
+,_, and_CC Riedl_NNP ,_, J_NNP ._.
+Is_VBZ Seeing_VBG Believing_VBG ?_.
+:_: How_WRB Recommender_NNP System_NNP Interfaces_NNP Affect_NNP User_NN ''_'' s_NNS Opinions_NNS ._.
+In_IN Proc_NNP ._.
+CHI_NN -LRB-_-LRB- ####_CD -RRB-_-RRB- ,_, pp_NN ._.
+585-592_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- Herlocker_NNP ,_, J_NNP ._.
+L_NN ._.
+,_, Konstan_NNP ,_, J_NNP ._.
+A_DT ._.
+,_, Borchers_NNP ,_, A_NNP ._.
+,_, and_CC Riedl_NNP ,_, J_NNP ._.
+An_DT Algorithmic_JJ Framework_NN for_IN Performing_VBG Collaborative_NNP Filtering_NNP ._.
+In_IN Proc_NNP ._.
+SIGIR_NN -LRB-_-LRB- ####_CD -RRB-_-RRB- ,_, pp_NN ._.
+230-237_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- Herlocker_NNP ,_, J_NNP ._.
+L_NN ._.
+,_, Konstan_NNP ,_, J_NNP ._.
+A_DT ._.
+,_, Terveen_NN ,_, L_NN ._.
+G_NN ._.
+,_, and_CC Riedl_NNP ,_, J_NNP ._.
+T_NN ._.
+Evaluating_VBG Collaborative_NNP Filtering_NNP Recommender_NNP Systems_NNPS ._.
+ACM_NNP Transactions_NNS on_IN Information_NNP Systems_NNP Vol_NNP ._.
+##_NN ,_, #_# -LRB-_-LRB- ####_CD -RRB-_-RRB- ,_, pp_NN ._.
+5-53_NN ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- Konstan_NNP ,_, J_NNP ._.
+A_DT ._.
+Personal_JJ communication_NN ._.
+####_NN ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- Lam_NNP ,_, S_NN ._.
+K_NN ._.
+,_, and_CC Riedl_NNP ,_, J_NNP ._.
+Shilling_NNP Recommender_NNP Systems_NNPS for_IN Fun_NNP and_CC Profit_NN ._.
+In_IN Proceedings_NNP of_IN the_DT 13th_JJ International_NNP World_NNP Wide_NN Web_NN Conference_NN -LRB-_-LRB- ####_CD -RRB-_-RRB- ,_, ACM_NNP Press_NNP ,_, pp_NN ._.
+393-402_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- Laxman_NNP ,_, S_NN ._.
+,_, Sastry_NNP ,_, P_NN ._.
+S_NN ._.
+,_, and_CC Unnikrishnan_NNP ,_, K_NNP ._.
+P_NN ._.
+Discovering_VBG Frequent_JJ Episodes_NNS and_CC Learning_NNP Hidden_NNP Markov_NNP Models_NNS :_: A_DT Formal_JJ Connection_NN ._.
+IEEE_NNP Transactions_NNS on_IN Knowledge_NN and_CC Data_NNP Engineering_NNP Vol_NNP ._.
+##_NN ,_, ##_NN -LRB-_-LRB- ####_CD -RRB-_-RRB- ,_, 1505-1517_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- McLaughlin_NNP ,_, M_NN ._.
+R_NN ._.
+,_, and_CC Herlocker_NNP ,_, J_NNP ._.
+L_NN ._.
+A_DT Collaborative_NNP Filtering_NNP Algorithm_NNP and_CC Evaluation_NN Metric_NNP that_WDT Accurately_RB Model_NNP the_DT User_NN Experience_NN ._.
+In_IN Proceedings_NNP of_IN the_DT 27th_JJ Annual_JJ International_NNP ACM_NNP SIGIR_NNP Conference_NNP on_IN Research_NNP and_CC Development_NNP in_IN Information_NNP Retrieval_NNP -LRB-_-LRB- ####_CD -RRB-_-RRB- ,_, pp_NN ._.
+###_SYM -_: ###_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- O_NN ''_'' Mahony_NNP ,_, M_NN ._.
+,_, Hurley_NNP ,_, N_NNP ._.
+J_NN ._.
+,_, Kushmerick_NNP ,_, N_NNP ._.
+,_, and_CC Silvestre_NNP ,_, G_NNP ._.
+Collaborative_JJ Recommendation_NN :_: A_DT Robustness_NNP Analysis_NN ._.
+ACM_NNP Transactions_NNS on_IN Internet_NNP Technology_NNP Vol_NNP ._.
+#_# ,_, #_# -LRB-_-LRB- Nov_NNP ####_CD -RRB-_-RRB- ,_, pp_NN ._.
+344-377_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- Rashid_NNP ,_, A_NNP ._.
+M_NN ._.
+,_, Albert_NNP ,_, I_PRP ._.
+,_, Cosley_NNP ,_, D_NNP ._.
+,_, Lam_NNP ,_, S_NN ._.
+,_, McNee_NN ,_, S_NN ._.
+,_, Konstan_NNP ,_, J_NNP ._.
+A_DT ._.
+,_, and_CC Riedl_NNP ,_, J_NNP ._.
+Getting_VBG to_TO Know_NNP You_PRP :_: Learning_NNP New_NNP User_NN Preferences_NNPS in_IN Recommender_NNP Systems_NNPS ._.
+In_IN Proceedings_NNP of_IN the_DT ####_CD Conference_NN on_IN Intelligent_NNP User_NN Interfaces_NNS -LRB-_-LRB- IUI_NN ####_CD -RRB-_-RRB- -LRB-_-LRB- ####_CD -RRB-_-RRB- ,_, pp_NN ._.
+127-134_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Rashid_NN ,_, A_DT ._.
+M_NN ._.
+,_, Karypis_NNP ,_, G_NNP ._.
+,_, and_CC Riedl_NNP ,_, J_NNP ._.
+Influence_NN in_IN Ratings-Based_NNP Recommender_NNP Systems_NNPS :_: An_DT Algorithm-Independent_JJ Approach_NN ._.
+In_IN Proc_NNP ._.
+of_IN the_DT SIAM_NNP International_NNP Conference_NNP on_IN Data_NNP Mining_NNP -LRB-_-LRB- ####_CD -RRB-_-RRB- ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Resnick_NNP ,_, P_NN ._.
+,_, Iacovou_NNP ,_, N_NNP ._.
+,_, Sushak_NNP ,_, M_NN ._.
+,_, Bergstrom_NNP ,_, P_NN ._.
+,_, and_CC Riedl_NNP ,_, J_NNP ._.
+GroupLens_NNP :_: An_DT Open_NNP Architecture_NNP for_IN Collaborative_NNP Filtering_NNP of_IN Netnews_NNP ._.
+In_IN Proceedings_NNP of_IN the_DT Conference_NN on_IN Computer_NNP Supported_NNP Collaborative_NNP Work_NNP -LRB-_-LRB- CSCW_NNP ''_'' ##_NN -RRB-_-RRB- -LRB-_-LRB- ####_CD -RRB-_-RRB- ,_, ACM_NNP Press_NNP ,_, pp_NN ._.
+175-186_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Sarwar_NNP ,_, B_NN ._.
+,_, Karypis_NNP ,_, G_NNP ._.
+,_, Konstan_NNP ,_, J_NNP ._.
+,_, and_CC Reidl_NNP ,_, J_NNP ._.
+Item-Based_JJ Collaborative_NNP Filtering_NNP Recommendation_NNP Algorithms_NNPS ._.
+In_IN Proceedings_NNP of_IN the_DT Tenth_NNP International_NNP World_NNP Wide_NN Web_NN Conference_NN -LRB-_-LRB- WWW_NN ''_'' ##_NN -RRB-_-RRB- -LRB-_-LRB- ####_CD -RRB-_-RRB- ,_, pp_NN ._.
+285-295_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Schein_NNP ,_, A_NNP ._.
+,_, Popescu_NNP ,_, A_NNP ._.
+,_, Ungar_NNP ,_, L_NNP ._.
+,_, and_CC Pennock_NNP ,_, D_NNP ._.
+Methods_NNS and_CC Metrics_NNS for_IN Cold-Start_NNP Recommendation_NNP ._.
+In_IN Proc_NNP ._.
+SIGIR_NN -LRB-_-LRB- ####_CD -RRB-_-RRB- ,_, pp_NN ._.
+253-260_CD ._.
+259_CD

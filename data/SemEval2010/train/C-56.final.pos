@@ -1,0 +1,284 @@
+A_DT Hierarchical_JJ Process_VB Execution_NNP Support_NN for_IN Grid_NNP Computing_NNP Fbio_NNP R_NN ._.
+L_NN ._.
+Cicerre_NNP Institute_NNP of_IN Computing_NNP State_NNP University_NNP of_IN Campinas_NNP Campinas_NNP ,_, Brazil_NNP fcicerre_NN @_IN ic_JJ ._.
+unicamp_NN ._.
+br_NN Edmundo_NNP R_NNP ._.
+M_NN ._.
+Madeira_NNP Institute_NNP of_IN Computing_NNP State_NNP University_NNP of_IN Campinas_NNP Campinas_NNP ,_, Brazil_NNP edmundo_NNP @_IN ic_JJ ._.
+unicamp_NN ._.
+br_NN Luiz_NN E_NN ._.
+Buzato_NNP Institute_NNP of_IN Computing_NNP State_NNP University_NNP of_IN Campinas_NNP Campinas_NNP ,_, Brazil_NNP buzato_FW @_SYM ic_JJ ._.
+unicamp_NN ._.
+br_NN ABSTRACT_NN Grid_NNP is_VBZ an_DT emerging_VBG infrastructure_NN used_VBN to_TO share_VB resources_NNS among_IN virtual_JJ organizations_NNS in_IN a_DT seamless_JJ manner_NN and_CC to_TO provide_VB breakthrough_NN computing_NN power_NN at_IN low_JJ cost_NN ._.
+Nowadays_RB there_EX are_VBP dozens_NNS of_IN academic_JJ and_CC commercial_JJ products_NNS that_WDT allow_VBP execution_NN of_IN isolated_VBN tasks_NNS on_IN grids_NNS ,_, but_CC few_JJ products_NNS support_VBP the_DT enactment_NN of_IN long-running_JJ processes_NNS in_IN a_DT distributed_VBN fashion_NN ._.
+In_IN order_NN to_TO address_VB such_JJ subject_JJ ,_, this_DT paper_NN presents_VBZ a_DT programming_NN model_NN and_CC an_DT infrastructure_NN that_WDT hierarchically_RB schedules_NNS process_NN activities_NNS using_VBG available_JJ nodes_NNS in_IN a_DT wide_JJ grid_NN environment_NN ._.
+Their_PRP$ advantages_NNS are_VBP automatic_JJ and_CC structured_JJ distribution_NN of_IN activities_NNS and_CC easy_JJ process_NN monitoring_NN and_CC steering_NN ._.
+Categories_NNS and_CC Subject_NNP Descriptors_NNPS C_NNP ._.
+#_# ._.
+#_# -LSB-_-LRB- Computer-Communication_NNP Networks_NNP -RSB-_-RRB- :_: Distributed_VBN Systems-distributed_JJ applications_NNS General_JJ Terms_NNS Design_NN ,_, Performance_NNP ,_, Management_NNP ,_, Algorithms_NNP 1_CD ._.
+INTRODUCTION_NNP Grid_NNP computing_NN is_VBZ a_DT model_NN for_IN wide-area_NN distributed_VBN and_CC parallel_JJ computing_NN across_IN heterogeneous_JJ networks_NNS in_IN multiple_JJ administrative_JJ domains_NNS ._.
+This_DT research_NN field_NN aims_VBZ to_TO promote_VB sharing_NN of_IN resources_NNS and_CC provides_VBZ breakthrough_NN computing_NN power_NN over_IN this_DT wide_JJ network_NN of_IN virtual_JJ organizations_NNS in_IN a_DT seamless_JJ manner_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+Traditionally_RB ,_, as_IN in_IN Globus_NNP -LSB-_-LRB- #_# -RSB-_-RRB- ,_, Condor-G_NN -LSB-_-LRB- #_# -RSB-_-RRB- and_CC Legion_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, there_EX is_VBZ a_DT minimal_JJ infrastructure_NN that_WDT provides_VBZ data_NNS resource_NN sharing_NN ,_, computational_JJ resource_NN utilization_NN management_NN ,_, and_CC distributed_VBN execution_NN ._.
+Specifically_RB ,_, considering_VBG distributed_VBN execution_NN ,_, most_JJS of_IN the_DT existing_VBG grid_NN infrastructures_NNS supports_VBZ execution_NN of_IN isolated_VBN tasks_NNS ,_, but_CC they_PRP do_VBP not_RB consider_VB their_PRP$ task_NN interdependencies_NNS as_IN in_IN processes_NNS -LRB-_-LRB- workflows_NNS -RRB-_-RRB- -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+This_DT deficiency_NN restricts_VBZ better_JJR scheduling_NN algorithms_NNS ,_, distributed_VBN execution_NN coordination_NN and_CC automatic_JJ execution_NN recovery_NN ._.
+There_EX are_VBP few_JJ proposed_VBN middleware_JJ infrastructures_NNS that_WDT support_VBP process_NN execution_NN over_IN the_DT grid_NN ._.
+In_IN general_JJ ,_, they_PRP model_VBP processes_NNS by_IN interconnecting_VBG their_PRP$ activities_NNS through_IN control_NN and_CC data_NNS dependencies_NNS ._.
+Among_IN them_PRP ,_, WebFlow_NNP -LSB-_-LRB- #_# -RSB-_-RRB- emphasizes_VBZ an_DT architecture_NN to_TO construct_VB distributed_VBN processes_NNS ;_: Opera-G_NN -LSB-_-LRB- #_# -RSB-_-RRB- provides_VBZ execution_NN recovering_VBG and_CC steering_VBG ,_, GridFlow_NNP -LSB-_-LRB- #_# -RSB-_-RRB- focuses_VBZ on_IN improved_VBN scheduling_NN algorithms_NNS that_WDT take_VBP advantage_NN of_IN activity_NN dependencies_NNS ,_, and_CC SwinDew_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- supports_VBZ totally_RB distributed_VBN execution_NN on_IN peer-to-peer_JJ networks_NNS ._.
+However_RB ,_, such_JJ infrastructures_NNS contain_VBP scheduling_NN algorithms_NNS that_WDT are_VBP centralized_VBN by_IN process_NN -LSB-_-LRB- #_# ,_, #_# ,_, #_# -RSB-_-RRB- ,_, or_CC completely_RB distributed_VBN ,_, but_CC difficult_JJ to_TO monitor_VB and_CC control_VB -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+In_IN order_NN to_TO address_VB such_JJ constraints_NNS ,_, this_DT paper_NN proposes_VBZ a_DT structured_JJ programming_NN model_NN for_IN process_NN description_NN and_CC a_DT hierarchical_JJ process_NN execution_NN infrastructure_NN ._.
+The_DT programming_NN model_NN employs_VBZ structured_JJ control_NN flow_NN to_TO promote_VB controlled_JJ and_CC contextualized_JJ activity_NN execution_NN ._.
+Complementary_JJ ,_, the_DT support_NN infrastructure_NN ,_, which_WDT executes_VBZ a_DT process_NN specification_NN ,_, takes_VBZ advantage_NN of_IN the_DT hierarchical_JJ structure_NN of_IN a_DT specified_VBN process_NN in_IN order_NN to_TO distribute_VB and_CC schedule_VB strong_JJ dependent_JJ activities_NNS as_IN a_DT unit_NN ,_, allowing_VBG a_DT better_JJR execution_NN performance_NN and_CC fault-tolerance_NN and_CC providing_VBG localized_JJ communication_NN ._.
+The_DT programming_NN model_NN and_CC the_DT support_NN infrastructure_NN ,_, named_VBN X_NN avantes_NNS ,_, are_VBP under_IN implementation_NN in_IN order_NN to_TO show_VB the_DT feasibility_NN of_IN the_DT proposed_VBN model_NN and_CC to_TO demonstrate_VB its_PRP$ two_CD major_JJ advantages_NNS :_: to_TO promote_VB widely_RB distributed_VBN process_NN execution_NN and_CC scheduling_NN ,_, but_CC in_IN a_DT controlled_VBN ,_, structured_VBN and_CC localized_JJ way_NN ._.
+Next_JJ Section_NN describes_VBZ the_DT programming_NN model_NN ,_, and_CC Section_NN #_# ,_, the_DT support_NN infrastructure_NN for_IN the_DT proposed_VBN grid_NN computing_NN model_NN ._.
+Section_NN #_# demonstrates_VBZ how_WRB the_DT support_NN infrastructure_NN executes_VBZ processes_NNS and_CC distributes_VBZ activities_NNS ._.
+Related_JJ works_NNS are_VBP presented_VBN and_CC compared_VBN to_TO the_DT proposed_VBN model_NN in_IN Section_NN #_# ._.
+The_DT last_JJ Section_NN concludes_VBZ this_DT paper_NN encompassing_VBG the_DT advantages_NNS of_IN the_DT proposed_VBN hierarchical_JJ process_NN execution_NN support_NN for_IN the_DT grid_NN computing_NN area_NN and_CC lists_VBZ some_DT future_JJ works_NNS ._.
+87_CD Middleware_NNP ####_CD Companion_NNP ProcessElement_NNP Process_VB Activity_NN Controller_NN 1_CD *_SYM 1_CD *_SYM Figure_NNP #_# :_: High-level_JJ framework_NN of_IN the_DT programming_NN model_NN 2_CD ._.
+PROGRAMMING_NN MODEL_NN The_DT programming_NN model_NN designed_VBN for_IN the_DT grid_NN computing_NN architecture_NN is_VBZ very_RB similar_JJ to_TO the_DT specified_VBN to_TO the_DT Business_NN Process_VB Execution_NN Language_NN -LRB-_-LRB- BPEL_NN -RRB-_-RRB- -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+Both_DT describe_VBP processes_NNS in_IN XML_NN -LSB-_-LRB- #_# -RSB-_-RRB- documents_NNS ,_, but_CC the_DT former_JJ specifies_VBZ processes_NNS strictly_RB synchronous_JJ and_CC structured_JJ ,_, and_CC has_VBZ more_RBR constructs_NNS for_IN structured_JJ parallel_JJ control_NN ._.
+The_DT rationale_NN behind_IN of_IN its_PRP$ design_NN is_VBZ the_DT possibility_NN of_IN hierarchically_RB distribute_VB the_DT process_NN control_NN and_CC coordination_NN based_VBN on_IN structured_JJ constructs_NNS ,_, differently_RB from_IN BPEL_NNP ,_, which_WDT does_VBZ not_RB allow_VB hierarchical_JJ composition_NN of_IN processes_NNS ._.
+In_IN the_DT proposed_VBN programming_NN model_NN ,_, a_DT process_NN is_VBZ a_DT set_NN of_IN interdependent_JJ activities_NNS arranged_VBN to_TO solve_VB a_DT certain_JJ problem_NN ._.
+In_IN detail_NN ,_, a_DT process_NN is_VBZ composed_VBN of_IN activities_NNS ,_, subprocesses_NNS ,_, and_CC controllers_NNS ._.
+Activities_NNS represent_VBP simple_JJ tasks_NNS that_WDT are_VBP executed_VBN on_IN behalf_NN of_IN a_DT process_NN ;_: subprocesses_NNS are_VBP processes_NNS executed_VBN in_IN the_DT context_NN of_IN a_DT parent_NN process_NN ;_: and_CC controllers_NNS are_VBP control_JJ elements_NNS used_VBN to_TO specify_VB the_DT execution_NN order_NN of_IN these_DT activities_NNS and_CC subprocesses_NNS ._.
+Like_IN structured_JJ languages_NNS ,_, controllers_NNS can_MD be_VB nested_JJ and_CC then_RB determine_VB the_DT execution_NN order_NN of_IN other_JJ controllers_NNS ._.
+Data_NNS are_VBP exchanged_VBN among_IN process_NN elements_NNS through_IN parameters_NNS ._.
+They_PRP are_VBP passed_VBN by_IN value_NN ,_, in_IN case_NN of_IN simple_JJ objects_NNS ,_, or_CC by_IN reference_NN ,_, if_IN they_PRP are_VBP remote_JJ objects_NNS shared_VBN among_IN elements_NNS of_IN the_DT same_JJ controller_NN or_CC process_NN ._.
+External_JJ data_NNS can_MD be_VB accessed_VBN through_IN data_NNS sources_NNS ,_, such_JJ as_IN relational_JJ databases_NNS or_CC distributed_VBN objects_NNS ._.
+2_LS ._.
+#_# Controllers_NNPS Controllers_NNPS are_VBP structured_JJ control_NN constructs_NNS used_VBN to_TO define_VB the_DT control_NN flow_NN of_IN processes_NNS ._.
+There_EX are_VBP sequential_JJ and_CC parallel_JJ controllers_NNS ._.
+The_DT sequential_JJ controller_NN types_NNS are_VBP :_: block_NN ,_, switch_NN ,_, for_IN and_CC while_IN ._.
+The_DT block_NN controller_NN is_VBZ a_DT simple_JJ sequential_JJ construct_NN ,_, and_CC the_DT others_NNS mimic_VBP equivalent_JJ structured_JJ programming_NN language_NN constructs_NNS ._.
+Similarly_RB ,_, the_DT parallel_JJ types_NNS are_VBP :_: par_NN ,_, parswitch_NN ,_, parfor_NN and_CC parwhile_NN ._.
+They_PRP extend_VBP the_DT respective_JJ sequential_JJ counterparts_NNS to_TO allow_VB parallel_JJ execution_NN of_IN process_NN elements_NNS ._.
+All_DT parallel_JJ controller_NN types_NNS fork_NN the_DT execution_NN of_IN one_CD or_CC more_JJR process_NN elements_NNS ,_, and_CC then_RB ,_, wait_VB for_IN each_DT execution_NN to_TO finish_VB ._.
+Indeed_RB ,_, they_PRP contain_VBP a_DT fork_NN and_CC a_DT join_VB of_IN execution_NN ._.
+Aiming_VBG to_TO implement_VB a_DT conditional_JJ join_VB ,_, all_DT parallel_JJ controller_NN types_NNS contain_VBP an_DT exit_NN condition_NN ,_, evaluated_VBD all_DT time_NN that_IN an_DT element_NN execution_NN finishes_NNS ,_, in_IN order_NN to_TO determine_VB when_WRB the_DT controller_NN must_MD end_VB ._.
+The_DT parfor_NN and_CC parwhile_NN are_VBP the_DT iterative_JJ versions_NNS of_IN the_DT parallel_JJ controller_NN types_NNS ._.
+Both_DT fork_NN executions_NNS while_IN the_DT iteration_NN condition_NN is_VBZ true_JJ ._.
+This_DT provides_VBZ flexibility_NN to_TO determine_VB ,_, at_IN run-time_NN ,_, the_DT number_NN of_IN process_NN elements_NNS to_TO execute_VB simultaneously_RB ._.
+When_WRB compared_VBN to_TO workflow_NN languages_NNS ,_, the_DT parallel_JJ controller_NN types_NNS represent_VBP structured_JJ versions_NNS of_IN the_DT workflow_NN control_NN constructors_NNS ,_, because_IN they_PRP can_MD nest_NN other_JJ controllers_NNS and_CC also_RB can_MD express_VB fixed_JJ and_CC conditional_JJ forks_NNS and_CC joins_VBZ ,_, present_JJ in_IN such_JJ languages_NNS ._.
+2_LS ._.
+#_# Process_VB Example_NNP This_DT section_NN presents_VBZ an_DT example_NN of_IN a_DT prime_JJ number_NN search_NN application_NN that_WDT receives_VBZ a_DT certain_JJ range_NN of_IN integers_NNS and_CC returns_VBZ a_DT set_NN of_IN primes_VBZ contained_VBN in_IN this_DT range_NN ._.
+The_DT whole_JJ computation_NN is_VBZ made_VBN by_IN a_DT process_NN ,_, which_WDT uses_VBZ a_DT parallel_JJ controller_NN to_TO start_VB and_CC dispatch_VB several_JJ concurrent_JJ activities_NNS of_IN the_DT same_JJ type_NN ,_, in_IN order_NN to_TO find_VB prime_JJ numbers_NNS ._.
+The_DT portion_NN of_IN the_DT XML_NN document_NN that_WDT describes_VBZ the_DT process_NN and_CC activity_NN types_NNS is_VBZ shown_VBN below_IN ._.
+setPrimes_NNS -LRB-_-LRB- new_JJ RemoteHashSet_NNP -LRB-_-LRB- -RRB-_-RRB- -RRB-_-RRB- ;_: parfor_NN ._.
+setMin_NN -LRB-_-LRB- getMin_NN -LRB-_-LRB- -RRB-_-RRB- -RRB-_-RRB- ;_: parfor_NN ._.
+setMax_NN -LRB-_-LRB- getMax_NN -LRB-_-LRB- -RRB-_-RRB- -RRB-_-RRB- ;_: parfor_NN ._.
+setNumPrimes_NNS -LRB-_-LRB- getNumPrimes_NNS -LRB-_-LRB- -RRB-_-RRB- -RRB-_-RRB- ;_: parfor_NN ._.
+setNumActs_NNS -LRB-_-LRB- getNumActs_NNS -LRB-_-LRB- -RRB-_-RRB- -RRB-_-RRB- ;_: parfor_NN ._.
+setPrimes_NNS -LRB-_-LRB- getPrimes_NNS -LRB-_-LRB- -RRB-_-RRB- -RRB-_-RRB- ;_: parfor_NN ._.
+setCounterBegin_NN -LRB-_-LRB- #_# -RRB-_-RRB- ;_: parfor_NN ._.
+setCounterEnd_NN -LRB-_-LRB- getNumActs_NNS -LRB-_-LRB- -RRB-_-RRB- -_: #_# -RRB-_-RRB- ;_: <_JJR IN_IN __CD PARAMETER_NN TYPE_NN =_JJ ''_'' RemoteCollection_NN ''_'' NAME_NN =_JJ ''_'' primes_VBZ ''_'' /_: >_JJR int_NN range_NN =_JJ -LRB-_-LRB- getMax_NN -LRB-_-LRB- -RRB-_-RRB- -_: getMin_NN -LRB-_-LRB- -RRB-_-RRB- +_CC #_# -RRB-_-RRB- /_: getNumActs_NNS -LRB-_-LRB- -RRB-_-RRB- ;_: int_NN minNum_NN =_JJ range_NN *_SYM getCounter_NN -LRB-_-LRB- -RRB-_-RRB- +_CC getMin_NN -LRB-_-LRB- -RRB-_-RRB- ;_: int_NN maxNum_NN =_JJ minNum_NN +_CC range-1_NN ;_: if_IN -LRB-_-LRB- getCounter_NN -LRB-_-LRB- -RRB-_-RRB- =_JJ =_JJ getNumActs_NNS -LRB-_-LRB- -RRB-_-RRB- -_: #_# -RRB-_-RRB- maxNum_NN =_JJ getMax_NN -LRB-_-LRB- -RRB-_-RRB- ;_: findPrimes_NNS ._.
+setMin_NN -LRB-_-LRB- minNum_NN -RRB-_-RRB- ;_: findPrimes_NNS ._.
+setMax_NN -LRB-_-LRB- maxNum_NN -RRB-_-RRB- ;_: findPrimes_NNS ._.
+setNumPrimes_NNS -LRB-_-LRB- getNumPrimes_NNS -LRB-_-LRB- -RRB-_-RRB- -RRB-_-RRB- ;_: findPrimes_NNS ._.
+setPrimes_NNS -LRB-_-LRB- getPrimes_NNS -LRB-_-LRB- -RRB-_-RRB- -RRB-_-RRB- ;_: <_JJR ACTIVITY_CD TYPE_NN =_JJ ''_'' FindPrimes_NNS ''_'' NAME_NN =_JJ ''_'' findPrimes_NNS ''_'' /_: >_JJR <_JJR OUT_CD __NN PARAMETER_NN TYPE_NN =_JJ ''_'' RemoteCollection_NN ''_'' NAME_NN =_JJ ''_'' primes_VBZ ''_'' /_: >_JJR Middleware_NNP for_IN Grid_NNP Computing_NNP ##_NN <_JJR IN_IN __CD PARAMETER_NN TYPE_NN =_JJ ''_'' RemoteCollection_NN ''_'' NAME_NN =_JJ ''_'' primes_VBZ ''_'' /_: >_JJR for_IN -LRB-_-LRB- int_NN num_NN =_JJ getMin_NN -LRB-_-LRB- -RRB-_-RRB- ;_: num_NN <_JJR =_JJ getMax_NN -LRB-_-LRB- -RRB-_-RRB- ;_: num_NN +_CC +_CC -RRB-_-RRB- -LCB-_-LRB- /_: /_: stop_VB ,_, required_VBN number_NN of_IN primes_VBZ was_VBD found_VBN if_IN -LRB-_-LRB- primes_VBZ ._.
+size_NN -LRB-_-LRB- -RRB-_-RRB- >_JJR =_JJ getNumPrimes_NNS -LRB-_-LRB- -RRB-_-RRB- -RRB-_-RRB- break_NN ;_: boolean_JJ prime_JJ =_JJ true_JJ ;_: for_IN -LRB-_-LRB- int_NN i_FW =_JJ #_# ;_: i_LS <_JJR num_NN ;_: i_LS +_CC +_CC -RRB-_-RRB- -LCB-_-LRB- if_IN -LRB-_-LRB- num_NN %_NN i_FW =_JJ =_JJ #_# -RRB-_-RRB- -LCB-_-LRB- prime_JJ =_JJ false_JJ ;_: break_NN ;_: -RCB-_-RRB- -RCB-_-RRB- if_IN -LRB-_-LRB- prime_JJ -RRB-_-RRB- -LCB-_-LRB- primes_VBZ ._.
+add_VB -LRB-_-LRB- new_JJ Integer_NN -LRB-_-LRB- num_NN -RRB-_-RRB- -RRB-_-RRB- ;_: -RCB-_-RRB- -RCB-_-RRB- Firstly_RB ,_, a_DT process_NN type_NN that_WDT finds_VBZ prime_JJ numbers_NNS ,_, named_VBN FindPrimes_NNP ,_, is_VBZ defined_VBN ._.
+It_PRP receives_VBZ ,_, through_IN its_PRP$ input_NN parameters_NNS ,_, a_DT range_NN of_IN integers_NNS in_IN which_WDT prime_JJ numbers_NNS have_VBP to_TO be_VB found_VBN ,_, the_DT number_NN of_IN primes_VBZ to_TO be_VB returned_VBN ,_, and_CC the_DT number_NN of_IN activities_NNS to_TO be_VB executed_VBN in_IN order_NN to_TO perform_VB this_DT work_NN ._.
+At_IN the_DT end_NN ,_, the_DT found_VBN prime_JJ numbers_NNS are_VBP returned_VBN as_IN a_DT collection_NN through_IN its_PRP$ output_NN parameter_NN ._.
+This_DT process_NN contains_VBZ a_DT PARFOR_NN controller_NN aiming_VBG to_TO execute_VB a_DT determined_VBN number_NN of_IN parallel_JJ activities_NNS ._.
+It_PRP iterates_VBZ from_IN #_# to_TO getNumActs_NNS -LRB-_-LRB- -RRB-_-RRB- -_: #_# ,_, which_WDT determines_VBZ the_DT number_NN of_IN activities_NNS ,_, starting_VBG a_DT parallel_JJ activity_NN in_IN each_DT iteration_NN ._.
+In_IN such_JJ case_NN ,_, the_DT controller_NN divides_VBZ the_DT whole_JJ range_NN of_IN numbers_NNS in_IN subranges_NNS of_IN the_DT same_JJ size_NN ,_, and_CC ,_, in_IN each_DT iteration_NN ,_, starts_VBZ a_DT parallel_JJ activity_NN that_WDT finds_VBZ prime_JJ numbers_NNS in_IN a_DT specific_JJ subrange_NN ._.
+These_DT activities_NNS receive_VBP a_DT shared_JJ object_NN by_IN reference_NN in_IN order_NN to_TO store_VB the_DT prime_JJ numbers_NNS just_RB found_VBN and_CC control_NN if_IN the_DT required_VBN number_NN of_IN primes_VBZ has_VBZ been_VBN reached_VBN ._.
+Finally_RB ,_, it_PRP is_VBZ defined_VBN the_DT activity_NN type_NN ,_, FindPrimes_NNS ,_, used_VBN to_TO find_VB prime_JJ numbers_NNS in_IN each_DT subrange_NN ._.
+It_PRP receives_VBZ ,_, through_IN its_PRP$ input_NN parameters_NNS ,_, the_DT range_NN of_IN numbers_NNS in_IN which_WDT it_PRP has_VBZ to_TO find_VB prime_JJ numbers_NNS ,_, the_DT total_JJ number_NN of_IN prime_JJ numbers_NNS to_TO be_VB found_VBN by_IN the_DT whole_JJ process_NN ,_, and_CC ,_, passed_VBN by_IN reference_NN ,_, a_DT collection_NN object_NN to_TO store_VB the_DT found_VBN prime_JJ numbers_NNS ._.
+Between_IN its_PRP$ CODE_NNP markers_NNS ,_, there_EX is_VBZ a_DT simple_JJ code_NN to_TO find_VB prime_JJ numbers_NNS ,_, which_WDT iterates_VBZ over_IN the_DT specified_VBN range_NN and_CC verifies_VBZ if_IN the_DT current_JJ integer_NN is_VBZ a_DT prime_JJ ._.
+Additionally_RB ,_, in_IN each_DT iteration_NN ,_, the_DT code_NN verifies_VBZ if_IN the_DT required_VBN number_NN of_IN primes_VBZ ,_, inserted_VBN in_IN the_DT primes_VBZ collection_NN by_IN all_DT concurrent_JJ activities_NNS ,_, has_VBZ been_VBN reached_VBN ,_, and_CC exits_NNS if_IN true_JJ ._.
+The_DT advantage_NN of_IN using_VBG controllers_NNS is_VBZ the_DT possibility_NN of_IN the_DT support_NN infrastructure_NN determines_VBZ the_DT point_NN of_IN execution_NN the_DT process_NN is_VBZ in_IN ,_, allowing_VBG automatic_JJ recovery_NN and_CC monitoring_NN ,_, and_CC also_RB the_DT capability_NN of_IN instantiating_NN and_CC dispatching_VBG process_NN elements_NNS only_RB when_WRB there_EX are_VBP enough_RB computing_VBG resources_NNS available_JJ ,_, reducing_VBG unnecessary_JJ overhead_NN ._.
+Besides_IN ,_, due_JJ to_TO its_PRP$ structured_JJ nature_NN ,_, they_PRP can_MD be_VB easily_RB composed_VBN and_CC the_DT support_NN infrastructure_NN can_MD take_VB advantage_NN of_IN this_DT in_IN order_NN to_TO distribute_VB hierarchically_RB the_DT nested_JJ controllers_NNS to_TO Group_NNP Server_NN Group_NNP Java_NNP Virtual_NNP Machine_NNP RMI_NNP JDBC_NNP Group_NNP Manager_NNP Process_VB Server_NN Java_NNP Virtual_NNP Machine_NNP RMI_NNP JDBC_NNP Process_VB Coordinator_NNP Worker_NNP Java_NNP Virtual_NNP Machine_NNP RMI_NNP Activity_NNP Manager_NNP Repository_NNP Figure_NNP #_# :_: Infrastructure_NN architecture_NN different_JJ machines_NNS over_IN the_DT grid_NN ,_, allowing_VBG enhanced_VBN scalability_NN and_CC fault-tolerance_NN ._.
+3_LS ._.
+SUPPORT_NN INFRASTRUCTURE_NN The_DT support_NN infrastructure_NN comprises_VBZ tools_NNS for_IN specification_NN ,_, and_CC services_NNS for_IN execution_NN and_CC monitoring_NN of_IN structured_JJ processes_NNS in_IN highly_RB distributed_VBN ,_, heterogeneous_JJ and_CC autonomous_JJ grid_NN environments_NNS ._.
+It_PRP has_VBZ services_NNS to_TO monitor_VB availability_NN of_IN resources_NNS in_IN the_DT grid_NN ,_, to_TO interpret_VB processes_NNS and_CC schedule_NN activities_NNS and_CC controllers_NNS ,_, and_CC to_TO execute_VB activities_NNS ._.
+3_LS ._.
+#_# Infrastructure_NNP Architecture_NNP The_DT support_NN infrastructure_NN architecture_NN is_VBZ composed_VBN of_IN groups_NNS of_IN machines_NNS and_CC data_NNS repositories_NNS ,_, which_WDT preserves_VBZ its_PRP$ administrative_JJ autonomy_NN ._.
+Generally_RB ,_, localized_JJ machines_NNS and_CC repositories_NNS ,_, such_JJ as_IN in_IN local_JJ networks_NNS or_CC clusters_NNS ,_, form_VBP a_DT group_NN ._.
+Each_DT machine_NN in_IN a_DT group_NN must_MD have_VB a_DT Java_NNP Virtual_NNP Machine_NN -LRB-_-LRB- JVM_NN -RRB-_-RRB- -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, and_CC a_DT Java_NNP Runtime_NNP Library_NNP ,_, besides_IN a_DT combination_NN of_IN the_DT following_VBG grid_NN support_NN services_NNS :_: group_NN manager_NN -LRB-_-LRB- GM_NNP -RRB-_-RRB- ,_, process_NN coordinator_NN -LRB-_-LRB- PC_NN -RRB-_-RRB- and_CC activity_NN manager_NN -LRB-_-LRB- AM_NNP -RRB-_-RRB- ._.
+This_DT combination_NN determines_VBZ what_WP kind_NN of_IN group_NN node_NN it_PRP represents_VBZ :_: a_DT group_NN server_NN ,_, a_DT process_NN server_NN ,_, or_CC simply_RB a_DT worker_NN ._.
+In_IN a_DT group_NN there_EX are_VBP one_CD or_CC more_JJR group_NN managers_NNS ,_, but_CC only_RB one_CD acts_VBZ as_IN primary_JJ and_CC the_DT others_NNS ,_, as_IN replicas_NNS ._.
+They_PRP are_VBP responsible_JJ to_TO maintain_VB availability_NN information_NN of_IN group_NN machines_NNS ._.
+Moreover_RB ,_, group_NN managers_NNS maintain_VBP references_NNS to_TO data_NNS resources_NNS of_IN the_DT group_NN ._.
+They_PRP use_VBP group_NN repositories_NNS to_TO persist_VB and_CC recover_VB the_DT location_NN of_IN nodes_NNS and_CC their_PRP$ availability_NN ._.
+To_TO control_VB process_NN execution_NN ,_, there_EX are_VBP one_CD or_CC more_JJR process_NN coordinators_NNS per_IN group_NN ._.
+They_PRP are_VBP responsible_JJ to_TO instantiate_VB and_CC execute_VB processes_NNS and_CC controllers_NNS ,_, select_JJ resources_NNS ,_, and_CC schedule_NN and_CC dispatch_VB activities_NNS to_TO workers_NNS ._.
+In_IN order_NN to_TO persist_VB and_CC recover_VB process_NN execution_NN and_CC data_NNS ,_, and_CC also_RB load_NN process_NN specification_NN ,_, they_PRP use_VBP group_NN repositories_NNS ._.
+Finally_RB ,_, in_IN several_JJ group_NN nodes_NNS there_EX is_VBZ an_DT activity_NN manager_NN ._.
+It_PRP is_VBZ responsible_JJ to_TO execute_VB activities_NNS in_IN the_DT hosted_VBN machine_NN on_IN behalf_NN of_IN the_DT group_NN process_NN coordinators_NNS ,_, and_CC to_TO inform_VB the_DT current_JJ availability_NN of_IN the_DT associated_VBN machine_NN to_TO group_NN managers_NNS ._.
+They_PRP also_RB have_VBP pendent_JJ activity_NN queues_NNS ,_, containing_VBG activities_NNS to_TO be_VB executed_VBN ._.
+3_LS ._.
+#_# Inter-group_JJ Relationships_NNPS In_IN order_NN to_TO model_VB real_JJ grid_NN architecture_NN ,_, the_DT infrastructure_NN must_MD comprise_VB several_JJ ,_, potentially_RB all_DT ,_, local_JJ networks_NNS ,_, like_IN Internet_NN does_VBZ ._.
+Aiming_VBG to_TO satisfy_VB this_DT intent_NN ,_, local_JJ groups_NNS are_VBP 89_CD Middleware_NNP ####_CD Companion_NNP GM_NNP GM_NNP GM_NNP GM_NNP Figure_NNP #_# :_: Inter-group_JJ relationships_NNS connected_VBN to_TO others_NNS ,_, directly_RB or_CC indirectly_RB ,_, through_IN its_PRP$ group_NN managers_NNS ._.
+Each_DT group_NN manager_NN deals_NNS with_IN requests_NNS of_IN its_PRP$ group_NN -LRB-_-LRB- represented_VBN by_IN dashed_VBN ellipses_NNS -RRB-_-RRB- ,_, in_IN order_NN to_TO register_VB local_JJ machines_NNS and_CC maintain_VB correspondent_JJ availability_NN ._.
+Additionally_RB ,_, group_NN managers_NNS communicate_VBP to_TO group_NN managers_NNS of_IN other_JJ groups_NNS ._.
+Each_DT group_NN manager_NN exports_NNS coarse_JJ availability_NN information_NN to_TO group_NN managers_NNS of_IN adjacent_JJ groups_NNS and_CC also_RB receives_VBZ requests_NNS from_IN other_JJ external_JJ services_NNS to_TO furnish_VB detailed_JJ availability_NN information_NN ._.
+In_IN this_DT way_NN ,_, if_IN there_EX are_VBP resources_NNS available_JJ in_IN external_JJ groups_NNS ,_, it_PRP is_VBZ possible_JJ to_TO send_VB processes_NNS ,_, controllers_NNS and_CC activities_NNS to_TO these_DT groups_NNS in_IN order_NN to_TO execute_VB them_PRP in_IN external_JJ process_NN coordinators_NNS and_CC activity_NN managers_NNS ,_, respectively_RB ._.
+4_LS ._.
+PROCESS_NN EXECUTION_NN In_IN the_DT proposed_VBN grid_NN architecture_NN ,_, a_DT process_NN is_VBZ specified_VBN in_IN XML_NN ,_, using_VBG controllers_NNS to_TO determine_VB control_NN flow_NN ;_: referencing_VBG other_JJ processes_NNS and_CC activities_NNS ;_: and_CC passing_VBG objects_NNS to_TO their_PRP$ parameters_NNS in_IN order_NN to_TO define_VB data_NNS flow_NN ._.
+After_IN specified_VBN ,_, the_DT process_NN is_VBZ compiled_VBN in_IN a_DT set_NN of_IN classes_NNS ,_, which_WDT represent_VBP specific_JJ process_NN ,_, activity_NN and_CC controller_NN types_NNS ._.
+At_IN this_DT time_NN ,_, it_PRP can_MD be_VB instantiated_VBN and_CC executed_VBN by_IN a_DT process_NN coordinator_NN ._.
+4_LS ._.
+#_# Dynamic_NNP Model_NNP To_TO execute_VB a_DT specified_VBN process_NN ,_, it_PRP must_MD be_VB instantiated_VBN by_IN referencing_VBG its_PRP$ type_NN on_IN a_DT process_NN coordinator_NN service_NN of_IN a_DT specific_JJ group_NN ._.
+Also_RB ,_, the_DT initial_JJ parameters_NNS must_MD be_VB passed_VBN to_TO it_PRP ,_, and_CC then_RB it_PRP can_MD be_VB started_VBN ._.
+The_DT process_NN coordinator_NN carries_VBZ out_RP the_DT process_NN by_IN executing_VBG the_DT process_NN elements_NNS included_VBD in_IN its_PRP$ body_NN sequentially_RB ._.
+If_IN the_DT element_NN is_VBZ a_DT process_NN or_CC a_DT controller_NN ,_, the_DT process_NN coordinator_NN can_MD choose_VB to_TO execute_VB it_PRP in_IN the_DT same_JJ machine_NN or_CC to_TO pass_VB it_PRP to_TO another_DT process_NN coordinator_NN in_IN a_DT remote_JJ machine_NN ,_, if_IN available_JJ ._.
+Else_RB ,_, if_IN the_DT element_NN is_VBZ an_DT activity_NN ,_, it_PRP passes_VBZ to_TO an_DT activity_NN manager_NN of_IN an_DT available_JJ machine_NN ._.
+Process_VB coordinators_NNS request_VB the_DT local_JJ group_NN manager_NN to_TO find_VB available_JJ machines_NNS that_WDT contain_VBP the_DT required_JJ service_NN ,_, process_NN coordinator_NN or_CC activity_NN manager_NN ,_, in_IN order_NN to_TO execute_VB a_DT process_NN element_NN ._.
+Then_RB ,_, it_PRP can_MD return_VB a_DT local_JJ machine_NN ,_, a_DT machine_NN in_IN another_DT group_NN or_CC none_NN ,_, depending_VBG on_IN the_DT availability_NN of_IN such_JJ resource_NN in_IN the_DT grid_NN ._.
+It_PRP returns_VBZ an_DT external_JJ worker_NN -LRB-_-LRB- activity_NN manager_NN machine_NN -RRB-_-RRB- if_IN there_EX are_VBP no_DT available_JJ workers_NNS in_IN the_DT local_JJ group_NN ;_: and_CC ,_, it_PRP returns_VBZ an_DT external_JJ process_NN server_NN -LRB-_-LRB- process_NN coordinator_NN machine_NN -RRB-_-RRB- ,_, if_IN there_EX are_VBP no_DT available_JJ process_NN servers_NNS or_CC workers_NNS in_IN the_DT local_JJ group_NN ._.
+Obeying_VBG this_DT rule_NN ,_, group_NN managers_NNS try_VBP to_TO find_VB process_NN servers_NNS in_IN the_DT same_JJ group_NN of_IN the_DT available_JJ workers_NNS ._.
+Such_JJ procedure_NN is_VBZ followed_VBN recursively_RB by_IN all_DT process_NN coGM_NN FindPrimes_NNP Activity_NNP AM_NNP FindPrimes_NNP Activity_NNP AM_NNP FindPrimes_NNP Activity_NNP AM_NNP FindPrimes_NNP Process_VB PC_NN Figure_NN #_# :_: FindPrimes_NNS process_NN execution_NN ordinators_NNS that_WDT execute_VBP subprocesses_NNS or_CC controllers_NNS of_IN a_DT process_NN ._.
+Therefore_RB ,_, because_IN processes_NNS are_VBP structured_VBN by_IN nesting_JJ process_NN elements_NNS ,_, the_DT process_NN execution_NN is_VBZ automatically_RB distributed_VBN hierarchically_RB through_IN one_CD or_CC more_JJR grid_NN groups_NNS according_VBG to_TO the_DT availability_NN and_CC locality_NN of_IN computing_VBG resources_NNS ._.
+The_DT advantage_NN of_IN this_DT distribution_NN model_NN is_VBZ wide_JJ area_NN execution_NN ,_, which_WDT takes_VBZ advantage_NN of_IN potentially_RB all_DT grid_NN resources_NNS ;_: and_CC localized_JJ communication_NN of_IN process_NN elements_NNS ,_, because_IN strong_JJ dependent_JJ elements_NNS ,_, which_WDT are_VBP under_IN the_DT same_JJ controller_NN ,_, are_VBP placed_VBN in_IN the_DT same_JJ or_CC near_JJ groups_NNS ._.
+Besides_IN ,_, it_PRP supports_VBZ easy_JJ monitoring_NN and_CC steering_NN ,_, due_JJ to_TO its_PRP$ structured_JJ controllers_NNS ,_, which_WDT maintain_VBP state_NN and_CC control_NN over_IN its_PRP$ inner_JJ elements_NNS ._.
+4_LS ._.
+#_# Process_VB Execution_NNP Example_NNP Revisiting_VBG the_DT example_NN shown_VBN in_IN Section_NN #_# ._.
+#_# ,_, a_DT process_NN type_NN is_VBZ specified_VBN to_TO find_VB prime_JJ numbers_NNS in_IN a_DT certain_JJ range_NN of_IN numbers_NNS ._.
+In_IN order_NN to_TO solve_VB this_DT problem_NN ,_, it_PRP creates_VBZ a_DT number_NN of_IN activities_NNS using_VBG the_DT parfor_JJ controller_NN ._.
+Each_DT activity_NN ,_, then_RB ,_, finds_VBZ primes_VBZ in_IN a_DT determined_VBN part_NN of_IN the_DT range_NN of_IN numbers_NNS ._.
+Figure_NNP #_# shows_VBZ an_DT instance_NN of_IN this_DT process_NN type_NN executing_VBG over_IN the_DT proposed_VBN infrastructure_NN ._.
+A_DT FindPrimes_NNPS process_NN instance_NN is_VBZ created_VBN in_IN an_DT available_JJ process_NN coordinator_NN -LRB-_-LRB- PC_NN -RRB-_-RRB- ,_, which_WDT begins_VBZ executing_VBG the_DT parfor_JJ controller_NN ._.
+In_IN each_DT iteration_NN of_IN this_DT controller_NN ,_, the_DT process_NN coordinator_NN requests_NNS to_TO the_DT group_NN manager_NN -LRB-_-LRB- GM_NNP -RRB-_-RRB- an_DT available_JJ activity_NN manager_NN -LRB-_-LRB- AM_NNP -RRB-_-RRB- in_IN order_NN to_TO execute_VB a_DT new_JJ instance_NN of_IN the_DT FindPrimes_NN activity_NN ._.
+If_IN there_EX is_VBZ any_DT AM_NNP available_JJ in_IN this_DT group_NN or_CC in_IN an_DT external_JJ one_CD ,_, the_DT process_NN coordinator_NN sends_VBZ the_DT activity_NN class_NN and_CC initial_JJ parameters_NNS to_TO this_DT activity_NN manager_NN and_CC requests_NNS its_PRP$ execution_NN ._.
+Else_RB ,_, if_IN no_DT activity_NN manager_NN is_VBZ available_JJ ,_, then_RB the_DT controller_NN enters_VBZ in_IN a_DT wait_NN state_NN until_IN an_DT activity_NN manager_NN is_VBZ made_VBN available_JJ ,_, or_CC is_VBZ created_VBN ._.
+In_IN parallel_NN ,_, whenever_WRB an_DT activity_NN finishes_NNS ,_, its_PRP$ result_NN is_VBZ sent_VBN back_RB to_TO the_DT process_NN coordinator_NN ,_, which_WDT records_VBZ it_PRP in_IN the_DT parfor_JJ controller_NN ._.
+Then_RB ,_, the_DT controller_NN waits_VBZ until_IN all_DT activities_NNS that_WDT have_VBP been_VBN started_VBN are_VBP finished_VBN ,_, and_CC it_PRP ends_VBZ ._.
+At_IN this_DT point_NN ,_, the_DT process_NN coordinator_NN verifies_VBZ that_IN there_EX is_VBZ no_DT other_JJ process_NN element_NN to_TO execute_VB and_CC finishes_VBZ the_DT process_NN ._.
+5_CD ._.
+RELATED_JJ WORK_VBP There_EX are_VBP several_JJ academic_JJ and_CC commercial_JJ products_NNS that_WDT promise_VBP to_TO support_VB grid_NN computing_NN ,_, aiming_VBG to_TO provide_VB interfaces_NNS ,_, protocols_NNS and_CC services_NNS to_TO leverage_NN the_DT use_NN of_IN widely_RB Middleware_NNP for_IN Grid_NNP Computing_NNP ##_NN distributed_VBN resources_NNS in_IN heterogeneous_JJ and_CC autonomous_JJ networks_NNS ._.
+Among_IN them_PRP ,_, Globus_NNP -LSB-_-LRB- #_# -RSB-_-RRB- ,_, Condor-G_NN -LSB-_-LRB- #_# -RSB-_-RRB- and_CC Legion_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- are_VBP widely_RB known_VBN ._.
+Aiming_VBG to_TO standardize_VB interfaces_NNS and_CC services_NNS to_TO grid_NN ,_, the_DT Open_NNP Grid_NNP Services_NNPS Architecture_NNP -LRB-_-LRB- OGSA_NNP -RRB-_-RRB- -LSB-_-LRB- #_# -RSB-_-RRB- has_VBZ been_VBN defined_VBN ._.
+The_DT grid_NN architectures_NNS generally_RB have_VBP services_NNS that_WDT manage_VBP computing_VBG resources_NNS and_CC distribute_VB the_DT execution_NN of_IN independent_JJ tasks_NNS on_IN available_JJ ones_NNS ._.
+However_RB ,_, emerging_VBG architectures_NNS maintain_VBP task_NN dependencies_NNS and_CC automatically_RB execute_VB tasks_NNS in_IN a_DT correct_JJ order_NN ._.
+They_PRP take_VBP advantage_NN of_IN these_DT dependencies_NNS to_TO provide_VB automatic_JJ recovery_NN ,_, and_CC better_JJR distribution_NN and_CC scheduling_NN algorithms_NNS ._.
+Following_VBG such_JJ model_NN ,_, WebFlow_NNP -LSB-_-LRB- #_# -RSB-_-RRB- is_VBZ a_DT process_NN specification_NN tool_NN and_CC execution_NN environment_NN constructed_VBN over_IN CORBA_NNP that_WDT allows_VBZ graphical_JJ composition_NN of_IN activities_NNS and_CC their_PRP$ distributed_VBN execution_NN in_IN a_DT grid_NN environment_NN ._.
+Opera-G_NN -LSB-_-LRB- #_# -RSB-_-RRB- ,_, like_IN WebFlow_NNP ,_, uses_VBZ a_DT process_NN specification_NN language_NN similar_JJ to_TO the_DT data_NN flow_NN diagram_NN and_CC workflow_NN languages_NNS ,_, but_CC furnishes_VBZ automatic_JJ execution_NN recovery_NN and_CC limited_JJ steering_NN of_IN process_NN execution_NN ._.
+The_DT previously_RB referred_VBN architectures_NNS and_CC others_NNS that_WDT enact_VBP processes_NNS over_IN the_DT grid_NN have_VBP a_DT centralized_JJ coordination_NN ._.
+In_IN order_NN to_TO surpass_VB this_DT limitation_NN ,_, systems_NNS like_IN SwinDew_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- proposed_VBD a_DT widely_RB distributed_VBN process_NN execution_NN ,_, in_IN which_WDT each_DT node_NN knows_VBZ where_WRB to_TO execute_VB the_DT next_JJ activity_NN or_CC join_VB activities_NNS in_IN a_DT peer-to-peer_JJ environment_NN ._.
+In_IN the_DT specific_JJ area_NN of_IN activity_NN distribution_NN and_CC scheduling_NN ,_, emphasized_VBN in_IN this_DT work_NN ,_, GridFlow_NN -LSB-_-LRB- #_# -RSB-_-RRB- is_VBZ remarkable_JJ ._.
+It_PRP uses_VBZ a_DT two-level_JJ scheduling_NN :_: global_JJ and_CC local_JJ ._.
+In_IN the_DT local_JJ level_NN ,_, it_PRP has_VBZ services_NNS that_WDT predict_VBP computing_VBG resource_NN utilization_NN and_CC activity_NN duration_NN ._.
+Based_VBN on_IN this_DT information_NN ,_, GridFlow_NNP employs_VBZ a_DT PERT-like_JJ technique_NN that_WDT tries_VBZ to_TO forecast_VB the_DT activity_NN execution_NN start_NN time_NN and_CC duration_NN in_IN order_NN to_TO better_JJR schedule_NN them_PRP to_TO the_DT available_JJ resources_NNS ._.
+The_DT architecture_NN proposed_VBN in_IN this_DT paper_NN ,_, which_WDT encompasses_VBZ a_DT programming_NN model_NN and_CC an_DT execution_NN support_NN infrastructure_NN ,_, is_VBZ widely_RB decentralized_VBN ,_, differently_RB from_IN WebFlow_NNP and_CC Opera-G_NNP ,_, being_VBG more_JJR scalable_JJ and_CC fault-tolerant_JJ ._.
+But_CC ,_, like_IN the_DT latter_JJ ,_, it_PRP is_VBZ designed_VBN to_TO support_VB execution_NN recovery_NN ._.
+Comparing_VBG to_TO SwinDew_NNP ,_, the_DT proposed_VBN architecture_NN contains_VBZ widely_RB distributed_VBN process_NN coordinators_NNS ,_, which_WDT coordinate_VBP processes_NNS or_CC parts_NNS of_IN them_PRP ,_, differently_RB from_IN SwinDew_NN where_WRB each_DT node_NN has_VBZ a_DT limited_JJ view_NN of_IN the_DT process_NN :_: only_RB the_DT activity_NN that_WDT starts_VBZ next_JJ ._.
+This_DT makes_VBZ easier_JJR to_TO monitor_VB and_CC control_VB processes_NNS ._.
+Finally_RB ,_, the_DT support_NN infrastructure_NN breaks_VBZ the_DT process_NN and_CC its_PRP$ subprocesses_NNS for_IN grid_NN execution_NN ,_, allowing_VBG a_DT group_NN to_TO require_VB another_DT group_NN for_IN the_DT coordination_NN and_CC execution_NN of_IN process_NN elements_NNS on_IN behalf_NN of_IN the_DT first_JJ one_CD ._.
+This_DT is_VBZ different_JJ from_IN GridFlow_NNP ,_, which_WDT can_MD execute_VB a_DT process_NN in_IN at_IN most_JJS two_CD levels_NNS ,_, having_VBG the_DT global_JJ level_NN as_IN the_DT only_JJ responsible_JJ to_TO schedule_VB subprocesses_NNS in_IN other_JJ groups_NNS ._.
+This_DT can_MD limit_VB the_DT overall_JJ performance_NN of_IN processes_NNS ,_, and_CC make_VB the_DT system_NN less_RBR scalable_JJ ._.
+6_CD ._.
+CONCLUSION_NN AND_CC FUTURE_NN WORK_VBP Grid_NNP computing_NN is_VBZ an_DT emerging_VBG research_NN field_NN that_WDT intends_VBZ to_TO promote_VB distributed_VBN and_CC parallel_JJ computing_NN over_IN the_DT wide_JJ area_NN network_NN of_IN heterogeneous_JJ and_CC autonomous_JJ administrative_JJ domains_NNS in_IN a_DT seamless_JJ way_NN ,_, similar_JJ to_TO what_WP Internet_NN does_VBZ to_TO the_DT data_NNS sharing_NN ._.
+There_EX are_VBP several_JJ products_NNS that_WDT support_VBP execution_NN of_IN independent_JJ tasks_NNS over_IN grid_NN ,_, but_CC only_RB a_DT few_JJ supports_VBZ the_DT execution_NN of_IN processes_NNS with_IN interdependent_JJ tasks_NNS ._.
+In_IN order_NN to_TO address_VB such_JJ subject_JJ ,_, this_DT paper_NN proposes_VBZ a_DT programming_NN model_NN and_CC a_DT support_NN infrastructure_NN that_WDT allow_VBP the_DT execution_NN of_IN structured_JJ processes_NNS in_IN a_DT widely_RB distributed_VBN and_CC hierarchical_JJ manner_NN ._.
+This_DT support_NN infrastructure_NN provides_VBZ automatic_JJ ,_, structured_JJ and_CC recursive_JJ distribution_NN of_IN process_NN elements_NNS over_IN groups_NNS of_IN available_JJ machines_NNS ;_: better_JJR resource_NN use_NN ,_, due_JJ to_TO its_PRP$ on_IN demand_NN creation_NN of_IN process_NN elements_NNS ;_: easy_JJ process_NN monitoring_NN and_CC steering_NN ,_, due_JJ to_TO its_PRP$ structured_JJ nature_NN ;_: and_CC localized_JJ communication_NN among_IN strong_JJ dependent_JJ process_NN elements_NNS ,_, which_WDT are_VBP placed_VBN under_IN the_DT same_JJ controller_NN ._.
+These_DT features_NNS contribute_VBP to_TO better_JJR scalability_NN ,_, fault-tolerance_NN and_CC control_NN for_IN processes_NNS execution_NN over_IN the_DT grid_NN ._.
+Moreover_RB ,_, it_PRP opens_VBZ doors_NNS for_IN better_JJR scheduling_NN algorithms_NNS ,_, recovery_NN mechanisms_NNS ,_, and_CC also_RB ,_, dynamic_JJ modification_NN schemes_NNS ._.
+The_DT next_JJ work_NN will_MD be_VB the_DT implementation_NN of_IN a_DT recovery_NN mechanism_NN that_WDT uses_VBZ the_DT execution_NN and_CC data_NNS state_NN of_IN processes_NNS and_CC controllers_NNS to_TO recover_VB process_NN execution_NN ._.
+After_IN that_DT ,_, it_PRP is_VBZ desirable_JJ to_TO advance_VB the_DT scheduling_NN algorithm_NN to_TO forecast_VB machine_NN use_NN in_IN the_DT same_JJ or_CC other_JJ groups_NNS and_CC to_TO foresee_VB start_NN time_NN of_IN process_NN elements_NNS ,_, in_IN order_NN to_TO use_VB this_DT information_NN to_TO pre-allocate_JJ resources_NNS and_CC ,_, then_RB ,_, obtain_VB a_DT better_JJR process_NN execution_NN performance_NN ._.
+Finally_RB ,_, it_PRP is_VBZ interesting_JJ to_TO investigate_VB schemes_NNS of_IN dynamic_JJ modification_NN of_IN processes_NNS over_IN the_DT grid_NN ,_, in_IN order_NN to_TO evolve_VB and_CC adapt_VB long-term_JJ processes_NNS to_TO the_DT continuously_RB changing_VBG grid_NN environment_NN ._.
+7_CD ._.
+ACKNOWLEDGMENTS_NNS We_PRP would_MD like_VB to_TO thank_VB Paulo_NNP C_NNP ._.
+Oliveira_NNP ,_, from_IN the_DT State_NNP Treasury_NNP Department_NNP of_IN Sao_NNP Paulo_NNP ,_, for_IN its_PRP$ deeply_RB revision_NN and_CC insightful_JJ comments_NNS ._.
+8_CD ._.
+REFERENCES_NNS -LSB-_-LRB- #_# -RSB-_-RRB- E_NN ._.
+Akarsu_NNP ,_, G_NNP ._.
+C_NN ._.
+Fox_NNP ,_, W_NNP ._.
+Furmanski_NNP ,_, and_CC T_NN ._.
+Haupt_NNP ._.
+WebFlow_NNP :_: High-Level_NNP Programming_NNP Environment_NNP and_CC Visual_NNP Authoring_NNP Toolkit_NNP for_IN High_NNP Performance_NNP Distributed_VBD Computing_NNP ._.
+In_IN Proceedings_NNP of_IN Supercom_NNP puting_NN -LRB-_-LRB- SC98_NN -RRB-_-RRB- ,_, ####_NN ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- T_NN ._.
+Andrews_NNP and_CC F_NN ._.
+Curbera_NNP ._.
+Specification_NN :_: Business_NNP Process_VB Execution_NNP Language_NNP for_IN W_NNP eb_NNP Services_NNP V_NNP ersion_NN 1_CD ._.
+#_# ._.
+IBM_NNP DeveloperWorks_NNPS ,_, ####_CD ._.
+Available_JJ at_IN http_NN :_: /_: /_: www-106_NN ._.
+ibm_NN ._.
+com_NN /_: developerworks_NNS /_: library_NN /_: wsbpel_NN ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- W_NN ._.
+Bausch_NNP ._.
+O_NN PERA_NN -_: G_NN :_: A_DT M_NN icrokernelfor_NN Com_NNP putationalG_NNP rids_VBZ ._.
+PhD_NN thesis_NN ,_, Swiss_NNP Federal_NNP Institute_NNP of_IN Technology_NNP ,_, Zurich_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- T_NN ._.
+Bray_NNP and_CC J_NNP ._.
+Paoli_NNP ._.
+Extensible_JJ M_NN arkup_NN Language_NN -LRB-_-LRB- X_NN M_NN L_NN -RRB-_-RRB- #_# ._.
+#_# ._.
+XML_NN Core_NN WG_NN ,_, W3C_NN ,_, ####_CD ._.
+Available_JJ at_IN http_NN :_: /_: /_: www_NN ._.
+w3_NN ._.
+org_NN /_: TR_NN /_: ####_CD /_: REC-xml-20040204_NN ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- J_NN ._.
+Cao_NNP ,_, S_NN ._.
+A_DT ._.
+Jarvis_NNP ,_, S_NN ._.
+Saini_NNP ,_, and_CC G_NN ._.
+R_NN ._.
+Nudd_NN ._.
+GridFlow_NNP :_: Workflow_NNP Management_NNP for_IN Grid_NNP Computing_NNP ._.
+In_IN Proceedings_NNP ofthe_NNP International_NNP Sym_NNP posium_NN on_IN Cluster_NNP Com_NNP puting_VBG and_CC the_DT G_NN rid_JJ -LRB-_-LRB- CCG_NN rid_JJ ####_NN -RRB-_-RRB- ,_, ####_NN ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- I_PRP ._.
+Foster_NNP and_CC C_NNP ._.
+Kesselman_NNP ._.
+Globus_NNP :_: A_NNP Metacomputing_NNP Infrastructure_NNP Toolkit_NNP ._.
+Intl_NNP ._.
+J_NN ._.
+Supercom_NNP puter_NN A_DT pplications_NNS ,_, ##_NN -LRB-_-LRB- #_# -RRB-_-RRB- :_: 115-128_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- I_PRP ._.
+Foster_NNP ,_, C_NNP ._.
+Kesselman_NNP ,_, J_NNP ._.
+M_NN ._.
+Nick_NNP ,_, and_CC S_NN ._.
+Tuecke_NNP ._.
+The_DT Physiology_NNP ofthe_NN G_NN rid_JJ :_: A_DT n_NN O_NN pen_NN G_NN rid_JJ Services_NNPS A_DT rchitecture_NN for_IN D_NN istributed_VBD System_NNP s_NNS Integration_NN ._.
+91_CD Middleware_NNP ####_CD Companion_NNP Open_NNP Grid_NNP Service_NNP Infrastructure_NNP WG_NNP ,_, Global_NNP Grid_NNP Forum_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- I_PRP ._.
+Foster_NNP ,_, C_NNP ._.
+Kesselman_NNP ,_, and_CC S_NN ._.
+Tuecke_NNP ._.
+The_DT Anatomy_NNP of_IN the_DT Grid_NNP :_: Enabling_VBG Scalable_JJ Virtual_NNP Organization_NNP ._.
+The_DT Intl_NNP ._.
+JournalofH_NNP igh_NNP Perform_NNP ance_NN Com_NNP puting_VBG A_DT pplications_NNS ,_, ##_NN -LRB-_-LRB- #_# -RRB-_-RRB- :_: 200-222_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- J_NN ._.
+Frey_NNP ,_, T_NN ._.
+Tannenbaum_NNP ,_, M_NN ._.
+Livny_NNP ,_, I_PRP ._.
+Foster_NNP ,_, and_CC S_NN ._.
+Tuecke_NNP ._.
+Condor-G_NNP :_: A_NNP Computational_NNP Management_NNP Agent_NNP for_IN Multi-institutional_JJ Grids_NNS ._.
+In_IN Proceedings_NNP of_IN the_DT Tenth_NNP Intl_NNP ._.
+Sym_NN posium_NN on_IN H_NN igh_NN Perform_VBP ance_NN D_NN istributed_VBN Com_NNP puting_NN -LRB-_-LRB- H_NN PD_NN C-10_NN -RRB-_-RRB- ._.
+IEEE_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- A_DT ._.
+S_NN ._.
+Grimshaw_NNP and_CC W_NNP ._.
+A_DT ._.
+Wulf_NNP ._.
+Legion_NNP -_: A_NNP View_NNP from_IN ##_CD ,_, ###_CD Feet_NNP ._.
+In_IN Proceedings_NNP ofthe_NNP Fifth_NNP Intl_NNP ._.
+Sym_NN posium_NN on_IN H_NN igh_NN Perform_VBP ance_NN D_NN istributed_VBD Com_NNP puting_VBG ._.
+IEEE_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- T_NN ._.
+Lindholm_NNP and_CC F_NN ._.
+Yellin_NNP ._.
+The_DT Java_NNP V_NNP irtualM_NNP achine_NN Specification_NN ._.
+Sun_NNP Microsystems_NNPS ,_, Second_NNP Edition_NNP edition_NN ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- B_NN ._.
+R_NN ._.
+Schulze_NN and_CC E_NN ._.
+R_NN ._.
+M_NN ._.
+Madeira_NNP ._.
+Grid_NNP Computing_NNP with_IN Active_JJ Services_NNPS ._.
+Concurrency_NNP and_CC Com_NNP putation_NN :_: Practice_NN and_CC Experience_NN Journal_NNP ,_, #_# -LRB-_-LRB- ##_CD -RRB-_-RRB- :_: 535-542_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+Yan_NNP ,_, Y_NN ._.
+Yang_NNP ,_, and_CC G_NN ._.
+K_NN ._.
+Raikundalia_NN ._.
+Enacting_NNP Business_NNP Processes_NNPS in_IN a_DT Decentralised_JJ Environment_NN with_IN P2P-Based_JJ Workflow_NNP Support_NN ._.
+In_IN Proceedings_NNP of_IN the_DT Fourth_JJ Intl_NNP ._.
+Conference_NN on_IN W_NNP eb-Age_NNP Inform_VB ation_NN M_NN anagem_NN ent_NN -LRB-_-LRB- W_NN A_NN IM_NN ####_CD -RRB-_-RRB- ,_, ####_NN ._.
+Middleware_NNP for_IN Grid_NNP Computing_NNP ##_IN

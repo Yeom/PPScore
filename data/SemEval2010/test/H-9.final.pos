@@ -1,0 +1,734 @@
+Learn_VB from_IN Web_NN Search_VB Logs_NNS to_TO Organize_VB Search_VB Results_NNS Xuanhui_NNP Wang_NNP Department_NNP of_IN Computer_NNP Science_NNP University_NNP of_IN Illinois_NNP at_IN Urbana-Champaign_NNP Urbana_NNP ,_, IL_NN #####_CD xwang20_NN @_IN cs_NNS ._.
+uiuc_NN ._.
+edu_NN ChengXiang_NNP Zhai_NNP Department_NNP of_IN Computer_NNP Science_NNP University_NNP of_IN Illinois_NNP at_IN Urbana-Champaign_NNP Urbana_NNP ,_, IL_NN #####_CD czhai_NNS @_IN cs_NNS ._.
+uiuc_NN ._.
+edu_NN ABSTRACT_NN Effective_JJ organization_NN of_IN search_NN results_NNS is_VBZ critical_JJ for_IN improving_VBG the_DT utility_NN of_IN any_DT search_NN engine_NN ._.
+Clustering_NN search_NN results_VBZ is_VBZ an_DT effective_JJ way_NN to_TO organize_VB search_NN results_NNS ,_, which_WDT allows_VBZ a_DT user_NN to_TO navigate_VB into_IN relevant_JJ documents_NNS quickly_RB ._.
+However_RB ,_, two_CD deficiencies_NNS of_IN this_DT approach_NN make_VB it_PRP not_RB always_RB work_VB well_RB :_: -LRB-_-LRB- #_# -RRB-_-RRB- the_DT clusters_NNS discovered_VBN do_VBP not_RB necessarily_RB correspond_VBP to_TO the_DT interesting_JJ aspects_NNS of_IN a_DT topic_NN from_IN the_DT user_NN ''_'' s_NNS perspective_NN ;_: and_CC -LRB-_-LRB- #_# -RRB-_-RRB- the_DT cluster_NN labels_VBZ generated_VBN are_VBP not_RB informative_JJ enough_JJ to_TO allow_VB a_DT user_NN to_TO identify_VB the_DT right_JJ cluster_NN ._.
+In_IN this_DT paper_NN ,_, we_PRP propose_VBP to_TO address_VB these_DT two_CD deficiencies_NNS by_IN -LRB-_-LRB- #_# -RRB-_-RRB- learning_VBG interesting_JJ aspects_NNS of_IN a_DT topic_NN from_IN Web_NN search_NN logs_NNS and_CC organizing_VBG search_NN results_VBZ accordingly_RB ;_: and_CC -LRB-_-LRB- #_# -RRB-_-RRB- generating_VBG more_RBR meaningful_JJ cluster_NN labels_NNS using_VBG past_JJ query_JJ words_NNS entered_VBN by_IN users_NNS ._.
+We_PRP evaluate_VBP our_PRP$ proposed_VBN method_NN on_IN a_DT commercial_JJ search_NN engine_NN log_NN data_NNS ._.
+Compared_VBN with_IN the_DT traditional_JJ methods_NNS of_IN clustering_NN search_NN results_VBZ ,_, our_PRP$ method_NN can_MD give_VB better_JJR result_NN organization_NN and_CC more_JJR meaningful_JJ labels_NNS ._.
+Categories_NNS and_CC Subject_NNP Descriptors_NNPS :_: H_NN ._.
+#_# ._.
+#_# -LSB-_-LRB- Information_NNP Search_VB and_CC Retrieval_NN -RSB-_-RRB- :_: Clustering_NN ,_, Search_VB process_NN General_NNP Terms_NNS :_: Algorithm_NN ,_, Experimentation_NN 1_CD ._.
+INTRODUCTION_NN The_DT utility_NN of_IN a_DT search_NN engine_NN is_VBZ affected_VBN by_IN multiple_JJ factors_NNS ._.
+While_IN the_DT primary_JJ factor_NN is_VBZ the_DT soundness_NN of_IN the_DT underlying_VBG retrieval_NN model_NN and_CC ranking_JJ function_NN ,_, how_WRB to_TO organize_VB and_CC present_JJ search_NN results_NNS is_VBZ also_RB a_DT very_RB important_JJ factor_NN that_WDT can_MD affect_VB the_DT utility_NN of_IN a_DT search_NN engine_NN significantly_RB ._.
+Compared_VBN with_IN the_DT vast_JJ amount_NN of_IN literature_NN on_IN retrieval_NN models_NNS ,_, however_RB ,_, there_EX is_VBZ relatively_RB little_JJ research_NN on_IN how_WRB to_TO improve_VB the_DT effectiveness_NN of_IN search_NN result_VBP organization_NN ._.
+The_DT most_RBS common_JJ strategy_NN of_IN presenting_VBG search_NN results_NNS is_VBZ a_DT simple_JJ ranked_VBD list_NN ._.
+Intuitively_RB ,_, such_PDT a_DT presentation_NN strategy_NN is_VBZ reasonable_JJ for_IN non-ambiguous_JJ ,_, homogeneous_JJ search_NN results_NNS ;_: in_IN general_JJ ,_, it_PRP would_MD work_VB well_RB when_WRB the_DT search_NN results_NNS are_VBP good_JJ and_CC a_DT user_NN can_MD easily_RB find_VB many_JJ relevant_JJ documents_NNS in_IN the_DT top_JJ ranked_VBD results_NNS ._.
+However_RB ,_, when_WRB the_DT search_NN results_NNS are_VBP diverse_JJ -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, due_JJ to_TO ambiguity_NN or_CC multiple_JJ aspects_NNS of_IN a_DT topic_NN -RRB-_-RRB- as_IN is_VBZ often_RB the_DT case_NN in_IN Web_NN search_NN ,_, the_DT ranked_VBD list_NN presentation_NN would_MD not_RB be_VB effective_JJ ;_: in_IN such_PDT a_DT case_NN ,_, it_PRP would_MD be_VB better_JJR to_TO group_VB the_DT search_NN results_VBZ into_IN clusters_NNS so_IN that_IN a_DT user_NN can_MD easily_RB navigate_VB into_IN a_DT particular_JJ interesting_JJ group_NN ._.
+For_IN example_NN ,_, the_DT results_NNS in_IN the_DT first_JJ page_NN returned_VBD from_IN Google_NNP for_IN the_DT ambiguous_JJ query_NN jaguar_NN -LRB-_-LRB- as_IN of_IN Dec_NNP ._.
+2nd_JJ ,_, ####_CD -RRB-_-RRB- contain_VBP at_IN least_JJS four_CD different_JJ senses_NNS of_IN jaguar_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, car_NN ,_, animal_NN ,_, software_NN ,_, and_CC a_DT sports_NNS team_NN -RRB-_-RRB- ;_: even_RB for_IN a_DT more_RBR refined_JJ query_NN such_JJ as_IN jaguar_NN team_NN picture_NN ,_, the_DT results_NNS are_VBP still_RB quite_RB ambiguous_JJ ,_, including_VBG at_IN least_JJS four_CD different_JJ jaguar_NN teams_NNS -_: a_DT wrestling_NN team_NN ,_, a_DT jaguar_NN car_NN team_NN ,_, Southwestern_NNP College_NNP Jaguar_NNP softball_NNP team_NN ,_, and_CC Jacksonville_NNP Jaguar_NNP football_NN team_NN ._.
+Moreover_RB ,_, if_IN a_DT user_NN wants_VBZ to_TO find_VB a_DT place_NN to_TO download_VB a_DT jaguar_NN software_NN ,_, a_DT query_NN such_JJ as_IN download_NN jaguar_NN is_VBZ also_RB not_RB very_RB effective_JJ as_IN the_DT dominating_VBG results_NNS are_VBP about_IN downloading_VBG jaguar_NN brochure_NN ,_, jaguar_NN wallpaper_NN ,_, and_CC jaguar_NN DVD_NN ._.
+In_IN these_DT examples_NNS ,_, a_DT clustering_NN view_NN of_IN the_DT search_NN results_VBZ would_MD be_VB much_RB more_RBR useful_JJ to_TO a_DT user_NN than_IN a_DT simple_JJ ranked_VBD list_NN ._.
+Clustering_NN is_VBZ also_RB useful_JJ when_WRB the_DT search_NN results_NNS are_VBP poor_JJ ,_, in_IN which_WDT case_NN ,_, a_DT user_NN would_MD otherwise_RB have_VB to_TO go_VB through_IN a_DT long_JJ list_NN sequentially_RB to_TO reach_VB the_DT very_RB first_JJ relevant_JJ document_NN ._.
+As_IN a_DT primary_JJ alternative_JJ strategy_NN for_IN presenting_VBG search_NN results_NNS ,_, clustering_NN search_NN results_VBZ has_VBZ been_VBN studied_VBN relatively_RB extensively_RB -LSB-_-LRB- #_# ,_, ##_CD ,_, ##_CD ,_, ##_CD ,_, ##_CD -RSB-_-RRB- ._.
+The_DT general_JJ idea_NN in_IN virtually_RB all_PDT the_DT existing_VBG work_NN is_VBZ to_TO perform_VB clustering_NN on_IN a_DT set_NN of_IN topranked_JJ search_NN results_VBZ to_TO partition_NN the_DT results_NNS into_IN natural_JJ clusters_NNS ,_, which_WDT often_RB correspond_VBP to_TO different_JJ subtopics_NNS of_IN the_DT general_JJ query_NN topic_NN ._.
+A_DT label_NN will_MD be_VB generated_VBN to_TO indicate_VB what_WP each_DT cluster_NN is_VBZ about_RB ._.
+A_DT user_NN can_MD then_RB view_VB the_DT labels_NNS to_TO decide_VB which_WDT cluster_NN to_TO look_VB into_IN ._.
+Such_PDT a_DT strategy_NN has_VBZ been_VBN shown_VBN to_TO be_VB more_RBR useful_JJ than_IN the_DT simple_JJ ranked_VBD list_NN presentation_NN in_IN several_JJ studies_NNS -LSB-_-LRB- #_# ,_, #_# ,_, ##_NN -RSB-_-RRB- ._.
+However_RB ,_, this_DT clustering_NN strategy_NN has_VBZ two_CD deficiencies_NNS which_WDT make_VBP it_PRP not_RB always_RB work_VB well_RB :_: First_NNP ,_, the_DT clusters_NNS discovered_VBN in_IN this_DT way_NN do_VBP not_RB necessarily_RB correspond_VBP to_TO the_DT interesting_JJ aspects_NNS of_IN a_DT topic_NN from_IN the_DT user_NN ''_'' s_NNS perspective_NN ._.
+For_IN example_NN ,_, users_NNS are_VBP often_RB interested_JJ in_IN finding_VBG either_CC phone_NN codes_NNS or_CC zip_NN codes_NNS when_WRB entering_VBG the_DT query_NN area_NN codes_NNS ._.
+But_CC the_DT clusters_NNS discovered_VBN by_IN the_DT current_JJ methods_NNS may_MD partition_NN the_DT results_NNS into_IN local_JJ codes_NNS and_CC international_JJ codes_NNS ._.
+Such_JJ clusters_NNS would_MD not_RB be_VB very_RB useful_JJ for_IN users_NNS ;_: even_RB the_DT best_JJS cluster_NN would_MD still_RB have_VB a_DT low_JJ precision_NN ._.
+Second_RB ,_, the_DT cluster_NN labels_VBZ generated_VBN are_VBP not_RB informative_JJ enough_JJ to_TO allow_VB a_DT user_NN to_TO identify_VB the_DT right_JJ cluster_NN ._.
+There_EX are_VBP two_CD reasons_NNS for_IN this_DT problem_NN :_: -LRB-_-LRB- #_# -RRB-_-RRB- The_DT clusters_NNS are_VBP not_RB corresponding_VBG to_TO a_DT user_NN ''_'' s_NNS interests_NNS ,_, so_IN their_PRP$ labels_NNS would_MD not_RB be_VB very_RB meaningful_JJ or_CC useful_JJ ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- Even_RB if_IN a_DT cluster_NN really_RB corresponds_VBZ to_TO an_DT interesting_JJ aspect_NN of_IN the_DT topic_NN ,_, the_DT label_NN may_MD not_RB be_VB informative_JJ because_IN it_PRP is_VBZ usually_RB generated_VBN based_VBN on_IN the_DT contents_NNS in_IN a_DT cluster_NN ,_, and_CC it_PRP is_VBZ possible_JJ that_IN the_DT user_NN is_VBZ not_RB very_RB familiar_JJ with_IN some_DT of_IN the_DT terms_NNS ._.
+For_IN example_NN ,_, the_DT ambiguous_JJ query_NN jaguar_NN may_MD mean_VB an_DT animal_NN or_CC a_DT car_NN ._.
+A_DT cluster_NN may_MD be_VB labeled_VBN as_IN panthera_NN onca_JJ ._.
+Although_IN this_DT is_VBZ an_DT accurate_JJ label_NN for_IN a_DT cluster_NN with_IN the_DT animal_NN sense_NN of_IN jaguar_NN ,_, if_IN a_DT user_NN is_VBZ not_RB familiar_JJ with_IN the_DT phrase_NN ,_, the_DT label_NN would_MD not_RB be_VB helpful_JJ ._.
+In_IN this_DT paper_NN ,_, we_PRP propose_VBP a_DT different_JJ strategy_NN for_IN partitioning_VBG search_NN results_NNS ,_, which_WDT addresses_VBZ these_DT two_CD deficiencies_NNS through_IN imposing_VBG a_DT user-oriented_JJ partitioning_NN of_IN the_DT search_NN results_VBZ ._.
+That_DT is_VBZ ,_, we_PRP try_VBP to_TO figure_VB out_RP what_WP aspects_NNS of_IN a_DT search_NN topic_NN are_VBP likely_JJ interesting_JJ to_TO a_DT user_NN and_CC organize_VB the_DT results_NNS accordingly_RB ._.
+Specifically_RB ,_, we_PRP propose_VBP to_TO do_VB the_DT following_NN :_: First_NNP ,_, we_PRP will_MD learn_VB interesting_JJ aspects_NNS of_IN similar_JJ topics_NNS from_IN search_NN logs_NNS and_CC organize_VB search_NN results_NNS based_VBN on_IN these_DT interesting_JJ aspects_NNS ._.
+For_IN example_NN ,_, if_IN the_DT current_JJ query_NN has_VBZ occurred_VBN many_JJ times_NNS in_IN the_DT search_NN logs_NNS ,_, we_PRP can_MD look_VB at_IN what_WDT kinds_NNS of_IN pages_NNS viewed_VBN by_IN the_DT users_NNS in_IN the_DT results_NNS and_CC what_WP kind_NN of_IN words_NNS are_VBP used_VBN together_RP with_IN such_PDT a_DT query_NN ._.
+In_IN case_NN when_WRB the_DT query_NN is_VBZ ambiguous_JJ such_JJ as_IN jaguar_NN we_PRP can_MD expect_VB to_TO see_VB some_DT clear_JJ clusters_NNS corresponding_VBG different_JJ senses_NNS of_IN jaguar_NN ._.
+More_RBR importantly_RB ,_, even_RB if_IN a_DT word_NN is_VBZ not_RB ambiguous_JJ -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, car_NN -RRB-_-RRB- ,_, we_PRP may_MD still_RB discover_VB interesting_JJ aspects_NNS such_JJ as_IN car_NN rental_NN and_CC car_NN pricing_NN -LRB-_-LRB- which_WDT happened_VBD to_TO be_VB the_DT two_CD primary_JJ aspects_NNS discovered_VBN in_IN our_PRP$ search_NN log_NN data_NNS -RRB-_-RRB- ._.
+Such_JJ aspects_NNS can_MD be_VB very_RB useful_JJ for_IN organizing_VBG future_JJ search_NN results_VBZ about_IN car_NN ._.
+Note_VB that_IN in_IN the_DT case_NN of_IN car_NN ,_, clusters_NNS generated_VBN using_VBG regular_JJ clustering_NN may_MD not_RB necessarily_RB reflect_VB such_JJ interesting_JJ aspects_NNS about_IN car_NN from_IN a_DT user_NN ''_'' s_NNS perspective_NN ,_, even_RB though_IN the_DT generated_VBN clusters_NNS are_VBP coherent_JJ and_CC meaningful_JJ in_IN other_JJ ways_NNS ._.
+Second_RB ,_, we_PRP will_MD generate_VB more_JJR meaningful_JJ cluster_NN labels_NNS using_VBG past_JJ query_JJ words_NNS entered_VBN by_IN users_NNS ._.
+Assuming_VBG that_IN the_DT past_JJ search_NN logs_NNS can_MD help_VB us_PRP learn_VB what_WP specific_JJ aspects_NNS are_VBP interesting_JJ to_TO users_NNS given_VBN the_DT current_JJ query_NN topic_NN ,_, we_PRP could_MD also_RB expect_VB that_IN those_DT query_JJ words_NNS entered_VBN by_IN users_NNS in_IN the_DT past_NN that_WDT are_VBP associated_VBN with_IN the_DT current_JJ query_NN can_MD provide_VB meaningful_JJ descriptions_NNS of_IN the_DT distinct_JJ aspects_NNS ._.
+Thus_RB they_PRP can_MD be_VB better_JJR labels_NNS than_IN those_DT extracted_VBN from_IN the_DT ordinary_JJ contents_NNS of_IN search_NN results_NNS ._.
+To_TO implement_VB the_DT ideas_NNS presented_VBN above_IN ,_, we_PRP rely_VBP on_IN search_NN engine_NN logs_NNS and_CC build_VB a_DT history_NN collection_NN containing_VBG the_DT past_JJ queries_NNS and_CC the_DT associated_VBN clickthroughs_NNS ._.
+Given_VBN a_DT new_JJ query_NN ,_, we_PRP find_VBP its_PRP$ related_JJ past_JJ queries_NNS from_IN the_DT history_NN collection_NN and_CC learn_VB aspects_NNS through_IN applying_VBG the_DT star_NN clustering_NN algorithm_NN -LSB-_-LRB- #_# -RSB-_-RRB- to_TO these_DT past_JJ queries_NNS and_CC clickthroughs_NNS ._.
+We_PRP can_MD then_RB organize_VB the_DT search_NN results_VBZ into_IN these_DT aspects_NNS using_VBG categorization_NN techniques_NNS and_CC label_NN each_DT aspect_NN by_IN the_DT most_RBS representative_JJ past_JJ query_NN in_IN the_DT query_NN cluster_NN ._.
+We_PRP evaluate_VBP our_PRP$ method_NN for_IN result_NN organization_NN using_VBG logs_NNS of_IN a_DT commercial_JJ search_NN engine_NN ._.
+We_PRP compare_VBP our_PRP$ method_NN with_IN the_DT default_NN search_NN engine_NN ranking_NN and_CC the_DT traditional_JJ clustering_NN of_IN search_NN results_NNS ._.
+The_DT results_NNS show_VBP that_IN our_PRP$ method_NN is_VBZ effective_JJ for_IN improving_VBG search_NN utility_NN and_CC the_DT labels_NNS generated_VBN using_VBG past_JJ query_JJ words_NNS are_VBP more_RBR readable_JJ than_IN those_DT generated_VBN using_VBG traditional_JJ clustering_NN approaches_NNS ._.
+The_DT rest_NN of_IN the_DT paper_NN is_VBZ organized_VBN as_IN follows_VBZ ._.
+We_PRP first_RB review_VB the_DT related_JJ work_NN in_IN Section_NN #_# ._.
+In_IN Section_NN #_# ,_, we_PRP describe_VBP search_NN engine_NN log_NN data_NNS and_CC our_PRP$ procedure_NN of_IN building_VBG a_DT history_NN collection_NN ._.
+In_IN Section_NN #_# ,_, we_PRP present_VBP our_PRP$ approach_NN in_IN details_NNS ._.
+We_PRP describe_VBP the_DT data_NNS set_VBN in_IN Section_NN #_# and_CC the_DT experimental_JJ results_NNS are_VBP discussed_VBN in_IN Section_NN #_# ._.
+Finally_RB ,_, we_PRP conclude_VBP our_PRP$ paper_NN and_CC discuss_VB future_JJ work_NN in_IN Section_NN #_# ._.
+2_LS ._.
+RELATED_JJ WORK_VBP Our_PRP$ work_NN is_VBZ closely_RB related_JJ to_TO the_DT study_NN of_IN clustering_NN search_NN results_NNS ._.
+In_IN -LSB-_-LRB- #_# ,_, ##_NN -RSB-_-RRB- ,_, the_DT authors_NNS used_VBN Scatter_NNP /_: Gather_NNP algorithm_NN to_TO cluster_VB the_DT top_JJ documents_NNS returned_VBN from_IN a_DT traditional_JJ information_NN retrieval_NN system_NN ._.
+Their_PRP$ results_NNS validate_VBP the_DT cluster_NN hypothesis_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- that_WDT relevant_JJ documents_NNS tend_VBP to_TO form_VB clusters_NNS ._.
+The_DT system_NN Grouper_NNP was_VBD described_VBN in_IN -LSB-_-LRB- ##_NN ,_, 27_CD -RSB-_-RRB- ._.
+In_IN these_DT papers_NNS ,_, the_DT authors_NNS proposed_VBN to_TO cluster_VB the_DT results_NNS of_IN a_DT real_JJ search_NN engine_NN based_VBN on_IN the_DT snippets_NNS or_CC the_DT contents_NNS of_IN returned_VBN documents_NNS ._.
+Several_JJ clustering_NN algorithms_NNS are_VBP compared_VBN and_CC the_DT Suffix_NNP Tree_NNP Clustering_NNP algorithm_NN -LRB-_-LRB- STC_NN -RRB-_-RRB- was_VBD shown_VBN to_TO be_VB the_DT most_RBS effective_JJ one_CD ._.
+They_PRP also_RB showed_VBD that_IN using_VBG snippets_NNS is_VBZ as_IN effective_JJ as_IN using_VBG whole_JJ documents_NNS ._.
+However_RB ,_, an_DT important_JJ challenge_NN of_IN document_NN clustering_NN is_VBZ to_TO generate_VB meaningful_JJ labels_NNS for_IN clusters_NNS ._.
+To_TO overcome_VB this_DT difficulty_NN ,_, in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ,_, supervised_JJ learning_NN algorithms_NNS were_VBD studied_VBN to_TO extract_VB meaningful_JJ phrases_NNS from_IN the_DT search_NN result_VBP snippets_NNS and_CC these_DT phrases_NNS were_VBD then_RB used_VBN to_TO group_NN search_NN results_NNS ._.
+In_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ,_, the_DT authors_NNS proposed_VBN to_TO use_VB a_DT monothetic_JJ clustering_NN algorithm_NN ,_, in_IN which_WDT a_DT document_NN is_VBZ assigned_VBN to_TO a_DT cluster_NN based_VBN on_IN a_DT single_JJ feature_NN ,_, to_TO organize_VB search_NN results_NNS ,_, and_CC the_DT single_JJ feature_NN is_VBZ used_VBN to_TO label_VB the_DT corresponding_JJ cluster_NN ._.
+Clustering_NN search_NN results_VBZ has_VBZ also_RB attracted_VBN a_DT lot_NN of_IN attention_NN in_IN industry_NN and_CC commercial_JJ Web_NN services_NNS such_JJ as_IN Vivisimo_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+However_RB ,_, in_IN all_DT these_DT works_NNS ,_, the_DT clusters_NNS are_VBP generated_VBN solely_RB based_VBN on_IN the_DT search_NN results_VBZ ._.
+Thus_RB the_DT obtained_VBN clusters_NNS do_VBP not_RB necessarily_RB reflect_VB users_NNS ''_'' preferences_NNS and_CC the_DT generated_VBN labels_NNS may_MD not_RB be_VB informative_JJ from_IN a_DT user_NN ''_'' s_NNS viewpoint_NN ._.
+Methods_NNS of_IN organizing_VBG search_NN results_VBZ based_VBN on_IN text_NN categorization_NN are_VBP studied_VBN in_IN -LSB-_-LRB- #_# ,_, #_# -RSB-_-RRB- ._.
+In_IN this_DT work_NN ,_, a_DT text_NN classifier_NN is_VBZ trained_VBN using_VBG a_DT Web_NN directory_NN and_CC search_NN results_NNS are_VBP then_RB classified_VBN into_IN the_DT predefined_JJ categories_NNS ._.
+The_DT authors_NNS designed_VBN and_CC studied_VBN different_JJ category_NN interfaces_NNS and_CC they_PRP found_VBD that_IN category_NN interfaces_NNS are_VBP more_RBR effective_JJ than_IN list_NN interfaces_NNS ._.
+However_RB predefined_JJ categories_NNS are_VBP often_RB too_RB general_JJ to_TO reflect_VB the_DT finer_NN granularity_NN aspects_NNS of_IN a_DT query_NN ._.
+Search_VB logs_NNS have_VBP been_VBN exploited_VBN for_IN several_JJ different_JJ purposes_NNS in_IN the_DT past_NN ._.
+For_IN example_NN ,_, clustering_NN search_NN queries_NNS to_TO find_VB those_DT Frequent_JJ Asked_VBN Questions_NNS -LRB-_-LRB- FAQ_NN -RRB-_-RRB- is_VBZ studied_VBN in_IN -LSB-_-LRB- ##_NN ,_, 4_CD -RSB-_-RRB- ._.
+Recently_RB ,_, search_NN logs_NNS have_VBP been_VBN used_VBN for_IN suggesting_VBG query_NN substitutes_VBZ -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, personalized_JJ search_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, Web_NN site_NN design_NN -LSB-_-LRB- #_# -RSB-_-RRB- ,_, Latent_JJ Semantic_NNP Analysis_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, and_CC learning_VBG retrieval_NN ranking_JJ functions_NNS -LSB-_-LRB- ##_CD ,_, ##_CD ,_, #_# -RSB-_-RRB- ._.
+In_IN our_PRP$ work_NN ,_, we_PRP explore_VBP past_JJ query_JJ history_NN in_IN order_NN to_TO better_JJR organize_VB the_DT search_NN results_VBZ for_IN future_JJ queries_NNS ._.
+We_PRP use_VBP the_DT star_NN clustering_NN algorithm_NN -LSB-_-LRB- #_# -RSB-_-RRB- ,_, which_WDT is_VBZ a_DT graph_NN partition_NN based_VBN approach_NN ,_, to_TO learn_VB interesting_JJ aspects_NNS from_IN search_NN logs_NNS given_VBN a_DT new_JJ query_NN ._.
+Thus_RB past_JJ queries_NNS are_VBP clustered_VBN in_IN a_DT query_NN specific_JJ manner_NN and_CC this_DT is_VBZ another_DT difference_NN from_IN previous_JJ works_NNS such_JJ as_IN -LSB-_-LRB- ##_NN ,_, #_# -RSB-_-RRB- in_IN which_WDT all_DT queries_NNS in_IN logs_NNS are_VBP clustered_VBN in_IN an_DT oine_NN batch_NN manner_NN ._.
+3_LS ._.
+SEARCH_NN ENGINE_NN LOGS_VBZ Search_VB engine_NN logs_NNS record_VBP the_DT activities_NNS of_IN Web_NN users_NNS ,_, which_WDT reflect_VBP the_DT actual_JJ users_NNS ''_'' needs_VBZ or_CC interests_NNS when_WRB conducting_VBG ID_NNP Query_NNP URL_NN Time_NNP 1_CD win_VB zip_NN http_NN :_: /_: /_: www_NN ._.
+winzip_NN ._.
+com_NN xxxx_NN 1_CD win_VBP zip_NN http_NN :_: /_: /_: www_NN ._.
+swinzip_NN ._.
+com_NN /_: winzip_NN xxxx_NN 2_CD time_NN zones_NNS http_VBP :_: /_: /_: www_NN ._.
+timeanddate_NN ._.
+com_NN xxxx_NN ..._: ._.
+Table_NNP #_# :_: Sample_VB entries_NNS of_IN search_NN engine_NN logs_NNS ._.
+Different_JJ ID_NN ''_'' s_NNS mean_VBP different_JJ sessions_NNS ._.
+Web_NN search_NN ._.
+They_PRP generally_RB have_VBP the_DT following_VBG information_NN :_: text_NN queries_NNS that_WDT users_NNS submitted_VBN ,_, the_DT URLs_NNS that_IN they_PRP clicked_VBD after_IN submitting_VBG the_DT queries_NNS ,_, and_CC the_DT time_NN when_WRB they_PRP clicked_VBD ._.
+Search_VB engine_NN logs_NNS are_VBP separated_VBN by_IN sessions_NNS ._.
+A_DT session_NN includes_VBZ a_DT single_JJ query_NN and_CC all_PDT the_DT URLs_NNS that_IN a_DT user_NN clicked_VBD after_IN issuing_VBG the_DT query_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+A_DT small_JJ sample_NN of_IN search_NN log_NN data_NNS is_VBZ shown_VBN in_IN Table_NNP #_# ._.
+Our_PRP$ idea_NN of_IN using_VBG search_NN engine_NN logs_NNS is_VBZ to_TO treat_VB these_DT logs_NNS as_IN past_JJ history_NN ,_, learn_VBP users_NNS ''_'' interests_NNS using_VBG this_DT history_NN data_NNS automatically_RB ,_, and_CC represent_VBP their_PRP$ interests_NNS by_IN representative_JJ queries_NNS ._.
+For_IN example_NN ,_, in_IN the_DT search_NN logs_NNS ,_, a_DT lot_NN of_IN queries_NNS are_VBP related_JJ to_TO car_NN and_CC this_DT reflects_VBZ that_IN a_DT large_JJ number_NN of_IN users_NNS are_VBP interested_JJ in_IN information_NN about_IN car_NN ._.
+Different_JJ users_NNS are_VBP probably_RB interested_JJ in_IN different_JJ aspects_NNS of_IN car_NN ._.
+Some_DT are_VBP looking_VBG for_IN renting_VBG a_DT car_NN ,_, thus_RB may_MD submit_VB a_DT query_NN like_IN car_NN rental_NN ;_: some_DT are_VBP more_RBR interested_JJ in_IN buying_VBG a_DT used_VBN car_NN ,_, and_CC may_MD submit_VB a_DT query_NN like_IN used_VBN car_NN ;_: and_CC others_NNS may_MD care_VB more_RBR about_IN buying_VBG a_DT car_NN accessory_NN ,_, so_IN they_PRP may_MD use_VB a_DT query_NN like_IN car_NN audio_NN ._.
+By_IN mining_VBG all_PDT the_DT queries_NNS which_WDT are_VBP related_JJ to_TO the_DT concept_NN of_IN car_NN ,_, we_PRP can_MD learn_VB the_DT aspects_NNS that_WDT are_VBP likely_JJ interesting_JJ from_IN a_DT user_NN ''_'' s_NNS perspective_NN ._.
+As_IN an_DT example_NN ,_, the_DT following_VBG is_VBZ some_DT aspects_NNS about_IN car_NN learned_VBD from_IN our_PRP$ search_NN log_NN data_NNS ._.
+1_LS ._.
+car_NN rental_NN ,_, hertz_NN car_NN rental_NN ,_, enterprise_NN car_NN rental_NN ,_, ..._: 2_CD ._.
+car_NN pricing_NN ,_, used_VBN car_NN ,_, car_NN values_NNS ,_, ..._: 3_CD ._.
+car_NN accidents_NNS ,_, car_NN crash_NN ,_, car_NN wrecks_NNS ,_, ..._: 4_LS ._.
+car_NN audio_NN ,_, car_NN stereo_NN ,_, car_NN speaker_NN ,_, ..._: In_IN order_NN to_TO learn_VB aspects_NNS from_IN search_NN engine_NN logs_NNS ,_, we_PRP preprocess_VBP the_DT raw_JJ logs_NNS to_TO build_VB a_DT history_NN data_NNS collection_NN ._.
+As_IN shown_VBN above_IN ,_, search_NN engine_NN logs_NNS consist_VBP of_IN sessions_NNS ._.
+Each_DT session_NN contains_VBZ the_DT information_NN of_IN the_DT text_NN query_NN and_CC the_DT clicked_VBN Web_NN page_NN URLs_NNS ,_, together_RB with_IN the_DT time_NN that_IN the_DT user_NN did_VBD the_DT clicks_NNS ._.
+However_RB ,_, this_DT information_NN is_VBZ limited_VBN since_IN URLs_NNS alone_RB are_VBP not_RB informative_JJ enough_JJ to_TO tell_VB the_DT intended_JJ meaning_NN of_IN a_DT submitted_VBN query_NN accurately_RB ._.
+To_TO gather_VB rich_JJ information_NN ,_, we_PRP enrich_VBP each_DT URL_NN with_IN additional_JJ text_NN content_NN ._.
+Specifically_RB ,_, given_VBN the_DT query_NN in_IN a_DT session_NN ,_, we_PRP obtain_VB its_PRP$ top-ranked_JJ results_NNS using_VBG the_DT search_NN engine_NN from_IN which_WDT we_PRP obtained_VBD our_PRP$ log_NN data_NNS ,_, and_CC extract_NN the_DT snippets_NNS of_IN the_DT URLs_NNS that_WDT are_VBP clicked_VBN on_IN according_VBG to_TO the_DT log_NN information_NN in_IN the_DT corresponding_JJ session_NN ._.
+All_PDT the_DT titles_NNS ,_, snippets_NNS ,_, and_CC URLs_NNS of_IN the_DT clicked_VBN Web_NN pages_NNS of_IN that_DT query_NN are_VBP used_VBN to_TO represent_VB the_DT session_NN ._.
+Different_JJ sessions_NNS may_MD contain_VB the_DT same_JJ queries_NNS ._.
+Thus_RB the_DT number_NN of_IN sessions_NNS could_MD be_VB quite_RB huge_JJ and_CC the_DT information_NN in_IN the_DT sessions_NNS with_IN the_DT same_JJ queries_NNS could_MD be_VB redundant_JJ ._.
+In_IN order_NN to_TO improve_VB the_DT scalability_NN and_CC reduce_VB data_NNS sparseness_NN ,_, we_PRP aggregate_NN all_PDT the_DT sessions_NNS which_WDT contain_VBP exactly_RB the_DT same_JJ queries_NNS together_RB ._.
+That_DT is_VBZ ,_, for_IN each_DT unique_JJ query_NN ,_, we_PRP build_VBP a_DT pseudo-document_NN which_WDT consists_VBZ of_IN all_PDT the_DT descriptions_NNS of_IN its_PRP$ clicks_NNS in_IN all_PDT the_DT sessions_NNS aggregated_VBN ._.
+The_DT keywords_NNS contained_VBD in_IN the_DT queries_NNS themselves_PRP can_MD be_VB regarded_VBN as_IN brief_JJ summaries_NNS of_IN the_DT pseudo-documents_NNS ._.
+All_PDT these_DT pseudo-documents_NNS form_VBP our_PRP$ history_NN data_NNS collection_NN ,_, which_WDT is_VBZ used_VBN to_TO learn_VB interesting_JJ aspects_NNS in_IN the_DT following_VBG section_NN ._.
+4_LS ._.
+OUR_NNP APPROACH_NNP Our_PRP$ approach_NN is_VBZ to_TO organize_VB search_NN results_NNS by_IN aspects_NNS learned_VBN from_IN search_NN engine_NN logs_NNS ._.
+Given_VBN an_DT input_NN query_NN ,_, the_DT general_JJ procedure_NN of_IN our_PRP$ approach_NN is_VBZ :_: 1_CD ._.
+Get_VB its_PRP$ related_JJ information_NN from_IN search_NN engine_NN logs_NNS ._.
+All_PDT the_DT information_NN forms_VBZ a_DT working_VBG set_NN ._.
+2_LS ._.
+Learn_VB aspects_NNS from_IN the_DT information_NN in_IN the_DT working_VBG set_NN ._.
+These_DT aspects_NNS correspond_VBP to_TO users_NNS ''_'' interests_NNS given_VBN the_DT input_NN query_NN ._.
+Each_DT aspect_NN is_VBZ labeled_VBN with_IN a_DT representative_JJ query_NN ._.
+3_LS ._.
+Categorize_VB and_CC organize_VB the_DT search_NN results_NNS of_IN the_DT input_NN query_NN according_VBG to_TO the_DT aspects_NNS learned_VBD above_RB ._.
+We_PRP now_RB give_VBP a_DT detailed_JJ presentation_NN of_IN each_DT step_NN ._.
+4_LS ._.
+#_# Finding_VBG Related_JJ Past_NNP Queries_NNPS Given_VBD a_DT query_NN q_NN ,_, a_DT search_NN engine_NN will_MD return_VB a_DT ranked_VBN list_NN of_IN Web_NN pages_NNS ._.
+To_TO know_VB what_WP the_DT users_NNS are_VBP really_RB interested_JJ in_IN given_VBN this_DT query_NN ,_, we_PRP first_RB retrieve_VB its_PRP$ past_JJ similar_JJ queries_NNS in_IN our_PRP$ preprocessed_JJ history_NN data_NNS collection_NN ._.
+Formally_RB ,_, assume_VB we_PRP have_VBP N_NN pseudo-documents_NNS in_IN our_PRP$ history_NN data_NNS set_NN :_: H_NN =_JJ -LCB-_-LRB- Q1_NN ,_, Q2_NN ,_, ..._: ,_, QN_NNP -RCB-_-RRB- ._.
+Each_DT Qi_NNP corresponds_VBZ to_TO a_DT unique_JJ query_NN and_CC is_VBZ enriched_VBN with_IN clickthrough_JJ information_NN as_IN discussed_VBN in_IN Section_NN #_# ._.
+To_TO find_VB q_JJ ''_'' s_NNS related_JJ queries_NNS in_IN H_NN ,_, a_DT natural_JJ way_NN is_VBZ to_TO use_VB a_DT text_NN retrieval_NN algorithm_NN ._.
+Here_RB we_PRP use_VBP the_DT OKAPI_NN method_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, one_CD of_IN the_DT state-of-the-art_JJ retrieval_NN methods_NNS ._.
+Specifically_RB ,_, we_PRP use_VBP the_DT following_VBG formula_NN to_TO calculate_VB the_DT similarity_NN between_IN query_NN q_NN and_CC pseudo-document_NN Qi_NNP :_: wq_NN Qi_NN c_NN -LRB-_-LRB- w_NN ,_, q_NN -RRB-_-RRB- IDF_NN -LRB-_-LRB- w_NN -RRB-_-RRB- -LRB-_-LRB- k1_NN +_CC #_# -RRB-_-RRB- c_NN -LRB-_-LRB- w_NN ,_, Qi_NN -RRB-_-RRB- k1_NN -LRB-_-LRB- -LRB-_-LRB- #_# b_LS -RRB-_-RRB- +_CC b_NN |_CD Qi_NNP |_CD avdl_NN -RRB-_-RRB- +_CC c_NN -LRB-_-LRB- w_NN ,_, Qi_NN -RRB-_-RRB- where_WRB k1_NN and_CC b_NN are_VBP OKAPI_NNP parameters_NNS set_VBD empirically_RB ,_, c_NN -LRB-_-LRB- w_NN ,_, Qi_NN -RRB-_-RRB- and_CC c_NN -LRB-_-LRB- w_NN ,_, q_NN -RRB-_-RRB- are_VBP the_DT count_NN of_IN word_NN w_NN in_IN Qi_NNP and_CC q_VB respectively_RB ,_, IDF_NN -LRB-_-LRB- w_NN -RRB-_-RRB- is_VBZ the_DT inverse_JJ document_NN frequency_NN of_IN word_NN w_NN ,_, and_CC avdl_NN is_VBZ the_DT average_JJ document_NN length_NN in_IN our_PRP$ history_NN collection_NN ._.
+Based_VBN on_IN the_DT similarity_NN scores_NNS ,_, we_PRP rank_VBP all_PDT the_DT documents_NNS in_IN H_NN ._.
+The_DT top_JJ ranked_VBD documents_NNS provide_VB us_PRP a_DT working_VBG set_NN to_TO learn_VB the_DT aspects_NNS that_WDT users_NNS are_VBP usually_RB interested_JJ in_IN ._.
+Each_DT document_NN in_IN H_NN corresponds_VBZ to_TO a_DT past_JJ query_NN ,_, and_CC thus_RB the_DT top_JJ ranked_VBD documents_NNS correspond_VBP to_TO q_VB ''_'' s_NNS related_JJ past_IN queries_NNS ._.
+4_LS ._.
+#_# Learning_NNP Aspects_NNPS by_IN Clustering_NNP Given_VBN a_DT query_NN q_NN ,_, we_PRP use_VBP Hq_NN =_JJ -LCB-_-LRB- d1_NN ,_, ..._: ,_, dn_NN -RCB-_-RRB- to_TO represent_VB the_DT top_JJ ranked_VBD pseudo-documents_NNS from_IN the_DT history_NN collection_NN H_NN ._.
+These_DT pseudo-documents_NNS contain_VBP the_DT aspects_NNS that_WDT users_NNS are_VBP interested_JJ in_IN ._.
+In_IN this_DT subsection_NN ,_, we_PRP propose_VBP to_TO use_VB a_DT clustering_NN method_NN to_TO discover_VB these_DT aspects_NNS ._.
+Any_DT clustering_NN algorithm_NN could_MD be_VB applied_VBN here_RB ._.
+In_IN this_DT paper_NN ,_, we_PRP use_VBP an_DT algorithm_NN based_VBN on_IN graph_NN partition_NN :_: the_DT star_NN clustering_NN algorithm_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+A_DT good_JJ property_NN of_IN the_DT star_NN clustering_NN in_IN our_PRP$ setting_NN is_VBZ that_IN it_PRP can_MD suggest_VB a_DT good_JJ label_NN for_IN each_DT cluster_NN naturally_RB ._.
+We_PRP describe_VBP the_DT star_NN clustering_NN algorithm_NN below_IN ._.
+4_LS ._.
+#_# ._.
+#_# Star_NNP Clustering_NNP Given_VBN Hq_NN ,_, star_NN clustering_NN starts_VBZ with_IN constructing_VBG a_DT pairwise_JJ similarity_NN graph_NN on_IN this_DT collection_NN based_VBN on_IN the_DT vector_NN space_NN model_NN in_IN information_NN retrieval_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Then_RB the_DT clusters_NNS are_VBP formed_VBN by_IN dense_JJ subgraphs_NNS that_WDT are_VBP star-shaped_JJ ._.
+These_DT clusters_NNS form_VBP a_DT cover_NN of_IN the_DT similarity_NN graph_NN ._.
+Formally_RB ,_, for_IN each_DT of_IN the_DT n_NN pseudo-documents_NNS -LCB-_-LRB- d1_NN ,_, ..._: ,_, dn_NN -RCB-_-RRB- in_IN the_DT collection_NN Hq_NN ,_, we_PRP compute_VBP a_DT TF-IDF_NN vector_NN ._.
+Then_RB ,_, for_IN each_DT pair_NN of_IN documents_NNS di_FW and_CC dj_NN -LRB-_-LRB- i_FW =_JJ j_NN -RRB-_-RRB- ,_, their_PRP$ similarity_NN is_VBZ computed_VBN as_IN the_DT cosine_NN score_NN of_IN their_PRP$ corresponding_JJ vectors_NNS vi_LS and_CC vj_NN ,_, that_WDT is_VBZ sim_NN -LRB-_-LRB- di_FW ,_, dj_NN -RRB-_-RRB- =_JJ cos_NNS -LRB-_-LRB- vi_LS ,_, vj_NN -RRB-_-RRB- =_JJ vi_LS vj_NN |_CD vi_LS |_CD |_CD vj_NN |_NN ._.
+A_DT similarity_NN graph_NN G_NN can_MD then_RB be_VB constructed_VBN as_IN follows_VBZ using_VBG a_DT similarity_NN threshold_NN parameter_NN ._.
+Each_DT document_NN di_FW is_VBZ a_DT vertex_NN of_IN G_NN ._.
+If_IN sim_NN -LRB-_-LRB- di_FW ,_, dj_NN -RRB-_-RRB- >_JJR ,_, there_EX would_MD be_VB an_DT edge_NN connecting_VBG the_DT corresponding_JJ two_CD vertices_NNS ._.
+After_IN the_DT similarity_NN graph_NN G_NN is_VBZ built_VBN ,_, the_DT star_NN clustering_NN algorithm_NN clusters_NNS the_DT documents_NNS using_VBG a_DT greedy_JJ algorithm_NN as_IN follows_VBZ :_: 1_CD ._.
+Associate_JJ every_DT vertex_NN in_IN G_NN with_IN a_DT flag_NN ,_, initialized_VBN as_IN unmarked_JJ ._.
+2_LS ._.
+From_IN those_DT unmarked_JJ vertices_NNS ,_, find_VB the_DT one_CD which_WDT has_VBZ the_DT highest_JJS degree_NN and_CC let_VB it_PRP be_VB u_FW ._.
+3_LS ._.
+Mark_NNP the_DT flag_NN of_IN u_FW as_IN center_NN ._.
+4_LS ._.
+Form_NN a_DT cluster_NN C_NN containing_VBG u_NN and_CC all_DT its_PRP$ neighbors_NNS that_WDT are_VBP not_RB marked_VBN as_IN center_NN ._.
+Mark_NNP all_PDT the_DT selected_VBN neighbors_NNS as_IN satellites_NNS ._.
+5_CD ._.
+Repeat_NN from_IN step_NN #_# until_IN all_PDT the_DT vertices_NNS in_IN G_NN are_VBP marked_VBN ._.
+Each_DT cluster_NN is_VBZ star-shaped_JJ ,_, which_WDT consists_VBZ a_DT single_JJ center_NN and_CC several_JJ satellites_NNS ._.
+There_EX is_VBZ only_RB one_CD parameter_NN in_IN the_DT star_NN clustering_NN algorithm_NN ._.
+A_DT big_JJ enforces_VBZ that_IN the_DT connected_JJ documents_NNS have_VBP high_JJ similarities_NNS ,_, and_CC thus_RB the_DT clusters_NNS tend_VBP to_TO be_VB small_JJ ._.
+On_IN the_DT other_JJ hand_NN ,_, a_DT small_JJ will_MD make_VB the_DT clusters_NNS big_JJ and_CC less_RBR coherent_JJ ._.
+We_PRP will_MD study_VB the_DT impact_NN of_IN this_DT parameter_NN in_IN our_PRP$ experiments_NNS ._.
+A_DT good_JJ feature_NN of_IN the_DT star_NN clustering_NN algorithm_NN is_VBZ that_IN it_PRP outputs_VBZ a_DT center_NN for_IN each_DT cluster_NN ._.
+In_IN the_DT past_JJ query_NN collection_NN Hq_NN ,_, each_DT document_NN corresponds_VBZ to_TO a_DT query_NN ._.
+This_DT center_NN query_NN can_MD be_VB regarded_VBN as_IN the_DT most_RBS representative_JJ one_CD for_IN the_DT whole_JJ cluster_NN ,_, and_CC thus_RB provides_VBZ a_DT label_NN for_IN the_DT cluster_NN naturally_RB ._.
+All_PDT the_DT clusters_NNS obtained_VBN are_VBP related_JJ to_TO the_DT input_NN query_NN q_NN from_IN different_JJ perspectives_NNS ,_, and_CC they_PRP represent_VBP the_DT possible_JJ aspects_NNS of_IN interests_NNS about_IN query_NN q_NN of_IN users_NNS ._.
+4_LS ._.
+#_# Categorizing_VBG Search_VB Results_NNS In_IN order_NN to_TO organize_VB the_DT search_NN results_VBZ according_VBG to_TO users_NNS ''_'' interests_NNS ,_, we_PRP use_VBP the_DT learned_VBN aspects_NNS from_IN the_DT related_JJ past_JJ queries_NNS to_TO categorize_VB the_DT search_NN results_VBZ ._.
+Given_VBN the_DT top_JJ m_NN Web_NN pages_NNS returned_VBN by_IN a_DT search_NN engine_NN for_IN q_NN :_: -LCB-_-LRB- s1_NN ,_, ..._: ,_, sm_NN -RCB-_-RRB- ,_, we_PRP group_VBP them_PRP into_IN different_JJ aspects_NNS using_VBG a_DT categorization_NN algorithm_NN ._.
+In_IN principle_NN ,_, any_DT categorization_NN algorithm_NN can_MD be_VB used_VBN here_RB ._.
+Here_RB we_PRP use_VBP a_DT simple_JJ centroid-based_JJ method_NN for_IN categorization_NN ._.
+Naturally_RB ,_, more_RBR sophisticated_JJ methods_NNS such_JJ as_IN SVM_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- may_MD be_VB expected_VBN to_TO achieve_VB even_RB better_JJR performance_NN ._.
+Based_VBN on_IN the_DT pseudo-documents_NNS in_IN each_DT discovered_VBN aspect_NN Ci_NN ,_, we_PRP build_VBP a_DT centroid_JJ prototype_NN pi_NN by_IN taking_VBG the_DT average_NN of_IN all_PDT the_DT vectors_NNS of_IN the_DT documents_NNS in_IN Ci_NNP :_: pi_NN =_JJ 1_CD |_CD Ci_NNP |_CD lCi_NNP vl_NN ._.
+All_PDT these_DT pi_NN ''_'' s_NNS are_VBP used_VBN to_TO categorize_VB the_DT search_NN results_VBZ ._.
+Specifically_RB ,_, for_IN any_DT search_NN result_VBP sj_NN ,_, we_PRP build_VBP a_DT TF-IDF_NN vector_NN ._.
+The_DT centroid-based_JJ method_NN computes_VBZ the_DT cosine_NN similarity_NN between_IN the_DT vector_NN representation_NN of_IN sj_NN and_CC each_DT centroid_NN prototype_NN pi_NN ._.
+We_PRP then_RB assign_VBP sj_NN to_TO the_DT aspect_NN with_IN which_WDT it_PRP has_VBZ the_DT highest_JJS cosine_NN similarity_NN score_NN ._.
+All_PDT the_DT aspects_NNS are_VBP finally_RB ranked_VBN according_VBG to_TO the_DT number_NN of_IN search_NN results_VBZ they_PRP have_VBP ._.
+Within_IN each_DT aspect_NN ,_, the_DT search_NN results_NNS are_VBP ranked_VBN according_VBG to_TO their_PRP$ original_JJ search_NN engine_NN ranking_NN ._.
+5_CD ._.
+DATA_NNP COLLECTION_NNP We_PRP construct_VBP our_PRP$ data_NNS set_VBP based_VBN on_IN the_DT MSN_NNP search_NN log_NN data_NNS set_VBP released_VBN by_IN the_DT Microsoft_NNP Live_NNP Labs_NNPS in_IN ####_CD -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+In_IN total_NN ,_, this_DT log_NN data_NNS spans_VBZ ##_CD days_NNS from_IN ##_CD /_: ##_CD /_: ####_CD to_TO 05_CD /_: ##_CD /_: ####_CD ._.
+There_EX are_VBP #_# ,_, ###_CD ,_, ###_CD queries_NNS ,_, #_# ,_, ###_CD ,_, ###_CD distinct_JJ queries_NNS ,_, and_CC #_# ,_, ###_CD ,_, ###_CD distinct_JJ URLs_NNS in_IN the_DT raw_JJ data_NNS ._.
+To_TO test_VB our_PRP$ algorithm_NN ,_, we_PRP separate_VBP the_DT whole_JJ data_NNS set_VBN into_IN two_CD parts_NNS according_VBG to_TO the_DT time_NN :_: the_DT first_JJ #_# /_: #_# data_NNS is_VBZ used_VBN to_TO simulate_VB the_DT historical_JJ data_NNS that_IN a_DT search_NN engine_NN accumulated_VBN ,_, and_CC we_PRP use_VBP the_DT last_JJ #_# /_: #_# to_TO simulate_VB future_JJ queries_NNS ._.
+In_IN the_DT history_NN collection_NN ,_, we_PRP clean_VBP the_DT data_NNS by_IN only_RB keeping_VBG those_DT frequent_JJ ,_, well-formatted_JJ ,_, English_JJ queries_NNS -LRB-_-LRB- queries_NNS which_WDT only_RB contain_VBP characters_NNS a_DT ''_'' ,_, b_NN ''_'' ,_, ..._: ,_, z_SYM ''_'' ,_, and_CC space_NN ,_, and_CC appear_VB more_JJR than_IN #_# times_NNS -RRB-_-RRB- ._.
+After_IN cleaning_NN ,_, we_PRP get_VBP ###_CD ,_, ###_CD unique_JJ queries_NNS in_IN our_PRP$ history_NN data_NNS collection_NN totally_RB ._.
+On_IN average_NN ,_, each_DT query_NN has_VBZ #_# ._.
+#_# distinct_JJ clicks_NNS ._.
+We_PRP build_VBP the_DT pseudo-documents_NNS for_IN all_PDT these_DT queries_NNS as_IN described_VBN in_IN Section_NN #_# ._.
+The_DT average_JJ length_NN of_IN these_DT pseudo-documents_NNS is_VBZ ##_CD words_NNS and_CC the_DT total_JJ data_NNS size_NN of_IN our_PRP$ history_NN collection_NN is_VBZ 129MB_NN ._.
+We_PRP construct_VBP our_PRP$ test_NN data_NNS from_IN the_DT last_JJ #_# /_: #_# data_NNS ._.
+According_VBG to_TO the_DT time_NN ,_, we_PRP separate_VBP this_DT data_NNS into_IN two_CD test_NN sets_NNS equally_RB for_IN cross-validation_NN to_TO set_VB parameters_NNS ._.
+For_IN each_DT test_NN set_NN ,_, we_PRP use_VBP every_DT session_NN as_IN a_DT test_NN case_NN ._.
+Each_DT session_NN contains_VBZ a_DT single_JJ query_NN and_CC several_JJ clicks_NNS ._.
+-LRB-_-LRB- Note_NN that_IN we_PRP do_VBP not_RB aggregate_JJ sessions_NNS for_IN test_NN cases_NNS ._.
+Different_JJ test_NN cases_NNS may_MD have_VB the_DT same_JJ queries_NNS but_CC possibly_RB different_JJ clicks_NNS ._. -RRB-_-RRB-
+Since_IN it_PRP is_VBZ infeasible_JJ to_TO ask_VB the_DT original_JJ user_NN who_WP submitted_VBD a_DT query_NN to_TO judge_VB the_DT results_NNS for_IN the_DT query_NN ,_, we_PRP follow_VBP the_DT work_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- and_CC opt_VB to_TO use_VB the_DT clicks_NNS associated_VBN with_IN the_DT query_NN in_IN a_DT session_NN to_TO approximate_JJ relevant_JJ documents_NNS ._.
+Using_VBG clicks_NNS as_IN judgments_NNS ,_, we_PRP can_MD then_RB compare_VB different_JJ algorithms_NNS for_IN organizing_VBG search_NN results_VBZ to_TO see_VB how_WRB well_RB these_DT algorithms_NNS can_MD help_VB users_NNS reach_VB the_DT clicked_VBN URLs_NNS ._.
+Organizing_NNP search_NN results_VBZ into_IN different_JJ aspects_NNS is_VBZ expected_VBN to_TO help_VB informational_JJ queries_NNS ._.
+It_PRP thus_RB makes_VBZ sense_NN to_TO focus_VB on_IN the_DT informational_JJ queries_NNS in_IN our_PRP$ evaluation_NN ._.
+For_IN each_DT test_NN case_NN ,_, i_FW ._.
+e_LS ._.
+,_, each_DT session_NN ,_, we_PRP count_VBP the_DT number_NN of_IN different_JJ clicks_NNS and_CC filter_NN out_IN those_DT test_NN cases_NNS with_IN fewer_JJR than_IN #_# clicks_VBZ under_IN the_DT assumption_NN that_IN a_DT query_NN with_IN more_JJR clicks_NNS is_VBZ more_RBR likely_JJ to_TO be_VB an_DT informational_JJ query_NN ._.
+Since_IN we_PRP want_VBP to_TO test_VB whether_IN our_PRP$ algorithm_NN can_MD learn_VB from_IN the_DT past_JJ queries_NNS ,_, we_PRP also_RB filter_NN out_RP those_DT test_NN cases_NNS whose_WP$ queries_NNS can_MD not_RB retrieve_VB at_IN least_JJS ###_CD pseudo-documents_NNS from_IN our_PRP$ history_NN collection_NN ._.
+Finally_RB ,_, we_PRP obtain_VBP ###_CD and_CC ###_CD test_NN cases_NNS in_IN the_DT first_JJ and_CC second_JJ test_NN sets_NNS respectively_RB ._.
+On_IN average_NN ,_, we_PRP have_VBP #_# ._.
+##_NN and_CC 5_CD ._.
+##_NN clicks_NNS for_IN each_DT test_NN case_NN in_IN the_DT two_CD test_NN sets_NNS respectively_RB ._.
+6_CD ._.
+EXPERIMENTS_NNS In_IN the_DT section_NN ,_, we_PRP describe_VBP our_PRP$ experiments_NNS on_IN the_DT search_NN result_VBP organization_NN based_VBN past_IN search_NN engine_NN logs_NNS ._.
+6_CD ._.
+#_# Experimental_JJ Design_NN We_PRP use_VBP two_CD baseline_NN methods_NNS to_TO evaluate_VB the_DT proposed_VBN method_NN for_IN organizing_VBG search_NN results_NNS ._.
+For_IN each_DT test_NN case_NN ,_, the_DT first_JJ method_NN is_VBZ the_DT default_NN ranked_VBD list_NN from_IN a_DT search_NN engine_NN -LRB-_-LRB- baseline_NN -RRB-_-RRB- ._.
+The_DT second_JJ method_NN is_VBZ to_TO organize_VB the_DT search_NN results_VBZ by_IN clustering_VBG them_PRP -LRB-_-LRB- cluster-based_JJ -RRB-_-RRB- ._.
+For_IN fair_JJ comparison_NN ,_, we_PRP use_VBP the_DT same_JJ clustering_NN algorithm_NN as_IN our_PRP$ logbased_JJ method_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, star_NN clustering_NN -RRB-_-RRB- ._.
+That_DT is_VBZ ,_, we_PRP treat_VBP each_DT search_NN result_VBP as_IN a_DT document_NN ,_, construct_NN the_DT similarity_NN graph_NN ,_, and_CC find_VB the_DT star-shaped_JJ clusters_NNS ._.
+We_PRP compare_VBP our_PRP$ method_NN -LRB-_-LRB- log-based_JJ -RRB-_-RRB- with_IN the_DT two_CD baseline_NN methods_NNS in_IN the_DT following_VBG experiments_NNS ._.
+For_IN both_DT cluster-based_JJ and_CC log-based_JJ methods_NNS ,_, the_DT search_NN results_VBZ within_IN each_DT cluster_NN is_VBZ ranked_VBN based_VBN on_IN their_PRP$ original_JJ ranking_JJ given_VBN by_IN the_DT search_NN engine_NN ._.
+To_TO compare_VB different_JJ result_NN organization_NN methods_NNS ,_, we_PRP adopt_VBP a_DT similar_JJ method_NN as_IN in_IN the_DT paper_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+That_DT is_VBZ ,_, we_PRP compare_VBP the_DT quality_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, precision_NN -RRB-_-RRB- of_IN the_DT best_JJS cluster_NN ,_, which_WDT is_VBZ defined_VBN as_IN the_DT one_CD with_IN the_DT largest_JJS number_NN of_IN relevant_JJ documents_NNS ._.
+Organizing_NNP search_NN results_VBZ into_IN clusters_NNS is_VBZ to_TO help_VB users_NNS navigate_VB into_IN relevant_JJ documents_NNS quickly_RB ._.
+The_DT above_JJ metric_NN is_VBZ to_TO simulate_VB a_DT scenario_NN when_WRB users_NNS always_RB choose_VBP the_DT right_JJ cluster_NN and_CC look_VB into_IN it_PRP ._.
+Specifically_RB ,_, we_PRP download_VBP and_CC organize_VBP the_DT top_JJ ###_CD search_NN results_VBZ into_IN aspects_NNS for_IN each_DT test_NN case_NN ._.
+We_PRP use_VBP Precision_NN at_IN #_# documents_NNS -LRB-_-LRB- P_NN @_IN #_# -RRB-_-RRB- in_IN the_DT best_JJS cluster_NN as_IN the_DT primary_JJ measure_NN to_TO compare_VB different_JJ methods_NNS ._.
+P_NN @_SYM #_# is_VBZ a_DT very_RB meaningful_JJ measure_NN as_IN it_PRP tells_VBZ us_PRP the_DT perceived_VBN precision_NN when_WRB the_DT user_NN opens_VBZ a_DT cluster_NN and_CC looks_VBZ at_IN the_DT first_JJ #_# documents_NNS ._.
+We_PRP also_RB use_VBP Mean_NN Reciprocal_JJ Rank_NNP -LRB-_-LRB- MRR_NNP -RRB-_-RRB- as_IN another_DT metric_JJ ._.
+MRR_NN is_VBZ calculated_VBN as_IN MRR_NN =_JJ 1_CD |_CD T_NN |_CD qT_NN 1_CD rq_NN where_WRB T_NN is_VBZ a_DT set_NN of_IN test_NN queries_NNS ,_, rq_NN is_VBZ the_DT rank_NN of_IN the_DT first_JJ relevant_JJ document_NN for_IN q_NN ._.
+To_TO give_VB a_DT fair_JJ comparison_NN across_IN different_JJ organization_NN algorithms_NNS ,_, we_PRP force_VBP both_CC cluster-based_JJ and_CC log-based_JJ methods_NNS to_TO output_NN the_DT same_JJ number_NN of_IN aspects_NNS and_CC force_VB each_DT search_NN result_VBP to_TO be_VB in_IN one_CD and_CC only_RB one_CD aspect_NN ._.
+The_DT number_NN of_IN aspects_NNS is_VBZ fixed_VBN at_IN ##_CD in_IN all_PDT the_DT following_VBG experiments_NNS ._.
+The_DT star_NN clustering_NN algorithm_NN can_MD output_NN different_JJ number_NN of_IN clusters_NNS for_IN different_JJ input_NN ._.
+To_TO constrain_VB the_DT number_NN of_IN clusters_NNS to_TO ##_CD ,_, we_PRP order_VBP all_PDT the_DT clusters_NNS by_IN their_PRP$ sizes_NNS ,_, select_VBP the_DT top_JJ ##_NN as_IN aspect_NN candidates_NNS ._.
+We_PRP then_RB re-assign_VB each_DT search_NN result_VBP to_TO one_CD of_IN these_DT selected_VBN ##_NN aspects_NNS that_WDT has_VBZ the_DT highest_JJS similarity_NN score_NN with_IN the_DT corresponding_JJ aspect_NN centroid_NN ._.
+In_IN our_PRP$ experiments_NNS ,_, we_PRP observe_VBP that_IN the_DT sizes_NNS of_IN the_DT best_JJS clusters_NNS are_VBP all_DT larger_JJR than_IN #_# ,_, and_CC this_DT ensures_VBZ that_IN P_NN @_IN #_# is_VBZ a_DT meaningful_JJ metric_JJ ._.
+6_CD ._.
+#_# Experimental_JJ Results_NNS Our_PRP$ main_JJ hypothesis_NN is_VBZ that_IN organizing_VBG search_NN results_VBZ based_VBN on_IN the_DT users_NNS ''_'' interests_NNS learned_VBD from_IN a_DT search_NN log_NN data_NNS set_NN is_VBZ more_RBR beneficial_JJ than_IN to_TO organize_VB results_NNS using_VBG a_DT simple_JJ list_NN or_CC cluster_NN search_NN results_NNS ._.
+In_IN the_DT following_VBG ,_, we_PRP test_VBP our_PRP$ hypothesis_NN from_IN two_CD perspectives_NNS -_: organization_NN and_CC labeling_NN ._.
+Method_NN Test_NN set_VBN #_# Test_VB set_VBN #_# MMR_NNP P_NN @_IN #_# MMR_NNP P_NN @_IN #_# Baseline_NNP #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_CD Cluster-based_JJ #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_CD Log-based_JJ #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NNP Cluster_NNP /_: Baseline_NNP #_# ._.
+##_CD %_NN -_: #_# ._.
+##_CD %_NN #_# ._.
+##_CD %_NN -8_CD ._.
+##_CD %_NN Log_NN /_: Baseline_NNP #_# ._.
+##_CD %_NN #_# ._.
+##_CD %_NN #_# ._.
+##_CD %_NN #_# ._.
+##_CD %_NN Log_NN /_: Cluster_NNP #_# ._.
+##_CD %_NN ##_CD ._.
+##_CD %_NN #_# ._.
+##_CD %_NN ##_CD ._.
+##_CD %_NN Table_NNP #_# :_: Comparison_NN of_IN different_JJ methods_NNS by_IN MMR_NN and_CC P_NN @_IN #_# ._.
+We_PRP also_RB show_VBP the_DT percentage_NN of_IN relative_JJ improvement_NN in_IN the_DT lower_JJR part_NN ._.
+Comparison_NN Test_NN set_VBN #_# Test_VB set_VBN #_# Impr_NNP ._.
+/_: Decr_NNP ._.
+Impr_NNP ._.
+/_: Decr_NNP ._.
+Cluster_NN /_: Baseline_NNP ##_CD /_: ##_CD ##_CD /_: ##_CD Log_NN /_: Baseline_NNP ##_CD /_: ##_CD ##_CD /_: ##_CD Log_NN /_: Cluster_NNP ##_CD /_: ##_CD ##_CD /_: ##_CD Table_NNP #_# :_: Pairwise_JJ comparison_NN w_NN ._.
+r_NN ._.
+t_NN the_DT number_NN of_IN test_NN cases_NNS whose_WP$ P_NN @_IN #_# ''_'' s_NNS are_VBP improved_VBN versus_CC decreased_VBN w_NN ._.
+r_NN ._.
+t_NN the_DT baseline_NN ._.
+6_CD ._.
+#_# ._.
+#_# Overall_JJ performance_NN We_PRP compare_VBP three_CD methods_NNS ,_, basic_JJ search_NN engine_NN ranking_NN -LRB-_-LRB- baseline_NN -RRB-_-RRB- ,_, traditional_JJ clustering_NN based_VBN method_NN -LRB-_-LRB- clusterbased_JJ -RRB-_-RRB- ,_, and_CC our_PRP$ log_NN based_VBN method_NN -LRB-_-LRB- log-based_JJ -RRB-_-RRB- ,_, in_IN Table_NNP #_# using_VBG MRR_NNP and_CC P_NN @_IN #_# ._.
+We_PRP optimize_VBP the_DT parameter_NN ''_'' s_NNS for_IN each_DT collection_NN individually_RB based_VBN on_IN P_NN @_IN #_# values_NNS ._.
+This_DT shows_VBZ the_DT best_JJS performance_NN that_IN each_DT method_NN can_MD achieve_VB ._.
+In_IN this_DT table_NN ,_, we_PRP can_MD see_VB that_IN in_IN both_DT test_NN collections_NNS ,_, our_PRP$ method_NN is_VBZ better_JJR than_IN both_DT the_DT baseline_NN and_CC the_DT cluster-based_JJ methods_NNS ._.
+For_IN example_NN ,_, in_IN the_DT first_JJ test_NN collection_NN ,_, the_DT baseline_NN method_NN of_IN MMR_NN is_VBZ #_# ._.
+###_NN ,_, the_DT cluster-based_JJ method_NN is_VBZ 0_CD ._.
+###_NN and_CC our_PRP$ method_NN is_VBZ #_# ._.
+###_NN ._.
+We_PRP achieve_VBP higher_JJR accuracy_NN than_IN both_DT cluster-based_JJ method_NN -LRB-_-LRB- #_# ._.
+##_CD %_NN improvement_NN -RRB-_-RRB- and_CC the_DT baseline_NN method_NN -LRB-_-LRB- #_# ._.
+##_CD %_NN improvement_NN -RRB-_-RRB- ._.
+The_DT P_NN @_IN #_# values_NNS are_VBP #_# ._.
+###_NN for_IN the_DT baseline_NN ,_, #_# ._.
+###_NN for_IN cluster-based_JJ method_NN ,_, but_CC #_# ._.
+###_NN for_IN our_PRP$ method_NN ._.
+Our_PRP$ method_NN improves_VBZ over_IN the_DT baseline_NN by_IN #_# ._.
+##_CD %_NN ,_, while_IN the_DT cluster-based_JJ method_NN even_RB decreases_VBZ the_DT accuracy_NN ._.
+This_DT is_VBZ because_IN cluster-based_JJ method_NN organizes_VBZ the_DT search_NN results_VBZ only_RB based_VBN on_IN the_DT contents_NNS ._.
+Thus_RB it_PRP could_MD organize_VB the_DT results_NNS differently_RB from_IN users_NNS ''_'' preferences_NNS ._.
+This_DT confirms_VBZ our_PRP$ hypothesis_NN of_IN the_DT bias_NN of_IN the_DT cluster-based_JJ method_NN ._.
+Comparing_VBG our_PRP$ method_NN with_IN the_DT cluster-based_JJ method_NN ,_, we_PRP achieve_VBP significant_JJ improvement_NN on_IN both_DT test_NN collections_NNS ._.
+The_DT p-values_NNS of_IN the_DT significance_NN tests_NNS based_VBN on_IN P_NN @_IN #_# on_IN both_DT collections_NNS are_VBP #_# ._.
+##_NN and_CC 0_CD ._.
+##_NN respectively_RB ._.
+This_DT shows_VBZ that_IN our_PRP$ log-based_JJ method_NN is_VBZ effective_JJ to_TO learn_VB users_NNS ''_'' preferences_NNS from_IN the_DT past_JJ query_JJ history_NN ,_, and_CC thus_RB it_PRP can_MD organize_VB the_DT search_NN results_VBZ in_IN a_DT more_RBR useful_JJ way_NN to_TO users_NNS ._.
+We_PRP showed_VBD the_DT optimal_JJ results_NNS above_IN ._.
+To_TO test_VB the_DT sensitivity_NN of_IN the_DT parameter_NN of_IN our_PRP$ log-based_JJ method_NN ,_, we_PRP use_VBP one_CD of_IN the_DT test_NN sets_VBZ to_TO tune_VB the_DT parameter_NN to_TO be_VB optimal_JJ and_CC then_RB use_VB the_DT tuned_VBN parameter_NN on_IN the_DT other_JJ set_NN ._.
+We_PRP compare_VBP this_DT result_NN -LRB-_-LRB- log_NN tuned_VBN outside_IN -RRB-_-RRB- with_IN the_DT optimal_JJ results_NNS of_IN both_DT cluster-based_JJ -LRB-_-LRB- cluster_NN optimized_VBN -RRB-_-RRB- and_CC log-based_JJ methods_NNS -LRB-_-LRB- log_NN optimized_VBN -RRB-_-RRB- in_IN Figure_NNP #_# ._.
+We_PRP can_MD see_VB that_IN ,_, as_IN expected_VBN ,_, the_DT performance_NN using_VBG the_DT parameter_NN tuned_VBN on_IN a_DT separate_JJ set_NN is_VBZ worse_JJR than_IN the_DT optimal_JJ performance_NN ._.
+However_RB ,_, our_PRP$ method_NN still_RB performs_VBZ much_RB better_JJR than_IN the_DT optimal_JJ results_NNS of_IN cluster-based_JJ method_NN on_IN both_DT test_NN collections_NNS ._.
+0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+#_# 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN Test_NN set_VBN #_# Test_VB set_VBN #_# P_NN @_IN #_# cluster_NN optimized_VBD log_NN optimized_VBN log_NN tuned_VBD outside_IN Figure_NNP #_# :_: Results_NNS using_VBG parameters_NNS tuned_VBN from_IN the_DT other_JJ test_NN collection_NN ._.
+We_PRP compare_VBP it_PRP with_IN the_DT optimal_JJ performance_NN of_IN the_DT cluster-based_JJ and_CC our_PRP$ logbased_JJ methods_NNS ._.
+0_CD 10_CD 20_CD 30_CD 40_CD 50_CD 60_CD 1_CD #_# #_# #_# Bin_NNP number_NN #_# Queries_NNPS Improved_NNP Decreased_VBD Figure_NNP #_# :_: The_DT correlation_NN between_IN performance_NN change_NN and_CC result_VBP diversity_NN ._.
+In_IN Table_NNP #_# ,_, we_PRP show_VBP pairwise_JJ comparisons_NNS of_IN the_DT three_CD methods_NNS in_IN terms_NNS of_IN the_DT numbers_NNS of_IN test_NN cases_NNS for_IN which_WDT P_NN @_IN #_# is_VBZ increased_VBN versus_CC decreased_VBN ._.
+We_PRP can_MD see_VB that_IN our_PRP$ method_NN improves_VBZ more_JJR test_NN cases_NNS compared_VBN with_IN the_DT other_JJ two_CD methods_NNS ._.
+In_IN the_DT next_JJ section_NN ,_, we_PRP show_VBP more_RBR detailed_JJ analysis_NN to_TO see_VB what_WP types_NNS of_IN test_NN cases_NNS can_MD be_VB improved_VBN by_IN our_PRP$ method_NN ._.
+6_CD ._.
+#_# ._.
+#_# Detailed_JJ Analysis_NN To_TO better_RBR understand_VB the_DT cases_NNS where_WRB our_PRP$ log-based_JJ method_NN can_MD improve_VB the_DT accuracy_NN ,_, we_PRP test_VBP two_CD properties_NNS :_: result_VB diversity_NN and_CC query_NN difficulty_NN ._.
+All_PDT the_DT analysis_NN below_IN is_VBZ based_VBN on_IN test_NN set_NN #_# ._.
+Diversity_NN Analysis_NN :_: Intuitively_RB ,_, organizing_VBG search_NN results_VBZ into_IN different_JJ aspects_NNS is_VBZ more_RBR beneficial_JJ to_TO those_DT queries_NNS whose_WP$ results_NNS are_VBP more_RBR diverse_JJ ,_, as_IN for_IN such_JJ queries_NNS ,_, the_DT results_NNS tend_VBP to_TO form_VB two_CD or_CC more_JJR big_JJ clusters_NNS ._.
+In_IN order_NN to_TO test_VB the_DT hypothesis_NN that_IN log-based_JJ method_NN help_NN more_RBR those_DT queries_NNS with_IN diverse_JJ results_NNS ,_, we_PRP compute_VBP the_DT size_NN ratios_NNS of_IN the_DT biggest_JJS and_CC second_JJ biggest_JJS clusters_NNS in_IN our_PRP$ log-based_JJ results_NNS and_CC use_VB this_DT ratio_NN as_IN an_DT indicator_NN of_IN diversity_NN ._.
+If_IN the_DT ratio_NN is_VBZ small_JJ ,_, it_PRP means_VBZ that_IN the_DT first_JJ two_CD clusters_NNS have_VBP a_DT small_JJ difference_NN thus_RB the_DT results_NNS are_VBP more_RBR diverse_JJ ._.
+In_IN this_DT case_NN ,_, we_PRP would_MD expect_VB our_PRP$ method_NN to_TO help_VB more_RBR ._.
+The_DT results_NNS are_VBP shown_VBN in_IN Figure_NNP #_# ._.
+In_IN this_DT figure_NN ,_, we_PRP partition_NN the_DT ratios_NNS into_IN #_# bins_NNS ._.
+The_DT #_# bins_NNS correspond_VBP to_TO the_DT ratio_NN ranges_VBZ -LSB-_-LRB- #_# ,_, #_# -RRB-_-RRB- ,_, -LSB-_-LRB- #_# ,_, #_# -RRB-_-RRB- ,_, -LSB-_-LRB- #_# ,_, #_# -RRB-_-RRB- ,_, and_CC -LSB-_-LRB- #_# ,_, +_CC -RRB-_-RRB- respectively_RB ._.
+-LRB-_-LRB- -LSB-_-LRB- i_FW ,_, j_NN -RRB-_-RRB- means_VBZ that_IN i_FW ratio_NN <_JJR j_CD ._. -RRB-_-RRB-
+In_IN each_DT bin_NN ,_, we_PRP count_VBP the_DT numbers_NNS of_IN test_NN cases_NNS whose_WP$ P_NN @_IN #_# ''_'' s_NNS are_VBP improved_VBN versus_CC decreased_VBN with_IN respect_NN to_TO the_DT ranking_JJ baseline_NN ,_, and_CC plot_NN the_DT numbers_NNS in_IN this_DT figure_NN ._.
+We_PRP can_MD observe_VB that_IN when_WRB the_DT ratio_NN is_VBZ smaller_JJR ,_, the_DT log-based_JJ method_NN can_MD improve_VB more_JJR test_NN cases_NNS ._.
+But_CC when_WRB 0_CD 5_CD 10_CD 15_CD 20_CD 25_CD 30_CD 1_CD #_# #_# #_# Bin_NNP number_NN #_# Queries_NNPS Improved_NNP Decreased_VBD Figure_NNP #_# :_: The_DT correlation_NN between_IN performance_NN change_NN and_CC query_NN difficulty_NN ._.
+the_DT ratio_NN is_VBZ large_JJ ,_, the_DT log-based_JJ method_NN can_MD not_RB improve_VB over_IN the_DT baseline_NN ._.
+For_IN example_NN ,_, in_IN bin_NN #_# ,_, ##_CD test_NN cases_NNS are_VBP improved_VBN and_CC ##_NN are_VBP decreased_VBN ._.
+But_CC in_IN bin_NN #_# ,_, all_PDT the_DT #_# test_NN cases_NNS are_VBP decreased_VBN ._.
+This_DT confirms_VBZ our_PRP$ hypothesis_NN that_IN our_PRP$ method_NN can_MD help_VB more_RBR if_IN the_DT query_NN has_VBZ more_JJR diverse_JJ results_NNS ._.
+This_DT also_RB suggests_VBZ that_IN we_PRP should_MD turn_VB off_RP the_DT option_NN of_IN re-organizing_VBG search_NN results_VBZ if_IN the_DT results_NNS are_VBP not_RB very_RB diverse_JJ -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, as_IN indicated_VBN by_IN the_DT cluster_NN size_NN ratio_NN -RRB-_-RRB- ._.
+Difficulty_NN Analysis_NN :_: Difficult_JJ queries_NNS have_VBP been_VBN studied_VBN in_IN recent_JJ years_NNS -LSB-_-LRB- #_# ,_, ##_NN ,_, #_# -RSB-_-RRB- ._.
+Here_RB we_PRP analyze_VBP the_DT effectiveness_NN of_IN our_PRP$ method_NN in_IN helping_VBG difficult_JJ queries_NNS ._.
+We_PRP quantify_VBP the_DT query_NN difficulty_NN by_IN the_DT Mean_NN Average_JJ Precision_NN -LRB-_-LRB- MAP_NN -RRB-_-RRB- of_IN the_DT original_JJ search_NN engine_NN ranking_NN for_IN each_DT test_NN case_NN ._.
+We_PRP then_RB order_VB the_DT ###_CD test_NN cases_NNS in_IN test_NN set_NN #_# in_IN an_DT increasing_VBG order_NN of_IN MAP_NN values_NNS ._.
+We_PRP partition_NN the_DT test_NN cases_NNS into_IN #_# bins_NNS with_IN each_DT having_VBG a_DT roughly_RB equal_JJ number_NN of_IN test_NN cases_NNS ._.
+A_DT small_JJ MAP_NN means_VBZ that_IN the_DT utility_NN of_IN the_DT original_JJ ranking_NN is_VBZ low_JJ ._.
+Bin_NNP #_# contains_VBZ those_DT test_NN cases_NNS with_IN the_DT lowest_JJS MAP_NN ''_'' s_NNS and_CC bin_NN #_# contains_VBZ those_DT test_NN cases_NNS with_IN the_DT highest_JJS MAP_NN ''_'' s_NNS ._.
+For_IN each_DT bin_NN ,_, we_PRP compute_VBP the_DT numbers_NNS of_IN test_NN cases_NNS whose_WP$ P_NN @_IN #_# ''_'' s_NNS are_VBP improved_VBN versus_CC decreased_VBN ._.
+Figure_NNP #_# shows_VBZ the_DT results_NNS ._.
+Clearly_RB ,_, in_IN bin_NN #_# ,_, most_JJS of_IN the_DT test_NN cases_NNS are_VBP improved_VBN -LRB-_-LRB- ##_CD vs_CC #_# -RRB-_-RRB- ,_, while_IN in_IN bin_NN #_# ,_, log-based_JJ method_NN may_MD decrease_VB the_DT performance_NN -LRB-_-LRB- #_# vs_CC ##_NN -RRB-_-RRB- ._.
+This_DT shows_VBZ that_IN our_PRP$ method_NN is_VBZ more_RBR beneficial_JJ to_TO difficult_JJ queries_NNS ,_, which_WDT is_VBZ as_IN expected_VBN since_IN clustering_NN search_NN results_VBZ is_VBZ intended_VBN to_TO help_VB difficult_JJ queries_NNS ._.
+This_DT also_RB shows_VBZ that_IN our_PRP$ method_NN does_VBZ not_RB really_RB help_VB easy_JJ queries_NNS ,_, thus_RB we_PRP should_MD turn_VB off_RP our_PRP$ organization_NN option_NN for_IN easy_JJ queries_NNS ._.
+6_CD ._.
+#_# ._.
+#_# Parameter_NNP Setting_NNP We_PRP examine_VBP parameter_NN sensitivity_NN in_IN this_DT section_NN ._.
+For_IN the_DT star_NN clustering_NN algorithm_NN ,_, we_PRP study_VBP the_DT similarity_NN threshold_NN parameter_NN ._.
+For_IN the_DT OKAPI_NNP retrieval_NN function_NN ,_, we_PRP study_VBP the_DT parameters_NNS k1_NN and_CC b_NN ._.
+We_PRP also_RB study_VB the_DT impact_NN of_IN the_DT number_NN of_IN past_JJ queries_NNS retrieved_VBN in_IN our_PRP$ log-based_JJ method_NN ._.
+Figure_NNP #_# shows_VBZ the_DT impact_NN of_IN the_DT parameter_NN for_IN both_DT cluster-based_JJ and_CC log-based_JJ methods_NNS on_IN both_DT test_NN sets_NNS ._.
+We_PRP vary_VBP from_IN #_# ._.
+##_NN to_TO #_# ._.
+#_# with_IN step_NN #_# ._.
+##_NN ._.
+Figure_NNP #_# shows_VBZ that_IN the_DT performance_NN is_VBZ not_RB very_RB sensitive_JJ to_TO the_DT parameter_NN ._.
+We_PRP can_MD always_RB obtain_VB the_DT best_JJS result_NN in_IN range_NN #_# ._.
+#_# #_# ._.
+##_NN ._.
+In_IN Table_NNP #_# ,_, we_PRP show_VBP the_DT impact_NN of_IN OKAPI_NNP parameters_NNS ._.
+We_PRP vary_VBP k1_NN from_IN #_# ._.
+#_# to_TO #_# ._.
+#_# with_IN step_NN #_# ._.
+#_# and_CC b_NN from_IN #_# to_TO 1_CD with_IN step_NN #_# ._.
+#_# ._.
+From_IN this_DT table_NN ,_, it_PRP is_VBZ clear_JJ that_IN P_NN @_IN #_# is_VBZ also_RB not_RB very_RB sensitive_JJ to_TO the_DT parameter_NN setting_NN ._.
+Most_JJS of_IN the_DT values_NNS are_VBP larger_JJR than_IN #_# ._.
+##_NN ._.
+The_DT default_NN values_NNS k1_NN =_JJ #_# ._.
+#_# and_CC b_NN =_JJ #_# ._.
+#_# give_VB approximately_RB optimal_JJ results_NNS ._.
+We_PRP further_RB study_VB the_DT impact_NN of_IN the_DT amount_NN of_IN history_NN 0_CD ._.
+#_# 0_CD ._.
+##_NN 0_CD ._.
+#_# 0_CD ._.
+##_NN 0_CD ._.
+#_# 0_CD ._.
+##_NN #_# ._.
+#_# #_# ._.
+##_NN #_# ._.
+#_# #_# ._.
+##_NN #_# ._.
+#_# P_NN @_IN #_# similarity_NN threhold_NN :_: sigma_NN cluster-based_JJ #_# log-based_JJ #_# cluster-based_JJ #_# log-based_JJ #_# Figure_NNP #_# :_: The_DT impact_NN of_IN similarity_NN threshold_NN on_IN both_DT cluster-based_JJ and_CC log-based_JJ methods_NNS ._.
+We_PRP show_VBP the_DT result_NN on_IN both_DT test_NN collections_NNS ._.
+b_NN 0_CD ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# 1_CD ._.
+#_# #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN 1_CD ._.
+#_# #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_CD k1_NN #_# ._.
+#_# #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN 1_CD ._.
+#_# #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN 1_CD ._.
+#_# #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN 2_CD ._.
+#_# #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NNP Table_NNP #_# :_: Impact_NN of_IN OKAPI_NNP parameters_NNS k1_NN and_CC b_NN ._.
+information_NN to_TO learn_VB from_IN by_IN varying_VBG the_DT number_NN of_IN past_JJ queries_NNS to_TO be_VB retrieved_VBN for_IN learning_VBG aspects_NNS ._.
+The_DT results_NNS on_IN both_DT test_NN collections_NNS are_VBP shown_VBN in_IN Figure_NNP #_# ._.
+We_PRP can_MD see_VB that_IN the_DT performance_NN gradually_RB increases_VBZ as_IN we_PRP enlarge_VBP the_DT number_NN of_IN past_JJ queries_NNS retrieved_VBN ._.
+Thus_RB our_PRP$ method_NN could_MD potentially_RB learn_VB more_RBR as_IN we_PRP accumulate_VBP more_RBR history_NN ._.
+More_RBR importantly_RB ,_, as_IN time_NN goes_VBZ ,_, more_RBR and_CC more_RBR queries_NNS will_MD have_VB sufficient_JJ history_NN ,_, so_IN we_PRP can_MD improve_VB more_RBR and_CC more_RBR queries_NNS ._.
+6_CD ._.
+#_# ._.
+#_# An_DT Illustrative_JJ Example_NN We_PRP use_VBP the_DT query_NN area_NN codes_VBZ to_TO show_VB the_DT difference_NN in_IN the_DT results_NNS of_IN the_DT log-based_JJ method_NN and_CC the_DT cluster-based_JJ method_NN ._.
+This_DT query_NN may_MD mean_VB phone_NN codes_NNS or_CC zip_NN codes_NNS ._.
+Table_NNP #_# shows_VBZ the_DT representative_JJ keywords_NNS extracted_VBN from_IN the_DT three_CD biggest_JJS clusters_NNS of_IN both_DT methods_NNS ._.
+In_IN the_DT clusterbased_JJ method_NN ,_, the_DT results_NNS are_VBP partitioned_VBN based_VBN on_IN locations_NNS :_: local_JJ or_CC international_JJ ._.
+In_IN the_DT log-based_JJ method_NN ,_, the_DT results_NNS are_VBP disambiguated_VBN into_IN two_CD senses_NNS :_: phone_NN codes_NNS or_CC zip_NN codes_NNS ._.
+While_IN both_DT are_VBP reasonable_JJ partitions_NNS ,_, our_PRP$ evaluation_NN indicates_VBZ that_IN most_JJS users_NNS using_VBG such_JJ a_DT query_NN are_VBP often_RB interested_JJ in_IN either_CC phone_NN codes_NNS or_CC zip_NN codes_NNS ._.
+since_IN the_DT P_NN @_IN #_# values_NNS of_IN cluster-based_JJ and_CC log-based_JJ methods_NNS are_VBP #_# ._.
+#_# and_CC #_# ._.
+#_# ,_, respectively_RB ._.
+Therefore_RB our_PRP$ log-based_JJ method_NN is_VBZ more_RBR effective_JJ in_IN helping_VBG users_NNS to_TO navigate_VB into_IN their_PRP$ desired_VBN results_NNS ._.
+Cluster-based_JJ method_NN Log-based_JJ method_NN city_NN ,_, state_NN telephone_NN ,_, city_NN ,_, international_JJ local_JJ ,_, area_NN phone_NN ,_, dialing_VBG international_JJ zip_NN ,_, postal_JJ Table_NNP #_# :_: An_DT example_NN showing_VBG the_DT difference_NN between_IN the_DT cluster-based_JJ method_NN and_CC our_PRP$ log-based_JJ method_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+#_# 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+#_# 1501201008050403020_CD P_NN @_IN #_# #_# queries_NNS retrieved_VBD Test_NN set_NN #_# Test_VB set_VBN #_# Figure_NNP #_# :_: The_DT impact_NN of_IN the_DT number_NN of_IN past_JJ queries_NNS retrieved_VBN ._.
+6_CD ._.
+#_# ._.
+#_# Labeling_VBG Comparison_NN We_PRP now_RB compare_VBP the_DT labels_NNS between_IN the_DT cluster-based_JJ method_NN and_CC log-based_JJ method_NN ._.
+The_DT cluster-based_JJ method_NN has_VBZ to_TO rely_VB on_IN the_DT keywords_NNS extracted_VBN from_IN the_DT snippets_NNS to_TO construct_VB the_DT label_NN for_IN each_DT cluster_NN ._.
+Our_PRP$ log-based_JJ method_NN can_MD avoid_VB this_DT difficulty_NN by_IN taking_VBG advantage_NN of_IN queries_NNS ._.
+Specifically_RB ,_, for_IN the_DT cluster-based_JJ method_NN ,_, we_PRP count_VBP the_DT frequency_NN of_IN a_DT keyword_NN appearing_VBG in_IN a_DT cluster_NN and_CC use_VB the_DT most_RBS frequent_JJ keywords_NNS as_IN the_DT cluster_NN label_NN ._.
+For_IN log-based_JJ method_NN ,_, we_PRP use_VBP the_DT center_NN of_IN each_DT star_NN cluster_NN as_IN the_DT label_NN for_IN the_DT corresponding_JJ cluster_NN ._.
+In_IN general_JJ ,_, it_PRP is_VBZ not_RB easy_JJ to_TO quantify_VB the_DT readability_NN of_IN a_DT cluster_NN label_NN automatically_RB ._.
+We_PRP use_VBP examples_NNS to_TO show_VB the_DT difference_NN between_IN the_DT cluster-based_JJ and_CC the_DT log-based_JJ methods_NNS ._.
+In_IN Table_NNP #_# ,_, we_PRP list_VBP the_DT labels_NNS of_IN the_DT top_JJ #_# clusters_NNS for_IN two_CD examples_NNS jaguar_NN and_CC apple_NN ._.
+For_IN the_DT cluster-based_JJ method_NN ,_, we_PRP separate_VBP keywords_NNS by_IN commas_NNS since_IN they_PRP do_VBP not_RB form_VB a_DT phrase_NN ._.
+From_IN this_DT table_NN ,_, we_PRP can_MD see_VB that_IN our_PRP$ log-based_JJ method_NN gives_VBZ more_RBR readable_JJ labels_NNS because_IN it_PRP generates_VBZ labels_NNS based_VBN on_IN users_NNS ''_'' queries_NNS ._.
+This_DT is_VBZ another_DT advantage_NN of_IN our_PRP$ way_NN of_IN organizing_VBG search_NN results_VBZ over_IN the_DT clustering_NN approach_NN ._.
+Label_NN comparison_NN for_IN query_NN jaguar_NN Log-based_JJ method_NN Cluster-based_JJ method_NN 1_CD ._.
+jaguar_NN animal_NN #_# ._.
+jaguar_NN ,_, auto_NN ,_, accessories_NNS 2_CD ._.
+jaguar_JJ auto_NN accessories_NNS #_# ._.
+jaguar_NN ,_, type_NN ,_, prices_NNS 3_CD ._.
+jaguar_NN cats_NNS #_# ._.
+jaguar_NN ,_, panthera_NN ,_, cats_NNS 4_CD ._.
+jaguar_NN repair_NN #_# ._.
+jaguar_NN ,_, services_NNS ,_, boston_NN 5_CD ._.
+jaguar_NN animal_NN pictures_NNS #_# ._.
+jaguar_NN ,_, collection_NN ,_, apparel_NN Label_NN comparison_NN for_IN query_NN apple_NN Log-based_JJ method_NN Cluster-based_JJ method_NN 1_CD ._.
+apple_NN computer_NN #_# ._.
+apple_NN ,_, support_NN ,_, product_NN 2_CD ._.
+apple_NN ipod_NN #_# ._.
+apple_NN ,_, site_NN ,_, computer_NN 3_CD ._.
+apple_NN crisp_JJ recipe_NN #_# ._.
+apple_NN ,_, world_NN ,_, visit_NN 4_CD ._.
+fresh_JJ apple_NN cake_NN #_# ._.
+apple_NN ,_, ipod_NN ,_, amazon_IN 5_CD ._.
+apple_NN laptop_NN #_# ._.
+apple_NN ,_, products_NNS ,_, news_NN Table_NNP #_# :_: Cluster_NNP label_NN comparison_NN ._.
+7_CD ._.
+CONCLUSIONS_NNS AND_CC FUTURE_NNS WORK_VBP In_IN this_DT paper_NN ,_, we_PRP studied_VBD the_DT problem_NN of_IN organizing_VBG search_NN results_NNS in_IN a_DT user-oriented_JJ manner_NN ._.
+To_TO attain_VB this_DT goal_NN ,_, we_PRP rely_VBP on_IN search_NN engine_NN logs_NNS to_TO learn_VB interesting_JJ aspects_NNS from_IN users_NNS ''_'' perspective_NN ._.
+Given_VBN a_DT query_NN ,_, we_PRP retrieve_VBP its_PRP$ related_JJ queries_NNS from_IN past_JJ query_JJ history_NN ,_, learn_VBP the_DT aspects_NNS by_IN clustering_VBG the_DT past_JJ queries_NNS and_CC the_DT associated_VBN clickthrough_JJ information_NN ,_, and_CC categorize_VBP the_DT search_NN results_VBZ into_IN the_DT aspects_NNS learned_VBD ._.
+We_PRP compared_VBD our_PRP$ log-based_JJ method_NN with_IN the_DT traditional_JJ cluster-based_JJ method_NN and_CC the_DT baseline_NN of_IN search_NN engine_NN ranking_NN ._.
+The_DT experiments_NNS show_VBP that_IN our_PRP$ log-based_JJ method_NN can_MD consistently_RB outperform_VB cluster-based_JJ method_NN and_CC improve_VB over_IN the_DT ranking_JJ baseline_NN ,_, especially_RB when_WRB the_DT queries_NNS are_VBP difficult_JJ or_CC the_DT search_NN results_NNS are_VBP diverse_JJ ._.
+Furthermore_RB ,_, our_PRP$ log-based_JJ method_NN can_MD generate_VB more_JJR meaningful_JJ aspect_NN labels_NNS than_IN the_DT cluster_NN labels_VBZ generated_VBN based_VBN on_IN search_NN results_VBZ when_WRB we_PRP cluster_VBP search_NN results_NNS ._.
+There_EX are_VBP several_JJ interesting_JJ directions_NNS for_IN further_JJ extending_VBG our_PRP$ work_NN :_: First_NNP ,_, although_IN our_PRP$ experiment_NN results_NNS have_VBP clearly_RB shown_VBN promise_NN of_IN the_DT idea_NN of_IN learning_VBG from_IN search_NN logs_NNS to_TO organize_VB search_NN results_NNS ,_, the_DT methods_NNS we_PRP have_VBP experimented_VBN with_IN are_VBP relatively_RB simple_JJ ._.
+It_PRP would_MD be_VB interesting_JJ to_TO explore_VB other_JJ potentially_RB more_RBR effective_JJ methods_NNS ._.
+In_IN particular_JJ ,_, we_PRP hope_VBP to_TO develop_VB probabilistic_JJ models_NNS for_IN learning_VBG aspects_NNS and_CC organizing_VBG results_NNS simultaneously_RB ._.
+Second_RB ,_, with_IN the_DT proposed_JJ way_NN of_IN organizing_VBG search_NN results_NNS ,_, we_PRP can_MD expect_VB to_TO obtain_VB informative_JJ feedback_NN information_NN from_IN a_DT user_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, the_DT aspect_NN chosen_VBN by_IN a_DT user_NN to_TO view_NN -RRB-_-RRB- ._.
+It_PRP would_MD thus_RB be_VB interesting_JJ to_TO study_VB how_WRB to_TO further_JJ improve_VB the_DT organization_NN of_IN the_DT results_NNS based_VBN on_IN such_JJ feedback_NN information_NN ._.
+Finally_RB ,_, we_PRP can_MD combine_VB a_DT general_JJ search_NN log_NN with_IN any_DT personal_JJ search_NN log_NN to_TO customize_VB and_CC optimize_VB the_DT organization_NN of_IN search_NN results_NNS for_IN each_DT individual_JJ user_NN ._.
+8_CD ._.
+ACKNOWLEDGMENTS_NNS We_PRP thank_VBP the_DT anonymous_JJ reviewers_NNS for_IN their_PRP$ valuable_JJ comments_NNS ._.
+This_DT work_NN is_VBZ in_IN part_NN supported_VBN by_IN a_DT Microsoft_NNP Live_NNP Labs_NNPS Research_NNP Grant_NNP ,_, a_DT Google_NNP Research_NNP Grant_NNP ,_, and_CC an_DT NSF_NNP CAREER_NNP grant_NN IIS-0347933_NN ._.
+9_CD ._.
+REFERENCES_NNS -LSB-_-LRB- #_# -RSB-_-RRB- E_NN ._.
+Agichtein_NNP ,_, E_NNP ._.
+Brill_NNP ,_, and_CC S_NN ._.
+T_NN ._.
+Dumais_NNP ._.
+Improving_NN web_NN search_NN ranking_NN by_IN incorporating_VBG user_NN behavior_NN information_NN ._.
+In_IN SIGIR_NN ,_, pages_NNS 19-26_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- J_NN ._.
+A_DT ._.
+Aslam_NNP ,_, E_NNP ._.
+Pelekov_NNP ,_, and_CC D_NN ._.
+Rus_NN ._.
+The_DT star_NN clustering_NN algorithm_NN for_IN static_JJ and_CC dynamic_JJ information_NN organization_NN ._.
+Journal_NNP of_IN Graph_NNP Algorithms_NNPS and_CC Applications_NNS ,_, #_# -LRB-_-LRB- #_# -RRB-_-RRB- :_: 95-129_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- R_NN ._.
+A_DT ._.
+Baeza-Yates_NNS ._.
+Applications_NNS of_IN web_NN query_NN mining_NN ._.
+In_IN ECIR_NN ,_, pages_NNS 7-22_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- D_NN ._.
+Beeferman_NNP and_CC A_NNP ._.
+L_NN ._.
+Berger_NNP ._.
+Agglomerative_JJ clustering_NN of_IN a_DT search_NN engine_NN query_NN log_NN ._.
+In_IN KDD_NNP ,_, pages_NNS 407-416_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- D_NN ._.
+Carmel_NNP ,_, E_NNP ._.
+Yom-Tov_NNP ,_, A_NNP ._.
+Darlow_NNP ,_, and_CC D_NN ._.
+Pelleg_NNP ._.
+What_WP makes_VBZ a_DT query_NN difficult_JJ ?_.
+In_IN SIGIR_NN ,_, pages_NNS 390-397_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- H_NN ._.
+Chen_NNP and_CC S_NN ._.
+T_NN ._.
+Dumais_NNP ._.
+Bringing_VBG order_NN to_TO the_DT web_NN :_: automatically_RB categorizing_VBG search_NN results_NNS ._.
+In_IN CHI_NNP ,_, pages_NNS 145-152_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- S_NN ._.
+Cronen-Townsend_NNP ,_, Y_NN ._.
+Zhou_NNP ,_, and_CC W_NN ._.
+B_NN ._.
+Croft_NNP ._.
+Predicting_VBG query_NN performance_NN ._.
+In_IN Proceedings_NNP of_IN ACM_NNP SIGIR_NNP ####_CD ,_, pages_NNS 299-306_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- S_NN ._.
+T_NN ._.
+Dumais_NNP ,_, E_NNP ._.
+Cutrell_NNP ,_, and_CC H_NN ._.
+Chen_NNP ._.
+Optimizing_VBG search_NN by_IN showing_VBG results_NNS in_IN context_NN ._.
+In_IN CHI_NNP ,_, pages_NNS 277-284_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- M_NN ._.
+A_DT ._.
+Hearst_NNP and_CC J_NNP ._.
+O_NN ._.
+Pedersen_NNP ._.
+Reexamining_VBG the_DT cluster_NN hypothesis_NN :_: Scatter_VB /_: gather_VB on_IN retrieval_NN results_NNS ._.
+In_IN SIGIR_NN ,_, pages_NNS 76-84_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- T_NN ._.
+Joachims_NNP ._.
+Optimizing_VBG search_NN engines_NNS using_VBG clickthrough_JJ data_NNS ._.
+In_IN KDD_NNP ,_, pages_NNS 133-142_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- T_NN ._.
+Joachims_NNP ._.
+Evaluating_VBG Retrieval_NNP Performance_NNP Using_VBG Clickthrough_NNP Data_NNP ._.
+,_, pages_NNS 79-96_CD ._.
+Physica_NNP /_: Springer_NNP Verlag_NNP ,_, ####_CD ._.
+in_IN J_NN ._.
+Franke_NNP and_CC G_NNP ._.
+Nakhaeizadeh_NNP and_CC I_PRP ._.
+Renz_NNP ,_, Text_VB Mining_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- R_NN ._.
+Jones_NNP ,_, B_NN ._.
+Rey_NNP ,_, O_NNP ._.
+Madani_NNP ,_, and_CC W_NN ._.
+Greiner_NNP ._.
+Generating_NNP query_NN substitutions_NNS ._.
+In_IN WWW_NNP ,_, pages_NNS 387-396_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- K_NN ._.
+Kummamuru_NNP ,_, R_NN ._.
+Lotlikar_NNP ,_, S_NN ._.
+Roy_NNP ,_, K_NNP ._.
+Singal_NNP ,_, and_CC R_NN ._.
+Krishnapuram_NNP ._.
+A_DT hierarchical_JJ monothetic_JJ document_NN clustering_NN algorithm_NN for_IN summarization_NN and_CC browsing_VBG search_NN results_NNS ._.
+In_IN WWW_NNP ,_, pages_NNS 658-665_CD ,_, 2004_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Microsoft_NNP Live_NNP Labs_NNPS ._.
+Accelerating_VBG search_NN in_IN academic_JJ research_NN ,_, ####_CD ._.
+http_NN :_: /_: /_: research_NN ._.
+microsoft_NN ._.
+com_NN /_: ur_NN /_: us_PRP /_: fundingopps_NNS /_: RFPs_NNS /_: Search_VB ####_CD RFP_NNP ._.
+aspx_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- P_NN ._.
+Pirolli_NNP ,_, P_NN ._.
+K_NN ._.
+Schank_NNP ,_, M_NN ._.
+A_DT ._.
+Hearst_NNP ,_, and_CC C_NN ._.
+Diehl_NNP ._.
+Scatter_NNP /_: gather_VB browsing_VBG communicates_VBZ the_DT topic_NN structure_NN of_IN a_DT very_RB large_JJ text_NN collection_NN ._.
+In_IN CHI_NNP ,_, pages_NNS 213-220_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- F_NN ._.
+Radlinski_NNP and_CC T_NN ._.
+Joachims_NNP ._.
+Query_NNP chains_NNS :_: learning_VBG to_TO rank_VB from_IN implicit_JJ feedback_NN ._.
+In_IN KDD_NNP ,_, pages_NNS 239-248_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- S_NN ._.
+E_NN ._.
+Robertson_NNP and_CC S_NN ._.
+Walker_NNP ._.
+Some_DT simple_JJ effective_JJ approximations_NNS to_TO the_DT 2-poisson_JJ model_NN for_IN probabilistic_JJ weighted_JJ retrieval_NN ._.
+In_IN SIGIR_NN ,_, pages_NNS 232-241_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- G_NN ._.
+Salton_NNP ,_, A_NNP ._.
+Wong_NNP ,_, and_CC C_NN ._.
+S_NN ._.
+Yang_NNP ._.
+A_DT vector_NN space_NN model_NN for_IN automatic_JJ indexing_NN ._.
+Commun_NNP ._.
+ACM_NNP ,_, 18_CD -LRB-_-LRB- ##_CD -RRB-_-RRB- :_: 613-620_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- X_NN ._.
+Shen_NNP ,_, B_NN ._.
+Tan_NNP ,_, and_CC C_NN ._.
+Zhai_NNP ._.
+Context-sensitive_JJ information_NN retrieval_NN using_VBG implicit_JJ feedback_NN ._.
+In_IN SIGIR_NN ,_, pages_NNS 43-50_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- C_NN ._.
+J_NN ._.
+van_NN Rijsbergen_NNP ._.
+Information_NNP Retrieval_NNP ,_, second_JJ edition_NN ._.
+Butterworths_NNS ,_, London_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- V_NN ._.
+N_NN ._.
+Vapnik_NNP ._.
+The_DT Nature_NNP of_IN Statistical_NNP Learning_NNP Theory_NNP ._.
+Springer-Verlag_NNP ,_, Berlin_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Vivisimo_NNP ._.
+http_NN :_: /_: /_: vivisimo_NN ._.
+com_NN /_: ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- X_NN ._.
+Wang_NNP ,_, J_NNP ._.
+-_: T_NN ._.
+Sun_NNP ,_, Z_NN ._.
+Chen_NNP ,_, and_CC C_NN ._.
+Zhai_NNP ._.
+Latent_JJ semantic_JJ analysis_NN for_IN multiple-type_JJ interrelated_JJ data_NNS objects_NNS ._.
+In_IN SIGIR_NN ,_, pages_NNS 236-243_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+-_: R_NN ._.
+Wen_NNP ,_, J_NNP ._.
+-_: Y_NN ._.
+Nie_NN ,_, and_CC H_NN ._.
+Zhang_NNP ._.
+Clustering_NN user_NN queries_NNS of_IN a_DT search_NN engine_NN ._.
+In_IN WWW_NNP ,_, pages_NNS 162-168_CD ,_, 2001_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- E_NN ._.
+Yom-Tov_NNP ,_, S_NN ._.
+Fine_NNP ,_, D_NNP ._.
+Carmel_NNP ,_, and_CC A_NN ._.
+Darlow_NNP ._.
+Learning_VBG to_TO estimate_VB query_NN difficulty_NN :_: including_VBG applications_NNS to_TO missing_VBG content_JJ detection_NN and_CC distributed_VBN information_NN retrieval_NN ._.
+In_IN SIGIR_NN ,_, pages_NNS 512-519_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- O_NN ._.
+Zamir_NNP and_CC O_NNP ._.
+Etzioni_NNP ._.
+Web_NN document_NN clustering_NN :_: A_DT feasibility_NN demonstration_NN ._.
+In_IN SIGIR_NN ,_, pages_NNS 46-54_CD ,_, 1998_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- O_NN ._.
+Zamir_NNP and_CC O_NNP ._.
+Etzioni_NNP ._.
+Grouper_NNP :_: A_NNP dynamic_JJ clustering_NN interface_NN to_TO web_NN search_NN results_NNS ._.
+Computer_NN Networks_NNP ,_, ##_CD -LRB-_-LRB- 11-16_CD -RRB-_-RRB- :_: 1361-1374_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- H_NN ._.
+-_: J_NN ._.
+Zeng_NNP ,_, Q_NNP ._.
+-_: C_NN ._.
+He_PRP ,_, Z_NN ._.
+Chen_NNP ,_, W_NNP ._.
+-_: Y_NN ._.
+Ma_NNP ,_, and_CC J_NN ._.
+Ma_NNP ._.
+Learning_VBG to_TO cluster_VB web_NN search_NN results_NNS ._.
+In_IN SIGIR_NN ,_, pages_NNS 210-217_CD ,_, ####_CD ._.

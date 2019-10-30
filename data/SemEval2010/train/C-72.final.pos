@@ -1,0 +1,454 @@
+GUESS_NNS :_: Gossiping_VBG Updates_NNS for_IN Efficient_JJ Spectrum_NN Sensing_VBG Nabeel_NNP Ahmed_NNP University_NNP of_IN Waterloo_NNP David_NNP R_NNP ._.
+Cheriton_NNP School_NNP of_IN Computer_NNP Science_NNP n3ahmed_VBD @_SYM uwaterloo_NN ._.
+ca_MD David_NNP Hadaller_NNP University_NNP of_IN Waterloo_NNP David_NNP R_NNP ._.
+Cheriton_NNP School_NNP of_IN Computer_NNP Science_NNP dthadaller_NN @_IN uwaterloo_NN ._.
+ca_MD Srinivasan_NNP Keshav_NNP University_NNP of_IN Waterloo_NNP David_NNP R_NNP ._.
+Cheriton_NNP School_NNP of_IN Computer_NNP Science_NNP keshav_NNP @_IN uwaterloo_NN ._.
+ca_MD ABSTRACT_NN Wireless_NNP radios_NNS of_IN the_DT future_NN will_MD likely_RB be_VB frequency-agile_JJ ,_, that_DT is_VBZ ,_, supporting_VBG opportunistic_JJ and_CC adaptive_JJ use_NN of_IN the_DT RF_NN spectrum_NN ._.
+Such_JJ radios_NNS must_MD coordinate_VB with_IN each_DT other_JJ to_TO build_VB an_DT accurate_JJ and_CC consistent_JJ map_NN of_IN spectral_JJ utilization_NN in_IN their_PRP$ surroundings_NNS ._.
+We_PRP focus_VBP on_IN the_DT problem_NN of_IN sharing_VBG RF_NN spectrum_NN data_NNS among_IN a_DT collection_NN of_IN wireless_JJ devices_NNS ._.
+The_DT inherent_JJ requirements_NNS of_IN such_JJ data_NNS and_CC the_DT time-granularity_NN at_IN which_WDT it_PRP must_MD be_VB collected_VBN makes_VBZ this_DT problem_NN both_CC interesting_JJ and_CC technically_RB challenging_JJ ._.
+We_PRP propose_VBP GUESS_NNP ,_, a_DT novel_JJ incremental_JJ gossiping_VBG approach_NN to_TO coordinated_VBN spectral_JJ sensing_VBG ._.
+It_PRP -LRB-_-LRB- #_# -RRB-_-RRB- reduces_VBZ protocol_NN overhead_NN by_IN limiting_VBG the_DT amount_NN of_IN information_NN exchanged_VBD between_IN participating_VBG nodes_NNS ,_, -LRB-_-LRB- #_# -RRB-_-RRB- is_VBZ resilient_JJ to_TO network_NN alterations_NNS ,_, due_JJ to_TO node_NN movement_NN or_CC node_NN failures_NNS ,_, and_CC -LRB-_-LRB- #_# -RRB-_-RRB- allows_VBZ exponentially-fast_JJ information_NN convergence_NN ._.
+We_PRP outline_VBP an_DT initial_JJ solution_NN incorporating_VBG these_DT ideas_NNS and_CC also_RB show_VBP how_WRB our_PRP$ approach_NN reduces_VBZ network_NN overhead_NN by_IN up_RB to_TO a_DT factor_NN of_IN #_# ._.
+#_# and_CC results_VBZ in_IN up_RB to_TO #_# ._.
+#_# times_NNS faster_JJR information_NN convergence_NN than_IN alternative_JJ approaches_NNS ._.
+Categories_NNS and_CC Subject_NNP Descriptors_NNPS C_NNP ._.
+#_# ._.
+#_# -LSB-_-LRB- Distributed_VBN Systems_NNPS -RSB-_-RRB- :_: Distributed_VBN applications_NNS General_JJ Terms_NNS Algorithms_NNS ,_, Performance_NNP ,_, Experimentation_NN 1_CD ._.
+INTRODUCTION_NNP There_EX has_VBZ recently_RB been_VBN a_DT huge_JJ surge_NN in_IN the_DT growth_NN of_IN wireless_JJ technology_NN ,_, driven_VBN primarily_RB by_IN the_DT availability_NN of_IN unlicensed_JJ spectrum_NN ._.
+However_RB ,_, this_DT has_VBZ come_VBN at_IN the_DT cost_NN of_IN increased_VBN RF_NN interference_NN ,_, which_WDT has_VBZ caused_VBN the_DT Federal_NNP Communications_NNP Commission_NNP -LRB-_-LRB- FCC_NNP -RRB-_-RRB- in_IN the_DT United_NNP States_NNPS to_TO re-evaluate_VB its_PRP$ strategy_NN on_IN spectrum_NN allocation_NN ._.
+Currently_RB ,_, the_DT FCC_NNP has_VBZ licensed_VBN RF_NN spectrum_NN to_TO a_DT variety_NN of_IN public_JJ and_CC private_JJ institutions_NNS ,_, termed_VBN primary_JJ users_NNS ._.
+New_NNP spectrum_NN allocation_NN regimes_VBZ implemented_VBN by_IN the_DT FCC_NNP use_NN dynamic_JJ spectrum_NN access_NN schemes_NNS to_TO either_CC negotiate_VB or_CC opportunistically_RB allocate_VB RF_NN spectrum_NN to_TO unlicensed_JJ secondary_JJ users_NNS Permission_NN to_TO make_VB digital_JJ or_CC hard_JJ copies_NNS of_IN all_DT or_CC part_NN of_IN this_DT work_NN for_IN personal_JJ or_CC classroom_NN use_NN is_VBZ granted_VBN without_IN fee_NN provided_VBD that_IN copies_NNS are_VBP not_RB made_VBN or_CC distributed_VBN for_IN profit_NN or_CC commercial_JJ advantage_NN and_CC that_IN copies_NNS bear_VBP this_DT notice_NN and_CC the_DT full_JJ citation_NN on_IN the_DT first_JJ page_NN ._.
+To_TO copy_VB otherwise_RB ,_, to_TO republish_VB ,_, to_TO post_VB on_IN servers_NNS or_CC to_TO redistribute_VB to_TO lists_NNS ,_, requires_VBZ prior_RB specific_JJ D1_NN D2_NN D5_NN D3_NN D4_NN Primary_JJ User_NN Shadowed_NNP Secondary_JJ Users_NNP Secondary_JJ Users_NNS detect_VBP Primary_JJ '_'' s_NNS Signal_VBP Shadowed_NNP Secondary_JJ User_NN Figure_NN #_# :_: Without_IN cooperation_NN ,_, shadowed_VBD users_NNS are_VBP not_RB able_JJ to_TO detect_VB the_DT presence_NN of_IN the_DT primary_JJ user_NN ._.
+that_WDT can_MD use_VB it_PRP when_WRB the_DT primary_JJ user_NN is_VBZ absent_JJ ._.
+The_DT second_JJ type_NN of_IN allocation_NN scheme_NN is_VBZ termed_VBN opportunistic_JJ spectrum_NN sharing_NN ._.
+The_DT FCC_NNP has_VBZ already_RB legislated_VBN this_DT access_NN method_NN for_IN the_DT #_# GHz_NNP band_NN and_CC is_VBZ also_RB considering_VBG the_DT same_JJ for_IN TV_NN broadcast_NN bands_NNS -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+As_IN a_DT result_NN ,_, a_DT new_JJ wave_NN of_IN intelligent_JJ radios_NNS ,_, termed_VBN cognitive_JJ radios_NNS -LRB-_-LRB- or_CC software_NN defined_VBD radios_NNS -RRB-_-RRB- ,_, is_VBZ emerging_VBG that_IN can_MD dynamically_RB re-tune_VB their_PRP$ radio_NN parameters_NNS based_VBN on_IN interactions_NNS with_IN their_PRP$ surrounding_JJ environment_NN ._.
+Under_IN the_DT new_JJ opportunistic_JJ allocation_NN strategy_NN ,_, secondary_JJ users_NNS are_VBP obligated_VBN not_RB to_TO interfere_VB with_IN primary_JJ users_NNS -LRB-_-LRB- senders_NNS or_CC receivers_NNS -RRB-_-RRB- ._.
+This_DT can_MD be_VB done_VBN by_IN sensing_VBG the_DT environment_NN to_TO detect_VB the_DT presence_NN of_IN primary_JJ users_NNS ._.
+However_RB ,_, local_JJ sensing_VBG is_VBZ not_RB always_RB adequate_JJ ,_, especially_RB in_IN cases_NNS where_WRB a_DT secondary_JJ user_NN is_VBZ shadowed_VBN from_IN a_DT primary_JJ user_NN ,_, as_IN illustrated_VBN in_IN Figure_NNP #_# ._.
+Here_RB ,_, coordination_NN between_IN secondary_JJ users_NNS is_VBZ the_DT only_JJ way_NN for_IN shadowed_JJ users_NNS to_TO detect_VB the_DT primary_JJ ._.
+In_IN general_JJ ,_, cooperation_NN improves_VBZ sensing_VBG accuracy_NN by_IN an_DT order_NN of_IN magnitude_NN when_WRB compared_VBN to_TO not_RB cooperating_VBG at_IN all_DT -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+To_TO realize_VB this_DT vision_NN of_IN dynamic_JJ spectrum_NN access_NN ,_, two_CD fundamental_JJ problems_NNS must_MD be_VB solved_VBN :_: -LRB-_-LRB- #_# -RRB-_-RRB- Efficient_JJ and_CC coordinated_VBN spectrum_NN sensing_VBG and_CC -LRB-_-LRB- #_# -RRB-_-RRB- Distributed_VBN spectrum_NN allocation_NN ._.
+In_IN this_DT paper_NN ,_, we_PRP propose_VBP strategies_NNS for_IN coordinated_VBN spectrum_NN sensing_VBG that_DT are_VBP low_JJ cost_NN ,_, operate_VBP on_IN timescales_NNS comparable_JJ to_TO the_DT agility_NN of_IN the_DT RF_NN environment_NN ,_, and_CC are_VBP resilient_JJ to_TO network_NN failures_NNS and_CC alterations_NNS ._.
+We_PRP defer_VBP the_DT problem_NN of_IN spectrum_NN allocation_NN to_TO future_JJ work_NN ._.
+Spectrum_NN sensing_VBG techniques_NNS for_IN cognitive_JJ radio_NN networks_NNS -LSB-_-LRB- #_# ,_, ##_NN -RSB-_-RRB- are_VBP broadly_RB classified_VBN into_IN three_CD regimes_NNS ;_: -LRB-_-LRB- #_# -RRB-_-RRB- centralized_VBN coordinated_VBN techniques_NNS ,_, -LRB-_-LRB- #_# -RRB-_-RRB- decentralized_VBN coordinated_VBN techniques_NNS ,_, and_CC -LRB-_-LRB- #_# -RRB-_-RRB- decentralized_VBN uncoordinated_JJ techniques_NNS ._.
+We_PRP advocate_VBP a_DT decentralized_VBN coordinated_VBN approach_NN ,_, similar_JJ in_IN spirit_NN to_TO OSPF_NN link-state_NN routing_VBG used_VBN in_IN the_DT Internet_NN ._.
+This_DT is_VBZ more_RBR effective_JJ than_IN uncoordinated_JJ approaches_NNS because_IN making_VBG decisions_NNS based_VBN only_RB on_IN local_JJ information_NN is_VBZ fallible_JJ -LRB-_-LRB- as_IN shown_VBN in_IN Figure_NNP #_# -RRB-_-RRB- ._.
+Moreover_RB ,_, compared_VBN to_TO cen12_NN tralized_VBD approaches_NNS ,_, decentralized_VBN techniques_NNS are_VBP more_RBR scalable_JJ ,_, robust_JJ ,_, and_CC resistant_JJ to_TO network_NN failures_NNS and_CC security_NN attacks_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+jamming_VBG -RRB-_-RRB- ._.
+Coordinating_VBG sensory_JJ data_NNS between_IN cognitive_JJ radio_NN devices_NNS is_VBZ technically_RB challenging_JJ because_IN accurately_RB assessing_VBG spectrum_NN usage_NN requires_VBZ exchanging_VBG potentially_RB large_JJ amounts_NNS of_IN data_NNS with_IN many_JJ radios_NNS at_IN very_RB short_JJ time_NN scales_NNS ._.
+Data_NNS size_NN grows_VBZ rapidly_RB due_JJ to_TO the_DT large_JJ number_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+thousands_NNS -RRB-_-RRB- of_IN spectrum_NN bands_NNS that_WDT must_MD be_VB scanned_VBN ._.
+This_DT data_NNS must_MD also_RB be_VB exchanged_VBN between_IN potentially_RB hundreds_NNS of_IN neighboring_VBG secondary_JJ users_NNS at_IN short_JJ time_NN scales_NNS ,_, to_TO account_VB for_IN rapid_JJ changes_NNS in_IN the_DT RF_NN environment_NN ._.
+This_DT paper_NN presents_VBZ GUESS_NNP ,_, a_DT novel_JJ approach_NN to_TO coordinated_VBN spectrum_NN sensing_VBG for_IN cognitive_JJ radio_NN networks_NNS ._.
+Our_PRP$ approach_NN is_VBZ motivated_VBN by_IN the_DT following_VBG key_JJ observations_NNS :_: 1_CD ._.
+Low-cost_JJ sensors_NNS collect_VBP approximate_JJ data_NNS :_: Most_JJS devices_NNS have_VBP limited_VBN sensing_VBG resolution_NN because_IN they_PRP are_VBP low-cost_JJ and_CC low_JJ duty-cycle_JJ devices_NNS and_CC thus_RB can_MD not_RB perform_VB complex_JJ RF_NN signal_NN processing_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+matched_VBN filtering_VBG -RRB-_-RRB- ._.
+Many_JJ are_VBP typically_RB equipped_VBN with_IN simple_JJ energy_NN detectors_NNS that_WDT gather_VBP only_RB approximate_JJ information_NN ._.
+2_LS ._.
+Approximate_JJ summaries_NNS are_VBP sufficient_JJ for_IN coordination_NN :_: Approximate_JJ statistical_JJ summaries_NNS of_IN sensed_VBN data_NNS are_VBP sufficient_JJ for_IN correlating_VBG sensed_VBN information_NN between_IN radios_NNS ,_, as_IN relative_JJ usage_NN information_NN is_VBZ more_RBR important_JJ than_IN absolute_JJ usage_NN data_NNS ._.
+Thus_RB ,_, exchanging_VBG exact_JJ RF_NN information_NN may_MD not_RB be_VB necessary_JJ ,_, and_CC more_RBR importantly_RB ,_, too_RB costly_JJ for_IN the_DT purposes_NNS of_IN spectrum_NN sensing_VBG ._.
+3_LS ._.
+RF_NN spectrum_NN changes_NNS incrementally_RB :_: On_IN most_JJS bands_NNS ,_, RF_NN spectrum_NN utilization_NN changes_NNS infrequently_RB ._.
+Moreover_RB ,_, utilization_NN of_IN a_DT specific_JJ RF_NN band_NN affects_VBZ only_RB that_IN band_NN and_CC not_RB the_DT entire_JJ spectrum_NN ._.
+Therefore_RB ,_, if_IN the_DT usage_NN pattern_NN of_IN a_DT particular_JJ band_NN changes_NNS substantially_RB ,_, nodes_NNS detecting_VBG that_IN change_NN can_MD initiate_VB an_DT update_VBP protocol_NN to_TO update_VB the_DT information_NN for_IN that_DT band_NN alone_RB ,_, leaving_VBG in_IN place_NN information_NN already_RB collected_VBN for_IN other_JJ bands_NNS ._.
+This_DT allows_VBZ rapid_JJ detection_NN of_IN change_NN while_IN saving_VBG the_DT overhead_NN of_IN exchanging_VBG unnecessary_JJ information_NN ._.
+Based_VBN on_IN these_DT observations_NNS ,_, GUESS_NNP makes_VBZ the_DT following_VBG contributions_NNS :_: 1_CD ._.
+A_DT novel_JJ approach_NN that_WDT applies_VBZ randomized_VBN gossiping_VBG algorithms_NNS to_TO the_DT problem_NN of_IN coordinated_VBN spectrum_NN sensing_VBG ._.
+These_DT algorithms_NNS are_VBP well_RB suited_VBN to_TO coordinated_VBN spectrum_NN sensing_VBG due_JJ to_TO the_DT unique_JJ characteristics_NNS of_IN the_DT problem_NN :_: i_LS ._.
+e_LS ._.
+radios_NNS are_VBP power-limited_JJ ,_, mobile_JJ and_CC have_VBP limited_VBN bandwidth_NN to_TO support_VB spectrum_NN sensing_VBG capabilities_NNS ._.
+2_LS ._.
+An_DT application_NN of_IN in-network_JJ aggregation_NN for_IN dissemination_NN of_IN spectrum_NN summaries_NNS ._.
+We_PRP argue_VBP that_IN approximate_JJ summaries_NNS are_VBP adequate_JJ for_IN performing_VBG accurate_JJ radio_NN parameter_NN tuning_NN ._.
+3_LS ._.
+An_DT extension_NN of_IN in-network_JJ aggregation_NN and_CC randomized_VBN gossiping_VBG to_TO support_VB incremental_JJ maintenance_NN of_IN spectrum_NN summaries_NNS ._.
+Compared_VBN to_TO standard_JJ gossiping_VBG approaches_NNS ,_, incremental_JJ techniques_NNS can_MD further_RB reduce_VB overhead_NN and_CC protocol_NN execution_NN time_NN by_IN requiring_VBG fewer_JJR radio_NN resources_NNS ._.
+The_DT rest_NN of_IN the_DT paper_NN is_VBZ organized_VBN as_IN follows_VBZ ._.
+Section_NN #_# motivates_VBZ the_DT need_NN for_IN a_DT low_JJ cost_NN and_CC efficient_JJ approach_NN to_TO coordinated_VBN spectrum_NN sensing_VBG ._.
+Section_NN #_# discusses_VBZ related_JJ work_NN in_IN the_DT area_NN ,_, while_IN Section_NN #_# provides_VBZ a_DT background_NN on_IN in-network_JJ aggregation_NN and_CC randomized_VBN gossiping_VBG ._.
+Sections_NNS 5_CD and_CC #_# discuss_VBP extensions_NNS and_CC protocol_NN details_NNS of_IN these_DT techniques_NNS for_IN coordinated_VBN spectrum_NN sensing_VBG ._.
+Section_NN #_# presents_VBZ simulation_NN results_NNS showcasing_VBG the_DT benefits_NNS of_IN GUESS_NNP ,_, and_CC Section_NN #_# presents_VBZ a_DT discussion_NN and_CC some_DT directions_NNS for_IN future_JJ work_NN ._.
+2_LS ._.
+MOTIVATION_NN To_TO estimate_VB the_DT scale_NN of_IN the_DT problem_NN ,_, In-stat_NN predicts_VBZ that_IN the_DT number_NN of_IN WiFi-enabled_JJ devices_NNS sold_VBN annually_RB alone_RB will_MD grow_VB to_TO ###_CD million_CD by_IN ####_CD -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+Therefore_RB ,_, it_PRP would_MD be_VB reasonable_JJ to_TO assume_VB that_IN a_DT typical_JJ dense_JJ urban_JJ environment_NN will_MD contain_VB several_JJ thousand_CD cognitive_JJ radio_NN devices_NNS in_IN range_NN of_IN each_DT other_JJ ._.
+As_IN a_DT result_NN ,_, distributed_VBN spectrum_NN sensing_VBG and_CC allocation_NN would_MD become_VB both_DT important_JJ and_CC fundamental_JJ ._.
+Coordinated_VBN sensing_VBG among_IN secondary_JJ radios_NNS is_VBZ essential_JJ due_JJ to_TO limited_JJ device_NN sensing_VBG resolution_NN and_CC physical_JJ RF_NN effects_NNS such_JJ as_IN shadowing_VBG ._.
+Cabric_NNP et_FW al_FW ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- illustrate_VBP the_DT gains_NNS from_IN cooperation_NN and_CC show_VBP an_DT order_NN of_IN magnitude_NN reduction_NN in_IN the_DT probability_NN of_IN interference_NN with_IN the_DT primary_JJ user_NN when_WRB only_RB a_DT small_JJ fraction_NN of_IN secondary_JJ users_NNS cooperate_VBP ._.
+However_RB ,_, such_JJ coordination_NN is_VBZ non-trivial_JJ due_JJ to_TO :_: -LRB-_-LRB- #_# -RRB-_-RRB- the_DT limited_JJ bandwidth_NN available_JJ for_IN coordination_NN ,_, -LRB-_-LRB- #_# -RRB-_-RRB- the_DT need_NN to_TO communicate_VB this_DT information_NN on_IN short_JJ timescales_NNS ,_, and_CC -LRB-_-LRB- #_# -RRB-_-RRB- the_DT large_JJ amount_NN of_IN sensory_JJ data_NNS that_WDT needs_VBZ to_TO be_VB exchanged_VBN ._.
+Limited_JJ Bandwidth_NN :_: Due_JJ to_TO restrictions_NNS of_IN cost_NN and_CC power_NN ,_, most_JJS devices_NNS will_MD likely_RB not_RB have_VB dedicated_VBN hardware_NN for_IN supporting_VBG coordination_NN ._.
+This_DT implies_VBZ that_IN both_CC data_NNS and_CC sensory_JJ traffic_NN will_MD need_VB to_TO be_VB time-multiplexed_JJ onto_IN a_DT single_JJ radio_NN interface_NN ._.
+Therefore_RB ,_, any_DT time_NN spent_VBD communicating_VBG sensory_JJ information_NN takes_VBZ away_RP from_IN the_DT device_NN ''_'' s_NNS ability_NN to_TO perform_VB its_PRP$ intended_JJ function_NN ._.
+Thus_RB ,_, any_DT such_JJ coordination_NN must_MD incur_VB minimal_JJ network_NN overhead_NN ._.
+Short_JJ Timescales_NNS :_: Further_JJ compounding_VBG the_DT problem_NN is_VBZ the_DT need_NN to_TO immediately_RB propagate_VB updated_VBN RF_NN sensory_JJ data_NNS ,_, in_IN order_NN to_TO allow_VB devices_NNS to_TO react_VB to_TO it_PRP in_IN a_DT timely_JJ fashion_NN ._.
+This_DT is_VBZ especially_RB true_JJ due_JJ to_TO mobility_NN ,_, as_IN rapid_JJ changes_NNS of_IN the_DT RF_NN environment_NN can_MD occur_VB due_JJ to_TO device_NN and_CC obstacle_NN movements_NNS ._.
+Here_RB ,_, fading_JJ and_CC multi-path_JJ interference_NN heavily_RB impact_NN sensing_VBG abilities_NNS ._.
+Signal_NN level_NN can_MD drop_VB to_TO a_DT deep_JJ null_NN with_IN just_RB a_DT /_: #_# movement_NN in_IN receiver_NN position_NN -LRB-_-LRB- #_# ._.
+#_# cm_NN at_IN #_# GHz_NNP -RRB-_-RRB- ,_, where_WRB is_VBZ the_DT wavelength_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Coordination_NN which_WDT does_VBZ not_RB support_VB rapid_JJ dissemination_NN of_IN information_NN will_MD not_RB be_VB able_JJ to_TO account_VB for_IN such_JJ RF_NN variations_NNS ._.
+Large_JJ Sensory_NNP Data_NNPS :_: Because_IN cognitive_JJ radios_NNS can_MD potentially_RB use_VB any_DT part_NN of_IN the_DT RF_NN spectrum_NN ,_, there_EX will_MD be_VB numerous_JJ channels_NNS that_IN they_PRP need_VBP to_TO scan_VB ._.
+Suppose_VB we_PRP wish_VB to_TO compute_VB the_DT average_JJ signal_NN energy_NN in_IN each_DT of_IN ###_CD discretized_JJ frequency_NN bands_NNS ,_, and_CC each_DT signal_NN can_MD have_VB up_RP to_TO ###_CD discrete_JJ energy_NN levels_NNS ._.
+Exchanging_VBG complete_JJ sensory_JJ information_NN between_IN nodes_NNS would_MD require_VB ###_CD bits_NNS per_IN transmission_NN -LRB-_-LRB- for_IN 100_CD channels_NNS ,_, each_DT requiring_VBG seven_CD bits_NNS of_IN information_NN -RRB-_-RRB- ._.
+Exchanging_VBG this_DT information_NN among_IN even_RB a_DT small_JJ group_NN of_IN ##_CD devices_NNS each_DT second_NN would_MD require_VB -LRB-_-LRB- ##_CD time-steps_NNS ##_CD devices_NNS ###_CD bits_NNS per_IN transmission_NN -RRB-_-RRB- =_JJ #_# ._.
+##_NN Mbps_NNS of_IN aggregate_JJ network_NN bandwidth_NN ._.
+Contrast_NN this_DT to_TO the_DT use_NN of_IN a_DT randomized_JJ gossip_NN protocol_NN to_TO disseminate_VB such_JJ information_NN ,_, and_CC the_DT use_NN of_IN FM_NNP bit_NN vectors_NNS to_TO perform_VB in-network_JJ aggregation_NN ._.
+By_IN applying_VBG gossip_NN and_CC FM_NN aggregation_NN ,_, aggregate_NN bandwidth_NN requirements_NNS drop_VBP to_TO -LRB-_-LRB- clogN_NN time-steps_NNS ##_VBP devices_NNS ###_CD bits_NNS per_IN transmission_NN -RRB-_-RRB- =_JJ #_# ._.
+##_NN Mbps_NNS ,_, since_IN ##_CD time-steps_NNS are_VBP needed_VBN to_TO propagate_VB the_DT data_NNS -LRB-_-LRB- with_IN c_NN =_JJ #_# ,_, for_IN illustrative_JJ purpoes1_NN -RRB-_-RRB- ._.
+This_DT is_VBZ explained_VBN further_RB in_IN Section_NN #_# ._.
+Based_VBN on_IN these_DT insights_NNS ,_, we_PRP propose_VBP GUESS_NNP ,_, a_DT low-overhead_JJ approach_NN which_WDT uses_VBZ incremental_JJ extensions_NNS to_TO FM_NNP aggregation_NN and_CC randomized_VBN gossiping_VBG for_IN efficient_JJ coordination_NN within_IN a_DT cognitive_JJ radio_NN network_NN ._.
+As_IN we_PRP show_VBP in_IN Section_NN #_# ,_, 1_CD Convergence_NN time_NN is_VBZ correlated_VBN with_IN the_DT connectivity_NN topology_NN of_IN the_DT devices_NNS ,_, which_WDT in_IN turn_NN depends_VBZ on_IN the_DT environment_NN ._.
+13_CD X_NN A_NN A_NN X_NN B_NN B_NN X_NN Figure_NN #_# :_: Using_VBG FM_NNP aggregation_NN to_TO compute_VB average_JJ signal_NN level_NN measured_VBN by_IN a_DT group_NN of_IN devices_NNS ._.
+these_DT incremental_JJ extensions_NNS can_MD further_RB reduce_VB bandwidth_NN requirements_NNS by_IN up_RB to_TO a_DT factor_NN of_IN #_# ._.
+#_# over_IN the_DT standard_JJ approaches_NNS discussed_VBN above_IN ._.
+3_LS ._.
+RELATED_JJ WORK_VBP Research_NN in_IN cognitive_JJ radio_NN has_VBZ increased_VBN rapidly_RB -LSB-_-LRB- #_# ,_, ##_NN -RSB-_-RRB- over_IN the_DT years_NNS ,_, and_CC it_PRP is_VBZ being_VBG projected_VBN as_IN one_CD of_IN the_DT leading_VBG enabling_VBG technologies_NNS for_IN wireless_JJ networks_NNS of_IN the_DT future_JJ -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+As_IN mentioned_VBN earlier_RBR ,_, the_DT FCC_NNP has_VBZ already_RB identified_VBN new_JJ regimes_NNS for_IN spectrum_NN sharing_NN between_IN primary_JJ users_NNS and_CC secondary_JJ users_NNS and_CC a_DT variety_NN of_IN systems_NNS have_VBP been_VBN proposed_VBN in_IN the_DT literature_NN to_TO support_VB such_JJ sharing_NN -LSB-_-LRB- #_# ,_, ##_NN -RSB-_-RRB- ._.
+Detecting_VBG the_DT presence_NN of_IN a_DT primary_JJ user_NN is_VBZ non-trivial_JJ ,_, especially_RB a_DT legacy_NN primary_JJ user_NN that_WDT is_VBZ not_RB cognitive_JJ radio_NN aware_JJ ._.
+Secondary_JJ users_NNS must_MD be_VB able_JJ to_TO detect_VB the_DT primary_JJ even_RB if_IN they_PRP can_MD not_RB properly_RB decode_VB its_PRP$ signals_NNS ._.
+This_DT has_VBZ been_VBN shown_VBN by_IN Sahai_NNP et_FW al_FW ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- to_TO be_VB extremely_RB difficult_JJ even_RB if_IN the_DT modulation_NN scheme_NN is_VBZ known_VBN ._.
+Sophisticated_JJ and_CC costly_JJ hardware_NN ,_, beyond_IN a_DT simple_JJ energy_NN detector_NN ,_, is_VBZ required_VBN to_TO improve_VB signal_NN detection_NN accuracy_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Moreover_RB ,_, a_DT shadowed_JJ secondary_JJ user_NN may_MD not_RB even_RB be_VB able_JJ to_TO detect_VB signals_NNS from_IN the_DT primary_JJ ._.
+As_IN a_DT result_NN ,_, simple_JJ local_JJ sensing_VBG approaches_NNS have_VBP not_RB gained_VBN much_JJ momentum_NN ._.
+This_DT has_VBZ motivated_VBN the_DT need_NN for_IN cooperation_NN among_IN cognitive_JJ radios_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+More_RBR recently_RB ,_, some_DT researchers_NNS have_VBP proposed_VBN approaches_NNS for_IN radio_NN coordination_NN ._.
+Liu_NNP et_FW al_FW ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- consider_VBP a_DT centralized_JJ access_NN point_NN -LRB-_-LRB- or_CC base_NN station_NN -RRB-_-RRB- architecture_NN in_IN which_WDT sensing_VBG information_NN is_VBZ forwarded_VBN to_TO APs_NNS for_IN spectrum_NN allocation_NN purposes_NNS ._.
+APs_NNS direct_JJ mobile_JJ clients_NNS to_TO collect_VB such_JJ sensing_VBG information_NN on_IN their_PRP$ behalf_NN ._.
+However_RB ,_, due_JJ to_TO the_DT need_NN of_IN a_DT fixed_VBN AP_NN infrastructure_NN ,_, such_PDT a_DT centralized_JJ approach_NN is_VBZ clearly_RB not_RB scalable_JJ ._.
+In_IN other_JJ work_NN ,_, Zhao_NNP et_FW al_FW ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- propose_VBP a_DT distributed_VBN coordination_NN approach_NN for_IN spectrum_NN sensing_VBG and_CC allocation_NN ._.
+Cognitive_JJ radios_NNS organize_VBP into_IN clusters_NNS and_CC coordination_NN occurs_VBZ within_IN clusters_NNS ._.
+The_DT CORVUS_NN -LSB-_-LRB- #_# -RSB-_-RRB- architecture_NN proposes_VBZ a_DT similar_JJ clustering_NN method_NN that_WDT can_MD use_VB either_CC a_DT centralized_JJ or_CC decentralized_JJ approach_NN to_TO manage_VB clusters_NNS ._.
+Although_IN an_DT improvement_NN over_IN purely_RB centralized_JJ approaches_NNS ,_, these_DT techniques_NNS still_RB require_VBP a_DT setup_NN phase_NN to_TO generate_VB the_DT clusters_NNS ,_, which_WDT not_RB only_RB adds_VBZ additional_JJ delay_NN ,_, but_CC also_RB requires_VBZ many_JJ of_IN the_DT secondary_JJ users_NNS to_TO be_VB static_JJ or_CC quasi-static_JJ ._.
+In_IN contrast_NN ,_, GUESS_NN does_VBZ not_RB place_VB such_JJ restrictions_NNS on_IN secondary_JJ users_NNS ,_, and_CC can_MD even_RB function_VB in_IN highly_RB mobile_JJ environments_NNS ._.
+4_LS ._.
+BACKGROUND_NN This_DT section_NN provides_VBZ the_DT background_NN for_IN our_PRP$ approach_NN ._.
+We_PRP present_VBP the_DT FM_NNP aggregation_NN scheme_NN that_IN we_PRP use_VBP to_TO generate_VB spectrum_NN summaries_NNS and_CC perform_VB in-network_JJ aggregation_NN ._.
+We_PRP also_RB discuss_VBP randomized_VBN gossiping_VBG techniques_NNS for_IN disseminating_VBG aggregates_NNS in_IN a_DT cognitive_JJ radio_NN network_NN ._.
+4_LS ._.
+#_# FM_NNP Aggregation_NN Aggregation_NN is_VBZ the_DT process_NN where_WRB nodes_NNS in_IN a_DT distributed_VBN network_NN combine_VBP data_NNS received_VBN from_IN neighboring_VBG nodes_NNS with_IN their_PRP$ local_JJ value_NN to_TO generate_VB a_DT combined_JJ aggregate_NN ._.
+This_DT aggregate_NN is_VBZ then_RB communicated_VBN to_TO other_JJ nodes_NNS in_IN the_DT network_NN and_CC this_DT process_NN repeats_NNS until_IN the_DT aggregate_NN at_IN all_DT nodes_NNS has_VBZ converged_VBN to_TO the_DT same_JJ value_NN ,_, i_FW ._.
+e_LS ._.
+the_DT global_JJ aggregate_NN ._.
+Double-counting_NN is_VBZ a_DT well_RB known_JJ problem_NN in_IN this_DT process_NN ,_, where_WRB nodes_NNS may_MD contribute_VB more_JJR than_IN once_RB to_TO the_DT aggregate_NN ,_, causing_VBG inaccuracy_NN in_IN the_DT final_JJ result_NN ._.
+Intuitively_RB ,_, nodes_NNS can_MD tag_VB the_DT aggregate_JJ value_NN they_PRP transmit_VBP with_IN information_NN about_IN which_WDT nodes_NNS have_VBP contributed_VBN to_TO it_PRP ._.
+However_RB ,_, this_DT approach_NN is_VBZ not_RB scalable_JJ ._.
+Order_NN and_CC Duplicate_VB Insensitive_JJ -LRB-_-LRB- ODI_NNP -RRB-_-RRB- techniques_NNS have_VBP been_VBN proposed_VBN in_IN the_DT literature_NN -LSB-_-LRB- ##_CD ,_, ##_CD -RSB-_-RRB- ._.
+We_PRP adopt_VBP the_DT ODI_NNP approach_NN pioneered_VBD by_IN Flajolet_NNP and_CC Martin_NNP -LRB-_-LRB- FM_NNP -RRB-_-RRB- for_IN the_DT purposes_NNS of_IN aggregation_NN ._.
+Next_IN we_PRP outline_VBP the_DT FM_NNP approach_NN ;_: for_IN full_JJ details_NNS ,_, see_VBP -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+Suppose_VB we_PRP want_VBP to_TO compute_VB the_DT number_NN of_IN nodes_NNS in_IN the_DT network_NN ,_, i_FW ._.
+e_LS ._.
+the_DT COUNT_NNP query_NN ._.
+To_TO do_VB so_RB ,_, each_DT node_NN performs_VBZ a_DT coin_NN toss_VB experiment_NN as_IN follows_VBZ :_: toss_VB an_DT unbiased_JJ coin_NN ,_, stopping_VBG after_IN the_DT first_JJ head_NN is_VBZ seen_VBN ._.
+The_DT node_NN then_RB sets_VBZ the_DT ith_NN bit_NN in_IN a_DT bit_NN vector_NN -LRB-_-LRB- initially_RB filled_VBN with_IN zeros_NNS -RRB-_-RRB- ,_, where_WRB i_FW is_VBZ the_DT number_NN of_IN coin_NN tosses_VBZ it_PRP performed_VBN ._.
+The_DT intuition_NN is_VBZ that_IN as_IN the_DT number_NN of_IN nodes_NNS doing_VBG coin_NN toss_VBP experiments_NNS increases_NNS ,_, the_DT probability_NN of_IN a_DT more_RBR significant_JJ bit_NN being_VBG set_VBN in_IN one_CD of_IN the_DT nodes_NNS ''_'' bit_NN vectors_NNS increases_NNS ._.
+These_DT bit_NN vectors_NNS are_VBP then_RB exchanged_VBN among_IN nodes_NNS ._.
+When_WRB a_DT node_NN receives_VBZ a_DT bit_NN vector_NN ,_, it_PRP updates_NNS its_PRP$ local_JJ bit_NN vector_NN by_IN bitwise_JJ OR-ing_JJ it_PRP with_IN the_DT received_VBN vector_NN -LRB-_-LRB- as_IN shown_VBN in_IN Figure_NNP #_# which_WDT computes_VBZ AVERAGE_NNP -RRB-_-RRB- ._.
+At_IN the_DT end_NN of_IN the_DT aggregation_NN process_NN ,_, every_DT node_NN ,_, with_IN high_JJ probability_NN ,_, has_VBZ the_DT same_JJ bit_NN vector_NN ._.
+The_DT actual_JJ value_NN of_IN the_DT count_NN aggregate_NN is_VBZ then_RB computed_VBN using_VBG the_DT following_VBG formula_NN ,_, AGGF_NN M_NN =_JJ 2j1_NN /_: #_# ._.
+#####_NN ,_, where_WRB j_NN represents_VBZ the_DT bit_NN position_NN of_IN the_DT least_JJS significant_JJ zero_NN in_IN the_DT aggregate_NN bit_NN vector_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+Although_IN such_JJ aggregates_NNS are_VBP very_RB compact_JJ in_IN nature_NN ,_, requiring_VBG only_RB O_NN -LRB-_-LRB- logN_NN -RRB-_-RRB- state_NN space_NN -LRB-_-LRB- where_WRB N_NN is_VBZ the_DT number_NN of_IN nodes_NNS -RRB-_-RRB- ,_, they_PRP may_MD not_RB be_VB very_RB accurate_JJ as_IN they_PRP can_MD only_RB approximate_JJ values_NNS to_TO the_DT closest_JJS power_NN of_IN #_# ,_, potentially_RB causing_VBG errors_NNS of_IN up_RB to_TO ##_CD %_NN ._.
+More_RBR accurate_JJ aggregates_NNS can_MD be_VB computed_VBN by_IN maintaining_VBG multiple_JJ bit_NN vectors_NNS at_IN each_DT node_NN ,_, as_IN explained_VBN in_IN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+This_DT decreases_VBZ the_DT error_NN to_TO within_IN O_NN -LRB-_-LRB- #_# /_: m_NN -RRB-_-RRB- ,_, where_WRB m_NN is_VBZ the_DT number_NN of_IN such_JJ bit_NN vectors_NNS ._.
+Queries_NNS other_JJ than_IN count_NN can_MD also_RB be_VB computed_VBN using_VBG variants_NNS of_IN this_DT basic_JJ counting_NN algorithm_NN ,_, as_IN discussed_VBN in_IN -LSB-_-LRB- #_# -RSB-_-RRB- -LRB-_-LRB- and_CC shown_VBN in_IN Figure_NNP #_# -RRB-_-RRB- ._.
+Transmitting_VBG FM_NNP bit_NN vectors_NNS between_IN nodes_NNS is_VBZ done_VBN using_VBG randomized_VBN gossiping_VBG ,_, discussed_VBN next_RB ._.
+4_LS ._.
+#_# Gossip_NNP Protocols_NNP Gossip-based_JJ protocols_NNS operate_VBP in_IN discrete_JJ time-steps_NNS ;_: a_DT time-step_NN is_VBZ the_DT required_VBN amount_NN of_IN time_NN for_IN all_DT transmissions_NNS in_IN that_DT time-step_NN to_TO complete_VB ._.
+At_IN every_DT time-step_NN ,_, each_DT node_NN having_VBG something_NN to_TO send_VB randomly_RB selects_VBZ one_CD or_CC more_JJR neighboring_VBG nodes_NNS and_CC transmits_VBZ its_PRP$ data_NNS to_TO them_PRP ._.
+The_DT randomized_VBN propagation_NN of_IN information_NN provides_VBZ fault-tolerance_JJ and_CC resilience_NN to_TO network_NN failures_NNS and_CC outages_NNS ._.
+We_PRP emphasize_VBP that_IN this_DT characteristic_NN of_IN the_DT protocol_NN also_RB allows_VBZ it_PRP to_TO operate_VB without_IN relying_VBG on_IN any_DT underlying_JJ network_NN structure_NN ._.
+Gossip_NN protocols_NNS have_VBP been_VBN shown_VBN to_TO provide_VB exponentially_RB fast_JJ convergence2_NN ,_, on_IN the_DT order_NN of_IN O_NN -LRB-_-LRB- log_NN N_NN -RRB-_-RRB- -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, where_WRB N_NN is_VBZ the_DT number_NN of_IN nodes_NNS -LRB-_-LRB- or_CC radios_NNS -RRB-_-RRB- ._.
+These_DT protocols_NNS can_MD therefore_RB easily_RB scale_NN to_TO very_RB dense_JJ environments_NNS ._.
+2_CD Convergence_NN refers_VBZ to_TO the_DT state_NN in_IN which_WDT all_DT nodes_NNS have_VBP the_DT most_RBS up-to-date_JJ view_NN of_IN the_DT network_NN ._.
+14_CD Two_CD types_NNS of_IN gossip_NN protocols_NNS are_VBP :_: Uniform_NNP Gossip_NNP :_: In_IN uniform_JJ gossip_NN ,_, at_IN each_DT timestep_NN ,_, each_DT node_NN chooses_VBZ a_DT random_JJ neighbor_NN and_CC sends_VBZ its_PRP$ data_NNS to_TO it_PRP ._.
+This_DT process_NN repeats_NNS for_IN O_NN -LRB-_-LRB- log_NN -LRB-_-LRB- N_NN -RRB-_-RRB- -RRB-_-RRB- steps_NNS -LRB-_-LRB- where_WRB N_NN is_VBZ the_DT number_NN of_IN nodes_NNS in_IN the_DT network_NN -RRB-_-RRB- ._.
+Uniform_JJ gossip_NN provides_VBZ exponentially_RB fast_JJ convergence_NN ,_, with_IN low_JJ network_NN overhead_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Random_NNP Walk_VB :_: In_IN random_JJ walk_NN ,_, only_RB a_DT subset_NN of_IN the_DT nodes_NNS -LRB-_-LRB- termed_VBN designated_VBN nodes_NNS -RRB-_-RRB- communicate_VBP in_IN a_DT particular_JJ time-step_NN ._.
+At_IN startup_NN ,_, k_NN nodes_NNS are_VBP randomly_RB elected_VBN as_IN designated_VBN nodes_NNS ._.
+In_IN each_DT time-step_NN ,_, each_DT designated_VBN node_NN sends_VBZ its_PRP$ data_NNS to_TO a_DT random_JJ neighbor_NN ,_, which_WDT becomes_VBZ designated_VBN for_IN the_DT subsequent_JJ timestep_NN -LRB-_-LRB- much_RB like_IN passing_VBG a_DT token_JJ -RRB-_-RRB- ._.
+This_DT process_NN repeats_NNS until_IN the_DT aggregate_NN has_VBZ converged_VBN in_IN the_DT network_NN ._.
+Random_NNP walk_NN has_VBZ been_VBN shown_VBN to_TO provide_VB similar_JJ convergence_NN bounds_NNS as_IN uniform_JJ gossip_NN in_IN problems_NNS of_IN similar_JJ context_NN -LSB-_-LRB- #_# ,_, ##_NN -RSB-_-RRB- ._.
+5_CD ._.
+INCREMENTAL_JJ PROTOCOLS_NNS 5_CD ._.
+#_# Incremental_JJ FM_NNP Aggregates_NNP One_CD limitation_NN of_IN FM_NNP aggregation_NN is_VBZ that_IN it_PRP does_VBZ not_RB support_VB updates_NNS ._.
+Due_JJ to_TO the_DT probabilistic_JJ nature_NN of_IN FM_NNP ,_, once_RB bit_NN vectors_NNS have_VBP been_VBN ORed_VBN together_RB ,_, information_NN can_MD not_RB simply_RB be_VB removed_VBN from_IN them_PRP as_IN each_DT node_NN ''_'' s_NNS contribution_NN has_VBZ not_RB been_VBN recorded_VBN ._.
+We_PRP propose_VBP the_DT use_NN of_IN delete_VB vectors_NNS ,_, an_DT extension_NN of_IN FM_NNP to_TO support_VB updates_NNS ._.
+We_PRP maintain_VBP a_DT separate_JJ aggregate_JJ delete_VB vector_NN whose_WP$ value_NN is_VBZ subtracted_VBN from_IN the_DT original_JJ aggregate_NN vector_NN ''_'' s_NNS value_NN to_TO obtain_VB the_DT resulting_VBG value_NN as_IN follows_VBZ ._.
+AGGINC_NN =_JJ -LRB-_-LRB- 2a1_JJ /_: #_# ._.
+#####_NN -RRB-_-RRB- -LRB-_-LRB- 2b1_CD /_: #_# ._.
+#####_NN -RRB-_-RRB- -LRB-_-LRB- #_# -RRB-_-RRB- Here_RB ,_, a_DT and_CC b_NN represent_VBP the_DT bit_NN positions_NNS of_IN the_DT least_JJS significant_JJ zero_NN in_IN the_DT original_JJ and_CC delete_VB bit_NN vectors_NNS respectively_RB ._.
+Suppose_VB we_PRP wish_VB to_TO compute_VB the_DT average_JJ signal_NN level_NN detected_VBN in_IN a_DT particular_JJ frequency_NN ._.
+To_TO compute_VB this_DT ,_, we_PRP compute_VBP the_DT SUM_NN of_IN all_DT signal_NN level_NN measurements_NNS and_CC divide_VBP that_IN by_IN the_DT COUNT_NN of_IN the_DT number_NN of_IN measurements_NNS ._.
+A_DT SUM_NN aggregate_NN is_VBZ computed_VBN similar_JJ to_TO COUNT_VB -LRB-_-LRB- explained_VBN in_IN Section_NN #_# ._.
+#_# -RRB-_-RRB- ,_, except_IN that_DT each_DT node_NN performs_VBZ s_NNS coin_NN toss_VBP experiments_NNS ,_, where_WRB s_NNS is_VBZ the_DT locally_RB measured_VBN signal_NN level_NN ._.
+Figure_NNP #_# illustrates_VBZ the_DT sequence_NN by_IN which_WDT the_DT average_JJ signal_NN energy_NN is_VBZ computed_VBN in_IN a_DT particular_JJ band_NN using_VBG FM_NNP aggregation_NN ._.
+Now_RB suppose_VB that_IN the_DT measured_VBN signal_NN at_IN a_DT node_NN changes_NNS from_IN s_NNS to_TO s_NNS ._.
+The_DT vectors_NNS are_VBP updated_VBN as_IN follows_VBZ ._.
+s_NNS >_JJR s_NNS :_: We_PRP simply_RB perform_VB -LRB-_-LRB- s_NNS s_NNS -RRB-_-RRB- more_JJR coin_NN toss_VBP experiments_NNS and_CC bitwise_JJ OR_NN the_DT result_NN with_IN the_DT original_JJ bit_NN vector_NN ._.
+s_NNS <_JJR s_NNS :_: We_PRP increase_VBP the_DT value_NN of_IN the_DT delete_VBP vector_NN by_IN performing_VBG -LRB-_-LRB- s_NNS s_NNS -RRB-_-RRB- coin_NN toss_VBP experiments_NNS and_CC bitwise_JJ OR_NN the_DT result_NN with_IN the_DT current_JJ delete_VB vector_NN ._.
+Using_VBG delete_VB vectors_NNS ,_, we_PRP can_MD now_RB support_VB updates_NNS to_TO the_DT measured_VBN signal_NN level_NN ._.
+With_IN the_DT original_JJ implementation_NN of_IN FM_NNP ,_, the_DT aggregate_NN would_MD need_VB to_TO be_VB discarded_VBN and_CC a_DT new_JJ one_CD recomputed_VBN every_DT time_NN an_DT update_VB occurred_VBD ._.
+Thus_RB ,_, delete_VB vectors_NNS provide_VB a_DT low_JJ overhead_NN alternative_NN for_IN applications_NNS whose_WP$ data_NNS changes_NNS incrementally_RB ,_, such_JJ as_IN signal_NN level_NN measurements_NNS in_IN a_DT coordinated_VBN spectrum_NN sensing_VBG environment_NN ._.
+Next_IN we_PRP discuss_VBP how_WRB these_DT aggregates_NNS can_MD be_VB communicated_VBN between_IN devices_NNS using_VBG incremental_JJ routing_VBG protocols_NNS ._.
+5_CD ._.
+#_# Incremental_JJ Routing_VBG Protocol_NNP We_PRP use_VBP the_DT following_VBG incremental_JJ variants_NNS of_IN the_DT routing_VBG protocols_NNS presented_VBN in_IN Section_NN #_# ._.
+#_# to_TO support_VB incremental_JJ updates_NNS to_TO previously_RB computed_VBN aggregates_NNS ._.
+Update_NNP Received_VBD OR_NN Local_JJ Update_NNP Occurs_VBZ Recovered_VBN Susceptible_JJ Time-stamp_NN Expires_VBZ Initial_JJ State_NN Additional_JJ Update_NNP Received_VBN Infectious_JJ Clean_JJ Up_IN Figure_NNP #_# :_: State_NNP diagram_NN each_DT device_NN passes_VBZ through_IN as_IN updates_NNS proceed_VBP in_IN the_DT system_NN Incremental_JJ Gossip_NNP Protocol_NNP -LRB-_-LRB- IGP_NNP -RRB-_-RRB- :_: When_WRB an_DT update_VBP occurs_VBZ ,_, the_DT updated_VBN node_NN initiates_VBZ the_DT gossiping_VBG procedure_NN ._.
+Other_JJ nodes_NNS only_RB begin_VBP gossiping_VBG once_RB they_PRP receive_VBP the_DT update_VBP ._.
+Therefore_RB ,_, nodes_NNS receiving_VBG the_DT update_VBP become_VB active_JJ and_CC continue_VBP communicating_VBG with_IN their_PRP$ neighbors_NNS until_IN the_DT update_VBP protocol_NN terminates_VBZ ,_, after_IN O_NN -LRB-_-LRB- log_NN -LRB-_-LRB- N_NN -RRB-_-RRB- -RRB-_-RRB- time_NN steps_NNS ._.
+Incremental_JJ Random_NNP Walk_VB Protocol_NNP -LRB-_-LRB- IRWP_NNP -RRB-_-RRB- :_: When_WRB an_DT update_VBP -LRB-_-LRB- or_CC updates_NNS -RRB-_-RRB- occur_VBP in_IN the_DT system_NN ,_, instead_RB of_IN starting_VBG random_JJ walks_VBZ at_IN k_NN random_JJ nodes_NNS in_IN the_DT network_NN ,_, all_DT k_NN random_JJ walks_VBZ are_VBP initiated_VBN from_IN the_DT updated_VBN node_NN -LRB-_-LRB- s_NNS -RRB-_-RRB- ._.
+The_DT rest_NN of_IN the_DT protocol_NN proceeds_VBZ in_IN the_DT same_JJ fashion_NN as_IN the_DT standard_JJ random_JJ walk_NN protocol_NN ._.
+The_DT allocation_NN of_IN walks_VBZ to_TO updates_NNS is_VBZ discussed_VBN in_IN more_JJR detail_NN in_IN -LSB-_-LRB- #_# -RSB-_-RRB- ,_, where_WRB the_DT authors_NNS show_VBP that_IN the_DT number_NN of_IN walks_VBZ has_VBZ an_DT almost_RB negligible_JJ impact_NN on_IN network_NN overhead_NN ._.
+6_CD ._.
+PROTOCOL_NN DETAILS_NNS Using_VBG incremental_JJ routing_VBG protocols_NNS to_TO disseminate_VB incremental_JJ FM_NNP aggregates_NNS is_VBZ a_DT natural_JJ fit_NN for_IN the_DT problem_NN of_IN coordinated_VBN spectrum_NN sensing_VBG ._.
+Here_RB we_PRP outline_VBP the_DT implementation_NN of_IN such_JJ techniques_NNS for_IN a_DT cognitive_JJ radio_NN network_NN ._.
+We_PRP continue_VBP with_IN the_DT example_NN from_IN Section_NN #_# ._.
+#_# ,_, where_WRB we_PRP wish_VBP to_TO perform_VB coordination_NN between_IN a_DT group_NN of_IN wireless_JJ devices_NNS to_TO compute_VB the_DT average_JJ signal_NN level_NN in_IN a_DT particular_JJ frequency_NN band_NN ._.
+Using_VBG either_CC incremental_JJ random_JJ walk_NN or_CC incremental_JJ gossip_NN ,_, each_DT device_NN proceeds_VBZ through_IN three_CD phases_NNS ,_, in_IN order_NN to_TO determine_VB the_DT global_JJ average_JJ signal_NN level_NN for_IN a_DT particular_JJ frequency_NN band_NN ._.
+Figure_NNP #_# shows_VBZ a_DT state_NN diagram_NN of_IN these_DT phases_NNS ._.
+Susceptible_JJ :_: Each_DT device_NN starts_VBZ in_IN the_DT susceptible_JJ state_NN and_CC becomes_VBZ infectious_JJ only_RB when_WRB its_PRP$ locally_RB measured_VBN signal_NN level_NN changes_NNS ,_, or_CC if_IN it_PRP receives_VBZ an_DT update_VBP message_NN from_IN a_DT neighboring_VBG device_NN ._.
+If_IN a_DT local_JJ change_NN is_VBZ observed_VBN ,_, the_DT device_NN updates_NNS either_CC the_DT original_JJ or_CC delete_VB bit_NN vector_NN ,_, as_IN described_VBN in_IN Section_NN #_# ._.
+#_# ,_, and_CC moves_VBZ into_IN the_DT infectious_JJ state_NN ._.
+If_IN it_PRP receives_VBZ an_DT update_VBP message_NN ,_, it_PRP ORs_VBZ the_DT received_VBN original_JJ and_CC delete_VB bit_NN vectors_NNS with_IN its_PRP$ local_JJ bit_NN vectors_NNS and_CC moves_NNS into_IN the_DT infectious_JJ state_NN ._.
+Note_VB ,_, because_IN signal_NN level_NN measurements_NNS may_MD change_VB sporadically_RB over_IN time_NN ,_, a_DT smoothing_NN function_NN ,_, such_JJ as_IN an_DT exponentially_RB weighted_JJ moving_VBG average_NN ,_, should_MD be_VB applied_VBN to_TO these_DT measurements_NNS ._.
+Infectious_JJ :_: Once_RB a_DT device_NN is_VBZ infectious_JJ it_PRP continues_VBZ to_TO send_VB its_PRP$ up-to-date_JJ bit_NN vectors_NNS ,_, using_VBG either_CC incremental_JJ random_JJ walk_NN or_CC incremental_JJ gossip_NN ,_, to_TO neighboring_VBG nodes_NNS ._.
+Due_JJ to_TO FM_NNP ''_'' s_VBZ order_NN and_CC duplicate_VB insensitive_JJ -LRB-_-LRB- ODI_NNP -RRB-_-RRB- properties_NNS ,_, simultaneously_RB occurring_VBG updates_NNS are_VBP handled_VBN seamlessly_RB by_IN the_DT protocol_NN ._.
+Update_NNP messages_NNS contain_VBP a_DT time_NN stamp_NN indicating_VBG when_WRB the_DT update_VBP was_VBD generated_VBN ,_, and_CC each_DT device_NN maintains_VBZ a_DT lo15_NN 0_CD 200_CD 400_CD 600_CD 800_CD 1000_CD 1_CD ##_CD ###_CD Number_NNP of_IN Measured_NNP Signal_NNP Changes_NNS Executiontime_NNP -LRB-_-LRB- ms_NNS -RRB-_-RRB- Incremental_JJ Gossip_NNP Uniform_NNP Gossip_NNP -LRB-_-LRB- a_DT -RRB-_-RRB- Incremental_JJ Gossip_NN and_CC Uniform_NNP Gossip_NNP on_IN Clique_NNP 0_CD 200_CD 400_CD 600_CD 800_CD 1000_CD 1_CD ##_CD ###_CD Number_NNP of_IN Measured_NNP Signal_NNP Changes_NNS ExecutionTime_NNP -LRB-_-LRB- ms_NNS -RRB-_-RRB- ._.
+Incremental_JJ Random_NNP Walk_VB Random_NNP Walk_VB -LRB-_-LRB- b_NN -RRB-_-RRB- Incremental_JJ Random_NNP Walk_VB and_CC Random_NNP Walk_VBP on_IN Clique_NN 0_CD 400_CD 800_CD 1200_CD 1600_CD 2000_CD 1_CD ##_CD ###_CD Number_NNP of_IN Measured_NNP Signal_NNP Changes_NNS ExecutionTime_NNP -LRB-_-LRB- ms_NNS -RRB-_-RRB- ._.
+Random_NNP Walk_VB Incremental_JJ Random_NNP Walk_VB -LRB-_-LRB- c_NN -RRB-_-RRB- Incremental_JJ Random_NNP Walk_VB and_CC Random_NNP Walk_VBP on_IN Power-Law_NNP Random_NNP Graph_NNP Figure_NNP #_# :_: Execution_NN times_NNS of_IN Incremental_JJ Protocols_NNS 0_CD ._.
+#_# 1_CD ._.
+#_# 1_CD ._.
+#_# 2_CD ._.
+#_# 2_CD ._.
+#_# 1_CD ##_CD ###_CD Number_NNP of_IN Measured_NNP Signal_NNP Changes_NNS OverheadImprovementRatio_NNP ._.
+-LRB-_-LRB- NormalizedtoUniformGossip_NN -RRB-_-RRB- Incremental_JJ Gossip_NNP Uniform_NNP Gossip_NNP -LRB-_-LRB- a_DT -RRB-_-RRB- Incremental_JJ Gossip_NN and_CC Uniform_NNP Gossip_NNP on_IN Clique_NNP 0_CD ._.
+#_# 1_CD ._.
+#_# 1_CD ._.
+#_# 2_CD ._.
+#_# 2_CD ._.
+#_# 1_CD ##_CD ###_CD Number_NNP of_IN Measured_NNP Signal_NNP Changes_NNS OverheadImprovementRatio_NNP ._.
+-LRB-_-LRB- NormalizedtoRandomWalk_NN -RRB-_-RRB- Incremental_JJ Random_NNP Walk_VB Random_NNP Walk_VB -LRB-_-LRB- b_NN -RRB-_-RRB- Incremental_JJ Random_NNP Walk_VB and_CC Random_NNP Walk_VBP on_IN Clique_NNP 0_CD ._.
+#_# 1_CD ._.
+#_# 1_CD ._.
+#_# 1_CD ._.
+#_# 1_CD ._.
+#_# 1_CD ._.
+#_# 1_CD ##_CD ###_CD Number_NNP of_IN Measured_NNP Signal_NNP Changes_NNS OverheadImprovementRatio_NNP ._.
+-LRB-_-LRB- NormalizedtoRandomWalk_NN -RRB-_-RRB- Random_JJ Walk_VBP Incremental_JJ Random_NNP Walk_VB -LRB-_-LRB- c_NN -RRB-_-RRB- Incremental_JJ Random_NNP Walk_VB and_CC Random_NNP Walk_VBP on_IN Power-Law_NNP Random_NNP Graph_NNP Figure_NNP #_# :_: Network_NNP overhead_NN of_IN Incremental_JJ Protocols_NNS cal_JJ time_NN stamp_NN of_IN when_WRB it_PRP received_VBD the_DT most_RBS recent_JJ update_VBP ._.
+Using_VBG this_DT information_NN ,_, a_DT device_NN moves_VBZ into_IN the_DT recovered_JJ state_NN once_RB enough_JJ time_NN has_VBZ passed_VBN for_IN the_DT most_RBS recent_JJ update_VBP to_TO have_VB converged_VBN ._.
+As_IN discussed_VBN in_IN Section_NN #_# ._.
+#_# ,_, this_DT happens_VBZ after_IN O_NN -LRB-_-LRB- log_NN -LRB-_-LRB- N_NN -RRB-_-RRB- -RRB-_-RRB- time_NN steps_NNS ._.
+Recovered_VBN :_: A_DT recovered_VBN device_NN ceases_VBZ to_TO propagate_VB any_DT update_VBP information_NN ._.
+At_IN this_DT point_NN ,_, it_PRP performs_VBZ clean-up_JJ and_CC prepares_VBZ for_IN the_DT next_JJ infection_NN by_IN entering_VBG the_DT susceptible_JJ state_NN ._.
+Once_RB all_DT devices_NNS have_VBP entered_VBN the_DT recovered_JJ state_NN ,_, the_DT system_NN will_MD have_VB converged_VBN ,_, and_CC with_IN high_JJ probability_NN ,_, all_DT devices_NNS will_MD have_VB the_DT up-to-date_JJ average_JJ signal_NN level_NN ._.
+Due_JJ to_TO the_DT cumulative_JJ nature_NN of_IN FM_NNP ,_, even_RB if_IN all_DT devices_NNS have_VBP not_RB converged_VBN ,_, the_DT next_JJ update_VBP will_MD include_VB all_DT previous_JJ updates_NNS ._.
+Nevertheless_RB ,_, the_DT probability_NN that_WDT gossip_NN fails_VBZ to_TO converge_VB is_VBZ small_JJ ,_, and_CC has_VBZ been_VBN shown_VBN to_TO be_VB O_NN -LRB-_-LRB- #_# /_: N_NN -RRB-_-RRB- -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+For_IN coordinated_VBN spectrum_NN sensing_VBG ,_, non-incremental_JJ routing_VBG protocols_NNS can_MD be_VB implemented_VBN in_IN a_DT similar_JJ fashion_NN ._.
+Random_NNP walk_NN would_MD operate_VB by_IN having_VBG devices_NNS periodically_RB drop_VBP the_DT aggregate_NN and_CC re-run_VB the_DT protocol_NN ._.
+Each_DT device_NN would_MD perform_VB a_DT coin_NN toss_VBP -LRB-_-LRB- biased_VBN on_IN the_DT number_NN of_IN walks_VBZ -RRB-_-RRB- to_TO determine_VB whether_IN or_CC not_RB it_PRP is_VBZ a_DT designated_VBN node_NN ._.
+This_DT is_VBZ different_JJ from_IN the_DT protocol_NN discussed_VBN above_IN where_WRB only_RB updated_VBN nodes_NNS initiate_VBP random_JJ walks_VBZ ._.
+Similar_JJ techniques_NNS can_MD be_VB used_VBN to_TO implement_VB standard_JJ gossip_NN ._.
+7_CD ._.
+EVALUATION_NN We_PRP now_RB provide_VBP a_DT preliminary_JJ evaluation_NN of_IN GUESS_NNP in_IN simulation_NN ._.
+A_DT more_JJR detailed_JJ evaluation_NN of_IN this_DT approach_NN can_MD be_VB found_VBN in_IN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+Here_RB we_PRP focus_VBP on_IN how_WRB incremental_JJ extensions_NNS to_TO gossip_NN protocols_NNS can_MD lead_VB to_TO further_JJ improvements_NNS over_IN standard_JJ gossiping_VBG techniques_NNS ,_, for_IN the_DT problem_NN of_IN coordinated_VBN spectrum_NN sensing_VBG ._.
+Simulation_NN Setup_NN :_: We_PRP implemented_VBD a_DT custom_NN simulator_NN in_IN C_NN +_CC +_CC ._.
+We_PRP study_VBP the_DT improvements_NNS of_IN our_PRP$ incremental_JJ gossip_NN protocols_NNS over_IN standard_JJ gossiping_VBG in_IN two_CD dimensions_NNS :_: execution_NN time_NN and_CC network_NN overhead_NN ._.
+We_PRP use_VBP two_CD topologies_NNS to_TO represent_VB device_NN connectivity_NN :_: a_DT clique_NN ,_, to_TO eliminate_VB the_DT effects_NNS of_IN the_DT underlying_VBG topology_NN on_IN protocol_NN performance_NN ,_, and_CC a_DT BRITE-generated_JJ -LSB-_-LRB- ##_CD -RSB-_-RRB- power-law_NN random_JJ graph_NN -LRB-_-LRB- PLRG_NN -RRB-_-RRB- ,_, to_TO illustrate_VB how_WRB our_PRP$ results_NNS extend_VBP to_TO more_JJR realistic_JJ scenarios_NNS ._.
+We_PRP simulate_VBP a_DT large_JJ deployment_NN of_IN #_# ,_, ###_CD devices_NNS to_TO analyze_VB protocol_NN scalability_NN ._.
+In_IN our_PRP$ simulations_NNS ,_, we_PRP compute_VBP the_DT average_JJ signal_NN level_NN in_IN a_DT particular_JJ band_NN by_IN disseminating_VBG FM_NNP bit_NN vectors_NNS ._.
+In_IN each_DT run_NN of_IN the_DT simulation_NN ,_, we_PRP induce_VBP a_DT change_NN in_IN the_DT measured_VBN signal_NN at_IN one_CD or_CC more_JJR devices_NNS ._.
+A_DT run_NN ends_VBZ when_WRB the_DT new_JJ average_JJ signal_NN level_NN has_VBZ converged_VBN in_IN the_DT network_NN ._.
+For_IN each_DT data_NNS point_NN ,_, we_PRP ran_VBD ###_CD simulations_NNS and_CC ##_CD %_NN confidence_NN intervals_NNS -LRB-_-LRB- error_NN bars_NNS -RRB-_-RRB- are_VBP shown_VBN ._.
+Simulation_NN Parameters_NNS :_: Each_DT transmission_NN involves_VBZ sending_VBG ##_CD bits_NNS of_IN information_NN to_TO a_DT neighboring_VBG node_NN ._.
+To_TO compute_VB the_DT AVERAGE_NNP aggregate_NN ,_, four_CD bit_NN vectors_NNS need_VBP to_TO be_VB transmitted_VBN :_: the_DT original_JJ SUM_NN vector_NN ,_, the_DT SUM_NNP delete_VB vector_NN ,_, the_DT original_JJ COUNT_NN vector_NN ,_, and_CC the_DT COUNT_NNP delete_VB vector_NN ._.
+Non-incremental_JJ protocols_NNS do_VBP not_RB transmit_VB the_DT delete_VB vectors_NNS ._.
+Each_DT transmission_NN also_RB includes_VBZ a_DT time_NN stamp_NN of_IN when_WRB the_DT update_VBP was_VBD generated_VBN ._.
+We_PRP assume_VBP nodes_NNS communicate_VBP on_IN a_DT common_JJ control_NN channel_NN at_IN #_# Mbps_NNPS ._.
+Therefore_RB ,_, one_CD time-step_NN of_IN protocol_NN execution_NN corresponds_VBZ to_TO the_DT time_NN required_VBN for_IN #_# ,_, ###_CD nodes_NNS to_TO sequentially_RB send_VB ##_RB bits_NNS at_IN #_# Mbps_NNPS ._.
+Sequential_JJ use_NN of_IN the_DT control_NN channel_NN is_VBZ a_DT worst_JJS case_NN for_IN our_PRP$ protocols_NNS ;_: in_IN practice_NN ,_, multiple_JJ control_NN channels_NNS could_MD be_VB used_VBN in_IN parallel_NN to_TO reduce_VB execution_NN time_NN ._.
+We_PRP also_RB assume_VBP nodes_NNS are_VBP loosely_RB time_NN synchronized_VBD ,_, the_DT implications_NNS of_IN which_WDT are_VBP discussed_VBN further_RBR in_IN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+Finally_RB ,_, in_IN order_NN to_TO isolate_VB the_DT effect_NN of_IN protocol_NN operation_NN on_IN performance_NN ,_, we_PRP do_VBP not_RB model_VB the_DT complexities_NNS of_IN the_DT wireless_JJ channel_NN in_IN our_PRP$ simulations_NNS ._.
+Incremental_JJ Protocols_NNS Reduce_VB Execution_NN Time_NN :_: Figure_NNP #_# -LRB-_-LRB- a_DT -RRB-_-RRB- compares_VBZ the_DT performance_NN of_IN incremental_JJ gossip_NN -LRB-_-LRB- IGP_NN -RRB-_-RRB- with_IN uniform_JJ gossip_NN on_IN a_DT clique_JJ topology_NN ._.
+We_PRP observe_VBP that_IN both_CC protocols_NNS have_VBP almost_RB identical_JJ execution_NN times_NNS ._.
+This_DT is_VBZ expected_VBN as_IN IGP_NN operates_VBZ in_IN a_DT similar_JJ fashion_NN to_TO 16_CD uniform_JJ gossip_NN ,_, taking_VBG O_NN -LRB-_-LRB- log_NN -LRB-_-LRB- N_NN -RRB-_-RRB- -RRB-_-RRB- time-steps_NNS to_TO converge_VB ._.
+Figure_NNP #_# -LRB-_-LRB- b_NN -RRB-_-RRB- compares_VBZ the_DT execution_NN times_NNS of_IN incremental_JJ random_JJ walk_NN -LRB-_-LRB- IRWP_NN -RRB-_-RRB- and_CC standard_JJ random_JJ walk_NN on_IN a_DT clique_NN ._.
+IRWP_NN reduces_VBZ execution_NN time_NN by_IN a_DT factor_NN of_IN #_# ._.
+#_# for_IN a_DT small_JJ number_NN of_IN measured_VBN signal_NN changes_NNS ._.
+Although_IN random_JJ walk_NN and_CC IRWP_NN both_CC use_VBP k_NN random_JJ walks_VBZ -LRB-_-LRB- in_IN our_PRP$ simulations_NNS k_NN =_JJ number_NN of_IN nodes_NNS -RRB-_-RRB- ,_, IRWP_NN initiates_VBZ walks_VBZ only_RB from_IN updated_VBN nodes_NNS -LRB-_-LRB- as_IN explained_VBN in_IN Section_NN #_# ._.
+#_# -RRB-_-RRB- ,_, resulting_VBG in_IN faster_JJR information_NN convergence_NN ._.
+These_DT improvements_NNS carry_VBP over_RP to_TO a_DT PLRG_NN topology_NN as_RB well_RB -LRB-_-LRB- as_IN shown_VBN in_IN Figure_NNP #_# -LRB-_-LRB- c_NN -RRB-_-RRB- -RRB-_-RRB- ,_, where_WRB IRWP_NN is_VBZ #_# ._.
+##_NN times_NNS faster_JJR than_IN random_JJ walk_NN ._.
+Incremental_JJ Protocols_NNS Reduce_VB Network_NNP Overhead_NN :_: Figure_NNP #_# -LRB-_-LRB- a_DT -RRB-_-RRB- shows_VBZ the_DT ratio_NN of_IN data_NNS transmitted_VBN using_VBG uniform_JJ gossip_NN relative_JJ to_TO incremental_JJ gossip_NN on_IN a_DT clique_NN ._.
+For_IN a_DT small_JJ number_NN of_IN signal_NN changes_NNS ,_, incremental_JJ gossip_NN incurs_VBZ 2_CD ._.
+#_# times_NNS less_JJR overhead_NN than_IN uniform_JJ gossip_NN ._.
+This_DT is_VBZ because_IN in_IN the_DT early_JJ steps_NNS of_IN protocol_NN execution_NN ,_, only_RB devices_NNS which_WDT detect_VBP signal_NN changes_NNS communicate_VBP ._.
+As_IN more_JJR signal_NN changes_NNS are_VBP introduced_VBN into_IN the_DT system_NN ,_, gossip_NN and_CC incremental_JJ gossip_NN incur_VBP approximately_RB the_DT same_JJ overhead_NN ._.
+Similarly_RB ,_, incremental_JJ random_JJ walk_NN -LRB-_-LRB- IRWP_NN -RRB-_-RRB- incurs_VBZ much_RB less_JJR overhead_NN than_IN standard_JJ random_JJ walk_NN ._.
+Figure_NNP #_# -LRB-_-LRB- b_NN -RRB-_-RRB- shows_VBZ a_DT #_# ._.
+#_# fold_JJ reduction_NN in_IN overhead_NN for_IN small_JJ numbers_NNS of_IN signal_NN changes_NNS on_IN a_DT clique_NN ._.
+Although_IN each_DT protocol_NN uses_VBZ the_DT same_JJ number_NN of_IN random_JJ walks_VBZ ,_, IRWP_NN uses_VBZ fewer_JJR network_NN resources_NNS than_IN random_JJ walk_NN because_IN it_PRP takes_VBZ less_JJR time_NN to_TO converge_VB ._.
+This_DT improvement_NN also_RB holds_VBZ true_JJ on_IN more_JJR complex_JJ PLRG_NN topologies_NNS -LRB-_-LRB- as_IN shown_VBN in_IN Figure_NNP #_# -LRB-_-LRB- c_NN -RRB-_-RRB- -RRB-_-RRB- ,_, where_WRB we_PRP observe_VBP a_DT ##_CD %_NN reduction_NN in_IN network_NN overhead_NN ._.
+From_IN these_DT results_NNS it_PRP is_VBZ clear_JJ that_IN incremental_JJ techniques_NNS yield_VBP significant_JJ improvements_NNS over_IN standard_JJ approaches_NNS to_TO gossip_NN ,_, even_RB on_IN complex_JJ topologies_NNS ._.
+Because_IN spectrum_NN utilization_NN is_VBZ characterized_VBN by_IN incremental_JJ changes_NNS to_TO usage_NN ,_, incremental_JJ protocols_NNS are_VBP ideally_RB suited_VBN to_TO solve_VB this_DT problem_NN in_IN an_DT efficient_JJ and_CC cost_NN effective_JJ manner_NN ._.
+8_CD ._.
+DISCUSSION_NN AND_CC FUTURE_NN WORK_VBP We_PRP have_VBP only_RB just_RB scratched_VBD the_DT surface_NN in_IN addressing_VBG the_DT problem_NN of_IN coordinated_VBN spectrum_NN sensing_VBG using_VBG incremental_JJ gossiping_VBG ._.
+Next_RB ,_, we_PRP outline_VBP some_DT open_JJ areas_NNS of_IN research_NN ._.
+Spatial_JJ Decay_NN :_: Devices_NNP performing_VBG coordinated_VBN sensing_VBG are_VBP primarily_RB interested_JJ in_IN the_DT spectrum_NN usage_NN of_IN their_PRP$ local_JJ neighborhood_NN ._.
+Therefore_RB ,_, we_PRP recommend_VBP the_DT use_NN of_IN spatially_RB decaying_JJ aggregates_NNS -LSB-_-LRB- #_# -RSB-_-RRB- ,_, which_WDT limits_VBZ the_DT impact_NN of_IN an_DT update_VBP on_IN more_JJR distant_JJ nodes_NNS ._.
+Spatially_RB decaying_JJ aggregates_NNS work_VBP by_IN successively_RB reducing_VBG -LRB-_-LRB- by_IN means_NNS of_IN a_DT decay_NN function_NN -RRB-_-RRB- the_DT value_NN of_IN the_DT update_VBP as_IN it_PRP propagates_VBZ further_RB from_IN its_PRP$ origin_NN ._.
+One_CD challenge_NN with_IN this_DT approach_NN is_VBZ that_IN propagation_NN distance_NN can_MD not_RB be_VB determined_VBN ahead_RB of_IN time_NN and_CC more_JJR importantly_RB ,_, exhibits_VBZ spatio-temporal_JJ variations_NNS ._.
+Therefore_RB ,_, finding_VBG the_DT optimal_JJ decay_NN function_NN is_VBZ non-trivial_JJ ,_, and_CC an_DT interesting_JJ subject_NN of_IN future_JJ work_NN ._.
+Significance_NN Threshold_NN :_: RF_NN spectrum_NN bands_NNS continually_RB experience_VBP small-scale_JJ changes_NNS which_WDT may_MD not_RB necessarily_RB be_VB significant_JJ ._.
+Deciding_VBG if_IN a_DT change_NN is_VBZ significant_JJ can_MD be_VB done_VBN using_VBG a_DT significance_NN threshold_NN ,_, below_IN which_WDT any_DT observed_VBN change_NN is_VBZ not_RB propagated_VBN by_IN the_DT node_NN ._.
+Choosing_VBG an_DT appropriate_JJ operating_NN value_NN for_IN is_VBZ application_NN dependent_JJ ,_, and_CC explored_VBN further_RB in_IN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+Weighted_JJ Readings_NNS :_: Although_IN we_PRP argued_VBD that_IN most_JJS devices_NNS will_MD likely_RB be_VB equipped_VBN with_IN low-cost_JJ sensing_VBG equipment_NN ,_, there_EX may_MD be_VB situations_NNS where_WRB there_EX are_VBP some_DT special_JJ infrastructure_NN nodes_NNS that_WDT have_VBP better_JJR sensing_VBG abilities_NNS than_IN others_NNS ._.
+Weighting_VBG their_PRP$ measurements_NNS more_RBR heavily_RB could_MD be_VB used_VBN to_TO maintain_VB a_DT higher_JJR degree_NN of_IN accuracy_NN ._.
+Determining_VBG how_WRB to_TO assign_VB such_JJ weights_NNS is_VBZ an_DT open_JJ area_NN of_IN research_NN ._.
+Implementation_NN Specifics_NNS :_: Finally_RB ,_, implementing_VBG gossip_NN for_IN coordinated_VBN spectrum_NN sensing_VBG is_VBZ also_RB open_JJ ._.
+If_IN implemented_VBN at_IN the_DT MAC_NNP layer_NN ,_, it_PRP may_MD be_VB feasible_JJ to_TO piggy-back_VB gossip_NN messages_NNS over_IN existing_VBG management_NN frames_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+networking_VBG advertisement_NN messages_NNS -RRB-_-RRB- ._.
+As_RB well_RB ,_, we_PRP also_RB require_VBP the_DT use_NN of_IN a_DT control_NN channel_NN to_TO disseminate_VB sensing_VBG information_NN ._.
+There_EX are_VBP a_DT variety_NN of_IN alternatives_NNS for_IN implementing_VBG such_PDT a_DT channel_NN ,_, some_DT of_IN which_WDT are_VBP outlined_VBN in_IN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+The_DT trade-offs_NNS of_IN different_JJ approaches_NNS to_TO implementing_VBG GUESS_NNP is_VBZ a_DT subject_NN of_IN future_JJ work_NN ._.
+9_CD ._.
+CONCLUSION_NN Spectrum_NN sensing_VBG is_VBZ a_DT key_JJ requirement_NN for_IN dynamic_JJ spectrum_NN allocation_NN in_IN cognitive_JJ radio_NN networks_NNS ._.
+The_DT nature_NN of_IN the_DT RF_NN environment_NN necessitates_VBZ coordination_NN between_IN cognitive_JJ radio_NN devices_NNS ._.
+We_PRP propose_VBP GUESS_NNP ,_, an_DT approximate_JJ yet_RB low_JJ overhead_JJ approach_NN to_TO perform_VB efficient_JJ coordination_NN between_IN cognitive_JJ radios_NNS ._.
+The_DT fundamental_JJ contributions_NNS of_IN GUESS_NNP are_VBP :_: -LRB-_-LRB- #_# -RRB-_-RRB- an_DT FM_NNP aggregation_NN scheme_NN for_IN efficient_JJ innetwork_NN aggregation_NN ,_, -LRB-_-LRB- #_# -RRB-_-RRB- a_DT randomized_VBN gossiping_VBG approach_NN which_WDT provides_VBZ exponentially_RB fast_JJ convergence_NN and_CC robustness_NN to_TO network_NN alterations_NNS ,_, and_CC -LRB-_-LRB- #_# -RRB-_-RRB- incremental_JJ variations_NNS of_IN FM_NNP and_CC gossip_NN which_WDT we_PRP show_VBP can_MD reduce_VB the_DT communication_NN time_NN by_IN up_RB to_TO a_DT factor_NN of_IN #_# ._.
+#_# and_CC reduce_VB network_NN overhead_NN by_IN up_RB to_TO a_DT factor_NN of_IN #_# ._.
+#_# ._.
+Our_PRP$ preliminary_JJ simulation_NN results_VBZ showcase_NN the_DT benefits_NNS of_IN this_DT approach_NN and_CC we_PRP also_RB outline_VBP a_DT set_NN of_IN open_JJ problems_NNS that_WDT make_VBP this_DT a_DT new_JJ and_CC exciting_JJ area_NN of_IN research_NN ._.
+10_CD ._.
+REFERENCES_NNS -LSB-_-LRB- #_# -RSB-_-RRB- Unlicensed_NNP Operation_NNP in_IN the_DT TV_NN Broadcast_NNP Bands_NNPS and_CC Additional_JJ Spectrum_NN for_IN Unlicensed_NNP Devices_NNPS Below_NNP ###_CD MHz_NNP in_IN the_DT #_# GHz_NNP band_NN ,_, May_NNP ####_CD ._.
+Notice_NNP of_IN Proposed_NNP Rule-Making_NNP 04-186_CD ,_, Federal_NNP Communications_NNP Commission_NNP ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- In-Stat_NNP :_: Covering_NNP the_DT Full_JJ Spectrum_NN of_IN Digital_NNP Communications_NNP Market_NNP Research_NNP ,_, from_IN Vendor_NNP to_TO End-user_NN ,_, December_NNP ####_CD ._.
+http_NN :_: /_: /_: www_NN ._.
+in-stat_NN ._.
+com_NN /_: catalog_NN /_: scatalogue_NN ._.
+asp_NN ?_.
+id_NN =_JJ ##_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- N_NN ._.
+Ahmed_NNP ,_, D_NNP ._.
+Hadaller_NNP ,_, and_CC S_NN ._.
+Keshav_NNP ._.
+Incremental_JJ Maintenance_NN of_IN Global_JJ Aggregates_NNS ._.
+UW_NNP ._.
+Technical_NNP Report_NNP CS-2006-19_NNP ,_, University_NNP of_IN Waterloo_NNP ,_, ON_NNP ,_, Canada_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- R_NN ._.
+W_NN ._.
+Brodersen_NNP ,_, A_NNP ._.
+Wolisz_NNP ,_, D_NNP ._.
+Cabric_NNP ,_, S_NN ._.
+M_NN ._.
+Mishra_NNP ,_, and_CC D_NN ._.
+Willkomm_NNP ._.
+CORVUS_NNP :_: A_NNP Cognitive_NNP Radio_NNP Approach_NNP for_IN Usage_NNP of_IN Virtual_NNP Unlicensed_NNP Spectrum_NNP ._.
+Technical_NNP report_NN ,_, July_NNP 2004_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- D_NN ._.
+Cabric_NNP ,_, S_NN ._.
+M_NN ._.
+Mishra_NNP ,_, and_CC R_NN ._.
+W_NN ._.
+Brodersen_NNP ._.
+Implementation_NN Issues_NNS in_IN Spectrum_NNP Sensing_VBG for_IN Cognitive_NNP Radios_NNPS ._.
+In_IN Asilomar_NNP Conference_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- E_NN ._.
+Cohen_NNP and_CC H_NNP ._.
+Kaplan_NNP ._.
+Spatially-Decaying_JJ Aggregation_NN Over_IN a_DT Network_NNP :_: Model_NNP and_CC Algorithms_NNP ._.
+In_IN Proceedings_NNP of_IN SIGMOD_NNP 2004_CD ,_, pages_NNS 707-718_CD ,_, New_NNP York_NNP ,_, NY_NNP ,_, USA_NNP ,_, ####_CD ._.
+ACM_NNP Press_NNP ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- P_NN ._.
+Flajolet_NNP and_CC G_NNP ._.
+N_NN ._.
+Martin_NNP ._.
+Probabilistic_NNP Counting_VBG Algorithms_NNS for_IN Data_NNP Base_NNP Applications_NNS ._.
+J_NN ._.
+Comput_NNP ._.
+Syst_NNP ._.
+Sci_NNP ._.
+,_, 31_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 182-209_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- C_NN ._.
+Gkantsidis_NNP ,_, M_NN ._.
+Mihail_NNP ,_, and_CC A_NN ._.
+Saberi_NNP ._.
+Random_NNP Walks_NNPS in_IN Peer-to-Peer_NNP Networks_NNP ._.
+In_IN Proceedings_NNP of_IN INFOCOM_NNP ####_CD ,_, pages_NNS 1229-1240_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- E_NN ._.
+Griffith_NNP ._.
+Previewing_VBG Intel_NNP ''_'' s_VBZ Cognitive_NNP Radio_NNP Chip_NNP ,_, June_NNP ####_CD ._.
+http_NN :_: /_: /_: www_NN ._.
+internetnews_NNS ._.
+com_NN /_: wireless_JJ /_: article_NN ._.
+php_NN /_: #######_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- D_NN ._.
+Kempe_NNP ,_, A_NNP ._.
+Dobra_NNP ,_, and_CC J_NN ._.
+Gehrke_NNP ._.
+Gossip-Based_JJ Computation_NN of_IN Aggregate_NNP Information_NNP ._.
+In_IN FOCS_NN ####_CD ,_, page_NN 482_CD ,_, Washington_NNP ,_, DC_NNP ,_, USA_NNP ,_, ####_CD ._.
+IEEE_NNP Computer_NNP Society_NNP ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- X_NN ._.
+Liu_NNP and_CC S_NN ._.
+Shankar_NNP ._.
+Sensing-based_JJ Opportunistic_NNP Channel_NNP Access_NN ._.
+In_IN ACM_NNP Mobile_NNP Networks_NNP and_CC Applications_NNS -LRB-_-LRB- MONET_NNP -RRB-_-RRB- Journal_NNP ,_, March_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Q_NNP ._.
+Lv_NNP ,_, P_NN ._.
+Cao_NNP ,_, E_NNP ._.
+Cohen_NNP ,_, K_NNP ._.
+Li_NNP ,_, and_CC S_NN ._.
+Shenker_NNP ._.
+Search_VB and_CC Replication_NN in_IN Unstructured_JJ Peer-to-Peer_NNP Networks_NNP ._.
+In_IN Proceedings_NNP of_IN ICS_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- A_DT ._.
+Medina_NNP ,_, A_NNP ._.
+Lakhina_NNP ,_, I_PRP ._.
+Matta_NNP ,_, and_CC J_NN ._.
+Byers_NNP ._.
+BRITE_NNP :_: an_DT Approach_NN to_TO Universal_NNP Topology_NNP Generation_NNP ._.
+In_IN Proceedings_NNP of_IN MASCOTS_NNP conference_NN ,_, Aug_NN ._.
+####_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- S_NN ._.
+M_NN ._.
+Mishra_NNP ,_, A_NNP ._.
+Sahai_NNP ,_, and_CC R_NN ._.
+W_NN ._.
+Brodersen_NNP ._.
+Cooperative_NNP Sensing_NNP among_IN Cognitive_NNP Radios_NNPS ._.
+In_IN ICC_NN ####_CD ,_, June_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- S_NN ._.
+Nath_NNP ,_, P_NN ._.
+B_NN ._.
+Gibbons_NNP ,_, S_NN ._.
+Seshan_NNP ,_, and_CC Z_NN ._.
+R_NN ._.
+Anderson_NNP ._.
+Synopsis_NNP Diffusion_NNP for_IN Robust_NNP Aggregation_NN in_IN Sensor_NNP Networks_NNP ._.
+In_IN Proceedings_NNP of_IN SenSys_NNP ####_CD ,_, pages_NNS 250-262_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- A_DT ._.
+Sahai_NNP ,_, N_NNP ._.
+Hoven_NNP ,_, S_NN ._.
+M_NN ._.
+Mishra_NNP ,_, and_CC R_NN ._.
+Tandra_NNP ._.
+Fundamental_JJ Tradeoffs_NNS in_IN Robust_JJ Spectrum_NN Sensing_VBG for_IN Opportunistic_NNP Frequency_NNP Reuse_NNP ._.
+Technical_NNP Report_NNP UC_NN Berkeley_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+Zhao_NNP ,_, H_NN ._.
+Zheng_NNP ,_, and_CC G_NN ._.
+-_: H_NN ._.
+Yang_NNP ._.
+Distributed_VBN Coordination_NN in_IN Dynamic_NNP Spectrum_NNP Allocation_NNP Networks_NNP ._.
+In_IN Proceedings_NNP of_IN DySPAN_NNP ####_CD ,_, Baltimore_NNP -LRB-_-LRB- MD_NN -RRB-_-RRB- ,_, Nov_NNP ._.
+####_NN ._.
+17_CD

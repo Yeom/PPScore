@@ -1,0 +1,859 @@
+Multi-dimensional_JJ Range_NNP Queries_NNPS in_IN Sensor_NNP Networks_NNP Xin_NNP Li_NNP Young_NNP Jin_NNP Kim_NNP Ramesh_NNP Govindan_NNP Wei_NNP Hong_NNP ABSTRACT_NN In_IN many_JJ sensor_NN networks_NNS ,_, data_NNS or_CC events_NNS are_VBP named_VBN by_IN attributes_NNS ._.
+Many_JJ of_IN these_DT attributes_NNS have_VBP scalar_JJ values_NNS ,_, so_RB one_CD natural_JJ way_NN to_TO query_VB events_NNS of_IN interest_NN is_VBZ to_TO use_VB a_DT multidimensional_JJ range_NN query_NN ._.
+An_DT example_NN is_VBZ :_: List_VB all_DT events_NNS whose_WP$ temperature_NN lies_VBZ between_IN ##_CD and_CC ##_CD ,_, and_CC whose_WP$ light_JJ levels_NNS lie_VBP between_IN ##_CD and_CC ##_CD ._.
+Such_JJ queries_NNS are_VBP useful_JJ for_IN correlating_VBG events_NNS occurring_VBG within_IN the_DT network_NN ._.
+In_IN this_DT paper_NN ,_, we_PRP describe_VBP the_DT design_NN of_IN a_DT distributed_VBN index_NN that_WDT scalably_RB supports_VBZ multi-dimensional_JJ range_NN queries_NNS ._.
+Our_PRP$ distributed_VBN index_NN for_IN multi-dimensional_JJ data_NNS -LRB-_-LRB- or_CC DIM_NNP -RRB-_-RRB- uses_VBZ a_DT novel_JJ geographic_JJ embedding_NN of_IN a_DT classical_JJ index_NN data_NNS structure_NN ,_, and_CC is_VBZ built_VBN upon_IN the_DT GPSR_NN geographic_JJ routing_VBG algorithm_NN ._.
+Our_PRP$ analysis_NN reveals_VBZ that_IN ,_, under_IN reasonable_JJ assumptions_NNS about_IN query_NN distributions_NNS ,_, DIMs_VBZ scale_NN quite_RB well_RB with_IN network_NN size_NN -LRB-_-LRB- both_DT insertion_NN and_CC query_NN costs_NNS scale_NN as_IN O_NN -LRB-_-LRB- N_NN -RRB-_-RRB- -RRB-_-RRB- ._.
+In_IN detailed_JJ simulations_NNS ,_, we_PRP show_VBP that_IN in_IN practice_NN ,_, the_DT insertion_NN and_CC query_NN costs_NNS of_IN other_JJ alternatives_NNS are_VBP sometimes_RB an_DT order_NN of_IN magnitude_NN more_RBR than_IN the_DT costs_NNS of_IN DIMs_NNS ,_, even_RB for_IN moderately_RB sized_VBN network_NN ._.
+Finally_RB ,_, experiments_NNS on_IN a_DT small_JJ scale_NN testbed_VBD validate_VB the_DT feasibility_NN of_IN DIMs_NNS ._.
+Categories_NNS and_CC Subject_NNP Descriptors_NNPS C_NNP ._.
+#_# ._.
+#_# -LSB-_-LRB- Computer_NNP Communication_NNP Networks_NNP -RSB-_-RRB- :_: Distributed_VBN Systems_NNPS ;_: C_NN ._.
+#_# -LSB-_-LRB- Special-Purpose_NN and_CC Application-Based_NNP Systems_NNPS -RSB-_-RRB- :_: Embedded_VBN Systems_NNP General_NNP Terms_NNS Embedded_VBN Systems_NNPS ,_, Sensor_NNP Networks_NNP ,_, Storage_NNP 1_CD ._.
+INTRODUCTION_NN In_IN wireless_JJ sensor_NN networks_NNS ,_, data_NNS or_CC events_NNS will_MD be_VB named_VBN by_IN attributes_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- or_CC represented_VBN as_IN virtual_JJ relations_NNS in_IN a_DT distributed_VBN database_NN -LSB-_-LRB- ##_CD ,_, #_# -RSB-_-RRB- ._.
+Many_JJ of_IN these_DT attributes_NNS will_MD have_VB scalar_JJ values_NNS :_: e_LS ._.
+g_NN ._.
+,_, temperature_NN and_CC light_JJ levels_NNS ,_, soil_NN moisture_NN conditions_NNS ,_, etc_FW ._.
+In_IN these_DT systems_NNS ,_, we_PRP argue_VBP ,_, one_CD natural_JJ way_NN to_TO query_VB for_IN events_NNS of_IN interest_NN will_MD be_VB to_TO use_VB multi-dimensional_JJ range_NN queries_NNS on_IN these_DT attributes_NNS ._.
+For_IN example_NN ,_, scientists_NNS analyzing_VBG the_DT growth_NN of_IN marine_JJ microorganisms_NNS might_MD be_VB interested_JJ in_IN events_NNS that_WDT occurred_VBD within_IN certain_JJ temperature_NN and_CC light_JJ conditions_NNS :_: List_VB all_DT events_NNS that_WDT have_VBP temperatures_NNS between_IN ##_CD F_NN and_CC ##_NN F_NN ,_, and_CC light_JJ levels_NNS between_IN ##_CD and_CC ##_CD ._.
+Such_JJ range_NN queries_NNS can_MD be_VB used_VBN in_IN two_CD distinct_JJ ways_NNS ._.
+They_PRP can_MD help_VB users_NNS efficiently_RB drill-down_VBP their_PRP$ search_NN for_IN events_NNS of_IN interest_NN ._.
+The_DT query_NN described_VBN above_IN illustrates_VBZ this_DT ,_, where_WRB the_DT scientist_NN is_VBZ presumably_RB interested_JJ in_IN discovering_VBG ,_, and_CC perhaps_RB mapping_VBG the_DT combined_JJ effect_NN of_IN temperature_NN and_CC light_NN on_IN the_DT growth_NN of_IN marine_JJ micro-organisms_NNS ._.
+More_RBR importantly_RB ,_, they_PRP can_MD be_VB used_VBN by_IN application_NN software_NN running_VBG within_IN a_DT sensor_NN network_NN for_IN correlating_VBG events_NNS and_CC triggering_VBG actions_NNS ._.
+For_IN example_NN ,_, if_IN in_IN a_DT habitat_NN monitoring_NN application_NN ,_, a_DT bird_NN alighting_NN on_IN its_PRP$ nest_NN is_VBZ indicated_VBN by_IN a_DT certain_JJ range_NN of_IN thermopile_JJ sensor_NN readings_NNS ,_, and_CC a_DT certain_JJ range_NN of_IN microphone_NN readings_NNS ,_, a_DT multi-dimensional_JJ range_NN query_NN on_IN those_DT attributes_NNS enables_VBZ higher_JJR confidence_NN detection_NN of_IN the_DT arrival_NN of_IN a_DT flock_NN of_IN birds_NNS ,_, and_CC can_MD trigger_VB a_DT system_NN of_IN cameras_NNS ._.
+In_IN traditional_JJ database_NN systems_NNS ,_, such_JJ range_NN queries_NNS are_VBP supported_VBN using_VBG pre-computed_JJ indices_NNS ._.
+Indices_NNS trade-off_NN some_DT initial_JJ pre-computation_JJ cost_NN to_TO achieve_VB a_DT significantly_RB more_RBR efficient_JJ querying_VBG capability_NN ._.
+For_IN sensor_NN networks_NNS ,_, we_PRP assert_VBP that_IN a_DT centralized_JJ index_NN for_IN multi-dimensional_JJ range_NN queries_NNS may_MD not_RB be_VB feasible_JJ for_IN energy-efficiency_NN reasons_NNS -LRB-_-LRB- as_RB well_RB as_IN the_DT fact_NN that_IN the_DT access_NN bandwidth_NN to_TO this_DT central_JJ index_NN will_MD be_VB limited_VBN ,_, particularly_RB for_IN queries_NNS emanating_VBG from_IN within_IN the_DT network_NN -RRB-_-RRB- ._.
+Rather_RB ,_, we_PRP believe_VBP ,_, there_EX will_MD be_VB situations_NNS when_WRB it_PRP is_VBZ more_RBR appropriate_JJ to_TO build_VB an_DT innetwork_NN distributed_VBN data_NNS structure_NN for_IN efficiently_RB answering_VBG multi-dimensional_JJ range_NN queries_NNS ._.
+In_IN this_DT paper_NN ,_, we_PRP present_VBP just_RB such_JJ a_DT data_NN structure_NN ,_, that_IN we_PRP call_VBP a_DT DIM1_NN ._.
+DIMs_NNS are_VBP inspired_VBN by_IN classical_JJ database_NN indices_NNS ,_, and_CC are_VBP essentially_RB embeddings_NNS of_IN such_JJ indices_NNS within_IN the_DT sensor_NN network_NN ._.
+DIMs_NNS leverage_NN two_CD key_JJ ideas_NNS :_: in-network_JJ 1_CD Distributed_VBN Index_NN for_IN Multi-dimensional_JJ data_NNS ._.
+63_CD data_NNS centric_JJ storage_NN ,_, and_CC a_DT novel_JJ locality-preserving_JJ geographic_JJ hash_NN -LRB-_-LRB- Section_NN #_# -RRB-_-RRB- ._.
+DIMs_NNS trace_VBP their_PRP$ lineage_NN to_TO datacentric_JJ storage_NN systems_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+The_DT underlying_VBG mechanism_NN in_IN these_DT systems_NNS allows_VBZ nodes_NNS to_TO consistently_RB hash_VB an_DT event_NN to_TO some_DT location_NN within_IN the_DT network_NN ,_, which_WDT allows_VBZ efficient_JJ retrieval_NN of_IN events_NNS ._.
+Building_NN upon_IN this_DT ,_, DIMs_NNS use_VBP a_DT technique_NN whereby_WRB events_NNS whose_WP$ attribute_NN values_NNS are_VBP close_JJ are_VBP likely_JJ to_TO be_VB stored_VBN at_IN the_DT same_JJ or_CC nearby_JJ nodes_NNS ._.
+DIMs_NNS then_RB use_VBP an_DT underlying_VBG geographic_JJ routing_VBG algorithm_NN -LRB-_-LRB- GPSR_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- -RRB-_-RRB- to_TO route_NN events_NNS and_CC queries_NNS to_TO their_PRP$ corresponding_JJ nodes_NNS in_IN an_DT entirely_RB distributed_VBN fashion_NN ._.
+We_PRP discuss_VBP the_DT design_NN of_IN a_DT DIM_NNP ,_, presenting_VBG algorithms_NNS for_IN event_NN insertion_NN and_CC querying_VBG ,_, for_IN maintaining_VBG a_DT DIM_NNP in_IN the_DT event_NN of_IN node_NN failure_NN ,_, and_CC for_IN making_VBG DIMs_NNS robust_JJ to_TO data_NNS or_CC packet_NN loss_NN -LRB-_-LRB- Section_NN #_# -RRB-_-RRB- ._.
+We_PRP then_RB extensively_RB evaluate_VB DIMs_NNS using_VBG analysis_NN -LRB-_-LRB- Section_NN #_# -RRB-_-RRB- ,_, simulation_NN -LRB-_-LRB- Section_NN #_# -RRB-_-RRB- ,_, and_CC actual_JJ implementation_NN -LRB-_-LRB- Section_NN #_# -RRB-_-RRB- ._.
+Our_PRP$ analysis_NN reveals_VBZ that_IN ,_, under_IN reasonable_JJ assumptions_NNS about_IN query_NN distributions_NNS ,_, DIMs_VBZ scale_NN quite_RB well_RB with_IN network_NN size_NN -LRB-_-LRB- both_DT insertion_NN and_CC query_NN costs_NNS scale_NN as_IN O_NN -LRB-_-LRB- N_NN -RRB-_-RRB- -RRB-_-RRB- ._.
+In_IN detailed_JJ simulations_NNS ,_, we_PRP show_VBP that_IN in_IN practice_NN ,_, the_DT event_NN insertion_NN and_CC querying_VBG costs_NNS of_IN other_JJ alternatives_NNS are_VBP sometimes_RB an_DT order_NN of_IN magnitude_NN the_DT costs_NNS of_IN DIMs_NNS ,_, even_RB for_IN moderately_RB sized_VBN network_NN ._.
+Experiments_NNS on_IN a_DT small_JJ scale_NN testbed_VBD validate_VB the_DT feasibility_NN of_IN DIMs_NNS -LRB-_-LRB- Section_NN #_# -RRB-_-RRB- ._.
+Much_JJ work_NN remains_VBZ ,_, including_VBG efficient_JJ support_NN for_IN skewed_JJ data_NNS distributions_NNS ,_, existential_JJ queries_NNS ,_, and_CC node_NN heterogeneity_NN ._.
+We_PRP believe_VBP that_IN DIMs_NNS will_MD be_VB an_DT essential_JJ ,_, but_CC perhaps_RB not_RB necessarily_RB the_DT only_RB ,_, distributed_VBN data_NNS structure_NN supporting_VBG efficient_JJ queries_NNS in_IN sensor_NN networks_NNS ._.
+DIMs_NNS will_MD be_VB part_NN of_IN a_DT suite_NN of_IN such_JJ systems_NNS that_WDT enable_VBP feature_NN extraction_NN -LSB-_-LRB- #_# -RSB-_-RRB- ,_, simple_JJ range_NN querying_VBG -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, exact-match_JJ queries_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, or_CC continuous_JJ queries_NNS -LSB-_-LRB- ##_NNS ,_, ##_NN -RSB-_-RRB- ._.
+All_DT such_JJ systems_NNS will_MD likely_RB be_VB integrated_VBN to_TO a_DT sensor_NN network_NN database_NN system_NN such_JJ as_IN TinyDB_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Application_NN designers_NNS could_MD then_RB choose_VB the_DT appropriate_JJ method_NN of_IN information_NN access_NN ._.
+For_IN instance_NN ,_, a_DT fire_NN tracking_NN application_NN would_MD use_VB DIM_NNP to_TO detect_VB the_DT hotspots_NNS ,_, and_CC would_MD then_RB use_VB mechanisms_NNS that_WDT enable_VBP continuous_JJ queries_NNS -LSB-_-LRB- ##_NNS ,_, ##_NN -RSB-_-RRB- to_TO track_VB the_DT spatio-temporal_JJ progress_NN of_IN the_DT hotspots_NNS ._.
+Finally_RB ,_, we_PRP note_VBP that_IN DIMs_NNS are_VBP applicable_JJ not_RB just_RB to_TO sensor_NN networks_NNS ,_, but_CC to_TO other_JJ deeply_RB distributed_VBN systems_NNS -LRB-_-LRB- embedded_JJ networks_NNS for_IN home_NN and_CC factory_NN automation_NN -RRB-_-RRB- as_RB well_RB ._.
+2_LS ._.
+RELATED_JJ WORK_VBP The_DT basic_JJ problem_NN that_IN this_DT paper_NN addresses_NNS -_: multidimensional_JJ range_NN queries_NNS -_: is_VBZ typically_RB solved_VBN in_IN database_NN systems_NNS using_VBG indexing_NN techniques_NNS ._.
+The_DT database_NN community_NN has_VBZ focused_VBN mostly_RB on_IN centralized_JJ indices_NNS ,_, but_CC distributed_VBN indexing_NN has_VBZ received_VBN some_DT attention_NN in_IN the_DT literature_NN ._.
+Indexing_NN techniques_NNS essentially_RB trade-off_NN some_DT data_NNS insertion_NN cost_NN to_TO enable_VB efficient_JJ querying_VBG ._.
+Indexing_NN has_VBZ ,_, for_IN long_RB ,_, been_VBN a_DT classical_JJ research_NN problem_NN in_IN the_DT database_NN community_NN -LSB-_-LRB- #_# ,_, #_# -RSB-_-RRB- ._.
+Our_PRP$ work_NN draws_VBZ its_PRP$ inspiration_NN from_IN the_DT class_NN of_IN multi-key_JJ constant_JJ branching_VBG index_NN structures_NNS ,_, exemplified_VBN by_IN k-d_JJ trees_NNS -LSB-_-LRB- #_# -RSB-_-RRB- ,_, where_WRB k_NN represents_VBZ the_DT dimensionality_NN of_IN the_DT data_NNS space_NN ._.
+Our_PRP$ approach_NN essentially_RB represents_VBZ a_DT geographic_JJ embedding_NN of_IN such_JJ structures_NNS in_IN a_DT sensor_NN field_NN ._.
+There_EX is_VBZ one_CD important_JJ difference_NN ._.
+The_DT classical_JJ indexing_NN structures_NNS are_VBP data-dependent_JJ -LRB-_-LRB- as_RB are_VBP some_DT indexing_NN schemes_NNS that_WDT use_VBP locality_NN preserving_VBG hashes_NNS ,_, and_CC developed_VBN in_IN the_DT theory_NN literature_NN -LSB-_-LRB- ##_CD ,_, #_# ,_, ##_NN -RSB-_-RRB- -RRB-_-RRB- ._.
+The_DT index_NN structure_NN is_VBZ decided_VBN not_RB only_RB by_IN the_DT data_NNS ,_, but_CC also_RB by_IN the_DT order_NN in_IN which_WDT data_NN is_VBZ inserted_VBN ._.
+Our_PRP$ current_JJ design_NN is_VBZ not_RB data_NN dependent_JJ ._.
+Finally_RB ,_, tangentially_RB related_JJ to_TO our_PRP$ work_NN is_VBZ the_DT class_NN of_IN spatial_JJ indexing_NN systems_NNS -LSB-_-LRB- ##_NNS ,_, #_# ,_, ##_NN -RSB-_-RRB- ._.
+While_IN there_EX has_VBZ been_VBN some_DT work_NN on_IN distributed_VBN indexing_NN ,_, the_DT problem_NN has_VBZ not_RB been_VBN extensively_RB explored_VBN ._.
+There_EX exist_VBP distributed_VBN indices_NNS of_IN a_DT restricted_JJ kind-those_NN that_WDT allow_VBP exact_JJ match_NN or_CC partial_JJ prefix_NN match_NN queries_NNS ._.
+Examples_NNS of_IN such_JJ systems_NNS ,_, of_IN course_NN ,_, are_VBP the_DT Internet_NN Domain_NN Name_VB System_NNP ,_, and_CC the_DT class_NN of_IN distributed_VBN hash_NN table_NN -LRB-_-LRB- DHT_NN -RRB-_-RRB- systems_NNS exemplified_VBN by_IN Freenet_NN -LSB-_-LRB- #_# -RSB-_-RRB- ,_, Chord_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, and_CC CAN_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Our_PRP$ work_NN is_VBZ superficially_RB similar_JJ to_TO CAN_NNP in_IN that_DT both_DT construct_NN a_DT zone-based_JJ overlay_NN atop_IN of_IN the_DT underlying_VBG physical_JJ network_NN ._.
+The_DT underlying_VBG details_NNS make_VBP the_DT two_CD systems_NNS very_RB different_JJ :_: CAN_NN ''_'' s_NNS overlay_NN is_VBZ purely_RB logical_JJ while_IN our_PRP$ overlay_NN is_VBZ consistent_JJ with_IN the_DT underlying_VBG physical_JJ topology_NN ._.
+More_RBR recent_JJ work_NN in_IN the_DT Internet_NN context_NN has_VBZ addressed_VBN support_NN for_IN range_NN queries_NNS in_IN DHT_NNP systems_NNS -LSB-_-LRB- #_# ,_, ##_NN -RSB-_-RRB- ,_, but_CC it_PRP is_VBZ unclear_JJ if_IN these_DT directly_RB translate_VB to_TO the_DT sensor_NN network_NN context_NN ._.
+Several_JJ research_NN efforts_NNS have_VBP expressed_VBN the_DT vision_NN of_IN a_DT database_NN interface_NN to_TO sensor_NN networks_NNS -LSB-_-LRB- #_# ,_, #_# ,_, ##_NN -RSB-_-RRB- ,_, and_CC there_EX are_VBP examples_NNS of_IN systems_NNS that_WDT contribute_VBP to_TO this_DT vision_NN -LSB-_-LRB- ##_CD ,_, 3_CD ,_, ##_CD -RSB-_-RRB- ._.
+Our_PRP$ work_NN is_VBZ similar_JJ in_IN spirit_NN to_TO this_DT body_NN of_IN literature_NN ._.
+In_IN fact_NN ,_, DIMs_NNS could_MD become_VB an_DT important_JJ component_NN of_IN a_DT sensor_NN network_NN database_NN system_NN such_JJ as_IN TinyDB_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Our_PRP$ work_NN departs_VBZ from_IN prior_JJ work_NN in_IN this_DT area_NN in_IN two_CD significant_JJ respects_NNS ._.
+Unlike_IN these_DT approaches_NNS ,_, in_IN our_PRP$ work_NN the_DT data_NNS generated_VBN at_IN a_DT node_NN are_VBP hashed_VBN -LRB-_-LRB- in_IN general_JJ -RRB-_-RRB- to_TO different_JJ locations_NNS ._.
+This_DT hashing_VBG is_VBZ the_DT key_JJ to_TO scaling_VBG multi-dimensional_JJ range_NN searches_NNS ._.
+In_IN all_PDT the_DT other_JJ systems_NNS described_VBN above_IN ,_, queries_NNS are_VBP flooded_VBN throughout_IN the_DT network_NN ,_, and_CC can_MD dominate_VB the_DT total_JJ cost_NN of_IN the_DT system_NN ._.
+Our_PRP$ work_NN avoids_VBZ query_NN flooding_NN by_IN an_DT appropriate_JJ choice_NN of_IN hashing_VBG ._.
+Madden_NNP et_FW al_FW ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- also_RB describe_VBP a_DT distributed_VBN index_NN ,_, called_VBN Semantic_NNP Routing_NNP Trees_NNP -LRB-_-LRB- SRT_NNP -RRB-_-RRB- ._.
+This_DT index_NN is_VBZ used_VBN to_TO direct_VB queries_NNS to_TO nodes_NNS that_WDT have_VBP detected_VBN relevant_JJ data_NNS ._.
+Our_PRP$ work_NN differs_VBZ from_IN SRT_NNP in_IN three_CD key_JJ aspects_NNS ._.
+First_RB ,_, SRT_NNP is_VBZ built_VBN on_IN single_JJ attributes_NNS while_IN DIM_NNP supports_VBZ mulitple_JJ attributes_NNS ._.
+Second_RB ,_, SRT_NNP constructs_NNS a_DT routing_VBG tree_NN based_VBN on_IN historical_JJ sensor_NN readings_NNS ,_, and_CC therefore_RB works_VBZ well_RB only_RB for_IN slowlychanging_VBG sensor_NN values_NNS ._.
+Finally_RB ,_, in_IN SRT_NNP queries_NNS are_VBP issued_VBN from_IN a_DT fixed_VBN node_NN while_IN in_IN DIM_NNP queries_NNS can_MD be_VB issued_VBN from_IN any_DT node_NN ._.
+A_DT similar_JJ differentiation_NN applies_VBZ with_IN respect_NN to_TO work_VB on_IN data-centric_JJ routing_VBG in_IN sensor_NN networks_NNS -LSB-_-LRB- ##_NNS ,_, ##_NN -RSB-_-RRB- ,_, where_WRB data_NNS generated_VBN at_IN a_DT node_NN is_VBZ assumed_VBN to_TO be_VB stored_VBN at_IN the_DT node_NN ,_, and_CC queries_NNS are_VBP either_RB flooded_VBN throughout_IN the_DT network_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, or_CC each_DT source_NN sets_VBZ up_RP a_DT network-wide_JJ overlay_NN announcing_VBG its_PRP$ presence_NN so_IN that_IN mobile_JJ sinks_NNS can_MD rendezvous_NN with_IN sources_NNS at_IN the_DT nearest_JJS node_NN on_IN the_DT overlay_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+These_DT approaches_NNS work_VBP well_RB for_IN relatively_RB long-lived_JJ queries_NNS ._.
+Finally_RB ,_, our_PRP$ work_NN is_VBZ most_RBS close_RB related_JJ to_TO data-centric_JJ storage_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- systems_NNS ,_, which_WDT include_VBP geographic_JJ hash-tables_NNS -LRB-_-LRB- GHTs_NNS -RRB-_-RRB- -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, DIMENSIONS_NNS -LSB-_-LRB- #_# -RSB-_-RRB- ,_, and_CC DIFS_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+In_IN a_DT GHT_NNP ,_, data_NNS is_VBZ hashed_VBN by_IN name_NN to_TO a_DT location_NN within_IN the_DT network_NN ,_, enabling_VBG highly_RB efficient_JJ rendezvous_NN ._.
+GHTs_NNS are_VBP built_VBN upon_IN the_DT GPSR_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- protocol_NN and_CC leverage_NN some_DT interesting_JJ properties_NNS of_IN that_DT protocol_NN ,_, such_JJ as_IN the_DT ability_NN to_TO route_NN to_TO a_DT node_NN nearest_JJS to_TO a_DT given_VBN location_NN ._.
+We_PRP also_RB leverage_NN properties_NNS in_IN GPSR_NN -LRB-_-LRB- as_IN we_PRP describe_VBP later_RB -RRB-_-RRB- ,_, but_CC we_PRP use_VBP a_DT locality-preserving_JJ hash_NN to_TO store_VB data_NNS ,_, enabling_VBG efficient_JJ multi-dimensional_JJ range_NN queries_NNS ._.
+DIMENSIONS_NNS and_CC DIFS_NNS can_MD be_VB thought_VBN of_IN as_IN using_VBG the_DT same_JJ set_NN of_IN primitives_NNS as_IN GHT_NN -LRB-_-LRB- storage_NN using_VBG consistent_JJ hashing_VBG -RRB-_-RRB- ,_, but_CC for_IN different_JJ ends_NNS :_: DIMENSIONS_NNS allows_VBZ drill64_NN down_IN search_NN for_IN features_NNS within_IN a_DT sensor_NN network_NN ,_, while_IN DIFS_NN allows_VBZ range_NN queries_NNS on_IN a_DT single_JJ key_NN in_IN addition_NN to_TO other_JJ operations_NNS ._.
+3_LS ._.
+THE_DT DESIGN_NN OF_IN DIMS_NNP Most_JJS sensor_NN networks_NNS are_VBP deployed_VBN to_TO collect_VB data_NNS from_IN the_DT environment_NN ._.
+In_IN these_DT networks_NNS ,_, nodes_NNS -LRB-_-LRB- either_CC individually_RB or_CC collaboratively_RB -RRB-_-RRB- will_MD generate_VB events_NNS ._.
+An_DT event_NN can_MD generally_RB be_VB described_VBN as_IN a_DT tuple_NN of_IN attribute_NN values_NNS ,_, A1_NN ,_, A2_NN ,_, ,_, Ak_NNP ,_, where_WRB each_DT attribute_NN Ai_NN represents_VBZ a_DT sensor_NN reading_NN ,_, or_CC some_DT value_NN corresponding_VBG to_TO a_DT detection_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, a_DT confidence_NN level_NN -RRB-_-RRB- ._.
+The_DT focus_NN of_IN this_DT paper_NN is_VBZ the_DT design_NN of_IN systems_NNS to_TO efficiently_RB answer_VB multi-dimensional_JJ range_NN queries_NNS of_IN the_DT form_NN :_: x1_NN y1_NN ,_, x2_NN y2_NN ,_, ,_, xk_NN yk_NN ._.
+Such_PDT a_DT query_NN returns_VBZ all_DT events_NNS whose_WP$ attribute_NN values_NNS fall_VBP into_IN the_DT corresponding_JJ ranges_NNS ._.
+Notice_NNP that_IN point_NN queries_NNS ,_, i_FW ._.
+e_LS ._.
+,_, queries_NNS that_WDT ask_VBP for_IN events_NNS with_IN specified_VBN values_NNS for_IN each_DT attribute_NN ,_, are_VBP a_DT special_JJ case_NN of_IN range_NN queries_NNS ._.
+As_IN we_PRP have_VBP discussed_VBN in_IN Section_NN #_# ,_, range_NN queries_NNS can_MD enable_VB efficient_JJ correlation_NN and_CC triggering_VBG within_IN the_DT network_NN ._.
+It_PRP is_VBZ possible_JJ to_TO implement_VB range_NN queries_NNS by_IN flooding_VBG a_DT query_NN within_IN the_DT network_NN ._.
+However_RB ,_, as_IN we_PRP show_VBP in_IN later_JJ sections_NNS ,_, this_DT alternative_NN can_MD be_VB inefficient_JJ ,_, particularly_RB as_IN the_DT system_NN scales_NNS ,_, and_CC if_IN nodes_NNS within_IN the_DT network_NN issue_NN such_JJ queries_NNS relatively_RB frequently_RB ._.
+The_DT other_JJ alternative_NN ,_, sending_VBG all_DT events_NNS to_TO an_DT external_JJ storage_NN node_NN results_VBZ in_IN the_DT access_NN link_NN being_VBG a_DT bottleneck_NN ,_, especially_RB if_IN nodes_NNS within_IN the_DT network_NN issue_NN queries_NNS ._.
+Shenker_NNP et_FW al_FW ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- also_RB make_VBP similar_JJ arguments_NNS with_IN respect_NN to_TO data-centric_JJ storage_NN schemes_NNS in_IN general_JJ ;_: DIMs_NNS are_VBP an_DT instance_NN of_IN such_JJ schemes_NNS ._.
+The_DT system_NN we_PRP present_VBP in_IN this_DT paper_NN ,_, the_DT DIM_NNP ,_, relies_VBZ upon_IN two_CD foundations_NNS :_: a_DT locality-preserving_JJ geographic_JJ hash_NN ,_, and_CC an_DT underlying_VBG geographic_JJ routing_VBG scheme_NN ._.
+The_DT key_NN to_TO resolving_VBG range_NN queries_NNS efficiently_RB is_VBZ data_NNS locality_NN :_: i_LS ._.
+e_LS ._.
+,_, events_NNS with_IN comparable_JJ attribute_NN values_NNS are_VBP stored_VBN nearby_RB ._.
+The_DT basic_JJ insight_NN underlying_VBG DIM_NNP is_VBZ that_IN data_NNS locality_NN can_MD be_VB obtained_VBN by_IN a_DT locality-preserving_JJ geographic_JJ hash_NN function_NN ._.
+Our_PRP$ geographic_JJ hash_NN function_NN finds_VBZ a_DT localitypreserving_JJ mapping_NN from_IN the_DT multi-dimensional_JJ space_NN -LRB-_-LRB- described_VBN by_IN the_DT set_NN of_IN attributes_NNS -RRB-_-RRB- to_TO a_DT 2-d_JJ geographic_JJ space_NN ;_: this_DT mapping_NN is_VBZ inspired_VBN by_IN k-d_JJ trees_NNS -LSB-_-LRB- #_# -RSB-_-RRB- and_CC is_VBZ described_VBN later_RB ._.
+Moreover_RB ,_, each_DT node_NN in_IN the_DT network_NN self-organizes_VBZ to_TO claim_VB part_NN of_IN the_DT attribute_NN space_NN for_IN itself_PRP -LRB-_-LRB- we_PRP say_VBP that_IN each_DT node_NN owns_VBZ a_DT zone_NN -RRB-_-RRB- ,_, so_RB events_NNS falling_VBG into_IN that_DT space_NN are_VBP routed_VBN to_TO and_CC stored_VBN at_IN that_DT node_NN ._.
+Having_VBG established_VBN the_DT mapping_NN ,_, and_CC the_DT zone_NN structure_NN ,_, DIMs_NNS use_VBP a_DT geographic_JJ routing_VBG algorithm_NN previously_RB developed_VBN in_IN the_DT literature_NN to_TO route_NN events_NNS to_TO their_PRP$ corresponding_JJ nodes_NNS ,_, or_CC to_TO resolve_VB queries_NNS ._.
+This_DT algorithm_NN ,_, GPSR_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, essentially_RB enables_VBZ the_DT delivery_NN of_IN a_DT packet_NN to_TO a_DT node_NN at_IN a_DT specified_VBN location_NN ._.
+The_DT routing_VBG mechanism_NN is_VBZ simple_JJ :_: when_WRB a_DT node_NN receives_VBZ a_DT packet_NN destined_VBN to_TO a_DT node_NN at_IN location_NN X_NN ,_, it_PRP forwards_RB the_DT packet_NN to_TO the_DT neighbor_NN closest_JJS to_TO X_NN ._.
+In_IN GPSR_NN ,_, this_DT is_VBZ called_VBN greedy-mode_JJ forwarding_NN ._.
+When_WRB no_DT such_JJ neighbor_NN exists_VBZ -LRB-_-LRB- as_IN when_WRB there_EX exists_VBZ a_DT void_NN in_IN the_DT network_NN -RRB-_-RRB- ,_, the_DT node_NN starts_VBZ the_DT packet_NN on_IN a_DT perimeter_NN mode_NN traversal_NN ,_, using_VBG the_DT well_RB known_VBN right-hand_JJ rule_NN to_TO circumnavigate_VB voids_NNS ._.
+GPSR_NN includes_VBZ efficient_JJ techniques_NNS for_IN perimeter_NN traversal_NN that_WDT are_VBP based_VBN on_IN graph_NN planarization_NN algorithms_NNS amenable_JJ to_TO distributed_VBN implementation_NN ._.
+For_IN all_DT of_IN this_DT to_TO work_VB ,_, DIMs_NNS make_VBP two_CD assumptions_NNS that_WDT are_VBP consistent_JJ with_IN the_DT literature_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+First_RB ,_, all_DT nodes_NNS know_VBP the_DT approximate_JJ geographic_JJ boundaries_NNS of_IN the_DT network_NN ._.
+These_DT boundaries_NNS may_MD either_RB be_VB configured_VBN in_IN nodes_NNS at_IN the_DT time_NN of_IN deployment_NN ,_, or_CC may_MD be_VB discovered_VBN using_VBG a_DT simple_JJ protocol_NN ._.
+Second_RB ,_, each_DT node_NN knows_VBZ its_PRP$ geographic_JJ location_NN ._.
+Node_NN locations_NNS can_MD be_VB automatically_RB determined_VBN by_IN a_DT localization_NN system_NN or_CC by_IN other_JJ means_NNS ._.
+Although_IN the_DT basic_JJ idea_NN of_IN DIMs_NNS may_MD seem_VB straightforward_JJ ,_, it_PRP is_VBZ challenging_VBG to_TO design_VB a_DT completely_RB distributed_VBN data_NNS structure_NN that_WDT must_MD be_VB robust_JJ to_TO packet_NN losses_NNS and_CC node_NN failures_NNS ,_, yet_RB must_MD support_VB efficient_JJ query_JJ distribution_NN and_CC deal_NN with_IN communication_NN voids_NNS and_CC obstacles_NNS ._.
+We_PRP now_RB describe_VBP the_DT complete_JJ design_NN of_IN DIMs_NNS ._.
+3_LS ._.
+#_# Zones_NNS The_DT key_JJ idea_NN behind_IN DIMs_NNS ,_, as_IN we_PRP have_VBP discussed_VBN ,_, is_VBZ a_DT geographic_JJ locality-preserving_JJ hash_NN that_WDT maps_VBZ a_DT multi-attribute_JJ event_NN to_TO a_DT geographic_JJ zone_NN ._.
+Intuitively_RB ,_, a_DT zone_NN is_VBZ a_DT subdivision_NN of_IN the_DT geographic_JJ extent_NN of_IN a_DT sensor_NN field_NN ._.
+A_DT zone_NN is_VBZ defined_VBN by_IN the_DT following_VBG constructive_JJ procedure_NN ._.
+Consider_VB a_DT rectangle_NN R_NN on_IN the_DT x-y_JJ plane_NN ._.
+Intuitively_RB ,_, R_NN is_VBZ the_DT bounding_VBG rectangle_NN that_WDT contains_VBZ all_DT sensors_NNS withing_VBG the_DT network_NN ._.
+We_PRP call_VBP a_DT sub-rectangle_JJ Z_NN of_IN R_NN a_DT zone_NN ,_, if_IN Z_NN is_VBZ obtained_VBN by_IN dividing_VBG R_NN k_NN times_NNS ,_, k_NN #_# ,_, using_VBG a_DT procedure_NN that_IN satisfies_VBZ the_DT following_VBG property_NN :_: After_IN the_DT i-th_JJ division_NN ,_, #_# i_FW k_NN ,_, R_NN is_VBZ partitioned_VBN into_IN 2i_JJ equal_JJ sized_VBN rectangles_NNS ._.
+If_IN i_FW is_VBZ an_DT odd_JJ -LRB-_-LRB- even_RB -RRB-_-RRB- number_NN ,_, the_DT i-th_JJ division_NN is_VBZ parallel_JJ to_TO the_DT y-axis_NN -LRB-_-LRB- x-axis_NN -RRB-_-RRB- ._.
+That_DT is_VBZ ,_, the_DT bounding_VBG rectangle_NN R_NN is_VBZ first_JJ sub-divided_JJ into_IN two_CD zones_NNS at_IN level_NN #_# by_IN a_DT vertical_JJ line_NN that_WDT splits_VBZ R_NN into_IN two_CD equal_JJ pieces_NNS ,_, each_DT of_IN these_DT sub-zones_NNS can_MD be_VB split_VBN into_IN two_CD zones_NNS at_IN level_NN #_# by_IN a_DT horizontal_JJ line_NN ,_, and_CC so_RB on_IN ._.
+We_PRP call_VBP the_DT non-negative_JJ integer_NN k_NN the_DT level_NN of_IN zone_NN Z_NN ,_, i_FW ._.
+e_LS ._.
+level_NN -LRB-_-LRB- Z_NN -RRB-_-RRB- =_JJ k_NN ._.
+A_DT zone_NN can_MD be_VB identified_VBN either_CC by_IN a_DT zone_NN code_NN code_NN -LRB-_-LRB- Z_NN -RRB-_-RRB- or_CC by_IN an_DT address_NN addr_NN -LRB-_-LRB- Z_NN -RRB-_-RRB- ._.
+The_DT code_NN code_NN -LRB-_-LRB- Z_NN -RRB-_-RRB- is_VBZ a_DT 0-1_CD bit_NN string_NN of_IN length_NN level_NN -LRB-_-LRB- Z_NN -RRB-_-RRB- ,_, and_CC is_VBZ defined_VBN as_IN follows_VBZ ._.
+If_IN Z_NN lies_VBZ in_IN the_DT left_JJ half_NN of_IN R_NN ,_, the_DT first_JJ -LRB-_-LRB- from_IN the_DT left_NN -RRB-_-RRB- bit_NN of_IN code_NN -LRB-_-LRB- Z_NN -RRB-_-RRB- is_VBZ #_# ,_, else_RB #_# ._.
+If_IN Z_NN lies_VBZ in_IN the_DT bottom_JJ half_NN of_IN R_NN ,_, the_DT second_JJ bit_NN of_IN code_NN -LRB-_-LRB- Z_NN -RRB-_-RRB- is_VBZ #_# ,_, else_RB #_# ._.
+The_DT remaining_VBG bits_NNS of_IN code_NN -LRB-_-LRB- Z_NN -RRB-_-RRB- are_VBP then_RB recursively_RB defined_VBN on_IN each_DT of_IN the_DT four_CD quadrants_NNS of_IN R_NN ._.
+This_DT definition_NN of_IN the_DT zone_NN code_NN matches_VBZ the_DT definition_NN of_IN zones_NNS given_VBN above_IN ,_, encoding_VBG divisions_NNS of_IN the_DT sensor_NN field_NN geography_NN by_IN bit_NN strings_NNS ._.
+Thus_RB ,_, in_IN Figure_NNP #_# ,_, the_DT zone_NN in_IN the_DT top-right_JJ corner_NN of_IN the_DT rectangle_NN R_NN has_VBZ a_DT zone_NN code_NN of_IN ####_CD ._.
+Note_VB that_IN the_DT zone_NN codes_VBZ collectively_RB define_VB a_DT zone_NN tree_NN such_JJ that_IN individual_JJ zones_NNS are_VBP at_IN the_DT leaves_NNS of_IN this_DT tree_NN ._.
+The_DT address_NN of_IN a_DT zone_NN Z_NN ,_, addr_NN -LRB-_-LRB- Z_NN -RRB-_-RRB- ,_, is_VBZ defined_VBN to_TO be_VB the_DT centroid_NN of_IN the_DT rectangle_NN defined_VBN by_IN Z_NN ._.
+The_DT two_CD representations_NNS of_IN a_DT zone_NN -LRB-_-LRB- its_PRP$ code_NN and_CC its_PRP$ address_NN -RRB-_-RRB- can_MD each_DT be_VB computed_VBN from_IN the_DT other_JJ ,_, assuming_VBG the_DT level_NN of_IN the_DT zone_NN is_VBZ known_VBN ._.
+Two_CD zones_NNS are_VBP called_VBN sibling_NN zones_NNS if_IN their_PRP$ zone_NN codes_NNS are_VBP the_DT same_JJ except_IN for_IN the_DT last_JJ bit_NN ._.
+For_IN example_NN ,_, if_IN code_NN -LRB-_-LRB- Z1_NN -RRB-_-RRB- =_JJ 01101_CD and_CC code_NN -LRB-_-LRB- Z2_NN -RRB-_-RRB- =_JJ #####_CD ,_, then_RB Z1_NN and_CC Z2_NN are_VBP sibling_NN zones_NNS ._.
+The_DT sibling_NN subtree_NN of_IN a_DT zone_NN is_VBZ the_DT subtree_JJ rooted_VBN at_IN the_DT left_JJ or_CC right_JJ sibling_NN of_IN the_DT zone_NN in_IN the_DT zone_NN tree_NN ._.
+We_PRP uniquely_RB define_VBP a_DT backup_NN zone_NN for_IN each_DT zone_NN as_IN follows_VBZ :_: if_IN the_DT sibling_NN subtree_NN of_IN the_DT zone_NN is_VBZ on_IN the_DT left_NN ,_, the_DT backup_NN zone_NN is_VBZ the_DT right-most_JJ zone_NN in_IN the_DT sibling_NN subtree_NN ;_: otherwise_RB ,_, the_DT backup_NN zone_NN is_VBZ the_DT left-most_JJ zone_NN in_IN the_DT sibling_NN subtree_NN ._.
+For_IN a_DT zone_NN Z_NN ,_, let_VB p_NN be_VB the_DT first_JJ level_NN -LRB-_-LRB- Z_NN -RRB-_-RRB- #_# digits_NNS of_IN code_NN -LRB-_-LRB- Z_NN -RRB-_-RRB- ._.
+Let_VB backup_NN -LRB-_-LRB- Z_NN -RRB-_-RRB- be_VB the_DT backup_NN zone_NN of_IN zone_NN Z_NN ._.
+If_IN code_NN -LRB-_-LRB- Z_NN -RRB-_-RRB- =_JJ p1_NN ,_, code_NN -LRB-_-LRB- backup_NN -LRB-_-LRB- Z_NN -RRB-_-RRB- -RRB-_-RRB- =_JJ p01_NN with_IN the_DT most_RBS number_NN of_IN trailing_VBG #_# ''_'' s_NNS -LRB-_-LRB- means_NNS #_# or_CC #_# occurrences_NNS -RRB-_-RRB- ._.
+If_IN 65_CD code_NN -LRB-_-LRB- Z_NN -RRB-_-RRB- =_JJ p0_NN ,_, code_NN -LRB-_-LRB- backup_NN -LRB-_-LRB- Z_NN -RRB-_-RRB- -RRB-_-RRB- =_JJ p10_NN with_IN the_DT most_RBS number_NN of_IN trailing_VBG #_# ''_'' s_NNS ._.
+3_LS ._.
+#_# Associating_VBG Zones_NNS with_IN Nodes_NNS Our_PRP$ definition_NN of_IN a_DT zone_NN is_VBZ independent_JJ of_IN the_DT actual_JJ distribution_NN of_IN nodes_NNS in_IN the_DT sensor_NN field_NN ,_, and_CC only_RB depends_VBZ upon_IN the_DT geographic_JJ extent_NN -LRB-_-LRB- the_DT bounding_VBG rectangle_NN -RRB-_-RRB- of_IN the_DT sensor_NN field_NN ._.
+Now_RB we_PRP describe_VBP how_WRB zones_NNS are_VBP mapped_VBN to_TO nodes_NNS ._.
+Conceptually_RB ,_, the_DT sensor_NN field_NN is_VBZ logically_RB divided_VBN into_IN zones_NNS and_CC each_DT zone_NN is_VBZ assigned_VBN to_TO a_DT single_JJ node_NN ._.
+If_IN the_DT sensor_NN network_NN were_VBD deployed_VBN in_IN a_DT grid-like_JJ -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, very_RB regular_JJ -RRB-_-RRB- fashion_NN ,_, then_RB it_PRP is_VBZ easy_JJ to_TO see_VB that_IN there_EX exists_VBZ a_DT k_NN such_JJ that_IN each_DT node_NN maps_VBZ into_IN a_DT distinct_JJ level-k_NN zone_NN ._.
+In_IN general_JJ ,_, however_RB ,_, the_DT node_NN placements_NNS within_IN a_DT sensor_NN field_NN are_VBP likely_JJ to_TO be_VB less_JJR regular_JJ than_IN the_DT grid_NN ._.
+For_IN some_DT k_NN ,_, some_DT zones_NNS may_MD be_VB empty_JJ and_CC other_JJ zones_NNS might_MD have_VB more_JJR than_IN one_CD node_NN situated_VBN within_IN them_PRP ._.
+One_CD alternative_NN would_MD have_VB been_VBN to_TO choose_VB a_DT fixed_VBN k_NN for_IN the_DT overall_JJ system_NN ,_, and_CC then_RB associate_JJ nodes_NNS with_IN the_DT zones_NNS they_PRP are_VBP in_IN -LRB-_-LRB- and_CC if_IN a_DT zone_NN is_VBZ empty_JJ ,_, associate_VBP the_DT nearest_JJS node_NN with_IN it_PRP ,_, for_IN some_DT definition_NN of_IN nearest_JJS -RRB-_-RRB- ._.
+Because_IN it_PRP makes_VBZ our_PRP$ overall_JJ query_NN routing_VBG system_NN simpler_JJR ,_, we_PRP allow_VBP nodes_NNS in_IN a_DT DIM_NNP to_TO map_VB to_TO different-sized_JJ zones_NNS ._.
+To_TO precisely_RB understand_VB the_DT associations_NNS between_IN zones_NNS and_CC nodes_NNS ,_, we_PRP define_VBP the_DT notion_NN of_IN zone_NN ownership_NN ._.
+For_IN any_DT given_VBN placement_NN of_IN network_NN nodes_NNS ,_, consider_VBP a_DT node_NN A_NN ._.
+Let_VB ZA_NNP to_TO be_VB the_DT largest_JJS zone_NN that_WDT includes_VBZ only_RB node_NN A_NN and_CC no_DT other_JJ node_NN ._.
+Then_RB ,_, we_PRP say_VBP that_IN A_DT owns_VBZ ZA_NN ._.
+Notice_NNP that_IN this_DT definition_NN of_IN ownership_NN may_MD leave_VB some_DT sections_NNS of_IN the_DT sensor_NN field_NN un-associated_JJ with_IN a_DT node_NN ._.
+For_IN example_NN ,_, in_IN Figure_NNP #_# ,_, the_DT zone_NN ###_NN does_VBZ not_RB contain_VB any_DT nodes_NNS and_CC would_MD not_RB have_VB an_DT owner_NN ._.
+To_TO remedy_VB this_DT ,_, for_IN any_DT empty_JJ zone_NN Z_NN ,_, we_PRP define_VBP the_DT owner_NN to_TO be_VB the_DT owner_NN of_IN backup_NN -LRB-_-LRB- Z_NN -RRB-_-RRB- ._.
+In_IN our_PRP$ example_NN ,_, that_IN empty_JJ zone_NN ''_'' s_NNS owner_NN would_MD also_RB be_VB the_DT node_NN that_WDT owns_VBZ 1110_CD ,_, its_PRP$ backup_NN zone_NN ._.
+Having_VBG defined_VBN the_DT association_NN between_IN nodes_NNS and_CC zones_NNS ,_, the_DT next_JJ problem_NN we_PRP tackle_VBP is_VBZ :_: given_VBN a_DT node_NN placement_NN ,_, does_VBZ there_EX exist_VBP a_DT distributed_VBN algorithm_NN that_WDT enables_VBZ each_DT node_NN to_TO determine_VB which_WDT zones_NNS it_PRP owns_VBZ ,_, knowing_VBG only_RB the_DT overall_JJ boundary_NN of_IN the_DT sensor_NN network_NN ?_.
+In_IN principle_NN ,_, this_DT should_MD be_VB relatively_RB straightforward_JJ ,_, since_IN each_DT node_NN can_MD simply_RB determine_VB the_DT location_NN of_IN its_PRP$ neighbors_NNS ,_, and_CC apply_VB simple_JJ geometric_JJ methods_NNS to_TO determine_VB the_DT largest_JJS zone_NN around_IN it_PRP such_JJ that_IN no_DT other_JJ node_NN resides_VBZ in_IN that_DT zone_NN ._.
+In_IN practice_NN ,_, however_RB ,_, communication_NN voids_NNS and_CC obstacles_NNS make_VBP the_DT algorithm_NN much_RB more_RBR challenging_JJ ._.
+In_IN particular_JJ ,_, resolving_VBG the_DT ownership_NN of_IN zones_NNS that_WDT do_VBP not_RB contain_VB any_DT nodes_NNS is_VBZ complicated_VBN ._.
+Equally_RB complicated_VBN is_VBZ the_DT case_NN where_WRB the_DT zone_NN of_IN a_DT node_NN is_VBZ larger_JJR than_IN its_PRP$ communication_NN radius_NN and_CC the_DT node_NN can_MD not_RB determine_VB the_DT boundaries_NNS of_IN its_PRP$ zone_NN by_IN local_JJ communication_NN alone_RB ._.
+Our_PRP$ distributed_VBN zone_NN building_NN algorithm_NN defers_VBZ the_DT resolution_NN of_IN such_JJ zones_NNS until_IN when_WRB either_CC a_DT query_NN is_VBZ initiated_VBN ,_, or_CC when_WRB an_DT event_NN is_VBZ inserted_VBN ._.
+The_DT basic_JJ idea_NN behind_IN our_PRP$ algorithm_NN is_VBZ that_IN each_DT node_NN tentatively_RB builds_VBZ up_RP an_DT idea_NN of_IN the_DT zone_NN it_PRP resides_VBZ in_IN just_RB by_IN communicating_VBG with_IN its_PRP$ neighbors_NNS -LRB-_-LRB- remembering_VBG which_WDT boundaries_NNS of_IN the_DT zone_NN are_VBP undecided_JJ because_IN there_EX is_VBZ no_DT radio_NN neighbor_NN that_WDT can_MD help_VB resolve_VB that_DT boundary_NN -RRB-_-RRB- ._.
+These_DT undecided_JJ boundaries_NNS are_VBP later_RB resolved_VBN by_IN a_DT GPSR_NN perimeter_NN traversal_NN when_WRB data_NNS messages_NNS are_VBP actually_RB routed_VBN ._.
+We_PRP now_RB describe_VBP the_DT algorithm_NN ,_, and_CC illustrate_VBP it_PRP using_VBG examples_NNS ._.
+In_IN our_PRP$ algorithm_NN ,_, each_DT node_NN uses_VBZ an_DT array_NN bound_VBD -LSB-_-LRB- #_# ._. ._.
+#_# -RSB-_-RRB- to_TO maintain_VB the_DT four_CD boundaries_NNS of_IN the_DT zone_NN it_PRP owns_VBZ -LRB-_-LRB- rememFigure_NN #_# :_: A_DT network_NN ,_, where_WRB circles_NNS represent_VBP sensor_NN nodes_NNS and_CC dashed_VBN lines_NNS mark_VBP the_DT network_NN boundary_NN ._.
+1111_CD 011_CD 00_CD 110_CD 100_CD 101_CD 1110_CD 010_CD Figure_NNP #_# :_: The_DT zone_NN code_NN and_CC boundaries_NNS ._.
+0_CD #_# 0_CD #_# 10_CD 10_CD 1_CD #_# 10_CD 00_CD Figure_NNP #_# :_: The_DT Corresponding_VBG Zone_NNP Tree_NNP ber_NN that_WDT in_IN this_DT algorithm_NN ,_, the_DT node_NN only_RB tries_VBZ to_TO determine_VB the_DT zone_NN it_PRP resides_VBZ in_IN ,_, not_RB the_DT other_JJ zones_NNS it_PRP might_MD own_VB because_IN those_DT zones_NNS are_VBP devoid_JJ of_IN nodes_NNS -RRB-_-RRB- ._.
+When_WRB a_DT node_NN starts_VBZ up_RP ,_, each_DT node_NN initializes_VBZ this_DT array_NN to_TO be_VB the_DT network_NN boundary_NN ,_, i_FW ._.
+e_LS ._.
+,_, initially_RB each_DT node_NN assumes_VBZ its_PRP$ zone_NN contains_VBZ the_DT whole_JJ network_NN ._.
+The_DT zone_NN boundary_NN algorithm_NN now_RB relies_VBZ upon_IN GPSR_NN ''_'' s_NNS beacon_VBP messages_NNS to_TO learn_VB the_DT locations_NNS of_IN neighbors_NNS within_IN radio_NN range_NN ._.
+Upon_IN hearing_NN of_IN such_PDT a_DT neighbor_NN ,_, the_DT node_NN calls_VBZ the_DT algorithm_NN in_IN Figure_NNP #_# to_TO update_VB its_PRP$ zone_NN boundaries_NNS and_CC its_PRP$ code_NN accordingly_RB ._.
+In_IN this_DT algorithm_NN ,_, we_PRP assume_VBP that_IN A_NN is_VBZ the_DT node_NN at_IN which_WDT the_DT algorithm_NN is_VBZ executed_VBN ,_, ZA_NN is_VBZ its_PRP$ zone_NN ,_, and_CC a_DT is_VBZ a_DT newly_RB discovered_VBN neighbor_NN of_IN A_NN ._.
+-LRB-_-LRB- Procedure_NNP Contain_NNP -LRB-_-LRB- ZA_NNP ,_, a_DT -RRB-_-RRB- is_VBZ used_VBN to_TO decide_VB if_IN node_NN a_DT is_VBZ located_JJ within_IN the_DT current_JJ zone_NN boundaries_NNS of_IN node_NN A_NN -RRB-_-RRB- ._.
+Using_VBG this_DT algorithm_NN ,_, then_RB ,_, each_DT node_NN can_MD independently_RB and_CC asynchronously_RB decide_VB its_PRP$ own_JJ tentative_JJ zone_NN based_VBN on_IN the_DT location_NN of_IN its_PRP$ neighbors_NNS ._.
+Figure_NNP #_# illustrates_VBZ the_DT results_NNS of_IN applying_VBG this_DT algorithm_NN for_IN the_DT network_NN in_IN Figure_NNP #_# ._.
+Figure_NNP #_# describes_VBZ the_DT corresponding_JJ zone_NN tree_NN ._.
+Each_DT zone_NN resides_VBZ at_IN a_DT leaf_NN node_NN and_CC the_DT code_NN of_IN a_DT zone_NN is_VBZ the_DT path_NN from_IN the_DT root_NN to_TO the_DT zone_NN if_IN we_PRP represent_VBP the_DT branch_NN to_TO the_DT left_JJ 66_CD Build-Zone_NN -LRB-_-LRB- a_DT -RRB-_-RRB- 1_CD while_IN Contain_NNP -LRB-_-LRB- ZA_NNP ,_, a_DT -RRB-_-RRB- 2_CD do_VBP if_IN length_NN -LRB-_-LRB- code_NN -LRB-_-LRB- ZA_NN -RRB-_-RRB- -RRB-_-RRB- mod_NN #_# =_JJ #_# 3_CD then_RB new_JJ bound_VBN -LRB-_-LRB- bound_VBN -LSB-_-LRB- #_# -RSB-_-RRB- +_CC bound_VBD -LSB-_-LRB- #_# -RSB-_-RRB- -RRB-_-RRB- /_: #_# 4_CD if_IN A_DT ._.
+x_NN <_JJR new_JJ bound_VBN 5_CD then_RB bound_VBD -LSB-_-LRB- #_# -RSB-_-RRB- new_JJ bound_VBN 6_CD else_RB bound_VBN -LSB-_-LRB- #_# -RSB-_-RRB- new_JJ bound_VBN 7_CD else_RB new_JJ bound_VBN -LRB-_-LRB- bound_VBN -LSB-_-LRB- #_# -RSB-_-RRB- +_CC bound_VBD -LSB-_-LRB- #_# -RSB-_-RRB- -RRB-_-RRB- /_: #_# 8_CD if_IN A_DT ._.
+y_NN <_JJR new_JJ bound_VBN 9_CD then_RB bound_VBD -LSB-_-LRB- #_# -RSB-_-RRB- new_JJ bound_VBN 10_CD else_RB bound_VBN -LSB-_-LRB- #_# -RSB-_-RRB- new_JJ bound_VBN 11_CD Update_NNP zone_NN code_NN code_NN -LRB-_-LRB- ZA_NN -RRB-_-RRB- Figure_NN #_# :_: Zone_NNP Boundary_NNP Determination_NN ,_, where_WRB A_NN ._.
+x_NN and_CC A_NN ._.
+y_NN represent_VBP the_DT geographic_JJ coordinate_NN of_IN node_NN A_NN ._.
+Insert-Event_JJ -LRB-_-LRB- e_LS -RRB-_-RRB- 1_CD c_NN Encode_NN -LRB-_-LRB- e_LS -RRB-_-RRB- 2_CD if_IN Contain_NNP -LRB-_-LRB- ZA_NNP ,_, c_NN -RRB-_-RRB- =_JJ true_JJ and_CC is_VBZ Internal_JJ -LRB-_-LRB- -RRB-_-RRB- =_JJ true_JJ 3_CD then_RB Store_NN e_SYM and_CC exit_NN 4_CD Send-Message_NN -LRB-_-LRB- c_NN ,_, e_LS -RRB-_-RRB- Send-Message_NN -LRB-_-LRB- c_NN ,_, m_NN -RRB-_-RRB- 1_CD if_IN neighbor_NN Y_NN ,_, Closer_JJR -LRB-_-LRB- Y_NN ,_, owner_NN -LRB-_-LRB- m_NN -RRB-_-RRB- ,_, m_NN -RRB-_-RRB- =_JJ true_JJ 2_CD then_RB addr_NN -LRB-_-LRB- m_NN -RRB-_-RRB- addr_NN -LRB-_-LRB- Y_NN -RRB-_-RRB- 3_CD else_RB if_IN length_NN -LRB-_-LRB- c_NN -RRB-_-RRB- >_JJR length_NN -LRB-_-LRB- code_NN -LRB-_-LRB- m_NN -RRB-_-RRB- -RRB-_-RRB- 4_CD then_RB Update_NNP code_NN -LRB-_-LRB- m_NN -RRB-_-RRB- and_CC addr_NN -LRB-_-LRB- m_NN -RRB-_-RRB- 5_CD source_NN -LRB-_-LRB- m_NN -RRB-_-RRB- caller_NN 6_CD if_IN is_VBZ Owner_NNP -LRB-_-LRB- msg_NN -RRB-_-RRB- =_JJ true_JJ 7_CD then_RB owner_NN -LRB-_-LRB- m_NN -RRB-_-RRB- caller_NN ''_'' s_NNS code_VBP 8_CD Send_VB -LRB-_-LRB- m_NN -RRB-_-RRB- Figure_NN #_# :_: Inserting_VBG an_DT event_NN in_IN a_DT DIM_NNP ._.
+Procedure_NNP Closer_JJR -LRB-_-LRB- A_NN ,_, B_NN ,_, m_NN -RRB-_-RRB- returns_NNS true_JJ if_IN code_NN -LRB-_-LRB- A_NN -RRB-_-RRB- is_VBZ closer_RBR to_TO code_NN -LRB-_-LRB- m_NN -RRB-_-RRB- than_IN code_NN -LRB-_-LRB- B_NN -RRB-_-RRB- ._.
+source_NN -LRB-_-LRB- m_NN -RRB-_-RRB- is_VBZ used_VBN to_TO set_VB the_DT source_NN address_NN of_IN message_NN m_NN ._.
+child_NN by_IN #_# and_CC the_DT branch_NN to_TO the_DT right_JJ child_NN by_IN #_# ._.
+This_DT binary_JJ tree_NN forms_VBZ the_DT index_NN that_IN we_PRP will_MD use_VB in_IN the_DT following_VBG event_NN and_CC query_NN processing_NN procedures_NNS ._.
+We_PRP see_VBP that_IN the_DT zone_NN sizes_NNS are_VBP different_JJ and_CC depend_VB on_IN the_DT local_JJ densities_NNS and_CC so_RB are_VBP the_DT lengths_NNS of_IN zone_NN codes_NNS for_IN different_JJ nodes_NNS ._.
+Notice_NNP that_IN in_IN Figure_NNP #_# ,_, there_EX is_VBZ an_DT empty_JJ zone_NN whose_WP$ code_NN should_MD be_VB ###_CD ._.
+In_IN this_DT case_NN ,_, if_IN the_DT node_NN in_IN zone_NN ####_NN can_MD only_RB hear_VB the_DT node_NN in_IN zone_NN ####_CD ,_, it_PRP sets_VBZ its_PRP$ boundary_NN with_IN the_DT empty_JJ zone_NN to_TO undecided_JJ ,_, because_IN it_PRP did_VBD not_RB hear_VB from_IN any_DT neighboring_VBG nodes_NNS from_IN that_DT direction_NN ._.
+As_IN we_PRP have_VBP mentioned_VBN before_RB ,_, the_DT undecided_JJ boundaries_NNS are_VBP resolved_VBN using_VBG GPSR_NN ''_'' s_NNS perimeter_NN mode_NN when_WRB an_DT event_NN is_VBZ inserted_VBN ,_, or_CC a_DT query_NN sent_VBN ._.
+We_PRP describe_VBP event_NN insertion_NN in_IN the_DT next_JJ step_NN ._.
+Finally_RB ,_, this_DT description_NN does_VBZ not_RB describe_VB how_WRB a_DT node_NN ''_'' s_NNS zone_NN codes_NNS are_VBP adjusted_VBN when_WRB neighboring_VBG nodes_NNS fail_VBP ,_, or_CC new_JJ nodes_NNS come_VBP up_RP ._.
+We_PRP return_VBP to_TO this_DT in_IN Section_NN #_# ._.
+#_# ._.
+3_LS ._.
+#_# Inserting_VBG an_DT Event_NN In_IN this_DT section_NN ,_, we_PRP describe_VBP how_WRB events_NNS are_VBP inserted_VBN into_IN a_DT DIM_NNP ._.
+There_EX are_VBP two_CD algorithms_NNS of_IN interest_NN :_: a_DT consistent_JJ hashing_VBG technique_NN for_IN mapping_VBG an_DT event_NN to_TO a_DT zone_NN ,_, and_CC a_DT routing_VBG algorithm_NN for_IN storing_VBG the_DT event_NN at_IN the_DT appropriate_JJ zone_NN ._.
+As_IN we_PRP shall_MD see_VB ,_, these_DT two_CD algorithms_NNS are_VBP inter-related_JJ ._.
+3_LS ._.
+#_# ._.
+#_# Hashing_VBG an_DT Event_NN to_TO a_DT Zone_NNP In_IN Section_NNP #_# ._.
+#_# ,_, we_PRP described_VBD a_DT recursive_JJ tessellation_NN of_IN the_DT geographic_JJ extent_NN of_IN a_DT sensor_NN field_NN ._.
+We_PRP now_RB describe_VBP a_DT consistent_JJ hashing_VBG scheme_NN for_IN a_DT DIM_NNP that_WDT supports_VBZ range_NN queries_NNS on_IN m_NN distinct_JJ attributes2_NN Let_VB us_PRP denote_VB these_DT attributes_NNS A1_NN ..._: Am_VBP ._.
+For_IN simplicity_NN ,_, assume_VB for_IN now_RB that_IN the_DT depth_NN of_IN every_DT zone_NN in_IN the_DT network_NN is_VBZ k_NN ,_, k_NN is_VBZ a_DT multiple_JJ of_IN m_NN ,_, and_CC that_IN this_DT value_NN of_IN k_NN is_VBZ known_VBN to_TO every_DT node_NN ._.
+We_PRP will_MD relax_VB this_DT assumption_NN shortly_RB ._.
+Furthermore_RB ,_, for_IN ease_NN of_IN discussion_NN ,_, we_PRP assume_VBP that_IN all_DT attribute_NN values_NNS have_VBP been_VBN normalized_VBN to_TO be_VB between_IN #_# and_CC #_# ._.
+Our_PRP$ hashing_VBG scheme_NN assigns_VBZ a_DT k_NN bit_NN zone_NN code_NN to_TO an_DT event_NN as_IN follows_VBZ ._.
+For_IN i_FW between_IN #_# and_CC m_NN ,_, if_IN Ai_NN <_JJR #_# ._.
+#_# ,_, the_DT i-th_JJ bit_NN of_IN the_DT zone_NN code_NN is_VBZ assigned_VBN #_# ,_, else_RB #_# ._.
+For_IN i_FW between_IN m_NN +_CC #_# and_CC 2m_NN ,_, if_IN Aim_NNP <_JJR #_# ._.
+##_NN or_CC Aim_NNP -LSB-_-LRB- #_# ._.
+#_# ,_, #_# ._.
+##_NN -RRB-_-RRB- ,_, the_DT i-th_JJ bit_NN of_IN the_DT zone_NN is_VBZ assigned_VBN #_# ,_, else_RB #_# ,_, because_IN the_DT next_JJ level_NN divisions_NNS are_VBP at_IN #_# ._.
+##_NN and_CC #_# ._.
+##_NN which_WDT divide_VBP the_DT ranges_NNS to_TO -LSB-_-LRB- #_# ,_, #_# ._.
+##_NN -RRB-_-RRB- ,_, -LSB-_-LRB- #_# ._.
+##_NN ,_, #_# ._.
+#_# -RRB-_-RRB- ,_, -LSB-_-LRB- #_# ._.
+#_# ,_, #_# ._.
+##_NN -RRB-_-RRB- ,_, and_CC -LSB-_-LRB- #_# ._.
+##_NN ,_, #_# -RRB-_-RRB- ._.
+We_PRP repeat_VBP this_DT procedure_NN until_IN all_DT k_NN bits_NNS have_VBP been_VBN assigned_VBN ._.
+As_IN an_DT example_NN ,_, consider_VBP event_NN E_NN =_JJ #_# ._.
+#_# ,_, #_# ._.
+#_# ._.
+For_IN this_DT event_NN ,_, the_DT 5-bit_JJ zone_NN code_NN is_VBZ code_NN -LRB-_-LRB- ZA_NN -RRB-_-RRB- =_JJ #####_CD ._.
+Essentially_RB ,_, our_PRP$ hashing_VBG scheme_NN uses_VBZ the_DT values_NNS of_IN the_DT attributes_NNS in_IN round-robin_NN fashion_NN on_IN the_DT zone_NN tree_NN -LRB-_-LRB- such_JJ as_IN the_DT one_CD in_IN Figure_NNP #_# -RRB-_-RRB- ,_, in_IN order_NN to_TO map_VB an_DT m-attribute_JJ event_NN to_TO a_DT zone_NN code_NN ._.
+This_DT is_VBZ reminiscent_JJ of_IN k-d_JJ trees_NNS -LSB-_-LRB- #_# -RSB-_-RRB- ,_, but_CC is_VBZ quite_RB different_JJ from_IN that_DT data_NNS structure_NN :_: zone_NN trees_NNS are_VBP spatial_JJ embeddings_NNS and_CC do_VBP not_RB incorporate_VB the_DT re-balancing_NN algorithms_NNS in_IN k-d_JJ trees_NNS ._.
+In_IN our_PRP$ design_NN of_IN DIMs_NNS ,_, we_PRP do_VBP not_RB require_VB nodes_NNS to_TO have_VB zone_NN codes_NNS of_IN the_DT same_JJ length_NN ,_, nor_CC do_VBP we_PRP expect_VBP a_DT node_NN to_TO know_VB the_DT zone_NN codes_NNS of_IN other_JJ nodes_NNS ._.
+Rather_RB ,_, suppose_VBP the_DT encoding_VBG node_NN is_VBZ A_DT and_CC its_PRP$ own_JJ zone_NN code_NN is_VBZ of_IN length_NN kA_NN ._.
+Then_RB ,_, given_VBN an_DT event_NN E_NN ,_, node_NN A_NN only_RB hashes_VBZ E_NN to_TO a_DT zone_NN code_NN of_IN length_NN kA_NN ._.
+We_PRP denote_VBP the_DT zone_NN code_NN assigned_VBN to_TO an_DT event_NN E_NN by_IN code_NN -LRB-_-LRB- E_NN -RRB-_-RRB- ._.
+As_IN we_PRP describe_VBP below_RB ,_, as_IN the_DT event_NN is_VBZ routed_VBN ,_, code_NN -LRB-_-LRB- E_NN -RRB-_-RRB- is_VBZ refined_VBN by_IN intermediate_JJ nodes_NNS ._.
+This_DT lazy_JJ evaluation_NN of_IN zone_NN codes_NNS allows_VBZ different_JJ nodes_NNS to_TO use_VB different_JJ length_NN zone_NN codes_NNS without_IN any_DT explicit_JJ coordination_NN ._.
+3_LS ._.
+#_# ._.
+#_# Routing_VBG an_DT Event_NN to_TO its_PRP$ Owner_NNP The_DT aim_NN of_IN hashing_VBG an_DT event_NN to_TO a_DT zone_NN code_NN is_VBZ to_TO store_VB the_DT event_NN at_IN the_DT node_NN within_IN the_DT network_NN node_NN that_WDT owns_VBZ that_IN zone_NN ._.
+We_PRP call_VBP this_DT node_NN the_DT owner_NN of_IN the_DT event_NN ._.
+Consider_VB an_DT event_NN E_NN that_WDT has_VBZ just_RB been_VBN generated_VBN at_IN a_DT node_NN A_NN ._.
+After_IN encoding_VBG event_NN E_NN ,_, node_NN A_NN compares_VBZ code_NN -LRB-_-LRB- E_NN -RRB-_-RRB- with_IN code_NN -LRB-_-LRB- A_NN -RRB-_-RRB- ._.
+If_IN the_DT two_CD are_VBP identical_JJ ,_, node_NN A_NN store_NN event_NN E_NN locally_RB ;_: otherwise_RB ,_, node_NN A_NN will_MD attempt_VB to_TO route_NN the_DT event_NN to_TO its_PRP$ owner_NN ._.
+To_TO do_VB this_DT ,_, note_VBP that_IN code_NN -LRB-_-LRB- E_NN -RRB-_-RRB- corresponds_VBZ to_TO some_DT zone_NN Z_NN ,_, which_WDT is_VBZ A_DT ''_'' s_VBZ current_JJ guess_NN for_IN the_DT zone_NN at_IN which_WDT event_NN E_NN should_MD be_VB stored_VBN ._.
+A_DT now_RB invokes_VBZ GPSR_NN to_TO send_VB a_DT message_NN to_TO addr_NN -LRB-_-LRB- Z_NN -RRB-_-RRB- -LRB-_-LRB- the_DT centroid_NN of_IN Z_NN ,_, Section_NN #_# ._.
+#_# -RRB-_-RRB- ._.
+The_DT message_NN contains_VBZ the_DT event_NN E_NN ,_, code_NN -LRB-_-LRB- E_NN -RRB-_-RRB- ,_, and_CC the_DT target_NN geographic_JJ location_NN for_IN storing_VBG the_DT event_NN ._.
+In_IN the_DT message_NN ,_, A_NN also_RB marks_VBZ itself_PRP as_IN the_DT owner_NN of_IN event_NN E_NN ._.
+As_IN we_PRP will_MD see_VB later_RB ,_, the_DT guessed_VBN zone_NN Z_NN ,_, the_DT address_NN addr_NN -LRB-_-LRB- Z_NN -RRB-_-RRB- ,_, and_CC the_DT owner_NN of_IN E_NN ,_, all_DT of_IN them_PRP contained_VBD in_IN the_DT message_NN ,_, will_MD be_VB refined_VBN by_IN intermediate_JJ forwarding_NN nodes_NNS ._.
+GPSR_NN now_RB delivers_VBZ this_DT message_NN to_TO the_DT next_JJ hop_NN towards_IN addr_NN -LRB-_-LRB- Z_NN -RRB-_-RRB- from_IN A_DT ._.
+This_DT next_JJ hop_NN node_NN -LRB-_-LRB- call_VB it_PRP B_NN -RRB-_-RRB- does_VBZ not_RB immediately_RB forward_RB the_DT message_NN ._.
+Rather_RB ,_, it_PRP attempts_VBZ to_TO com2_VB DIM_NNP does_VBZ not_RB assume_VB that_IN all_DT nodes_NNS are_VBP homogeneous_JJ in_IN terms_NNS of_IN the_DT sensors_NNS they_PRP have_VBP ._.
+Thus_RB ,_, in_IN an_DT m_NN dimensional_JJ DIM_NNP ,_, a_DT node_NN that_WDT does_VBZ not_RB possess_VB all_DT m_NN sensors_NNS can_MD use_VB NULL_NNP values_NNS for_IN the_DT corresponding_JJ readings_NNS ._.
+DIM_NNP treats_VBZ NULL_NNP as_IN an_DT extreme_JJ value_NN for_IN range_NN comparisons_NNS ._.
+As_IN an_DT aside_RB ,_, a_DT network_NN may_MD have_VB many_JJ DIM_NNP instances_NNS running_VBG concurrently_RB ._.
+67_CD pute_NN a_DT new_JJ zone_NN code_NN for_IN E_NN to_TO get_VB a_DT new_JJ code_NN codenew_NN -LRB-_-LRB- E_NN -RRB-_-RRB- ._.
+B_NN will_MD update_VB the_DT code_NN contained_VBD in_IN the_DT message_NN -LRB-_-LRB- and_CC also_RB the_DT geographic_JJ destination_NN of_IN the_DT message_NN -RRB-_-RRB- if_IN codenew_NN -LRB-_-LRB- E_NN -RRB-_-RRB- is_VBZ longer_JJR than_IN the_DT event_NN code_NN in_IN the_DT message_NN ._.
+In_IN this_DT manner_NN ,_, as_IN the_DT event_NN wends_VBZ its_PRP$ way_NN to_TO its_PRP$ owner_NN ,_, its_PRP$ zone_NN code_NN gets_VBZ refined_VBN ._.
+Now_RB ,_, B_NN compares_VBZ its_PRP$ own_JJ code_NN code_NN -LRB-_-LRB- B_NN -RRB-_-RRB- against_IN the_DT owner_NN code_NN owner_NN -LRB-_-LRB- E_NN -RRB-_-RRB- contained_VBD in_IN the_DT incoming_JJ message_NN ._.
+If_IN code_NN -LRB-_-LRB- B_NN -RRB-_-RRB- has_VBZ a_DT longer_JJR match_NN with_IN code_NN -LRB-_-LRB- E_NN -RRB-_-RRB- than_IN the_DT current_JJ owner_NN owner_NN -LRB-_-LRB- E_NN -RRB-_-RRB- ,_, then_RB B_NN sets_VBZ itself_PRP to_TO be_VB the_DT current_JJ owner_NN of_IN E_NN ,_, meaning_VBG that_IN if_IN nobody_NN is_VBZ eligible_JJ to_TO store_VB E_NN ,_, then_RB B_NN will_MD store_VB the_DT event_NN -LRB-_-LRB- we_PRP shall_MD see_VB how_WRB this_DT happens_VBZ next_JJ -RRB-_-RRB- ._.
+If_IN B_NN ''_'' s_NNS zone_NN code_NN does_VBZ not_RB exactly_RB match_VB code_NN -LRB-_-LRB- E_NN -RRB-_-RRB- ,_, B_NN will_MD invoke_VB GPSR_NN to_TO deliver_VB E_NN to_TO the_DT next_JJ hop_NN ._.
+3_LS ._.
+#_# ._.
+#_# Resolving_NNP undecided_JJ zone_NN boundaries_NNS during_IN insertion_NN Suppose_VB that_IN some_DT node_NN ,_, say_VBP C_NN ,_, finds_VBZ itself_PRP to_TO be_VB the_DT destination_NN -LRB-_-LRB- or_CC eventual_JJ owner_NN -RRB-_-RRB- of_IN an_DT event_NN E_NN ._.
+It_PRP does_VBZ so_RB by_IN noticing_VBG that_IN code_NN code_NN -LRB-_-LRB- C_NN -RRB-_-RRB- equals_VBZ code_NN -LRB-_-LRB- E_NN -RRB-_-RRB- after_IN locally_RB recomputing_VBG a_DT code_NN for_IN E_NN ._.
+In_IN that_DT case_NN ,_, C_NN stores_NNS E_NN locally_RB ,_, but_CC only_RB if_IN all_DT four_CD of_IN C_NN ''_'' s_NNS zone_NN boundaries_NNS are_VBP decided_VBN ._.
+When_WRB this_DT condition_NN holds_VBZ ,_, C_NN knows_VBZ for_IN sure_JJ that_IN no_DT other_JJ nodes_NNS have_VBP overlapped_VBN zones_NNS with_IN it_PRP ._.
+In_IN this_DT case_NN ,_, we_PRP call_VBP C_NN an_DT internal_JJ node_NN ._.
+Recall_VB ,_, though_RB ,_, that_IN because_IN the_DT zone_NN discovery_NN algorithm_NN Section_NN #_# ._.
+#_# only_RB uses_VBZ information_NN from_IN immediate_JJ neighbors_NNS ,_, one_CD or_CC more_JJR of_IN C_NN ''_'' s_NNS boundaries_NNS may_MD be_VB undecided_JJ ._.
+If_IN so_RB ,_, C_NN assumes_VBZ that_IN some_DT other_JJ nodes_NNS have_VBP a_DT zone_NN that_WDT overlaps_VBZ with_IN its_PRP$ own_JJ ,_, and_CC sets_VBZ out_RP to_TO resolve_VB this_DT overlap_VBP ._.
+To_TO do_VB this_DT ,_, C_NN now_RB sets_VBZ itself_PRP to_TO be_VB the_DT owner_NN of_IN E_NN and_CC continues_VBZ forwarding_NN the_DT message_NN ._.
+Here_RB we_PRP rely_VBP on_IN GPSR_NN ''_'' s_NNS perimeter_NN mode_NN routing_VBG to_TO probe_VB around_IN the_DT void_NN that_WDT causes_VBZ the_DT undecided_JJ boundary_NN ._.
+Since_IN the_DT message_NN starts_VBZ from_IN C_NN and_CC is_VBZ destined_VBN for_IN a_DT geographic_JJ location_NN near_IN C_NN ,_, GPSR_NN guarantees_NNS that_IN the_DT message_NN will_MD be_VB delivered_VBN back_RB to_TO C_NN if_IN no_DT other_JJ nodes_NNS will_MD update_VB the_DT information_NN in_IN the_DT message_NN ._.
+If_IN the_DT message_NN comes_VBZ back_RB to_TO C_NN with_IN itself_PRP to_TO be_VB the_DT owner_NN ,_, C_NN infers_VBZ that_IN it_PRP must_MD be_VB the_DT true_JJ owner_NN of_IN the_DT zone_NN and_CC stores_NNS E_NN locally_RB ._.
+If_IN this_DT does_VBZ not_RB happen_VB ,_, there_EX are_VBP two_CD possibilities_NNS ._.
+The_DT first_JJ is_VBZ that_IN as_IN the_DT event_NN traverses_VBZ the_DT perimeter_NN ,_, some_DT intermediate_JJ node_NN ,_, say_VBP B_NN whose_WP$ zone_NN overlaps_VBZ with_IN C_NN ''_'' s_NNS marks_NNS itself_PRP to_TO be_VB the_DT owner_NN of_IN the_DT event_NN ,_, but_CC otherwise_RB does_VBZ not_RB change_VB the_DT event_NN ''_'' s_NNS zone_NN code_NN ._.
+This_DT node_NN also_RB recognizes_VBZ that_IN its_PRP$ own_JJ zone_NN overlaps_VBZ with_IN C_NN ''_'' s_NNS and_CC initiates_VBZ a_DT message_NN exchange_NN which_WDT causes_VBZ each_DT of_IN them_PRP to_TO appropriately_RB shrink_VB their_PRP$ zone_NN ._.
+Figures_NNS #_# through_IN #_# show_VBP an_DT example_NN of_IN this_DT data-driven_JJ zone_NN shrinking_NN ._.
+Initially_RB ,_, both_DT node_NN A_NN and_CC node_NN B_NN have_VBP claimed_VBN the_DT same_JJ zone_NN #_# because_IN they_PRP are_VBP out_IN of_IN radio_NN range_NN of_IN each_DT other_JJ ._.
+Suppose_VB that_IN A_DT inserts_NNS an_DT event_NN E_NN =_JJ #_# ._.
+#_# ,_, #_# ._.
+#_# ,_, #_# ._.
+#_# ._.
+A_DT encodes_VBZ E_NN to_TO #_# and_CC claims_VBZ itself_PRP to_TO be_VB the_DT owner_NN of_IN E_NN ._.
+Since_IN A_DT is_VBZ not_RB an_DT internal_JJ node_NN ,_, it_PRP sends_VBZ out_RP E_NN ,_, looking_VBG for_IN other_JJ owner_NN candidates_NNS of_IN E_NN ._.
+Once_RB E_NN gets_VBZ to_TO node_NN B_NN ,_, B_NN will_MD see_VB in_IN the_DT message_NN ''_'' s_NNS owner_NN field_NN A_NN ''_'' s_NNS code_VBP that_DT is_VBZ the_DT same_JJ as_IN its_PRP$ own_JJ ._.
+B_NN then_RB shrinks_VBZ its_PRP$ zone_NN from_IN #_# to_TO ##_CD according_VBG to_TO A_DT ''_'' s_VBZ location_NN which_WDT is_VBZ also_RB recorded_VBN in_IN the_DT message_NN and_CC send_VB a_DT shrink_VB request_NN to_TO A_DT ._.
+Upon_IN receiving_VBG this_DT request_NN ,_, A_NN also_RB shrinks_VBZ its_PRP$ zone_NN from_IN #_# to_TO ##_CD ._.
+A_DT second_JJ possibility_NN is_VBZ if_IN some_DT intermediate_JJ node_NN changes_VBZ the_DT destination_NN code_NN of_IN E_NN to_TO a_DT more_RBR specific_JJ value_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, longer_JJR zone_NN code_NN -RRB-_-RRB- ._.
+Let_VB us_PRP label_VB this_DT node_NN D_NN ._.
+D_NN now_RB tries_VBZ to_TO initiate_VB delivery_NN to_TO the_DT centroid_NN of_IN the_DT new_JJ zone_NN ._.
+This_DT A_NN B_NN 0_CD 0_CD 110_CD 100_CD 1111_CD 1110_CD 101_CD Figure_NNP #_# :_: Nodes_NNS A_DT and_CC B_NN have_VBP claimed_VBN the_DT same_JJ zone_NN ._.
+A_DT B_NN Figure_NN #_# :_: An_DT event_NN /_: query_NN message_NN -LRB-_-LRB- filled_VBN arrows_NNS -RRB-_-RRB- triggers_VBZ zone_NN shrinking_NN -LRB-_-LRB- hollow_JJ arrows_NNS -RRB-_-RRB- ._.
+A_DT B_NN 01_CD 00_CD 110_CD 100_CD 1111_CD 1110_CD 101_CD Figure_NNP #_# :_: The_DT zone_NN layout_NN after_IN shrinking_VBG ._.
+Now_RB node_NN A_NN and_CC B_NN have_VBP been_VBN mapped_VBN to_TO different_JJ zones_NNS ._.
+might_MD result_VB in_IN a_DT new_JJ perimeter_NN walk_NN that_WDT returns_VBZ to_TO D_NN -LRB-_-LRB- if_IN ,_, for_IN example_NN ,_, D_NN happens_VBZ to_TO be_VB geographically_RB closest_JJS to_TO the_DT centroid_NN of_IN the_DT zone_NN -RRB-_-RRB- ._.
+However_RB ,_, D_NN would_MD not_RB be_VB the_DT owner_NN of_IN the_DT event_NN ,_, which_WDT would_MD still_RB be_VB C_NN ._.
+In_IN routing_VBG to_TO the_DT centroid_NN of_IN this_DT zone_NN ,_, the_DT message_NN may_MD traverse_VB the_DT perimeter_NN and_CC return_NN to_TO D_NN ._.
+Now_RB D_NN notices_NNS that_WDT C_NN was_VBD the_DT original_JJ owner_NN ,_, so_IN it_PRP encapsulates_VBZ the_DT event_NN and_CC directs_VBZ it_PRP to_TO C_NN ._.
+In_IN case_NN that_IN there_EX indeed_RB is_VBZ another_DT node_NN ,_, say_VBP X_NN ,_, that_WDT owns_VBZ an_DT overlapped_JJ zone_NN with_IN C_NN ,_, X_NN will_MD notice_VB this_DT fact_NN by_IN finding_VBG in_IN the_DT message_NN the_DT same_JJ prefix_NN of_IN the_DT code_NN of_IN one_CD of_IN its_PRP$ zones_NNS ,_, but_CC with_IN a_DT different_JJ geographic_JJ location_NN from_IN its_PRP$ own_JJ ._.
+X_NN will_MD shrink_VB its_PRP$ zone_NN to_TO resolve_VB the_DT overlap_VBP ._.
+If_IN X_NN ''_'' s_NNS zone_NN is_VBZ smaller_JJR than_IN or_CC equal_JJ to_TO C_NN ''_'' s_NNS zone_NN ,_, X_NN will_MD also_RB send_VB a_DT shrink_VB request_NN to_TO C_NN ._.
+Once_RB C_NN receives_VBZ a_DT shrink_VB request_NN ,_, it_PRP will_MD reduce_VB its_PRP$ zone_NN appropriately_RB and_CC fix_VB its_PRP$ undecided_JJ boundary_NN ._.
+In_IN this_DT manner_NN ,_, the_DT zone_NN formation_NN process_NN is_VBZ resolved_VBN on_IN demand_NN in_IN a_DT data-driven_JJ way_NN ._.
+68_CD There_EX are_VBP several_JJ interesting_JJ effects_NNS with_IN respect_NN to_TO perimeter_NN walking_NN that_WDT arise_VBP in_IN our_PRP$ algorithm_NN ._.
+The_DT first_JJ is_VBZ that_IN there_EX are_VBP some_DT cases_NNS where_WRB an_DT event_NN insertion_NN might_MD cause_VB the_DT entire_JJ outer_JJ perimeter_NN of_IN the_DT network_NN to_TO be_VB traversed3_NN ._.
+Figure_NNP #_# also_RB works_VBZ as_IN an_DT example_NN where_WRB the_DT outer_JJ perimeter_NN is_VBZ traversed_VBN ._.
+Event_NN E_NN inserted_VBN by_IN A_DT will_MD eventually_RB be_VB stored_VBN in_IN node_NN B_NN ._.
+Before_IN node_NN B_NN stores_NNS event_NN E_NN ,_, if_IN B_NN ''_'' s_NNS nominal_JJ radio_NN range_NN does_VBZ not_RB intersect_VB the_DT network_NN boundary_NN ,_, it_PRP needs_VBZ to_TO send_VB out_RP E_NN again_RB as_IN A_DT did_VBD ,_, because_IN B_NN in_IN this_DT case_NN is_VBZ not_RB an_DT internal_JJ node_NN ._.
+But_CC if_IN B_NN ''_'' s_NNS nominal_JJ radio_NN range_NN intersects_VBZ the_DT network_NN boundary_NN ,_, it_PRP then_RB has_VBZ two_CD choices_NNS ._.
+It_PRP can_MD assume_VB that_IN there_EX will_MD not_RB be_VB any_DT nodes_NNS outside_IN the_DT network_NN boundary_NN and_CC so_RB B_NN is_VBZ an_DT internal_JJ node_NN ._.
+This_DT is_VBZ an_DT aggressive_JJ approach_NN ._.
+On_IN the_DT other_JJ hand_NN ,_, B_NN can_MD also_RB make_VB a_DT conservative_JJ decision_NN assuming_VBG that_IN there_EX might_MD be_VB some_DT other_JJ nodes_NNS it_PRP have_VBP not_RB heard_VBN of_IN yet_RB ._.
+B_NN will_MD then_RB force_VB the_DT message_NN walking_VBG another_DT perimeter_NN before_IN storing_VBG it_PRP ._.
+In_IN some_DT situations_NNS ,_, especially_RB for_IN large_JJ zones_NNS where_WRB the_DT node_NN that_WDT owns_VBZ a_DT zone_NN is_VBZ far_RB away_RB from_IN the_DT centroid_NN of_IN the_DT owned_VBN zone_NN ,_, there_EX might_MD exist_VB a_DT small_JJ perimeter_NN around_IN the_DT destination_NN that_WDT does_VBZ not_RB include_VB the_DT owner_NN of_IN the_DT zone_NN ._.
+The_DT event_NN will_MD end_VB up_RP being_VBG stored_VBN at_IN a_DT different_JJ node_NN than_IN the_DT real_JJ owner_NN ._.
+In_IN order_NN to_TO deal_VB with_IN this_DT problem_NN ,_, we_PRP add_VBP an_DT extra_JJ operation_NN in_IN event_NN forwarding_NN ,_, called_VBN efficient_JJ neighbor_NN discovery_NN ._.
+Before_IN invoking_VBG GPSR_NNP ,_, a_DT node_NN needs_VBZ to_TO check_VB if_IN there_EX exists_VBZ a_DT neighbor_NN who_WP is_VBZ eligible_JJ to_TO be_VB the_DT real_JJ owner_NN of_IN the_DT event_NN ._.
+To_TO do_VB this_DT ,_, a_DT node_NN C_NN ,_, say_VBP ,_, needs_VBZ to_TO know_VB the_DT zone_NN codes_NNS of_IN its_PRP$ neighboring_VBG nodes_NNS ._.
+We_PRP deploy_VBP GPSR_NN ''_'' s_NNS beaconing_VBG message_NN to_TO piggyback_VB the_DT zone_NN codes_NNS for_IN nodes_NNS ._.
+So_RB by_IN simply_RB comparing_VBG the_DT event_NN ''_'' s_NNS code_VBP and_CC neighbor_NN ''_'' s_NNS code_VBP ,_, a_DT node_NN can_MD decide_VB whether_IN there_EX exists_VBZ a_DT neighbor_NN Y_NN which_WDT is_VBZ more_RBR likely_JJ to_TO be_VB the_DT owner_NN of_IN event_NN E_NN ._.
+C_NN delivers_VBZ E_NN to_TO Y_NN ,_, which_WDT simply_RB follows_VBZ the_DT decision_NN making_VBG procedure_NN discussed_VBN above_IN ._.
+3_LS ._.
+#_# ._.
+#_# Summary_NNP and_CC Pseudo-code_JJ In_IN summary_NN ,_, our_PRP$ event_NN insertion_NN procedure_NN is_VBZ designed_VBN to_TO nicely_RB interact_VB with_IN the_DT zone_NN discovery_NN mechanism_NN ,_, and_CC the_DT event_NN hashing_VBG mechanism_NN ._.
+The_DT latter_JJ two_CD mechanisms_NNS are_VBP kept_VBN simple_JJ ,_, while_IN the_DT event_NN insertion_NN mechanism_NN uses_VBZ lazy_JJ evaluation_NN at_IN each_DT hop_NN to_TO refine_VB the_DT event_NN ''_'' s_NNS zone_NN code_NN ,_, and_CC it_PRP leverages_VBZ GPSR_NN ''_'' s_NNS perimeter_NN walking_VBG mechanism_NN to_TO fix_VB undecided_JJ zone_NN boundaries_NNS ._.
+In_IN Section_NN #_# ._.
+#_# ,_, we_PRP address_VBP robustness_NN of_IN event_NN insertion_NN to_TO packet_NN loss_NN or_CC to_TO node_NN failures_NNS ._.
+Figure_NNP #_# shows_VBZ the_DT pseudo-code_NN for_IN inserting_VBG and_CC forwarding_NN an_DT event_NN e_LS ._.
+In_IN this_DT pseudo_NN code_NN ,_, we_PRP have_VBP omitted_VBN a_DT description_NN of_IN the_DT zone_NN shrinking_VBG procedure_NN ._.
+In_IN the_DT pseudo_NN code_NN ,_, procedure_NN is_VBZ Internal_JJ -LRB-_-LRB- -RRB-_-RRB- is_VBZ used_VBN to_TO determine_VB if_IN the_DT caller_NN is_VBZ an_DT internal_JJ node_NN and_CC procedure_NN is_VBZ Owner_NNP -LRB-_-LRB- -RRB-_-RRB- is_VBZ used_VBN to_TO determine_VB if_IN the_DT caller_NN is_VBZ more_RBR eligible_JJ to_TO be_VB the_DT owner_NN of_IN the_DT event_NN than_IN is_VBZ currently_RB claimed_VBN owner_NN as_IN recorded_VBN in_IN the_DT message_NN ._.
+Procedure_NN Send-Message_NN is_VBZ used_VBN to_TO send_VB either_CC an_DT event_NN message_NN or_CC a_DT query_NN message_NN ._.
+If_IN the_DT message_NN destination_NN address_NN has_VBZ been_VBN changed_VBN ,_, the_DT packet_NN source_NN address_NN needs_NNS also_RB to_TO be_VB changed_VBN in_IN order_NN to_TO avoid_VB being_VBG dropped_VBN by_IN GPSR_NN ,_, since_IN GPSR_NN does_VBZ not_RB allow_VB a_DT node_NN to_TO see_VB the_DT same_JJ packet_NN in_IN greedy_JJ mode_NN twice_RB ._.
+3_CD This_DT happens_VBZ less_RBR frequently_RB than_IN for_IN GHTs_NNS ,_, where_WRB inserting_VBG an_DT event_NN to_TO a_DT location_NN outside_IN the_DT actual_JJ -LRB-_-LRB- but_CC inside_IN the_DT nominal_NN -RRB-_-RRB- boundary_NN of_IN the_DT network_NN will_MD always_RB invoke_VB an_DT external_JJ perimeter_NN walk_NN ._.
+3_LS ._.
+#_# Resolving_NNP and_CC Routing_NNP Queries_NNPS DIMs_VBZ support_NN both_DT point_NN queries4_NN and_CC range_NN queries_NNS ._.
+Routing_VBG a_DT point_NN query_NN is_VBZ identical_JJ to_TO routing_VBG an_DT event_NN ._.
+Thus_RB ,_, the_DT rest_NN of_IN this_DT section_NN details_NNS how_WRB range_NN queries_NNS are_VBP routed_VBN ._.
+The_DT key_JJ challenge_NN in_IN routing_VBG zone_NN queries_NNS is_VBZ brought_VBN out_RP by_IN the_DT following_VBG strawman_NN design_NN ._.
+If_IN the_DT entire_JJ network_NN was_VBD divided_VBN evenly_RB into_IN zones_NNS of_IN depth_NN k_NN -LRB-_-LRB- for_IN some_DT pre-defined_JJ constant_JJ k_NN -RRB-_-RRB- ,_, then_RB the_DT querier_NN -LRB-_-LRB- the_DT node_NN issuing_VBG the_DT query_NN -RRB-_-RRB- could_MD subdivide_VB a_DT given_VBN range_NN query_NN into_IN the_DT relevant_JJ subzones_NNS and_CC route_NN individual_JJ requests_NNS to_TO each_DT of_IN the_DT zones_NNS ._.
+This_DT can_MD be_VB inefficient_JJ for_IN large_JJ range_NN queries_NNS and_CC also_RB hard_JJ to_TO implement_VB in_IN our_PRP$ design_NN where_WRB zone_NN sizes_NNS are_VBP not_RB predefined_VBN ._.
+Accordingly_RB ,_, we_PRP use_VBP a_DT slightly_RB different_JJ technique_NN where_WRB a_DT range_NN query_NN is_VBZ initially_RB routed_VBN to_TO a_DT zone_NN corresponding_VBG to_TO the_DT entire_JJ range_NN ,_, and_CC is_VBZ then_RB progressively_RB split_VBN into_IN smaller_JJR subqueries_NNS ._.
+We_PRP describe_VBP this_DT algorithm_NN here_RB ._.
+The_DT first_JJ step_NN of_IN the_DT algorithm_NN is_VBZ to_TO map_VB a_DT range_NN query_NN to_TO a_DT zone_NN code_NN prefix_NN ._.
+Conceptually_RB ,_, this_DT is_VBZ easy_JJ ;_: in_IN a_DT zone_NN tree_NN -LRB-_-LRB- Figure_NN #_# -RRB-_-RRB- ,_, there_EX exists_VBZ some_DT node_NN which_WDT contains_VBZ the_DT entire_JJ range_NN query_NN in_IN its_PRP$ sub-tree_JJ ,_, and_CC none_NN of_IN its_PRP$ children_NNS in_IN the_DT tree_NN do_VBP ._.
+The_DT initial_JJ zone_NN code_NN we_PRP choose_VBP for_IN the_DT query_NN is_VBZ the_DT zone_NN code_NN corresponding_VBG to_TO that_DT tree_NN node_NN ,_, and_CC is_VBZ a_DT prefix_NN of_IN the_DT zone_NN codes_NNS of_IN all_DT zones_NNS -LRB-_-LRB- note_NN that_IN these_DT zones_NNS may_MD not_RB be_VB geographically_RB contiguous_JJ -RRB-_-RRB- in_IN the_DT subtree_NN ._.
+The_DT querier_NN computes_VBZ the_DT zone_NN code_NN of_IN Q_NNP ,_, denoted_VBN by_IN code_NN -LRB-_-LRB- Q_NNP -RRB-_-RRB- and_CC then_RB starts_VBZ routing_VBG a_DT query_NN to_TO addr_NN -LRB-_-LRB- code_NN -LRB-_-LRB- Q_NNP -RRB-_-RRB- -RRB-_-RRB- ._.
+Upon_IN receiving_VBG a_DT range_NN query_NN Q_NNP ,_, a_DT node_NN A_NN -LRB-_-LRB- where_WRB A_DT is_VBZ any_DT node_NN on_IN the_DT query_NN propagation_NN path_NN -RRB-_-RRB- divides_VBZ it_PRP into_IN multiple_JJ smaller_JJR sized_VBN subqueries_NNS if_IN there_EX is_VBZ an_DT overlap_VBP between_IN the_DT zone_NN of_IN A_NN ,_, zone_NN -LRB-_-LRB- A_NN -RRB-_-RRB- and_CC the_DT zone_NN code_NN associated_VBN with_IN Q_NNP ,_, code_NN -LRB-_-LRB- Q_NNP -RRB-_-RRB- ._.
+Our_PRP$ approach_NN to_TO split_VB a_DT query_NN Q_NNP into_IN subqueries_NNS is_VBZ as_IN follows_VBZ ._.
+If_IN the_DT range_NN of_IN Q_NNP ''_'' s_VBZ first_JJ attribute_NN contains_VBZ the_DT value_NN #_# ._.
+#_# ,_, A_DT divides_VBZ Q_NNP into_IN two_CD sub-queries_NNS one_CD of_IN whose_WP$ first_JJ attribute_NN ranges_NNS from_IN #_# to_TO #_# ._.
+#_# ,_, and_CC the_DT other_JJ from_IN #_# ._.
+#_# to_TO 1_CD ._.
+Then_RB A_DT decides_VBZ the_DT half_NN that_WDT overlaps_VBZ with_IN its_PRP$ own_JJ zone_NN ._.
+Let_VB ''_'' s_NNS call_VBP it_PRP QA_NN ._.
+If_IN QA_NN does_VBZ not_RB exist_VB ,_, then_RB A_DT stops_VBZ splitting_NN ;_: otherwise_RB ,_, it_PRP continues_VBZ splitting_NN -LRB-_-LRB- using_VBG the_DT second_JJ attribute_NN range_NN -RRB-_-RRB- and_CC recomputing_VBG QA_NN until_IN QA_NN is_VBZ small_JJ enough_RB so_IN that_IN it_PRP completely_RB falls_VBZ into_IN zone_NN -LRB-_-LRB- A_NN -RRB-_-RRB- and_CC hence_RB A_DT can_MD now_RB resolve_VB it_PRP ._.
+For_IN example_NN ,_, suppose_VBP that_IN node_NN A_NN ,_, whose_WP$ code_NN is_VBZ ####_CD ,_, is_VBZ to_TO split_VB a_DT range_NN query_NN Q_NNP =_JJ #_# ._.
+#_# #_# ._.
+#_# ,_, #_# ._.
+#_# #_# ._.
+#_# ._.
+The_DT splitting_JJ steps_NNS is_VBZ shown_VBN in_IN Figure_NNP #_# ._.
+After_IN splitting_NN ,_, we_PRP obtain_VBP three_CD smaller_JJR queries_NNS q0_NN =_JJ #_# ._.
+#_# #_# ._.
+#_# ,_, #_# ._.
+#_# #_# ._.
+##_NN ,_, q1_NN =_JJ #_# ._.
+#_# #_# ._.
+#_# ,_, #_# ._.
+##_NN #_# ._.
+#_# ,_, and_CC q2_NN =_JJ #_# ._.
+#_# #_# ._.
+#_# ,_, #_# ._.
+#_# #_# ._.
+#_# ._.
+This_DT splitting_NN procedure_NN is_VBZ illustrated_VBN in_IN Figure_NNP #_# which_WDT also_RB shows_VBZ the_DT codes_NNS of_IN each_DT subquery_NN after_IN splitting_NN ._.
+A_DT then_RB replies_VBZ to_TO subquery_JJ q0_NN with_IN data_NNS stored_VBD locally_RB and_CC sends_VBZ subqueries_NNS q1_NN and_CC q2_NN using_VBG the_DT procedure_NN outlined_VBN above_IN ._.
+More_RBR generally_RB ,_, if_IN node_NN A_NN finds_VBZ itself_PRP to_TO be_VB inside_IN the_DT zone_NN subtree_NN that_WDT maximally_RB covers_VBZ Q_NNP ,_, it_PRP will_MD send_VB the_DT subqueries_NNS that_WDT resulted_VBD from_IN the_DT split_NN ._.
+Otherwise_RB ,_, if_IN there_EX is_VBZ no_DT overlap_VBP between_IN A_DT and_CC Q_NNP ,_, then_RB A_DT forwards_RB Q_NNP as_IN is_VBZ -LRB-_-LRB- in_IN this_DT case_NN Q_NNP is_VBZ either_CC the_DT original_JJ query_NN ,_, or_CC a_DT product_NN of_IN an_DT earlier_JJR split_NN -RRB-_-RRB- ._.
+Figure_NNP ##_NNP describes_VBZ the_DT pseudo-code_NN for_IN the_DT zone_NN splitting_NN algorithm_NN ._.
+As_IN shown_VBN in_IN the_DT above_JJ algorithm_NN ,_, once_RB a_DT subquery_NN has_VBZ been_VBN recognized_VBN as_IN belonging_VBG to_TO the_DT caller_NN ''_'' s_NNS zone_NN ,_, procedure_NN Resolve_NNP is_VBZ invoked_VBN to_TO resolve_VB the_DT subquery_NN and_CC send_VB a_DT reply_NN to_TO the_DT querier_NN ._.
+Every_DT query_NN message_NN contains_VBZ 4_CD By_IN point_NN queries_NNS ,_, we_PRP mean_VBP the_DT equality_NN condition_NN on_IN all_DT indexed_VBN keys_NNS ._.
+DIM_NNP index_NN attributes_NNS are_VBP not_RB necessarily_RB primary_JJ keys_NNS ._.
+69_CD the_DT geographic_JJ location_NN of_IN its_PRP$ initiator_NN ,_, so_IN the_DT corresponding_JJ reply_NN message_NN can_MD be_VB delivered_VBN directly_RB back_RB to_TO the_DT initiator_NN ._.
+Finally_RB ,_, in_IN the_DT process_NN of_IN query_NN resolution_NN ,_, zones_NNS might_MD shrink_VB similar_JJ to_TO shrinkage_NN during_IN inserting_VBG ._.
+We_PRP omit_VBP this_DT in_IN the_DT pseudo_NN code_NN ._.
+3_LS ._.
+#_# Robustness_NNPS Until_IN now_RB ,_, we_PRP have_VBP not_RB discussed_VBN the_DT impact_NN of_IN node_NN failures_NNS and_CC packet_NN losses_NNS ,_, or_CC node_NN arrivals_NNS and_CC departures_NNS on_IN our_PRP$ algorithms_NNS ._.
+Packet_NN losses_NNS can_MD affect_VB query_NN and_CC event_NN insertion_NN ,_, and_CC node_NN failures_NNS can_MD result_VB in_IN lost_VBN data_NNS ,_, while_IN node_NN arrivals_NNS and_CC departures_NNS can_MD impact_VB the_DT zone_NN structure_NN ._.
+We_PRP now_RB discuss_VBP how_WRB DIMs_NNS can_MD be_VB made_VBN robust_JJ to_TO these_DT kinds_NNS of_IN dynamics_NNS ._.
+3_LS ._.
+#_# ._.
+#_# Maintaining_VBG Zones_NNS In_IN previous_JJ sections_NNS ,_, we_PRP described_VBD how_WRB the_DT zone_NN discovery_NN algorithm_NN could_MD leave_VB zone_NN boundaries_NNS undecided_JJ ._.
+These_DT undecided_JJ boundaries_NNS are_VBP resolved_VBN during_IN insertion_NN or_CC querying_VBG ,_, using_VBG the_DT zone_NN shrinking_VBG procedure_NN describe_VBP above_IN ._.
+When_WRB a_DT new_JJ node_NN joins_VBZ the_DT network_NN ,_, the_DT zone_NN discovery_NN mechanism_NN -LRB-_-LRB- Section_NN #_# ._.
+#_# -RRB-_-RRB- will_MD cause_VB neighboring_VBG zones_NNS to_TO appropriately_RB adjust_VB their_PRP$ zone_NN boundaries_NNS ._.
+At_IN this_DT time_NN ,_, those_DT zones_NNS can_MD also_RB transfer_VB to_TO the_DT new_JJ node_NN those_DT events_NNS they_PRP store_VBP but_CC which_WDT should_MD belong_VB to_TO the_DT new_JJ node_NN ._.
+Before_IN a_DT node_NN turns_VBZ itself_PRP off_RP -LRB-_-LRB- if_IN this_DT is_VBZ indeed_RB possible_JJ -RRB-_-RRB- ,_, it_PRP knows_VBZ that_IN its_PRP$ backup_NN node_NN -LRB-_-LRB- Section_NN #_# ._.
+#_# -RRB-_-RRB- will_MD take_VB over_RP its_PRP$ zone_NN ,_, and_CC will_MD simply_RB send_VB all_DT its_PRP$ events_NNS to_TO its_PRP$ backup_NN node_NN ._.
+Node_NN deletion_NN may_MD also_RB cause_VB zone_NN expansion_NN ._.
+In_IN order_NN to_TO keep_VB the_DT mapping_NN between_IN the_DT binary_JJ zone_NN tree_NN ''_'' s_NNS leaf_VBP nodes_NNS and_CC zones_NNS ,_, we_PRP allow_VBP zone_NN expansion_NN to_TO only_RB occur_VB among_IN sibling_NN zones_NNS -LRB-_-LRB- Section_NN #_# ._.
+#_# -RRB-_-RRB- ._.
+The_DT rule_NN is_VBZ :_: if_IN zone_NN -LRB-_-LRB- A_NN -RRB-_-RRB- ''_'' s_VBZ sibling_NN zone_NN becomes_VBZ empty_JJ ,_, then_RB A_DT can_MD expand_VB its_PRP$ own_JJ zone_NN to_TO include_VB its_PRP$ sibling_NN zone_NN ._.
+Now_RB ,_, we_PRP turn_VBP our_PRP$ attention_NN to_TO node_NN failures_NNS ._.
+Node_NN failures_NNS are_VBP just_RB like_IN node_NN deletions_NNS except_IN that_IN a_DT failed_VBN node_NN does_VBZ not_RB have_VB a_DT chance_NN to_TO move_VB its_PRP$ events_NNS to_TO another_DT node_NN ._.
+But_CC how_WRB does_VBZ a_DT node_NN decide_VB if_IN its_PRP$ sibling_NN has_VBZ failed_VBN ?_.
+If_IN the_DT sibling_NN is_VBZ within_IN radio_NN range_NN ,_, the_DT absence_NN of_IN GPSR_NN beaconing_NN messages_NNS can_MD detect_VB this_DT ._.
+Once_IN it_PRP detects_VBZ this_DT ,_, the_DT node_NN can_MD expand_VB its_PRP$ zone_NN ._.
+A_DT different_JJ approach_NN is_VBZ needed_VBN for_IN detecting_VBG siblings_NNS who_WP are_VBP not_RB within_IN radio_NN range_NN ._.
+These_DT are_VBP the_DT cases_NNS where_WRB two_CD nodes_NNS own_VBP their_PRP$ zones_NNS after_IN exchanging_VBG a_DT shrink_VB message_NN ;_: they_PRP do_VBP not_RB periodically_RB exchange_NN messages_NNS thereafter_RB to_TO maintain_VB this_DT zone_NN relationship_NN ._.
+In_IN this_DT case_NN ,_, we_PRP detect_VBP the_DT failure_NN in_IN a_DT data-driven_JJ fashion_NN ,_, with_IN obvious_JJ efficiency_NN benefits_NNS compared_VBN to_TO periodic_JJ keepalives_NNS ._.
+Once_RB a_DT node_NN B_NN has_VBZ failed_VBN ,_, an_DT event_NN or_CC query_NN message_NN that_WDT previously_RB should_MD have_VB been_VBN owned_VBN by_IN the_DT failed_VBN node_NN will_MD now_RB be_VB delivered_VBN to_TO the_DT node_NN A_NN that_WDT owns_VBZ the_DT empty_JJ zone_NN left_VBN by_IN node_NN B_NN ._.
+A_DT can_MD see_VB this_DT message_NN because_IN A_DT stands_NNS right_RB around_IN the_DT empty_JJ area_NN left_VBN by_IN B_NN and_CC is_VBZ guaranteed_VBN to_TO be_VB visited_VBN in_IN a_DT GPSR_NN perimeter_NN traversal_NN ._.
+A_DT will_MD set_VB itself_PRP to_TO be_VB the_DT owner_NN of_IN the_DT message_NN ,_, and_CC any_DT node_NN which_WDT would_MD have_VB dropped_VBN this_DT message_NN due_JJ to_TO a_DT perimeter_NN loop_NN will_MD redirect_VB the_DT message_NN to_TO A_DT instead_RB ._.
+If_IN A_DT ''_'' s_VBZ zone_NN happens_VBZ to_TO be_VB the_DT sibling_NN of_IN B_NN ''_'' s_NNS zone_NN ,_, A_DT can_MD safely_RB expand_VB its_PRP$ own_JJ zone_NN and_CC notify_VB its_PRP$ expanded_VBN zone_NN to_TO its_PRP$ neighbors_NNS via_IN GPSR_NN beaconing_NN messages_NNS ._.
+3_LS ._.
+#_# ._.
+#_# Preventing_NNP Data_NNP Loss_NN from_IN Node_NNP Failure_NN The_DT algorithms_NNS described_VBN above_IN are_VBP robust_JJ in_IN terms_NNS of_IN zone_NN formation_NN ,_, but_CC node_NN failure_NN can_MD erase_VB data_NNS ._.
+To_TO avoid_VB this_DT ,_, DIMs_NNS can_MD employ_VB two_CD kinds_NNS of_IN replication_NN :_: local_JJ replication_NN to_TO be_VB resilient_JJ to_TO random_JJ node_NN failures_NNS ,_, and_CC mirror_NN replication_NN for_IN resilience_NN to_TO concurrent_JJ failure_NN of_IN geographically_RB contiguous_JJ nodes_NNS ._.
+Mirror_NNP replication_NN is_VBZ conceptually_RB easy_JJ ._.
+Suppose_VB an_DT event_NN E_NN has_VBZ a_DT zone_NN code_NN code_NN -LRB-_-LRB- E_NN -RRB-_-RRB- ._.
+Then_RB ,_, the_DT node_NN that_WDT inserts_NNS E_NN would_MD store_VB two_CD copies_NNS of_IN E_NN ;_: one_CD at_IN the_DT zone_NN denoted_VBN by_IN code_NN -LRB-_-LRB- E_NN -RRB-_-RRB- ,_, and_CC the_DT other_JJ at_IN the_DT zone_NN corresponding_VBG to_TO the_DT one_CD ''_'' s_VBZ complement_NN of_IN code_NN -LRB-_-LRB- E_NN -RRB-_-RRB- ._.
+This_DT technique_NN essentially_RB creates_VBZ a_DT mirror_NN DIM_NNP ._.
+A_DT querier_NN would_MD need_VB ,_, in_IN parallel_NN ,_, to_TO query_VB both_CC the_DT original_JJ DIM_NNP and_CC its_PRP$ mirror_NN since_IN there_EX is_VBZ no_DT way_NN of_IN knowing_VBG if_IN a_DT collection_NN of_IN nodes_NNS has_VBZ failed_VBN ._.
+Clearly_RB ,_, the_DT trade-off_NN here_RB is_VBZ an_DT approximate_JJ doubling_NN of_IN both_CC insertion_NN and_CC query_NN costs_NNS ._.
+There_EX exists_VBZ a_DT far_RB cheaper_JJR technique_NN to_TO ensure_VB resilience_NN to_TO random_JJ node_NN failures_NNS ._.
+Our_PRP$ local_JJ replication_NN technique_NN rests_VBZ on_IN the_DT observation_NN that_IN ,_, for_IN each_DT node_NN A_NN ,_, there_EX exists_VBZ a_DT unique_JJ node_NN which_WDT will_MD take_VB over_RP its_PRP$ zone_NN when_WRB A_DT fails_VBZ ._.
+This_DT node_NN is_VBZ defined_VBN as_IN the_DT node_NN responsible_JJ for_IN A_DT ''_'' s_VBZ zone_NN ''_'' s_NNS backup_VBP zone_NN ._.
+The_DT basic_JJ idea_NN is_VBZ that_IN A_DT replicates_VBZ each_DT data_NNS item_NN it_PRP has_VBZ in_IN this_DT node_NN ._.
+We_PRP call_VBP this_DT node_NN A_NN ''_'' s_NNS local_JJ replica_NN ._.
+Let_VB A_NNP ''_'' s_VBZ local_JJ replica_NN be_VB B_NN ._.
+Often_RB B_NN will_MD be_VB a_DT radio_NN neighbor_NN of_IN A_NN and_CC can_MD be_VB detected_VBN from_IN GPSR_NN beacons_NNS ._.
+Sometimes_RB ,_, however_RB ,_, this_DT is_VBZ not_RB the_DT case_NN ,_, and_CC B_NN will_MD have_VB to_TO be_VB explicitly_RB discovered_VBN ._.
+We_PRP use_VBP an_DT explicit_JJ message_NN for_IN discovering_VBG the_DT local_JJ replica_NN ._.
+Discovering_VBG the_DT local_JJ replica_NN is_VBZ data-driven_JJ ,_, and_CC uses_VBZ a_DT mechanism_NN similar_JJ to_TO that_DT of_IN event_NN insertion_NN ._.
+Node_NN A_NN sends_VBZ a_DT message_NN whose_WP$ geographic_JJ destination_NN is_VBZ a_DT random_JJ nearby_JJ location_NN chosen_VBN by_IN A_NN ._.
+The_DT location_NN is_VBZ close_RB enough_JJ to_TO A_DT such_JJ that_IN GPSR_NN will_MD guarantee_VB that_IN the_DT message_NN will_MD delivered_VBN back_RB to_TO A_DT ._.
+In_IN addition_NN ,_, the_DT message_NN has_VBZ three_CD fields_NNS ,_, one_CD for_IN the_DT zone_NN code_NN of_IN A_NN ,_, code_NN -LRB-_-LRB- A_NN -RRB-_-RRB- ,_, one_CD for_IN the_DT owner_NN owner_NN -LRB-_-LRB- A_NN -RRB-_-RRB- of_IN zone_NN -LRB-_-LRB- A_NN -RRB-_-RRB- which_WDT is_VBZ set_VBN to_TO be_VB empty_JJ ,_, and_CC one_CD for_IN the_DT geographic_JJ location_NN of_IN owner_NN -LRB-_-LRB- A_NN -RRB-_-RRB- ._.
+Then_RB the_DT packet_NN will_MD be_VB delivered_VBN in_IN GPSR_NNP perimeter_NN mode_NN ._.
+Each_DT node_NN that_WDT receives_VBZ this_DT message_NN will_MD compare_VB its_PRP$ zone_NN code_NN and_CC code_NN -LRB-_-LRB- A_NN -RRB-_-RRB- in_IN the_DT message_NN ,_, and_CC if_IN it_PRP is_VBZ more_RBR eligible_JJ to_TO be_VB the_DT owner_NN of_IN zone_NN -LRB-_-LRB- A_NN -RRB-_-RRB- than_IN the_DT current_JJ owner_NN -LRB-_-LRB- A_NN -RRB-_-RRB- recorded_VBN in_IN the_DT message_NN ,_, it_PRP will_MD update_VB the_DT field_NN owner_NN -LRB-_-LRB- A_NN -RRB-_-RRB- and_CC the_DT corresponding_JJ geographic_JJ location_NN ._.
+Once_RB the_DT packet_NN comes_VBZ back_RB to_TO A_DT ,_, it_PRP will_MD know_VB the_DT location_NN of_IN its_PRP$ local_JJ replica_NN and_CC can_MD start_VB to_TO send_VB replicas_NNS ._.
+In_IN a_DT dense_JJ sensor_NN network_NN ,_, the_DT local_JJ replica_NN of_IN a_DT node_NN is_VBZ usually_RB very_RB near_IN to_TO the_DT node_NN ,_, either_CC its_PRP$ direct_JJ neighbor_NN or_CC 1-2_CD hops_VBZ away_RB ,_, so_IN the_DT cost_NN of_IN sending_VBG replicas_NNS to_TO local_JJ replication_NN will_MD not_RB dominate_VB the_DT network_NN traffic_NN ._.
+However_RB ,_, a_DT node_NN ''_'' s_NNS local_JJ replica_NN itself_PRP may_MD fail_VB ._.
+There_EX are_VBP two_CD ways_NNS to_TO deal_VB with_IN this_DT situation_NN ;_: periodic_JJ refreshes_NNS ,_, or_CC repeated_VBN datadriven_JJ discovery_NN of_IN local_JJ replicas_NNS ._.
+The_DT former_JJ has_VBZ higher_JJR overhead_NN ,_, but_CC more_RBR quickly_RB discovers_VBZ failed_JJ replicas_NNS ._.
+3_LS ._.
+#_# ._.
+#_# Robustness_NNPS to_TO Packet_NNP Loss_NN Finally_RB ,_, the_DT mechanisms_NNS for_IN querying_VBG and_CC event_NN insertion_NN can_MD be_VB easily_RB made_VBN resilient_JJ to_TO packet_NN loss_NN ._.
+For_IN event_NN insertion_NN ,_, a_DT simple_JJ ACK_NN scheme_NN suffices_VBZ ._.
+Of_IN course_NN ,_, queries_NNS and_CC responses_NNS can_MD be_VB lost_VBN as_RB well_RB ._.
+In_IN this_DT case_NN ,_, there_EX exists_VBZ an_DT efficient_JJ approach_NN for_IN error_NN recovery_NN ._.
+This_DT rests_VBZ on_IN the_DT observation_NN that_IN the_DT querier_NN knows_VBZ which_WDT zones_NNS fall_VBP within_IN its_PRP$ query_NN and_CC should_MD have_VB responded_VBN -LRB-_-LRB- we_PRP assume_VBP that_IN a_DT node_NN that_WDT has_VBZ no_DT data_NNS matching_VBG a_DT query_NN ,_, but_CC whose_WP$ zone_NN falls_VBZ within_IN the_DT query_NN ,_, responds_VBZ with_IN a_DT negative_JJ acknowledgment_NN -RRB-_-RRB- ._.
+After_IN a_DT conservative_JJ timeout_NN ,_, the_DT querier_NN can_MD re-issue_VB the_DT queries_NNS selectively_RB to_TO these_DT zones_NNS ._.
+If_IN DIM_NNP can_MD not_RB get_VB any_DT answers_NNS -LRB-_-LRB- positive_JJ or_CC negative_JJ -RRB-_-RRB- from_IN 70_CD 0_CD 0_CD 1_CD 1_CD 1_CD 1_CD Figure_NNP #_# :_: An_DT example_NN of_IN range_NN query_NN splitting_NN Resolve-Range-Query_NN -LRB-_-LRB- Q_NNP -RRB-_-RRB- 1_CD Qsub_NN nil_NN 2_CD q0_NN ,_, Qsub_NNP Split-Query_NNP -LRB-_-LRB- Q_NNP -RRB-_-RRB- 3_CD if_IN q0_NN =_JJ nil_NN 4_CD then_RB c_NN Encode_NN -LRB-_-LRB- Q_NNP -RRB-_-RRB- 5_CD if_IN Contain_NNP -LRB-_-LRB- c_NN ,_, code_NN -LRB-_-LRB- A_NN -RRB-_-RRB- -RRB-_-RRB- =_JJ true_JJ 6_CD then_RB go_VB to_TO step_VB ##_RB 7_CD else_JJ Send-Message_NN -LRB-_-LRB- c_NN ,_, q0_NN -RRB-_-RRB- 8_CD else_JJ Resolve_NN -LRB-_-LRB- q0_NN -RRB-_-RRB- 9_CD if_IN is_VBZ Internal_JJ -LRB-_-LRB- -RRB-_-RRB- =_JJ true_JJ 10_CD then_RB Absorb_VB -LRB-_-LRB- q0_NN -RRB-_-RRB- 11_CD else_JJ Append_NN q0_NN to_TO Qsub_NNP 12_CD if_IN Qsub_NN =_JJ nil_NN 13_CD then_RB for_IN each_DT subquery_NN q_VBD Qsub_NNP 14_CD do_VBP c_NN Encode_NN -LRB-_-LRB- q_NN -RRB-_-RRB- 15_CD Send-Message_NN -LRB-_-LRB- c_NN ,_, q_NN -RRB-_-RRB- Figure_NN ##_NN :_: Query_NNP resolving_VBG algorithm_NN certain_JJ zones_NNS after_IN repeated_VBN timeouts_NNS ,_, it_PRP can_MD at_IN least_JJS return_VB the_DT partial_JJ query_NN results_VBZ to_TO the_DT application_NN together_RB with_IN the_DT information_NN about_IN the_DT zones_NNS from_IN which_WDT data_NN is_VBZ missing_VBG ._.
+4_LS ._.
+DIMS_VBZ :_: AN_DT ANALYSIS_NN In_IN this_DT section_NN ,_, we_PRP present_VBP a_DT simple_JJ analytic_JJ performance_NN evaluation_NN of_IN DIMs_NNS ,_, and_CC compare_VB their_PRP$ performance_NN against_IN other_JJ possible_JJ approaches_NNS for_IN implementing_VBG multi-dimensional_JJ range_NN queries_NNS in_IN sensor_NN networks_NNS ._.
+In_IN the_DT next_JJ section_NN ,_, we_PRP validate_VBP these_DT analyses_NNS using_VBG detailed_JJ packet-level_JJ simulations_NNS ._.
+Our_PRP$ primary_JJ metrics_NNS for_IN the_DT performance_NN of_IN a_DT DIM_NNP are_VBP :_: Average_JJ Insertion_NN Cost_NN measures_VBZ the_DT average_JJ number_NN of_IN messages_NNS required_VBN to_TO insert_VB an_DT event_NN into_IN the_DT network_NN ._.
+Average_JJ Query_NNP Delivery_NN Cost_NN measures_VBZ the_DT average_JJ number_NN of_IN messages_NNS required_VBN to_TO route_NN a_DT query_NN message_NN to_TO all_PDT the_DT relevant_JJ nodes_NNS in_IN the_DT network_NN ._.
+It_PRP does_VBZ not_RB measure_VB the_DT number_NN of_IN messages_NNS required_VBN to_TO transmit_VB responses_NNS to_TO the_DT querier_NN ;_: this_DT latter_JJ number_NN depends_VBZ upon_IN the_DT precise_JJ data_NNS distribution_NN and_CC is_VBZ the_DT same_JJ for_IN many_JJ of_IN the_DT schemes_NNS we_PRP compare_VBP DIMs_NNS against_IN ._.
+In_IN DIMs_NNS ,_, event_NN insertion_NN essentially_RB uses_VBZ geographic_JJ routing_VBG ._.
+In_IN a_DT dense_JJ N-node_NN network_NN where_WRB the_DT likelihood_NN of_IN traversing_VBG perimeters_NNS is_VBZ small_JJ ,_, the_DT average_JJ event_NN insertion_NN cost_NN proportional_JJ to_TO N_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+On_IN the_DT other_JJ hand_NN ,_, the_DT query_NN delivery_NN cost_NN depends_VBZ upon_IN the_DT size_NN of_IN ranges_NNS specified_VBN in_IN the_DT query_NN ._.
+Recall_VB that_IN our_PRP$ query_NN delivery_NN mechanism_NN is_VBZ careful_JJ about_IN splitting_NN a_DT query_NN into_IN sub-queries_NNS ,_, doing_VBG so_RB only_RB when_WRB the_DT query_NN nears_VBZ the_DT zone_NN that_WDT covers_VBZ the_DT query_NN range_NN ._.
+Thus_RB ,_, when_WRB the_DT querier_NN is_VBZ far_RB from_IN the_DT queried_VBN zone_NN ,_, there_EX are_VBP two_CD components_NNS to_TO the_DT query_NN delivery_NN cost_NN ._.
+The_DT first_JJ ,_, which_WDT is_VBZ proportional_JJ to_TO N_NN ,_, is_VBZ the_DT cost_NN to_TO deliver_VB the_DT query_NN near_IN the_DT covering_VBG zone_NN ._.
+If_IN within_IN this_DT covering_VBG zone_NN ,_, there_EX are_VBP M_NN nodes_NNS ,_, the_DT message_NN delivery_NN cost_NN of_IN splitting_NN the_DT query_NN is_VBZ proportional_JJ to_TO M_NN ._.
+The_DT average_JJ cost_NN of_IN query_NN delivery_NN depends_VBZ upon_IN the_DT distribution_NN of_IN query_NN range_NN sizes_NNS ._.
+Now_RB ,_, suppose_VBP that_IN query_NN sizes_NNS follow_VBP some_DT density_NN function_NN f_FW -LRB-_-LRB- x_NN -RRB-_-RRB- ,_, then_RB the_DT average_JJ cost_NN of_IN resolve_NN a_DT query_NN can_MD be_VB approximated_VBN by_IN N_NN 1_CD xf_NN -LRB-_-LRB- x_NN -RRB-_-RRB- dx_NN ._.
+To_TO give_VB some_DT intuition_NN for_IN the_DT performance_NN of_IN DIMs_NNS ,_, we_PRP consider_VBP four_CD different_JJ forms_NNS for_IN f_FW -LRB-_-LRB- x_NN -RRB-_-RRB- :_: the_DT uniform_JJ distribution_NN where_WRB a_DT query_NN range_NN encompassing_VBG the_DT entire_JJ network_NN is_VBZ as_IN likely_JJ as_IN a_DT point_NN query_NN ;_: a_DT bounded_VBN uniform_JJ distribution_NN where_WRB all_DT sizes_NNS up_IN to_TO a_DT bound_VBN B_NN are_VBP equally_RB likely_JJ ;_: an_DT algebraic_JJ distribution_NN in_IN which_WDT most_RBS queries_NNS are_VBP small_JJ ,_, but_CC large_JJ queries_NNS are_VBP somewhat_RB likely_JJ ;_: and_CC an_DT exponential_JJ distribution_NN where_WRB most_RBS queries_NNS are_VBP small_JJ and_CC large_JJ queries_NNS are_VBP unlikely_JJ ._.
+In_IN all_DT our_PRP$ analyses_NNS ,_, we_PRP make_VBP the_DT simplifying_VBG assumption_NN that_IN the_DT size_NN of_IN a_DT query_NN is_VBZ proportional_JJ to_TO the_DT number_NN of_IN nodes_NNS that_WDT can_MD answer_VB that_IN query_NN ._.
+For_IN the_DT uniform_JJ distribution_NN P_NN -LRB-_-LRB- x_NN -RRB-_-RRB- c_NN for_IN some_DT constant_JJ c_NN ._.
+If_IN each_DT query_NN size_NN from_IN #_# ..._: N_NN is_VBZ equally_RB likely_JJ ,_, the_DT average_JJ query_NN delivery_NN cost_NN of_IN uniformly_RB distributed_VBN queries_NNS is_VBZ O_NN -LRB-_-LRB- N_NN -RRB-_-RRB- ._.
+Thus_RB ,_, for_IN uniformly_RB distributed_VBN queries_NNS ,_, the_DT performance_NN of_IN DIMs_NNS is_VBZ comparable_JJ to_TO that_DT of_IN flooding_NN ._.
+However_RB ,_, for_IN the_DT applications_NNS we_PRP envision_VBP ,_, where_WRB nodes_NNS within_IN the_DT network_NN are_VBP trying_VBG to_TO correlate_VB events_NNS ,_, the_DT uniform_JJ distribution_NN is_VBZ highly_RB unrealistic_JJ ._.
+Somewhat_RB more_RBR realistic_JJ is_VBZ a_DT situation_NN where_WRB all_DT query_NN sizes_NNS are_VBP bounded_VBN by_IN a_DT constant_JJ B_NN ._.
+In_IN this_DT case_NN ,_, the_DT average_JJ cost_NN for_IN resolving_VBG such_PDT a_DT query_NN is_VBZ approximately_RB B_NN 1_CD xf_NN -LRB-_-LRB- x_NN -RRB-_-RRB- dx_NN =_JJ O_NN -LRB-_-LRB- B_NN -RRB-_-RRB- ._.
+Recall_VB now_RB that_IN all_DT queries_NNS have_VBP to_TO pay_VB an_DT approximate_JJ cost_NN of_IN O_NN -LRB-_-LRB- N_NN -RRB-_-RRB- to_TO deliver_VB the_DT query_NN near_IN the_DT covering_VBG zone_NN ._.
+Thus_RB ,_, if_IN DIM_NNP limited_JJ queries_NNS to_TO a_DT size_NN proportional_JJ to_TO N_NN ,_, the_DT average_JJ query_NN cost_NN would_MD be_VB O_NN -LRB-_-LRB- N_NN -RRB-_-RRB- ._.
+The_DT algebraic_JJ distribution_NN ,_, where_WRB f_FW -LRB-_-LRB- x_NN -RRB-_-RRB- xk_NN ,_, for_IN some_DT constant_JJ k_NN between_IN #_# and_CC #_# ,_, has_VBZ an_DT average_JJ query_NN resolution_NN cost_NN given_VBN by_IN N_NN 1_CD xf_NN -LRB-_-LRB- x_NN -RRB-_-RRB- dx_NN =_JJ O_NN -LRB-_-LRB- N2k_NN -RRB-_-RRB- ._.
+In_IN this_DT case_NN ,_, if_IN k_NN >_JJR 1_CD ._.
+#_# ,_, the_DT average_JJ cost_NN of_IN query_NN delivery_NN is_VBZ dominated_VBN by_IN the_DT cost_NN to_TO deliver_VB the_DT query_NN to_TO near_IN the_DT covering_VBG zone_NN ,_, given_VBN by_IN O_NN -LRB-_-LRB- N_NN -RRB-_-RRB- ._.
+Finally_RB ,_, for_IN the_DT exponential_JJ distribution_NN ,_, f_FW -LRB-_-LRB- x_NN -RRB-_-RRB- =_JJ cecx_NN for_IN some_DT constant_JJ c_NN ,_, and_CC the_DT average_JJ cost_NN is_VBZ just_RB the_DT mean_NN of_IN the_DT corresponding_JJ distribution_NN ,_, i_FW ._.
+e_LS ._.
+,_, O_NN -LRB-_-LRB- #_# -RRB-_-RRB- for_IN large_JJ N_NN ._.
+Asymptotically_RB ,_, then_RB ,_, the_DT cost_NN of_IN the_DT query_NN for_IN the_DT exponential_JJ distribution_NN is_VBZ dominated_VBN by_IN the_DT cost_NN to_TO deliver_VB the_DT query_NN near_IN the_DT covering_VBG zone_NN -LRB-_-LRB- O_NN -LRB-_-LRB- N_NN -RRB-_-RRB- -RRB-_-RRB- ._.
+Thus_RB ,_, we_PRP see_VBP that_IN if_IN queries_NNS follow_VBP either_CC the_DT bounded_VBN uniform_JJ distribution_NN ,_, the_DT algebraic_JJ distribution_NN ,_, or_CC the_DT exponential_JJ distribution_NN ,_, the_DT query_NN cost_NN scales_NNS as_IN the_DT insertion_NN cost_NN -LRB-_-LRB- for_IN appropriate_JJ choice_NN of_IN constants_NNS for_IN the_DT bounded_VBN uniform_NN and_CC the_DT algebraic_JJ distributions_NNS -RRB-_-RRB- ._.
+How_WRB well_RB does_VBZ the_DT performance_NN of_IN DIMs_NNS compare_VBP against_IN alternative_JJ choices_NNS for_IN implementing_VBG multi-dimensional_JJ queries_NNS ?_.
+A_DT simple_JJ alternative_NN is_VBZ called_VBN external_JJ storage_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, where_WRB all_DT events_NNS are_VBP stored_VBN centrally_RB in_IN a_DT node_NN outside_IN the_DT sensor_NN network_NN ._.
+This_DT scheme_NN incurs_VBZ an_DT insertion_NN cost_NN of_IN O_NN -LRB-_-LRB- N_NN -RRB-_-RRB- ,_, and_CC a_DT zero_CD query_NN cost_NN ._.
+However_RB ,_, as_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- points_VBZ out_RP ,_, such_JJ systems_NNS may_MD be_VB impractical_JJ in_IN sensor_NN networks_NNS since_IN the_DT access_NN link_NN to_TO the_DT external_JJ node_NN becomes_VBZ a_DT hotspot_NN ._.
+A_DT second_JJ alternative_JJ implementation_NN would_MD store_VB events_NNS at_IN the_DT node_NN where_WRB they_PRP are_VBP generated_VBN ._.
+Queries_NNS are_VBP flooded_VBN 71_CD throughout_IN the_DT network_NN ,_, and_CC nodes_NNS that_WDT have_VBP matching_VBG data_NNS respond_VBP ._.
+Examples_NNS of_IN systems_NNS that_WDT can_MD be_VB used_VBN for_IN this_DT -LRB-_-LRB- although_IN ,_, to_TO our_PRP$ knowledge_NN ,_, these_DT systems_NNS do_VBP not_RB implement_VB multi-dimensional_JJ range_NN queries_NNS -RRB-_-RRB- are_VBP Directed_NNP Diffusion_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- and_CC TinyDB_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+The_DT flooding_NN scheme_NN incurs_VBZ a_DT zero_CD insertion_NN cost_NN ,_, but_CC an_DT O_NN -LRB-_-LRB- N_NN -RRB-_-RRB- query_NN cost_NN ._.
+It_PRP is_VBZ easy_JJ to_TO show_VB that_IN DIMs_NNS outperform_VBP flooding_NN as_RB long_RB as_IN the_DT ratio_NN of_IN the_DT number_NN of_IN insertions_NNS to_TO the_DT number_NN of_IN queries_NNS is_VBZ less_JJR than_IN N_NN ._.
+A_DT final_JJ alternative_NN would_MD be_VB to_TO use_VB a_DT geographic_JJ hash_NN table_NN -LRB-_-LRB- GHT_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- -RRB-_-RRB- ._.
+In_IN this_DT approach_NN ,_, attribute_NN values_NNS are_VBP assumed_VBN to_TO be_VB integers_NNS -LRB-_-LRB- this_DT is_VBZ actually_RB quite_RB a_DT reasonable_JJ assumption_NN since_IN attribute_NN values_NNS are_VBP often_RB quantized_VBN -RRB-_-RRB- ,_, and_CC events_NNS are_VBP hashed_VBN on_IN some_DT -LRB-_-LRB- say_VB ,_, the_DT first_JJ -RRB-_-RRB- attribute_NN ._.
+A_DT range_NN query_NN is_VBZ sub-divided_VBN into_IN several_JJ sub-queries_NNS ,_, one_CD for_IN each_DT integer_NN in_IN the_DT range_NN of_IN the_DT first_JJ attribute_NN ._.
+Each_DT sub-query_NN is_VBZ then_RB hashed_VBN to_TO the_DT appropriate_JJ location_NN ._.
+The_DT nodes_NNS that_WDT receive_VBP a_DT sub-query_JJ only_JJ return_NN events_NNS that_WDT match_VBP all_DT other_JJ attribute_NN ranges_NNS ._.
+In_IN this_DT approach_NN ,_, which_WDT we_PRP call_VBP GHT-R_NN -LRB-_-LRB- GHT_NN ''_'' s_NNS for_IN range_NN queries_NNS -RRB-_-RRB- the_DT insertion_NN cost_NN is_VBZ O_NN -LRB-_-LRB- N_NN -RRB-_-RRB- ._.
+Suppose_VB that_IN the_DT range_NN of_IN the_DT first_JJ attribute_NN contains_VBZ r_NN discrete_JJ values_NNS ._.
+Then_RB the_DT cost_NN to_TO deliver_VB queries_NNS is_VBZ O_NN -LRB-_-LRB- r_NN N_NN -RRB-_-RRB- ._.
+Thus_RB ,_, asymptotically_RB ,_, GHT-R_NN ''_'' s_NNS perform_VBP similarly_RB to_TO DIMs_NNS ._.
+In_IN practice_NN ,_, however_RB ,_, the_DT proportionality_NN constants_NNS are_VBP significantly_RB different_JJ ,_, and_CC DIMs_NNS outperform_VBP GHT-Rs_NNS ,_, as_IN we_PRP shall_MD show_VB using_VBG detailed_JJ simulations_NNS ._.
+5_CD ._.
+DIMS_NNP :_: SIMULATION_NNP RESULTS_NNS Our_PRP$ analysis_NN gives_VBZ us_PRP some_DT insight_NN into_IN the_DT asymptotic_JJ behavior_NN of_IN various_JJ approaches_NNS for_IN multi-dimensional_JJ range_NN queries_NNS ._.
+In_IN this_DT section_NN ,_, we_PRP use_VBP simulation_NN to_TO compare_VB DIMs_NNS against_IN flooding_NN and_CC GHT-R_NN ;_: this_DT comparison_NN gives_VBZ us_PRP a_DT more_RBR detailed_JJ understanding_NN of_IN these_DT approaches_NNS for_IN moderate_JJ size_NN networks_NNS ,_, and_CC gives_VBZ us_PRP a_DT nuanced_JJ view_NN of_IN the_DT mechanistic_JJ differences_NNS between_IN some_DT of_IN these_DT approaches_NNS ._.
+5_CD ._.
+#_# Simulation_NNP Methodology_NNP We_PRP use_VBP ns-2_NN for_IN our_PRP$ simulations_NNS ._.
+Since_IN DIMs_NNS are_VBP implemented_VBN on_IN top_NN of_IN GPSR_NN ,_, we_PRP first_RB ported_VBD an_DT earlier_JJR GPSR_NN implementation_NN to_TO the_DT latest_JJS version_NN of_IN ns-2_NN ._.
+We_PRP modified_VBD the_DT GPSR_NN module_NN to_TO call_VB our_PRP$ DIM_NNP implementation_NN when_WRB it_PRP receives_VBZ any_DT data_NNS message_NN in_IN transit_NN or_CC when_WRB it_PRP is_VBZ about_IN to_TO drop_VB a_DT message_NN because_IN that_DT message_NN traversed_VBD the_DT entire_JJ perimeter_NN ._.
+This_DT allows_VBZ a_DT DIM_NNP to_TO modify_VB message_NN zone_NN codes_NNS in_IN flight_NN -LRB-_-LRB- Section_NN #_# -RRB-_-RRB- ,_, and_CC determine_VB the_DT actual_JJ owner_NN of_IN an_DT event_NN or_CC query_NN ._.
+In_IN addition_NN ,_, to_TO this_DT ,_, we_PRP implemented_VBD in_IN ns-2_NN most_JJS of_IN the_DT DIM_NNP mechanisms_NNS described_VBN in_IN Section_NN #_# ._.
+Of_IN those_DT mechanisms_NNS ,_, the_DT only_RB one_CD we_PRP did_VBD not_RB implement_VB is_VBZ mirror_VB replication_NN ._.
+We_PRP have_VBP implemented_VBN selective_JJ query_NN retransmission_NN for_IN resiliency_NN to_TO packet_NN loss_NN ,_, but_CC have_VBP left_VBN the_DT evaluation_NN of_IN this_DT mechanism_NN to_TO future_JJ work_NN ._.
+Our_PRP$ DIM_NNP implementation_NN in_IN ns-2_NN is_VBZ ####_CD lines_NNS of_IN code_NN ._.
+Finally_RB ,_, we_PRP implemented_VBD GHT-R_NN ,_, our_PRP$ GHT-based_JJ multidimensional_JJ range_NN query_NN mechanism_NN in_IN ns-2_NN ._.
+This_DT implementation_NN was_VBD relatively_RB straightforward_JJ ,_, given_VBN that_IN we_PRP had_VBD ported_VBN GPSR_NNP ,_, and_CC modified_VBN GPSR_NN to_TO detect_VB the_DT completion_NN of_IN perimeter_NN mode_NN traversals_NNS ._.
+Using_VBG this_DT implementation_NN ,_, we_PRP conducted_VBD a_DT fairly_RB extensive_JJ evaluation_NN of_IN DIM_NNP and_CC two_CD alternatives_NNS -LRB-_-LRB- flooding_NN ,_, and_CC our_PRP$ GHT-R_NN -RRB-_-RRB- ._.
+For_IN all_DT our_PRP$ experiments_NNS ,_, we_PRP use_VBP uniformly_RB placed_VBN sensor_NN nodes_NNS with_IN network_NN sizes_NNS ranging_VBG from_IN ##_CD nodes_NNS to_TO ###_CD nodes_NNS ._.
+Each_DT node_NN has_VBZ a_DT radio_NN range_NN of_IN 40m_NN ._.
+For_IN the_DT results_NNS presented_VBN here_RB ,_, each_DT node_NN has_VBZ on_IN average_JJ ##_CD nodes_NNS within_IN its_PRP$ nominal_JJ radio_NN range_NN ._.
+We_PRP have_VBP conducted_VBN experiments_NNS at_IN other_JJ node_NN densities_NNS ;_: they_PRP are_VBP in_IN agreement_NN with_IN the_DT results_NNS presented_VBN here_RB ._.
+In_IN all_DT our_PRP$ experiments_NNS ,_, each_DT node_NN first_RB generates_VBZ #_# events5_CD on_IN average_NN -LRB-_-LRB- more_RBR precisely_RB ,_, for_IN a_DT topology_NN of_IN size_NN N_NN ,_, we_PRP have_VBP 3N_NN events_NNS ,_, and_CC each_DT node_NN is_VBZ equally_RB likely_JJ to_TO generate_VB an_DT event_NN -RRB-_-RRB- ._.
+We_PRP have_VBP conducted_VBN experiments_NNS for_IN three_CD different_JJ event_NN value_NN distributions_NNS ._.
+Our_PRP$ uniform_JJ event_NN distribution_NN generates_VBZ 2-dimensional_JJ events_NNS and_CC ,_, for_IN each_DT dimension_NN ,_, every_DT attribute_NN value_NN is_VBZ equally_RB likely_JJ ._.
+Our_PRP$ normal_JJ event_NN distribution_NN generates_VBZ 2-dimensional_JJ events_NNS and_CC ,_, for_IN each_DT dimension_NN ,_, the_DT attribute_NN value_NN is_VBZ normally_RB distributed_VBN with_IN a_DT mean_NN corresponding_VBG to_TO the_DT mid-point_NN of_IN the_DT attribute_NN value_NN range_NN ._.
+The_DT normal_JJ event_NN distribution_NN represents_VBZ a_DT skewed_JJ data_NN set_NN ._.
+Finally_RB ,_, our_PRP$ trace_NN event_NN distribution_NN is_VBZ a_DT collection_NN of_IN 4-dimensional_JJ events_NNS obtained_VBN from_IN a_DT habitat_NN monitoring_NN network_NN ._.
+As_IN we_PRP shall_MD see_VB ,_, this_DT represents_VBZ a_DT fairly_RB skewed_JJ data_NNS set_VBN ._.
+Having_VBG generated_VBN events_NNS ,_, for_IN each_DT simulation_NN we_PRP generate_VBP queries_NNS such_JJ that_IN ,_, on_IN average_NN ,_, each_DT node_NN generates_VBZ #_# queries_NNS ._.
+The_DT query_NN sizes_NNS are_VBP determined_VBN using_VBG the_DT four_CD size_NN distributions_NNS we_PRP discussed_VBD in_IN Section_NN #_# :_: uniform_NN ,_, boundeduniform_NN ,_, algebraic_JJ and_CC exponential_JJ ._.
+Once_RB a_DT query_NN size_NN has_VBZ been_VBN determined_VBN ,_, the_DT location_NN of_IN the_DT query_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, the_DT actual_JJ boundaries_NNS of_IN the_DT zone_NN -RRB-_-RRB- are_VBP uniformly_RB distributed_VBN ._.
+For_IN our_PRP$ GHT-R_NN experiments_NNS ,_, the_DT dynamic_JJ range_NN of_IN the_DT attributes_NNS had_VBD ###_CD discrete_JJ values_NNS ,_, but_CC we_PRP restricted_VBD the_DT query_NN range_NN for_IN any_DT one_CD attribute_NN to_TO ##_CD discrete_JJ values_NNS to_TO allow_VB those_DT simulations_NNS to_TO complete_VB in_IN reasonable_JJ time_NN ._.
+Finally_RB ,_, using_VBG one_CD set_NN of_IN simulations_NNS we_PRP evaluate_VBP the_DT efficacy_NN of_IN local_JJ replication_NN by_IN turning_VBG off_RP random_JJ fractions_NNS of_IN nodes_NNS and_CC measuring_VBG the_DT fidelity_NN of_IN the_DT returned_VBN results_NNS ._.
+The_DT primary_JJ metrics_NNS for_IN our_PRP$ simulations_NNS are_VBP the_DT average_JJ query_NN and_CC insertion_NN costs_NNS ,_, as_IN defined_VBN in_IN Section_NN #_# ._.
+5_CD ._.
+#_# Results_NNS Although_IN we_PRP have_VBP examined_VBN almost_RB all_PDT the_DT combinations_NNS of_IN factors_NNS described_VBN above_IN ,_, we_PRP discuss_VBP only_RB the_DT most_RBS salient_JJ ones_NNS here_RB ,_, for_IN lack_NN of_IN space_NN ._.
+Figure_NNP ##_CD plots_NNS the_DT average_JJ insertion_NN costs_NNS for_IN DIM_NNP and_CC GHT-R_NN -LRB-_-LRB- for_IN flooding_NN ,_, of_IN course_NN ,_, the_DT insertion_NN costs_NNS are_VBP zero_CD -RRB-_-RRB- ._.
+DIM_NNP incurs_VBZ less_JJR per_IN event_NN overhead_NN in_IN inserting_VBG events_NNS -LRB-_-LRB- regardless_RB of_IN the_DT actual_JJ event_NN distribution_NN ;_: Figure_NNP ##_NN shows_VBZ the_DT cost_NN for_IN uniformly_RB distributed_VBN events_NNS -RRB-_-RRB- ._.
+The_DT reason_NN for_IN this_DT is_VBZ interesting_JJ ._.
+In_IN GHT-R_NN ,_, storing_VBG almost_RB every_DT event_NN incurs_VBZ a_DT perimeter_NN traversal_NN ,_, and_CC storing_VBG some_DT events_NNS require_VBP traversing_VBG the_DT outer_JJ perimeter_NN of_IN the_DT network_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+By_IN contrast_NN ,_, in_IN DIM_NNP ,_, storing_VBG an_DT event_NN incurs_VBZ a_DT perimeter_NN traversal_NN only_RB when_WRB a_DT node_NN ''_'' s_NNS boundaries_NNS are_VBP undecided_JJ ._.
+Furthermore_RB ,_, an_DT insertion_NN or_CC a_DT query_NN in_IN a_DT DIM_NNP can_MD traverse_VB the_DT outer_JJ perimeter_NN -LRB-_-LRB- Section_NN #_# ._.
+#_# -RRB-_-RRB- ,_, but_CC less_RBR frequently_RB than_IN in_IN GHTs_NNS ._.
+Figure_NNP ##_CD plots_NNS the_DT average_JJ query_NN cost_NN for_IN a_DT bounded_VBN uniform_NN query_NN size_NN distribution_NN ._.
+For_IN this_DT graph_NN -LRB-_-LRB- and_CC the_DT next_JJ -RRB-_-RRB- we_PRP use_VBP a_DT uniform_JJ event_NN distribution_NN ,_, since_IN the_DT event_NN distribution_NN does_VBZ not_RB affect_VB the_DT query_NN delivery_NN cost_NN ._.
+For_IN this_DT simulation_NN ,_, our_PRP$ bound_VBN was_VBD #_# 4_CD th_DT the_DT size_NN of_IN the_DT largest_JJS possible_JJ 5_CD Our_PRP$ metrics_NNS are_VBP chosen_VBN so_IN that_IN the_DT exact_JJ number_NN of_IN events_NNS and_CC queries_NNS is_VBZ unimportant_JJ for_IN our_PRP$ discussion_NN ._.
+Of_IN course_NN ,_, the_DT overall_JJ performance_NN of_IN the_DT system_NN will_MD depend_VB on_IN the_DT relative_JJ frequency_NN of_IN events_NNS and_CC queries_NNS ,_, as_IN we_PRP discuss_VBP in_IN Section_NN #_# ._.
+Since_IN we_PRP don_VBP ''_'' t_NN have_VBP realistic_JJ ratios_NNS for_IN these_DT ,_, we_PRP focus_VBP on_IN the_DT microscopic_JJ costs_NNS ,_, rather_RB than_IN on_IN the_DT overall_JJ system_NN costs_NNS ._.
+72_CD 0_CD 2_CD 4_CD 6_CD 8_CD 10_CD 12_CD 14_CD 16_CD 18_CD 20_CD 50_CD ###_CD ###_CD ###_CD ###_CD ###_CD AverageCostperInsertion_NNP Network_NNP Size_NN DIM_NNP GHT-R_NNP Figure_NNP ##_NNP :_: Average_JJ insertion_NN cost_NN for_IN DIM_NNP and_CC GHT_NNP ._.
+0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 1_CD 5_CD ##_NN ##_CD ##_CD ##_CD ##_CD Fractionofrepliescomparedwithnon-failurecase_NN Fraction_NN of_IN failed_VBN nodes_NNS -LRB-_-LRB- %_NN -RRB-_-RRB- No_DT Replication_NN Local_JJ Replication_NN Figure_NN ##_CD :_: Local_JJ replication_NN performance_NN ._.
+query_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, a_DT query_NN of_IN the_DT form_NN #_# #_# ._.
+#_# ,_, #_# #_# ._.
+#_# ._.
+Even_RB for_IN this_DT generous_JJ query_NN size_NN ,_, DIMs_NNS perform_VBP quite_RB well_RB -LRB-_-LRB- almost_RB a_DT third_JJ the_DT cost_NN of_IN flooding_NN -RRB-_-RRB- ._.
+Notice_NNP ,_, however_RB ,_, that_IN GHTRs_NNS incur_VBP high_JJ query_NN cost_NN since_IN almost_RB any_DT query_NN requires_VBZ as_IN many_JJ subqueries_NNS as_IN the_DT width_NN of_IN the_DT first_JJ attribute_NN ''_'' s_NNS range_VBP ._.
+Figure_NNP ##_CD plots_NNS the_DT average_JJ query_NN cost_NN for_IN the_DT exponential_JJ distribution_NN -LRB-_-LRB- the_DT average_NN query_NN size_NN for_IN this_DT distribution_NN was_VBD set_VBN to_TO be_VB #_# 16_CD th_DT the_DT largest_JJS possible_JJ query_NN -RRB-_-RRB- ._.
+The_DT superior_JJ scaling_NN of_IN DIMs_NNS is_VBZ evident_JJ in_IN these_DT graphs_NNS ._.
+Clearly_RB ,_, this_DT is_VBZ the_DT regime_NN in_IN which_WDT one_NN might_MD expect_VB DIMs_NNS to_TO perform_VB best_RB ,_, when_WRB most_JJS of_IN the_DT queries_NNS are_VBP small_JJ and_CC large_JJ queries_NNS are_VBP relatively_RB rare_JJ ._.
+This_DT is_VBZ also_RB the_DT regime_NN in_IN which_WDT one_PRP would_MD expect_VB to_TO use_VB multi-dimensional_JJ range_NN queries_NNS :_: to_TO perform_VB relatively_RB tight_JJ correlations_NNS ._.
+As_IN with_IN the_DT bounded_VBN uniform_JJ distribution_NN ,_, GHT_NN query_NN cost_NN is_VBZ dominated_VBN by_IN the_DT cost_NN of_IN sending_VBG sub-queries_NNS ;_: for_IN DIMs_NNS ,_, the_DT query_NN splitting_NN strategy_NN works_VBZ quite_RB well_RB in_IN keep_VB overall_JJ query_NN delivery_NN costs_NNS low_JJ ._.
+Figure_NNP ##_NNP describes_VBZ the_DT efficacy_NN of_IN local_JJ replication_NN ._.
+To_TO obtain_VB this_DT figure_NN ,_, we_PRP conducted_VBD the_DT following_VBG experiment_NN ._.
+On_IN a_DT 100-node_JJ network_NN ,_, we_PRP inserted_VBD a_DT number_NN of_IN events_NNS uniformly_RB distributed_VBN throughout_IN the_DT network_NN ,_, then_RB issued_VBD a_DT query_NN covering_VBG the_DT entire_JJ network_NN and_CC recorded_VBD the_DT answers_NNS ._.
+Knowing_VBG the_DT expected_VBN answers_NNS for_IN this_DT query_NN ,_, we_PRP then_RB successively_RB removed_VBD a_DT fraction_NN f_FW of_IN nodes_NNS randomly_RB ,_, and_CC re-issued_VBD the_DT same_JJ query_NN ._.
+The_DT figure_NN plots_NNS the_DT fraction_NN of_IN expected_JJ responses_NNS actually_RB received_VBD ,_, with_IN and_CC without_IN replication_NN ._.
+As_IN the_DT graph_NN shows_VBZ ,_, local_JJ replication_NN performs_VBZ well_RB for_IN random_JJ failures_NNS ,_, returning_VBG almost_RB ##_CD %_NN of_IN the_DT responses_NNS when_WRB up_RB to_TO ##_CD %_NN of_IN the_DT nodes_NNS have_VBP failed_VBN simultaneously_RB #_# ._.
+In_IN the_DT absence_NN of_IN local_JJ replication_NN ,_, of_IN course_NN ,_, when_WRB 6_CD In_IN practice_NN ,_, the_DT performance_NN of_IN local_JJ replication_NN is_VBZ likely_JJ to_TO 0_CD 100_CD 200_CD 300_CD 400_CD 500_CD 600_CD 700_CD 50_CD ###_CD ###_CD ###_CD ###_CD ###_CD AverageCostperQueryinBoundedUnifDistribution_NNP Network_NNP Size_NN DIM_NNP flooding_NN GHT-R_NN Figure_NN ##_CD :_: Average_JJ query_NN cost_NN with_IN a_DT bounded_VBN uniform_NN query_NN distribution_NN 0_CD 50_CD 100_CD 150_CD 200_CD 250_CD 300_CD 350_CD 400_CD 450_CD 50_CD ###_CD ###_CD ###_CD ###_CD ###_CD AverageCostperQueryinExponentialDistribution_NNP Network_NNP Size_NN DIM_NNP flooding_NN GHT-R_NN Figure_NN ##_CD :_: Average_JJ query_NN cost_NN with_IN an_DT exponential_JJ query_NN distribution_NN 30_CD %_NN of_IN the_DT nodes_NNS fail_VBP ,_, the_DT response_NN rate_NN is_VBZ only_RB ##_CD %_NN as_IN one_CD would_MD expect_VB ._.
+We_PRP note_VBP that_IN DIMs_NNS -LRB-_-LRB- as_IN currently_RB designed_VBN -RRB-_-RRB- are_VBP not_RB perfect_JJ ._.
+When_WRB the_DT data_NNS is_VBZ highly_RB skewed-as_JJ it_PRP was_VBD for_IN our_PRP$ trace_NN data_NNS set_VBN from_IN the_DT habitat_NN monitoring_NN application_NN where_WRB most_JJS of_IN the_DT event_NN values_NNS fell_VBD into_IN within_IN ##_CD %_NN of_IN the_DT attribute_NN ''_'' s_NNS range-a_JJ few_JJ DIM_NNP nodes_NNS will_MD clearly_RB become_VB the_DT bottleneck_NN ._.
+This_DT is_VBZ depicted_VBN in_IN Figure_NNP ##_NNP ,_, which_WDT shows_VBZ that_IN for_IN DIMs_NNS ,_, and_CC GHT-Rs_NN ,_, the_DT maximum_NN number_NN of_IN transmissions_NNS at_IN any_DT network_NN node_NN -LRB-_-LRB- the_DT hotspots_NNS -RRB-_-RRB- is_VBZ rather_RB high_JJ ._.
+-LRB-_-LRB- For_IN less_JJR skewed_JJ data_NNS distributions_NNS ,_, and_CC reasonable_JJ query_NN size_NN distributions_NNS ,_, the_DT hotspot_NN curves_NNS for_IN all_DT three_CD schemes_NNS are_VBP comparable_JJ ._. -RRB-_-RRB-
+This_DT is_VBZ a_DT standard_JJ problem_NN that_IN the_DT database_NN indices_NNS have_VBP dealt_VBN with_IN by_IN tree_NN re-balancing_NN ._.
+In_IN our_PRP$ case_NN ,_, simpler_JJR solutions_NNS might_MD be_VB possible_JJ -LRB-_-LRB- and_CC we_PRP discuss_VBP this_DT in_IN Section_NN #_# -RRB-_-RRB- ._.
+However_RB ,_, our_PRP$ use_NN of_IN the_DT trace_NN data_NNS demonstrates_VBZ that_IN DIMs_VBZ work_NN for_IN events_NNS which_WDT have_VBP more_JJR than_IN two_CD dimensions_NNS ._.
+Increasing_VBG the_DT number_NN of_IN dimensions_NNS does_VBZ not_RB noticeably_RB degrade_VB DIMs_NNS query_VB cost_NN -LRB-_-LRB- omitted_VBN for_IN lack_NN of_IN space_NN -RRB-_-RRB- ._.
+Also_RB omitted_VBN are_VBP experiments_NNS examining_VBG the_DT impact_NN of_IN several_JJ other_JJ factors_NNS ,_, as_IN they_PRP do_VBP not_RB affect_VB our_PRP$ conclusions_NNS in_IN any_DT way_NN ._.
+As_IN we_PRP expected_VBD ,_, DIMs_NNS are_VBP comparable_JJ in_IN performance_NN to_TO flooding_NN when_WRB all_DT sizes_NNS of_IN queries_NNS are_VBP equally_RB likely_JJ ._.
+For_IN an_DT algebraic_JJ distribution_NN of_IN query_NN sizes_NNS ,_, the_DT relative_JJ performance_NN is_VBZ close_JJ to_TO that_DT for_IN the_DT exponential_JJ distribution_NN ._.
+For_IN normally_RB distributed_VBN events_NNS ,_, the_DT insertion_NN costs_NNS be_VB much_RB better_JJR than_IN this_DT ._.
+Assuming_VBG a_DT node_NN and_CC its_PRP$ replica_NN don_VB ''_'' t_NN simultaneously_RB fail_VBP often_RB ,_, a_DT node_NN will_MD almost_RB always_RB detect_VB a_DT replica_NN failure_NN and_CC re-replicate_NN ,_, leading_VBG to_TO near_IN ###_CD %_NN response_NN rates_NNS ._.
+73_CD 0_CD 2000_CD 4000_CD 6000_CD 8000_CD 10000_CD 12000_CD 50_CD ###_CD ###_CD ###_CD ###_CD ###_CD MaximumHotspotonTraceDataSet_NNP Network_NNP Size_NN DIM_NNP flooding_NN GHT-R_NN Figure_NN ##_CD :_: Hotspot_NN usage_NN DIM_NNP Zone_NNP Manager_NNP Query_NNP Router_NNP Query_NNP Processor_NNP Event_NNP Manager_NNP Event_NNP Router_NNP GPSR_NNP interface_NN -LRB-_-LRB- Event_NN driven_VBN /_: Thread_NN based_VBN -RRB-_-RRB- update_VBP useuse_JJ update_VBP GPSR_NNP Upper_NNP interface_NN -LRB-_-LRB- Event_NN driven_VBN /_: Thread_NN based_VBN -RRB-_-RRB- Lower_JJR interface_NN -LRB-_-LRB- Event_NN driven_VBN /_: Thread_NN based_VBN -RRB-_-RRB- Greedy_NNP Forwarding_NNP Perimeter_NNP Forwarding_NNP Beaconing_NNP Neighbor_NNP List_NN Manager_NN update_VBP use_NN MoteNIC_NN -LRB-_-LRB- MicaRadio_NN -RRB-_-RRB- IP_NNP Socket_NNP -LRB-_-LRB- ###_CD ._.
+11b_JJ /_: Ethernet_NN -RRB-_-RRB- Figure_NN ##_NN :_: Software_NNP architecture_NN of_IN DIM_NNP over_IN GPSR_NNP are_VBP comparable_JJ to_TO that_DT for_IN the_DT uniform_JJ distribution_NN ._.
+Finally_RB ,_, we_PRP note_VBP that_IN in_IN all_DT our_PRP$ evaluations_NNS we_PRP have_VBP only_RB used_VBN list_NN queries_NNS -LRB-_-LRB- those_DT that_WDT request_VBP all_DT events_NNS matching_VBG the_DT specified_VBN range_NN -RRB-_-RRB- ._.
+We_PRP expect_VBP that_IN for_IN summary_NN queries_NNS -LRB-_-LRB- those_DT that_WDT expect_VBP an_DT aggregate_NN over_IN matching_JJ events_NNS -RRB-_-RRB- ,_, the_DT overall_JJ cost_NN of_IN DIMs_NNS could_MD be_VB lower_JJR because_IN the_DT matching_VBG data_NNS are_VBP likely_JJ to_TO be_VB found_VBN in_IN one_CD or_CC a_DT small_JJ number_NN of_IN zones_NNS ._.
+We_PRP leave_VBP an_DT understanding_NN of_IN this_DT to_TO future_JJ work_NN ._.
+Also_RB left_VBN to_TO future_JJ work_NN is_VBZ a_DT detailed_JJ understanding_NN of_IN the_DT impact_NN of_IN location_NN error_NN on_IN DIM_NNP ''_'' s_VBZ mechanisms_NNS ._.
+Recent_JJ work_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- has_VBZ examined_VBN the_DT impact_NN of_IN imprecise_JJ location_NN information_NN on_IN other_JJ data-centric_JJ storage_NN mechanisms_NNS such_JJ as_IN GHTs_NNS ,_, and_CC found_VBD that_IN there_EX exist_VBP relatively_RB simple_JJ fixes_NNS to_TO GPSR_NN that_WDT ameliorate_VBP the_DT effects_NNS of_IN location_NN error_NN ._.
+6_CD ._.
+IMPLEMENTATION_NN We_PRP have_VBP implemented_VBN DIMs_NNS on_IN a_DT Linux_NN platform_NN suitable_JJ for_IN experimentation_NN on_IN PDAs_NNS and_CC PC-104_NN class_NN machines_NNS ._.
+To_TO implement_VB DIMs_NNS ,_, we_PRP had_VBD to_TO develop_VB and_CC test_VB an_DT independent_JJ implementation_NN of_IN GPSR_NN ._.
+Our_PRP$ GPSR_NN implementation_NN is_VBZ full-featured_JJ ,_, while_IN our_PRP$ DIM_NNP implementation_NN has_VBZ most_JJS of_IN the_DT algorithms_NNS discussed_VBN in_IN Section_NN #_# ;_: some_DT of_IN the_DT robustness_NN extensions_NNS have_VBP only_RB simpler_JJR variants_NNS implemented_VBD ._.
+The_DT software_NN architecture_NN of_IN DIM_NNP /_: GPSR_NN system_NN is_VBZ shown_VBN in_IN Figure_NNP ##_NNP ._.
+The_DT entire_JJ system_NN -LRB-_-LRB- about_IN ####_NN lines_NNS of_IN code_NN -RRB-_-RRB- is_VBZ event-driven_JJ and_CC multi-threaded_JJ ._.
+The_DT DIM_NNP subsystem_NN consists_VBZ of_IN six_CD logical_JJ components_NNS :_: zone_NN management_NN ,_, event_NN maintenance_NN ,_, event_NN routing_VBG ,_, query_NN routing_VBG ,_, query_NN processing_NN ,_, and_CC GPSR_NN interactions_NNS ._.
+The_DT GPSR_NN system_NN is_VBZ implemented_VBN as_IN user-level_JJ daemon_NN process_NN ._.
+Applications_NNS are_VBP executed_VBN as_IN clients_NNS ._.
+For_IN the_DT DIM_NNP subsystem_NN ,_, the_DT GPSR_NN module_NN 0_CD 2_CD 4_CD 6_CD 8_CD 10_CD 12_CD 14_CD 16_CD 0_CD ._.
+25x0_NN ._.
+##_NN #_# ._.
+50x0_NN ._.
+##_NN #_# ._.
+75x0_NNS ._.
+##_NN #_# ._.
+0x1_NN ._.
+#_# Query_NNP size_NN Average_JJ #_# ofreceivedresponses_NNS perquery_JJ Figure_NN ##_NN :_: Number_NN of_IN events_NNS received_VBN for_IN different_JJ query_NN sizes_NNS 0_CD 2_CD 4_CD 6_CD 8_CD 10_CD 12_CD 14_CD 16_CD 0_CD ._.
+25x0_NN ._.
+##_NN #_# ._.
+50x0_NN ._.
+##_NN #_# ._.
+75x0_NNS ._.
+##_NN #_# ._.
+0x1_NN ._.
+#_# Query_NNP sizeTotalnumberofmessages_NNS onlyforsendingthequery_JJ Figure_NN ##_NN :_: Query_NNP distribution_NN cost_NN provides_VBZ several_JJ extensions_NNS :_: it_PRP exports_VBZ information_NN about_IN neighbors_NNS ,_, and_CC provides_VBZ callbacks_NNS during_IN packet_NN forwarding_NN and_CC perimeter-mode_JJ termination_NN ._.
+We_PRP tested_VBD our_PRP$ implementation_NN on_IN a_DT testbed_JJ consisting_VBG of_IN #_# PC-104_NN class_NN machines_NNS ._.
+Each_DT of_IN these_DT boxes_NNS runs_VBZ Linux_NNP and_CC uses_VBZ a_DT Mica_NNP mote_NN -LRB-_-LRB- attached_VBN through_IN a_DT serial_NN cable_NN -RRB-_-RRB- for_IN communication_NN ._.
+These_DT boxes_NNS are_VBP laid_VBN out_RP in_IN an_DT office_NN building_NN with_IN a_DT total_JJ spatial_JJ separation_NN of_IN over_IN a_DT hundred_CD feet_NNS ._.
+We_PRP manually_RB measured_VBD the_DT locations_NNS of_IN these_DT nodes_NNS relative_JJ to_TO some_DT coordinate_JJ system_NN and_CC configured_VBD the_DT nodes_NNS with_IN their_PRP$ location_NN ._.
+The_DT network_NN topology_NN is_VBZ approximately_RB a_DT chain_NN ._.
+On_IN this_DT testbed_NN ,_, we_PRP inserted_VBD queries_NNS and_CC events_NNS from_IN a_DT single_JJ designated_VBN node_NN ._.
+Our_PRP$ events_NNS have_VBP two_CD attributes_NNS which_WDT span_VBP all_DT combinations_NNS of_IN the_DT four_CD values_NNS -LSB-_-LRB- #_# ,_, #_# ._.
+##_NN ,_, #_# ._.
+##_NN ,_, #_# -RSB-_-RRB- -LRB-_-LRB- sixteen_CD events_NNS in_IN all_DT -RRB-_-RRB- ._.
+Our_PRP$ queries_NNS span_VBP four_CD sizes_NNS ,_, returning_VBG #_# ,_, 4_CD ,_, #_# and_CC ##_JJ events_NNS respectively_RB ._.
+Figure_NNP ##_CD plots_NNS the_DT number_NN of_IN events_NNS received_VBN for_IN different_JJ sized_VBN queries_NNS ._.
+It_PRP might_MD appear_VB that_IN we_PRP received_VBD fewer_JJR events_NNS than_IN expected_VBN ,_, but_CC this_DT graph_NN doesn_NN ''_'' t_NN count_NN the_DT events_NNS that_WDT were_VBD already_RB stored_VBN at_IN the_DT querier_NN ._.
+With_IN that_DT adjustment_NN ,_, the_DT number_NN of_IN responses_NNS matches_VBZ our_PRP$ expectation_NN ._.
+Finally_RB ,_, Figure_NNP ##_NN shows_VBZ the_DT total_JJ number_NN of_IN messages_NNS required_VBN for_IN different_JJ query_NN sizes_NNS on_IN our_PRP$ testbed_VBN ._.
+While_IN these_DT experiments_NNS do_VBP not_RB reveal_VB as_RB much_JJ about_IN the_DT performance_NN range_NN of_IN DIMs_NNS as_IN our_PRP$ simulations_NNS do_VBP ,_, they_PRP nevertheless_RB serve_VBP as_IN proof-of-concept_JJ for_IN DIMs_NNS ._.
+Our_PRP$ next_JJ step_NN in_IN the_DT implementation_NN is_VBZ to_TO port_JJ DIMs_NNS to_TO the_DT Mica_NNP motes_NNS ,_, and_CC integrate_VB them_PRP into_IN the_DT TinyDB_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- sensor_NN database_NN engine_NN on_IN motes_NNS ._.
+74_CD 7_CD ._.
+CONCLUSIONS_NNS In_IN this_DT paper_NN ,_, we_PRP have_VBP discussed_VBN the_DT design_NN and_CC evaluation_NN of_IN a_DT distributed_VBN data_NNS structure_NN called_VBN DIM_NNP for_IN efficiently_RB resolving_VBG multi-dimensional_JJ range_NN queries_NNS in_IN sensor_NN networks_NNS ._.
+Our_PRP$ design_NN of_IN DIMs_NNS relies_VBZ upon_IN a_DT novel_JJ locality-preserving_JJ hash_NN inspired_VBN by_IN early_JJ work_NN in_IN database_NN indexing_NN ,_, and_CC is_VBZ built_VBN upon_IN GPSR_NN ._.
+We_PRP have_VBP a_DT working_VBG prototype_NN ,_, both_DT of_IN GPSR_NN and_CC DIM_NNP ,_, and_CC plan_NN to_TO conduct_VB larger_JJR scale_NN experiments_NNS in_IN the_DT future_NN ._.
+There_EX are_VBP several_JJ interesting_JJ future_JJ directions_NNS that_IN we_PRP intend_VBP to_TO pursue_VB ._.
+One_CD is_VBZ adaptation_NN to_TO skewed_JJ data_NNS distributions_NNS ,_, since_IN these_DT can_MD cause_VB storage_NN and_CC transmission_NN hotspots_NNS ._.
+Unlike_IN traditional_JJ database_NN indices_NNS that_WDT re-balance_VBP trees_NNS upon_IN data_NNS insertion_NN ,_, in_IN sensor_NN networks_NNS it_PRP might_MD be_VB feasible_JJ to_TO re-structure_VB the_DT zones_NNS on_IN a_DT much_JJ larger_JJR timescale_NN after_IN obtaining_VBG a_DT rough_JJ global_JJ estimate_NN of_IN the_DT data_NNS distribution_NN ._.
+Another_DT direction_NN is_VBZ support_NN for_IN node_NN heterogeneity_NN in_IN the_DT zone_NN construction_NN process_NN ;_: nodes_NNS with_IN larger_JJR storage_NN space_NN assert_VBP larger-sized_JJ zones_NNS for_IN themselves_PRP ._.
+A_DT third_JJ is_VBZ support_NN for_IN efficient_JJ resolution_NN of_IN existential_JJ queries-whether_NN there_EX exists_VBZ an_DT event_NN matching_VBG a_DT multi-dimensional_JJ range_NN ._.
+Acknowledgments_NNS This_DT work_NN benefited_VBD greatly_RB from_IN discussions_NNS with_IN Fang_NNP Bian_NNP ,_, Hui_NNP Zhang_NNP and_CC other_JJ ENL_NNP lab_NN members_NNS ,_, as_RB well_RB as_IN from_IN comments_NNS provided_VBN by_IN the_DT reviewers_NNS and_CC our_PRP$ shepherd_NN Feng_NNP Zhao_NNP ._.
+8_CD ._.
+REFERENCES_NNS -LSB-_-LRB- #_# -RSB-_-RRB- J_NN ._.
+Aspnes_NNPS and_CC G_NN ._.
+Shah_NNP ._.
+Skip_VB Graphs_NNP ._.
+In_IN Proceedings_NNP of_IN 14th_JJ Annual_JJ ACM-SIAM_NN Symposium_NN on_IN Discrete_NNP Algorithms_NNP -LRB-_-LRB- SODA_NNP -RRB-_-RRB- ,_, Baltimore_NNP ,_, MD_NNP ,_, January_NNP ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- J_NN ._.
+L_NN ._.
+Bentley_NNP ._.
+Multidimensional_JJ Binary_JJ Search_VB Trees_NNP Used_VBN for_IN Associative_JJ Searching_NN ._.
+Communicaions_NNS of_IN the_DT ACM_NNP ,_, 18_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 475-484_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- P_NN ._.
+Bonnet_NN ,_, J_NN ._.
+E_NN ._.
+Gerhke_NNP ,_, and_CC P_NN ._.
+Seshadri_NNP ._.
+Towards_IN Sensor_NNP Database_NNP Systems_NNPS ._.
+In_IN Proceedings_NNP of_IN the_DT Second_NNP International_NNP Conference_NNP on_IN Mobile_NNP Data_NNP Management_NNP ,_, Hong_NNP Kong_NNP ,_, January_NNP ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- I_PRP ._.
+Clarke_NNP ,_, O_NNP ._.
+Sandberg_NNP ,_, B_NN ._.
+Wiley_NNP ,_, and_CC T_NN ._.
+W_NN ._.
+Hong_NNP ._.
+Freenet_NNP :_: A_DT Distributed_VBN Anonymous_NNP Information_NNP Storage_NNP and_CC Retrieval_NNP System_NNP ._.
+In_IN Designing_NNP Privacy_NNP Enhancing_NN Technologies_NNPS :_: International_NNP Workshop_NNP on_IN Design_NNP Issues_NNP in_IN Anonymity_NNP and_CC Unobservability_NNP ._.
+Springer_NNP ,_, New_NNP York_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- D_NN ._.
+Comer_NNP ._.
+The_DT Ubiquitous_JJ B-tree_NN ._.
+ACM_NNP Computing_NNP Surveys_NNS ,_, ##_NN -LRB-_-LRB- #_# -RRB-_-RRB- :_: 121-137_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- R_NN ._.
+A_DT ._.
+Finkel_NNP and_CC J_NNP ._.
+L_NN ._.
+Bentley_NNP ._.
+Quad_NNP Trees_NNP :_: A_NNP Data_NNP Structure_NN for_IN Retrieval_NNP on_IN Composite_NNP Keys_NNP ._.
+Acta_NNP Informatica_NNP ,_, #_# :_: 1-9_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- D_NN ._.
+Ganesan_NNP ,_, D_NNP ._.
+Estrin_NNP ,_, and_CC J_NN ._.
+Heidemann_NNP ._.
+DIMENSIONS_NNS :_: Why_WRB do_VBP we_PRP need_VB a_DT new_JJ Data_NNS Handling_VBG architecture_NN for_IN Sensor_NNP Networks_NNP ?_.
+In_IN Proceedings_NNP of_IN the_DT First_NNP Workshop_NNP on_IN Hot_NNP Topics_NNPS In_IN Networks_NNP -LRB-_-LRB- HotNets-I_NN -RRB-_-RRB- ,_, Princeton_NNP ,_, NJ_NNP ,_, October_NNP ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- A_DT ._.
+Gionis_NNP ,_, P_NN ._.
+Indyk_NNP ,_, and_CC R_NN ._.
+Motwani_NNP ._.
+Similarity_NN Search_VB in_IN High_JJ Dimensions_NNS via_IN Hashing_VBG ._.
+In_IN Proceedings_NNP of_IN the_DT 25th_JJ VLDB_NN conference_NN ,_, Edinburgh_NNP ,_, Scotland_NNP ,_, September_NNP ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- R_NN ._.
+Govindan_NNP ,_, J_NNP ._.
+Hellerstein_NNP ,_, W_NNP ._.
+Hong_NNP ,_, S_NN ._.
+Madden_NNP ,_, M_NN ._.
+Franklin_NNP ,_, and_CC S_NN ._.
+Shenker_NNP ._.
+The_DT Sensor_NNP Network_NNP as_IN a_DT Database_NN ._.
+Technical_NNP Report_NNP 02-771_CD ,_, Computer_NNP Science_NNP Department_NNP ,_, University_NNP of_IN Southern_NNP California_NNP ,_, September_NNP 2002_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- B_NN ._.
+Greenstein_NNP ,_, D_NNP ._.
+Estrin_NNP ,_, R_NN ._.
+Govindan_NNP ,_, S_NN ._.
+Ratnasamy_NNP ,_, and_CC S_NN ._.
+Shenker_NNP ._.
+DIFS_NNP :_: A_DT Distributed_VBN Index_NN for_IN Features_NNS in_IN Sensor_NNP Networks_NNP ._.
+In_IN Proceedings_NNP of_IN 1st_CD IEEE_NNP International_NNP Workshop_NNP on_IN Sensor_NNP Network_NNP Protocols_NNPS and_CC Applications_NNS ,_, Anchorage_NNP ,_, AK_NNP ,_, May_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- A_DT ._.
+Guttman_NNP ._.
+R-trees_NNS :_: A_DT Dynamic_NNP Index_NNP Structure_NN for_IN Spatial_JJ Searching_NN ._.
+In_IN Proceedings_NNP of_IN the_DT ACM_NNP SIGMOD_NNP ,_, Boston_NNP ,_, MA_NNP ,_, June_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- M_NN ._.
+Harren_NNP ,_, J_NNP ._.
+M_NN ._.
+Hellerstein_NNP ,_, R_NN ._.
+Huebsch_NNP ,_, B_NN ._.
+T_NN ._.
+Loo_NNP ,_, S_NN ._.
+Shenker_NNP ,_, and_CC I_PRP ._.
+Stoica_NNP ._.
+Complex_NN Queries_NNS in_IN DHT-based_JJ Peer-to-Peer_NNP Networks_NNP ._.
+In_IN P_NN ._.
+Druschel_NNP ,_, F_NN ._.
+Kaashoek_NNP ,_, and_CC A_NN ._.
+Rowstron_NNP ,_, editors_NNS ,_, Proceedings_NNP of_IN 1st_CD International_NNP Workshop_NNP on_IN Peer-to-Peer_NNP Systems_NNP -LRB-_-LRB- IPTPS_NNP ''_'' ##_NN -RRB-_-RRB- ,_, volume_NN 2429_CD of_IN LNCS_NN ,_, page_NN ###_CD ,_, Cambridge_NNP ,_, MA_NNP ,_, March_NNP ####_CD ._.
+Springer-Verlag_NNP ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- P_NN ._.
+Indyk_NNP and_CC R_NN ._.
+Motwani_NNP ._.
+Approximate_JJ Nearest_JJS Neighbors_NNS :_: Towards_IN Removing_VBG the_DT Curse_NN of_IN Dimensionality_NN ._.
+In_IN Proceedings_NNP of_IN the_DT 30th_JJ Annual_JJ ACM_NNP Symposium_NNP on_IN Theory_NNP of_IN Computing_NNP ,_, Dallas_NNP ,_, Texas_NNP ,_, May_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- P_NN ._.
+Indyk_NNP ,_, R_NN ._.
+Motwani_NNP ,_, P_NN ._.
+Raghavan_NNP ,_, and_CC S_NN ._.
+Vempala_NNP ._.
+Locality-preserving_JJ Hashing_NN in_IN Multidimensional_JJ Spaces_NNS ._.
+In_IN Proceedings_NNP of_IN the_DT 29th_JJ Annual_JJ ACM_NN symposium_NN on_IN Theory_NNP of_IN Computing_NNP ,_, pages_NNS ###_SYM -_: ###_NN ,_, El_NNP Paso_NNP ,_, Texas_NNP ,_, May_NNP ####_CD ._.
+ACM_NNP Press_NNP ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- C_NN ._.
+Intanagonwiwat_NNP ,_, R_NN ._.
+Govindan_NNP ,_, and_CC D_NN ._.
+Estrin_NNP ._.
+Directed_NNP Diffusion_NNP :_: A_NNP Scalable_NNP and_CC Robust_NNP Communication_NNP Paradigm_NNP for_IN Sensor_NNP Networks_NNP ._.
+In_IN Proceedings_NNP of_IN the_DT Sixth_NNP Annual_JJ ACM_NN /_: IEEE_NNP International_NNP Conference_NNP on_IN Mobile_NNP Computing_NNP and_CC Networking_NNP -LRB-_-LRB- Mobicom_NNP ####_CD -RRB-_-RRB- ,_, Boston_NNP ,_, MA_NNP ,_, August_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- B_NN ._.
+Karp_NNP and_CC H_NNP ._.
+T_NN ._.
+Kung_NNP ._.
+GPSR_NNP :_: Greedy_NNP Perimeter_NNP Stateless_NNP Routing_VBG for_IN Wireless_NNP Networks_NNP ._.
+In_IN Proceedings_NNP of_IN the_DT Sixth_NNP Annual_JJ ACM_NN /_: IEEE_NNP International_NNP Conference_NNP on_IN Mobile_NNP Computing_NNP and_CC Networking_NNP -LRB-_-LRB- Mobicom_NNP ####_CD -RRB-_-RRB- ,_, Boston_NNP ,_, MA_NNP ,_, August_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- S_NN ._.
+Madden_NNP ,_, M_NN ._.
+Franklin_NNP ,_, J_NNP ._.
+Hellerstein_NNP ,_, and_CC W_NN ._.
+Hong_NNP ._.
+The_DT Design_NN of_IN an_DT Acquisitional_NNP Query_NNP Processor_NNP for_IN Sensor_NNP Networks_NNP ._.
+In_IN Proceedings_NNP of_IN ACM_NNP SIGCMOD_NNP ,_, San_NNP Diego_NNP ,_, CA_NNP ,_, June_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- S_NN ._.
+Madden_NNP ,_, M_NN ._.
+J_NN ._.
+Franklin_NNP ,_, J_NNP ._.
+M_NN ._.
+Hellerstein_NNP ,_, and_CC W_NN ._.
+Hong_NNP ._.
+TAG_NN :_: a_DT Tiny_NNP AGregation_NNP Service_NNP for_IN ad-hoc_JJ Sensor_NNP Networks_NNP ._.
+In_IN Proceedings_NNP of_IN 5th_JJ Annual_JJ Symposium_NN on_IN Operating_NNP Systems_NNPS Design_NN and_CC Implementation_NN -LRB-_-LRB- OSDI_NN -RRB-_-RRB- ,_, Boston_NNP ,_, MA_NNP ,_, December_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- S_NN ._.
+Ratnasamy_NNP ,_, P_NN ._.
+Francis_NNP ,_, M_NN ._.
+Handley_NNP ,_, R_NN ._.
+Karp_NNP ,_, and_CC S_NN ._.
+Shenker_NNP ._.
+A_DT Scalable_JJ Content-Addressable_JJ Network_NNP ._.
+In_IN Proceedings_NNP of_IN the_DT ACM_NNP SIGCOMM_NNP ,_, San_NNP Diego_NNP ,_, CA_NNP ,_, August_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- S_NN ._.
+Ratnasamy_NNP ,_, B_NN ._.
+Karp_NNP ,_, L_NNP ._.
+Yin_NNP ,_, F_NN ._.
+Yu_NNP ,_, D_NNP ._.
+Estrin_NNP ,_, R_NN ._.
+Govindan_NNP ,_, and_CC S_NN ._.
+Shenker_NNP ._.
+GHT_NNP :_: A_NNP Geographic_NNP Hash_NNP Table_NNP for_IN Data-Centric_NNP Storage_NNP ._.
+In_IN Proceedings_NNP of_IN the_DT First_NNP ACM_NNP International_NNP Workshop_NNP on_IN Wireless_NNP Sensor_NNP Networks_NNP and_CC Applications_NNS ,_, Atlanta_NNP ,_, GA_NNP ,_, September_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- H_NN ._.
+Samet_NNP ._.
+Spatial_JJ Data_NNS Structures_NNS ._.
+In_IN W_NN ._.
+Kim_NNP ,_, editor_NN ,_, Modern_NNP Database_NNP Systems_NNPS :_: The_DT Object_NNP Model_NNP ,_, Interoperability_NNP and_CC Beyond_NNP ,_, pages_NNS 361-385_CD ._.
+Addison_NNP Wesley_NNP /_: ACM_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- K_NN ._.
+Sead_NNP ,_, A_NNP ._.
+Helmy_NNP ,_, and_CC R_NN ._.
+Govindan_NNP ._.
+On_IN the_DT Effect_NN of_IN Localization_NN Errors_NNS on_IN Geographic_NNP Face_NNP Routing_NNP in_IN Sensor_NNP Networks_NNP ._.
+In_IN Under_IN submission_NN ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- S_NN ._.
+Shenker_NNP ,_, S_NN ._.
+Ratnasamy_NNP ,_, B_NN ._.
+Karp_NNP ,_, R_NN ._.
+Govindan_NNP ,_, and_CC D_NN ._.
+Estrin_NNP ._.
+Data-Centric_NNP Storage_NNP in_IN Sensornets_NNPS ._.
+In_IN Proc_NNP ._.
+ACM_NNP SIGCOMM_NNP Workshop_NNP on_IN Hot_NNP Topics_NNPS In_IN Networks_NNP ,_, Princeton_NNP ,_, NJ_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- I_PRP ._.
+Stoica_NNP ,_, R_NN ._.
+Morris_NNP ,_, D_NNP ._.
+Karger_NNP ,_, M_NN ._.
+F_NN ._.
+Kaashoek_NNP ,_, and_CC H_NN ._.
+Balakrishnan_NNP ._.
+Chord_NNP :_: A_NNP Scalable_NNP Peer-To-Peer_NNP Lookup_NNP Service_NNP for_IN Internet_NNP Applications_NNS ._.
+In_IN Proceedings_NNP of_IN the_DT ACM_NNP SIGCOMM_NNP ,_, San_NNP Diego_NNP ,_, CA_NNP ,_, August_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- F_NN ._.
+Ye_PRP ,_, H_NN ._.
+Luo_NNP ,_, J_NNP ._.
+Cheng_NNP ,_, S_NN ._.
+Lu_NNP ,_, and_CC L_NN ._.
+Zhang_NNP ._.
+A_DT Two-Tier_NNP Data_NNP Dissemination_NNP Model_NNP for_IN Large-scale_JJ Wireless_NNP Sensor_NNP Networks_NNP ._.
+In_IN Proceedings_NNP of_IN the_DT Eighth_NNP Annual_JJ ACM_NN /_: IEEE_NNP International_NNP Conference_NNP on_IN Mobile_NNP Computing_NNP and_CC Networking_NNP -LRB-_-LRB- Mobicom_NNP ''_'' ##_NN -RRB-_-RRB- ,_, Atlanta_NNP ,_, GA_NNP ,_, September_NNP ####_CD ._.
+75_CD

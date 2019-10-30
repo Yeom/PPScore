@@ -1,0 +1,271 @@
+Heuristics-Based_JJ Scheduling_NN of_IN Composite_NNP Web_NN Service_NNP Workloads_NNP Thomas_NNP Phan_NNP Wen-Syan_NNP Li_NNP IBM_NNP Almaden_NNP Research_NNP Center_NNP 650_CD Harry_NNP Rd_NNP ._.
+San_NNP Jose_NNP ,_, CA_NNP #####_NNP -LCB-_-LRB- phantom_JJ ,_, wsl_NN -RCB-_-RRB- @_IN us_PRP ._.
+ibm_NN ._.
+com_NN ABSTRACT_NN Web_NN services_NNS can_MD be_VB aggregated_VBN to_TO create_VB composite_JJ workflows_NNS that_WDT provide_VBP streamlined_JJ functionality_NN for_IN human_JJ users_NNS or_CC other_JJ systems_NNS ._.
+Although_IN industry_NN standards_NNS and_CC recent_JJ research_NN have_VBP sought_VBN to_TO define_VB best_JJS practices_NNS and_CC to_TO improve_VB end-to-end_JJ workflow_NN composition_NN ,_, one_CD area_NN that_WDT has_VBZ not_RB fully_RB been_VBN explored_VBN is_VBZ the_DT scheduling_NN of_IN a_DT workflow_NN ''_'' s_NNS web_NN service_NN requests_NNS to_TO actual_JJ service_NN provisioning_VBG in_IN a_DT multi-tiered_JJ ,_, multi-organisation_JJ environment_NN ._.
+This_DT issue_NN is_VBZ relevant_JJ to_TO modern_JJ business_NN scenarios_NNS where_WRB business_NN processes_NNS within_IN a_DT workflow_NN must_MD complete_VB within_IN QoS-defined_JJ limits_NNS ._.
+Because_IN these_DT business_NN processes_NNS are_VBP web_NN service_NN consumers_NNS ,_, service_NN requests_NNS must_MD be_VB mapped_VBN and_CC scheduled_VBN across_IN multiple_JJ web_NN service_NN providers_NNS ,_, each_DT with_IN its_PRP$ own_JJ negotiated_JJ service_NN level_NN agreement_NN ._.
+In_IN this_DT paper_NN we_PRP provide_VBP heuristics_NNS for_IN scheduling_NN service_NN requests_NNS from_IN multiple_JJ business_NN process_NN workflows_NNS to_TO web_NN service_NN providers_NNS such_JJ that_IN a_DT business_NN value_NN metric_JJ across_IN all_DT workflows_NNS is_VBZ maximised_VBN ._.
+We_PRP show_VBP that_IN a_DT genetic_JJ search_NN algorithm_NN is_VBZ appropriate_JJ to_TO perform_VB this_DT scheduling_NN ,_, and_CC through_IN experimentation_NN we_PRP show_VBP that_IN our_PRP$ algorithm_NN scales_NNS well_RB up_IN to_TO a_DT thousand_CD workflows_NNS and_CC produces_VBZ better_JJR mappings_NNS than_IN traditional_JJ approaches_NNS ._.
+Categories_NNS and_CC Subject_NNP Descriptors_NNPS C_NNP ._.
+#_# ._.
+#_# -LSB-_-LRB- Computer-Communication_NNP Networks_NNP -RSB-_-RRB- :_: Distributed_VBN Systems-distributed_JJ applications_NNS ;_: D_NN ._.
+#_# ._.
+#_# -LSB-_-LRB- Software_NNP Engineering_NNP -RSB-_-RRB- :_: Metrics-complexity_NN measures_NNS ,_, performance_NN measures_NNS 1_CD ._.
+INTRODUCTION_NNP Web_NN services_NNS can_MD be_VB composed_VBN into_IN workflows_NNS to_TO provide_VB streamlined_JJ end-to-end_JJ functionality_NN for_IN human_JJ users_NNS or_CC other_JJ systems_NNS ._.
+Although_IN previous_JJ research_NN efforts_NNS have_VBP looked_VBN at_IN ways_NNS to_TO intelligently_RB automate_VB the_DT composition_NN of_IN web_NN services_NNS into_IN workflows_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+-LSB-_-LRB- #_# ,_, #_# -RSB-_-RRB- -RRB-_-RRB- ,_, an_DT important_JJ remaining_VBG problem_NN is_VBZ the_DT assignment_NN of_IN web_NN service_NN requests_NNS to_TO the_DT underlying_VBG web_NN service_NN providers_NNS in_IN a_DT multi-tiered_JJ runtime_NN scenario_NN within_IN constraints_NNS ._.
+In_IN this_DT paper_NN we_PRP address_VBP this_DT scheduling_NN problem_NN and_CC examine_VB means_NNS to_TO manage_VB a_DT large_JJ number_NN of_IN business_NN process_NN workflows_NNS in_IN a_DT scalable_JJ manner_NN ._.
+The_DT problem_NN of_IN scheduling_NN web_NN service_NN requests_NNS to_TO providers_NNS is_VBZ relevant_JJ to_TO modern_JJ business_NN domains_NNS that_WDT depend_VBP on_IN multi-tiered_JJ service_NN provisioning_VBG ._.
+Consider_VB the_DT example_NN shown_VBN in_IN Figure_NNP #_# that_WDT illustrates_VBZ our_PRP$ problem_NN space_NN ._.
+Workflows_JJ comprise_VBP multiple_JJ related_JJ business_NN processes_NNS that_WDT are_VBP web_NN service_NN consumers_NNS ;_: here_RB we_PRP assume_VBP that_IN the_DT workflows_NNS represent_VBP requested_VBN service_NN from_IN customers_NNS or_CC automated_VBN systems_NNS and_CC that_IN the_DT workflow_NN has_VBZ already_RB been_VBN composed_VBN with_IN an_DT existing_VBG choreography_NN toolkit_NN ._.
+These_DT workflows_NNS are_VBP then_RB submitted_VBN to_TO a_DT portal_NN -LRB-_-LRB- not_RB shown_VBN -RRB-_-RRB- that_WDT acts_VBZ as_IN a_DT scheduling_NN agent_NN between_IN the_DT web_NN service_NN consumers_NNS and_CC the_DT web_NN service_NN providers_NNS ._.
+In_IN this_DT example_NN ,_, a_DT workflow_NN could_MD represent_VB the_DT actions_NNS needed_VBN to_TO instantiate_VB a_DT vacation_NN itinerary_NN ,_, where_WRB one_CD business_NN process_NN requests_NNS booking_VBG an_DT airline_NN ticket_NN ,_, another_DT business_NN process_NN requests_NNS a_DT hotel_NN room_NN ,_, and_CC so_RB forth_RB ._.
+Each_DT of_IN these_DT requests_NNS target_VBP a_DT particular_JJ service_NN type_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+airline_NN reservations_NNS ,_, hotel_NN reservations_NNS ,_, car_NN reservations_NNS ,_, etc_FW ._. -RRB-_-RRB-
+,_, and_CC for_IN each_DT service_NN type_NN ,_, there_EX are_VBP multiple_JJ instances_NNS of_IN service_NN providers_NNS that_WDT publish_VBP a_DT web_NN service_NN interface_NN ._.
+An_DT important_JJ challenge_NN is_VBZ that_IN the_DT workflows_NNS must_MD meet_VB some_DT quality-of-service_NN -LRB-_-LRB- QoS_NN -RRB-_-RRB- metric_JJ ,_, such_JJ as_IN end-to-end_JJ completion_NN time_NN of_IN all_DT its_PRP$ business_NN processes_NNS ,_, and_CC that_IN meeting_NN or_CC failing_VBG this_DT goal_NN results_VBZ in_IN the_DT assignment_NN of_IN a_DT quantitative_JJ business_NN value_NN metric_JJ for_IN the_DT workflow_NN ;_: intuitively_RB ,_, it_PRP is_VBZ desired_VBN that_IN all_DT workflows_NNS meet_VBP their_PRP$ respective_JJ QoS_NN goals_NNS ._.
+We_PRP further_RB leverage_NN the_DT notion_NN that_IN QoS_NN service_NN agreements_NNS are_VBP generally_RB agreed-upon_JJ between_IN the_DT web_NN service_NN providers_NNS and_CC the_DT scheduling_NN agent_NN such_JJ that_IN the_DT providers_NNS advertise_VBP some_DT level_NN of_IN guaranteed_VBN QoS_NN to_TO the_DT scheduler_NN based_VBN upon_IN runtime_NN conditions_NNS such_JJ as_IN turnaround_NN time_NN and_CC maximum_NN available_JJ concurrency_NN ._.
+The_DT resulting_VBG problem_NN is_VBZ then_RB to_TO schedule_NN and_CC assign_VB the_DT business_NN processes_NNS ''_'' requests_NNS for_IN service_NN types_NNS to_TO one_CD of_IN the_DT service_NN providers_NNS for_IN that_DT type_NN ._.
+The_DT scheduling_NN must_MD be_VB done_VBN such_JJ that_IN the_DT aggregate_NN business_NN value_NN across_IN all_PDT the_DT workflows_NNS is_VBZ maximised_VBN ._.
+In_IN Section_NN #_# we_PRP state_VBP the_DT scenario_NN as_IN a_DT combinatorial_JJ problem_NN and_CC utilise_VB a_DT genetic_JJ search_NN algorithm_NN -LSB-_-LRB- #_# -RSB-_-RRB- to_TO find_VB the_DT best_JJS assignment_NN of_IN web_NN service_NN requests_NNS to_TO providers_NNS ._.
+This_DT approach_NN converges_VBZ towards_IN an_DT assignment_NN that_WDT maximises_VBZ the_DT overall_JJ business_NN value_NN for_IN all_PDT the_DT workflows_NNS ._.
+In_IN Section_NN #_# we_PRP show_VBP through_IN experimentation_NN that_IN this_DT search_NN heuristic_NN finds_VBZ better_JJR assignments_NNS than_IN other_JJ algorithms_NNS -LRB-_-LRB- greedy_JJ ,_, round-robin_NN ,_, and_CC proportional_JJ -RRB-_-RRB- ._.
+Further_RB ,_, this_DT approach_NN allows_VBZ us_PRP to_TO scale_VB the_DT number_NN of_IN simultaneous_JJ workflows_NNS -LRB-_-LRB- up_RB to_TO one_CD thousand_CD workflows_NNS in_IN our_PRP$ experiments_NNS -RRB-_-RRB- and_CC yet_RB still_RB find_VB effective_JJ schedules_NNS ._.
+2_LS ._.
+RELATED_JJ WORK_VBP In_IN the_DT context_NN of_IN service_NN assignment_NN and_CC scheduling_NN ,_, -LSB-_-LRB- ##_CD -RSB-_-RRB- maps_VBZ web_NN service_NN calls_VBZ to_TO potential_JJ servers_NNS using_VBG linear_JJ programming_NN ,_, but_CC their_PRP$ work_NN is_VBZ concerned_VBN with_IN mapping_VBG only_RB single_JJ workflows_NNS ;_: our_PRP$ principal_JJ focus_NN is_VBZ on_IN scalably_JJ scheduling_NN multiple_JJ workflows_NNS -LRB-_-LRB- up_RB 30_CD Service_NNP Type_NN SuperHotels_NNS ._.
+com_NN Business_NN Process_VBP Business_NN Process_VB Workflow_NNP ..._: Business_NNP Process_VB Business_NNP Process_VB ..._: HostileHostels_NNP ._.
+com_NN IncredibleInns_NNS ._.
+com_NN Business_NN Process_VBP Business_NN Process_VB Business_NNP Process_VB ..._: Business_NNP Process_VB Service_NNP Provider_NNP SkyHighAirlines_NNP ._.
+com_NN SuperCrazyFlights_NNS ._.
+com_NN Business_NN Process_VBP ._. ._. ._. ._. ._. ._.
+Advertised_VBN QoS_NNP Service_NNP Agreement_NNP CarRentalService_NNP ._.
+com_NN Figure_NN #_# :_: An_DT example_NN scenario_NN demonstrating_VBG the_DT interaction_NN between_IN business_NN processes_NNS in_IN workflows_NNS and_CC web_NN service_NN providers_NNS ._.
+Each_DT business_NN process_NN accesses_VBZ a_DT service_NN type_NN and_CC is_VBZ then_RB mapped_VBN to_TO a_DT service_NN provider_NN for_IN that_DT type_NN ._.
+to_TO one_CD thousand_CD as_IN we_PRP show_VBP later_RB -RRB-_-RRB- using_VBG different_JJ business_NN metrics_NNS and_CC a_DT search_NN heuristic_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- presents_VBZ a_DT dynamic_JJ provisioning_VBG approach_NN that_WDT uses_VBZ both_DT predictive_JJ and_CC reactive_JJ techniques_NNS for_IN multi-tiered_JJ Internet_NN application_NN delivery_NN ._.
+However_RB ,_, the_DT provisioning_VBG techniques_NNS do_VBP not_RB consider_VB the_DT challenges_NNS faced_VBN when_WRB there_EX are_VBP alternative_JJ query_JJ execution_NN plans_NNS and_CC replicated_VBN data_NNS sources_NNS ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- presents_VBZ a_DT feedback-based_JJ scheduling_NN mechanism_NN for_IN multi-tiered_JJ systems_NNS with_IN back-end_JJ databases_NNS ,_, but_CC unlike_IN our_PRP$ work_NN ,_, it_PRP assumes_VBZ a_DT tighter_JJR coupling_NN between_IN the_DT various_JJ components_NNS of_IN the_DT system_NN ._.
+Our_PRP$ work_NN also_RB builds_VBZ upon_IN prior_JJ scheduling_NN research_NN ._.
+The_DT classic_JJ job-shop_JJ scheduling_NN problem_NN ,_, shown_VBN to_TO be_VB NP-complete_JJ -LSB-_-LRB- #_# -RSB-_-RRB- -LSB-_-LRB- #_# -RSB-_-RRB- ,_, is_VBZ similar_JJ to_TO ours_JJ in_IN that_DT tasks_NNS within_IN a_DT job_NN must_MD be_VB scheduled_VBN onto_IN machinery_NN -LRB-_-LRB- c_NN ._.
+f_LS ._.
+our_PRP$ scenario_NN is_VBZ that_IN business_NN processes_NNS within_IN a_DT workflow_NN must_MD be_VB scheduled_VBN onto_IN web_NN service_NN providers_NNS -RRB-_-RRB- ._.
+The_DT salient_JJ differences_NNS are_VBP that_IN the_DT machines_NNS can_MD process_VB only_RB one_CD job_NN at_IN a_DT time_NN -LRB-_-LRB- we_PRP assume_VBP servers_NNS can_MD multi-task_VB but_CC with_IN degraded_JJ performance_NN and_CC a_DT maximum_NN concurrency_NN level_NN -RRB-_-RRB- ,_, tasks_NNS within_IN a_DT job_NN can_MD not_RB simultaneously_RB run_VB on_IN different_JJ machines_NNS -LRB-_-LRB- we_PRP assume_VBP business_NN processes_NNS can_MD be_VB assigned_VBN to_TO any_DT available_JJ server_NN -RRB-_-RRB- ,_, and_CC the_DT principal_JJ metric_NN of_IN performance_NN is_VBZ the_DT makespan_NN ,_, which_WDT is_VBZ the_DT time_NN for_IN the_DT last_JJ task_NN among_IN all_PDT the_DT jobs_NNS to_TO complete_JJ -LRB-_-LRB- and_CC as_IN we_PRP show_VBP later_RB ,_, optimising_VBG on_IN the_DT makespan_NN is_VBZ insufficient_JJ for_IN scheduling_VBG the_DT business_NN processes_NNS ,_, necessitating_VBG different_JJ metrics_NNS -RRB-_-RRB- ._.
+3_LS ._.
+DESIGN_NN In_IN this_DT section_NN we_PRP describe_VBP our_PRP$ model_NN and_CC discuss_VB how_WRB we_PRP can_MD find_VB scheduling_NN assignments_NNS using_VBG a_DT genetic_JJ search_NN algorithm_NN ._.
+3_LS ._.
+#_# Model_NNP We_PRP base_VBP our_PRP$ model_NN on_IN the_DT simplified_VBN scenario_NN shown_VBN in_IN Figure_NNP 1_CD ._.
+Specifically_RB ,_, we_PRP assume_VBP that_IN users_NNS or_CC automated_VBN systems_NNS request_VBP the_DT execution_NN of_IN a_DT workflow_NN ._.
+The_DT workflows_NNS comprise_VBP business_NN processes_NNS ,_, each_DT of_IN which_WDT makes_VBZ one_CD web_NN service_NN invocation_NN to_TO a_DT service_NN type_NN ._.
+Further_RB ,_, business_NN processes_NNS have_VBP an_DT ordering_VBG in_IN the_DT workflow_NN ._.
+The_DT arrangement_NN and_CC execution_NN of_IN the_DT business_NN processes_NNS and_CC the_DT data_NN flow_NN between_IN them_PRP are_VBP all_DT managed_VBN by_IN a_DT composition_NN or_CC choreography_NN tool_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+-LSB-_-LRB- #_# ,_, #_# -RSB-_-RRB- -RRB-_-RRB- ._.
+Although_IN composition_NN languages_NNS can_MD use_VB sophisticated_JJ flow-control_JJ mechanisms_NNS such_JJ as_IN conditional_JJ branches_NNS ,_, for_IN simplicity_NN we_PRP assume_VBP the_DT processes_NNS execute_VBP sequentially_RB in_IN a_DT given_VBN order_NN ._.
+This_DT scenario_NN can_MD be_VB naturally_RB extended_VBN to_TO more_RBR complex_JJ relationships_NNS that_WDT can_MD be_VB expressed_VBN in_IN BPEL_NN -LSB-_-LRB- #_# -RSB-_-RRB- ,_, which_WDT defines_VBZ how_WRB business_NN processes_NNS interact_VBP ,_, messages_NNS are_VBP exchanged_VBN ,_, activities_NNS are_VBP ordered_VBN ,_, and_CC exceptions_NNS are_VBP handled_VBN ._.
+Due_JJ to_TO space_NN constraints_NNS ,_, we_PRP focus_VBP on_IN the_DT problem_NN space_NN presented_VBN here_RB and_CC will_MD extend_VB our_PRP$ model_NN to_TO more_JJR advanced_JJ deployment_NN scenarios_NNS in_IN the_DT future_NN ._.
+Each_DT workflow_NN has_VBZ a_DT QoS_NN requirement_NN to_TO complete_VB within_IN a_DT specified_VBN number_NN of_IN time_NN units_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+on_IN the_DT order_NN of_IN seconds_NNS ,_, as_IN detailed_VBN in_IN the_DT Experiments_NNS section_NN -RRB-_-RRB- ._.
+Upon_IN completion_NN -LRB-_-LRB- or_CC failure_NN -RRB-_-RRB- ,_, the_DT workflow_NN is_VBZ assigned_VBN a_DT business_NN value_NN ._.
+We_PRP extended_VBD this_DT approach_NN further_RB and_CC considered_VBN different_JJ types_NNS of_IN workflow_NN completion_NN in_IN order_NN to_TO model_NN differentiated_VBD QoS_NN levels_NNS that_WDT can_MD be_VB applied_VBN by_IN businesses_NNS -LRB-_-LRB- for_IN example_NN ,_, to_TO provide_VB tiered_JJ customer_NN service_NN -RRB-_-RRB- ._.
+We_PRP say_VBP that_IN a_DT workflow_NN is_VBZ successful_JJ if_IN it_PRP completes_VBZ within_IN its_PRP$ QoS_NN requirement_NN ,_, acceptable_JJ if_IN it_PRP completes_VBZ within_IN a_DT constant_JJ factor_NN 31_CD of_IN its_PRP$ QoS_NN bound_VBD -LRB-_-LRB- in_IN our_PRP$ experiments_NNS we_PRP chose_VBD =_JJ #_# -RRB-_-RRB- ,_, or_CC failing_VBG if_IN it_PRP finishes_VBZ beyond_IN times_NNS its_PRP$ QoS_NN bound_VBD ._.
+For_IN each_DT category_NN ,_, a_DT business_NN value_NN score_NN is_VBZ assigned_VBN to_TO the_DT workflow_NN ,_, with_IN the_DT successful_JJ category_NN assigned_VBN the_DT highest_JJS positive_JJ score_NN ,_, followed_VBN by_IN acceptable_JJ and_CC then_RB failing_VBG ._.
+The_DT business_NN value_NN point_NN distribution_NN is_VBZ non-uniform_JJ across_IN workflows_NNS ,_, further_RB modelling_VBG cases_NNS where_WRB some_DT workflows_NNS are_VBP of_IN higher_JJR priority_NN than_IN others_NNS ._.
+Each_DT service_NN type_NN is_VBZ implemented_VBN by_IN a_DT number_NN of_IN different_JJ service_NN providers_NNS ._.
+We_PRP assume_VBP that_IN the_DT providers_NNS make_VBP service_NN level_NN agreements_NNS -LRB-_-LRB- SLAs_NNS -RRB-_-RRB- to_TO guarantee_VB a_DT level_NN of_IN performance_NN defined_VBN by_IN the_DT completion_NN time_NN for_IN completing_VBG a_DT web_NN service_NN invocation_NN ._.
+Although_IN SLAs_NNS can_MD be_VB complex_JJ ,_, in_IN this_DT paper_NN we_PRP assume_VBP for_IN simplicity_NN that_IN the_DT guarantees_NNS can_MD take_VB the_DT form_NN of_IN a_DT linear_JJ performance_NN degradation_NN under_IN load_NN ._.
+This_DT guarantee_NN is_VBZ defined_VBN by_IN several_JJ parameters_NNS :_: is_VBZ the_DT expected_VBN completion_NN time_NN -LRB-_-LRB- for_IN example_NN ,_, on_IN the_DT order_NN of_IN seconds_NNS -RRB-_-RRB- if_IN the_DT assigned_VBN workload_NN of_IN web_NN service_NN requests_NNS is_VBZ less_JJR than_IN or_CC equal_JJ to_TO ,_, the_DT maximum_NN concurrency_NN ,_, and_CC if_IN the_DT workload_NN is_VBZ higher_JJR than_IN ,_, the_DT expected_VBN completion_NN for_IN a_DT workload_NN of_IN size_NN is_VBZ +_CC -LRB-_-LRB- -RRB-_-RRB- where_WRB is_VBZ a_DT fractional_JJ coefficient_NN ._.
+In_IN our_PRP$ experiments_NNS we_PRP vary_VBP ,_, ,_, and_CC with_IN different_JJ distributions_NNS ._.
+Ideally_RB ,_, all_DT workflows_NNS would_MD be_VB able_JJ to_TO finish_VB within_IN their_PRP$ QoS_NN limits_NNS and_CC thus_RB maximise_VB the_DT aggregate_NN business_NN value_NN across_IN all_DT workflows_NNS ._.
+However_RB ,_, because_IN we_PRP model_VBP service_NN providers_NNS with_IN degrading_JJ performance_NN under_IN load_NN ,_, not_RB all_DT workflows_NNS will_MD achieve_VB their_PRP$ QoS_NN limit_NN :_: it_PRP may_MD easily_RB be_VB the_DT case_NN that_WDT business_NN processes_NNS are_VBP assigned_VBN to_TO providers_NNS who_WP are_VBP overloaded_VBN and_CC can_MD not_RB complete_VB within_IN the_DT respective_JJ workflow_NN ''_'' s_NNS QoS_NN limit_NN ._.
+The_DT key_JJ research_NN problem_NN ,_, then_RB ,_, is_VBZ to_TO assign_VB the_DT business_NN processes_NNS to_TO the_DT web_NN service_NN providers_NNS with_IN the_DT goal_NN of_IN optimising_VBG on_IN the_DT aggregate_NN business_NN value_NN of_IN all_DT workflows_NNS ._.
+Given_VBN that_IN the_DT scope_NN of_IN the_DT optimisation_NN is_VBZ the_DT entire_JJ set_NN of_IN workflows_NNS ,_, it_PRP may_MD be_VB that_IN the_DT best_JJS scheduling_NN assignments_NNS may_MD result_VB in_IN some_DT workflows_NNS having_VBG to_TO fail_VB in_IN order_NN for_IN more_JJR workflows_NNS to_TO succeed_VB ._.
+This_DT intuitive_JJ observation_NN suggests_VBZ that_IN traditional_JJ scheduling_NN approaches_NNS such_JJ as_IN round-robin_NN or_CC proportional_JJ assignments_NNS will_MD not_RB fare_VB well_RB ,_, which_WDT is_VBZ what_WP we_PRP observe_VBP and_CC discuss_VBP in_IN Section_NN #_# ._.
+On_IN the_DT other_JJ hand_NN ,_, an_DT exhaustive_JJ search_NN of_IN all_PDT the_DT possible_JJ assignments_NNS will_MD find_VB the_DT best_JJS schedule_NN ,_, but_CC the_DT computational_JJ complexity_NN is_VBZ prohibitively_RB high_JJ ._.
+Suppose_VB there_EX are_VBP W_NNP workflows_NNS with_IN an_DT average_NN of_IN B_NN business_NN processes_NNS per_IN workflow_NN ._.
+Further_RB ,_, in_IN the_DT worst_JJS case_NN each_DT business_NN process_NN requests_NNS one_CD service_NN type_NN ,_, for_IN which_WDT there_EX are_VBP P_NN providers_NNS ._.
+There_EX are_VBP thus_RB W_NNP PB_NN combinations_NNS to_TO explore_VB to_TO find_VB the_DT optimal_JJ assignments_NNS of_IN business_NN processes_NNS to_TO providers_NNS ._.
+Even_RB for_IN small_JJ configurations_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+W_NN =_JJ ##_CD ,_, B_NN =_JJ #_# ,_, P_NN =_JJ ##_NN -RRB-_-RRB- ,_, the_DT computational_JJ time_NN for_IN exhaustive_JJ search_NN is_VBZ significant_JJ ,_, and_CC in_IN our_PRP$ work_NN we_PRP look_VBP to_TO scale_VB these_DT parameters_NNS ._.
+In_IN the_DT next_JJ subsection_NN ,_, discuss_VB how_WRB a_DT genetic_JJ search_NN algorithm_NN can_MD be_VB used_VBN to_TO converge_VB toward_IN the_DT optimum_JJ scheduling_NN assignments_NNS ._.
+3_LS ._.
+#_# Genetic_JJ algorithm_NN Given_VBN an_DT exponential_JJ search_NN space_NN of_IN business_NN process_NN assignments_NNS to_TO web_NN service_NN providers_NNS ,_, the_DT problem_NN is_VBZ to_TO find_VB the_DT optimal_JJ assignment_NN that_WDT produces_VBZ the_DT overall_JJ highest_JJS aggregate_JJ business_NN value_NN across_IN all_DT workflows_NNS ._.
+To_TO explore_VB the_DT solution_NN space_NN ,_, we_PRP use_VBP a_DT genetic_JJ algorithm_NN -LRB-_-LRB- GA_NN -RRB-_-RRB- search_NN heuristic_NN that_WDT simulates_VBZ Darwinian_JJ natural_JJ selection_NN by_IN having_VBG members_NNS of_IN a_DT population_NN compete_VB to_TO survive_VB in_IN order_NN to_TO pass_VB their_PRP$ genetic_JJ chromosomes_NNS onto_IN the_DT next_JJ generation_NN ;_: after_IN successive_JJ generations_NNS ,_, there_EX is_VBZ a_DT tendency_NN for_IN the_DT chromosomes_NNS to_TO converge_VB toward_IN the_DT best_JJS combination_NN -LSB-_-LRB- #_# -RSB-_-RRB- -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+Although_IN other_JJ search_NN heuristics_NNS exist_VBP that_IN can_MD solve_VB optimization_NN problems_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+simulated_JJ annealing_NN or_CC steepest-ascent_JJ hillclimbing_NN -RRB-_-RRB- ,_, the_DT business_NN process_NN scheduling_NN problem_NN fits_VBZ well_RB with_IN a_DT GA_NN because_IN potential_JJ solutions_NNS can_MD be_VB represented_VBN in_IN a_DT matrix_NN form_NN and_CC allows_VBZ us_PRP to_TO use_VB prior_JJ research_NN in_IN effective_JJ GA_NN chromosome_NN recombination_NN to_TO form_VB new_JJ members_NNS of_IN the_DT population_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- -RRB-_-RRB- ._.
+0_CD #_# #_# #_# #_# 0_CD #_# #_# #_# #_# #_# 1_CD #_# #_# #_# #_# #_# 2_CD #_# #_# #_# #_# #_# Figure_NNP #_# :_: An_DT example_NN chromosome_NN representing_VBG a_DT scheduling_NN assignment_NN of_IN -LRB-_-LRB- workflow_NN ,_, service_NN type_NN -RRB-_-RRB- service_NN provider_NN ._.
+Each_DT row_NN represents_VBZ a_DT workflow_NN ,_, and_CC each_DT column_NN represents_VBZ a_DT service_NN type_NN ._.
+For_IN example_NN ,_, here_RB there_EX are_VBP #_# workflows_NNS -LRB-_-LRB- #_# to_TO #_# -RRB-_-RRB- and_CC 5_CD service_NN types_NNS -LRB-_-LRB- #_# to_TO #_# -RRB-_-RRB- ._.
+In_IN workflow_NN #_# ,_, any_DT request_NN for_IN service_NN type_NN #_# goes_VBZ to_TO provider_NN #_# ._.
+Note_VB that_IN the_DT service_NN provider_NN identifier_NN is_VBZ within_IN a_DT range_NN limited_VBN to_TO its_PRP$ service_NN type_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+its_PRP$ column_NN -RRB-_-RRB- ,_, so_IN the_DT #_# listed_VBN for_IN service_NN type_NN #_# is_VBZ a_DT different_JJ server_NN from_IN server_NN #_# in_IN other_JJ columns_NNS ._.
+Chromosome_NN representation_NN of_IN a_DT solution_NN ._.
+In_IN Figure_NNP #_# we_PRP show_VBP an_DT example_NN chromosome_NN that_WDT encodes_VBZ one_CD scheduling_NN assignment_NN ._.
+The_DT representation_NN is_VBZ a_DT 2-dimensional_JJ matrix_NN that_WDT maps_VBZ -LCB-_-LRB- workflow_NN ,_, service_NN type_NN -RCB-_-RRB- to_TO a_DT service_NN provider_NN ._.
+For_IN a_DT business_NN process_NN in_IN workflow_NN i_FW and_CC utilising_VBG service_NN type_NN j_NN ,_, the_DT -LRB-_-LRB- i_FW ,_, j_NN -RRB-_-RRB- th_DT entry_NN in_IN the_DT table_NN is_VBZ the_DT identifier_NN for_IN the_DT service_NN provider_NN to_TO which_WDT the_DT business_NN process_NN is_VBZ assigned_VBN ._.
+Note_VB that_IN the_DT service_NN provider_NN identifier_NN is_VBZ within_IN a_DT range_NN limited_VBN to_TO its_PRP$ service_NN type_NN ._.
+GA_NN execution_NN ._.
+A_DT GA_NN proceeds_VBZ as_IN follows_VBZ ._.
+Initially_RB a_DT random_JJ set_NN of_IN chromosomes_NNS is_VBZ created_VBN for_IN the_DT population_NN ._.
+The_DT chromosomes_NNS are_VBP evaluated_VBN -LRB-_-LRB- hashed_VBN -RRB-_-RRB- to_TO some_DT metric_JJ ,_, and_CC the_DT best_JJS ones_NNS are_VBP chosen_VBN to_TO be_VB parents_NNS ._.
+In_IN our_PRP$ problem_NN ,_, the_DT evaluation_NN produces_VBZ the_DT net_JJ business_NN value_NN across_IN all_DT workflows_NNS after_IN executing_VBG all_DT business_NN processes_NNS once_IN they_PRP are_VBP assigned_VBN to_TO their_PRP$ respective_JJ service_NN providers_NNS according_VBG to_TO the_DT mapping_NN in_IN the_DT chromosome_NN ._.
+The_DT parents_NNS recombine_VBP to_TO produce_VB children_NNS ,_, simulating_VBG sexual_JJ crossover_NN ,_, and_CC occasionally_RB a_DT mutation_NN may_MD arise_VB which_WDT produces_VBZ new_JJ characteristics_NNS that_WDT were_VBD not_RB available_JJ in_IN either_CC parent_NN ._.
+The_DT principal_JJ idea_NN is_VBZ that_IN we_PRP would_MD like_VB the_DT children_NNS to_TO be_VB different_JJ from_IN the_DT parents_NNS -LRB-_-LRB- in_IN order_NN to_TO explore_VB more_JJR of_IN the_DT solution_NN space_NN -RRB-_-RRB- yet_RB not_RB too_RB different_JJ -LRB-_-LRB- in_IN order_NN to_TO contain_VB the_DT portions_NNS of_IN the_DT chromosome_NN that_WDT result_VBP in_IN good_JJ scheduling_NN assignments_NNS -RRB-_-RRB- ._.
+Note_VB that_DT finding_VBG the_DT global_JJ optimum_NN is_VBZ not_RB guaranteed_VBN because_IN the_DT recombination_NN and_CC mutation_NN are_VBP stochastic_JJ ._.
+GA_NN recombination_NN and_CC mutation_NN ._.
+As_IN mentioned_VBN ,_, the_DT chromosomes_NNS are_VBP 2-dimensional_JJ matrices_NNS that_WDT represent_VBP scheduling_NN assignments_NNS ._.
+To_TO simulate_VB sexual_JJ recombination_NN of_IN two_CD chromosomes_NNS to_TO produce_VB a_DT new_JJ child_NN chromosome_NN ,_, we_PRP applied_VBD a_DT one-point_JJ crossover_NN scheme_NN twice_RB -LRB-_-LRB- once_RB along_IN each_DT dimension_NN -RRB-_-RRB- ._.
+The_DT crossover_NN is_VBZ best_JJS explained_VBN by_IN analogy_NN to_TO Cartesian_JJ space_NN as_IN follows_VBZ ._.
+A_DT random_JJ point_NN is_VBZ chosen_VBN in_IN the_DT matrix_NN to_TO be_VB coordinate_JJ -LRB-_-LRB- #_# ,_, #_# -RRB-_-RRB- ._.
+Matrix_NNP elements_NNS from_IN quadrants_NNS II_CD and_CC IV_CD from_IN the_DT first_JJ parent_NN and_CC elements_NNS from_IN quadrants_NNS I_CD and_CC III_CD from_IN the_DT second_JJ parent_NN are_VBP used_VBN to_TO create_VB the_DT new_JJ child_NN ._.
+This_DT approach_NN follows_VBZ GA_NNP best_JJS practices_NNS by_IN keeping_VBG contiguous_JJ chromosome_NN segments_NNS together_RB as_IN they_PRP are_VBP transmitted_VBN from_IN parent_NN to_TO child_NN ._.
+The_DT uni-chromosome_JJ mutation_NN scheme_NN randomly_RB changes_VBZ one_CD of_IN the_DT service_NN provider_NN assignments_NNS to_TO another_DT provider_NN within_IN the_DT available_JJ range_NN ._.
+Other_JJ recombination_NN and_CC mutation_NN schemes_NNS are_VBP an_DT area_NN of_IN research_NN in_IN the_DT GA_NN community_NN ,_, and_CC we_PRP look_VBP to_TO explore_VB new_JJ operators_NNS in_IN future_JJ work_NN ._.
+GA_NN evaluation_NN function_NN ._.
+An_DT important_JJ GA_NN component_NN is_VBZ the_DT evaluation_NN function_NN ._.
+Given_VBN a_DT particular_JJ chromosome_NN representing_VBG one_CD scheduling_NN mapping_NN ,_, the_DT function_NN deterministically_RB calculates_VBZ the_DT net_JJ business_NN value_NN across_IN all_DT workloads_NNS ._.
+The_DT business_NN processes_NNS in_IN each_DT workload_NN are_VBP assigned_VBN to_TO service_NN providers_NNS ,_, and_CC each_DT provider_NN ''_'' s_NNS completion_NN time_NN is_VBZ calculated_VBN based_VBN on_IN the_DT service_NN agreement_NN guarantee_NN using_VBG the_DT parameters_NNS mentioned_VBN in_IN Section_NN #_# ._.
+#_# ,_, namely_RB the_DT unloaded_JJ completion_NN time_NN ,_, the_DT maximum_NN concur32_NN rency_NN ,_, and_CC a_DT coefficient_NN that_WDT controls_VBZ the_DT linear_JJ performance_NN degradation_NN under_IN heavy_JJ load_NN ._.
+Note_VB that_IN the_DT evaluation_NN function_NN can_MD be_VB easily_RB replaced_VBN if_IN desired_VBN ;_: for_IN example_NN ,_, other_JJ evaluation_NN functions_NNS can_MD model_VB different_JJ service_NN provider_NN guarantees_NNS or_CC parallel_JJ workflows_NNS ._.
+4_LS ._.
+EXPERIMENTS_NNS AND_CC RESULTS_NNS In_IN this_DT section_NN we_PRP show_VBP the_DT benefit_NN of_IN using_VBG our_PRP$ GA-based_JJ scheduler_NN ._.
+Because_IN we_PRP wanted_VBD to_TO scale_VB the_DT scenarios_NNS up_IN to_TO a_DT large_JJ number_NN of_IN workflows_NNS -LRB-_-LRB- up_RB to_TO ####_CD in_IN our_PRP$ experiments_NNS -RRB-_-RRB- ,_, we_PRP implemented_VBD a_DT simulation_NN program_NN that_WDT allowed_VBD us_PRP to_TO vary_VB parameters_NNS and_CC to_TO measure_VB the_DT results_NNS with_IN different_JJ metrics_NNS ._.
+The_DT simulator_NN was_VBD written_VBN in_IN standard_JJ C_NN +_CC +_CC and_CC was_VBD run_VBN on_IN a_DT Linux_NN -LRB-_-LRB- Fedora_NN Core_NN -RRB-_-RRB- desktop_NN computer_NN running_VBG at_IN #_# ._.
+#_# GHz_SYM with_IN 1GB_NN of_IN RAM_NNP ._.
+We_PRP compared_VBD our_PRP$ algorithm_NN against_IN alternative_JJ candidates_NNS :_: A_DT well-known_JJ round-robin_NN algorithm_NN that_WDT assigns_VBZ each_DT business_NN process_NN in_IN circular_JJ fashion_NN to_TO the_DT service_NN providers_NNS for_IN a_DT particular_JJ service_NN type_NN ._.
+This_DT approach_NN provides_VBZ the_DT simplest_JJS scheme_NN for_IN load-balancing_NN ._.
+A_DT random-proportional_JJ algorithm_NN that_WDT proportionally_RB assigns_VBZ business_NN processes_NNS to_TO the_DT service_NN providers_NNS ;_: that_DT is_VBZ ,_, for_IN a_DT given_VBN service_NN type_NN ,_, the_DT service_NN providers_NNS are_VBP ranked_VBN by_IN their_PRP$ guaranteed_VBN completion_NN time_NN ,_, and_CC business_NN processes_NNS are_VBP assigned_VBN proportionally_RB to_TO the_DT providers_NNS based_VBN on_IN their_PRP$ completion_NN time_NN ._.
+-LRB-_-LRB- We_PRP also_RB tried_VBD a_DT proportionality_NN scheme_NN based_VBN on_IN both_CC the_DT completion_NN times_NNS and_CC maximum_NN concurrency_NN but_CC attained_VBD the_DT same_JJ results_NNS ,_, so_RB only_RB the_DT former_JJ scheme_NN ''_'' s_NNS results_NNS are_VBP shown_VBN here_RB ._. -RRB-_-RRB-
+A_DT strawman_NN greedy_JJ algorithm_NN that_WDT always_RB assigns_VBZ business_NN processes_NNS to_TO the_DT service_NN provider_NN that_WDT has_VBZ the_DT fastest_JJS guaranteed_VBN completion_NN time_NN ._.
+This_DT algorithm_NN represents_VBZ a_DT naive_JJ approach_NN based_VBN on_IN greedy_JJ ,_, local_JJ observations_NNS of_IN each_DT workflow_NN without_IN taking_VBG into_IN consideration_NN all_DT workflows_NNS ._.
+In_IN the_DT experiments_NNS that_WDT follow_VBP ,_, all_DT results_NNS were_VBD averaged_VBN across_IN 20_CD trials_NNS ,_, and_CC to_TO help_VB normalise_VB the_DT effects_NNS of_IN randomisation_NN used_VBN during_IN the_DT GA_NN ,_, each_DT trial_NN started_VBN by_IN reading_VBG in_IN pre-initialised_JJ data_NNS from_IN disk_NN ._.
+In_IN Table_NNP #_# we_PRP list_VBP our_PRP$ experimental_JJ parameters_NNS ._.
+In_IN Figure_NNP #_# we_PRP show_VBP the_DT results_NNS of_IN running_VBG our_PRP$ GA_NN against_IN the_DT three_CD candidate_NN alternatives_NNS ._.
+The_DT x-axis_NN shows_VBZ the_DT number_NN for_IN workflows_NNS scaled_VBD up_RP to_TO ####_CD ,_, and_CC the_DT y-axis_NN shows_VBZ the_DT aggregate_NN business_NN value_NN for_IN all_DT workflows_NNS ._.
+As_IN can_MD be_VB seen_VBN ,_, the_DT GA_NNP consistently_RB produces_VBZ the_DT highest_JJS business_NN value_NN even_RB as_IN the_DT number_NN of_IN workflows_NNS grows_VBZ ;_: at_IN ####_CD workflows_NNS ,_, the_DT GA_NN produces_VBZ a_DT ###_CD %_NN improvement_NN over_IN the_DT next-best_JJ alternative_NN ._.
+-LRB-_-LRB- Note_VB that_IN although_IN we_PRP are_VBP optimising_VBG against_IN the_DT business_NN value_NN metric_NN we_PRP defined_VBD earlier_RBR ,_, genetic_JJ algorithms_NNS are_VBP able_JJ to_TO converge_VB towards_IN the_DT optimal_JJ value_NN of_IN any_DT metric_JJ ,_, as_RB long_RB as_IN the_DT evaluation_NN function_NN can_MD consistently_RB measure_VB a_DT chromosome_NN ''_'' s_NNS value_NN with_IN that_DT metric_JJ ._. -RRB-_-RRB-
+As_IN expected_VBN ,_, the_DT greedy_JJ algorithm_NN performs_VBZ very_RB poorly_RB because_IN it_PRP does_VBZ the_DT worst_JJS job_NN at_IN balancing_VBG load_NN :_: all_DT business_NN processes_NNS for_IN a_DT given_VBN service_NN type_NN are_VBP assigned_VBN to_TO only_RB one_CD server_NN -LRB-_-LRB- the_DT one_CD advertised_VBN to_TO have_VB the_DT fastest_JJS completion_NN time_NN -RRB-_-RRB- ,_, and_CC as_IN more_JJR business_NN processes_NNS arrive_VBP ,_, the_DT provider_NN ''_'' s_NNS performance_NN degrades_VBZ linearly_RB ._.
+The_DT round-robin_NN scheme_NN is_VBZ initially_RB outperformed_VBN by_IN the_DT randomproportional_JJ scheme_NN up_IN to_TO around_IN ###_CD workflows_NNS -LRB-_-LRB- as_IN shown_VBN in_IN the_DT magnified_VBN graph_NN of_IN Figure_NNP #_# -RRB-_-RRB- ,_, but_CC as_IN the_DT number_NN of_IN workflows_NNS increases_NNS ,_, the_DT round-robin_NN scheme_NN consistently_RB wins_VBZ over_IN randomproportional_JJ ._.
+The_DT reason_NN is_VBZ that_IN although_IN the_DT random-proportional_JJ scheme_NN assigns_VBZ business_NN processes_NNS to_TO providers_NNS proportionally_RB according_VBG to_TO the_DT advertised_JJ completion_NN times_NNS -LRB-_-LRB- which_WDT is_VBZ a_DT measure_NN of_IN the_DT power_NN of_IN the_DT service_NN provider_NN -RRB-_-RRB- ,_, even_RB the_DT best_JJS providers_NNS will_MD eventually_RB reach_VB a_DT real-world_JJ maximum_NN concurrency_NN for_IN the_DT large_JJ -2000_CD -1000_CD 0_CD 1000_CD 2000_CD 3000_CD 4000_CD 5000_CD 6000_CD 7000_CD 0_CD ###_CD ###_CD ###_CD ###_CD ####_CD Aggregatebusinessvalueacrossallworkflows_NNP Total_NNP number_NN of_IN workflows_NNP Business_NNP value_NN scores_NNS of_IN scheduling_NN algorithms_NNS Genetic_JJ algorithm_NN Round_NNP robin_NNP Random_NNP proportional_JJ Greedy_NNP Figure_NNP #_# :_: Net_JJ business_NN value_NN scores_NNS of_IN different_JJ scheduling_NN algorithms_NNS ._.
+-500_CD 0_CD 500_CD 1000_CD 1500_CD 2000_CD 2500_CD 3000_CD 3500_CD 4000_CD 0_CD ##_CD ###_CD ###_CD 200Aggregatebusinessvalueacrossallworkflows_NNS Total_JJ number_NN of_IN workflows_NNP Business_NNP value_NN scores_NNS of_IN scheduling_NN algorithms_NNS Genetic_JJ algorithm_NN Round_NNP robin_NNP Random_NNP proportional_JJ Greedy_NNP Figure_NNP #_# :_: Magnification_NN of_IN the_DT left-most_JJ region_NN in_IN Figure_NNP #_# ._.
+number_NN of_IN workflows_NNS that_IN we_PRP are_VBP considering_VBG ._.
+For_IN a_DT very_RB large_JJ number_NN of_IN workflows_NNS ,_, the_DT round-robin_NN scheme_NN is_VBZ able_JJ to_TO better_JJR balance_NN the_DT load_NN across_IN all_DT service_NN providers_NNS ._.
+To_TO better_RBR understand_VB the_DT behaviour_NN resulting_VBG from_IN the_DT scheduling_NN assignments_NNS ,_, we_PRP show_VBP the_DT workflow_NN completion_NN results_VBZ in_IN Figures_NNS 5_CD ,_, #_# ,_, and_CC #_# for_IN ###_CD ,_, ###_CD ,_, and_CC ###_CD workflows_NNS ,_, respectively_RB ._.
+These_DT figures_NNS show_VBP the_DT percentage_NN of_IN workflows_NNS that_WDT are_VBP successful_JJ -LRB-_-LRB- can_MD complete_VB with_IN their_PRP$ QoS_NN limit_NN -RRB-_-RRB- ,_, acceptable_JJ -LRB-_-LRB- can_MD complete_VB within_IN =_JJ #_# times_NNS their_PRP$ QoS_NN limit_NN -RRB-_-RRB- ,_, and_CC failed_VBD -LRB-_-LRB- can_MD not_RB complete_VB within_IN =_JJ #_# times_NNS their_PRP$ QoS_NN limit_NN -RRB-_-RRB- ._.
+The_DT GA_NN consistently_RB produces_VBZ the_DT highest_JJS percentage_NN of_IN successful_JJ workflows_NNS -LRB-_-LRB- resulting_VBG in_IN higher_JJR business_NN values_NNS for_IN the_DT aggregate_JJ set_NN of_IN workflows_NNS -RRB-_-RRB- ._.
+Further_RB ,_, the_DT round-robin_NN scheme_NN produces_VBZ better_JJR results_NNS than_IN the_DT random-proportional_JJ for_IN a_DT large_JJ number_NN of_IN workflows_NNS but_CC does_VBZ not_RB perform_VB as_RB well_RB as_IN the_DT GA_NN ._.
+In_IN Figure_NNP #_# we_PRP graph_NN the_DT makespan_NN resulting_VBG from_IN the_DT same_JJ experiments_NNS above_IN ._.
+Makespan_NNP is_VBZ a_DT traditional_JJ metric_JJ from_IN the_DT job_NN scheduling_NN community_NN measuring_VBG elapsed_JJ time_NN for_IN the_DT last_JJ job_NN to_TO complete_VB ._.
+While_IN useful_JJ ,_, it_PRP does_VBZ not_RB capture_VB the_DT high-level_JJ business_NN value_NN metric_JJ that_IN we_PRP are_VBP optimising_VBG against_IN ._.
+Indeed_RB ,_, the_DT makespan_NN is_VBZ oblivious_JJ to_TO the_DT fact_NN that_IN we_PRP provide_VBP multiple_JJ levels_NNS of_IN completion_NN -LRB-_-LRB- successful_JJ ,_, acceptable_JJ ,_, and_CC failed_VBD -RRB-_-RRB- and_CC assign_VB business_NN value_NN scores_NNS accordingly_RB ._.
+For_IN completeness_NN ,_, we_PRP note_VBP that_IN the_DT GA_NN provides_VBZ the_DT fastest_JJS makespan_NN ,_, but_CC it_PRP is_VBZ matched_VBN by_IN the_DT round_NN robin_NN algorithm_NN ._.
+The_DT GA_NN produces_VBZ better_JJR business_NN values_NNS -LRB-_-LRB- as_IN shown_VBN in_IN Figure_NNP #_# -RRB-_-RRB- because_IN it_PRP is_VBZ able_JJ to_TO search_VB the_DT solution_NN space_NN to_TO find_VB better_JJR mappings_NNS that_WDT produce_VBP more_JJR successful_JJ workflows_NNS -LRB-_-LRB- as_IN shown_VBN in_IN Figures_NNS #_# to_TO #_# -RRB-_-RRB- ._.
+We_PRP also_RB looked_VBD at_IN the_DT effect_NN of_IN the_DT scheduling_NN algorithms_NNS on_IN balancing_VBG the_DT load_NN ._.
+Figure_NNP #_# shows_VBZ the_DT percentage_NN of_IN services_NNS providers_NNS that_WDT were_VBD accessed_VBN while_IN the_DT workflows_NNS ran_VBD ._.
+As_IN expected_VBN ,_, the_DT greedy_JJ algorithm_NN always_RB hits_VBZ one_CD service_NN provider_NN ;_: on_IN the_DT other_JJ hand_NN ,_, the_DT round-robin_NN algorithm_NN is_VBZ the_DT fastest_JJS to_TO spread_VB the_DT business_NN 33_CD Experimental_JJ parameter_NN Comment_NN Workflows_JJ #_# to_TO ####_NNP Business_NNP processes_VBZ per_IN workflow_NN uniform_JJ random_JJ :_: #_# -_: ##_NNP Service_NNP types_NNS ##_NNP Service_NNP providers_NNS per_IN service_NN type_NN uniform_JJ random_JJ :_: #_# -_: ##_CD Workflow_NNP QoS_NNP goal_NN uniform_NN random_JJ :_: 10-30_CD seconds_NNS Service_NNP provider_NN completion_NN time_NN -LRB-_-LRB- -RRB-_-RRB- uniform_JJ random_JJ :_: #_# -_: ##_CD seconds_NNS Service_NNP provider_NN maximum_NN concurrency_NN -LRB-_-LRB- -RRB-_-RRB- uniform_JJ random_JJ :_: #_# -_: ##_NNP Service_NNP provider_NN degradation_NN coefficient_NN -LRB-_-LRB- -RRB-_-RRB- uniform_JJ random_JJ :_: #_# ._.
+#_# -_: #_# ._.
+#_# Business_NN value_NN for_IN successful_JJ workflows_NNS uniform_JJ random_JJ :_: ##_SYM -_: ##_CD points_NNS Business_NN value_NN for_IN acceptable_JJ workflows_NNS uniform_JJ random_JJ :_: #_# -_: ##_CD points_NNS Business_NN value_NN for_IN failed_VBN workflows_NNS uniform_JJ random_JJ :_: -_: ##_SYM -_: #_# points_NNS GA_NNP :_: number_NN of_IN parents_NNS ##_VBP GA_NN :_: number_NN of_IN children_NNS ##_VBP GA_NN :_: number_NN of_IN generations_NNS ####_CD Table_NNP #_# :_: Experimental_JJ parameters_NNS Failed_VBD Acceptable_JJ -LRB-_-LRB- completed_VBN but_CC not_RB within_IN QoS_NN -RRB-_-RRB- Successful_JJ -LRB-_-LRB- completed_VBN within_IN QoS_NN -RRB-_-RRB- 0_CD %_NN 20_CD %_NN 40_CD %_NN 60_CD %_NN 80_CD %_NN 100_CD %_NN RoundRobinRandProportionalGreedyGeneticAlg_NNP Percentageofallworkflows_NNP Workflow_NNP behaviour_NN ,_, ###_CD workflows_NNS Figure_NNP #_# :_: Workflow_JJ behaviour_NN for_IN ###_CD workflows_NNS ._.
+Failed_NNP Acceptable_NNP -LRB-_-LRB- completed_VBN but_CC not_RB within_IN QoS_NN -RRB-_-RRB- Successful_JJ -LRB-_-LRB- completed_VBN within_IN QoS_NN -RRB-_-RRB- 0_CD %_NN 20_CD %_NN 40_CD %_NN 60_CD %_NN 80_CD %_NN 100_CD %_NN RoundRobinRandProportionalGreedyGeneticAlg_NNP Percentageofallworkflows_NNP Workflow_NNP behaviour_NN ,_, ###_CD workflows_NNS Figure_NNP #_# :_: Workflow_JJ behaviour_NN for_IN ###_CD workflows_NNS ._.
+Failed_NNP Acceptable_NNP -LRB-_-LRB- completed_VBN but_CC not_RB within_IN QoS_NN -RRB-_-RRB- Successful_JJ -LRB-_-LRB- completed_VBN within_IN QoS_NN -RRB-_-RRB- 0_CD %_NN 20_CD %_NN 40_CD %_NN 60_CD %_NN 80_CD %_NN 100_CD %_NN RoundRobinRandProportionalGreedyGeneticAlg_NNP Percentageofallworkflows_NNP Workflow_NNP behaviour_NN ,_, ###_CD workflows_NNS Figure_NNP #_# :_: Workflow_JJ behaviour_NN for_IN ###_CD workflows_NNS ._.
+0_CD 50_CD 100_CD 150_CD 200_CD 250_CD 300_CD 0_CD ###_CD ###_CD ###_CD ###_CD ####_CD Makespan_NN -LSB-_-LRB- seconds_NNS -RSB-_-RRB- Number_NNP of_IN workflows_NNS Maximum_NNP completion_NN time_NN for_IN all_DT workflows_NNS Genetic_JJ algorithm_NN Round_NNP robin_NNP Random_NNP proportional_JJ Greedy_NNP Figure_NNP #_# :_: Maximum_NNP completion_NN time_NN for_IN all_DT workflows_NNS ._.
+This_DT value_NN is_VBZ the_DT makespan_JJ metric_JJ used_VBN in_IN traditional_JJ scheduling_NN research_NN ._.
+Although_IN useful_JJ ,_, the_DT makespan_NN does_VBZ not_RB take_VB into_IN consideration_NN the_DT business_NN value_NN scoring_VBG in_IN our_PRP$ problem_NN domain_NN ._.
+processes_NNS ._.
+Figure_NNP ##_NNP is_VBZ the_DT percentage_NN of_IN accessed_VBN service_NN providers_NNS -LRB-_-LRB- that_WDT is_VBZ ,_, the_DT percentage_NN of_IN service_NN providers_NNS represented_VBN in_IN Figure_NNP 9_CD -RRB-_-RRB- that_WDT had_VBD more_RBR assigned_VBN business_NN processes_NNS than_IN their_PRP$ advertised_JJ maximum_NN concurrency_NN ._.
+For_IN example_NN ,_, in_IN the_DT greedy_JJ algorithm_NN only_RB one_CD service_NN provider_NN is_VBZ utilised_VBN ,_, and_CC this_DT one_CD provider_NN quickly_RB becomes_VBZ saturated_JJ ._.
+On_IN the_DT other_JJ hand_NN ,_, the_DT random-proportional_JJ algorithm_NN uses_VBZ many_JJ service_NN providers_NNS ,_, but_CC because_IN business_NN processes_NNS are_VBP proportionally_RB assigned_VBN with_IN more_JJR assignments_NNS going_VBG to_TO the_DT better_JJR providers_NNS ,_, there_EX is_VBZ a_DT tendency_NN for_IN a_DT smaller_JJR percentage_NN of_IN providers_NNS to_TO become_VB saturated_JJ ._.
+For_IN completeness_NN ,_, we_PRP show_VBP the_DT performance_NN of_IN the_DT genetic_JJ algorithm_NN itself_PRP in_IN Figure_NNP ##_NNP ._.
+The_DT algorithm_NN scales_NNS linearly_RB with_IN an_DT increasing_VBG number_NN of_IN workflows_NNS ._.
+We_PRP note_VBP that_IN the_DT round-robin_NN ,_, random-proportional_JJ ,_, and_CC greedy_JJ algorithms_NNS all_DT finished_VBD within_IN #_# second_RB even_RB for_IN the_DT largest_JJS workflow_NN configuration_NN ._.
+However_RB ,_, we_PRP feel_VBP that_IN the_DT benefit_NN of_IN finding_VBG much_RB higher_JJR business_NN value_NN scores_NNS justifies_VBZ the_DT running_VBG time_NN of_IN the_DT GA_NN ;_: further_RB we_PRP would_MD expect_VB that_IN the_DT running_VBG time_NN will_MD improve_VB with_IN both_DT software_NN tuning_NN as_RB well_RB as_IN with_IN a_DT computer_NN faster_RBR than_IN our_PRP$ off-the-shelf_JJ PC_NN ._.
+5_CD ._.
+CONCLUSION_NN Business_NN processes_NNS within_IN workflows_NNS can_MD be_VB orchestrated_VBN to_TO access_NN web_NN services_NNS ._.
+In_IN this_DT paper_NN we_PRP looked_VBD at_IN multi-tiered_JJ service_NN provisioning_VBG where_WRB web_NN service_NN requests_NNS to_TO service_NN types_NNS can_MD be_VB mapped_VBN to_TO different_JJ service_NN providers_NNS ._.
+The_DT resulting_VBG problem_NN is_VBZ that_IN in_IN order_NN to_TO support_VB a_DT very_RB large_JJ number_NN of_IN workflows_NNS ,_, the_DT assignment_NN of_IN business_NN process_NN to_TO web_NN service_NN provider_NN must_MD be_VB intelligent_JJ ._.
+We_PRP used_VBD a_DT business_NN value_NN metric_JJ to_TO measure_VB the_DT be34_NN 0_CD 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 1_CD 0_CD ###_CD ###_CD ###_CD ###_CD ####_CD Percentageofallserviceproviders_NNP Number_NNP of_IN workflows_NNP Service_NNP providers_NNS utilised_VBD Genetic_JJ algorithm_NN Round_NNP robin_NNP Random_NNP proportional_JJ Greedy_NNP Figure_NNP #_# :_: The_DT percentage_NN of_IN service_NN providers_NNS utilized_VBN during_IN workload_NN executions_NNS ._.
+The_DT Greedy_JJ algorithm_NN always_RB hits_VBZ the_DT one_CD service_NN provider_NN ,_, while_IN the_DT Round_NNP Robin_NNP algorithm_NN spreads_VBZ requests_NNS evenly_RB across_IN the_DT providers_NNS ._.
+0_CD 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 1_CD 0_CD ###_CD ###_CD ###_CD ###_CD ####_CD Percentageofallserviceproviders_NNP Number_NNP of_IN workflows_NNP Service_NNP providers_NNS saturated_VBD Genetic_JJ algorithm_NN Round_NNP robin_NNP Random_NNP proportional_JJ Greedy_NNP Figure_NNP ##_NNP :_: The_DT percentage_NN of_IN service_NN providers_NNS that_WDT are_VBP saturated_VBN among_IN those_DT providers_NNS who_WP were_VBD utilized_VBN -LRB-_-LRB- that_WDT is_VBZ ,_, percentage_NN of_IN the_DT service_NN providers_NNS represented_VBN in_IN Figure_NNP #_# -RRB-_-RRB- ._.
+A_DT saturated_JJ service_NN provider_NN is_VBZ one_CD whose_WP$ workload_NN is_VBZ greater_JJR that_IN its_PRP$ advertised_JJ maximum_NN concurrency_NN ._.
+0_CD 5_CD 10_CD 15_CD 20_CD 25_CD 0_CD ###_CD ###_CD ###_CD ###_CD ####_CD Runningtimeinseconds_NNPS Total_NNP number_NN of_IN workflows_NNS Running_VBG time_NN of_IN genetic_JJ algorithm_NN GA_NN running_VBG time_NN Figure_NN ##_CD :_: Running_VBG time_NN of_IN the_DT genetic_JJ algorithm_NN ._.
+haviour_NN of_IN workflows_NNS meeting_VBG or_CC failing_VBG QoS_NN values_NNS ,_, and_CC we_PRP optimised_VBD our_PRP$ scheduling_NN to_TO maximise_VB the_DT aggregate_NN business_NN value_NN across_IN all_DT workflows_NNS ._.
+Since_IN the_DT solution_NN space_NN of_IN scheduler_NN mappings_NNS is_VBZ exponential_JJ ,_, we_PRP used_VBD a_DT genetic_JJ search_NN algorithm_NN to_TO search_VB the_DT space_NN and_CC converge_VB toward_IN the_DT best_JJS schedule_NN ._.
+With_IN a_DT default_NN configuration_NN for_IN all_DT parameters_NNS and_CC using_VBG our_PRP$ business_NN value_NN scoring_VBG ,_, the_DT GA_NN produced_VBD up_RP to_TO ###_CD %_NN business_NN value_NN improvement_NN over_IN the_DT next_JJ best_JJS algorithm_NN ._.
+Finally_RB ,_, because_IN a_DT genetic_JJ algorithm_NN will_MD converge_VB towards_IN the_DT optimal_JJ value_NN using_VBG any_DT metric_JJ -LRB-_-LRB- even_RB other_JJ than_IN the_DT business_NN value_NN metric_NN we_PRP used_VBD -RRB-_-RRB- ,_, we_PRP believe_VBP our_PRP$ approach_NN has_VBZ strong_JJ potential_NN for_IN continuing_VBG work_NN ._.
+In_IN future_JJ work_NN ,_, we_PRP look_VBP to_TO acquire_VB real-world_JJ traces_NNS of_IN web_NN service_NN instances_NNS in_IN order_NN to_TO get_VB better_JJR estimates_NNS of_IN service_NN agreement_NN guarantees_NNS ,_, although_IN we_PRP expect_VBP that_IN such_JJ guarantees_NNS between_IN the_DT providers_NNS and_CC their_PRP$ consumers_NNS are_VBP not_RB generally_RB available_JJ to_TO the_DT public_NN ._.
+We_PRP will_MD also_RB look_VB at_IN other_JJ QoS_NN metrics_NNS such_JJ as_IN CPU_NNP and_CC I_PRP /_: O_NN usage_NN ._.
+For_IN example_NN ,_, we_PRP can_MD analyse_VB transfer_NN costs_NNS with_IN varying_VBG bandwidth_NN ,_, latency_NN ,_, data_NNS size_NN ,_, and_CC data_NNS distribution_NN ._.
+Further_RB ,_, we_PRP hope_VBP to_TO improve_VB our_PRP$ genetic_JJ algorithm_NN and_CC compare_VB it_PRP to_TO more_JJR scheduler_NN alternatives_NNS ._.
+Finally_RB ,_, since_IN our_PRP$ work_NN is_VBZ complementary_JJ to_TO existing_VBG work_NN in_IN web_NN services_NNS choreography_NN -LRB-_-LRB- because_IN we_PRP rely_VBP on_IN pre-configured_JJ workflows_NNS -RRB-_-RRB- ,_, we_PRP look_VBP to_TO integrate_VB our_PRP$ approach_NN with_IN available_JJ web_NN service_NN workflow_NN systems_NNS expressed_VBN in_IN BPEL_NNP ._.
+6_CD ._.
+REFERENCES_NNS -LSB-_-LRB- #_# -RSB-_-RRB- A_DT ._.
+Ankolekar_NNP ,_, et_FW al_FW ._.
+DAML-S_NNP :_: Semantic_NNP Markup_NNP For_IN Web_NN Services_NNPS ,_, In_IN Proc_NNP ._.
+of_IN the_DT Int_NN ''_'' l_NN Semantic_NNP Web_NN Working_VBG Symposium_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- L_NN ._.
+Davis_NNP ._.
+Job_NNP Shop_NNP Scheduling_VBG with_IN Genetic_JJ Algorithms_NNS ,_, In_IN Proc_NNP ._.
+of_IN the_DT Int_NN ''_'' l_NN Conference_NN on_IN Genetic_JJ Algorithms_NNS ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- H_NN ._.
+-_: L_NN ._.
+Fang_NNP ,_, P_NN ._.
+Ross_NNP ,_, and_CC D_NN ._.
+Corne_NNP ._.
+A_DT Promising_NNP Genetic_NNP Algorithm_NNP Approach_NNP to_TO Job-Shop_NNP Scheduling_NNP ,_, Rescheduling_NNP ,_, and_CC Open-Shop_NNP Scheduling_NNP Problems_NNS ,_, In_IN Proc_NNP ._.
+on_IN the_DT 5th_JJ Int_NN ''_'' l_NN Conference_NN on_IN Genetic_JJ Algorithms_NNS ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- M_NN ._.
+Gary_NNP and_CC D_NNP ._.
+Johnson_NNP ._.
+Computers_NNS and_CC Intractability_NNP :_: A_NNP Guide_NNP to_TO the_DT Theory_NNP of_IN NP-Completeness_NNP ,_, Freeman_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- J_NN ._.
+Holland_NNP ._.
+Adaptation_NN in_IN Natural_JJ and_CC Artificial_NNP Systems_NNPS :_: An_DT Introductory_JJ Analysis_NN with_IN Applications_NNS to_TO Biology_NNP ,_, Control_NNP ,_, and_CC Artificial_NNP Intelligence_NNP ,_, MIT_NNP Press_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- D_NN ._.
+Goldberg_NNP ._.
+Genetic_JJ Algorithms_NNS in_IN Search_VB ,_, Optimization_NN and_CC Machine_NN Learning_NNP ,_, Kluwer_NNP Academic_NNP Publishers_NNPS ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- Business_NNP Processes_NNPS in_IN a_DT Web_NN Services_NNP World_NNP ,_, www-128_NN ._.
+ibm_NN ._.
+com_NN /_: developerworks_NNS /_: webservices_NNS /_: library_NN /_: ws-bpelwp_JJ /_: ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- G_NN ._.
+Soundararajan_NNP ,_, K_NNP ._.
+Manassiev_NNP ,_, J_NNP ._.
+Chen_NNP ,_, A_NNP ._.
+Goel_NNP ,_, and_CC C_NN ._.
+Amza_NNP ._.
+Back-end_JJ Databases_NNS in_IN Shared_VBN Dynamic_NNP Content_NNP Server_NN Clusters_NNS ,_, In_IN Proc_NNP ._.
+of_IN the_DT IEEE_NNP Int_NNP ''_'' l_NN Conference_NN on_IN Autonomic_NNP Computing_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- B_NN ._.
+Srivastava_NNP and_CC J_NNP ._.
+Koehler_NNP ._.
+Web_NN Service_NNP Composition_NNP Current_NNP Solutions_NNPS and_CC Open_VB Problems_NNS ,_, ICAP_NN ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- B_NN ._.
+Urgaonkar_NNP ,_, P_NN ._.
+Shenoy_NNP ,_, A_NNP ._.
+Chandra_NNP ,_, and_CC P_NN ._.
+Goyal_NNP ._.
+Dynamic_NNP Provisioning_NNP of_IN Multi-Tier_NNP Internet_NNP Applications_NNS ,_, In_IN Proc_NNP ._.
+of_IN the_DT IEEE_NNP Int_NNP ''_'' l_NN Conference_NN on_IN Autonomic_NNP Computing_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- L_NN ._.
+Zeng_NNP ,_, B_NN ._.
+Benatallah_NNP ,_, M_NN ._.
+Dumas_NNP ,_, J_NNP ._.
+Kalagnanam_NNP ,_, and_CC Q_NNP ._.
+Sheng_NNP ._.
+Quality_NNP Driven_NNP Web_NN Services_NNP Composition_NNP ,_, In_IN Proc_NNP ._.
+of_IN the_DT WWW_NNP Conference_NNP ,_, ####_CD ._.
+35_CD

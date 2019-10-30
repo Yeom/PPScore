@@ -1,0 +1,688 @@
+Estimating_VBG the_DT Global_JJ PageRank_NN of_IN Web_NN Communities_NNS Jason_NNP V_NNP ._.
+Davis_NNP Dept_NNP ._.
+of_IN Computer_NNP Sciences_NNP University_NNP of_IN Texas_NNP at_IN Austin_NNP Austin_NNP ,_, TX_NNP #####_CD jdavis_NN @_IN cs_NNS ._.
+utexas_NNS ._.
+edu_FW Inderjit_FW S_NN ._.
+Dhillon_NNP Dept_NNP ._.
+of_IN Computer_NNP Sciences_NNP University_NNP of_IN Texas_NNP at_IN Austin_NNP Austin_NNP ,_, TX_NNP #####_CD inderjit_NN @_IN cs_NNS ._.
+utexas_NNS ._.
+edu_NN ABSTRACT_NN Localized_JJ search_NN engines_NNS are_VBP small-scale_JJ systems_NNS that_WDT index_NN a_DT particular_JJ community_NN on_IN the_DT web_NN ._.
+They_PRP offer_VBP several_JJ benefits_NNS over_IN their_PRP$ large-scale_JJ counterparts_NNS in_IN that_IN they_PRP are_VBP relatively_RB inexpensive_JJ to_TO build_VB ,_, and_CC can_MD provide_VB more_RBR precise_JJ and_CC complete_JJ search_NN capability_NN over_IN their_PRP$ relevant_JJ domains_NNS ._.
+One_CD disadvantage_NN such_JJ systems_NNS have_VBP over_IN large-scale_JJ search_NN engines_NNS is_VBZ the_DT lack_NN of_IN global_JJ PageRank_NN values_NNS ._.
+Such_JJ information_NN is_VBZ needed_VBN to_TO assess_VB the_DT value_NN of_IN pages_NNS in_IN the_DT localized_JJ search_NN domain_NN within_IN the_DT context_NN of_IN the_DT web_NN as_IN a_DT whole_NN ._.
+In_IN this_DT paper_NN ,_, we_PRP present_VBP well-motivated_JJ algorithms_NNS to_TO estimate_VB the_DT global_JJ PageRank_NN values_NNS of_IN a_DT local_JJ domain_NN ._.
+The_DT algorithms_NNS are_VBP all_DT highly_RB scalable_JJ in_IN that_DT ,_, given_VBN a_DT local_JJ domain_NN of_IN size_NN n_NN ,_, they_PRP use_VBP O_NN -LRB-_-LRB- n_NN -RRB-_-RRB- resources_NNS that_WDT include_VBP computation_NN time_NN ,_, bandwidth_NN ,_, and_CC storage_NN ._.
+We_PRP test_VBP our_PRP$ methods_NNS across_IN a_DT variety_NN of_IN localized_JJ domains_NNS ,_, including_VBG site-specific_JJ domains_NNS and_CC topic-specific_JJ domains_NNS ._.
+We_PRP demonstrate_VBP that_IN by_IN crawling_VBG as_IN few_JJ as_IN n_NN or_CC 2n_JJ additional_JJ pages_NNS ,_, our_PRP$ methods_NNS can_MD give_VB excellent_JJ global_JJ PageRank_NN estimates_NNS ._.
+Categories_NNS and_CC Subject_NNP Descriptors_NNPS H_NN ._.
+#_# ._.
+#_# -LSB-_-LRB- Information_NNP Storage_NNP and_CC Retrieval_NNP -RSB-_-RRB- :_: Information_NNP Search_VB and_CC Retrieval_NNP ;_: G_NN ._.
+#_# ._.
+#_# -LSB-_-LRB- Numerical_JJ Analysis_NN -RSB-_-RRB- :_: Numerical_JJ Linear_JJ Algebra_NN ;_: G_NN ._.
+#_# -LSB-_-LRB- Probability_NN and_CC Statistics_NNS -RSB-_-RRB- :_: Markov_NNP Processes_NNP General_NNP Terms_NNS PageRank_NNP ,_, Markov_NNP Chain_NNP ,_, Stochastic_NNP Complementation_NNP 1_CD ._.
+INTRODUCTION_NNP Localized_JJ search_NN engines_NNS are_VBP small-scale_JJ search_NN engines_NNS that_WDT index_NN only_RB a_DT single_JJ community_NN of_IN the_DT web_NN ._.
+Such_JJ communities_NNS can_MD be_VB site-specific_JJ domains_NNS ,_, such_JJ as_IN pages_NNS within_IN the_DT cs_NNS ._.
+utexas_NNS ._.
+edu_NN domain_NN ,_, or_CC topic-related_JJ communitiesfor_NN example_NN ,_, political_JJ websites_NNS ._.
+Compared_VBN to_TO the_DT web_NN graph_NN crawled_VBD and_CC indexed_VBN by_IN large-scale_JJ search_NN engines_NNS ,_, the_DT size_NN of_IN such_JJ local_JJ communities_NNS is_VBZ typically_RB orders_NNS of_IN magnitude_NN smaller_JJR ._.
+Consequently_RB ,_, the_DT computational_JJ resources_NNS needed_VBN to_TO build_VB such_PDT a_DT search_NN engine_NN are_VBP also_RB similarly_RB lighter_JJR ._.
+By_IN restricting_VBG themselves_PRP to_TO smaller_JJR ,_, more_RBR manageable_JJ sections_NNS of_IN the_DT web_NN ,_, localized_JJ search_NN engines_NNS can_MD also_RB provide_VB more_JJR precise_JJ and_CC complete_JJ search_NN capabilities_NNS over_IN their_PRP$ respective_JJ domains_NNS ._.
+One_CD drawback_NN of_IN localized_JJ indexes_NNS is_VBZ the_DT lack_NN of_IN global_JJ information_NN needed_VBN to_TO compute_VB link-based_JJ rankings_NNS ._.
+The_DT PageRank_NNP algorithm_NN -LSB-_-LRB- #_# -RSB-_-RRB- ,_, has_VBZ proven_VBN to_TO be_VB an_DT effective_JJ such_JJ measure_NN ._.
+In_IN general_JJ ,_, the_DT PageRank_NN of_IN a_DT given_VBN page_NN is_VBZ dependent_JJ on_IN pages_NNS throughout_IN the_DT entire_JJ web_NN graph_NN ._.
+In_IN the_DT context_NN of_IN a_DT localized_JJ search_NN engine_NN ,_, if_IN the_DT PageRanks_NNP are_VBP computed_VBN using_VBG only_RB the_DT local_JJ subgraph_NN ,_, then_RB we_PRP would_MD expect_VB the_DT resulting_VBG PageRanks_NNP to_TO reflect_VB the_DT perceived_VBN popularity_NN within_IN the_DT local_JJ community_NN and_CC not_RB of_IN the_DT web_NN as_IN a_DT whole_NN ._.
+For_IN example_NN ,_, consider_VB a_DT localized_JJ search_NN engine_NN that_WDT indexes_NNS political_JJ pages_NNS with_IN conservative_JJ views_NNS ._.
+A_DT person_NN wishing_VBG to_TO research_VB the_DT opinions_NNS on_IN global_JJ warming_NN within_IN the_DT conservative_JJ political_JJ community_NN may_MD encounter_VB numerous_JJ such_JJ opinions_NNS across_IN various_JJ websites_NNS ._.
+If_IN only_RB local_JJ PageRank_NN values_NNS are_VBP available_JJ ,_, then_RB the_DT search_NN results_NNS will_MD reflect_VB only_RB strongly_RB held_VBN beliefs_NNS within_IN the_DT community_NN ._.
+However_RB ,_, if_IN global_JJ PageRanks_NNP are_VBP also_RB available_JJ ,_, then_RB the_DT results_NNS can_MD additionally_RB reflect_VB outsiders_NNS ''_'' views_NNS of_IN the_DT conservative_JJ community_NN -LRB-_-LRB- those_DT documents_NNS that_IN liberals_NNS most_RBS often_RB access_NN within_IN the_DT conservative_JJ community_NN -RRB-_-RRB- ._.
+Thus_RB ,_, for_IN many_JJ localized_JJ search_NN engines_NNS ,_, incorporating_VBG global_JJ PageRanks_NNP can_MD improve_VB the_DT quality_NN of_IN search_NN results_NNS ._.
+However_RB ,_, the_DT number_NN of_IN pages_NNS a_DT local_JJ search_NN engine_NN indexes_NNS is_VBZ typically_RB orders_NNS of_IN magnitude_NN smaller_JJR than_IN the_DT number_NN of_IN pages_NNS indexed_VBN by_IN their_PRP$ large-scale_JJ counterparts_NNS ._.
+Localized_JJ search_NN engines_NNS do_VBP not_RB have_VB the_DT bandwidth_NN ,_, storage_NN capacity_NN ,_, or_CC computational_JJ power_NN to_TO crawl_VB ,_, download_VB ,_, and_CC compute_VB the_DT global_JJ PageRanks_NNP of_IN the_DT entire_JJ web_NN ._.
+In_IN this_DT work_NN ,_, we_PRP present_VBP a_DT method_NN of_IN approximating_VBG the_DT global_JJ PageRanks_NNP of_IN a_DT local_JJ domain_NN while_IN only_RB using_VBG resources_NNS of_IN the_DT same_JJ order_NN as_IN those_DT needed_VBN to_TO compute_VB the_DT PageRanks_NNPS of_IN the_DT local_JJ subgraph_NN ._.
+Our_PRP$ proposed_VBN method_NN looks_VBZ for_IN a_DT supergraph_NN of_IN our_PRP$ local_JJ subgraph_NN such_JJ that_IN the_DT local_JJ PageRanks_NNP within_IN this_DT supergraph_NN are_VBP close_JJ to_TO the_DT true_JJ global_JJ PageRanks_NNPS ._.
+We_PRP construct_VBP this_DT supergraph_NN by_IN iteratively_RB crawling_VBG global_JJ pages_NNS on_IN the_DT current_JJ web_NN frontier-i_NN ._.
+e_LS ._.
+,_, global_JJ pages_NNS with_IN inlinks_NNS from_IN pages_NNS that_WDT have_VBP already_RB been_VBN crawled_VBN ._.
+In_IN order_NN to_TO provide_VB 116_CD Research_NNP Track_NNP Paper_NNP a_DT good_JJ approximation_NN to_TO the_DT global_JJ PageRanks_NNP ,_, care_NN must_MD be_VB taken_VBN when_WRB choosing_VBG which_WDT pages_NNS to_TO crawl_VB next_JJ ;_: in_IN this_DT paper_NN ,_, we_PRP present_VBP a_DT well-motivated_JJ page_NN selection_NN algorithm_NN that_WDT also_RB performs_VBZ well_RB empirically_RB ._.
+This_DT algorithm_NN is_VBZ derived_VBN from_IN a_DT well-defined_JJ problem_NN objective_NN and_CC has_VBZ a_DT running_VBG time_NN linear_JJ in_IN the_DT number_NN of_IN local_JJ nodes_NNS ._.
+We_PRP experiment_NN across_IN several_JJ types_NNS of_IN local_JJ subgraphs_NNS ,_, including_VBG four_CD topic_NN related_JJ communities_NNS and_CC several_JJ sitespecific_JJ domains_NNS ._.
+To_TO evaluate_VB performance_NN ,_, we_PRP measure_VBP the_DT difference_NN between_IN the_DT current_JJ global_JJ PageRank_NN estimate_NN and_CC the_DT global_JJ PageRank_NNP ,_, as_IN a_DT function_NN of_IN the_DT number_NN of_IN pages_NNS crawled_VBD ._.
+We_PRP compare_VBP our_PRP$ algorithm_NN against_IN several_JJ heuristics_NNS and_CC also_RB against_IN a_DT baseline_NN algorithm_NN that_WDT chooses_VBZ pages_NNS at_IN random_JJ ,_, and_CC we_PRP show_VBP that_IN our_PRP$ method_NN outperforms_VBZ these_DT other_JJ methods_NNS ._.
+Finally_RB ,_, we_PRP empirically_RB demonstrate_VBP that_IN ,_, given_VBN a_DT local_JJ domain_NN of_IN size_NN n_NN ,_, we_PRP can_MD provide_VB good_JJ approximations_NNS to_TO the_DT global_JJ PageRank_NN values_NNS by_IN crawling_VBG at_IN most_JJS n_NN or_CC 2n_JJ additional_JJ pages_NNS ._.
+The_DT paper_NN is_VBZ organized_VBN as_IN follows_VBZ ._.
+Section_NN #_# gives_VBZ an_DT overview_NN of_IN localized_JJ search_NN engines_NNS and_CC outlines_VBZ their_PRP$ advantages_NNS over_IN global_JJ search_NN ._.
+Section_NN #_# provides_VBZ background_NN on_IN the_DT PageRank_NNP algorithm_NN ._.
+Section_NN #_# formally_RB defines_VBZ our_PRP$ problem_NN ,_, and_CC section_NN #_# presents_VBZ our_PRP$ page_NN selection_NN criteria_NNS and_CC derives_VBZ our_PRP$ algorithms_NNS ._.
+Section_NN #_# provides_VBZ experimental_JJ results_NNS ,_, section_NN #_# gives_VBZ an_DT overview_NN of_IN related_JJ work_NN ,_, and_CC ,_, finally_RB ,_, conclusions_NNS are_VBP given_VBN in_IN section_NN #_# ._.
+2_LS ._.
+LOCALIZED_JJ SEARCH_NN ENGINES_NNS Localized_JJ search_NN engines_NNS index_NN a_DT single_JJ community_NN of_IN the_DT web_NN ,_, typically_RB either_CC a_DT site-specific_JJ community_NN ,_, or_CC a_DT topicspecific_JJ community_NN ._.
+Localized_JJ search_NN engines_NNS enjoy_VBP three_CD major_JJ advantages_NNS over_IN their_PRP$ large-scale_JJ counterparts_NNS :_: they_PRP are_VBP relatively_RB inexpensive_JJ to_TO build_VB ,_, they_PRP can_MD offer_VB more_RBR precise_JJ search_NN capability_NN over_IN their_PRP$ local_JJ domain_NN ,_, and_CC they_PRP can_MD provide_VB a_DT more_RBR complete_JJ index_NN ._.
+The_DT resources_NNS needed_VBN to_TO build_VB a_DT global_JJ search_NN engine_NN are_VBP enormous_JJ ._.
+A_DT ####_CD study_NN by_IN Lyman_NNP et_FW al_FW ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- found_VBD that_IN the_DT surface_NN web_NN ''_'' -LRB-_-LRB- publicly_RB available_JJ static_JJ sites_NNS -RRB-_-RRB- consists_VBZ of_IN 8_CD ._.
+#_# billion_CD pages_NNS ,_, and_CC that_IN the_DT average_JJ size_NN of_IN these_DT pages_NNS is_VBZ approximately_RB ##_RB ._.
+#_# kilobytes_NNS ._.
+To_TO download_VB a_DT crawl_NN of_IN this_DT size_NN ,_, approximately_RB ###_RB terabytes_NNS of_IN space_NN is_VBZ needed_VBN ._.
+For_IN a_DT researcher_NN who_WP wishes_VBZ to_TO build_VB a_DT search_NN engine_NN with_IN access_NN to_TO a_DT couple_NN of_IN workstations_NNS or_CC a_DT small_JJ server_NN ,_, storage_NN of_IN this_DT magnitude_NN is_VBZ simply_RB not_RB available_JJ ._.
+However_RB ,_, building_VBG a_DT localized_JJ search_NN engine_NN over_IN a_DT web_NN community_NN of_IN a_DT hundred_CD thousand_CD pages_NNS would_MD only_RB require_VB a_DT few_JJ gigabytes_NNS of_IN storage_NN ._.
+The_DT computational_JJ burden_NN required_VBN to_TO support_VB search_NN queries_NNS over_IN a_DT database_NN this_DT size_NN is_VBZ more_RBR manageable_JJ as_RB well_RB ._.
+We_PRP note_VBP that_IN ,_, for_IN topic-specific_JJ search_NN engines_NNS ,_, the_DT relevant_JJ community_NN can_MD be_VB efficiently_RB identified_VBN and_CC downloaded_VBN by_IN using_VBG a_DT focused_JJ crawler_NN -LSB-_-LRB- ##_CD ,_, #_# -RSB-_-RRB- ._.
+For_IN site-specific_JJ domains_NNS ,_, the_DT local_JJ domain_NN is_VBZ readily_RB available_JJ on_IN their_PRP$ own_JJ web_NN server_NN ._.
+This_DT obviates_VBZ the_DT need_NN for_IN crawling_VBG or_CC spidering_VBG ,_, and_CC a_DT complete_JJ and_CC up-to-date_JJ index_NN of_IN the_DT domain_NN can_MD thus_RB be_VB guaranteed_VBN ._.
+This_DT is_VBZ in_IN contrast_NN to_TO their_PRP$ large-scale_JJ counterparts_NNS ,_, which_WDT suffer_VBP from_IN several_JJ shortcomings_NNS ._.
+First_RB ,_, crawling_VBG dynamically_RB generated_VBN pages-pages_NNS in_IN the_DT hidden_JJ web_NN ''_'' -_: has_VBZ been_VBN the_DT subject_NN of_IN research_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- and_CC is_VBZ a_DT non-trivial_JJ task_NN for_IN an_DT external_JJ crawler_NN ._.
+Second_RB ,_, site-specific_JJ domains_NNS can_MD enable_VB the_DT robots_NNS exclusion_NN policy_NN ._.
+This_DT prohibits_VBZ external_JJ search_NN engines_NNS ''_'' crawlers_NNS from_IN downloading_VBG content_NN from_IN the_DT domain_NN ,_, and_CC an_DT external_JJ search_NN engine_NN must_MD instead_RB rely_VB on_IN outside_JJ links_NNS and_CC anchor_NN text_NN to_TO index_NN these_DT restricted_JJ pages_NNS ._.
+By_IN restricting_VBG itself_PRP to_TO only_RB a_DT specific_JJ domain_NN of_IN the_DT internet_NN ,_, a_DT localized_JJ search_NN engine_NN can_MD provide_VB more_RBR precise_JJ search_NN results_NNS ._.
+Consider_VB the_DT canonical_JJ ambiguous_JJ search_NN query_NN ,_, jaguar_NN ''_'' ,_, which_WDT can_MD refer_VB to_TO either_CC the_DT car_NN manufacturer_NN or_CC the_DT animal_NN ._.
+A_DT scientist_NN trying_VBG to_TO research_VB the_DT habitat_NN and_CC evolutionary_JJ history_NN of_IN a_DT jaguar_NN may_MD have_VB better_JJR success_NN using_VBG a_DT finely_RB tuned_VBN zoology-specific_JJ search_NN engine_NN than_IN querying_VBG Google_NNP with_IN multiple_JJ keyword_NN searches_NNS and_CC wading_VBG through_IN irrelevant_JJ results_NNS ._.
+A_DT method_NN to_TO learn_VB better_JJR ranking_JJ functions_NNS for_IN retrieval_NN was_VBD recently_RB proposed_VBN by_IN Radlinski_NNP and_CC Joachims_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- and_CC has_VBZ been_VBN applied_VBN to_TO various_JJ local_JJ domains_NNS ,_, including_VBG Cornell_NNP University_NNP ''_'' s_VBZ website_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+3_LS ._.
+PAGERANK_NNP OVERVIEW_NNP The_NNP PageRank_NNP algorithm_NN defines_VBZ the_DT importance_NN of_IN web_NN pages_NNS by_IN analyzing_VBG the_DT underlying_VBG hyperlink_NN structure_NN of_IN a_DT web_NN graph_NN ._.
+The_DT algorithm_NN works_VBZ by_IN building_VBG a_DT Markov_NNP chain_NN from_IN the_DT link_NN structure_NN of_IN the_DT web_NN graph_NN and_CC computing_VBG its_PRP$ stationary_JJ distribution_NN ._.
+One_CD way_NN to_TO compute_VB the_DT stationary_JJ distribution_NN of_IN a_DT Markov_NNP chain_NN is_VBZ to_TO find_VB the_DT limiting_VBG distribution_NN of_IN a_DT random_JJ walk_NN over_IN the_DT chain_NN ._.
+Thus_RB ,_, the_DT PageRank_NNP algorithm_NN uses_VBZ what_WP is_VBZ sometimes_RB referred_VBN to_TO as_IN the_DT random_JJ surfer_NN ''_'' model_NN ._.
+In_IN each_DT step_NN of_IN the_DT random_JJ walk_NN ,_, the_DT surfer_NN ''_'' either_CC follows_VBZ an_DT outlink_NN from_IN the_DT current_JJ page_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+the_DT current_JJ node_NN in_IN the_DT chain_NN -RRB-_-RRB- ,_, or_CC jumps_VBZ to_TO a_DT random_JJ page_NN on_IN the_DT web_NN ._.
+We_PRP now_RB precisely_RB define_VB the_DT PageRank_NN problem_NN ._.
+Let_VB U_NNP be_VB an_DT m_NN m_NN adjacency_NN matrix_NN for_IN a_DT given_VBN web_NN graph_NN such_JJ that_IN Uji_NN =_JJ #_# if_IN page_NN i_FW links_NNS to_TO page_NN j_NN and_CC Uji_NN =_JJ #_# otherwise_RB ._.
+We_PRP define_VBP the_DT PageRank_NN matrix_NN PU_NN to_TO be_VB :_: PU_NN =_JJ UD1_NN U_NN +_CC -LRB-_-LRB- #_# -RRB-_-RRB- veT_NN ,_, -LRB-_-LRB- #_# -RRB-_-RRB- where_WRB DU_NNP is_VBZ the_DT -LRB-_-LRB- unique_JJ -RRB-_-RRB- diagonal_JJ matrix_NN such_JJ that_IN UD1_NN U_NN is_VBZ column_NN stochastic_JJ ,_, is_VBZ a_DT given_VBN scalar_NN such_JJ that_IN #_# #_# ,_, e_SYM is_VBZ the_DT vector_NN of_IN all_DT ones_NNS ,_, and_CC v_LS is_VBZ a_DT non-negative_JJ ,_, L1normalized_JJ vector_NN ,_, sometimes_RB called_VBD the_DT random_JJ surfer_NN ''_'' vector_NN ._.
+Note_VB that_IN the_DT matrix_NN D1_NN U_NN is_VBZ well-defined_JJ only_RB if_IN each_DT column_NN of_IN U_NNP has_VBZ at_IN least_JJS one_CD non-zero_JJ entry-i_NNS ._.
+e_LS ._.
+,_, each_DT page_NN in_IN the_DT webgraph_NN has_VBZ at_IN least_JJS one_CD outlink_NN ._.
+In_IN the_DT presence_NN of_IN such_JJ dangling_JJ nodes_NNS ''_'' that_WDT have_VBP no_DT outlinks_NNS ,_, one_CD commonly_RB used_VBN solution_NN ,_, proposed_VBN by_IN Brin_NNP et_FW al_FW ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- ,_, is_VBZ to_TO replace_VB each_DT zero_CD column_NN of_IN U_NNP by_IN a_DT non-negative_JJ ,_, L1-normalized_JJ vector_NN ._.
+The_DT PageRank_NN vector_NN r_NN is_VBZ the_DT dominant_JJ eigenvector_NN of_IN the_DT PageRank_NN matrix_NN ,_, r_NN =_JJ PU_NN r_NN ._.
+We_PRP will_MD assume_VB ,_, without_IN loss_NN of_IN generality_NN ,_, that_WDT r_NN has_VBZ an_DT L1-norm_NN of_IN one_CD ._.
+Computationally_RB ,_, r_NN can_MD be_VB computed_VBN using_VBG the_DT power_NN method_NN ._.
+This_DT method_NN first_RB chooses_VBZ a_DT random_JJ starting_VBG vector_NN r_NN -LRB-_-LRB- #_# -RRB-_-RRB- ,_, and_CC iteratively_RB multiplies_VBZ the_DT current_JJ vector_NN by_IN the_DT PageRank_NN matrix_NN PU_NN ;_: see_VB Algorithm_NNP #_# ._.
+In_IN general_JJ ,_, each_DT iteration_NN of_IN the_DT power_NN method_NN can_MD take_VB O_NN -LRB-_-LRB- m2_NN -RRB-_-RRB- operations_NNS when_WRB PU_NN is_VBZ a_DT dense_JJ matrix_NN ._.
+However_RB ,_, in_IN practice_NN ,_, the_DT number_NN of_IN links_NNS in_IN a_DT web_NN graph_NN will_MD be_VB of_IN the_DT order_NN of_IN the_DT number_NN of_IN pages_NNS ._.
+By_IN exploiting_VBG the_DT sparsity_NN of_IN the_DT PageRank_NN matrix_NN ,_, the_DT work_NN per_IN iteration_NN can_MD be_VB reduced_VBN to_TO O_NN -LRB-_-LRB- km_NN -RRB-_-RRB- ,_, where_WRB k_NN is_VBZ the_DT average_JJ number_NN of_IN links_NNS per_IN web_NN page_NN ._.
+It_PRP has_VBZ also_RB been_VBN shown_VBN that_IN the_DT total_JJ number_NN of_IN iterations_NNS needed_VBN for_IN convergence_NN is_VBZ proportional_JJ to_TO and_CC does_VBZ not_RB depend_VB on_IN the_DT size_NN of_IN the_DT web_NN graph_NN -LSB-_-LRB- ##_CD ,_, #_# -RSB-_-RRB- ._.
+Finally_RB ,_, the_DT total_JJ space_NN needed_VBN is_VBZ also_RB O_NN -LRB-_-LRB- km_NN -RRB-_-RRB- ,_, mainly_RB to_TO store_VB the_DT matrix_NN U_NN ._.
+117_CD Research_NNP Track_NNP Paper_NNP Algorithm_NNP #_# :_: A_DT linear_JJ time_NN -LRB-_-LRB- per_IN iteration_NN -RRB-_-RRB- algorithm_NN for_IN computing_VBG PageRank_NNP ._.
+ComputePR_NN -LRB-_-LRB- U_NN -RRB-_-RRB- Input_NN :_: U_NNP :_: Adjacency_NNP matrix_NN ._.
+Output_NN :_: r_NN :_: PageRank_NN vector_NN ._.
+Choose_VB -LRB-_-LRB- randomly_RB -RRB-_-RRB- an_DT initial_JJ non-negative_JJ vector_NN r_NN -LRB-_-LRB- #_# -RRB-_-RRB- such_JJ that_IN r_NN -LRB-_-LRB- #_# -RRB-_-RRB- 1_CD =_JJ #_# ._.
+i_LS #_# repeat_NN i_FW i_FW +_CC #_# UD1_CD U_NNP r_NN -LRB-_-LRB- i1_NN -RRB-_-RRB- -LCB-_-LRB- is_VBZ the_DT random_JJ surfing_NN probability_NN -RCB-_-RRB- r_NN -LRB-_-LRB- i_LS -RRB-_-RRB- +_CC -LRB-_-LRB- #_# -RRB-_-RRB- v_LS -LCB-_-LRB- v_LS is_VBZ the_DT random_JJ surfer_NN vector_NN ._. -RCB-_-RRB-
+until_IN r_NN -LRB-_-LRB- i_LS -RRB-_-RRB- r_NN -LRB-_-LRB- i1_NN -RRB-_-RRB- <_JJR -LCB-_-LRB- is_VBZ the_DT convergence_NN threshold_NN ._. -RCB-_-RRB-
+r_NN r_NN -LRB-_-LRB- i_LS -RRB-_-RRB- 4_CD ._.
+PROBLEM_NN DEFINITION_NNP Given_VBN a_DT local_JJ domain_NN L_NN ,_, let_VB G_NN be_VB an_DT N_NN N_NN adjacency_NN matrix_NN for_IN the_DT entire_JJ connected_JJ component_NN of_IN the_DT web_NN that_WDT contains_VBZ L_NN ,_, such_JJ that_IN Gji_NN =_JJ #_# if_IN page_NN i_FW links_NNS to_TO page_NN j_NN and_CC Gji_NN =_JJ #_# otherwise_RB ._.
+Without_IN loss_NN of_IN generality_NN ,_, we_PRP will_MD partition_NN G_NN as_IN :_: G_NN =_JJ L_NN Gout_NNP Lout_NNP Gwithin_NNP ,_, -LRB-_-LRB- #_# -RRB-_-RRB- where_WRB L_NN is_VBZ the_DT n_NN n_NN local_JJ subgraph_JJ corresponding_VBG to_TO links_NNS inside_IN the_DT local_JJ domain_NN ,_, Lout_NN is_VBZ the_DT subgraph_NN that_WDT corresponds_VBZ to_TO links_NNS from_IN the_DT local_JJ domain_NN pointing_VBG out_RP to_TO the_DT global_JJ domain_NN ,_, Gout_NNP is_VBZ the_DT subgraph_NN containing_VBG links_NNS from_IN the_DT global_JJ domain_NN into_IN the_DT local_JJ domain_NN ,_, and_CC Gwithin_NN contains_VBZ links_NNS within_IN the_DT global_JJ domain_NN ._.
+We_PRP assume_VBP that_IN when_WRB building_VBG a_DT localized_JJ search_NN engine_NN ,_, only_RB pages_NNS inside_IN the_DT local_JJ domain_NN are_VBP crawled_VBN ,_, and_CC the_DT links_NNS between_IN these_DT pages_NNS are_VBP represented_VBN by_IN the_DT subgraph_JJ L_NN ._.
+The_DT links_NNS in_IN Lout_NN are_VBP also_RB known_VBN ,_, as_IN these_DT point_NN from_IN crawled_VBN pages_NNS in_IN the_DT local_JJ domain_NN to_TO uncrawled_JJ pages_NNS in_IN the_DT global_JJ domain_NN ._.
+As_IN defined_VBN in_IN equation_NN -LRB-_-LRB- #_# -RRB-_-RRB- ,_, PG_NN is_VBZ the_DT PageRank_NN matrix_NN formed_VBN from_IN the_DT global_JJ graph_NN G_NN ,_, and_CC we_PRP define_VBP the_DT global_JJ PageRank_NN vector_NN of_IN this_DT graph_NN to_TO be_VB g_NN ._.
+Let_VB the_DT n-length_NN vector_NN p_NN be_VB the_DT L1-normalized_JJ vector_NN corresponding_VBG to_TO the_DT global_JJ PageRank_NN of_IN the_DT pages_NNS in_IN the_DT local_JJ domain_NN L_NN :_: p_NN =_JJ EL_NN g_NN ELg_NN #_# ,_, where_WRB EL_NN =_JJ -LSB-_-LRB- I_PRP |_VBP #_# -RSB-_-RRB- is_VBZ the_DT restriction_NN matrix_NN that_WDT selects_VBZ the_DT components_NNS from_IN g_NN corresponding_VBG to_TO nodes_NNS in_IN L_NN ._.
+Let_VB p_NN denote_VBP the_DT PageRank_NN vector_NN constructed_VBN from_IN the_DT local_JJ domain_NN subgraph_JJ L_NN ._.
+In_IN practice_NN ,_, the_DT observed_VBN local_JJ PageRank_NN p_NN and_CC the_DT global_JJ PageRank_NN p_NN will_MD be_VB quite_RB different_JJ ._.
+One_CD would_MD expect_VB that_DT as_IN the_DT size_NN of_IN local_JJ matrix_NN L_NN approaches_VBZ the_DT size_NN of_IN global_JJ matrix_NN G_NN ,_, the_DT global_JJ PageRank_NN and_CC the_DT observed_VBN local_JJ PageRank_NNP will_MD become_VB more_RBR similar_JJ ._.
+Thus_RB ,_, one_CD approach_NN to_TO estimating_VBG the_DT global_JJ PageRank_NN is_VBZ to_TO crawl_VB the_DT entire_JJ global_JJ domain_NN ,_, compute_VB its_PRP$ PageRank_NNP ,_, and_CC extract_NN the_DT PageRanks_NNPS of_IN the_DT local_JJ domain_NN ._.
+Typically_RB ,_, however_RB ,_, n_NN N_NN ,_, i_FW ._.
+e_LS ._.
+,_, the_DT number_NN of_IN global_JJ pages_NNS is_VBZ much_RB larger_JJR than_IN the_DT number_NN of_IN local_JJ pages_NNS ._.
+Therefore_RB ,_, crawling_VBG all_DT global_JJ pages_NNS will_MD quickly_RB exhaust_VB all_DT local_JJ resources_NNS -LRB-_-LRB- computational_JJ ,_, storage_NN ,_, and_CC bandwidth_NN -RRB-_-RRB- available_JJ to_TO create_VB the_DT local_JJ search_NN engine_NN ._.
+We_PRP instead_RB seek_VBP a_DT supergraph_JJ F_NN of_IN our_PRP$ local_JJ subgraph_JJ L_NN with_IN size_NN O_NN -LRB-_-LRB- n_NN -RRB-_-RRB- ._.
+Our_PRP$ goal_NN Algorithm_NN #_# :_: The_DT FindGlobalPR_NN algorithm_NN ._.
+FindGlobalPR_NN -LRB-_-LRB- L_NN ,_, Lout_NN ,_, T_NN ,_, k_NN -RRB-_-RRB- Input_NN :_: L_NN :_: zero-one_NN adjacency_NN matrix_NN for_IN the_DT local_JJ domain_NN ,_, Lout_NN :_: zero-one_NN outlink_NN matrix_NN from_IN L_NN to_TO global_JJ subgraph_NN as_IN in_IN -LRB-_-LRB- #_# -RRB-_-RRB- ,_, T_NN :_: number_NN of_IN iterations_NNS ,_, k_NN :_: number_NN of_IN pages_NNS to_TO crawl_VB per_IN iteration_NN ._.
+Output_NN :_: p_NN :_: an_DT improved_JJ estimate_NN of_IN the_DT global_JJ PageRank_NN of_IN L_NN ._.
+F_NN L_NN Fout_NN Lout_NN f_FW ComputePR_NN -LRB-_-LRB- F_NN -RRB-_-RRB- for_IN -LRB-_-LRB- i_FW =_JJ #_# to_TO T_NN -RRB-_-RRB- -LCB-_-LRB- Determine_NN which_WDT pages_NNS to_TO crawl_VB next_JJ -RCB-_-RRB- pages_NNS SelectNodes_NNS -LRB-_-LRB- F_NN ,_, Fout_NN ,_, f_FW ,_, k_NN -RRB-_-RRB- Crawl_NN pages_NNS ,_, augment_VBP F_NN and_CC modify_VB Fout_NN -LCB-_-LRB- Update_NNP PageRanks_NNP for_IN new_JJ local_JJ domain_NN -RCB-_-RRB- f_LS ComputePR_NN -LRB-_-LRB- F_NN -RRB-_-RRB- end_NN -LCB-_-LRB- Extract_NN PageRanks_NN of_IN original_JJ local_JJ domain_NN &_CC normalize_VB -RCB-_-RRB- p_NN ELf_NN ELf_NN #_# is_VBZ to_TO find_VB such_JJ a_DT supergraph_JJ F_NN with_IN PageRank_NN f_FW ,_, so_RB that_IN f_FW when_WRB restricted_JJ to_TO L_NN is_VBZ close_JJ to_TO p_NN ._.
+Formally_RB ,_, we_PRP seek_VBP to_TO minimize_VB GlobalDiff_NNP -LRB-_-LRB- f_LS -RRB-_-RRB- =_JJ EL_FW f_FW EL_FW f_FW #_# p_NN 1_CD ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- We_PRP choose_VBP the_DT L1_NN norm_NN for_IN measuring_VBG the_DT error_NN as_IN it_PRP does_VBZ not_RB place_VB excessive_JJ weight_NN on_IN outliers_NNS -LRB-_-LRB- as_IN the_DT L2_NN norm_NN does_VBZ ,_, for_IN example_NN -RRB-_-RRB- ,_, and_CC also_RB because_IN it_PRP is_VBZ the_DT most_RBS commonly_RB used_VBN distance_NN measure_NN in_IN the_DT literature_NN for_IN comparing_VBG PageRank_NN vectors_NNS ,_, as_RB well_RB as_IN for_IN detecting_VBG convergence_NN of_IN the_DT algorithm_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+We_PRP propose_VBP a_DT greedy_JJ framework_NN ,_, given_VBN in_IN Algorithm_NNP #_# ,_, for_IN constructing_VBG F_NN ._.
+Initially_RB ,_, F_NN is_VBZ set_VBN to_TO the_DT local_JJ subgraph_JJ L_NN ,_, and_CC the_DT PageRank_NN f_FW of_IN this_DT graph_NN is_VBZ computed_VBN ._.
+The_DT algorithm_NN then_RB proceeds_VBZ as_IN follows_VBZ ._.
+First_RB ,_, the_DT SelectNodes_NNP algorithm_NN -LRB-_-LRB- which_WDT we_PRP discuss_VBP in_IN the_DT next_JJ section_NN -RRB-_-RRB- is_VBZ called_VBN and_CC it_PRP returns_VBZ a_DT set_NN of_IN k_NN nodes_NNS to_TO crawl_VB next_JJ from_IN the_DT set_NN of_IN nodes_NNS in_IN the_DT current_JJ crawl_NN frontier_NN ,_, Fout_NN ._.
+These_DT selected_VBN nodes_NNS are_VBP then_RB crawled_VBN to_TO expand_VB the_DT local_JJ subgraph_NN ,_, F_NN ,_, and_CC the_DT PageRanks_NNPS of_IN this_DT expanded_VBN graph_NN are_VBP then_RB recomputed_VBN ._.
+These_DT steps_NNS are_VBP repeated_VBN for_IN each_DT of_IN T_NN iterations_NNS ._.
+Finally_RB ,_, the_DT PageRank_NN vector_NN p_NN ,_, which_WDT is_VBZ restricted_JJ to_TO pages_NNS within_IN the_DT original_JJ local_JJ domain_NN ,_, is_VBZ returned_VBN ._.
+Given_VBN our_PRP$ computation_NN ,_, bandwidth_NN ,_, and_CC memory_NN restrictions_NNS ,_, we_PRP will_MD assume_VB that_IN the_DT algorithm_NN will_MD crawl_VB at_IN most_JJS O_NN -LRB-_-LRB- n_NN -RRB-_-RRB- pages_NNS ._.
+Since_IN the_DT PageRanks_NNP are_VBP computed_VBN in_IN each_DT iteration_NN of_IN the_DT algorithm_NN ,_, which_WDT is_VBZ an_DT O_NN -LRB-_-LRB- n_NN -RRB-_-RRB- operation_NN ,_, we_PRP will_MD also_RB assume_VB that_IN the_DT number_NN of_IN iterations_NNS T_NN is_VBZ a_DT constant_JJ ._.
+Of_IN course_NN ,_, the_DT main_JJ challenge_NN here_RB is_VBZ in_IN selecting_VBG which_WDT set_NN of_IN k_NN nodes_NNS to_TO crawl_VB next_JJ ._.
+In_IN the_DT next_JJ section_NN ,_, we_PRP formally_RB define_VBP the_DT problem_NN and_CC give_VB efficient_JJ algorithms_NNS ._.
+5_CD ._.
+NODE_NN SELECTION_NN In_IN this_DT section_NN ,_, we_PRP present_VBP node_NN selection_NN algorithms_NNS that_WDT operate_VBP within_IN the_DT greedy_JJ framework_NN presented_VBN in_IN the_DT previous_JJ section_NN ._.
+We_PRP first_RB give_VB a_DT well-defined_JJ criteria_NNS for_IN the_DT page_NN selection_NN problem_NN and_CC provide_VB experimental_JJ evidence_NN that_IN this_DT criteria_NNS can_MD effectively_RB identify_VB pages_NNS that_WDT optimize_VBP our_PRP$ problem_NN objective_NN -LRB-_-LRB- #_# -RRB-_-RRB- ._.
+We_PRP then_RB present_VBP our_PRP$ main_JJ al118_NN Research_NN Track_NNP Paper_NNP gorithmic_JJ contribution_NN of_IN the_DT paper_NN ,_, a_DT method_NN with_IN linear_JJ running_VBG time_NN that_WDT is_VBZ derived_VBN from_IN this_DT page_NN selection_NN criteria_NNS ._.
+Finally_RB ,_, we_PRP give_VBP an_DT intuitive_JJ analysis_NN of_IN our_PRP$ algorithm_NN in_IN terms_NNS of_IN leaks_NNS ''_'' and_CC flows_VBZ ''_'' ._.
+We_PRP show_VBP that_IN if_IN only_RB the_DT flow_NN ''_'' is_VBZ considered_VBN ,_, then_RB the_DT resulting_VBG method_NN is_VBZ very_RB similar_JJ to_TO a_DT widely_RB used_VBN page_NN selection_NN heuristic_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+5_CD ._.
+#_# Formulation_NNP For_IN a_DT given_VBN page_NN j_NN in_IN the_DT global_JJ domain_NN ,_, we_PRP define_VBP the_DT expanded_VBN local_JJ graph_NN Fj_NNP :_: Fj_NN =_JJ F_NN s_NNS uT_NN j_NN #_# ,_, -LRB-_-LRB- #_# -RRB-_-RRB- where_WRB uj_NN is_VBZ the_DT zero-one_NN vector_NN containing_VBG the_DT outlinks_NNS from_IN F_NN into_IN page_NN j_NN ,_, and_CC s_VBZ contains_VBZ the_DT inlinks_NNS from_IN page_NN j_NN into_IN the_DT local_JJ domain_NN ._.
+Note_VB that_IN we_PRP do_VBP not_RB allow_VB self-links_NNS in_IN this_DT framework_NN ._.
+In_IN practice_NN ,_, self-links_NNS are_VBP often_RB removed_VBN ,_, as_IN they_PRP only_RB serve_VBP to_TO inflate_VB a_DT given_VBN page_NN ''_'' s_NNS PageRank_NNP ._.
+Observe_VB that_IN the_DT inlinks_NNS into_IN F_NN from_IN node_NN j_NN are_VBP not_RB known_VBN until_IN after_IN node_NN j_NN is_VBZ crawled_VBN ._.
+Therefore_RB ,_, we_PRP estimate_VBP this_DT inlink_NN vector_NN as_IN the_DT expectation_NN over_IN inlink_JJ counts_NNS among_IN the_DT set_NN of_IN already_RB crawled_VBN pages_NNS ,_, s_NNS =_JJ F_NN T_NN e_SYM F_NN T_NN e_SYM #_# ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- In_IN practice_NN ,_, for_IN any_DT given_VBN page_NN ,_, this_DT estimate_NN may_MD not_RB reflect_VB the_DT true_JJ inlinks_NNS from_IN that_DT page_NN ._.
+Furthermore_RB ,_, this_DT expectation_NN is_VBZ sampled_VBN from_IN the_DT set_NN of_IN links_NNS within_IN the_DT crawled_VBN domain_NN ,_, whereas_IN a_DT better_JJR estimate_NN would_MD also_RB use_VB links_NNS from_IN the_DT global_JJ domain_NN ._.
+However_RB ,_, the_DT latter_JJ distribution_NN is_VBZ not_RB known_VBN to_TO a_DT localized_JJ search_NN engine_NN ,_, and_CC we_PRP contend_VBP that_IN the_DT above_JJ estimate_NN will_MD ,_, on_IN average_NN ,_, be_VB a_DT better_JJR estimate_NN than_IN the_DT uniform_JJ distribution_NN ,_, for_IN example_NN ._.
+Let_VB the_DT PageRank_NN of_IN F_NN be_VB f_LS ._.
+We_PRP express_VBP the_DT PageRank_NN f_FW +_CC j_FW of_IN the_DT expanded_VBN local_JJ graph_NN Fj_NN as_IN f_FW +_CC j_FW =_JJ -LRB-_-LRB- #_# xj_NN -RRB-_-RRB- fj_NN xj_NN ,_, -LRB-_-LRB- #_# -RRB-_-RRB- where_WRB xj_NN is_VBZ the_DT PageRank_NN of_IN the_DT candidate_NN global_JJ node_NN j_NN ,_, and_CC fj_NN is_VBZ the_DT L1-normalized_JJ PageRank_NN vector_NN restricted_JJ to_TO the_DT pages_NNS in_IN F_NN ._.
+Since_IN directly_RB optimizing_VBG our_PRP$ problem_NN goal_NN requires_VBZ knowing_VBG the_DT global_JJ PageRank_NN p_NN ,_, we_PRP instead_RB propose_VBP to_TO crawl_VB those_DT nodes_NNS that_WDT will_MD have_VB the_DT greatest_JJS influence_NN on_IN the_DT PageRanks_NNPS of_IN pages_NNS in_IN the_DT original_JJ local_JJ domain_NN L_NN :_: influence_NN -LRB-_-LRB- j_NN -RRB-_-RRB- =_JJ kL_NN |_NN fj_NN -LSB-_-LRB- k_NN -RSB-_-RRB- f_FW -LSB-_-LRB- k_NN -RSB-_-RRB- |_NN -LRB-_-LRB- #_# -RRB-_-RRB- =_JJ EL_NN -LRB-_-LRB- fj_NN f_LS -RRB-_-RRB- #_# ._.
+Experimentally_RB ,_, the_DT influence_NN score_NN is_VBZ a_DT very_RB good_JJ predictor_NN of_IN our_PRP$ problem_NN objective_NN -LRB-_-LRB- #_# -RRB-_-RRB- ._.
+For_IN each_DT candidate_NN global_JJ node_NN j_NN ,_, figure_NN #_# -LRB-_-LRB- a_DT -RRB-_-RRB- shows_VBZ the_DT objective_JJ function_NN value_NN Global_JJ Diff_NN -LRB-_-LRB- fj_NN -RRB-_-RRB- as_IN a_DT function_NN of_IN the_DT influence_NN of_IN page_NN j_NN ._.
+The_DT local_JJ domain_NN used_VBN here_RB is_VBZ a_DT crawl_NN of_IN conservative_JJ political_JJ pages_NNS -LRB-_-LRB- we_PRP will_MD provide_VB more_JJR details_NNS about_IN this_DT dataset_NN in_IN section_NN #_# -RRB-_-RRB- ;_: we_PRP observed_VBD similar_JJ results_NNS in_IN other_JJ domains_NNS ._.
+The_DT correlation_NN is_VBZ quite_RB strong_JJ ,_, implying_VBG that_IN the_DT influence_NN criteria_NNS can_MD effectively_RB identify_VB pages_NNS that_WDT improve_VBP the_DT global_JJ PageRank_NN estimate_NN ._.
+As_IN a_DT baseline_NN ,_, figure_NN #_# -LRB-_-LRB- b_NN -RRB-_-RRB- compares_VBZ our_PRP$ objective_NN with_IN an_DT alternative_JJ criteria_NNS ,_, outlink_NN count_NN ._.
+The_DT outlink_NN count_NN is_VBZ defined_VBN as_IN the_DT number_NN of_IN outlinks_NNS from_IN the_DT local_JJ domain_NN to_TO page_NN j_NN ._.
+The_DT correlation_NN here_RB is_VBZ much_JJ weaker_JJR ._. ._.
+#####_NN ._.
+####_NN ._.
+###_NN ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+###_NN 0_CD ._.
+###_NN 0_CD ._.
+###_CD Influence_NN Objective_NN 1_CD ##_CD ###_CD ####_CD 0_CD ._.
+###_NN 0_CD ._.
+###_NN 0_CD ._.
+###_NN 0_CD ._.
+##_NN Outlink_NNP Count_NNP Objective_NNP -LRB-_-LRB- a_DT -RRB-_-RRB- -LRB-_-LRB- b_NN -RRB-_-RRB- Figure_NN #_# :_: -LRB-_-LRB- a_LS -RRB-_-RRB- The_DT correlation_NN between_IN our_PRP$ influence_NN page_NN selection_NN criteria_NNS -LRB-_-LRB- #_# -RRB-_-RRB- and_CC the_DT actual_JJ objective_JJ function_NN -LRB-_-LRB- #_# -RRB-_-RRB- value_NN is_VBZ quite_RB strong_JJ ._.
+-LRB-_-LRB- b_NN -RRB-_-RRB- This_DT is_VBZ in_IN contrast_NN to_TO other_JJ criteria_NNS ,_, such_JJ as_IN outlink_NN count_NN ,_, which_WDT exhibit_VBP a_DT much_JJ weaker_JJR correlation_NN ._.
+5_CD ._.
+#_# Computation_NNP As_IN described_VBN ,_, for_IN each_DT candidate_NN global_JJ page_NN j_NN ,_, the_DT influence_NN score_NN -LRB-_-LRB- #_# -RRB-_-RRB- must_MD be_VB computed_VBN ._.
+If_IN fj_NN is_VBZ computed_VBN exactly_RB for_IN each_DT global_JJ page_NN j_NN ,_, then_RB the_DT PageRank_NNP algorithm_NN would_MD need_VB to_TO be_VB run_VBN for_IN each_DT of_IN the_DT O_NN -LRB-_-LRB- n_NN -RRB-_-RRB- such_JJ global_JJ pages_NNS j_VBP we_PRP consider_VB ,_, resulting_VBG in_IN an_DT O_NN -LRB-_-LRB- n2_NN -RRB-_-RRB- computational_JJ cost_NN for_IN the_DT node_NN selection_NN method_NN ._.
+Thus_RB ,_, computing_VBG the_DT exact_JJ value_NN of_IN fj_NN will_MD lead_VB to_TO a_DT quadratic_JJ algorithm_NN ,_, and_CC we_PRP must_MD instead_RB turn_VB to_TO methods_NNS of_IN approximating_VBG this_DT vector_NN ._.
+The_DT algorithm_NN we_PRP present_VBP works_NNS by_IN performing_VBG one_CD power_NN method_NN iteration_NN used_VBN by_IN the_DT PageRank_NNP algorithm_NN -LRB-_-LRB- Algorithm_NN #_# -RRB-_-RRB- ._.
+The_DT convergence_NN rate_NN for_IN the_DT PageRank_NNP algorithm_NN has_VBZ been_VBN shown_VBN to_TO equal_VB the_DT random_JJ surfer_NN probability_NN -LSB-_-LRB- #_# ,_, 11_CD -RSB-_-RRB- ._.
+Given_VBN a_DT starting_VBG vector_NN x_NN -LRB-_-LRB- #_# -RRB-_-RRB- ,_, if_IN k_NN PageRank_NN iterations_NNS are_VBP performed_VBN ,_, the_DT current_JJ PageRank_NN solution_NN x_NN -LRB-_-LRB- k_NN -RRB-_-RRB- satisfies_NNS :_: x_NN -LRB-_-LRB- k_NN -RRB-_-RRB- x_NN 1_CD =_JJ O_NN -LRB-_-LRB- k_NN x_NN -LRB-_-LRB- #_# -RRB-_-RRB- x_CC 1_LS -RRB-_-RRB- ,_, -LRB-_-LRB- #_# -RRB-_-RRB- where_WRB x_NN is_VBZ the_DT desired_VBN PageRank_NN vector_NN ._.
+Therefore_RB ,_, if_IN only_RB one_CD iteration_NN is_VBZ performed_VBN ,_, choosing_VBG a_DT good_JJ starting_VBG vector_NN is_VBZ necessary_JJ to_TO achieve_VB an_DT accurate_JJ approximation_NN ._.
+We_PRP partition_NN the_DT PageRank_NN matrix_NN PFj_NN ,_, corresponding_VBG to_TO the_DT subgraph_JJ Fj_NN as_IN :_: PFj_NN =_JJ F_NN s_NNS uT_NN j_NN w_NN ,_, -LRB-_-LRB- #_# -RRB-_-RRB- where_WRB F_NN =_JJ F_NN -LRB-_-LRB- DF_NN +_CC diag_NN -LRB-_-LRB- uj_NN -RRB-_-RRB- -RRB-_-RRB- #_# +_CC -LRB-_-LRB- #_# -RRB-_-RRB- e_SYM +_CC #_# eT_NNP ,_, s_VBZ =_JJ s_NNS +_CC -LRB-_-LRB- #_# -RRB-_-RRB- e_SYM +_CC #_# ,_, uj_NN =_JJ -LRB-_-LRB- DF_NN +_CC diag_NN -LRB-_-LRB- uj_NN -RRB-_-RRB- -RRB-_-RRB- #_# uj_NN +_CC -LRB-_-LRB- #_# -RRB-_-RRB- e_SYM +_CC #_# ,_, w_NN =_JJ 1_CD +_CC #_# ,_, and_CC diag_NN -LRB-_-LRB- uj_NN -RRB-_-RRB- is_VBZ the_DT diagonal_JJ matrix_NN with_IN the_DT -LRB-_-LRB- i_FW ,_, i_LS -RRB-_-RRB- th_DT entry_NN equal_JJ to_TO one_CD if_IN the_DT ith_NN element_NN of_IN uj_NN equals_VBZ one_CD ,_, and_CC is_VBZ zero_CD otherwise_RB ._.
+We_PRP have_VBP assumed_VBN here_RB that_IN the_DT random_JJ surfer_NN vector_NN is_VBZ the_DT uniform_JJ vector_NN ,_, and_CC that_IN L_NN has_VBZ no_DT dangling_JJ links_NNS ''_'' ._.
+These_DT assumptions_NNS are_VBP not_RB necessary_JJ and_CC serve_VB only_RB to_TO simplify_VB discussion_NN and_CC analysis_NN ._.
+A_DT simple_JJ approach_NN for_IN estimating_VBG fj_NN is_VBZ the_DT following_VBG ._.
+First_RB ,_, estimate_VBP the_DT PageRank_NN f_FW +_CC j_FW of_IN Fj_NN by_IN computing_VBG one_CD PageRank_NN iteration_NN over_IN the_DT matrix_NN PFj_NN ,_, using_VBG the_DT starting_VBG vector_NN =_JJ f_FW 0_CD ._.
+Then_RB ,_, estimate_NN fj_NN by_IN removing_VBG the_DT last_JJ 119_CD Research_NNP Track_NNP Paper_NNP component_NN from_IN our_PRP$ estimate_NN of_IN f_FW +_CC j_FW -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, the_DT component_NN corresponding_VBG to_TO the_DT added_VBN node_NN j_NN -RRB-_-RRB- ,_, and_CC renormalizing_VBG ._.
+The_DT problem_NN with_IN this_DT approach_NN is_VBZ in_IN the_DT starting_VBG vector_NN ._.
+Recall_VB from_IN -LRB-_-LRB- #_# -RRB-_-RRB- that_WDT xj_NN is_VBZ the_DT PageRank_NN of_IN the_DT added_VBN node_NN j_NN ._.
+The_DT difference_NN between_IN the_DT actual_JJ PageRank_NN f_FW +_CC j_FW of_IN PFj_NN and_CC the_DT starting_VBG vector_NN is_VBZ f_FW +_CC j_FW #_# =_SYM xj_FW +_CC f_FW -LRB-_-LRB- #_# xj_NN -RRB-_-RRB- fj_NN #_# xj_FW +_CC |_FW f_FW #_# -LRB-_-LRB- #_# xj_NN -RRB-_-RRB- fj_NN #_# |_CD =_JJ xj_NN +_CC |_NN xj_NN |_NN =_JJ 2xj_CD ._.
+Thus_RB ,_, by_IN -LRB-_-LRB- #_# -RRB-_-RRB- ,_, after_IN one_CD PageRank_NN iteration_NN ,_, we_PRP expect_VBP our_PRP$ estimate_NN of_IN f_FW +_CC j_FW to_TO still_RB have_VB an_DT error_NN of_IN about_IN 2xj_JJ ._.
+In_IN particular_JJ ,_, for_IN candidate_NN nodes_NNS j_VBP with_IN relatively_RB high_JJ PageRank_NNP xj_NN ,_, this_DT method_NN will_MD yield_VB more_RBR inaccurate_JJ results_NNS ._.
+We_PRP will_MD next_RB present_VB a_DT method_NN that_WDT eliminates_VBZ this_DT bias_NN and_CC runs_VBZ in_IN O_NN -LRB-_-LRB- n_NN -RRB-_-RRB- time_NN ._.
+5_CD ._.
+#_# ._.
+#_# Stochastic_NNP Complementation_NNP Since_IN f_FW +_CC j_FW ,_, as_IN given_VBN in_IN -LRB-_-LRB- #_# -RRB-_-RRB- is_VBZ the_DT PageRank_NN of_IN the_DT matrix_NN PFj_NN ,_, we_PRP have_VBP :_: fj_NN -LRB-_-LRB- #_# xj_NN -RRB-_-RRB- xj_NN =_JJ F_NN s_NNS uT_NN j_NN w_NN fj_NN -LRB-_-LRB- #_# xj_NN -RRB-_-RRB- xj_NN =_JJ F_NN fj_NN -LRB-_-LRB- #_# xj_NN -RRB-_-RRB- +_CC sxj_NN uT_NN j_NN fj_NN -LRB-_-LRB- #_# xj_NN -RRB-_-RRB- +_CC wxj_NN ._.
+Solving_VBG the_DT above_JJ system_NN for_IN fj_NN can_MD be_VB shown_VBN to_TO yield_VB fj_NN =_JJ -LRB-_-LRB- F_NN +_CC -LRB-_-LRB- #_# w_FW -RRB-_-RRB- #_# suT_NN j_NN -RRB-_-RRB- fj_NN ._.
+-LRB-_-LRB- ##_NN -RRB-_-RRB- The_DT matrix_NN S_NN =_JJ F_NN +_CC -LRB-_-LRB- 1w_NN -RRB-_-RRB- #_# suT_NN j_NN is_VBZ known_VBN as_IN the_DT stochastic_JJ complement_NN of_IN the_DT column_NN stochastic_JJ matrix_NN PFj_NN with_IN respect_NN to_TO the_DT sub_NN matrix_NN F_NN ._.
+The_DT theory_NN of_IN stochastic_JJ complementation_NN is_VBZ well_RB studied_VBN ,_, and_CC it_PRP can_MD be_VB shown_VBN the_DT stochastic_JJ complement_NN of_IN an_DT irreducible_JJ matrix_NN -LRB-_-LRB- such_JJ as_IN the_DT PageRank_NN matrix_NN -RRB-_-RRB- is_VBZ unique_JJ ._.
+Furthermore_RB ,_, the_DT stochastic_JJ complement_NN is_VBZ also_RB irreducible_JJ and_CC therefore_RB has_VBZ a_DT unique_JJ stationary_JJ distribution_NN as_RB well_RB ._.
+For_IN an_DT extensive_JJ study_NN ,_, see_VB -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+It_PRP can_MD be_VB easily_RB shown_VBN that_IN the_DT sub-dominant_JJ eigenvalue_NN of_IN S_NN is_VBZ at_IN most_JJS +_CC #_# ,_, where_WRB is_VBZ the_DT size_NN of_IN F_NN ._.
+For_IN sufficiently_RB large_JJ ,_, this_DT value_NN will_MD be_VB very_RB close_RB to_TO ._.
+This_DT is_VBZ important_JJ ,_, as_IN other_JJ properties_NNS of_IN the_DT PageRank_NNP algorithm_NN ,_, notably_RB the_DT algorithm_NN ''_'' s_NNS sensitivity_NN ,_, are_VBP dependent_JJ on_IN this_DT value_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+In_IN this_DT method_NN ,_, we_PRP estimate_VBP the_DT length_NN vector_NN fj_NN by_IN computing_VBG one_CD PageRank_NN iteration_NN over_IN the_DT stochastic_JJ complement_NN S_NN ,_, starting_VBG at_IN the_DT vector_NN f_FW :_: fj_NN Sf_NN ._.
+-LRB-_-LRB- ##_NN -RRB-_-RRB- This_DT is_VBZ in_IN contrast_NN to_TO the_DT simple_JJ method_NN outlined_VBN in_IN the_DT previous_JJ section_NN ,_, which_WDT first_RB iterates_VBZ over_IN the_DT -LRB-_-LRB- +_CC #_# -RRB-_-RRB- -LRB-_-LRB- +_CC #_# -RRB-_-RRB- matrix_NN PFj_NN to_TO estimate_VB f_FW +_CC j_FW ,_, and_CC then_RB removes_VBZ the_DT last_JJ component_NN from_IN the_DT estimate_NN and_CC renormalizes_NNS to_TO approximate_JJ fj_NN ._.
+The_DT problem_NN with_IN the_DT latter_JJ method_NN is_VBZ in_IN the_DT choice_NN of_IN the_DT -LRB-_-LRB- +_CC #_# -RRB-_-RRB- length_NN starting_VBG vector_NN ,_, ._.
+Consequently_RB ,_, the_DT PageRank_NN estimate_NN given_VBN by_IN the_DT simple_JJ method_NN differs_VBZ from_IN the_DT true_JJ PageRank_NN by_IN at_IN least_JJS 2xj_JJ ,_, where_WRB xj_NN is_VBZ the_DT PageRank_NN of_IN page_NN j_NN ._.
+By_IN using_VBG the_DT stochastic_JJ complement_NN ,_, we_PRP can_MD establish_VB a_DT tight_JJ lower_JJR bound_VBN of_IN zero_CD for_IN this_DT difference_NN ._.
+To_TO see_VB this_DT ,_, consider_VB the_DT case_NN in_IN which_WDT a_DT node_NN k_NN is_VBZ added_VBN to_TO F_NN to_TO form_VB the_DT augmented_JJ local_JJ subgraph_JJ Fk_NN ,_, and_CC that_IN the_DT PageRank_NN of_IN this_DT new_JJ graph_NN is_VBZ -LRB-_-LRB- #_# xk_NN -RRB-_-RRB- f_LS xk_NN ._.
+Specifically_RB ,_, the_DT addition_NN of_IN page_NN k_NN does_VBZ not_RB change_VB the_DT PageRanks_NNPS of_IN the_DT pages_NNS in_IN F_NN ,_, and_CC thus_RB fk_NN =_JJ f_LS ._.
+By_IN construction_NN of_IN the_DT stochastic_JJ complement_NN ,_, fk_NN =_JJ Sfk_NN ,_, so_IN the_DT approximation_NN given_VBN in_IN equation_NN -LRB-_-LRB- ##_NN -RRB-_-RRB- will_MD yield_VB the_DT exact_JJ solution_NN ._.
+Next_RB ,_, we_PRP present_VBP the_DT computational_JJ details_NNS needed_VBN to_TO efficiently_RB compute_VB the_DT quantity_NN fj_NN f_FW #_# over_IN all_DT known_VBN global_JJ pages_NNS j_NN ._.
+We_PRP begin_VBP by_IN expanding_VBG the_DT difference_NN fj_NN f_FW ,_, where_WRB the_DT vector_NN fj_NN is_VBZ estimated_VBN as_IN in_IN -LRB-_-LRB- ##_NN -RRB-_-RRB- ,_, fj_NN f_FW Sf_FW f_FW =_JJ F_NN -LRB-_-LRB- DF_NN +_CC diag_NN -LRB-_-LRB- uj_NN -RRB-_-RRB- -RRB-_-RRB- #_# f_FW +_CC -LRB-_-LRB- #_# -RRB-_-RRB- e_SYM +_CC #_# eT_FW f_FW +_CC -LRB-_-LRB- #_# w_FW -RRB-_-RRB- #_# -LRB-_-LRB- uT_NN j_NN f_LS -RRB-_-RRB- s_VBZ f_LS ._.
+-LRB-_-LRB- ##_NN -RRB-_-RRB- Note_VBP that_IN the_DT matrix_NN -LRB-_-LRB- DF_NN +_CC diag_NN -LRB-_-LRB- uj_NN -RRB-_-RRB- -RRB-_-RRB- #_# is_VBZ diagonal_JJ ._.
+Letting_VBG o_NN -LSB-_-LRB- k_NN -RSB-_-RRB- be_VB the_DT outlink_NN count_NN for_IN page_NN k_NN in_IN F_NN ,_, we_PRP can_MD express_VB the_DT kth_NN diagonal_JJ element_NN as_IN :_: -LRB-_-LRB- DF_NN +_CC diag_NN -LRB-_-LRB- uj_NN -RRB-_-RRB- -RRB-_-RRB- #_# -LSB-_-LRB- k_NN ,_, k_NN -RSB-_-RRB- =_JJ 1_CD o_NN -LSB-_-LRB- k_NN -RSB-_-RRB- +_CC #_# if_IN uj_NN -LSB-_-LRB- k_NN -RSB-_-RRB- =_JJ #_# 1_CD o_NN -LSB-_-LRB- k_NN -RSB-_-RRB- if_IN uj_NN -LSB-_-LRB- k_NN -RSB-_-RRB- =_JJ #_# Noting_VBG that_IN -LRB-_-LRB- o_NN -LSB-_-LRB- k_NN -RSB-_-RRB- +_CC #_# -RRB-_-RRB- #_# =_JJ o_NN -LSB-_-LRB- k_NN -RSB-_-RRB- #_# -LRB-_-LRB- o_NN -LSB-_-LRB- k_NN -RSB-_-RRB- -LRB-_-LRB- o_NN -LSB-_-LRB- k_NN -RSB-_-RRB- +_CC #_# -RRB-_-RRB- -RRB-_-RRB- #_# and_CC rewriting_VBG this_DT in_IN matrix_NN form_NN yields_NNS -LRB-_-LRB- DF_NN +_CC diag_NN -LRB-_-LRB- uj_NN -RRB-_-RRB- -RRB-_-RRB- #_# =_JJ D1_NN F_NN D1_NN F_NN -LRB-_-LRB- DF_NN +_CC diag_NN -LRB-_-LRB- uj_NN -RRB-_-RRB- -RRB-_-RRB- #_# diag_NN -LRB-_-LRB- uj_NN -RRB-_-RRB- ._.
+-LRB-_-LRB- ##_NN -RRB-_-RRB- We_PRP use_VBP the_DT same_JJ identity_NN to_TO express_VB e_SYM +_CC #_# =_JJ e_SYM e_SYM -LRB-_-LRB- +_CC #_# -RRB-_-RRB- ._.
+-LRB-_-LRB- ##_NN -RRB-_-RRB- Recall_VBP that_IN ,_, by_IN definition_NN ,_, we_PRP have_VBP PF_NN =_JJ F_NN D1_NN F_NN +_CC -LRB-_-LRB- #_# -RRB-_-RRB- e_LS ._.
+Substituting_VBG -LRB-_-LRB- ##_CD -RRB-_-RRB- and_CC -LRB-_-LRB- ##_CD -RRB-_-RRB- in_IN -LRB-_-LRB- ##_NN -RRB-_-RRB- yields_VBZ fj_NN f_FW -LRB-_-LRB- PF_FW f_FW f_LS -RRB-_-RRB- F_NN D1_NN F_NN -LRB-_-LRB- DF_NN +_CC diag_NN -LRB-_-LRB- uj_NN -RRB-_-RRB- -RRB-_-RRB- #_# diag_NN -LRB-_-LRB- uj_NN -RRB-_-RRB- f_FW -LRB-_-LRB- #_# -RRB-_-RRB- e_SYM -LRB-_-LRB- +_CC #_# -RRB-_-RRB- +_CC -LRB-_-LRB- #_# w_FW -RRB-_-RRB- #_# -LRB-_-LRB- uT_NN j_NN f_LS -RRB-_-RRB- s_VBZ =_JJ x_NN +_CC y_NN +_CC -LRB-_-LRB- uT_NN j_NN f_LS -RRB-_-RRB- z_SYM ,_, -LRB-_-LRB- ##_CD -RRB-_-RRB- noting_VBG that_IN by_IN definition_NN ,_, f_SYM =_SYM PF_FW f_FW ,_, and_CC defining_VBG the_DT vectors_NNS x_CC ,_, y_NN ,_, and_CC z_SYM to_TO be_VB x_NN =_JJ F_NN D1_NN F_NN -LRB-_-LRB- DF_NN +_CC diag_NN -LRB-_-LRB- uj_NN -RRB-_-RRB- -RRB-_-RRB- #_# diag_NN -LRB-_-LRB- uj_NN -RRB-_-RRB- f_FW -LRB-_-LRB- ##_CD -RRB-_-RRB- y_NN =_JJ -LRB-_-LRB- #_# -RRB-_-RRB- e_SYM -LRB-_-LRB- +_CC #_# -RRB-_-RRB- -LRB-_-LRB- ##_CD -RRB-_-RRB- z_SYM =_JJ -LRB-_-LRB- #_# w_FW -RRB-_-RRB- #_# s_NNS ._.
+-LRB-_-LRB- ##_NN -RRB-_-RRB- The_DT first_JJ term_NN x_NN is_VBZ a_DT sparse_JJ vector_NN ,_, and_CC takes_VBZ non-zero_JJ values_NNS only_RB for_IN local_JJ pages_NNS k_NN that_WDT are_VBP siblings_NNS of_IN the_DT global_JJ page_NN j_NN ._.
+We_PRP define_VBP -LRB-_-LRB- i_FW ,_, j_NN -RRB-_-RRB- F_NN if_IN and_CC only_RB if_IN F_NN -LSB-_-LRB- j_NN ,_, i_FW -RSB-_-RRB- =_JJ #_# -LRB-_-LRB- equivalently_RB ,_, page_NN i_FW links_NNS to_TO page_NN j_NN -RRB-_-RRB- and_CC express_VBP the_DT value_NN of_IN the_DT component_NN x_NN -LSB-_-LRB- k_NN -RSB-_-RRB- as_IN :_: x_NN -LSB-_-LRB- k_NN -RSB-_-RRB- =_JJ k_NN :_: -LRB-_-LRB- k_NN ,_, k_NN -RRB-_-RRB- F_NN ,_, uj_NN -LSB-_-LRB- k_NN -RSB-_-RRB- =_JJ #_# f_FW -LSB-_-LRB- k_NN -RSB-_-RRB- o_NN -LSB-_-LRB- k_NN -RSB-_-RRB- -LRB-_-LRB- o_NN -LSB-_-LRB- k_NN -RSB-_-RRB- +_CC #_# -RRB-_-RRB- ,_, -LRB-_-LRB- ##_CD -RRB-_-RRB- where_WRB o_NN -LSB-_-LRB- k_NN -RSB-_-RRB- ,_, as_IN before_RB ,_, is_VBZ the_DT number_NN of_IN outlinks_NNS from_IN page_NN k_NN in_IN the_DT local_JJ domain_NN ._.
+Note_VB that_IN the_DT last_JJ two_CD terms_NNS ,_, y_NN and_CC z_SYM are_VBP not_RB dependent_JJ on_IN the_DT current_JJ global_JJ node_NN j_NN ._.
+Given_VBN the_DT function_NN hj_NN -LRB-_-LRB- f_LS -RRB-_-RRB- =_JJ y_NN +_CC -LRB-_-LRB- uT_NN j_NN f_LS -RRB-_-RRB- z_SYM #_# ,_, the_DT quantity_NN fj_NN f_FW #_# 120_CD Research_NNP Track_NNP Paper_NNP can_MD be_VB expressed_VBN as_IN fj_NN f_FW #_# =_JJ k_NN x_NN -LSB-_-LRB- k_NN -RSB-_-RRB- +_CC y_NN -LSB-_-LRB- k_NN -RSB-_-RRB- +_CC -LRB-_-LRB- uT_NN j_NN f_LS -RRB-_-RRB- z_SYM -LSB-_-LRB- k_NN -RSB-_-RRB- =_JJ k_NN :_: x_CC -LSB-_-LRB- k_NN -RSB-_-RRB- =_JJ #_# y_SYM -LSB-_-LRB- k_NN -RSB-_-RRB- +_CC -LRB-_-LRB- uT_NN j_NN f_LS -RRB-_-RRB- z_SYM -LSB-_-LRB- k_NN -RSB-_-RRB- +_CC k_NN :_: x_CC -LSB-_-LRB- k_NN -RSB-_-RRB- =_JJ #_# x_CC -LSB-_-LRB- k_NN -RSB-_-RRB- +_CC y_NN -LSB-_-LRB- k_NN -RSB-_-RRB- +_CC -LRB-_-LRB- uT_NN j_NN f_LS -RRB-_-RRB- z_SYM -LSB-_-LRB- k_NN -RSB-_-RRB- =_JJ hj_NN -LRB-_-LRB- f_LS -RRB-_-RRB- k_NN :_: x_CC -LSB-_-LRB- k_NN -RSB-_-RRB- =_JJ #_# y_SYM -LSB-_-LRB- k_NN -RSB-_-RRB- +_CC -LRB-_-LRB- uT_NN j_NN f_LS -RRB-_-RRB- z_SYM -LSB-_-LRB- k_NN -RSB-_-RRB- +_CC k_NN :_: x_CC -LSB-_-LRB- k_NN -RSB-_-RRB- =_JJ #_# x_CC -LSB-_-LRB- k_NN -RSB-_-RRB- +_CC y_NN -LSB-_-LRB- k_NN -RSB-_-RRB- +_CC -LRB-_-LRB- uT_NN j_NN f_LS -RRB-_-RRB- z_SYM -LSB-_-LRB- k_NN -RSB-_-RRB- ._.
+-LRB-_-LRB- ##_NN -RRB-_-RRB- If_IN we_PRP can_MD compute_VB the_DT function_NN hj_NN in_IN linear_JJ time_NN ,_, then_RB we_PRP can_MD compute_VB each_DT value_NN of_IN fj_NN f_FW #_# using_VBG an_DT additional_JJ amount_NN of_IN time_NN that_WDT is_VBZ proportional_JJ to_TO the_DT number_NN of_IN nonzero_NN components_NNS in_IN x_NN ._.
+These_DT optimizations_NNS are_VBP carried_VBN out_RP in_IN Algorithm_NNP #_# ._.
+Note_VB that_IN -LRB-_-LRB- ##_NN -RRB-_-RRB- computes_VBZ the_DT difference_NN between_IN all_DT components_NNS of_IN f_FW and_CC fj_NN ,_, whereas_IN our_PRP$ node_NN selection_NN criteria_NNS ,_, given_VBN in_IN -LRB-_-LRB- #_# -RRB-_-RRB- ,_, is_VBZ restricted_JJ to_TO the_DT components_NNS corresponding_VBG to_TO nodes_NNS in_IN the_DT original_JJ local_JJ domain_NN L_NN ._.
+Let_VB us_PRP examine_VB Algorithm_NNP #_# in_IN more_JJR detail_NN ._.
+First_RB ,_, the_DT algorithm_NN computes_VBZ the_DT outlink_JJ counts_NNS for_IN each_DT page_NN in_IN the_DT local_JJ domain_NN ._.
+The_DT algorithm_NN then_RB computes_VBZ the_DT quantity_NN uT_NN j_NN f_FW for_IN each_DT known_VBN global_JJ page_NN j_NN ._.
+This_DT inner_JJ product_NN can_MD be_VB written_VBN as_IN -LRB-_-LRB- #_# -RRB-_-RRB- 1_CD +_CC #_# +_CC k_NN :_: -LRB-_-LRB- k_NN ,_, j_NN -RRB-_-RRB- Fout_NN f_FW -LSB-_-LRB- k_NN -RSB-_-RRB- o_NN -LSB-_-LRB- k_NN -RSB-_-RRB- +_CC #_# ,_, where_WRB the_DT second_JJ term_NN sums_NNS over_IN the_DT set_NN of_IN local_JJ pages_NNS that_WDT link_VBP to_TO page_NN j_NN ._.
+Since_IN the_DT total_JJ number_NN of_IN edges_NNS in_IN Fout_NN was_VBD assumed_VBN to_TO have_VB size_NN O_NN -LRB-_-LRB- -RRB-_-RRB- -LRB-_-LRB- recall_NN that_WDT is_VBZ the_DT number_NN of_IN pages_NNS in_IN F_NN -RRB-_-RRB- ,_, the_DT running_VBG time_NN of_IN this_DT step_NN is_VBZ also_RB O_NN -LRB-_-LRB- -RRB-_-RRB- ._.
+The_DT algorithm_NN then_RB computes_VBZ the_DT vectors_NNS y_NN and_CC z_SYM ,_, as_IN given_VBN in_IN -LRB-_-LRB- ##_NN -RRB-_-RRB- and_CC -LRB-_-LRB- ##_CD -RRB-_-RRB- ,_, respectively_RB ._.
+The_DT L1NormDiff_NN method_NN is_VBZ called_VBN on_IN the_DT components_NNS of_IN these_DT vectors_NNS which_WDT correspond_VBP to_TO the_DT pages_NNS in_IN L_NN ,_, and_CC it_PRP estimates_VBZ the_DT value_NN of_IN EL_NN -LRB-_-LRB- y_NN +_CC -LRB-_-LRB- uT_NN j_NN f_LS -RRB-_-RRB- z_SYM -RRB-_-RRB- #_# for_IN each_DT page_NN j_NN ._.
+The_DT estimation_NN works_VBZ as_IN follows_VBZ ._.
+First_RB ,_, the_DT values_NNS of_IN uT_NN j_NN f_FW are_VBP discretized_VBN uniformly_RB into_IN c_NN values_NNS -LCB-_-LRB- a1_NN ,_, ..._: ,_, ac_NN -RCB-_-RRB- ._.
+The_DT quantity_NN EL_NN -LRB-_-LRB- y_NN +_CC aiz_NN -RRB-_-RRB- #_# is_VBZ then_RB computed_VBN for_IN each_DT discretized_VBN value_NN of_IN ai_VBP and_CC stored_VBN in_IN a_DT table_NN ._.
+To_TO evaluate_VB EL_NN -LRB-_-LRB- y_NN +_CC az_NN -RRB-_-RRB- #_# for_IN some_DT a_DT -LSB-_-LRB- a1_NN ,_, ac_NN -RSB-_-RRB- ,_, the_DT closest_JJS discretized_JJ value_NN ai_VBP is_VBZ determined_VBN ,_, and_CC the_DT corresponding_JJ entry_NN in_IN the_DT table_NN is_VBZ used_VBN ._.
+The_DT total_JJ running_VBG time_NN for_IN this_DT method_NN is_VBZ linear_JJ in_IN and_CC the_DT discretization_NN parameter_NN c_NN -LRB-_-LRB- which_WDT we_PRP take_VBP to_TO be_VB a_DT constant_JJ -RRB-_-RRB- ._.
+We_PRP note_VBP that_IN if_IN exact_JJ values_NNS are_VBP desired_VBN ,_, we_PRP have_VBP also_RB developed_VBN an_DT algorithm_NN that_WDT runs_VBZ in_IN O_NN -LRB-_-LRB- log_NN -RRB-_-RRB- time_NN that_WDT is_VBZ not_RB described_VBN here_RB ._.
+In_IN the_DT main_JJ loop_NN ,_, we_PRP compute_VBP the_DT vector_NN x_NN ,_, as_IN defined_VBN in_IN equation_NN -LRB-_-LRB- ##_NN -RRB-_-RRB- ._.
+The_DT nested_JJ loops_NNS iterate_VB over_IN the_DT set_NN of_IN pages_NNS in_IN F_NN that_WDT are_VBP siblings_NNS of_IN page_NN j_NN ._.
+Typically_RB ,_, the_DT size_NN of_IN this_DT set_NN is_VBZ bounded_VBN by_IN a_DT constant_JJ ._.
+Finally_RB ,_, for_IN each_DT page_NN j_NN ,_, the_DT scores_NNS vector_NN is_VBZ updated_VBN over_IN the_DT set_NN of_IN non-zero_JJ components_NNS k_NN of_IN the_DT vector_NN x_NN with_IN k_NN L_NN ._.
+This_DT set_NN has_VBZ size_NN equal_JJ to_TO the_DT number_NN of_IN local_JJ siblings_NNS of_IN page_NN j_NN ,_, and_CC is_VBZ a_DT subset_NN of_IN the_DT total_JJ number_NN of_IN siblings_NNS of_IN page_NN j_NN ._.
+Thus_RB ,_, each_DT iteration_NN of_IN the_DT main_JJ loop_NN takes_VBZ constant_JJ time_NN ,_, and_CC the_DT total_JJ running_VBG time_NN of_IN the_DT main_JJ loop_NN is_VBZ O_NN -LRB-_-LRB- -RRB-_-RRB- ._.
+Since_IN we_PRP have_VBP assumed_VBN that_IN the_DT size_NN of_IN F_NN will_MD not_RB grow_VB larger_JJR than_IN O_NN -LRB-_-LRB- n_NN -RRB-_-RRB- ,_, the_DT total_JJ running_VBG time_NN for_IN the_DT algorithm_NN is_VBZ O_NN -LRB-_-LRB- n_NN -RRB-_-RRB- ._.
+Algorithm_NN #_# :_: Node_NNP Selection_NN via_IN Stochastic_NNP Complementation_NNP ._.
+SC-Select_NN -LRB-_-LRB- F_NN ,_, Fout_NN ,_, f_FW ,_, k_NN -RRB-_-RRB- Input_NN :_: F_NN :_: zero-one_NN adjacency_NN matrix_NN of_IN size_NN corresponding_VBG to_TO the_DT current_JJ local_JJ subgraph_NN ,_, Fout_NN :_: zero-one_NN outlink_NN matrix_NN from_IN F_NN to_TO global_JJ subgraph_NN ,_, f_FW :_: PageRank_NN of_IN F_NN ,_, k_NN :_: number_NN of_IN pages_NNS to_TO return_VB Output_NN :_: pages_NNS :_: set_NN of_IN k_NN pages_NNS to_TO crawl_VB next_JJ -LCB-_-LRB- Compute_VB outlink_NN sums_NNS for_IN local_JJ subgraph_JJ -RCB-_-RRB- foreach_NN -LRB-_-LRB- page_NN j_NN F_NN -RRB-_-RRB- o_NN -LSB-_-LRB- j_NN -RSB-_-RRB- k_NN :_: -LRB-_-LRB- j_NN ,_, k_NN -RRB-_-RRB- F_NN F_NN -LSB-_-LRB- j_NN ,_, k_NN -RSB-_-RRB- end_NN -LCB-_-LRB- Compute_NN scalar_NN uT_NN j_NN f_FW for_IN each_DT global_JJ node_NN j_NN -RCB-_-RRB- foreach_NN -LRB-_-LRB- page_NN j_NN Fout_NN -RRB-_-RRB- g_NN -LSB-_-LRB- j_NN -RSB-_-RRB- -LRB-_-LRB- #_# -RRB-_-RRB- #_# +_CC #_# foreach_NN -LRB-_-LRB- page_NN k_NN :_: -LRB-_-LRB- k_NN ,_, j_NN -RRB-_-RRB- Fout_NN -RRB-_-RRB- g_NN -LSB-_-LRB- j_NN -RSB-_-RRB- g_NN -LSB-_-LRB- j_NN -RSB-_-RRB- +_CC f_FW -LSB-_-LRB- k_NN -RSB-_-RRB- o_NN -LSB-_-LRB- k_NN -RSB-_-RRB- +_CC #_# end_VB end_NN -LCB-_-LRB- Compute_NN vectors_NNS y_NN and_CC z_SYM as_IN in_IN -LRB-_-LRB- ##_NN -RRB-_-RRB- and_CC -LRB-_-LRB- ##_CD -RRB-_-RRB- -RCB-_-RRB- y_NN -LRB-_-LRB- #_# -RRB-_-RRB- e_SYM -LRB-_-LRB- +_CC #_# -RRB-_-RRB- z_SYM -LRB-_-LRB- #_# w_FW -RRB-_-RRB- #_# s_NNS -LCB-_-LRB- Approximate_NNP y_NN +_CC g_NN -LSB-_-LRB- j_NN -RSB-_-RRB- z_SYM #_# for_IN all_DT values_NNS g_NN -LSB-_-LRB- j_NN -RSB-_-RRB- -RCB-_-RRB- norm_NN diffs_VBZ L1NormDiffs_NNS -LRB-_-LRB- g_NN ,_, ELy_NNP ,_, ELz_NNP -RRB-_-RRB- foreach_NN -LRB-_-LRB- page_NN j_NN Fout_NN -RRB-_-RRB- -LCB-_-LRB- Compute_VB sparse_JJ vector_NN x_NN as_IN in_IN -LRB-_-LRB- ##_NN -RRB-_-RRB- -RCB-_-RRB- x_CC #_# foreach_NN -LRB-_-LRB- page_NN k_NN :_: -LRB-_-LRB- k_NN ,_, j_NN -RRB-_-RRB- Fout_NN -RRB-_-RRB- foreach_NN -LRB-_-LRB- page_NN k_NN :_: -LRB-_-LRB- k_NN ,_, k_NN -RRB-_-RRB- F_NN -RRB-_-RRB- -RRB-_-RRB- x_CC -LSB-_-LRB- k_NN -RSB-_-RRB- x_CC -LSB-_-LRB- k_NN -RSB-_-RRB- f_FW -LSB-_-LRB- k_NN -RSB-_-RRB- o_NN -LSB-_-LRB- k_NN -RSB-_-RRB- -LRB-_-LRB- o_NN -LSB-_-LRB- k_NN -RSB-_-RRB- +_CC #_# -RRB-_-RRB- end_NN end_NN x_CC x_NN scores_NNS -LSB-_-LRB- j_NN -RSB-_-RRB- norm_NN diffs_VBZ -LSB-_-LRB- j_NN -RSB-_-RRB- foreach_NN -LRB-_-LRB- k_NN :_: x_CC -LSB-_-LRB- k_NN -RSB-_-RRB- >_JJR #_# and_CC page_NN k_NN L_NN -RRB-_-RRB- scores_NNS -LSB-_-LRB- j_NN -RSB-_-RRB- scores_NNS -LSB-_-LRB- j_NN -RSB-_-RRB- |_CD y_NN -LSB-_-LRB- k_NN -RSB-_-RRB- +_CC g_NN -LSB-_-LRB- j_NN -RSB-_-RRB- z_SYM -LSB-_-LRB- k_NN -RSB-_-RRB- |_CD +_CC |_CD x_CC -LSB-_-LRB- k_NN -RSB-_-RRB- +_CC y_NN -LSB-_-LRB- k_NN -RSB-_-RRB- +_CC g_NN -LSB-_-LRB- j_NN -RSB-_-RRB- z_SYM -LSB-_-LRB- k_NN -RSB-_-RRB- -RRB-_-RRB- |_CD end_NN end_NN Return_NN k_NN pages_NNS with_IN highest_JJS scores_NNS 5_CD ._.
+#_# ._.
+#_# PageRank_NNP Flows_VBZ We_PRP now_RB present_VBP an_DT intuitive_JJ analysis_NN of_IN the_DT stochastic_JJ complementation_NN method_NN by_IN decomposing_VBG the_DT change_NN in_IN PageRank_NNP in_IN terms_NNS of_IN leaks_NNS ''_'' and_CC flows_VBZ ''_'' ._.
+This_DT analysis_NN is_VBZ motivated_VBN by_IN the_DT decomposition_NN given_VBN in_IN -LRB-_-LRB- ##_NN -RRB-_-RRB- ._.
+PageRank_NN flow_NN ''_'' is_VBZ the_DT increase_NN in_IN the_DT local_JJ PageRanks_NNP originating_VBG from_IN global_JJ page_NN j_NN ._.
+The_DT flows_NNS are_VBP represented_VBN by_IN the_DT non-negative_JJ vector_NN -LRB-_-LRB- uT_NN j_NN f_LS -RRB-_-RRB- z_SYM -LRB-_-LRB- equations_NNS -LRB-_-LRB- ##_NNS -RRB-_-RRB- and_CC -LRB-_-LRB- ##_CD -RRB-_-RRB- -RRB-_-RRB- ._.
+The_DT scalar_NN uT_NN j_NN f_FW can_MD be_VB thought_VBN of_IN as_IN the_DT total_JJ amount_NN of_IN PageRank_NN flow_NN that_WDT page_NN j_NN has_VBZ available_JJ to_TO distribute_VB ._.
+The_DT vector_NN z_SYM dictates_VBZ how_WRB the_DT flow_NN is_VBZ allocated_VBN to_TO the_DT local_JJ domain_NN ;_: the_DT flow_NN that_IN local_JJ page_NN k_NN receives_VBZ is_VBZ proportional_JJ to_TO -LRB-_-LRB- within_IN a_DT constant_JJ factor_NN due_JJ to_TO the_DT random_JJ surfer_NN vector_NN -RRB-_-RRB- the_DT expected_VBN number_NN of_IN its_PRP$ inlinks_NNS ._.
+The_DT PageRank_NN leaks_NNS ''_'' represent_VBP the_DT decrease_NN in_IN PageRank_NN resulting_VBG from_IN the_DT addition_NN of_IN page_NN j_NN ._.
+The_DT leakage_NN can_MD be_VB quantified_VBN in_IN terms_NNS of_IN the_DT non-positive_JJ vectors_NNS x_CC and_CC y_NN -LRB-_-LRB- equations_NNS -LRB-_-LRB- ##_NNS -RRB-_-RRB- and_CC -LRB-_-LRB- ##_CD -RRB-_-RRB- -RRB-_-RRB- ._.
+For_IN vector_NN x_NN ,_, we_PRP can_MD see_VB from_IN equation_NN -LRB-_-LRB- ##_NN -RRB-_-RRB- that_IN the_DT amount_NN of_IN PageRank_NNP leaked_VBN by_IN a_DT local_JJ page_NN is_VBZ proportional_JJ to_TO the_DT weighted_JJ sum_NN of_IN the_DT Page121_NNP Research_NNP Track_NNP Paper_NNP Ranks_NNP of_IN its_PRP$ siblings_NNS ._.
+Thus_RB ,_, pages_NNS that_WDT have_VBP siblings_NNS with_IN higher_JJR PageRanks_NNP -LRB-_-LRB- and_CC low_JJ outlink_NN counts_NNS -RRB-_-RRB- will_MD experience_VB more_RBR leakage_NN ._.
+The_DT leakage_NN caused_VBN by_IN y_NN is_VBZ an_DT artifact_NN of_IN the_DT random_JJ surfer_NN vector_NN ._.
+We_PRP will_MD next_RB show_VB that_IN if_IN only_RB the_DT flow_NN ''_'' term_NN ,_, -LRB-_-LRB- uT_NNP j_NN f_LS -RRB-_-RRB- z_SYM ,_, is_VBZ considered_VBN ,_, then_RB the_DT resulting_VBG method_NN is_VBZ very_RB similar_JJ to_TO a_DT heuristic_NN proposed_VBN by_IN Cho_NNP et_FW al_FW ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- that_WDT has_VBZ been_VBN widely_RB used_VBN for_IN the_DT Crawling_NNP Through_IN URL_NN Ordering_VBG problem_NN ._.
+This_DT heuristic_NN is_VBZ computationally_RB cheaper_JJR ,_, but_CC as_IN we_PRP will_MD see_VB later_RB ,_, not_RB as_IN effective_JJ as_IN the_DT Stochastic_NNP Complementation_NNP method_NN ._.
+Our_PRP$ node_NN selection_NN strategy_NN chooses_VBZ global_JJ nodes_NNS that_WDT have_VBP the_DT largest_JJS influence_NN -LRB-_-LRB- equation_NN -LRB-_-LRB- #_# -RRB-_-RRB- -RRB-_-RRB- ._.
+If_IN this_DT influence_NN is_VBZ approximated_VBN using_VBG only_RB flows_VBZ ''_'' ,_, the_DT optimal_JJ node_NN j_NN is_VBZ :_: j_NN =_JJ argmaxj_NN EL_NN uT_NN j_NN fz_NN #_# =_SYM argmaxj_FW uT_FW j_FW f_FW EL_FW z_SYM #_# =_SYM argmaxj_FW uT_FW j_FW f_FW =_JJ argmaxj_NN -LRB-_-LRB- DF_NN +_CC diag_NN -LRB-_-LRB- uj_NN -RRB-_-RRB- -RRB-_-RRB- #_# uj_NN +_CC -LRB-_-LRB- #_# -RRB-_-RRB- e_SYM +_CC #_# ,_, f_FW =_JJ argmaxjfT_NN -LRB-_-LRB- DF_NN +_CC diag_NN -LRB-_-LRB- uj_NN -RRB-_-RRB- -RRB-_-RRB- #_# uj_NN ._.
+The_DT resulting_VBG page_NN selection_NN score_NN can_MD be_VB expressed_VBN as_IN a_DT sum_NN of_IN the_DT PageRanks_NNPS of_IN each_DT local_JJ page_NN k_NN that_WDT links_VBZ to_TO j_NN ,_, where_WRB each_DT PageRank_NN value_NN is_VBZ normalized_VBN by_IN o_NN -LSB-_-LRB- k_NN -RSB-_-RRB- +_CC #_# ._.
+Interestingly_RB ,_, the_DT normalization_NN that_WDT arises_VBZ in_IN our_PRP$ method_NN differs_VBZ from_IN the_DT heuristic_NN given_VBN in_IN -LSB-_-LRB- #_# -RSB-_-RRB- ,_, which_WDT normalizes_VBZ by_IN o_NN -LSB-_-LRB- k_NN -RSB-_-RRB- ._.
+The_DT algorithm_NN PF-Select_NN ,_, which_WDT is_VBZ omitted_VBN due_JJ to_TO lack_NN of_IN space_NN ,_, first_JJ computes_VBZ the_DT quantity_NN fT_NN -LRB-_-LRB- DF_NN +_CC diag_NN -LRB-_-LRB- uj_NN -RRB-_-RRB- -RRB-_-RRB- #_# uj_NN for_IN each_DT global_JJ page_NN j_NN ,_, and_CC then_RB returns_VBZ the_DT pages_NNS with_IN the_DT k_NN largest_JJS scores_NNS ._.
+To_TO see_VB that_IN the_DT running_VBG time_NN for_IN this_DT algorithm_NN is_VBZ O_NN -LRB-_-LRB- n_NN -RRB-_-RRB- ,_, note_NN that_IN the_DT computation_NN involved_VBN in_IN this_DT method_NN is_VBZ a_DT subset_NN of_IN that_DT needed_VBN for_IN the_DT SC-Select_NN method_NN -LRB-_-LRB- Algorithm_NN #_# -RRB-_-RRB- ,_, which_WDT was_VBD shown_VBN to_TO have_VB a_DT running_VBG time_NN of_IN O_NN -LRB-_-LRB- n_NN -RRB-_-RRB- ._.
+6_CD ._.
+EXPERIMENTS_NNS In_IN this_DT section_NN ,_, we_PRP provide_VBP experimental_JJ evidence_NN to_TO verify_VB the_DT effectiveness_NN of_IN our_PRP$ algorithms_NNS ._.
+We_PRP first_RB outline_VB our_PRP$ experimental_JJ methodology_NN and_CC then_RB provide_VB results_NNS across_IN a_DT variety_NN of_IN local_JJ domains_NNS ._.
+6_CD ._.
+#_# Methodology_NNP Given_VBN the_DT limited_JJ resources_NNS available_JJ at_IN an_DT academic_JJ institution_NN ,_, crawling_VBG a_DT section_NN of_IN the_DT web_NN that_WDT is_VBZ of_IN the_DT same_JJ magnitude_NN as_IN that_DT indexed_VBN by_IN Google_NNP or_CC Yahoo_NNP !_.
+is_VBZ clearly_RB infeasible_JJ ._.
+Thus_RB ,_, for_IN a_DT given_VBN local_JJ domain_NN ,_, we_PRP approximate_JJ the_DT global_JJ graph_NN by_IN crawling_VBG a_DT local_JJ neighborhood_NN around_IN the_DT domain_NN that_WDT is_VBZ several_JJ orders_NNS of_IN magnitude_NN larger_JJR than_IN the_DT local_JJ subgraph_NN ._.
+Even_RB though_IN such_PDT a_DT graph_NN is_VBZ still_RB orders_NNS of_IN magnitude_NN smaller_JJR than_IN the_DT true_JJ ''_'' global_JJ graph_NN ,_, we_PRP contend_VBP that_IN ,_, even_RB if_IN there_EX exist_VBP some_DT highly_RB influential_JJ pages_NNS that_WDT are_VBP very_RB far_RB away_RB from_IN our_PRP$ local_JJ domain_NN ,_, it_PRP is_VBZ unrealistic_JJ for_IN any_DT local_JJ node_NN selection_NN algorithm_NN to_TO find_VB them_PRP ._.
+Such_JJ pages_NNS also_RB tend_VBP to_TO be_VB highly_RB unrelated_JJ to_TO pages_NNS within_IN the_DT local_JJ domain_NN ._.
+When_WRB explaining_VBG our_PRP$ node_NN selection_NN strategies_NNS in_IN section_NN 5_CD ,_, we_PRP made_VBD the_DT simplifying_VBG assumption_NN that_IN our_PRP$ local_JJ graph_NN contained_VBD no_DT dangling_JJ nodes_NNS ._.
+This_DT assumption_NN was_VBD only_RB made_VBN to_TO ease_VB our_PRP$ analysis_NN ._.
+Our_PRP$ implementation_NN efficiently_RB handles_VBZ dangling_JJ links_NNS by_IN replacing_VBG each_DT zero_CD column_NN of_IN our_PRP$ adjacency_NN matrix_NN with_IN the_DT uniform_JJ vector_NN ._.
+We_PRP evaluate_VBP the_DT algorithm_NN using_VBG the_DT two_CD node_NN selection_NN strategies_NNS given_VBN in_IN Section_NN #_# ._.
+#_# ,_, and_CC also_RB against_IN the_DT following_VBG baseline_NN methods_NNS :_: Random_NNP :_: Nodes_NNS are_VBP chosen_VBN uniformly_RB at_IN random_JJ among_IN the_DT known_JJ global_JJ nodes_NNS ._.
+OutlinkCount_NNP :_: Global_NNP nodes_NNS with_IN the_DT highest_JJS number_NN of_IN outlinks_NNS from_IN the_DT local_JJ domain_NN are_VBP chosen_VBN ._.
+At_IN each_DT iteration_NN of_IN the_DT FindGlobalPR_NN algorithm_NN ,_, we_PRP evaluate_VBP performance_NN by_IN computing_VBG the_DT difference_NN between_IN the_DT current_JJ PageRank_NN estimate_NN of_IN the_DT local_JJ domain_NN ,_, ELf_NNP ELf_NNP #_# ,_, and_CC the_DT global_JJ PageRank_NN of_IN the_DT local_JJ domain_NN ELg_NNP ELg_NNP #_# ._.
+All_DT PageRank_NN calculations_NNS were_VBD performed_VBN using_VBG the_DT uniform_JJ random_JJ surfer_NN vector_NN ._.
+Across_IN all_DT experiments_NNS ,_, we_PRP set_VBD the_DT random_JJ surfer_NN parameter_NN ,_, to_TO be_VB ._.
+##_NN ,_, and_CC used_VBD a_DT convergence_NN threshold_NN of_IN ###_CD ._.
+We_PRP evaluate_VBP the_DT difference_NN between_IN the_DT local_JJ and_CC global_JJ PageRank_NN vectors_NNS using_VBG three_CD different_JJ metrics_NNS :_: the_DT L1_NN and_CC L_NN norms_NNS ,_, and_CC Kendall_NNP ''_'' s_VBZ tau_NN ._.
+The_DT L1_NN norm_NN measures_VBZ the_DT sum_NN of_IN the_DT absolute_JJ value_NN of_IN the_DT differences_NNS between_IN the_DT two_CD vectors_NNS ,_, and_CC the_DT L_NN norm_NN measures_VBZ the_DT absolute_JJ value_NN of_IN the_DT largest_JJS difference_NN ._.
+Kendall_NNP ''_'' s_VBZ tau_NN metric_JJ is_VBZ a_DT popular_JJ rank_NN correlation_NN measure_NN used_VBN to_TO compare_VB PageRanks_NNP -LSB-_-LRB- #_# ,_, ##_NN -RSB-_-RRB- ._.
+This_DT metric_NN can_MD be_VB computed_VBN by_IN counting_VBG the_DT number_NN of_IN pairs_NNS of_IN pairs_NNS that_WDT agree_VBP in_IN ranking_JJ ,_, and_CC subtracting_VBG from_IN that_IN the_DT number_NN of_IN pairs_NNS of_IN pairs_NNS that_WDT disagree_VBP in_IN ranking_NN ._.
+The_DT final_JJ value_NN is_VBZ then_RB normalized_VBN by_IN the_DT total_JJ number_NN of_IN n_NN 2_CD such_JJ pairs_NNS ,_, resulting_VBG in_IN a_DT -LSB-_-LRB- #_# ,_, #_# -RSB-_-RRB- range_NN ,_, where_WRB a_DT negative_JJ score_NN signifies_VBZ anti-correlation_JJ among_IN rankings_NNS ,_, and_CC values_NNS near_IN one_CD correspond_VBP to_TO strong_JJ rank_NN correlation_NN ._.
+6_CD ._.
+#_# Results_NNS Our_PRP$ experiments_NNS are_VBP based_VBN on_IN two_CD large_JJ web_NN crawls_VBZ and_CC were_VBD downloaded_VBN using_VBG the_DT web_NN crawler_NN that_WDT is_VBZ part_NN of_IN the_DT Nutch_NNP open_JJ source_NN search_NN engine_NN project_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+All_DT crawls_VBZ were_VBD restricted_JJ to_TO only_RB http_VB ''_'' pages_NNS ,_, and_CC to_TO limit_VB the_DT number_NN of_IN dynamically_RB generated_VBN pages_NNS that_IN we_PRP crawl_VBP ,_, we_PRP ignored_VBD all_DT pages_NNS with_IN urls_NNS containing_VBG any_DT of_IN the_DT characters_NNS ?_. ''_''
+,_, *_SYM ''_'' ,_, @_SYM ''_'' ,_, or_CC =_JJ ''_'' ._.
+The_DT first_JJ crawl_NN ,_, which_WDT we_PRP will_MD refer_VB to_TO as_IN the_DT edu_NN ''_'' dataset_NN ,_, was_VBD seeded_VBN by_IN homepages_NNS of_IN the_DT top_JJ 100_CD graduate_JJ computer_NN science_NN departments_NNS in_IN the_DT USA_NNP ,_, as_IN rated_VBN by_IN the_DT US_NNP News_NNP and_CC World_NNP Report_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, and_CC also_RB by_IN the_DT home_NN pages_NNS of_IN their_PRP$ respective_JJ institutions_NNS ._.
+A_DT crawl_NN of_IN depth_NN #_# was_VBD performed_VBN ,_, restricted_JJ to_TO pages_NNS within_IN the_DT ._.
+edu_NN ''_'' domain_NN ,_, resulting_VBG in_IN a_DT graph_NN with_IN approximately_RB #_# ._.
+#_# million_CD pages_NNS and_CC ##_NN ._.
+#_# million_CD links_NNS ._.
+The_DT second_JJ crawl_NN was_VBD seeded_VBN by_IN the_DT set_NN of_IN pages_NNS under_IN the_DT politics_NNS ''_'' hierarchy_NN in_IN the_DT dmoz_NN open_JJ directory_NN project_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+We_PRP crawled_VBD all_DT pages_NNS up_IN to_TO four_CD links_NNS away_RB ,_, which_WDT yielded_VBD a_DT graph_NN with_IN #_# ._.
+#_# million_CD pages_NNS and_CC 17_CD ._.
+#_# million_CD links_NNS ._.
+Within_IN the_DT edu_NN ''_'' crawl_NN ,_, we_PRP identified_VBD the_DT five_CD site-specific_JJ domains_NNS corresponding_VBG to_TO the_DT websites_NNS of_IN the_DT top_JJ five_CD graduate_JJ computer_NN science_NN departments_NNS ,_, as_IN ranked_VBN by_IN the_DT US_NNP News_NNP and_CC World_NNP Report_NNP ._.
+This_DT yielded_VBD local_JJ domains_NNS of_IN various_JJ sizes_NNS ,_, from_IN ##_CD ,_, ###_CD -LRB-_-LRB- UIUC_NN -RRB-_-RRB- to_TO ##_CD ,_, ###_CD -LRB-_-LRB- Berkeley_NNP -RRB-_-RRB- ._.
+For_IN each_DT of_IN these_DT site-specific_JJ domains_NNS with_IN size_NN n_NN ,_, we_PRP performed_VBD ##_CD iterations_NNS of_IN the_DT FindGlobalPR_NN algorithm_NN to_TO crawl_VB a_DT total_NN of_IN 2n_JJ additional_JJ nodes_NNS ._.
+Figure_NNP #_# -LRB-_-LRB- a_DT -RRB-_-RRB- gives_VBZ the_DT -LRB-_-LRB- L1_NN -RRB-_-RRB- difference_NN from_IN the_DT PageRank_NN estimate_NN at_IN each_DT iteration_NN to_TO the_DT global_JJ PageRank_NNP ,_, for_IN the_DT Berkeley_NNP local_JJ domain_NN ._.
+The_DT performance_NN of_IN this_DT dataset_NN was_VBD representative_NN of_IN the_DT typical_JJ performance_NN across_IN the_DT five_CD computer_NN science_NN sitespecific_JJ local_JJ domains_NNS ._.
+Initially_RB ,_, the_DT L1_NN difference_NN between_IN the_DT global_JJ and_CC local_JJ PageRanks_NNP ranged_VBD from_IN ._.
+####_NN -LRB-_-LRB- Stanford_NNP -RRB-_-RRB- to_TO ._.
+###_NN -LRB-_-LRB- MIT_NNP -RRB-_-RRB- ._.
+For_IN the_DT first_JJ several_JJ iterations_NNS ,_, the_DT 122_CD Research_NNP Track_NNP Paper_NNP 0_CD #_# ##_CD ##_CD ##_CD ##_CD ##_CD ##_CD ##_CD ##_CD ##_NN 0_CD ._.
+###_NN 0_CD ._.
+##_NN 0_CD ._.
+###_NN 0_CD ._.
+##_NN 0_CD ._.
+###_NN 0_CD ._.
+##_NN 0_CD ._.
+###_NN 0_CD ._.
+##_NN 0_CD ._.
+###_NNP Number_NNP of_IN Iterations_NNPS GlobalandLocalPageRankDifference_NNP -LRB-_-LRB- L1_NN -RRB-_-RRB- Stochastic_NNP Complement_NNP PageRank_NNP Flow_NN Outlink_NNP Count_NNP Random_NNP 0_CD ##_CD ##_CD ##_CD ##_CD ##_NN 0_CD 0_CD ._.
+##_NN 0_CD ._.
+#_# 0_CD ._.
+##_NN 0_CD ._.
+#_# 0_CD ._.
+##_NN 0_CD ._.
+#_# 0_CD ._.
+##_NN Number_NN of_IN Iterations_NNS GlobalandLocalPageRankDifference_NN -LRB-_-LRB- L1_NN -RRB-_-RRB- Stochastic_NNP Complement_NNP PageRank_NNP Flow_NN Outlink_NNP Count_NNP Random_NNP 0_CD #_# ##_CD ##_CD ##_CD ##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+#_# 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+#_# 0_CD ._.
+##_NN 0_CD ._.
+##_NN Number_NN of_IN Iterations_NNS GlobalandLocalPageRankDifference_NN -LRB-_-LRB- L1_NN -RRB-_-RRB- Stochastic_NNP Complement_NNP PageRank_NNP Flow_NN Outlink_NNP Count_NNP Random_NNP -LRB-_-LRB- a_DT -RRB-_-RRB- www_NN ._.
+cs_NNS ._.
+berkeley_NN ._.
+edu_NN -LRB-_-LRB- b_NN -RRB-_-RRB- www_NN ._.
+enterstageright_NN ._.
+com_NN -LRB-_-LRB- c_NN -RRB-_-RRB- Politics_NNPS Figure_NNP #_# :_: L1_NN difference_NN between_IN the_DT estimated_VBN and_CC true_JJ global_JJ PageRanks_NNP for_IN -LRB-_-LRB- a_DT -RRB-_-RRB- Berkeley_NNP ''_'' s_VBZ computer_NN science_NN website_NN ,_, -LRB-_-LRB- b_LS -RRB-_-RRB- the_DT site-specific_JJ domain_NN ,_, www_NN ._.
+enterstageright_NN ._.
+com_NN ,_, and_CC -LRB-_-LRB- c_LS -RRB-_-RRB- the_DT politics_NNS ''_'' topic-specific_JJ domain_NN ._.
+The_DT stochastic_JJ complement_NN method_NN outperforms_VBZ all_DT other_JJ methods_NNS across_IN various_JJ domains_NNS ._.
+three_CD link-based_JJ methods_NNS all_DT outperform_VBP the_DT random_JJ selection_NN heuristic_NN ._.
+After_IN these_DT initial_JJ iterations_NNS ,_, the_DT random_JJ heuristic_NN tended_VBD to_TO be_VB more_RBR competitive_JJ with_IN -LRB-_-LRB- or_CC even_RB outperform_JJ ,_, as_IN in_IN the_DT Berkeley_NNP local_JJ domain_NN -RRB-_-RRB- the_DT outlink_NN count_NN and_CC PageRank_NN flow_NN heuristics_NNS ._.
+In_IN all_DT tests_NNS ,_, the_DT stochastic_JJ complementation_NN method_NN either_CC outperformed_VBD ,_, or_CC was_VBD competitive_JJ with_IN ,_, the_DT other_JJ methods_NNS ._.
+Table_NNP #_# gives_VBZ the_DT average_JJ difference_NN between_IN the_DT final_JJ estimated_VBN global_JJ PageRanks_NNPS and_CC the_DT true_JJ global_JJ PageRanks_NNP for_IN various_JJ distance_NN measures_NNS ._.
+Algorithm_NN L1_NN L_NN Kendall_NNP Stoch_NNP ._.
+Comp_NNP ._. ._.
+####_NN ._.
+#####_NN ._.
+####_CD PR_NN Flow_NN ._.
+####_NN ._.
+#####_NN ._.
+####_CD Outlink_NNP ._.
+####_NN ._.
+#####_NN ._.
+####_NNP Random_NNP ._.
+####_NN ._.
+#####_NN ._.
+####_NNP Table_NNP #_# :_: Average_JJ final_JJ performance_NN of_IN various_JJ node_NN selection_NN strategies_NNS for_IN the_DT five_CD site-specific_JJ computer_NN science_NN local_JJ domains_NNS ._.
+Note_VB that_DT Kendall_NNP ''_'' s_VBZ Tau_NNP measures_NNS similarity_NN ,_, while_IN the_DT other_JJ metrics_NNS are_VBP dissimilarity_NN measures_NNS ._.
+Stochastic_NNP Complementation_NNP clearly_RB outperforms_VBZ the_DT other_JJ methods_NNS in_IN all_DT metrics_NNS ._.
+Within_IN the_DT politics_NNS ''_'' dataset_NN ,_, we_PRP also_RB performed_VBD two_CD sitespecific_JJ tests_NNS for_IN the_DT largest_JJS websites_NNS in_IN the_DT crawl_NN :_: www_NN ._.
+adamsmith_NN ._.
+org_NN ,_, the_DT website_NN for_IN the_DT London_NNP based_VBN Adam_NNP Smith_NNP Institute_NNP ,_, and_CC www_NN ._.
+enterstageright_NN ._.
+com_NN ,_, an_DT online_JJ conservative_JJ journal_NN ._.
+As_IN with_IN the_DT edu_NN ''_'' local_JJ domains_NNS ,_, we_PRP ran_VBD our_PRP$ algorithm_NN for_IN ##_CD iterations_NNS ,_, crawling_VBG a_DT total_NN of_IN 2n_JJ nodes_NNS ._.
+Figure_NNP #_# -LRB-_-LRB- b_NN -RRB-_-RRB- plots_NNS the_DT results_NNS for_IN the_DT www_NN ._.
+enterstageright_NN ._.
+com_NN domain_NN ._.
+In_IN contrast_NN to_TO the_DT edu_NN ''_'' local_JJ domains_NNS ,_, the_DT Random_NNP and_CC OutlinkCount_NNP methods_NNS were_VBD not_RB competitive_JJ with_IN either_CC the_DT SC-Select_NN or_CC the_DT PF-Select_JJ methods_NNS ._.
+Among_IN all_DT datasets_NNS and_CC all_DT node_NN selection_NN methods_NNS ,_, the_DT stochastic_JJ complementation_NN method_NN was_VBD most_RBS impressive_JJ in_IN this_DT dataset_NN ,_, realizing_VBG a_DT final_JJ estimate_NN that_WDT differed_VBD only_RB ._.
+####_CD from_IN the_DT global_JJ PageRank_NNP ,_, a_DT ten-fold_RB improvement_NN over_IN the_DT initial_JJ local_JJ PageRank_NN difference_NN of_IN ._.
+###_NN ._.
+For_IN the_DT Adam_NNP Smith_NNP local_JJ domain_NN ,_, the_DT initial_JJ difference_NN between_IN the_DT local_JJ and_CC global_JJ PageRanks_NNP was_VBD ._.
+###_NN ,_, and_CC the_DT final_JJ estimates_NNS given_VBN by_IN the_DT SC-Select_NN ,_, PF-Select_NN ,_, OutlinkCount_NN ,_, and_CC Random_NNP methods_NNS were_VBD ._.
+####_NN ,_, ._.
+####_NN ,_, ._.
+####_NN ,_, and_CC ._.
+####_NN ,_, respectively_RB ._.
+Within_IN the_DT politics_NNS ''_'' dataset_NN ,_, we_PRP constructed_VBD four_CD topicspecific_JJ local_JJ domains_NNS ._.
+The_DT first_JJ domain_NN consisted_VBD of_IN all_DT pages_NNS in_IN the_DT dmoz_JJ politics_NNS category_NN ,_, and_CC also_RB all_DT pages_NNS within_IN each_DT of_IN these_DT sites_NNS up_IN to_TO two_CD links_NNS away_RB ._.
+This_DT yielded_VBD a_DT local_JJ domain_NN of_IN ##_NN ,_, ###_CD pages_NNS ,_, and_CC the_DT results_NNS are_VBP given_VBN in_RP figure_NN #_# -LRB-_-LRB- c_NN -RRB-_-RRB- ._.
+Because_IN of_IN the_DT larger_JJR size_NN of_IN the_DT topic-specific_JJ domains_NNS ,_, we_PRP ran_VBD our_PRP$ algorithm_NN for_IN only_RB ##_CD iterations_NNS to_TO crawl_VB a_DT total_NN of_IN n_NN nodes_NNS ._.
+We_PRP also_RB created_VBD topic-specific_JJ domains_NNS from_IN three_CD political_JJ sub-topics_NNS :_: liberalism_NN ,_, conservatism_NN ,_, and_CC socialism_NN ._.
+The_DT pages_NNS in_IN these_DT domains_NNS were_VBD identified_VBN by_IN their_PRP$ corresponding_JJ dmoz_NN categories_NNS ._.
+For_IN each_DT sub-topic_JJ ,_, we_PRP set_VBD the_DT local_JJ domain_NN to_TO be_VB all_DT pages_NNS within_IN three_CD links_NNS from_IN the_DT corresponding_JJ dmoz_NN category_NN pages_NNS ._.
+Table_NNP #_# summarizes_VBZ the_DT performance_NN of_IN these_DT three_CD topic-specific_JJ domains_NNS ,_, and_CC also_RB the_DT larger_JJR political_JJ domain_NN ._.
+To_TO quantify_VB a_DT global_JJ page_NN j_NN ''_'' s_NNS effect_NN on_IN the_DT global_JJ PageRank_NN values_NNS of_IN pages_NNS in_IN the_DT local_JJ domain_NN ,_, we_PRP define_VBP page_NN j_NN ''_'' s_NNS impact_NN to_TO be_VB its_PRP$ PageRank_NNP value_NN ,_, g_NN -LSB-_-LRB- j_NN -RSB-_-RRB- ,_, normalized_VBN by_IN the_DT fraction_NN of_IN its_PRP$ outlinks_NNS pointing_VBG to_TO the_DT local_JJ domain_NN :_: impact_NN -LRB-_-LRB- j_NN -RRB-_-RRB- =_JJ oL_NN -LSB-_-LRB- j_NN -RSB-_-RRB- o_NN -LSB-_-LRB- j_NN -RSB-_-RRB- g_NN -LSB-_-LRB- j_NN -RSB-_-RRB- ,_, where_WRB ,_, oL_NN -LSB-_-LRB- j_NN -RSB-_-RRB- is_VBZ the_DT number_NN of_IN outlinks_NNS from_IN page_NN j_NN to_TO pages_NNS in_IN the_DT local_JJ domain_NN L_NN ,_, and_CC o_NN -LSB-_-LRB- j_NN -RSB-_-RRB- is_VBZ the_DT total_JJ number_NN of_IN j_NN ''_'' s_NNS outlinks_NNS ._.
+In_IN terms_NNS of_IN the_DT random_JJ surfer_NN model_NN ,_, the_DT impact_NN of_IN page_NN j_NN is_VBZ the_DT probability_NN that_IN the_DT random_JJ surfer_NN -LRB-_-LRB- #_# -RRB-_-RRB- is_VBZ currently_RB at_IN global_JJ page_NN j_NN in_IN her_PRP$ random_JJ walk_NN and_CC -LRB-_-LRB- #_# -RRB-_-RRB- takes_VBZ an_DT outlink_NN to_TO a_DT local_JJ page_NN ,_, given_VBN that_IN she_PRP has_VBZ already_RB decided_VBN not_RB to_TO jump_VB to_TO a_DT random_JJ page_NN ._.
+For_IN the_DT politics_NNS local_JJ domain_NN ,_, we_PRP found_VBD that_IN many_JJ of_IN the_DT pages_NNS with_IN high_JJ impact_NN were_VBD in_IN fact_NN political_JJ pages_NNS that_WDT should_MD have_VB been_VBN included_VBN in_IN the_DT dmoz_JJ politics_NNS topic_NN ,_, but_CC were_VBD not_RB ._.
+For_IN example_NN ,_, the_DT two_CD most_RBS influential_JJ global_JJ pages_NNS were_VBD the_DT political_JJ search_NN engine_NN www_NN ._.
+askhenry_NN ._.
+com_NN ,_, and_CC the_DT home_NN page_NN of_IN the_DT online_JJ political_JJ magazine_NN ,_, www_NN ._.
+policyreview_NN ._.
+com_NN ._.
+Among_IN non-political_JJ pages_NNS ,_, the_DT home_NN page_NN of_IN the_DT journal_NN Education_NNP Next_NNP was_VBD most_RBS influential_JJ ._.
+The_DT journal_NN is_VBZ freely_RB available_JJ online_NN and_CC contains_VBZ articles_NNS regarding_VBG various_JJ aspect_NN of_IN K-12_NN education_NN in_IN America_NNP ._.
+To_TO provide_VB some_DT anecdotal_JJ evidence_NN for_IN the_DT effectiveness_NN of_IN our_PRP$ page_NN selection_NN methods_NNS ,_, we_PRP note_VBP that_IN the_DT SC-Select_NN method_NN chose_VBD 11_CD pages_NNS within_IN the_DT www_NN ._.
+educationnext_NN ._.
+org_NN domain_NN ,_, the_DT PF-Select_NN method_NN discovered_VBN #_# such_JJ pages_NNS ,_, while_IN the_DT OutlinkCount_NNP and_CC Random_NNP methods_NNS found_VBD only_RB #_# pages_NNS each_DT ._.
+For_IN the_DT conservative_JJ political_JJ local_JJ domain_NN ,_, the_DT socialist_JJ website_NN www_NN ._.
+ornery_JJ ._.
+org_NN had_VBD a_DT very_RB high_JJ impact_NN score_NN ._.
+This_DT 123_CD Research_NNP Track_NNP Paper_NNP All_NNP Politics_NNPS :_: Algorithm_NN L1_NN L2_NN Kendall_NNP Stoch_NNP ._.
+Comp_NNP ._. ._.
+####_NN ._.
+######_NN ._.
+####_CD PR_NN Flow_NN ._.
+####_NN ._.
+######_NN ._.
+####_CD Outlink_NNP ._.
+####_NN ._.
+#####_NN ._.
+####_NNP Random_NNP ._.
+####_NN ._.
+#####_NN ._.
+####_NN Conservativism_NN :_: Algorithm_NN L1_NN L2_NN Kendall_NNP Stoch_NNP ._.
+Comp_NNP ._. ._.
+####_NN ._.
+######_NN ._.
+####_CD PR_NN Flow_NN ._.
+####_NN ._.
+######_NN ._.
+####_CD Outlink_NNP ._.
+####_NN ._.
+#####_NN ._.
+####_NNP Random_NNP ._.
+####_NN ._.
+#####_NN ._.
+####_NNP Liberalism_NNP :_: Algorithm_NNP L1_NN L2_NN Kendall_NNP Stoch_NNP ._.
+Comp_NNP ._. ._.
+####_NN ._.
+######_NN ._.
+####_CD PR_NN Flow_NN ._.
+####_NN ._.
+######_NN ._.
+####_CD Outlink_NNP ._.
+####_NN ._.
+######_NN ._.
+####_NNP Random_NNP ._.
+####_NN ._.
+######_NN ._.
+####_NNP Socialism_NNP :_: Algorithm_NNP L1_NN L_NN Kendall_NNP Stoch_NNP ._.
+Comp_NNP ._. ._.
+#####_NN ._.
+#####_NN ._.
+####_CD PR_NN Flow_NN ._.
+####_NN ._.
+######_NN ._.
+####_CD Outlink_NNP ._.
+#####_NN ._.
+#####_NN ._.
+####_NNP Random_NNP ._.
+####_NN ._.
+######_NN ._.
+####_NNP Table_NNP #_# :_: Final_JJ performance_NN among_IN node_NN selection_NN strategies_NNS for_IN the_DT four_CD political_JJ topic-specific_JJ crawls_VBZ ._.
+Note_VB that_DT Kendall_NNP ''_'' s_VBZ Tau_NNP measures_NNS similarity_NN ,_, while_IN the_DT other_JJ metrics_NNS are_VBP dissimilarity_NN measures_NNS ._.
+was_VBD largely_RB due_JJ to_TO a_DT link_NN from_IN the_DT front_JJ page_NN of_IN this_DT site_NN to_TO an_DT article_NN regarding_VBG global_JJ warming_NN published_VBN by_IN the_DT National_NNP Center_NNP for_IN Public_NNP Policy_NNP Research_NNP ,_, a_DT conservative_JJ research_NN group_NN in_IN Washington_NNP ,_, DC_NNP ._.
+Not_RB surprisingly_RB ,_, the_DT global_JJ PageRank_NN of_IN this_DT article_NN -LRB-_-LRB- which_WDT happens_VBZ to_TO be_VB on_IN the_DT home_NN page_NN of_IN the_DT NCCPR_NNP ,_, www_NN ._.
+nationalresearch_NN ._.
+com_NN -RRB-_-RRB- ,_, was_VBD approximately_RB ._.
+###_NN ,_, whereas_IN the_DT local_JJ PageRank_NN of_IN this_DT page_NN was_VBD only_RB ._.
+#####_NN ._.
+The_DT SC-Select_JJ method_NN yielded_VBD a_DT global_JJ PageRank_NN estimate_NN of_IN approximately_RB ._.
+#####_NN ,_, the_DT PFSelect_NN method_NN estimated_VBD a_DT value_NN of_IN ._.
+#####_NN ,_, and_CC the_DT Random_NNP and_CC OutlinkCount_NNP methods_NNS yielded_VBD values_NNS of_IN ._.
+#####_NN and_CC ._.
+#####_NN ,_, respectively_RB ._.
+7_CD ._.
+RELATED_JJ WORK_VBP The_DT node_NN selection_NN framework_NN we_PRP have_VBP proposed_VBN is_VBZ similar_JJ to_TO the_DT url_NN ordering_VBG for_IN crawling_VBG problem_NN proposed_VBN by_IN Cho_NNP et_FW al_FW ._.
+in_IN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+Whereas_IN our_PRP$ framework_NN seeks_VBZ to_TO minimize_VB the_DT difference_NN between_IN the_DT global_JJ and_CC local_JJ PageRank_NNP ,_, the_DT objective_NN used_VBN in_IN -LSB-_-LRB- #_# -RSB-_-RRB- is_VBZ to_TO crawl_VB the_DT most_RBS highly_RB -LRB-_-LRB- globally_RB -RRB-_-RRB- ranked_VBD pages_NNS first_RB ._.
+They_PRP propose_VBP several_JJ node_NN selection_NN algorithms_NNS ,_, including_VBG the_DT outlink_NN count_NN heuristic_NN ,_, as_RB well_RB as_IN a_DT variant_NN of_IN our_PRP$ PF-Select_JJ algorithm_NN which_WDT they_PRP refer_VBP to_TO as_IN the_DT PageRank_NNP ordering_VBG metric_JJ ''_'' ._.
+They_PRP found_VBD this_DT method_NN to_TO be_VB most_RBS effective_JJ in_IN optimizing_VBG their_PRP$ objective_NN ,_, as_IN did_VBD a_DT recent_JJ survey_NN of_IN these_DT methods_NNS by_IN Baeza-Yates_NNP et_FW al_FW ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- ._.
+Boldi_NNP et_FW al_FW ._.
+also_RB experiment_NN within_IN a_DT similar_JJ crawling_VBG framework_NN in_IN -LSB-_-LRB- #_# -RSB-_-RRB- ,_, but_CC quantify_VB their_PRP$ results_NNS by_IN comparing_VBG Kendall_NNP ''_'' s_VBZ rank_NN correlation_NN between_IN the_DT PageRanks_NNPS of_IN the_DT current_JJ set_NN of_IN crawled_VBN pages_NNS and_CC those_DT of_IN the_DT entire_JJ global_JJ graph_NN ._.
+They_PRP found_VBD that_IN node_NN selection_NN strategies_NNS that_WDT crawled_VBD pages_NNS with_IN the_DT highest_JJS global_JJ PageRank_NN first_JJ actually_RB performed_VBN worse_JJR -LRB-_-LRB- with_IN respect_NN to_TO Kendall_NNP ''_'' s_VBZ Tau_NNP correlation_NN between_IN the_DT local_JJ and_CC global_JJ PageRanks_NNPS -RRB-_-RRB- than_IN basic_JJ depth_NN first_JJ or_CC breadth_NN first_JJ strategies_NNS ._.
+However_RB ,_, their_PRP$ experiments_NNS differ_VBP from_IN our_PRP$ work_NN in_IN that_DT our_PRP$ node_NN selection_NN algorithms_NNS do_VBP not_RB use_VB -LRB-_-LRB- or_CC have_VBP access_NN to_TO -RRB-_-RRB- global_JJ PageRank_NN values_NNS ._.
+Many_JJ algorithmic_JJ improvements_NNS for_IN computing_VBG exact_JJ PageRank_NN values_NNS have_VBP been_VBN proposed_VBN -LSB-_-LRB- #_# ,_, ##_NN ,_, ##_NN -RSB-_-RRB- ._.
+If_IN such_JJ algorithms_NNS are_VBP used_VBN to_TO compute_VB the_DT global_JJ PageRanks_NNP of_IN our_PRP$ local_JJ domain_NN ,_, they_PRP would_MD all_RB require_VB O_NN -LRB-_-LRB- N_NN -RRB-_-RRB- computation_NN ,_, storage_NN ,_, and_CC bandwidth_NN ,_, where_WRB N_NN is_VBZ the_DT size_NN of_IN the_DT global_JJ domain_NN ._.
+This_DT is_VBZ in_IN contrast_NN to_TO our_PRP$ method_NN ,_, which_WDT approximates_VBZ the_DT global_JJ PageRank_NN and_CC scales_NNS linearly_RB with_IN the_DT size_NN of_IN the_DT local_JJ domain_NN ._.
+Wang_NNP and_CC Dewitt_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- propose_VBP a_DT system_NN where_WRB the_DT set_NN of_IN web_NN servers_NNS that_WDT comprise_VBP the_DT global_JJ domain_NN communicate_VBP with_IN each_DT other_JJ to_TO compute_VB their_PRP$ respective_JJ global_JJ PageRanks_NNPS ._.
+For_IN a_DT given_VBN web_NN server_NN hosting_VBG n_NN pages_NNS ,_, the_DT computational_JJ ,_, bandwidth_NN ,_, and_CC storage_NN requirements_NNS are_VBP also_RB linear_JJ in_IN n_NN ._.
+One_CD drawback_NN of_IN this_DT system_NN is_VBZ that_IN the_DT number_NN of_IN distinct_JJ web_NN servers_NNS that_WDT comprise_VBP the_DT global_JJ domain_NN can_MD be_VB very_RB large_JJ ._.
+For_IN example_NN ,_, our_PRP$ edu_NN ''_'' dataset_NN contains_VBZ websites_NNS from_IN over_IN #_# ,_, ###_CD different_JJ universities_NNS ;_: coordinating_VBG such_PDT a_DT system_NN among_IN a_DT large_JJ number_NN of_IN sites_NNS can_MD be_VB very_RB difficult_JJ ._.
+Gan_NNP ,_, Chen_NNP ,_, and_CC Suel_NNP propose_VBP a_DT method_NN for_IN estimating_VBG the_DT PageRank_NN of_IN a_DT single_JJ page_NN -LSB-_-LRB- #_# -RSB-_-RRB- which_WDT uses_VBZ only_RB constant_JJ bandwidth_NN ,_, computation_NN ,_, and_CC space_NN ._.
+Their_PRP$ approach_NN relies_VBZ on_IN the_DT availability_NN of_IN a_DT remote_JJ connectivity_NN server_NN that_WDT can_MD supply_VB the_DT set_NN of_IN inlinks_NNS to_TO a_DT given_VBN page_NN ,_, an_DT assumption_NN not_RB used_VBN in_IN our_PRP$ framework_NN ._.
+They_PRP experimentally_RB show_VBP that_IN a_DT reasonable_JJ estimate_NN of_IN the_DT node_NN ''_'' s_NNS PageRank_NNP can_MD be_VB obtained_VBN by_IN visiting_VBG at_IN most_JJS a_DT few_JJ hundred_CD nodes_NNS ._.
+Using_VBG their_PRP$ algorithm_NN for_IN our_PRP$ problem_NN would_MD require_VB that_IN either_CC the_DT entire_JJ global_JJ domain_NN first_RB be_VB downloaded_VBN or_CC a_DT connectivity_NN server_NN be_VB used_VBN ,_, both_DT of_IN which_WDT would_MD lead_VB to_TO very_RB large_JJ web_NN graphs_NNS ._.
+8_CD ._.
+CONCLUSIONS_NNS AND_CC FUTURE_NNS WORK_VBP The_DT internet_NN is_VBZ growing_VBG exponentially_RB ,_, and_CC in_IN order_NN to_TO navigate_VB such_PDT a_DT large_JJ repository_NN as_IN the_DT web_NN ,_, global_JJ search_NN engines_NNS have_VBP established_VBN themselves_PRP as_IN a_DT necessity_NN ._.
+Along_IN with_IN the_DT ubiquity_NN of_IN these_DT large-scale_JJ search_NN engines_NNS comes_VBZ an_DT increase_NN in_IN search_NN users_NNS ''_'' expectations_NNS ._.
+By_IN providing_VBG complete_JJ and_CC isolated_VBN coverage_NN of_IN a_DT particular_JJ web_NN domain_NN ,_, localized_JJ search_NN engines_NNS are_VBP an_DT effective_JJ outlet_NN to_TO quickly_RB locate_VB content_NN that_WDT could_MD otherwise_RB be_VB difficult_JJ to_TO find_VB ._.
+In_IN this_DT work_NN ,_, we_PRP contend_VBP that_IN the_DT use_NN of_IN global_JJ PageRank_NN in_IN a_DT localized_JJ search_NN engine_NN can_MD improve_VB performance_NN ._.
+To_TO estimate_VB the_DT global_JJ PageRank_NNP ,_, we_PRP have_VBP proposed_VBN an_DT iterative_JJ node_NN selection_NN framework_NN where_WRB we_PRP select_VBP which_WDT pages_NNS from_IN the_DT global_JJ frontier_NN to_TO crawl_VB next_JJ ._.
+Our_PRP$ primary_JJ contribution_NN is_VBZ our_PRP$ stochastic_JJ complementation_NN page_NN selection_NN algorithm_NN ._.
+This_DT method_NN crawls_VBZ nodes_NNS that_WDT will_MD most_RBS significantly_RB impact_NN the_DT local_JJ domain_NN and_CC has_VBZ running_VBG time_NN linear_JJ in_IN the_DT number_NN of_IN nodes_NNS in_IN the_DT local_JJ domain_NN ._.
+Experimentally_RB ,_, we_PRP validate_VBP these_DT methods_NNS across_IN a_DT diverse_JJ set_NN of_IN local_JJ domains_NNS ,_, including_VBG seven_CD site-specific_JJ domains_NNS and_CC four_CD topic-specific_JJ domains_NNS ._.
+We_PRP conclude_VBP that_IN by_IN crawling_VBG an_DT additional_JJ n_NN or_CC 2n_JJ pages_NNS ,_, our_PRP$ methods_NNS find_VBP an_DT estimate_NN of_IN the_DT global_JJ PageRanks_NNP that_WDT is_VBZ up_RB to_TO ten_CD times_NNS better_JJR than_IN just_RB using_VBG the_DT local_JJ PageRanks_NNP ._.
+Furthermore_RB ,_, we_PRP demonstrate_VBP that_IN our_PRP$ algorithm_NN consistently_RB outperforms_VBZ other_JJ existing_VBG heuristics_NNS ._.
+124_CD Research_NNP Track_NNP Paper_NNP Often_RB times_NNS ,_, topic-specific_JJ domains_NNS are_VBP discovered_VBN using_VBG a_DT focused_JJ web_NN crawler_NN which_WDT considers_VBZ a_DT page_NN ''_'' s_NNS content_NN in_IN conjunction_NN with_IN link_NN anchor_NN text_NN to_TO decide_VB which_WDT pages_NNS to_TO crawl_VB next_JJ -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+Although_IN such_JJ crawlers_NNS have_VBP proven_VBN to_TO be_VB quite_RB effective_JJ in_IN discovering_VBG topic-related_JJ content_NN ,_, many_JJ irrelevant_JJ pages_NNS are_VBP also_RB crawled_VBN in_IN the_DT process_NN ._.
+Typically_RB ,_, these_DT pages_NNS are_VBP deleted_VBN and_CC not_RB indexed_VBN by_IN the_DT localized_JJ search_NN engine_NN ._.
+These_DT pages_NNS can_MD of_IN course_NN provide_VBP valuable_JJ information_NN regarding_VBG the_DT global_JJ PageRank_NN of_IN the_DT local_JJ domain_NN ._.
+One_CD way_NN to_TO integrate_VB these_DT pages_NNS into_IN our_PRP$ framework_NN is_VBZ to_TO start_VB the_DT FindGlobalPR_NN algorithm_NN with_IN the_DT current_JJ subgraph_JJ F_NN equal_JJ to_TO the_DT set_NN of_IN pages_NNS that_WDT were_VBD crawled_VBN by_IN the_DT focused_JJ crawler_NN ._.
+The_DT global_JJ PageRank_NN estimation_NN framework_NN ,_, along_IN with_IN the_DT node_NN selection_NN algorithms_NNS presented_VBN ,_, all_DT require_VBP O_NN -LRB-_-LRB- n_NN -RRB-_-RRB- computation_NN per_IN iteration_NN and_CC bandwidth_NN proportional_JJ to_TO the_DT number_NN of_IN pages_NNS crawled_VBD ,_, Tk_NN ._.
+If_IN the_DT number_NN of_IN iterations_NNS T_NN is_VBZ relatively_RB small_JJ compared_VBN to_TO the_DT number_NN of_IN pages_NNS crawled_VBD per_IN iteration_NN ,_, k_NN ,_, then_RB the_DT bottleneck_NN of_IN the_DT algorithm_NN will_MD be_VB the_DT crawling_VBG phase_NN ._.
+However_RB ,_, as_IN the_DT number_NN of_IN iterations_NNS increases_NNS -LRB-_-LRB- relative_JJ to_TO k_NN -RRB-_-RRB- ,_, the_DT bottleneck_NN will_MD reside_VB in_IN the_DT node_NN selection_NN computation_NN ._.
+In_IN this_DT case_NN ,_, our_PRP$ algorithms_NNS would_MD benefit_VB from_IN constant_JJ factor_NN optimizations_NNS ._.
+Recall_VB that_IN the_DT FindGlobalPR_NN algorithm_NN -LRB-_-LRB- Algorithm_NN #_# -RRB-_-RRB- requires_VBZ that_IN the_DT PageRanks_NNPS of_IN the_DT current_JJ expanded_VBN local_JJ domain_NN be_VB recomputed_VBN in_IN each_DT iteration_NN ._.
+Recent_JJ work_NN by_IN Langville_NNP and_CC Meyer_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- gives_VBZ an_DT algorithm_NN to_TO quickly_RB recompute_VB PageRanks_NNP of_IN a_DT given_VBN webgraph_NN if_IN a_DT small_JJ number_NN of_IN nodes_NNS are_VBP added_VBN ._.
+This_DT algorithm_NN was_VBD shown_VBN to_TO give_VB speedup_NN of_IN five_CD to_TO ten_CD times_NNS on_IN some_DT datasets_NNS ._.
+We_PRP plan_VBP to_TO investigate_VB this_DT and_CC other_JJ such_JJ optimizations_NNS as_IN future_JJ work_NN ._.
+In_IN this_DT paper_NN ,_, we_PRP have_VBP objectively_RB evaluated_VBN our_PRP$ methods_NNS by_IN measuring_VBG how_WRB close_JJ our_PRP$ global_JJ PageRank_NN estimates_NNS are_VBP to_TO the_DT actual_JJ global_JJ PageRanks_NNPS ._.
+To_TO determine_VB the_DT benefit_NN of_IN using_VBG global_JJ PageRanks_NNPS in_IN a_DT localized_JJ search_NN engine_NN ,_, we_PRP suggest_VBP a_DT user_NN study_NN in_IN which_WDT users_NNS are_VBP asked_VBN to_TO rate_VB the_DT quality_NN of_IN search_NN results_NNS for_IN various_JJ search_NN queries_NNS ._.
+For_IN some_DT queries_NNS ,_, only_RB the_DT local_JJ PageRanks_NNP are_VBP used_VBN in_IN ranking_JJ ,_, and_CC for_IN the_DT remaining_VBG queries_NNS ,_, local_JJ PageRanks_NNP and_CC the_DT approximate_JJ global_JJ PageRanks_NNP ,_, as_IN computed_VBN by_IN our_PRP$ algorithms_NNS ,_, are_VBP used_VBN ._.
+The_DT results_NNS of_IN such_PDT a_DT study_NN can_MD then_RB be_VB analyzed_VBN to_TO determine_VB the_DT added_VBN benefit_NN of_IN using_VBG the_DT global_JJ PageRanks_NNP computed_VBN by_IN our_PRP$ methods_NNS ,_, over_RB just_RB using_VBG the_DT local_JJ PageRanks_NNP ._.
+Acknowledgements_NNS ._.
+This_DT research_NN was_VBD supported_VBN by_IN NSF_NNP grant_NN CCF-0431257_NN ,_, NSF_NNP Career_NNP Award_NN ACI-0093404_NN ,_, and_CC a_DT grant_NN from_IN Sabre_NNP ,_, Inc_NNP ._.
+9_CD ._.
+REFERENCES_NNS -LSB-_-LRB- #_# -RSB-_-RRB- R_NN ._.
+Baeza-Yates_NNP ,_, M_NN ._.
+Marin_NNP ,_, C_NNP ._.
+Castillo_NNP ,_, and_CC A_NN ._.
+Rodriguez_NNP ._.
+Crawling_VBG a_DT country_NN :_: better_JJR strategies_NNS than_IN breadth-first_JJ for_IN web_NN page_NN ordering_VBG ._.
+World-Wide_JJ Web_NN Conference_NN ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- P_NN ._.
+Boldi_NNP ,_, M_NN ._.
+Santini_NNP ,_, and_CC S_NN ._.
+Vigna_NNP ._.
+Do_VB your_PRP$ worst_JJS to_TO make_VB the_DT best_JJS :_: paradoxical_JJ effects_NNS in_IN pagerank_NN incremental_JJ computations_NNS ._.
+Workshop_NNP on_IN Web_NN Graphs_NNS ,_, 3243_CD :_: 168-180_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- S_NN ._.
+Brin_NNP and_CC L_NNP ._.
+Page_NNP ._.
+The_DT anatomy_NN of_IN a_DT large-scale_JJ hypertextual_JJ web_NN search_NN engine_NN ._.
+Computer_NN Networks_NNP and_CC ISDN_NNP Systems_NNPS ,_, ##_NN -LRB-_-LRB- 1-7_CD -RRB-_-RRB- :_: 107-117_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- S_NN ._.
+Chakrabarti_NNP ,_, M_NN ._.
+van_NN den_NN Berg_NNP ,_, and_CC B_NN ._.
+Dom_NNP ._.
+Focused_VBN crawling_VBG :_: a_DT new_JJ approach_NN to_TO topic-specific_JJ web_NN resource_NN discovery_NN ._.
+World-Wide_JJ Web_NN Conference_NN ,_, 1999_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- Y_NN ._.
+Chen_NNP ,_, Q_NNP ._.
+Gan_NNP ,_, and_CC T_NN ._.
+Suel_NNP ._.
+Local_JJ methods_NNS for_IN estimating_VBG pagerank_NN values_NNS ._.
+Conference_NN on_IN Information_NN and_CC Knowledge_NNP Management_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- J_NN ._.
+Cho_NNP ,_, H_NN ._.
+Garcia-Molina_NNP ,_, and_CC L_NN ._.
+Page_NNP ._.
+Efficient_JJ crawling_VBG through_IN url_NN ordering_VBG ._.
+World-Wide_JJ Web_NN Conference_NN ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- T_NN ._.
+H_NN ._.
+Haveliwala_NNP and_CC S_NN ._.
+D_NN ._.
+Kamvar_NNP ._.
+The_DT second_JJ eigenvalue_NN of_IN the_DT Google_NNP matrix_NN ._.
+Technical_NNP report_NN ,_, Stanford_NNP University_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- T_NN ._.
+Joachims_NNP ,_, F_NN ._.
+Radlinski_NNP ,_, L_NNP ._.
+Granka_NNP ,_, A_NNP ._.
+Cheng_NNP ,_, C_NNP ._.
+Tillekeratne_NNP ,_, and_CC A_NN ._.
+Patel_NNP ._.
+Learning_NNP retrieval_NN functions_NNS from_IN implicit_JJ feedback_NN ._.
+http_NN :_: /_: /_: www_NN ._.
+cs_NNS ._.
+cornell_NN ._.
+edu_FW /_: People_NNS /_: tj_NN /_: career_NN ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- S_NN ._.
+D_NN ._.
+Kamvar_NNP ,_, T_NN ._.
+H_NN ._.
+Haveliwala_NNP ,_, C_NNP ._.
+D_NN ._.
+Manning_NNP ,_, and_CC G_NN ._.
+H_NN ._.
+Golub_NNP ._.
+Exploiting_VBG the_DT block_NN structure_NN of_IN the_DT web_NN for_IN computing_VBG pagerank_NN ._.
+World-Wide_JJ Web_NN Conference_NN ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- S_NN ._.
+D_NN ._.
+Kamvar_NNP ,_, T_NN ._.
+H_NN ._.
+Haveliwala_NNP ,_, C_NNP ._.
+D_NN ._.
+Manning_NNP ,_, and_CC G_NN ._.
+H_NN ._.
+Golub_NNP ._.
+Extrapolation_NN methods_NNS for_IN accelerating_VBG pagerank_NN computation_NN ._.
+World-Wide_JJ Web_NN Conference_NN ,_, 2003_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- A_DT ._.
+N_NN ._.
+Langville_NNP and_CC C_NNP ._.
+D_NN ._.
+Meyer_NNP ._.
+Deeper_JJR inside_IN pagerank_NN ._.
+Internet_NNP Mathematics_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- A_DT ._.
+N_NN ._.
+Langville_NNP and_CC C_NNP ._.
+D_NN ._.
+Meyer_NNP ._.
+Updating_VBG the_DT stationary_JJ vector_NN of_IN an_DT irreducible_JJ markov_NN chain_NN with_IN an_DT eye_NN on_IN Google_NNP ''_'' s_VBZ pagerank_NN ._.
+SIAM_NNP Journal_NNP on_IN Matrix_NNP Analysis_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- P_NN ._.
+Lyman_NNP ,_, H_NN ._.
+R_NN ._.
+Varian_NNP ,_, K_NNP ._.
+Swearingen_NNP ,_, P_NN ._.
+Charles_NNP ,_, N_NNP ._.
+Good_JJ ,_, L_NN ._.
+L_NN ._.
+Jordan_NNP ,_, and_CC J_NN ._.
+Pal_NN ._.
+How_WRB much_JJ information_NN ####_CD ?_.
+School_NNP of_IN Information_NNP Management_NNP and_CC System_NNP ,_, University_NNP of_IN California_NNP at_IN Berkely_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- F_NN ._.
+McSherry_NNP ._.
+A_DT uniform_JJ approach_NN to_TO accelerated_VBN pagerank_NN computation_NN ._.
+World-Wide_JJ Web_NN Conference_NN ,_, 2005_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- C_NN ._.
+D_NN ._.
+Meyer_NNP ._.
+Stochastic_JJ complementation_NN ,_, uncoupling_NN markov_NN chains_NNS ,_, and_CC the_DT theory_NN of_IN nearly_RB reducible_JJ systems_NNS ._.
+SIAM_NNP Review_NNP ,_, ##_CD :_: 240-272_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- US_NNP News_NNP and_CC World_NNP Report_NNP ._.
+http_NN :_: /_: /_: www_NN ._.
+usnews_NNS ._.
+com_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Dmoz_NNP open_JJ directory_NN project_NN ._.
+http_NN :_: /_: /_: www_NN ._.
+dmoz_NN ._.
+org_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Nutch_NNP open_JJ source_NN search_NN engine_NN ._.
+http_NN :_: /_: /_: www_NN ._.
+nutch_NN ._.
+org_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- F_NN ._.
+Radlinski_NNP and_CC T_NN ._.
+Joachims_NNP ._.
+Query_NNP chains_NNS :_: learning_VBG to_TO rank_VB from_IN implicit_JJ feedback_NN ._.
+ACM_NNP SIGKDD_NNP International_NNP Conference_NNP on_IN Knowledge_NNP Discovery_NNP and_CC Data_NNP Mining_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- S_NN ._.
+Raghavan_NNP and_CC H_NNP ._.
+Garcia-Molina_NNP ._.
+Crawling_VBG the_DT hidden_JJ web_NN ._.
+In_IN Proceedings_NNP of_IN the_DT Twenty-seventh_NNP International_NNP Conference_NNP on_IN Very_RB Large_JJ Databases_NNS ,_, 2001_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- T_NN ._.
+Tin_NN Tang_NNP ,_, D_NNP ._.
+Hawking_VBG ,_, N_NN ._.
+Craswell_NNP ,_, and_CC K_NN ._.
+Griffiths_NNP ._.
+Focused_VBN crawling_VBG for_IN both_DT topical_JJ relevance_NN and_CC quality_NN of_IN medical_JJ information_NN ._.
+Conference_NN on_IN Information_NN and_CC Knowledge_NNP Management_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Y_NN ._.
+Wang_NNP and_CC D_NNP ._.
+J_NN ._.
+DeWitt_NNP ._.
+Computing_NNP pagerank_NN in_IN a_DT distributed_VBN internet_NN search_NN system_NN ._.
+Proceedings_NNP of_IN the_DT 30th_JJ VLDB_NN Conference_NN ,_, ####_CD ._.
+125_CD Research_NNP Track_NNP Paper_NNP

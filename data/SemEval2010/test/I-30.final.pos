@@ -1,0 +1,644 @@
+Distributed_VBN Task_NNP Allocation_NNP in_IN Social_NNP Networks_NNP Mathijs_NNP de_IN Weerdt_NNP Delft_NNP Technical_NNP University_NNP Delft_NNP ,_, The_DT Netherlands_NNP M_NN ._.
+M_NN ._.
+deWeerdt_NN @_SYM tudelft_NN ._.
+nl_NN Yingqian_NNP Zhang_NNP Delft_NNP Technical_NNP University_NNP Delft_NNP ,_, The_DT Netherlands_NNP Yingqian_NNP ._.
+Zhang_NNP @_SYM tudelft_NN ._.
+nl_NN Tomas_NNP Klos_NNP Center_NNP for_IN Mathematics_NNP and_CC Computer_NNP Science_NNP -LRB-_-LRB- CWI_NNP -RRB-_-RRB- Amsterdam_NNP ,_, The_DT Netherlands_NNP tomas_NNS ._.
+klos_NNS @_IN cwi_NN ._.
+nl_NN ABSTRACT_NN This_DT paper_NN proposes_VBZ a_DT new_JJ variant_NN of_IN the_DT task_NN allocation_NN problem_NN ,_, where_WRB the_DT agents_NNS are_VBP connected_VBN in_IN a_DT social_JJ network_NN and_CC tasks_NNS arrive_VBP at_IN the_DT agents_NNS distributed_VBN over_IN the_DT network_NN ._.
+We_PRP show_VBP that_IN the_DT complexity_NN of_IN this_DT problem_NN remains_VBZ NPhard_NNP ._.
+Moreover_RB ,_, it_PRP is_VBZ not_RB approximable_JJ within_IN some_DT factor_NN ._.
+We_PRP develop_VBP an_DT algorithm_NN based_VBN on_IN the_DT contract-net_NN protocol_NN ._.
+Our_PRP$ algorithm_NN is_VBZ completely_RB distributed_VBN ,_, and_CC it_PRP assumes_VBZ that_IN agents_NNS have_VBP only_RB local_JJ knowledge_NN about_IN tasks_NNS and_CC resources_NNS ._.
+We_PRP conduct_VBP a_DT set_NN of_IN experiments_NNS to_TO evaluate_VB the_DT performance_NN and_CC scalability_NN of_IN the_DT proposed_VBN algorithm_NN in_IN terms_NNS of_IN solution_NN quality_NN and_CC computation_NN time_NN ._.
+Three_CD different_JJ types_NNS of_IN networks_NNS ,_, namely_RB small-world_JJ ,_, random_JJ and_CC scale-free_JJ networks_NNS ,_, are_VBP used_VBN to_TO represent_VB various_JJ social_JJ relationships_NNS among_IN agents_NNS in_IN realistic_JJ applications_NNS ._.
+The_DT results_NNS demonstrate_VBP that_IN our_PRP$ algorithm_NN works_VBZ well_RB and_CC that_IN it_PRP scales_NNS well_RB to_TO large-scale_JJ applications_NNS ._.
+Categories_NNS and_CC Subject_NNP Descriptors_NNS I_PRP ._.
+#_# ._.
+##_NN -LSB-_-LRB- Distributed_VBN Artificial_NNP Intelligence_NNP -RSB-_-RRB- :_: Multiagent_JJ systems_NNS General_NNP Terms_NNS Algorithms_NNS ,_, Experimentation_NN 1_CD ._.
+INTRODUCTION_NNP Recent_JJ years_NNS have_VBP seen_VBN a_DT lot_NN of_IN work_NN on_IN task_NN and_CC resource_NN allocation_NN methods_NNS ,_, which_WDT can_MD potentially_RB be_VB applied_VBN to_TO many_JJ real-world_JJ applications_NNS ._.
+However_RB ,_, some_DT interesting_JJ applications_NNS where_WRB relations_NNS between_IN agents_NNS play_VBP a_DT role_NN require_VBP a_DT slightly_RB more_RBR general_JJ model_NN ._.
+Such_JJ situations_NNS appear_VBP very_RB frequently_RB in_IN real-world_JJ scenarios_NNS ,_, and_CC recent_JJ technological_JJ developments_NNS are_VBP bringing_VBG more_JJR of_IN them_PRP within_IN the_DT range_NN of_IN task_NN allocation_NN methods_NNS ._.
+Especially_RB in_IN business_NN applications_NNS ,_, preferential_JJ partner_NN selection_NN and_CC interaction_NN is_VBZ very_RB common_JJ ,_, and_CC this_DT aspect_NN becomes_VBZ more_RBR important_JJ for_IN task_NN allocation_NN research_NN ,_, to_TO the_DT extent_NN that_IN technological_JJ developments_NNS need_VBP to_TO be_VB able_JJ to_TO support_VB it_PRP ._.
+For_IN example_NN ,_, the_DT development_NN of_IN semantic_JJ web_NN and_CC grid_NN technologies_NNS leads_VBZ to_TO increased_VBN and_CC renewed_VBN attention_NN for_IN the_DT potential_NN of_IN the_DT web_NN to_TO support_VB business_NN processes_NNS -LSB-_-LRB- #_# ,_, 15_CD -RSB-_-RRB- ._.
+As_IN an_DT example_NN ,_, virtual_JJ organizations_NNS -LRB-_-LRB- VOs_NNS -RRB-_-RRB- are_VBP being_VBG re-invented_VBN in_IN the_DT context_NN of_IN the_DT grid_NN ,_, where_WRB they_PRP are_VBP composed_VBN of_IN a_DT number_NN of_IN autonomous_JJ entities_NNS -LRB-_-LRB- representing_VBG different_JJ individuals_NNS ,_, departments_NNS and_CC organizations_NNS -RRB-_-RRB- ,_, each_DT of_IN which_WDT has_VBZ a_DT range_NN of_IN problem-solving_JJ capabilities_NNS and_CC resources_NNS at_IN its_PRP$ disposal_NN -LSB-_-LRB- ##_CD ,_, p_NN ._.
+###_NN -RSB-_-RRB- ._.
+The_DT question_NN is_VBZ how_WRB VOs_NNS are_VBP to_TO be_VB dynamically_RB composed_VBN and_CC re-composed_VBN from_IN individual_JJ agents_NNS ,_, when_WRB different_JJ tasks_NNS and_CC subtasks_NNS need_VBP to_TO be_VB performed_VBN ._.
+This_DT would_MD be_VB done_VBN by_IN allocating_VBG them_PRP to_TO different_JJ agents_NNS who_WP may_MD each_DT be_VB capable_JJ of_IN performing_VBG different_JJ subsets_NNS of_IN those_DT tasks_NNS ._.
+Similarly_RB ,_, supply_NN chain_NN formation_NN -LRB-_-LRB- SCF_NN -RRB-_-RRB- is_VBZ concerned_VBN with_IN the_DT ,_, possibly_RB ad-hoc_JJ ,_, allocation_NN of_IN services_NNS to_TO providers_NNS in_IN the_DT supply_NN chain_NN ,_, in_IN such_PDT a_DT way_NN that_IN overall_JJ profit_NN is_VBZ optimized_VBN -LSB-_-LRB- #_# ,_, ##_NN -RSB-_-RRB- ._.
+Traditionally_RB ,_, such_JJ allocation_NN decisions_NNS have_VBP been_VBN analyzed_VBN using_VBG transaction_NN cost_NN economics_NNS -LRB-_-LRB- TCE_NN -RRB-_-RRB- -LSB-_-LRB- #_# -RSB-_-RRB- ,_, which_WDT takes_VBZ the_DT transaction_NN between_IN consecutive_JJ stages_NNS of_IN development_NN as_IN its_PRP$ basic_JJ unit_NN of_IN analysis_NN ,_, and_CC considers_VBZ the_DT firm_NN and_CC the_DT market_NN as_IN alternative_JJ structural_JJ forms_NNS for_IN organizing_VBG transactions_NNS ._.
+-LRB-_-LRB- Transaction_NN cost_NN -RRB-_-RRB- economics_NNS has_VBZ traditionally_RB built_VBN on_IN analysis_NN of_IN comparative_JJ statics_NNS :_: the_DT central_JJ problem_NN of_IN economic_JJ organization_NN is_VBZ considered_VBN to_TO be_VB the_DT adaptation_NN of_IN organizational_JJ forms_NNS to_TO the_DT characteristics_NNS of_IN transactions_NNS ._.
+More_RBR recently_RB ,_, TCE_NN ''_'' s_NNS founding_VBG father_NN ,_, Ronald_NNP Coase_NNP ,_, acknowledged_VBD that_IN this_DT is_VBZ too_RB simplistic_JJ an_DT approach_NN -LSB-_-LRB- #_# ,_, p_NN ._.
+###_NN -RSB-_-RRB- :_: The_DT analysis_NN can_MD not_RB be_VB confined_VBN to_TO what_WP happens_VBZ within_IN a_DT single_JJ firm_NN ._.
+-LRB-_-LRB- ..._: -RRB-_-RRB- What_WP we_PRP are_VBP dealing_VBG with_IN is_VBZ a_DT complex_JJ interrelated_JJ structure_NN ._.
+In_IN this_DT paper_NN ,_, we_PRP study_VBP the_DT problem_NN of_IN task_NN allocation_NN from_IN the_DT perspective_NN of_IN such_PDT a_DT complex_JJ interrelated_JJ structure_NN ._.
+In_IN particular_JJ ,_, the_DT market_NN ''_'' can_MD not_RB be_VB considered_VBN as_IN an_DT organizational_JJ form_NN without_IN considering_VBG specific_JJ partners_NNS to_TO interact_VB with_IN on_IN the_DT market_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Specifically_RB ,_, therefore_RB ,_, we_PRP consider_VBP agents_NNS to_TO be_VB connected_VBN to_TO each_DT other_JJ in_IN a_DT social_JJ network_NN ._.
+Furthermore_RB ,_, this_DT network_NN is_VBZ not_RB fully_RB connected_VBN :_: as_IN informed_VBN by_IN the_DT business_NN literature_NN ,_, firms_NNS typically_RB have_VBP established_VBN working_VBG relations_NNS with_IN limited_JJ numbers_NNS of_IN preferred_JJ partners_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ;_: these_DT are_VBP the_DT ones_NNS they_PRP consider_VBP when_WRB new_JJ tasks_NNS arrive_VBP and_CC they_PRP have_VBP to_TO form_VB supply_NN chains_NNS to_TO allocate_VB those_DT tasks_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Other_JJ than_IN modeling_NN the_DT interrelated_JJ 500_CD 978-81-904262-7-5_CD -LRB-_-LRB- RPS_NN -RRB-_-RRB- c_NN ####_CD IFAAMAS_NNP structure_NN between_IN business_NN partners_NNS ,_, the_DT social_JJ network_NN introduced_VBN in_IN this_DT paper_NN can_MD also_RB be_VB used_VBN to_TO represent_VB other_JJ types_NNS of_IN connections_NNS or_CC constraints_NNS among_IN autonomous_JJ entities_NNS that_WDT arise_VBP from_IN other_JJ application_NN domains_NNS ._.
+The_DT next_JJ section_NN gives_VBZ a_DT formal_JJ description_NN of_IN the_DT task_NN allocation_NN problem_NN on_IN social_JJ networks_NNS ._.
+In_IN Section_NN #_# ,_, we_PRP prove_VBP that_IN the_DT complexity_NN of_IN this_DT problem_NN remains_VBZ NP-hard_JJ ._.
+We_PRP then_RB proceed_VB to_TO develop_VB a_DT distributed_VBN algorithm_NN in_IN Section_NN #_# ,_, and_CC perform_VB a_DT series_NN of_IN experiments_NNS with_IN this_DT algorithm_NN ,_, as_IN described_VBN in_IN Section_NN #_# ._.
+Section_NN #_# discusses_VBZ related_JJ work_NN ,_, and_CC Section_NN #_# concludes_VBZ ._.
+2_LS ._.
+PROBLEM_NN DESCRIPTION_NN We_PRP formulate_VBP the_DT social_JJ task_NN allocation_NN problem_NN in_IN this_DT section_NN ._.
+There_EX is_VBZ a_DT set_NN A_NN of_IN agents_NNS :_: A_NN =_JJ -LCB-_-LRB- a1_NN ,_, ..._: ,_, am_VBP -RCB-_-RRB- ._.
+Agents_NNS need_VBP resources_NNS to_TO complete_VB tasks_NNS ._.
+Let_VB R_NN =_JJ -LCB-_-LRB- r1_NN ,_, ..._: ,_, rk_NN -RCB-_-RRB- denote_VBP the_DT collection_NN of_IN the_DT resource_NN types_NNS available_JJ to_TO the_DT agents_NNS A_DT ._.
+Each_DT agent_NN a_DT A_NN controls_VBZ a_DT fixed_JJ amount_NN of_IN resources_NNS for_IN each_DT resource_NN type_NN in_IN R_NN ,_, which_WDT is_VBZ defined_VBN by_IN a_DT resource_NN function_NN :_: rsc_NN :_: A_DT R_NN N_NN ._.
+Moreover_RB ,_, we_PRP assume_VBP agents_NNS are_VBP connected_VBN by_IN a_DT social_JJ network_NN ._.
+Definition_NN #_# -LRB-_-LRB- Social_NNP network_NN -RRB-_-RRB- ._.
+An_DT agent_NN social_JJ network_NN SN_NN =_JJ -LRB-_-LRB- A_NN ,_, AE_NN -RRB-_-RRB- is_VBZ an_DT undirected_JJ graph_NN ,_, where_WRB vertices_NNS A_DT are_VBP agents_NNS ,_, and_CC each_DT edge_NN -LRB-_-LRB- ai_VBP ,_, aj_VBP -RRB-_-RRB- AE_NN indicates_VBZ the_DT existence_NN of_IN a_DT social_JJ connection_NN between_IN agents_NNS ai_VBP and_CC aj_VBP ._.
+Suppose_VB a_DT set_NN of_IN tasks_NNS T_NN =_JJ -LCB-_-LRB- t1_NN ,_, t2_NN ,_, ..._: ,_, tn_NN -RCB-_-RRB- arrives_VBZ at_IN such_PDT an_DT agent_NN social_JJ network_NN ._.
+Each_DT task_NN t_NN T_NN is_VBZ then_RB defined_VBN by_IN a_DT tuple_NN u_NN -LRB-_-LRB- t_NN -RRB-_-RRB- ,_, rsc_NN -LRB-_-LRB- t_NN -RRB-_-RRB- ,_, loc_NN -LRB-_-LRB- t_NN -RRB-_-RRB- ,_, where_WRB u_NN -LRB-_-LRB- t_NN -RRB-_-RRB- is_VBZ the_DT utility_NN gained_VBN if_IN task_NN t_NN is_VBZ accomplished_VBN ,_, and_CC the_DT resource_NN function_NN rsc_NN :_: T_NN R_NN N_NN specifies_VBZ the_DT amount_NN of_IN resources_NNS required_VBN for_IN the_DT accomplishment_NN of_IN task_NN t_NN ._.
+Furthermore_RB ,_, a_DT location_NN function_NN loc_NN :_: T_NN A_NN defines_VBZ the_DT locations_NNS -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, agents_NNS -RRB-_-RRB- at_IN which_WDT the_DT tasks_NNS arrive_VBP in_IN the_DT social_JJ network_NN ._.
+An_DT agent_NN a_DT that_DT is_VBZ the_DT location_NN of_IN a_DT task_NN t_NN ,_, i_FW ._.
+e_LS ._.
+loc_NN -LRB-_-LRB- t_NN -RRB-_-RRB- =_JJ a_DT ,_, is_VBZ called_VBN the_DT manager_NN of_IN this_DT task_NN ._.
+Each_DT task_NN t_NN T_NN needs_VBZ some_DT specific_JJ resources_NNS from_IN the_DT agents_NNS in_IN order_NN to_TO complete_VB the_DT task_NN ._.
+The_DT exact_JJ assignment_NN of_IN tasks_NNS to_TO agents_NNS is_VBZ defined_VBN by_IN a_DT task_NN allocation_NN ._.
+Definition_NN #_# -LRB-_-LRB- Task_NNP allocation_NN -RRB-_-RRB- ._.
+Given_VBN a_DT set_NN of_IN tasks_NNS T_NN =_JJ -LCB-_-LRB- t1_NN ,_, ..._: ,_, tn_NN -RCB-_-RRB- and_CC a_DT set_NN of_IN agents_NNS A_NN =_JJ -LCB-_-LRB- a1_NN ,_, ..._: ,_, am_VBP -RCB-_-RRB- in_IN a_DT social_JJ network_NN SN_NN ,_, a_DT task_NN allocation_NN is_VBZ a_DT mapping_NN :_: T_NN A_DT R_NN N_NN ._.
+A_DT valid_JJ task_NN allocation_NN in_IN SN_NNP must_MD satisfy_VB the_DT following_VBG constrains_VBZ :_: A_DT task_NN allocation_NN must_MD be_VB correct_JJ ._.
+Each_DT agent_NN a_DT A_NN can_MD not_RB use_VB more_JJR than_IN its_PRP$ available_JJ resources_NNS ,_, i_FW ._.
+e_LS ._.
+for_IN each_DT r_NN R_NN ,_, P_NN tT_NN -LRB-_-LRB- t_NN ,_, a_DT ,_, r_NN -RRB-_-RRB- rsc_NN -LRB-_-LRB- a_DT ,_, r_NN -RRB-_-RRB- ._.
+A_DT task_NN allocation_NN must_MD be_VB complete_JJ ._.
+For_IN each_DT task_NN t_NN T_NN ,_, either_CC all_DT allocated_VBN agents_NNS ''_'' resources_NNS are_VBP sufficient_JJ ,_, i_FW ._.
+e_LS ._.
+for_IN each_DT r_NN R_NN ,_, P_NN aA_NN -LRB-_-LRB- t_NN ,_, a_DT ,_, r_NN -RRB-_-RRB- rsc_NN -LRB-_-LRB- t_NN ,_, r_NN -RRB-_-RRB- ,_, or_CC t_NN is_VBZ not_RB allocated_VBN ,_, i_FW ._.
+e_LS ._.
+-LRB-_-LRB- t_NN ,_, ,_, -RRB-_-RRB- =_JJ #_# ._.
+A_DT task_NN allocation_NN must_MD obey_VB the_DT social_JJ relationships_NNS ._.
+Each_DT task_NN t_NN T_NN can_MD only_RB be_VB allocated_VBN to_TO agents_NNS that_WDT are_VBP -LRB-_-LRB- direct_JJ -RRB-_-RRB- neighbors_NNS of_IN agent_NN loc_NN -LRB-_-LRB- t_NN -RRB-_-RRB- in_IN the_DT social_JJ network_NN SN_NN ._.
+Each_DT such_JJ agent_NN that_WDT can_MD contribute_VB to_TO a_DT task_NN is_VBZ called_VBN a_DT contractor_NN ._.
+We_PRP write_VBP T_NN to_TO represent_VB the_DT tasks_NNS that_WDT are_VBP fully_RB allocated_VBN in_IN ._.
+The_DT utility_NN of_IN is_VBZ then_RB the_DT summation_NN of_IN the_DT utilities_NNS of_IN each_DT task_NN in_IN T_NN ,_, i_FW ._.
+e_LS ._.
+,_, U_NN =_JJ P_NN tT_NN u_NN -LRB-_-LRB- t_NN -RRB-_-RRB- ._.
+Using_VBG this_DT notation_NN ,_, we_PRP define_VBP the_DT efficient_JJ task_NN allocation_NN below_IN ._.
+Definition_NN #_# -LRB-_-LRB- Efficient_JJ task_NN allocation_NN -RRB-_-RRB- ._.
+We_PRP say_VBP a_DT task_NN allocation_NN is_VBZ efficient_JJ if_IN it_PRP is_VBZ valid_JJ and_CC U_NNP is_VBZ maximized_VBN ,_, i_FW ._.
+e_LS ._.
+,_, U_NN =_JJ max_NN -LRB-_-LRB- P_NN tT_NN u_NN -LRB-_-LRB- t_NN -RRB-_-RRB- -RRB-_-RRB- ._.
+We_PRP are_VBP now_RB ready_JJ to_TO define_VB the_DT task_NN allocation_NN problem_NN in_IN social_JJ network_NN that_IN we_PRP study_VB in_IN this_DT paper_NN ._.
+Definition_NN #_# -LRB-_-LRB- Social_NNP task_NN allocation_NN problem_NN -RRB-_-RRB- ._.
+Given_VBN a_DT set_NN of_IN agents_NNS A_DT connected_VBN by_IN a_DT social_JJ network_NN SN_NN =_JJ -LRB-_-LRB- A_NN ,_, AE_NN -RRB-_-RRB- ,_, and_CC a_DT finite_JJ set_NN of_IN tasks_NNS T_NN ,_, the_DT social_JJ task_NN allocation_NN problem_NN -LRB-_-LRB- or_CC STAP_NN for_IN short_JJ -RRB-_-RRB- is_VBZ the_DT problem_NN of_IN finding_VBG the_DT efficient_JJ task_NN allocation_NN ,_, such_JJ that_IN is_VBZ valid_JJ and_CC the_DT social_JJ welfare_NN U_NN is_VBZ maximized_VBN ._.
+3_LS ._.
+COMPLEXITY_NNP RESULTS_NNS The_DT traditional_JJ task_NN allocation_NN problem_NN ,_, TAP_NN -LRB-_-LRB- without_IN the_DT condition_NN of_IN the_DT social_JJ network_NN SN_NN -RRB-_-RRB- ,_, is_VBZ NP-complete_JJ -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, and_CC the_DT complexity_NN comes_VBZ from_IN the_DT fact_NN that_IN we_PRP need_VBP to_TO evaluate_VB the_DT exponential_JJ number_NN of_IN subsets_NNS of_IN the_DT task_NN set_NN ._.
+Although_IN we_PRP may_MD consider_VB the_DT TAP_NN as_IN a_DT special_JJ case_NN of_IN the_DT STAP_NN by_IN assuming_VBG agents_NNS are_VBP fully_RB connected_VBN ,_, we_PRP can_MD not_RB directly_RB use_VB the_DT complexity_NN results_VBZ from_IN the_DT TAP_NN ,_, since_IN we_PRP study_VBP the_DT STAP_NN in_IN an_DT arbitrary_JJ social_JJ network_NN ,_, which_WDT ,_, as_IN we_PRP argued_VBD in_IN the_DT introduction_NN ,_, should_MD be_VB partially_RB connected_VBN ._.
+We_PRP now_RB show_VBP that_IN the_DT TAP_NN with_IN an_DT arbitrary_JJ social_JJ network_NN is_VBZ also_RB NP-complete_JJ ,_, even_RB when_WRB the_DT utility_NN of_IN each_DT task_NN is_VBZ #_# ,_, and_CC the_DT quantity_NN of_IN all_DT required_VBN and_CC available_JJ resources_NNS is_VBZ #_# ._.
+Theorem_NNP #_# ._.
+Given_VBN the_DT social_JJ task_NN allocation_NN problem_NN with_IN an_DT arbitrary_JJ social_JJ network_NN ,_, as_IN defined_VBN in_IN Definition_NNP #_# ,_, the_DT problem_NN of_IN deciding_VBG whether_IN a_DT task_NN allocation_NN with_IN utility_NN more_RBR than_IN k_NN exists_VBZ is_VBZ NP-complete_JJ ._.
+Proof_NN ._.
+We_PRP first_RB show_VBP that_IN the_DT problem_NN is_VBZ in_IN NP_NN ._.
+Given_VBN an_DT instance_NN of_IN the_DT problem_NN and_CC an_DT integer_NN k_NN ,_, we_PRP can_MD verify_VB in_IN polynomial_JJ time_NN whether_IN an_DT allocation_NN is_VBZ a_DT valid_JJ allocation_NN and_CC whether_IN the_DT utility_NN of_IN is_VBZ greater_JJR than_IN k_NN ._.
+We_PRP now_RB prove_VBP that_IN the_DT STAP_NN is_VBZ NP-hard_JJ by_IN showing_VBG that_IN MAXIMUM_NNP INDEPENDENT_JJ SET_NN P_NN STAP_NN ._.
+Given_VBN an_DT undirected_JJ graph_NN G_NN =_JJ -LRB-_-LRB- V_NN ,_, E_NN -RRB-_-RRB- and_CC an_DT integer_NN k_NN ,_, we_PRP construct_VBP a_DT network_NN G_NN =_JJ -LRB-_-LRB- V_NN ,_, E_NN -RRB-_-RRB- which_WDT has_VBZ an_DT efficient_JJ task_NN allocation_NN with_IN k_NN tasks_NNS of_IN utility_NN #_# allocated_VBN if_IN and_CC only_RB if_IN G_NN has_VBZ an_DT independent_JJ set_NN -LRB-_-LRB- IS_VBZ -RRB-_-RRB- of_IN size_NN k_NN ._.
+av1_NN av3_NN ae3_NN rsc_NN -LRB-_-LRB- ae1_NN -RRB-_-RRB- =_JJ -LCB-_-LRB- e1_NN -RCB-_-RRB- rsc_NN -LRB-_-LRB- ae4_NN -RRB-_-RRB- =_JJ -LCB-_-LRB- e4_NN -RCB-_-RRB- av4_NN ae2_NN av2_NN ae4_NN ae1_NN rsc_NN -LRB-_-LRB- ae2_NN -RRB-_-RRB- =_JJ -LCB-_-LRB- e2_NN -RCB-_-RRB- -LCB-_-LRB- e3_NN -RCB-_-RRB- rsc_NN -LRB-_-LRB- av3_NN -RRB-_-RRB- =_JJ -LCB-_-LRB- v3_NN -RCB-_-RRB- rsc_NN -LRB-_-LRB- av4_NN -RRB-_-RRB- =_JJ -LCB-_-LRB- v4_NN -RCB-_-RRB- t1_NN =_JJ -LCB-_-LRB- v1_NN ,_, e1_NN ,_, e3_NN -RCB-_-RRB- t2_NN =_JJ -LCB-_-LRB- v2_NN ,_, e1_NN ,_, e2_NN -RCB-_-RRB- rsc_NN -LRB-_-LRB- ae3_NN -RRB-_-RRB- =_JJ rsc_NN -LRB-_-LRB- av1_NN -RRB-_-RRB- =_JJ -LCB-_-LRB- v1_NN -RCB-_-RRB- rsc_NN -LRB-_-LRB- av2_NN -RRB-_-RRB- =_JJ -LCB-_-LRB- v2_NN -RCB-_-RRB- t3_NN =_JJ -LCB-_-LRB- v3_NN ,_, e3_NN ,_, e4_NN -RCB-_-RRB- t4_NN =_JJ -LCB-_-LRB- v4_NN ,_, e2_NN ,_, e4_NN -RCB-_-RRB- e1_NN e2_NN e4_NN e3_NN v1_NN v2_NN v4v3_CD Figure_NNP #_# :_: The_DT MIS_NNP problem_NN can_MD be_VB reduced_VBN to_TO the_DT STAP_NN ._.
+The_DT left_JJ figure_NN is_VBZ an_DT undirected_JJ graph_NN G_NN ,_, which_WDT has_VBZ the_DT optimal_JJ solution_NN -LCB-_-LRB- v1_NN ,_, v4_NN -RCB-_-RRB- or_CC -LCB-_-LRB- v2_NN ,_, v3_NN -RCB-_-RRB- ;_: the_DT right_JJ figure_NN is_VBZ the_DT constructed_VBN instance_NN of_IN the_DT STAP_NN ,_, where_WRB the_DT optimal_JJ allocation_NN is_VBZ -LCB-_-LRB- t1_NN ,_, t4_NN -RCB-_-RRB- or_CC -LCB-_-LRB- t2_NN ,_, t3_NN -RCB-_-RRB- ._.
+An_DT instance_NN of_IN the_DT following_VBG construction_NN is_VBZ shown_VBN in_IN Figure_NNP #_# ._.
+For_IN each_DT node_NN v_LS V_NN and_CC each_DT edge_NN e_SYM E_NN in_IN the_DT graph_NN G_NN ,_, we_PRP create_VBP a_DT vertex_NN agent_NN av_NN and_CC an_DT edge_NN agent_NN ae_NN in_IN G_NN ._.
+The_DT Sixth_NNP Intl_NNP ._.
+Joint_NNP Conf_NNP ._.
+on_IN Autonomous_NNP Agents_NNPS and_CC Multi-Agent_NNP Systems_NNP -LRB-_-LRB- AAMAS_NNP ##_CD -RRB-_-RRB- ###_CD When_WRB v_LS was_VBD incident_NN to_TO e_SYM in_IN G_NN we_PRP correspondingly_RB add_VBP an_DT edge_NN e_SYM in_IN G_NN between_IN av_NN and_CC ae_NN ._.
+We_PRP assign_VBP each_DT agent_NN in_IN G_NN one_CD resource_NN ,_, which_WDT is_VBZ related_JJ to_TO the_DT node_NN or_CC the_DT edge_NN in_IN the_DT graph_NN G_NN ,_, i_FW ._.
+e_LS ._.
+,_, for_IN each_DT v_LS V_NN ,_, rsc_NN -LRB-_-LRB- av_NN -RRB-_-RRB- =_JJ -LCB-_-LRB- v_LS -RCB-_-RRB- -LRB-_-LRB- here_RB we_PRP write_VBP rsc_NN -LRB-_-LRB- a_DT -RRB-_-RRB- and_CC rsc_NN -LRB-_-LRB- t_NN -RRB-_-RRB- to_TO represent_VB the_DT set_NN of_IN resources_NNS available_JJ to_TO /_: required_VBN by_IN a_DT and_CC t_NN -RRB-_-RRB- ,_, and_CC for_IN each_DT e_SYM E_NN ,_, rsc_NN -LRB-_-LRB- ae_NN -RRB-_-RRB- =_JJ -LCB-_-LRB- e_SYM -RCB-_-RRB- ._.
+Each_DT vertex_NN agent_NN avi_NN in_IN G_NN has_VBZ a_DT task_NN ti_NN that_WDT requires_VBZ a_DT set_NN of_IN neighboring_VBG resources_NNS ti_NN =_JJ -LCB-_-LRB- vi_LS -RCB-_-RRB- -LCB-_-LRB- e_SYM |_CD e_SYM =_JJ -LRB-_-LRB- u_NN ,_, vi_LS -RRB-_-RRB- E_NN -RCB-_-RRB- ._.
+There_EX is_VBZ no_DT task_NN on_IN the_DT edge_NN agents_NNS in_IN G_NN ._.
+We_PRP define_VBP utility_NN #_# for_IN each_DT task_NN ,_, and_CC the_DT quantity_NN of_IN all_DT required_VBN and_CC available_JJ resources_NNS to_TO be_VB #_# ._.
+Taken_VBD an_DT instance_NN of_IN the_DT IS_VBZ problem_NN ,_, suppose_VBP there_EX is_VBZ a_DT solution_NN of_IN size_NN k_NN ,_, i_FW ._.
+e_LS ._.
+,_, a_DT subset_NN N_NN V_NN such_JJ that_IN no_DT two_CD vertices_NNS in_IN N_NN are_VBP joined_VBN by_IN an_DT edge_NN in_IN E_NN and_CC |_NN N_NN |_NN =_JJ k_NN ._.
+N_NN specifies_VBZ a_DT set_NN of_IN vertex_NN agents_NNS AN_DT in_IN the_DT corresponding_JJ graph_NN G_NN ._.
+Given_VBN two_CD agents_NNS a1_NN ,_, a2_NN AN_DT we_PRP now_RB know_VBP that_IN there_EX is_VBZ no_DT edge_NN agent_NN ae_NN connected_VBN to_TO both_DT a1_NN and_CC a2_NN ._.
+Thus_RB ,_, for_IN each_DT agent_NN a_DT AN_DT ,_, a_DT assigns_VBZ its_PRP$ task_NN to_TO the_DT edge_NN agents_NNS which_WDT are_VBP connected_VBN to_TO a_DT ._.
+All_DT other_JJ vertex_NN agents_NNS a_DT /_: AN_DT are_VBP not_RB able_JJ to_TO assign_VB their_PRP$ tasks_NNS ,_, since_IN the_DT required_VBN resources_NNS of_IN the_DT edge_NN agents_NNS are_VBP already_RB used_VBN by_IN the_DT agents_NNS a_DT AN_DT ._.
+The_DT set_NN of_IN tasks_NNS of_IN the_DT agents_NNS AN_DT -LRB-_-LRB- |_CD AN_DT |_NN =_JJ k_NN -RRB-_-RRB- is_VBZ thus_RB the_DT maximum_NN set_NN of_IN tasks_NNS that_WDT can_MD be_VB allocated_VBN ._.
+The_DT utility_NN of_IN this_DT allocation_NN is_VBZ k_NN ._.
+Similarly_RB ,_, if_IN there_EX is_VBZ a_DT solution_NN for_IN the_DT STAP_NN with_IN the_DT utility_NN value_NN k_NN ,_, and_CC the_DT allocated_VBN task_NN set_NN is_VBZ N_NN ,_, then_RB for_IN the_DT IS_VBZ problem_NN ,_, there_EX exists_VBZ a_DT maximum_NN independent_JJ set_NN N_NN of_IN size_NN k_NN in_IN G_NN ._.
+An_DT example_NN can_MD be_VB found_VBN in_IN Figure_NNP #_# ._.
+We_PRP just_RB proved_VBD that_IN the_DT STAP_NN is_VBZ NP-hard_JJ for_IN an_DT arbitrary_JJ graph_NN ._.
+In_IN our_PRP$ proof_NN ,_, the_DT complexity_NN comes_VBZ from_IN the_DT introduction_NN of_IN a_DT social_JJ network_NN ._.
+One_CD may_MD expect_VB that_IN the_DT complexity_NN of_IN this_DT problem_NN can_MD be_VB reduced_VBN for_IN some_DT networks_NNS where_WRB the_DT number_NN of_IN neighbors_NNS of_IN the_DT agents_NNS is_VBZ bounded_VBN by_IN a_DT fixed_VBN constant_NN ._.
+We_PRP now_RB give_VBP a_DT complexity_NN result_NN on_IN this_DT class_NN of_IN networks_NNS as_IN follows_VBZ ._.
+Theorem_NNP #_# ._.
+Let_VB the_DT number_NN of_IN neighbors_NNS of_IN each_DT agent_NN in_IN the_DT social_JJ network_NN SN_NN be_VB bounded_VBN by_IN for_IN #_# ._.
+Computing_NNP the_DT efficient_JJ task_NN allocation_NN given_VBN such_PDT a_DT network_NN is_VBZ NP-complete_JJ ._.
+In_IN addition_NN ,_, it_PRP is_VBZ not_RB approximable_JJ within_IN for_IN some_DT >_JJR #_# ._.
+Proof_NN ._.
+It_PRP has_VBZ been_VBN shown_VBN in_IN -LSB-_-LRB- #_# -RSB-_-RRB- that_IN the_DT maximum_NN independent_JJ set_NN problem_NN in_IN the_DT case_NN of_IN the_DT degree_NN bounded_VBN by_IN for_IN #_# is_VBZ NP-complete_JJ and_CC is_VBZ not_RB approximable_JJ within_IN for_IN some_DT >_JJR #_# ._.
+Using_VBG the_DT similar_JJ reduction_NN from_IN the_DT proof_NN of_IN Theorem_NNP #_# ,_, this_DT result_NN also_RB holds_VBZ for_IN the_DT STAP_NN ._.
+Since_IN our_PRP$ problem_NN is_VBZ as_RB hard_JJ as_IN MIS_NNP as_IN shown_VBN in_IN Theorem_NNP #_# ,_, it_PRP is_VBZ not_RB possible_JJ to_TO give_VB a_DT worst_JJS case_NN bound_VBD better_JJR than_IN for_IN any_DT polynomial_JJ time_NN algorithm_NN ,_, unless_IN P_NN =_JJ NP_NN ._.
+4_LS ._.
+ALGORITHMS_NNP To_TO deal_VB with_IN the_DT problem_NN of_IN allocating_VBG tasks_NNS in_IN a_DT social_JJ network_NN ,_, we_PRP present_VBP a_DT distributed_VBN algorithm_NN ._.
+We_PRP introduce_VBP this_DT algorithm_NN by_IN describing_VBG the_DT protocol_NN for_IN the_DT agents_NNS ._.
+After_IN that_DT we_PRP give_VBP the_DT optimal_JJ ,_, centralized_JJ algorithm_NN and_CC an_DT upper_JJ bound_VBN algorithm_NN ,_, which_WDT we_PRP use_VBP in_IN Section_NN #_# to_TO benchmark_JJ the_DT quality_NN of_IN our_PRP$ distributed_VBN algorithm_NN ._.
+4_LS ._.
+#_# Protocol_NNP for_IN distributed_VBN task_NN allocation_NN We_PRP can_MD summarize_VB the_DT description_NN of_IN the_DT task_NN allocation_NN problem_NN in_IN social_JJ networks_NNS from_IN Section_NN #_# as_IN follows_VBZ ._.
+We_PRP Algorithm_NN #_# Greedy_NNP distributed_VBN allocation_NN protocol_NN -LRB-_-LRB- GDAP_NN -RRB-_-RRB- ._.
+Each_DT manager_NN a_DT calculates_VBZ the_DT efficiency_NN e_SYM -LRB-_-LRB- t_NN -RRB-_-RRB- for_IN each_DT of_IN their_PRP$ tasks_NNS t_NN Ta_NN ,_, and_CC then_RB while_IN Ta_NN =_JJ :_: 1_CD ._.
+Each_DT manager_NN a_DT selects_VBZ the_DT most_RBS efficient_JJ task_NN t_NN Ta_NN such_JJ that_IN for_IN each_DT task_NN t_NN Ta_NN :_: e_LS -LRB-_-LRB- t_NN -RRB-_-RRB- e_SYM -LRB-_-LRB- t_NN -RRB-_-RRB- ._.
+2_LS ._.
+Each_DT manager_NN a_DT requests_NNS help_VBP for_IN t_NN from_IN all_DT its_PRP$ neighbors_NNS -LRB-_-LRB- of_IN a_DT -RRB-_-RRB- by_IN informing_VBG these_DT neighbors_NNS of_IN the_DT efficiency_NN e_SYM -LRB-_-LRB- t_NN -RRB-_-RRB- and_CC the_DT required_VBN resources_NNS for_IN t_NN ._.
+3_LS ._.
+Contractors_NNS receive_VBP and_CC store_VBP all_DT requests_NNS ,_, and_CC then_RB offer_VBP all_DT relevant_JJ resources_NNS to_TO the_DT manager_NN for_IN the_DT task_NN with_IN the_DT highest_JJS efficiency_NN ._.
+4_LS ._.
+The_DT managers_NNS that_WDT have_VBP received_VBN sufficient_JJ offers_NNS allocate_VBP their_PRP$ tasks_NNS ,_, and_CC inform_VB each_DT contractor_NN which_WDT part_NN of_IN the_DT offer_NN is_VBZ accepted_VBN ._.
+When_WRB a_DT task_NN is_VBZ allocated_VBN ,_, or_CC when_WRB a_DT manager_NN has_VBZ received_VBN offers_NNS from_IN all_DT neighbors_NNS ,_, but_CC still_RB can_MD not_RB satisfy_VB its_PRP$ task_NN ,_, the_DT task_NN is_VBZ removed_VBN from_IN the_DT task_NN list_NN Ta_NN ._.
+5_CD ._.
+Contractors_NNS update_VBP their_PRP$ used_VBN resources_NNS ._.
+have_VB a_DT -LRB-_-LRB- social_JJ -RRB-_-RRB- network_NN of_IN agents_NNS ._.
+Each_DT agent_NN has_VBZ a_DT set_NN of_IN resources_NNS of_IN different_JJ types_NNS at_IN its_PRP$ disposal_NN ._.
+We_PRP also_RB have_VBP a_DT set_NN of_IN tasks_NNS ._.
+Each_DT task_NN requires_VBZ some_DT resources_NNS ,_, has_VBZ a_DT fixed_JJ benefit_NN ,_, and_CC is_VBZ located_JJ at_IN a_DT certain_JJ agent_NN ._.
+This_DT agent_NN is_VBZ called_VBN a_DT manager_NN ._.
+We_PRP only_RB allow_VBP neighboring_VBG agents_NNS to_TO help_VB with_IN a_DT task_NN ._.
+These_DT agents_NNS are_VBP called_VBN contractors_NNS ._.
+Agents_NNS can_MD fulfill_VB the_DT role_NN of_IN manager_NN as_RB well_RB as_IN contractor_NN ._.
+The_DT problem_NN is_VBZ to_TO find_VB out_RP which_WDT tasks_NNS to_TO execute_VB ,_, and_CC which_WDT resources_NNS of_IN which_WDT contractors_NNS to_TO use_VB for_IN these_DT tasks_NNS ._.
+The_DT idea_NN of_IN the_DT protocol_NN is_VBZ as_IN follows_VBZ ._.
+All_DT manager_NN agents_NNS a_DT A_DT try_NN to_TO find_VB neighboring_JJ contractors_NNS to_TO help_VB them_PRP with_IN their_PRP$ task_NN -LRB-_-LRB- s_NNS -RRB-_-RRB- Ta_NN =_JJ -LCB-_-LRB- ti_NN T_NN |_CD loc_NN -LRB-_-LRB- ti_NN -RRB-_-RRB- =_JJ a_DT -RCB-_-RRB- ._.
+They_PRP start_VBP with_IN offering_VBG the_DT task_NN that_WDT is_VBZ most_RBS efficient_JJ in_IN terms_NNS of_IN the_DT ratio_NN between_IN benefit_NN and_CC required_VBN resources_NNS ._.
+Out_IN of_IN all_DT tasks_NNS offered_VBD ,_, contractors_NNS select_VBP the_DT task_NN with_IN the_DT highest_JJS efficiency_NN ,_, and_CC send_VB a_DT bid_NN to_TO the_DT related_JJ manager_NN ._.
+A_DT bid_NN consists_VBZ of_IN all_PDT the_DT resources_NNS the_DT agent_NN is_VBZ able_JJ to_TO supply_VB for_IN this_DT task_NN ._.
+If_IN sufficient_JJ resources_NNS have_VBP been_VBN offered_VBN ,_, the_DT manager_NN selects_VBZ the_DT required_VBN resources_NNS and_CC informs_VBZ all_DT contractors_NNS of_IN its_PRP$ choice_NN ._.
+The_DT efficiency_NN of_IN a_DT task_NN is_VBZ defined_VBN as_IN follows_VBZ :_: Definition_NN #_# ._.
+The_DT efficiency_NN e_SYM of_IN a_DT task_NN t_NN T_NN is_VBZ defined_VBN by_IN the_DT utility_NN of_IN this_DT task_NN divided_VBN by_IN the_DT sum_NN of_IN all_DT required_VBN resources_NNS :_: e_LS -LRB-_-LRB- t_NN -RRB-_-RRB- =_JJ u_NN -LRB-_-LRB- t_NN -RRB-_-RRB- P_NN rR_NN rsc_NN -LRB-_-LRB- t_NN ,_, r_NN -RRB-_-RRB- ._.
+A_DT more_JJR detailed_JJ description_NN of_IN this_DT protocol_NN can_MD be_VB found_VBN in_IN Algorithm_NNP #_# ._.
+Here_RB it_PRP is_VBZ also_RB defined_VBN how_WRB to_TO determine_VB when_WRB a_DT task_NN should_MD not_RB be_VB offered_VBN anymore_RB ,_, because_IN it_PRP is_VBZ impossible_JJ to_TO fulfill_VB locally_RB ._.
+Obviously_RB ,_, a_DT task_NN is_VBZ also_RB not_RB offered_VBN anymore_RB when_WRB it_PRP has_VBZ been_VBN allocated_VBN ._.
+This_DT protocol_NN is_VBZ such_JJ that_IN ,_, when_WRB no_DT two_CD tasks_NNS have_VBP exactly_RB the_DT same_JJ efficiency_NN ,_, in_IN every_DT iteration_NN at_IN least_JJS one_CD task_NN is_VBZ removed_VBN from_IN a_DT task_NN list_NN ._.
+#_# From_IN this_DT the_DT computation_NN and_CC communication_NN property_NN of_IN the_DT algorithm_NN follows_VBZ ._.
+Proposition_NN #_# ._.
+For_IN a_DT STAP_NN with_IN n_NN tasks_NNS and_CC m_NN agents_NNS ,_, the_DT run_NN time_NN of_IN the_DT distributed_VBN algorithm_NN is_VBZ O_NN -LRB-_-LRB- nm_NN -RRB-_-RRB- ,_, and_CC the_DT number_NN of_IN communication_NN messages_NNS is_VBZ O_NN -LRB-_-LRB- n2_NN m_NN -RRB-_-RRB- ._.
+1_CD Even_RB when_WRB some_DT tasks_NNS have_VBP the_DT same_JJ efficiency_NN ,_, it_PRP is_VBZ straightforward_JJ to_TO make_VB this_DT result_NN work_NN ._.
+For_IN example_NN ,_, the_DT implementation_NN can_MD ensure_VB that_IN the_DT contractors_NNS choose_VB the_DT task_NN with_IN the_DT lowest_JJS task-id_NN ._.
+502_CD The_DT Sixth_NNP Intl_NNP ._.
+Joint_NNP Conf_NNP ._.
+on_IN Autonomous_NNP Agents_NNPS and_CC Multi-Agent_NNP Systems_NNP -LRB-_-LRB- AAMAS_NNP ##_CD -RRB-_-RRB- Algorithm_NNP #_# Optimal_JJ social_JJ task_NN allocation_NN -LRB-_-LRB- OPT_NN -RRB-_-RRB- ._.
+Repeat_NN the_DT following_VBG for_IN each_DT combination_NN of_IN tasks_NNS :_: 1_CD ._.
+If_IN the_DT total_JJ reward_NN for_IN this_DT combination_NN is_VBZ higher_JJR than_IN any_DT previous_JJ combination_NN ,_, test_NN if_IN this_DT combination_NN is_VBZ feasible_JJ as_IN follows_VBZ :_: 2_CD ._.
+Create_VB a_DT network_NN flow_NN problem_NN for_IN each_DT resource_NN type_NN r_NN R_NN -LRB-_-LRB- separately_RB -RRB-_-RRB- as_IN follows_VBZ :_: -LRB-_-LRB- a_LS -RRB-_-RRB- Create_VB a_DT source_NN s_NNS and_CC a_DT sink_NN s_NNS ._.
+-LRB-_-LRB- b_NN -RRB-_-RRB- For_IN each_DT agent_NN a_DT A_NN create_VB an_DT agent_NN node_NN and_CC an_DT edge_NN from_IN s_NNS to_TO this_DT node_NN with_IN capacity_NN equal_JJ to_TO the_DT amount_NN of_IN resources_NNS of_IN type_NN r_NN agent_NN a_DT has_VBZ ._.
+-LRB-_-LRB- c_NN -RRB-_-RRB- For_IN each_DT task_NN t_NN T_NN create_VB a_DT task_NN node_NN and_CC an_DT edge_NN from_IN this_DT node_NN to_TO s_NNS with_IN capacity_NN equal_JJ to_TO the_DT amount_NN of_IN resources_NNS of_IN type_NN r_NN task_NN T_NN requires_VBZ ._.
+-LRB-_-LRB- d_NN -RRB-_-RRB- For_IN each_DT agent_NN a_DT connect_VB the_DT agent_NN node_NN to_TO all_DT task_NN nodes_NNS of_IN neighboring_VBG tasks_NNS ,_, i_FW ._.
+e_LS ._.
+,_, t_NN -LCB-_-LRB- t_NN T_NN |_NN -LRB-_-LRB- a_DT ,_, loc_NN -LRB-_-LRB- t_NN -RRB-_-RRB- -RRB-_-RRB- AE_NN -RCB-_-RRB- ._.
+Give_VB this_DT connection_NN unlimited_JJ capacity_NN ._.
+3_LS ._.
+Solve_VB the_DT maximum_NN flow_NN problem_NN for_IN the_DT created_VBN flow_NN networks_NNS ._.
+If_IN the_DT maximum_NN flow_NN in_IN each_DT network_NN is_VBZ equal_JJ to_TO the_DT total_NN required_VBN resources_NNS of_IN that_DT type_NN ,_, the_DT current_JJ combination_NN of_IN tasks_NNS is_VBZ feasible_JJ ._.
+In_IN that_DT case_NN ,_, this_DT is_VBZ the_DT current_JJ best_JJS combination_NN of_IN tasks_NNS ._.
+Proof_NN ._.
+In_IN the_DT worst_JJS case_NN ,_, in_IN each_DT iteration_NN exactly_RB one_CD task_NN is_VBZ removed_VBN from_IN a_DT task_NN list_NN ,_, so_RB there_EX are_VBP n_NN iterations_NNS ._.
+In_IN each_DT iteration_NN in_IN the_DT worst_JJS case_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, a_DT fully_RB connected_JJ network_NN -RRB-_-RRB- ,_, for_IN each_DT of_IN the_DT O_NN -LRB-_-LRB- n_NN -RRB-_-RRB- managers_NNS ,_, O_NN -LRB-_-LRB- m_NN -RRB-_-RRB- messages_NNS are_VBP sent_VBN ._.
+Next_IN the_DT task_NN with_IN the_DT highest_JJS efficiency_NN can_MD be_VB selected_VBN by_IN each_DT contractor_NN in_IN O_NN -LRB-_-LRB- n_NN -RRB-_-RRB- ._.
+Assigning_VBG an_DT allocation_NN can_MD be_VB done_VBN in_IN O_NN -LRB-_-LRB- m_NN -RRB-_-RRB- ._.
+This_DT leads_VBZ to_TO a_DT total_NN of_IN O_NN -LRB-_-LRB- n_NN +_CC m_NN -RRB-_-RRB- operations_NNS for_IN each_DT iteration_NN ,_, and_CC thus_RB O_NN -LRB-_-LRB- n2_NN +_CC nm_NN -RRB-_-RRB- operations_NNS in_IN total_NN ._.
+The_DT number_NN of_IN messages_NNS sent_VBN is_VBZ O_NN -LRB-_-LRB- n_NN -LRB-_-LRB- nm_NN +_CC nm_NN +_CC nm_NN -RRB-_-RRB- -RRB-_-RRB- =_JJ O_NN -LRB-_-LRB- n2_NN m_NN -RRB-_-RRB- ._.
+We_PRP establish_VBP the_DT quality_NN of_IN this_DT protocol_NN experimentally_RB -LRB-_-LRB- in_IN Section_NN #_# -RRB-_-RRB- ._.
+Preferably_RB ,_, we_PRP compare_VBP the_DT results_NNS to_TO the_DT optimal_JJ solution_NN ._.
+4_LS ._.
+#_# Optimal_JJ social_JJ task_NN allocation_NN The_DT optimal_JJ task_NN allocation_NN algorithm_NN should_MD deal_VB with_IN the_DT restrictions_NNS posed_VBN by_IN the_DT social_JJ network_NN ._.
+For_IN this_DT NPcomplete_NN problem_NN we_PRP used_VBD an_DT exponential_JJ brute-force_JJ algorithm_NN to_TO consider_VB relevant_JJ combinations_NNS of_IN tasks_NNS to_TO execute_VB ._.
+For_IN each_DT combination_NN we_PRP use_VBP a_DT maximum-flow_JJ algorithm_NN to_TO check_VB whether_IN the_DT resources_NNS are_VBP sufficient_JJ for_IN the_DT selected_VBN subset_NN of_IN tasks_NNS ._.
+The_DT flow_NN network_NN describes_VBZ which_WDT resources_NNS can_MD be_VB used_VBN for_IN which_WDT tasks_NNS ,_, depending_VBG on_IN the_DT social_JJ network_NN ._.
+If_IN the_DT maximum_NN flow_NN is_VBZ equal_JJ to_TO the_DT sum_NN of_IN all_DT resources_NNS required_VBN by_IN the_DT subset_NN of_IN tasks_NNS ,_, we_PRP know_VBP that_IN a_DT feasible_JJ solution_NN exists_VBZ ._.
+Clearly_RB ,_, we_PRP can_MD not_RB expect_VB this_DT optimal_JJ algorithm_NN to_TO be_VB able_JJ to_TO find_VB solutions_NNS for_IN larger_JJR problem_NN sizes_NNS ._.
+To_TO establish_VB the_DT quality_NN of_IN our_PRP$ protocol_NN for_IN large_JJ instances_NNS ,_, we_PRP use_VBP the_DT following_VBG method_NN to_TO determine_VB an_DT upper_JJ bound_VBN ._.
+4_LS ._.
+#_# Upper_NNP bound_VBD for_IN social_JJ task_NN allocation_NN Given_VBN a_DT social_JJ task_NN allocation_NN problem_NN ,_, if_IN the_DT number_NN of_IN resource_NN types_NNS for_IN every_DT task_NN t_NN T_NN is_VBZ bounded_VBN by_IN #_# ,_, the_DT Algorithm_NNP #_# An_DT upper_JJ bound_VBN for_IN social_JJ task_NN allocation_NN -LRB-_-LRB- UB_NN -RRB-_-RRB- ._.
+Create_VB a_DT network_NN flow_NN problem_NN with_IN costs_NNS as_IN follows_VBZ :_: 1_CD ._.
+Create_VB a_DT source_NN s_NNS and_CC a_DT sink_NN s_NNS ._.
+2_LS ._.
+For_IN each_DT agent_NN a_DT A_NN and_CC each_DT resource_NN type_NN ri_NN R_NN ,_, create_VB an_DT agent-resource_JJ node_NN ai_VBP ,_, and_CC an_DT edge_NN from_IN s_NNS to_TO this_DT node_NN with_IN capacity_NN equal_JJ to_TO the_DT amount_NN of_IN resources_NNS of_IN type_NN r_NN agent_NN a_DT has_VBZ available_JJ and_CC with_IN costs_NNS 0_CD ._.
+3_LS ._.
+For_IN each_DT task_NN t_NN T_NN and_CC each_DT resource_NN type_NN ri_NN R_NN ,_, create_VB a_DT task-resource_NN node_NN ti_NN ,_, and_CC an_DT edge_NN from_IN this_DT node_NN to_TO s_NNS with_IN capacity_NN equal_JJ to_TO the_DT amount_NN of_IN resources_NNS of_IN type_NN r_NN task_NN t_NN requires_VBZ and_CC costs_VBZ e_SYM -LRB-_-LRB- t_NN -RRB-_-RRB- ._.
+4_LS ._.
+For_IN each_DT resource_NN type_NN ri_NN R_NN and_CC for_IN each_DT agent_NN a_DT connect_VB the_DT agent-resource_JJ node_NN ai_VBP to_TO all_DT task-resource_JJ nodes_NNS ti_NN for_IN neighboring_VBG tasks_NNS t_NN -LCB-_-LRB- t_NN T_NN |_NN -LRB-_-LRB- a_DT ,_, loc_NN -LRB-_-LRB- t_NN -RRB-_-RRB- -RRB-_-RRB- AE_NN or_CC a_DT =_JJ loc_NN -LRB-_-LRB- t_NN -RRB-_-RRB- -RCB-_-RRB- ._.
+Give_VB this_DT connection_NN unlimited_JJ capacity_NN and_CC zero_CD costs_NNS ._.
+5_CD ._.
+Create_VB an_DT edge_NN directly_RB from_IN s_NNS to_TO s_NNS with_IN unlimited_JJ capacity_NN and_CC zero_CD costs_NNS ._.
+Solve_VB the_DT minimum_JJ cost_NN flow_NN network_NN problem_NN for_IN this_DT network_NN ._.
+The_DT costs_NNS of_IN the_DT resulting_VBG network_NN is_VBZ an_DT upper_JJ bound_VBN for_IN the_DT social_JJ task_NN allocation_NN problem_NN ._.
+problem_NN is_VBZ polynomially_RB solvable_JJ by_IN transforming_VBG it_PRP to_TO a_DT flow_NN network_NN problem_NN ._.
+Our_PRP$ method_NN for_IN efficiently_RB calculating_VBG an_DT upper_JJ bound_VBN for_IN STAP_NN makes_VBZ use_NN of_IN this_DT special_JJ case_NN by_IN converting_VBG any_DT given_VBN STAP_NN instance_NN P_NN into_IN a_DT new_JJ problem_NN P_NN where_WRB each_DT task_NN only_RB has_VBZ one_CD resource_NN type_NN ._.
+More_RBR specifically_RB ,_, for_IN every_DT task_NN t_NN T_NN with_IN utility_NN u_NN -LRB-_-LRB- t_NN -RRB-_-RRB- ,_, we_PRP do_VBP the_DT following_VBG ._.
+Let_VB m_NN be_VB the_DT number_NN of_IN resource_NN types_NNS -LCB-_-LRB- r1_NN ,_, ..._: ,_, rm_NN -RCB-_-RRB- required_VBN by_IN t_NN ._.
+We_PRP then_RB split_VBD t_NN into_IN a_DT set_NN of_IN m_NN tasks_NNS T_NN =_JJ -LCB-_-LRB- t1_NN ,_, ..._: ,_, tm_NN -RCB-_-RRB- where_WRB each_DT task_NN ti_NN only_RB has_VBZ one_CD unique_JJ resource_NN type_NN -LRB-_-LRB- of_IN -LCB-_-LRB- r1_NN ,_, ..._: ,_, rm_NN -RCB-_-RRB- -RRB-_-RRB- and_CC each_DT task_NN has_VBZ a_DT fair_JJ share_NN of_IN the_DT utility_NN ,_, i_FW ._.
+e_LS ._.
+,_, the_DT efficiency_NN of_IN t_NN from_IN Definition_NNP #_# times_NNS the_DT amount_NN of_IN this_DT resource_NN type_NN rsc_NN -LRB-_-LRB- ti_NN ,_, ri_NN -RRB-_-RRB- ._.
+After_IN polynomially_RB performing_VBG this_DT conversion_NN for_IN every_DT task_NN in_IN T_NN ,_, the_DT original_JJ problem_NN P_NN becomes_VBZ the_DT special_JJ case_NN P_NN ._.
+Note_VB that_IN the_DT set_NN of_IN valid_JJ allocations_NNS in_IN P_NN is_VBZ only_RB a_DT subset_NN of_IN the_DT set_NN of_IN valid_JJ allocations_NNS in_IN P_NN ,_, because_IN it_PRP is_VBZ now_RB possible_JJ to_TO partially_RB allocate_VB a_DT task_NN ._.
+From_IN this_DT it_PRP is_VBZ easy_JJ to_TO see_VB that_IN the_DT solution_NN of_IN P_NN gives_VBZ an_DT upper_JJ bound_VBN of_IN the_DT solution_NN of_IN the_DT original_JJ problem_NN P_NN ._.
+To_TO compute_VB the_DT optimal_JJ solution_NN for_IN P_NN ,_, we_PRP transform_VBP it_PRP to_TO a_DT minimum_JJ cost_NN flow_NN problem_NN ._.
+We_PRP model_VBP the_DT cost_NN in_IN the_DT flow_NN network_NN by_IN the_DT negation_NN of_IN the_DT new_JJ task_NN ''_'' s_NNS utility_NN ._.
+A_DT polynomial-time_JJ implementation_NN of_IN a_DT scaling_VBG minimum_NN cost_NN flow_NN algorithm_NN -LSB-_-LRB- #_# -RSB-_-RRB- is_VBZ used_VBN for_IN the_DT computation_NN ._.
+The_DT resulting_VBG minimum_NN cost_NN flow_NN represents_VBZ a_DT maximum_NN allocation_NN of_IN the_DT tasks_NNS for_IN P_NN ._.
+The_DT detailed_JJ modeling_NN is_VBZ described_VBN in_IN Algorithm_NNP #_# ._.
+In_IN the_DT next_JJ section_NN ,_, we_PRP use_VBP this_DT upper_JJ bound_VBN to_TO estimate_VB the_DT quality_NN of_IN the_DT GDAP_NN for_IN large-scale_JJ instances_NNS ._.
+5_CD ._.
+EXPERIMENTS_NNS We_PRP implemented_VBD the_DT greedy_JJ distributed_VBN allocation_NN protocol_NN -LRB-_-LRB- GDAP_NN -RRB-_-RRB- ,_, the_DT optimal_JJ allocation_NN algorithm_NN -LRB-_-LRB- OPT_NN -RRB-_-RRB- ,_, and_CC the_DT upper_JJ bound_VBN algorithm_NN -LRB-_-LRB- UB_NN -RRB-_-RRB- in_IN Java_NNP ,_, and_CC tested_VBD them_PRP on_IN a_DT Linux_NNP PC_NNP ._.
+The_DT purpose_NN of_IN these_DT experiments_NNS is_VBZ to_TO study_VB the_DT performance_NN of_IN the_DT distributed_VBN algorithm_NN in_IN different_JJ problem_NN settings_NNS using_VBG different_JJ social_JJ networks_NNS ._.
+The_DT perThe_NNP Sixth_NNP Intl_NNP ._.
+Joint_NNP Conf_NNP ._.
+on_IN Autonomous_NNP Agents_NNPS and_CC Multi-Agent_NNP Systems_NNP -LRB-_-LRB- AAMAS_NNP ##_CD -RRB-_-RRB- ###_CD 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 1_CD 1_CD ._.
+#_# 1_CD ._.
+#_# 1_CD ._.
+#_# 1_CD ._.
+#_# 0_CD ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# Rewardrelativetooptimal_NNP Resource_NNP ratio_NN small-world_JJ -_: upper_JJ bound_VBN random_JJ -_: upper_JJ bound_VBN scale-free_NN -_: upper_JJ bound_VBN small-world_JJ -_: GDAP_NN random_JJ -_: GDAP_NN scale-free_NN -_: GDAP_NN Figure_NN #_# :_: The_DT solution_NN qualities_NNS of_IN the_DT GDAP_NN and_CC the_DT upper_JJ bound_VBN depend_VBP on_IN the_DT resource_NN ratio_NN ._.
+0_CD 5_CD 10_CD 15_CD 20_CD 25_CD 30_CD 0_CD #_# #_# #_# #_# ##_CD ##_CD ##_CD ##_CD ##_CD Numberofagents_NNP Degree_NNP small-world_JJ random_JJ scale-free_JJ Figure_NN #_# :_: The_DT histogram_NN of_IN the_DT degrees_NNS ._.
+formance_NN measurements_NNS are_VBP the_DT solution_NN quality_NN and_CC computation_NN time_NN ,_, where_WRB the_DT solution_NN quality_NN -LRB-_-LRB- SQ_NN -RRB-_-RRB- is_VBZ computed_VBN as_IN follows_VBZ ._.
+When_WRB the_DT number_NN of_IN tasks_NNS is_VBZ small_JJ ,_, we_PRP compare_VBP the_DT output_NN of_IN the_DT distributed_VBN algorithm_NN with_IN the_DT optimal_JJ solution_NN ,_, i_FW ._.
+e_LS ._.
+,_, SQ_NN =_JJ GDAP_NN OP_NN T_NN ,_, but_CC if_IN it_PRP is_VBZ not_RB feasible_JJ to_TO compute_VB the_DT optimal_JJ solution_NN ,_, we_PRP use_VBP the_DT value_NN returned_VBN by_IN the_DT upper_JJ bound_VBN algorithm_NN for_IN evaluation_NN ,_, i_FW ._.
+e_LS ._.
+,_, SQ_NN =_JJ GDAP_NN UB_NN ._.
+To_TO see_VB whether_IN the_DT latter_JJ is_VBZ a_DT good_JJ measure_NN ,_, we_PRP also_RB compare_VBP the_DT quality_NN of_IN the_DT upper_JJ bound_VBN to_TO the_DT optimal_JJ solution_NN for_IN smaller_JJR problems_NNS ._.
+In_IN the_DT following_VBG ,_, we_PRP describe_VBP the_DT setup_NN of_IN all_DT experiments_NNS ,_, and_CC present_VB the_DT results_NNS ._.
+5_CD ._.
+#_# Experimental_JJ settings_NNS We_PRP consider_VBP several_JJ experimental_JJ environments_NNS ._.
+In_IN all_DT environments_NNS the_DT agents_NNS are_VBP connected_VBN by_IN a_DT social_JJ network_NN ._.
+In_IN the_DT experiments_NNS ,_, three_CD different_JJ networks_NNS are_VBP used_VBN to_TO simulate_VB the_DT social_JJ relationships_NNS among_IN agents_NNS in_IN potential_JJ realworld_NN problems_NNS ._.
+Small-world_JJ networks_NNS are_VBP networks_NNS where_WRB most_RBS neighbors_NNS of_IN an_DT agent_NN are_VBP also_RB connected_VBN to_TO each_DT other_JJ ._.
+For_IN the_DT experiments_NNS we_PRP use_VBP a_DT method_NN for_IN generating_VBG random_JJ small-world_JJ networks_NNS proposed_VBN by_IN Watts_NNP et_FW al_FW ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- ,_, with_IN a_DT fixed_VBN rewiring_NN probability_NN p_NN =_JJ #_# ._.
+##_NN ._.
+Scale-free_JJ networks_NNS have_VBP the_DT property_NN that_IN a_DT couple_NN of_IN nodes_NNS have_VBP many_JJ connections_NNS ,_, and_CC many_JJ nodes_NNS have_VBP only_RB a_DT small_JJ number_NN of_IN connections_NNS ._.
+To_TO generate_VB these_DT we_PRP use_VBP the_DT implementation_NN in_IN the_DT JUNG_NNP library_NN of_IN the_DT generator_NN proposed_VBN by_IN Barabasi_NNP and_CC Albert_NNP -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+We_PRP also_RB generate_VBP random_JJ networks_NNS as_IN follows_VBZ ._.
+First_RB we_PRP connect_VBP each_DT agent_NN to_TO another_DT agent_NN such_JJ that_IN all_DT agents_NNS are_VBP connected_VBN ._.
+Next_RB ,_, we_PRP randomly_RB add_VBP connections_NNS until_IN the_DT desired_VBN average_JJ degree_NN has_VBZ been_VBN reached_VBN ._.
+We_PRP now_RB describe_VBP the_DT different_JJ settings_NNS used_VBN in_IN our_PRP$ experiments_NNS with_IN both_DT small_JJ and_CC large-scale_JJ problems_NNS ._.
+Setting_VBG #_# ._.
+The_DT number_NN of_IN agents_NNS is_VBZ ##_CD ,_, and_CC the_DT number_NN of_IN tasks_NNS is_VBZ ##_CD ._.
+The_DT number_NN of_IN different_JJ resource_NN types_NNS is_VBZ bounded_VBN by_IN #_# ,_, and_CC the_DT average_JJ number_NN of_IN resources_NNS required_VBN by_IN a_DT task_NN is_VBZ ##_CD ._.
+Consequently_RB ,_, the_DT total_JJ number_NN of_IN resources_NNS required_VBN by_IN the_DT tasks_NNS is_VBZ fixed_VBN ._.
+However_RB ,_, the_DT resources_NNS available_JJ to_TO the_DT agents_NNS are_VBP varied_VBN ._.
+We_PRP define_VBP the_DT resource_NN ratio_NN to_TO refer_VB to_TO the_DT ratio_NN between_IN the_DT total_JJ number_NN of_IN available_JJ resources_NNS and_CC the_DT total_JJ number_NN of_IN required_VBN resources_NNS ._.
+Resources_NNPS are_VBP allocated_VBN uniformly_RB to_TO the_DT agents_NNS ._.
+The_DT average_JJ degrees_NNS of_IN the_DT networks_NNS may_MD also_RB change_VB ._.
+In_IN this_DT setting_VBG the_DT task_NN benefits_NNS are_VBP distributed_VBN normally_RB around_IN the_DT number_NN of_IN resources_NNS required_VBN ._.
+Setting_VBG #_# ._.
+This_DT setting_NN is_VBZ similar_JJ to_TO Setting_VBG #_# ,_, but_CC here_RB we_PRP let_VBD the_DT benefits_NNS of_IN the_DT tasks_NNS vary_VBP dramatically-40_JJ %_NN of_IN the_DT tasks_NNS have_VBP around_IN ##_CD times_NNS higher_JJR benefit_NN than_IN the_DT other_JJ ##_CD %_NN of_IN the_DT tasks_NNS ._.
+Setting_VBG #_# ._.
+This_DT setting_NN is_VBZ for_IN large-scale_JJ problems_NNS ._.
+The_DT ratio_NN between_IN the_DT number_NN of_IN agents_NNS and_CC the_DT number_NN of_IN tasks_NNS is_VBZ set_VBN to_TO #_# /_: #_# ,_, and_CC the_DT number_NN of_IN agents_NNS varies_VBZ from_IN ###_CD to_TO ####_CD ._.
+We_PRP also_RB fix_VBP the_DT resource_NN ratio_NN to_TO #_# ._.
+#_# and_CC the_DT average_JJ degree_NN to_TO #_# ._.
+The_DT number_NN of_IN different_JJ resource_NN types_NNS is_VBZ ##_CD ,_, and_CC the_DT average_JJ resource_NN requirement_NN of_IN a_DT tasks_NNS is_VBZ ###_CD ._.
+The_DT task_NN benefits_NNS are_VBP again_RB normally_RB distributed_VBN ._.
+5_CD ._.
+#_# Experimental_JJ results_NNS The_DT experiments_NNS are_VBP done_VBN with_IN the_DT three_CD different_JJ settings_NNS in_IN the_DT three_CD different_JJ networks_NNS mentioned_VBN before_RB ,_, where_WRB each_DT recorded_VBN data_NNS is_VBZ the_DT average_NN over_IN ##_CD random_JJ instances_NNS ._.
+5_CD ._.
+#_# ._.
+#_# Experiment_NN #_# Experimental_JJ setting_NN #_# is_VBZ used_VBN for_IN this_DT set_NN of_IN experiments_NNS ._.
+We_PRP would_MD like_VB to_TO see_VB how_WRB the_DT GDAP_NN behaves_VBZ in_IN the_DT different_JJ networks_NNS when_WRB the_DT number_NN of_IN resources_NNS available_JJ to_TO the_DT agents_NNS is_VBZ changing_VBG ._.
+We_PRP also_RB study_VB the_DT behavior_NN of_IN our_PRP$ upper_JJ bound_VBN algorithm_NN ._.
+For_IN this_DT experiment_NN we_PRP fix_VBP the_DT average_JJ number_NN of_IN neighbors_NNS -LRB-_-LRB- degree_NN -RRB-_-RRB- in_IN each_DT network_NN type_NN to_TO six_CD ._.
+In_IN Figure_NNP #_# we_PRP see_VBP how_WRB the_DT quality_NN of_IN both_CC the_DT upper_JJ bound_VBN and_CC the_DT GDAP_NN algorithm_NN depends_VBZ on_IN the_DT resource_NN ratio_NN ._.
+Remarkably_RB ,_, for_IN lower_JJR resource_NN ratios_NNS our_PRP$ GDAP_NN is_VBZ much_RB closer_JJR to_TO the_DT optimal_JJ allocation_NN than_IN the_DT upper_JJ bound_VBN ._.
+When_WRB the_DT resource_NN ratio_NN grows_VBZ above_IN #_# ._.
+#_# ,_, the_DT graphs_NNS of_IN the_DT upper_JJ bound_VBN and_CC the_DT GDAP_NN converge_VBP ,_, meaning_VBG that_IN both_DT are_VBP really_RB close_JJ to_TO the_DT optimal_JJ solution_NN ._.
+This_DT can_MD be_VB explained_VBN by_IN the_DT fact_NN that_IN when_WRB plenty_NN of_IN resources_NNS are_VBP available_JJ ,_, all_DT tasks_NNS can_MD be_VB allocated_VBN without_IN any_DT conflicts_NNS ._.
+However_RB ,_, when_WRB resources_NNS are_VBP very_RB scarce_JJ ,_, the_DT upper_JJ bound_VBN is_VBZ much_RB too_RB optimistic_JJ ,_, because_IN it_PRP is_VBZ based_VBN on_IN the_DT allocation_NN of_IN sub-tasks_NNS per_IN resource_NN type_NN ,_, and_CC does_VBZ not_RB reason_NN about_IN how_WRB many_JJ of_IN the_DT tasks_NNS can_MD actually_RB be_VB allocated_VBN completely_RB ._.
+We_PRP also_RB notice_VBP from_IN the_DT graph_NN that_IN the_DT solution_NN quality_NN of_IN the_DT GDAP_NN on_IN all_DT three_CD networks_NNS is_VBZ quite_RB high_JJ -LRB-_-LRB- over_IN #_# ._.
+#_# -RRB-_-RRB- when_WRB the_DT available_JJ resource_NN is_VBZ very_RB limited_JJ -LRB-_-LRB- #_# ._.
+#_# -RRB-_-RRB- ._.
+It_PRP drops_VBZ below_IN 0_CD ._.
+#_# with_IN the_DT increased_VBN ratio_NN and_CC goes_VBZ up_RP again_RB once_RB there_EX are_VBP plenty_NN of_IN resources_NNS available_JJ -LRB-_-LRB- resource_NN ratio_NN #_# ._.
+#_# -RRB-_-RRB- ._.
+Clearly_RB ,_, if_IN 504_CD The_DT Sixth_NNP Intl_NNP ._.
+Joint_NNP Conf_NNP ._.
+on_IN Autonomous_NNP Agents_NNPS and_CC Multi-Agent_NNP Systems_NNP -LRB-_-LRB- AAMAS_NNP ##_CD -RRB-_-RRB- 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 1_CD 1_CD ._.
+#_# 1_CD ._.
+#_# 1_CD ._.
+#_# 1_CD ._.
+#_# 2_CD #_# #_# #_# ##_CD ##_CD ##_CD ##_CD Rewardrelativetooptimal_NNP Degree_NNP small-world_JJ -_: upper_JJ bound_VBN random_JJ -_: upper_JJ bound_VBN scale-free_NN -_: upper_JJ bound_VBN small-world_JJ -_: GDAP_NN random_JJ -_: GDAP_NN scale-free_NN -_: GDAP_NN Figure_NN #_# :_: The_DT quality_NN of_IN the_DT GDAP_NN and_CC the_DT upper_JJ bound_VBN depend_VBP on_IN the_DT network_NN degree_NN ._.
+resources_NNS are_VBP really_RB scarce_JJ ,_, only_RB a_DT few_JJ tasks_NNS can_MD be_VB successfully_RB allocated_VBN even_RB by_IN the_DT optimal_JJ algorithm_NN ._.
+Therefore_RB ,_, the_DT GDAP_NN is_VBZ able_JJ to_TO give_VB quite_RB a_DT good_JJ allocation_NN ._.
+Although_IN the_DT differences_NNS are_VBP minor_JJ ,_, it_PRP can_MD also_RB be_VB seen_VBN that_IN the_DT results_NNS for_IN the_DT small-world_JJ network_NN are_VBP consistently_RB slightly_RB better_JJR than_IN those_DT of_IN random_JJ networks_NNS ,_, which_WDT in_IN turn_NN outperform_VBP scale-free_JJ networks_NNS ._.
+This_DT can_MD be_VB understood_VBN by_IN looking_VBG at_IN the_DT distribution_NN of_IN the_DT agents_NNS ''_'' degree_NN ,_, as_IN shown_VBN in_IN Figure_NNP #_# ._.
+In_IN this_DT experiment_NN ,_, in_IN the_DT small-world_JJ network_NN almost_RB every_DT manager_NN has_VBZ a_DT degree_NN of_IN six_CD ._.
+In_IN random_JJ networks_NNS ,_, the_DT degree_NN varies_VBZ between_IN one_CD and_CC about_IN ten_CD ._.
+However_RB ,_, in_IN the_DT scale-free_JJ network_NN ,_, most_JJS nodes_NNS have_VBP only_RB three_CD or_CC four_CD connections_NNS ,_, and_CC only_RB a_DT very_RB few_JJ have_VBP up_RP to_TO twenty_CD connections_NNS ._.
+As_IN we_PRP will_MD see_VB in_IN the_DT next_JJ experiment_NN ,_, having_VBG more_JJR connections_NNS means_VBZ getting_VBG better_JJR results_NNS ._.
+For_IN the_DT next_JJ experiment_NN we_PRP fix_VBP the_DT resource_NN ratio_NN to_TO #_# ._.
+#_# and_CC study_VB the_DT quality_NN of_IN both_CC the_DT upper_JJ bound_VBN and_CC the_DT GDAP_NN algorithm_NN related_JJ to_TO the_DT degree_NN of_IN the_DT social_JJ network_NN ._.
+The_DT result_NN can_MD be_VB found_VBN in_IN Figure_NNP #_# ._.
+In_IN this_DT figure_NN we_PRP can_MD see_VB that_IN a_DT high_JJ average_JJ degree_NN also_RB leads_VBZ to_TO convergence_NN of_IN the_DT upper_JJ bound_VBN and_CC the_DT GDAP_NNP ._.
+Obviously_RB ,_, when_WRB managers_NNS have_VBP many_JJ connections_NNS ,_, it_PRP becomes_VBZ easier_JJR to_TO allocate_VB tasks_NNS ._.
+An_DT exception_NN is_VBZ ,_, similar_JJ to_TO what_WP we_PRP have_VBP seen_VBN in_IN Figure_NNP #_# ,_, that_IN the_DT solution_NN of_IN the_DT GDAP_NN is_VBZ also_RB very_RB good_JJ if_IN the_DT connections_NNS are_VBP extremely_RB limited_JJ -LRB-_-LRB- degree_NN #_# -RRB-_-RRB- ,_, due_JJ to_TO the_DT fact_NN that_IN the_DT number_NN of_IN possibly_RB allocated_VBN tasks_NNS is_VBZ very_RB small_JJ ._.
+Again_RB we_PRP see_VBP that_IN the_DT upper_JJ bound_VBN is_VBZ not_RB that_DT good_JJ for_IN problems_NNS where_WRB resources_NNS are_VBP hard_JJ to_TO reach_VB ,_, i_FW ._.
+e_LS ._.
+in_IN social_JJ networks_NNS with_IN a_DT low_JJ average_JJ degree_NN ._.
+#_# Since_IN the_DT solution_NN quality_NN clearly_RB depends_VBZ on_IN the_DT resource_NN ratio_NN as_RB well_RB as_IN on_IN the_DT degree_NN of_IN the_DT social_JJ network_NN ,_, we_PRP study_VBP the_DT effect_NN of_IN changing_VBG both_CC ,_, to_TO see_VB whether_IN they_PRP influence_VBP each_DT other_JJ ._.
+Figure_NNP #_# shows_VBZ how_WRB the_DT solution_NN quality_NN depends_VBZ on_IN both_CC the_DT resource_NN ratio_NN and_CC the_DT network_NN degree_NN ._.
+This_DT graph_NN confirms_VBZ the_DT results_NNS that_IN the_DT GDAP_NN performs_VBZ better_JJR for_IN problems_NNS with_IN higher_JJR degree_NN and_CC higher_JJR resource_NN ratio_NN ._.
+However_RB ,_, it_PRP is_VBZ now_RB also_RB more_RBR clear_JJ that_IN it_PRP performs_VBZ better_JJR for_IN very_RB low_JJ degree_NN and_CC resource_NN availability_NN ._.
+For_IN this_DT experiment_NN with_IN ##_CD agents_NNS and_CC ##_NN tasks_NNS ,_, the_DT worst_JJS performance_NN is_VBZ met_VBN for_IN instances_NNS with_IN degree_NN six_CD and_CC resource_NN ratio_NN 0_CD ._.
+#_# to_TO instances_NNS with_IN degree_NN twelve_CD and_CC resource_NN ratio_NN #_# ._.
+#_# ._.
+But_CC even_RB for_IN those_DT instances_NNS ,_, the_DT performance_NN lies_VBZ above_IN #_# ._.
+#_# ._.
+2_CD The_DT consistent_JJ standard_JJ deviation_NN of_IN about_IN ##_CD %_NN over_IN the_DT 20_CD problem_NN instances_NNS is_VBZ not_RB displayed_VBN as_IN error-bars_NNS in_IN these_DT first_JJ graphs_NNS ,_, because_IN it_PRP would_MD obfuscate_VB the_DT interesting_JJ correlations_NNS that_WDT can_MD now_RB be_VB seen_VBN ._.
+4_CD 6_CD 8_CD 10_CD 12_CD 14_CD 16_CD #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+##_NN 0_CD ._.
+#_# 0_CD ._.
+##_NN 0_CD ._.
+#_# 0_CD ._.
+##_NN 1_CD Relative_JJ reward_NN small-world_JJ Average_JJ degree_NN Resource_NNP ratio_NN Relative_JJ reward_NN Figure_NN #_# :_: The_DT quality_NN of_IN the_DT GDAP_NN depends_VBZ on_IN both_CC the_DT resource_NN ratio_NN and_CC the_DT network_NN degree_NN ._.
+5_CD ._.
+#_# ._.
+#_# Experiment_NN #_# To_TO study_VB the_DT robustness_NN of_IN the_DT GDAP_NN against_IN different_JJ problem_NN settings_NNS ,_, we_PRP generate_VBP instances_NNS where_WRB the_DT task_NN benefit_NN distribution_NN is_VBZ different_JJ :_: ##_CD %_NN of_IN the_DT tasks_NNS gets_VBZ a_DT ##_JJ times_NNS higher_JJR benefit_NN -LRB-_-LRB- as_IN described_VBN in_IN Setting_VBG #_# -RRB-_-RRB- ._.
+The_DT effect_NN of_IN this_DT different_JJ distribution_NN can_MD be_VB seen_VBN in_IN Figure_NNP #_# ._.
+These_DT two_CD graphs_NNS show_VBP that_IN the_DT results_NNS for_IN the_DT skewed_JJ task_NN benefit_NN distribution_NN are_VBP slightly_RB better_JJR on_IN average_NN ,_, both_CC when_WRB varying_VBG the_DT resource_NN ratio_NN ,_, and_CC when_WRB varying_VBG the_DT average_JJ degree_NN of_IN the_DT network_NN ._.
+We_PRP argue_VBP that_IN this_DT can_MD be_VB explained_VBN by_IN the_DT greedy_JJ nature_NN of_IN GDAP_NN ,_, which_WDT causes_VBZ the_DT tasks_NNS with_IN high_JJ efficiency_NN to_TO be_VB allocated_VBN first_RB ,_, and_CC makes_VBZ the_DT algorithm_NN perform_VB better_JJR in_IN this_DT heterogeneous_JJ setting_NN ._.
+5_CD ._.
+#_# ._.
+#_# Experiment_NN #_# The_DT purpose_NN of_IN this_DT final_JJ experiment_NN is_VBZ to_TO test_VB whether_IN the_DT algorithm_NN can_MD be_VB scaled_VBN to_TO large_JJ problems_NNS ,_, like_IN applications_NNS running_VBG on_IN the_DT internet_NN ._.
+We_PRP therefore_RB generate_VBP instances_NNS where_WRB the_DT number_NN of_IN agents_NNS varies_VBZ from_IN ###_CD to_TO ####_CD ,_, and_CC simultaneously_RB increase_VB the_DT number_NN of_IN tasks_NNS from_IN ###_CD to_TO ####_CD -LRB-_-LRB- Setting_VBG #_# -RRB-_-RRB- ._.
+Figure_NNP #_# shows_VBZ the_DT run_NN time_NN for_IN these_DT instances_NNS on_IN a_DT Linux_NNP machine_NN with_IN an_DT AMD_NNP Opteron_NNP #_# ._.
+#_# GHz_NNP processor_NN ._.
+These_DT graphs_NNS confirm_VBP the_DT theoretical_JJ analysis_NN from_IN the_DT previous_JJ section_NN ,_, saying_VBG that_IN both_CC the_DT upper_JJ bound_VBN and_CC the_DT GDAP_NN are_VBP polynomial_JJ ._.
+In_IN fact_NN ,_, the_DT graphs_NNS show_VBP that_IN the_DT GDAP_NN almost_RB behaves_VBZ linearly_RB ._.
+Here_RB we_PRP see_VBP that_IN the_DT locality_NN of_IN the_DT GDAP_NN really_RB helps_VBZ in_IN reducing_VBG the_DT computation_NN time_NN ._.
+Also_RB note_NN that_IN the_DT GDAP_NN requires_VBZ even_RB less_RBR computation_JJ time_NN than_IN the_DT upper_JJ bound_VBN ._.
+The_DT quality_NN of_IN the_DT GDAP_NN for_IN these_DT large_JJ instances_NNS can_MD not_RB be_VB compared_VBN to_TO the_DT optimal_JJ solution_NN ._.
+Therefore_RB ,_, in_IN Figure_NNP #_# the_DT upper_JJ bound_VBN is_VBZ used_VBN instead_RB ._.
+This_DT result_NN shows_VBZ that_IN the_DT GDAP_NN behaves_VBZ stably_RB and_CC consistently_RB well_RB with_IN the_DT increasing_VBG problem_NN size_NN ._.
+It_PRP also_RB shows_VBZ once_RB more_RBR that_IN the_DT GDAP_NN performs_VBZ better_RBR in_IN a_DT small-world_JJ network_NN ._.
+6_CD ._.
+RELATED_JJ WORK_VBP Task_NNP allocation_NN in_IN multiagent_JJ systems_NNS has_VBZ been_VBN investigated_VBN by_IN many_JJ researchers_NNS in_IN recent_JJ years_NNS with_IN different_JJ assumptions_NNS and_CC emphases_NNS ._.
+However_RB ,_, most_JJS of_IN the_DT research_NN to_TO date_NN on_IN task_NN allocation_NN does_VBZ not_RB consider_VB social_JJ connections_NNS among_IN agents_NNS ,_, and_CC studies_NNS the_DT problem_NN in_IN a_DT centralized_JJ The_DT Sixth_NNP Intl_NNP ._.
+Joint_NNP Conf_NNP ._.
+on_IN Autonomous_NNP Agents_NNPS and_CC Multi-Agent_NNP Systems_NNP -LRB-_-LRB- AAMAS_NNP ##_CD -RRB-_-RRB- ###_CD 0_CD ._.
+##_NN 0_CD ._.
+#_# 0_CD ._.
+##_NN 0_CD ._.
+#_# 0_CD ._.
+##_NN 0_CD ._.
+#_# 0_CD ._.
+##_NN 1_CD 0_CD ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# Rewardrelativetooptimal_NNP Resource_NNP ratio_NN skewed_JJ small-world_JJ skewed_JJ random_JJ skewed_JJ scale-free_JJ uniform_JJ small-world_JJ uniform_JJ random_JJ uniform_NN scale-free_NN 0_CD ._.
+#_# 0_CD ._.
+##_NN 0_CD ._.
+#_# 0_CD ._.
+##_NN 0_CD ._.
+#_# 0_CD ._.
+##_NN 1_CD 2_CD #_# #_# #_# ##_CD ##_CD ##_NNS ##_VBP Rewardrelativetooptimal_JJ Degree_NN skewed_JJ small-world_JJ skewed_JJ random_JJ skewed_JJ scale-free_JJ uniform_JJ small-world_JJ uniform_JJ random_JJ uniform_JJ scale-free_JJ Figure_NN #_# :_: The_DT quality_NN of_IN the_DT GDAP_NN algorithm_NN for_IN a_DT uniform_NN and_CC a_DT skewed_JJ task_NN benefit_NN distribution_NN related_JJ to_TO the_DT resource_NN ratio_NN -LRB-_-LRB- the_DT first_JJ graph_NN -RRB-_-RRB- ,_, and_CC the_DT network_NN degree_NN -LRB-_-LRB- the_DT second_JJ graph_NN -RRB-_-RRB- ._.
+setting_VBG ._.
+For_IN example_NN ,_, Kraus_NNP et_FW al_FW ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- develop_VBP an_DT auction_NN protocol_NN that_WDT enables_VBZ agents_NNS to_TO form_VB coalitions_NNS with_IN time_NN constraints_NNS ._.
+It_PRP assumes_VBZ each_DT agent_NN knows_VBZ the_DT capabilities_NNS of_IN all_DT others_NNS ._.
+The_DT proposed_VBN protocol_NN is_VBZ centralized_VBN ,_, where_WRB one_CD manager_NN is_VBZ responsible_JJ for_IN allocating_VBG the_DT tasks_NNS to_TO all_DT coalitions_NNS ._.
+Manisterski_NNP at_IN al_NNP ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- discuss_VBP the_DT possibilities_NNS of_IN achieving_VBG efficient_JJ allocations_NNS in_IN both_DT cooperative_JJ and_CC noncooperative_JJ settings_NNS ._.
+They_PRP propose_VBP a_DT centralized_JJ algorithm_NN to_TO find_VB the_DT optimal_JJ solution_NN ._.
+In_IN contrast_NN to_TO this_DT work_NN ,_, we_PRP introduce_VBP also_RB an_DT efficient_JJ completely_RB distributed_VBN protocol_NN that_WDT takes_VBZ the_DT social_JJ network_NN into_IN account_NN ._.
+Task_NNP allocation_NN has_VBZ also_RB been_VBN studied_VBN in_IN distributed_VBN settings_NNS by_IN for_IN example_NN Shehory_NN and_CC Kraus_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- and_CC by_IN Lerman_NNP and_CC Shehory_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+They_PRP propose_VBP distributed_VBN algorithms_NNS with_IN low_JJ communication_NN complexity_NN for_IN forming_VBG coalitions_NNS in_IN large-scale_JJ multiagent_JJ systems_NNS ._.
+However_RB ,_, they_PRP do_VBP not_RB assume_VB the_DT existence_NN of_IN any_DT agent_NN network_NN ._.
+The_DT work_NN of_IN Sander_NNP et_FW al_FW ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- introduces_VBZ computational_JJ geometry-based_JJ algorithms_NNS for_IN distributed_VBN task_NN allocation_NN in_IN geographical_JJ domains_NNS ._.
+Agents_NNS are_VBP then_RB allowed_VBN to_TO move_VB and_CC actively_RB search_NN for_IN tasks_NNS ,_, and_CC the_DT capability_NN of_IN agents_NNS to_TO perform_VB tasks_NNS is_VBZ homogeneous_JJ ._.
+In_IN order_NN to_TO apply_VB their_PRP$ approach_NN ,_, agents_NNS need_VBP to_TO have_VB some_DT knowledge_NN about_IN the_DT geographical_JJ positions_NNS of_IN tasks_NNS and_CC some_DT other_JJ agents_NNS ._.
+Other_JJ work_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- proposes_VBZ a_DT location_NN mechanism_NN for_IN open_JJ multiagent_JJ systems_NNS to_TO allocate_VB tasks_NNS to_TO unknown_JJ agents_NNS ._.
+In_IN this_DT approach_NN each_DT agent_NN caches_VBZ a_DT list_NN of_IN agents_NNS they_PRP know_VBP ._.
+The_DT analysis_NN of_IN the_DT communication_NN complexity_NN of_IN this_DT method_NN is_VBZ based_VBN on_IN lattice-like_JJ graphs_NNS ,_, while_IN we_PRP investigate_VBP how_WRB to_TO efficiently_RB solve_VB task_NN allocation_NN in_IN a_DT social_JJ network_NN ,_, whose_WP$ topology_NN can_MD be_VB arbitrary_JJ ._.
+Networks_NNP have_VBP been_VBN employed_VBN in_IN the_DT context_NN of_IN task_NN allocation_NN in_IN some_DT other_JJ works_NNS as_RB well_RB ,_, for_IN example_NN to_TO limit_VB the_DT 0_CD 1000_CD 2000_CD 3000_CD 4000_CD 5000_CD 6000_CD 7000_CD 0_CD ###_CD ###_CD ###_CD ###_CD ####_CD ####_CD ####_CD ####_CD ####_CD ####_CD Time_NNP -LRB-_-LRB- ms_NNS -RRB-_-RRB- Agents_NNPS upper_JJ bound_VBN -_: small-world_JJ upper_JJ bound_VBN -_: random_JJ upper_JJ bound_VBN -_: scale-free_JJ GDAP_NN -_: small-world_JJ GDAP_NN -_: random_JJ GDAP_NN -_: scale-free_JJ Figure_NN #_# :_: The_DT run_NN time_NN of_IN the_DT GDAP_NN algorithm_NN ._.
+0_CD ._.
+##_NN 0_CD ._.
+#_# 0_CD ._.
+##_NN 0_CD ._.
+#_# 0_CD ._.
+##_NN 1_CD 0_CD ###_CD ###_CD ###_CD ###_CD ####_CD ####_CD ####_CD ####_CD ####_CD ####_CD Rewardrelativetoupperbound_NNP Agents_NNPS small-world_JJ random_JJ scale-free_JJ Figure_NN #_# :_: The_DT quality_NN of_IN the_DT GDAP_NN algorithm_NN compared_VBN to_TO the_DT upper_JJ bound_VBN ._.
+interactions_NNS between_IN agents_NNS and_CC mediators_NNS -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+Mediators_NNS in_IN this_DT context_NN are_VBP agents_NNS who_WP receive_VBP the_DT task_NN and_CC have_VBP connections_NNS to_TO other_JJ agents_NNS ._.
+They_PRP break_VBP up_RP the_DT task_NN into_IN subtasks_NNS ,_, and_CC negotiate_VB with_IN other_JJ agents_NNS to_TO obtain_VB commitments_NNS to_TO execute_VB these_DT subtasks_NNS ._.
+Their_PRP$ focus_NN is_VBZ on_IN modeling_NN the_DT decision_NN process_NN of_IN just_RB a_DT single_JJ mediator_NN ._.
+Another_DT approach_NN is_VBZ to_TO partition_NN the_DT network_NN into_IN cliques_NNS of_IN nodes_NNS ,_, representing_VBG coalitions_NNS which_WDT the_DT agents_NNS involved_VBN may_MD use_VB as_IN a_DT coordination_NN mechanism_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+The_DT focus_NN of_IN that_DT work_NN is_VBZ distributed_VBN coalition_NN formation_NN among_IN agents_NNS ,_, but_CC in_IN our_PRP$ approach_NN ,_, we_PRP do_VBP not_RB need_VB agents_NNS to_TO form_VB groups_NNS before_IN allocating_VBG tasks_NNS ._.
+Easwaran_NNP and_CC Pitt_NNP -LSB-_-LRB- #_# -RSB-_-RRB- study_NN complex_NN tasks_NNS ''_'' that_WDT require_VBP services_NNS ''_'' for_IN their_PRP$ accomplishment_NN ._.
+The_DT problem_NN concerns_VBZ the_DT allocation_NN of_IN subtasks_NNS to_TO service_NN providers_NNS in_IN a_DT supply_NN chain_NN ._.
+Another_DT study_NN of_IN task_NN allocation_NN in_IN supply_NN chains_NNS is_VBZ -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, where_WRB it_PRP is_VBZ argued_VBN that_IN the_DT defining_VBG characteristic_NN of_IN Supply_NNP Chain_NNP Formation_NN is_VBZ hierarchical_JJ subtask_NN decomposition_NN -LRB-_-LRB- HSD_NN -RRB-_-RRB- ._.
+HSD_NN is_VBZ implemented_VBN using_VBG task_NN dependency_NN networks_NNS -LRB-_-LRB- TDN_NN -RRB-_-RRB- ,_, with_IN agents_NNS and_CC goods_NNS as_IN nodes_NNS ,_, and_CC I_PRP /_: O_NN relations_NNS between_IN them_PRP as_IN edges_NNS ._.
+Here_RB ,_, the_DT network_NN is_VBZ given_VBN ,_, and_CC the_DT problem_NN is_VBZ to_TO select_VB a_DT subgraph_NN ,_, for_IN which_WDT the_DT authors_NNS propose_VBP a_DT market-based_JJ algorithm_NN ,_, in_IN particular_JJ ,_, a_DT series_NN of_IN auctions_NNS ._.
+Compared_VBN to_TO these_DT works_NNS ,_, our_PRP$ approach_NN is_VBZ more_RBR general_JJ in_IN the_DT sense_NN that_IN we_PRP are_VBP able_JJ to_TO model_VB different_JJ types_NNS of_IN connections_NNS or_CC constraints_NNS among_IN agents_NNS for_IN different_JJ problem_NN domains_NNS in_IN addition_NN to_TO supply_VB chain_NN formation_NN ._.
+Finally_RB ,_, social_JJ networks_NNS have_VBP been_VBN used_VBN in_IN the_DT context_NN of_IN team_NN formation_NN ._.
+Previous_JJ work_NN has_VBZ shown_VBN how_WRB to_TO learn_VB which_WDT relations_NNS are_VBP more_RBR beneficial_JJ in_IN the_DT long_JJ run_NN -LSB-_-LRB- #_# -RSB-_-RRB- ,_, and_CC adapt_VB the_DT social_JJ network_NN accordingly_RB ._.
+We_PRP believe_VBP these_DT results_NNS can_MD be_VB transferred_VBN to_TO the_DT domain_NN of_IN task_NN allocation_NN as_RB well_RB ,_, leaving_VBG this_DT as_IN a_DT topic_NN for_IN further_JJ study_NN ._.
+506_CD The_DT Sixth_NNP Intl_NNP ._.
+Joint_NNP Conf_NNP ._.
+on_IN Autonomous_NNP Agents_NNPS and_CC Multi-Agent_NNP Systems_NNP -LRB-_-LRB- AAMAS_NNP ##_CD -RRB-_-RRB- 7_CD ._.
+CONCLUSIONS_NNS In_IN this_DT paper_NN we_PRP studied_VBD the_DT task_NN allocation_NN problem_NN in_IN a_DT social_JJ network_NN -LRB-_-LRB- STAP_NN -RRB-_-RRB- ,_, which_WDT can_MD be_VB seen_VBN as_IN a_DT new_JJ ,_, more_RBR general_JJ ,_, variant_JJ of_IN the_DT TAP_NN ._.
+We_PRP believe_VBP it_PRP has_VBZ a_DT great_JJ amount_NN of_IN potential_NN for_IN realistic_JJ problems_NNS ._.
+We_PRP provided_VBD complexity_NN results_NNS on_IN computing_VBG the_DT efficient_JJ solution_NN for_IN the_DT STAP_NN ,_, as_RB well_RB as_IN a_DT bound_VBN on_IN possible_JJ approximation_NN algorithms_NNS ._.
+Next_RB ,_, we_PRP presented_VBD a_DT distributed_VBN protocol_NN ,_, related_JJ to_TO the_DT contractnet_NN protocol_NN ._.
+We_PRP also_RB introduced_VBD an_DT exponential_JJ algorithm_NN to_TO compute_VB the_DT optimal_JJ solution_NN ,_, as_RB well_RB as_IN a_DT fast_JJ upperbound_JJ algorithm_NN ._.
+Finally_RB ,_, we_PRP used_VBD the_DT optimal_JJ solution_NN and_CC the_DT upper-bound_JJ -LRB-_-LRB- for_IN larger_JJR instances_NNS -RRB-_-RRB- to_TO conduct_VB an_DT extensive_JJ set_NN of_IN experiments_NNS to_TO assess_VB the_DT solution_NN quality_NN and_CC the_DT computational_JJ efficiency_NN of_IN the_DT proposed_VBN distributed_VBN algorithm_NN in_IN different_JJ types_NNS of_IN networks_NNS ,_, namely_RB ,_, small-world_JJ networks_NNS ,_, random_JJ networks_NNS ,_, and_CC scale-free_JJ networks_NNS ._.
+The_DT results_NNS presented_VBN in_IN this_DT paper_NN show_NN that_IN the_DT distributed_VBN algorithm_NN performs_VBZ well_RB in_IN small-world_JJ ,_, scale-free_JJ ,_, and_CC random_JJ networks_NNS ,_, and_CC for_IN many_JJ different_JJ settings_NNS ._.
+Also_RB other_JJ experiments_NNS were_VBD done_VBN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+on_IN grid_NN networks_NNS -RRB-_-RRB- and_CC these_DT results_NNS held_VBD up_RP over_IN a_DT wider_JJR range_NN of_IN scenarios_NNS ._.
+Furthermore_RB ,_, we_PRP showed_VBD that_IN it_PRP scales_NNS well_RB to_TO large_JJ networks_NNS ,_, both_CC in_IN terms_NNS of_IN quality_NN and_CC of_IN required_VBN computation_NN time_NN ._.
+The_DT results_NNS also_RB suggest_VBP that_IN small-world_JJ networks_NNS are_VBP slightly_RB better_JJR suited_VBN for_IN local_JJ task_NN allocation_NN ,_, because_IN there_EX are_VBP no_DT nodes_NNS with_IN very_RB few_JJ neighbors_NNS ._.
+There_EX are_VBP many_JJ interesting_JJ extensions_NNS to_TO our_PRP$ current_JJ work_NN ._.
+In_IN this_DT paper_NN ,_, we_PRP focus_VBP on_IN the_DT computational_JJ aspect_NN in_IN the_DT design_NN of_IN the_DT distributed_VBN algorithm_NN ._.
+In_IN our_PRP$ future_JJ work_NN ,_, we_PRP would_MD also_RB like_VB to_TO address_VB some_DT of_IN the_DT related_JJ issues_NNS in_IN game_NN theory_NN ,_, such_JJ as_IN strategic_JJ agents_NNS ,_, and_CC show_VBP desirable_JJ properties_NNS of_IN a_DT distributed_VBN protocol_NN in_IN such_JJ a_DT context_NN ._.
+In_IN the_DT current_JJ algorithm_NN we_PRP assume_VBP that_IN agents_NNS can_MD only_RB contact_VB their_PRP$ neighbors_NNS to_TO request_NN resources_NNS ,_, which_WDT may_MD explain_VB why_WRB our_PRP$ algorithm_NN performs_VBZ not_RB as_RB good_JJ in_IN the_DT scalefree_NN networks_NNS as_IN in_IN the_DT small-world_JJ networks_NNS ._.
+Our_PRP$ future_JJ work_NN may_MD allow_VB agents_NNS to_TO reallocate_VB -LRB-_-LRB- sub_NN -RRB-_-RRB- tasks_NNS ._.
+We_PRP are_VBP interested_JJ in_IN seeing_VBG how_WRB such_JJ interactions_NNS will_MD affect_VB the_DT performance_NN of_IN task_NN allocation_NN in_IN different_JJ social_JJ networks_NNS ._.
+A_DT third_JJ interesting_JJ topic_NN for_IN further_JJ work_NN is_VBZ the_DT addition_NN of_IN reputation_NN information_NN among_IN the_DT agents_NNS ._.
+This_DT may_MD help_VB to_TO model_NN changing_VBG business_NN relations_NNS and_CC incentivize_VB agents_NNS to_TO follow_VB the_DT protocol_NN ._.
+Finally_RB ,_, it_PRP would_MD be_VB interesting_JJ to_TO study_VB real-life_JJ instances_NNS of_IN the_DT social_JJ task_NN allocation_NN problem_NN ,_, and_CC see_VB how_WRB they_PRP relate_VBP to_TO the_DT randomly_RB generated_VBN networks_NNS of_IN different_JJ types_NNS studied_VBN in_IN this_DT paper_NN ._.
+Acknowledgments_NNS ._.
+This_DT work_NN is_VBZ supported_VBN by_IN the_DT Technology_NNP Foundation_NNP STW_NNP ,_, applied_VBD science_NN division_NN of_IN NWO_NNP ,_, and_CC the_DT Ministry_NNP of_IN Economic_NNP Affairs_NNPS ._.
+8_CD ._.
+REFERENCES_NNS -LSB-_-LRB- #_# -RSB-_-RRB- S_NN ._.
+Abdallah_NNP and_CC V_NNP ._.
+Lesser_RBR ._.
+Modeling_VBG Task_NNP Allocation_NNP Using_VBG a_DT Decision_NN Theoretic_JJ Model_NNP ._.
+In_IN Proc_NNP ._.
+AAMAS_NNP ,_, pages_NNS 719-726_CD ._.
+ACM_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- N_NN ._.
+Alon_NNP ,_, U_NNP ._.
+Feige_NNP ,_, A_NNP ._.
+Wigderson_NNP ,_, and_CC D_NN ._.
+Zuckerman_NNP ._.
+Derandomized_NNP Graph_NNP Products_NNPS ._.
+Computational_JJ Complexity_NN ,_, #_# -LRB-_-LRB- #_# -RRB-_-RRB- :_: 60-75_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- A_DT ._.
+-_: L_NN ._.
+Barabasi_NNS and_CC R_NN ._.
+Albert_NNP ._.
+Emergence_NN of_IN scaling_VBG in_IN random_JJ networks_NNS ._.
+Science_NNP ,_, ###_CD -LRB-_-LRB- ####_CD -RRB-_-RRB- :_: 509-512_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- R_NN ._.
+H_NN ._.
+Coase_NNP ._.
+The_DT Nature_NN of_IN the_DT Firm_NN ._.
+Economica_NNP NS_NNP ,_, 4_CD -LRB-_-LRB- ##_CD -RRB-_-RRB- :_: 386-405_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- R_NN ._.
+H_NN ._.
+Coase_NNP ._.
+My_PRP$ Evolution_NN as_IN an_DT Economist_NNP ._.
+In_IN W_NN ._.
+Breit_NNP and_CC R_NN ._.
+W_NN ._.
+Spencer_NNP ,_, editors_NNS ,_, Lives_NNS of_IN the_DT Laureates_NNP ,_, pages_NNS 227-249_CD ._.
+MIT_NNP Press_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- A_DT ._.
+M_NN ._.
+Easwaran_NNP and_CC J_NNP ._.
+Pitt_NNP ._.
+Supply_NNP Chain_NNP Formation_NN in_IN Open_NNP ,_, Market-Based_JJ Multi-Agent_NNP Systems_NNPS ._.
+International_NNP J_NNP ._.
+of_IN Computational_NNP Intelligence_NNP and_CC Applications_NNS ,_, #_# -LRB-_-LRB- #_# -RRB-_-RRB- :_: 349-363_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- I_PRP ._.
+Foster_NNP ,_, N_NNP ._.
+R_NN ._.
+Jennings_NNP ,_, and_CC C_NN ._.
+Kesselman_NNP ._.
+Brain_NN Meets_VBZ Brawn_NNP :_: Why_WRB Grid_NNP and_CC Agents_NNPS Need_VBD Each_DT Other_JJ ._.
+In_IN Proc_NNP ._.
+AAMAS_NNP ,_, pages_NNS 8-15_CD ,_, Washington_NNP ,_, DC_NNP ,_, USA_NNP ,_, ####_CD ._.
+IEEE_NNP Computer_NNP Society_NNP ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- M_NN ._.
+E_NN ._.
+Gaston_NNP and_CC M_NN ._.
+desJardins_NNS ._.
+Agent-organized_JJ networks_NNS for_IN dynamic_JJ team_NN formation_NN ._.
+In_IN Proc_NNP ._.
+AAMAS_NNP ,_, pages_NNS 230-237_CD ,_, New_NNP York_NNP ,_, NY_NNP ,_, USA_NNP ,_, ####_CD ._.
+ACM_NNP Press_NNP ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- A_DT ._.
+Goldberg_NNP ._.
+An_DT Efficient_JJ Implementation_NN of_IN a_DT Scaling_VBG Minimum-Cost_JJ Flow_NN Algorithm_NN ._.
+J_NN ._.
+of_IN Algorithms_NNP ,_, 22_CD :_: 1-29_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- R_NN ._.
+Gulati_NNP ._.
+Does_VBZ Familiarity_NNP Breed_NNP Trust_NNP ?_.
+The_DT Implications_NNS of_IN Repeated_JJ Ties_NNPS for_IN Contractual_NNP Choice_NNP in_IN Alliances_NNP ._.
+Academy_NN of_IN Management_NNP Journal_NNP ,_, 38_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 85-112_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- T_NN ._.
+Klos_NNP and_CC B_NNP ._.
+Nooteboom_NNP ._.
+Agent-based_JJ Computational_NNP Transaction_NNP Cost_NN Economics_NNP ._.
+Economic_NNP Dynamics_NNPS and_CC Control_NNP ,_, ##_CD -LRB-_-LRB- 3-4_CD -RRB-_-RRB- :_: 503-526_CD ,_, ##_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- S_NN ._.
+Kraus_NNP ,_, O_NNP ._.
+Shehory_NNP ,_, and_CC G_NN ._.
+Taase_NN ._.
+Coalition_NNP formation_NN with_IN uncertain_JJ heterogeneous_JJ information_NN ._.
+In_IN Proc_NNP ._.
+AAMAS_NNP ,_, pages_NNS 1-8_CD ._.
+ACM_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- K_NN ._.
+Lerman_NNP and_CC O_NNP ._.
+Shehory_NNP ._.
+Coalition_NNP formation_NN for_IN large-scale_JJ electronic_JJ markets_NNS ._.
+In_IN Proc_NNP ._.
+ICMAS_NNP ,_, pages_NNS 167-174_CD ._.
+IEEE_NNP Computer_NNP Society_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- E_NN ._.
+Manisterski_NNP ,_, E_NNP ._.
+David_NNP ,_, S_NN ._.
+Kraus_NNP ,_, and_CC N_NN ._.
+Jennings_NNP ._.
+Forming_VBG Efficient_JJ Agent_NNP Groups_NNS for_IN Completing_VBG Complex_NN Tasks_NNS ._.
+In_IN Proc_NNP ._.
+AAMAS_NNP ,_, pages_NNS 257-264_CD ._.
+ACM_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+Patel_NNP et_FW al_FW ._.
+Agent-Based_JJ Virtual_JJ Organizations_NNPS for_IN the_DT Grid_NNP ._.
+Multi-Agent_JJ and_CC Grid_NNP Systems_NNPS ,_, 1_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 237-249_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- P_NN ._.
+V_NN ._.
+Sander_NNP ,_, D_NNP ._.
+Peleshchuk_NNP ,_, and_CC B_NN ._.
+J_NN ._.
+Grosz_NNP ._.
+A_DT scalable_JJ ,_, distributed_VBN algorithm_NN for_IN efficient_JJ task_NN allocation_NN ._.
+In_IN Proc_NNP ._.
+AAMAS_NNP ,_, pages_NNS 1191-1198_CD ,_, New_NNP York_NNP ,_, NY_NNP ,_, USA_NNP ,_, ####_CD ._.
+ACM_NNP Press_NNP ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- O_NN ._.
+Shehory_NNP ._.
+A_DT scalable_JJ agent_NN location_NN mechanism_NN ._.
+In_IN Proc_NNP ._.
+ATAL_NN ,_, volume_NN ####_CD of_IN LNCS_NN ,_, pages_NNS 162-172_CD ._.
+Springer_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- O_NN ._.
+Shehory_NNP and_CC S_NN ._.
+Kraus_NNP ._.
+Methods_NNS for_IN Task_NNP Allocation_NNP via_IN Agent_NNP Coalition_NNP Formation_NN ._.
+Artificial_JJ Intelligence_NNP ,_, ###_CD -LRB-_-LRB- 1-2_CD -RRB-_-RRB- :_: 165-200_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- R_NN ._.
+M_NN ._.
+Sreenath_NNP and_CC M_NN ._.
+P_NN ._.
+Singh_NNP ._.
+Agent-based_JJ service_NN selection_NN ._.
+Web_NN Semantics_NNS ,_, #_# -LRB-_-LRB- #_# -RRB-_-RRB- :_: 261-279_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- P_NN ._.
+T_NN ._.
+Tosic_NNP and_CC G_NNP ._.
+A_DT ._.
+Agha_NNP ._.
+Maximal_JJ Clique_NNP Based_VBD Distributed_VBN Coalition_NNP Formation_NN for_IN Task_NNP Allocation_NNP in_IN Large-Scale_NNP Multi-Agent_NNP Systems_NNPS ._.
+In_IN Proc_NNP ._.
+MMAS_NNP ,_, volume_NN ####_CD of_IN LNAI_NNP ,_, pages_NNS 104-120_CD ._.
+Springer_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- W_NN ._.
+E_NN ._.
+Walsh_NNP and_CC M_NN ._.
+P_NN ._.
+Wellman_NNP ._.
+Modeling_VBG Supply_NNP Chain_NNP Formation_NN in_IN Multiagent_NNP Systems_NNPS ._.
+In_IN Proc_NNP ._.
+AMEC_NNP II_NNP ,_, volume_NN ####_CD of_IN LNAI_NNP ,_, pages_NNS 94-101_CD ._.
+Springer_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- D_NN ._.
+J_NN ._.
+Watts_NNP and_CC S_NN ._.
+H_NN ._.
+Strogatz_NNP ._.
+Collective_JJ dynamics_NNS of_IN small_JJ world_NN ''_'' networks_NNS ._.
+Nature_NNP ,_, ###_CD :_: 440-442_CD ,_, ####_CD ._.
+The_DT Sixth_NNP Intl_NNP ._.
+Joint_NNP Conf_NNP ._.
+on_IN Autonomous_NNP Agents_NNPS and_CC Multi-Agent_NNP Systems_NNP -LRB-_-LRB- AAMAS_NNP ##_CD -RRB-_-RRB- ###_CD

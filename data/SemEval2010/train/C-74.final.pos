@@ -1,0 +1,396 @@
+Adapting_VBG Asynchronous_JJ Messaging_VBG Middleware_NNP to_TO ad-hoc_JJ Networking_NNP Mirco_NNP Musolesi_NNP Dept_NNP ._.
+of_IN Computer_NNP Science_NNP ,_, University_NNP College_NNP London_NNP Gower_NNP Street_NNP ,_, London_NNP WC1E_NN 6BT_NN ,_, United_NNP Kingdom_NNP m_NN ._.
+musolesi_NNS @_IN cs_NNS ._.
+ucl_NN ._.
+ac_NN ._.
+uk_NN Cecilia_NNP Mascolo_NNP Dept_NNP ._.
+of_IN Computer_NNP Science_NNP ,_, University_NNP College_NNP London_NNP Gower_NNP Street_NNP ,_, London_NNP WC1E_NN 6BT_NN ,_, United_NNP Kingdom_NNP c_NN ._.
+mascolo_NN @_SYM cs_NNS ._.
+ucl_NN ._.
+ac_NN ._.
+uk_NN Stephen_NNP Hailes_NNP Dept_NNP ._.
+of_IN Computer_NNP Science_NNP ,_, University_NNP College_NNP London_NNP Gower_NNP Street_NNP ,_, London_NNP WC1E_NN 6BT_NN ,_, United_NNP Kingdom_NNP s_NNS ._.
+hailes_NNS @_IN cs_NNS ._.
+ucl_NN ._.
+ac_NN ._.
+uk_NN ABSTRACT_NN The_DT characteristics_NNS of_IN mobile_JJ environments_NNS ,_, with_IN the_DT possibility_NN of_IN frequent_JJ disconnections_NNS and_CC fluctuating_VBG bandwidth_NN ,_, have_VBP forced_VBN a_DT rethink_NN of_IN traditional_JJ middleware_NN ._.
+In_IN particular_JJ ,_, the_DT synchronous_JJ communication_NN paradigms_NNS often_RB employed_VBN in_IN standard_JJ middleware_NN do_VBP not_RB appear_VB to_TO be_VB particularly_RB suited_VBN to_TO ad-hoc_JJ environments_NNS ,_, in_IN which_WDT not_RB even_RB the_DT intermittent_JJ availability_NN of_IN a_DT backbone_NN network_NN can_MD be_VB assumed_VBN ._.
+Instead_RB ,_, asynchronous_JJ communication_NN seems_VBZ to_TO be_VB a_DT generally_RB more_RBR suitable_JJ paradigm_NN for_IN such_JJ environments_NNS ._.
+Message_NN oriented_VBN middleware_NN for_IN traditional_JJ systems_NNS has_VBZ been_VBN developed_VBN and_CC used_VBN to_TO provide_VB an_DT asynchronous_JJ paradigm_NN of_IN communication_NN for_IN distributed_VBN systems_NNS ,_, and_CC ,_, recently_RB ,_, also_RB for_IN some_DT specific_JJ mobile_JJ computing_NN systems_NNS ._.
+In_IN this_DT paper_NN ,_, we_PRP present_VBP our_PRP$ experience_NN in_IN designing_VBG ,_, implementing_VBG and_CC evaluating_VBG EMMA_NNP -LRB-_-LRB- Epidemic_NNP Messaging_NNP Middleware_NNP for_IN ad-hoc_JJ networks_NNS -RRB-_-RRB- ,_, an_DT adaptation_NN of_IN Java_NNP Message_NNP Service_NNP -LRB-_-LRB- JMS_NNP -RRB-_-RRB- for_IN mobile_JJ ad-hoc_JJ environments_NNS ._.
+We_PRP discuss_VBP in_IN detail_NN the_DT design_NN challenges_NNS and_CC some_DT possible_JJ solutions_NNS ,_, showing_VBG a_DT concrete_JJ example_NN of_IN the_DT feasibility_NN and_CC suitability_NN of_IN the_DT application_NN of_IN the_DT asynchronous_JJ paradigm_NN in_IN this_DT setting_NN and_CC outlining_VBG a_DT research_NN roadmap_NN for_IN the_DT coming_VBG years_NNS ._.
+Categories_NNS and_CC Subject_NNP Descriptors_NNPS C_NNP ._.
+#_# ._.
+#_# -LSB-_-LRB- Computer-Communication_NNP Networks_NNP -RSB-_-RRB- :_: Distributed_VBN Systems-Distributed_NNP Applications_NNS ;_: C_NN ._.
+#_# ._.
+#_# -LSB-_-LRB- Network_NNP Architecture_NNP and_CC Design_NN -RSB-_-RRB- :_: Wireless_NNP Communication_NNP General_NNP Terms_NNS DESIGN_NN ,_, ALGORITHMS_NN 1_CD ._.
+INTRODUCTION_NN With_IN the_DT increasing_VBG popularity_NN of_IN mobile_JJ devices_NNS and_CC their_PRP$ widespread_JJ adoption_NN ,_, there_EX is_VBZ a_DT clear_JJ need_NN to_TO allow_VB the_DT development_NN of_IN a_DT broad_JJ spectrum_NN of_IN applications_NNS that_WDT operate_VBP effectively_RB over_IN such_PDT an_DT environment_NN ._.
+Unfortunately_RB ,_, this_DT is_VBZ far_RB from_IN simple_JJ :_: mobile_JJ devices_NNS are_VBP increasingly_RB heterogeneous_JJ in_IN terms_NNS of_IN processing_NN capabilities_NNS ,_, memory_NN size_NN ,_, battery_NN capacity_NN ,_, and_CC network_NN interfaces_NNS ._.
+Each_DT such_JJ configuration_NN has_VBZ substantially_RB different_JJ characteristics_NNS that_WDT are_VBP both_DT statically_RB different_JJ -_: for_IN example_NN ,_, there_EX is_VBZ a_DT major_JJ difference_NN in_IN capability_NN between_IN a_DT Berkeley_NNP mote_NN and_CC an_DT ###_NN ._.
+11g-equipped_JJ laptop_NN -_: and_CC that_IN vary_VBP dynamically_RB ,_, as_IN in_IN situations_NNS of_IN fluctuating_VBG bandwidth_NN and_CC intermittent_JJ connectivity_NN ._.
+Mobile_NNP ad_NN hoc_FW environments_NNS have_VBP an_DT additional_JJ element_NN of_IN complexity_NN in_IN that_IN they_PRP are_VBP entirely_RB decentralised_VBN ._.
+In_IN order_NN to_TO craft_VB applications_NNS for_IN such_JJ complex_JJ environments_NNS ,_, an_DT appropriate_JJ form_NN of_IN middleware_NN is_VBZ essential_JJ if_IN cost_NN effective_JJ development_NN is_VBZ to_TO be_VB achieved_VBN ._.
+In_IN this_DT paper_NN ,_, we_PRP examine_VBP one_CD of_IN the_DT foundational_JJ aspects_NNS of_IN middleware_NN for_IN mobile_JJ ad-hoc_JJ environments_NNS :_: that_IN of_IN the_DT communication_NN primitives_NNS ._.
+Traditionally_RB ,_, the_DT most_RBS frequently_RB used_VBN middleware_JJ primitives_NNS for_IN communication_NN assume_VB the_DT simultaneous_JJ presence_NN of_IN both_DT end_NN points_NNS on_IN a_DT network_NN ,_, since_IN the_DT stability_NN and_CC pervasiveness_NN of_IN the_DT networking_NN infrastructure_NN is_VBZ not_RB an_DT unreasonable_JJ assumption_NN for_IN most_JJS wired_VBN environments_NNS ._.
+In_IN other_JJ words_NNS ,_, most_JJS communication_NN paradigms_NNS are_VBP synchronous_JJ :_: object_NN oriented_VBN middleware_NN such_JJ as_IN CORBA_NNP and_CC Java_NNP RMI_NNP are_VBP typical_JJ examples_NNS of_IN middleware_JJ based_VBN on_IN synchronous_JJ communication_NN ._.
+In_IN recent_JJ years_NNS ,_, there_EX has_VBZ been_VBN growing_VBG interest_NN in_IN platforms_NNS based_VBN on_IN asynchronous_JJ communication_NN paradigms_NNS ,_, such_JJ as_IN publish-subscribe_NN systems_NNS -LSB-_-LRB- #_# -RSB-_-RRB- :_: these_DT have_VBP been_VBN exploited_VBN very_RB successfully_RB where_WRB there_EX is_VBZ application_NN level_NN asynchronicity_NN ._.
+From_IN a_DT Gartner_NNP Market_NNP Report_NNP -LSB-_-LRB- #_# -RSB-_-RRB- :_: Given_VBN messageoriented-middleware_JJ ''_'' s_NNS -LRB-_-LRB- MOM_NN -RRB-_-RRB- popularity_NN ,_, scalability_NN ,_, flexibility_NN ,_, and_CC affinity_NN with_IN mobile_JJ and_CC wireless_JJ architectures_NNS ,_, by_IN ####_CD ,_, MOM_NNP will_MD emerge_VB as_IN the_DT dominant_JJ form_NN of_IN communication_NN middleware_NN for_IN linking_VBG mobile_JJ and_CC enterprise_NN applications_NNS -LRB-_-LRB- #_# ._.
+#_# probability_NN -RRB-_-RRB- ..._: ._.
+Moreover_RB ,_, in_IN mobile_JJ ad-hoc_JJ systems_NNS ,_, the_DT likelihood_NN of_IN network_NN fragmentation_NN means_VBZ that_IN synchronous_JJ communication_NN may_MD in_IN any_DT case_NN be_VB impracticable_JJ ,_, giving_VBG situations_NNS in_IN which_WDT delay_NN tolerant_JJ asynchronous_JJ traffic_NN is_VBZ the_DT only_JJ form_NN of_IN traffic_NN that_WDT could_MD be_VB supported_VBN ._.
+121_CD Middleware_NNP ####_CD Companion_NNP Middleware_NNP for_IN mobile_JJ ad-hoc_JJ environments_NNS must_MD therefore_RB support_VB semi-synchronous_JJ or_CC completely_RB asynchronous_JJ communication_NN primitives_NNS if_IN it_PRP is_VBZ to_TO avoid_VB substantial_JJ limitations_NNS to_TO its_PRP$ utility_NN ._.
+Aside_RB from_IN the_DT intellectual_JJ challenge_NN in_IN supporting_VBG this_DT model_NN ,_, this_DT work_NN is_VBZ also_RB interesting_JJ because_IN there_EX are_VBP a_DT number_NN of_IN practical_JJ application_NN domains_NNS in_IN allowing_VBG inter-community_JJ communication_NN in_IN undeveloped_JJ areas_NNS of_IN the_DT globe_NN ._.
+Thus_RB ,_, for_IN example_NN ,_, projects_NNS that_WDT have_VBP been_VBN carried_VBN out_RP to_TO help_VB populations_NNS that_WDT live_VBP in_IN remote_JJ places_NNS of_IN the_DT globe_NN such_JJ as_IN Lapland_NNP -LSB-_-LRB- #_# -RSB-_-RRB- or_CC in_IN poor_JJ areas_NNS that_WDT lack_VBP fixed_VBN connectivity_NN infrastructure_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+There_EX have_VBP been_VBN attempts_NNS to_TO provide_VB mobile_JJ middleware_NN with_IN these_DT properties_NNS ,_, including_VBG STEAM_NNP ,_, LIME_NNP ,_, XMIDDLE_NNP ,_, Bayou_NNP -LRB-_-LRB- see_VB -LSB-_-LRB- ##_CD -RSB-_-RRB- for_IN a_DT more_RBR complete_JJ review_NN of_IN mobile_JJ middleware_NN -RRB-_-RRB- ._.
+These_DT models_NNS differ_VBP quite_RB considerably_RB from_IN the_DT existing_VBG traditional_JJ middleware_NN in_IN terms_NNS of_IN primitives_NNS provided_VBN ._.
+Furthermore_RB ,_, some_DT of_IN them_PRP fail_VBP in_IN providing_VBG a_DT solution_NN for_IN the_DT true_JJ ad-hoc_JJ scenarios_NNS ._.
+If_IN the_DT projected_VBN success_NN of_IN MOM_NN becomes_VBZ anything_NN like_IN a_DT reality_NN ,_, there_EX will_MD be_VB many_JJ programmers_NNS with_IN experience_NN of_IN it_PRP ._.
+The_DT ideal_JJ solution_NN to_TO the_DT problem_NN of_IN middleware_NN for_IN ad-hoc_JJ systems_NNS is_VBZ ,_, then_RB ,_, to_TO allow_VB programmers_NNS to_TO utilise_VB the_DT same_JJ paradigms_NNS and_CC models_NNS presented_VBN by_IN common_JJ forms_NNS of_IN MOM_NN and_CC to_TO ensure_VB that_IN these_DT paradigms_NNS are_VBP supportable_JJ within_IN the_DT mobile_JJ environment_NN ._.
+This_DT approach_NN has_VBZ clear_JJ advantages_NNS in_IN allowing_VBG applications_NNS developed_VBN on_IN standard_JJ middleware_JJ platforms_NNS to_TO be_VB easily_RB deployed_VBN on_IN mobile_JJ devices_NNS ._.
+Indeed_RB ,_, some_DT research_NN has_VBZ already_RB led_VBN to_TO the_DT adaptation_NN of_IN traditional_JJ middleware_JJ platforms_NNS to_TO mobile_JJ settings_NNS ,_, mainly_RB to_TO provide_VB integration_NN between_IN mobile_JJ devices_NNS and_CC existing_VBG fixed_VBN networks_NNS in_IN a_DT nomadic_JJ -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, mixed_JJ -RRB-_-RRB- environment_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+With_IN respect_NN to_TO message_NN oriented_VBN middleware_NN ,_, the_DT current_JJ implementations_NNS ,_, however_RB ,_, either_CC assume_VB the_DT existence_NN of_IN a_DT backbone_NN network_NN to_TO which_WDT the_DT mobile_JJ hosts_NNS connect_VBP from_IN time_NN to_TO time_NN while_IN roaming_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, or_CC assume_VB that_DT nodes_NNS are_VBP always_RB somehow_RB reachable_JJ through_IN a_DT path_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+No_DT adaptation_NN to_TO heterogeneous_JJ or_CC completely_RB ad-hoc_JJ scenarios_NNS ,_, with_IN frequent_JJ disconnection_NN and_CC periodically_RB isolated_VBN clouds_NNS of_IN hosts_NNS ,_, has_VBZ been_VBN attempted_VBN ._.
+In_IN the_DT remainder_NN of_IN this_DT paper_NN we_PRP describe_VBP an_DT initial_JJ attempt_NN to_TO adapt_VB message_NN oriented_VBN middleware_NN to_TO suit_NN mobile_JJ and_CC ,_, more_RBR specifically_RB ,_, mobile_JJ ad-hoc_JJ networks_NNS ._.
+In_IN our_PRP$ case_NN ,_, we_PRP elected_VBD to_TO examine_VB JMS_NNP ,_, as_IN one_CD of_IN the_DT most_RBS widely_RB known_JJ MOM_NN systems_NNS ._.
+In_IN the_DT latter_JJ part_NN of_IN this_DT paper_NN ,_, we_PRP explore_VBP the_DT limitations_NNS of_IN our_PRP$ results_NNS and_CC describe_VBP the_DT plans_NNS we_PRP have_VBP to_TO take_VB the_DT work_NN further_RB ._.
+2_LS ._.
+MESSAGE_NN ORIENTED_VBD MIDDLEWARE_NNPS AND_CC JAVA_NNP MESSAGE_NNP SERVICE_NNP -LRB-_-LRB- JMS_NNP -RRB-_-RRB- Message-oriented_JJ middleware_JJ systems_NNS support_VBP communication_NN between_IN distributed_VBN components_NNS via_IN message-passing_NN :_: the_DT sender_NN sends_VBZ a_DT message_NN to_TO identified_VBN queues_NNS ,_, which_WDT usually_RB reside_VBP on_IN a_DT server_NN ._.
+A_DT receiver_NN retrieves_VBZ the_DT message_NN from_IN the_DT queue_NN at_IN a_DT different_JJ time_NN and_CC may_MD acknowledge_VB the_DT reply_NN using_VBG the_DT same_JJ asynchronous_JJ mechanism_NN ._.
+Message-oriented_JJ middleware_JJ thus_RB supports_VBZ asynchronous_JJ communication_NN in_IN a_DT very_RB natural_JJ way_NN ,_, achieving_VBG de-coupling_NN of_IN senders_NNS and_CC receivers_NNS ._.
+A_DT sender_NN is_VBZ able_JJ to_TO continue_VB processing_VBG as_RB soon_RB as_IN the_DT middleware_NN has_VBZ accepted_VBN the_DT message_NN ;_: eventually_RB ,_, the_DT receiver_NN will_MD send_VB an_DT acknowledgment_NN message_NN and_CC the_DT sender_NN will_MD be_VB able_JJ to_TO collect_VB it_PRP at_IN a_DT convenient_JJ time_NN ._.
+However_RB ,_, given_VBN the_DT way_NN they_PRP are_VBP implemented_VBN ,_, these_DT middleware_JJ systems_NNS usually_RB require_VBP resource-rich_JJ devices_NNS ,_, especially_RB in_IN terms_NNS of_IN memory_NN and_CC disk_NN space_NN ,_, where_WRB persistent_JJ queues_NNS of_IN messages_NNS that_WDT have_VBP been_VBN received_VBN but_CC not_RB yet_RB processed_VBN ,_, are_VBP stored_VBN ._.
+Sun_NNP Java_NNP Message_NNP Service_NNP -LSB-_-LRB- #_# -RSB-_-RRB- ,_, IBM_NNP WebSphere_NNP MQ_NNP -LSB-_-LRB- #_# -RSB-_-RRB- ,_, Microsoft_NNP MSMQ_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- are_VBP examples_NNS of_IN very_RB successful_JJ message-oriented_JJ middleware_NN for_IN traditional_JJ distributed_VBN systems_NNS ._.
+The_DT Java_NNP Messaging_NNP Service_NNP -LRB-_-LRB- JMS_NNP -RRB-_-RRB- is_VBZ a_DT collection_NN of_IN interfaces_NNS for_IN asynchronous_JJ communication_NN between_IN distributed_VBN components_NNS ._.
+It_PRP provides_VBZ a_DT common_JJ way_NN for_IN Java_NNP programs_NNS to_TO create_VB ,_, send_VB and_CC receive_VB messages_NNS ._.
+JMS_NNP users_NNS are_VBP usually_RB referred_VBN to_TO as_IN clients_NNS ._.
+The_DT JMS_NNP specification_NN further_RB defines_VBZ providers_NNS as_IN the_DT components_NNS in_IN charge_NN of_IN implementing_VBG the_DT messaging_NN system_NN and_CC providing_VBG the_DT administrative_JJ and_CC control_JJ functionality_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, persistence_NN and_CC reliability_NN -RRB-_-RRB- required_VBN by_IN the_DT system_NN ._.
+Clients_NNS can_MD send_VB and_CC receive_VB messages_NNS ,_, asynchronously_RB ,_, through_IN the_DT JMS_NNP provider_NN ,_, which_WDT is_VBZ in_IN charge_NN of_IN the_DT delivery_NN and_CC ,_, possibly_RB ,_, of_IN the_DT persistence_NN of_IN the_DT messages_NNS ._.
+There_EX are_VBP two_CD types_NNS of_IN communication_NN supported_VBD :_: point_NN to_TO point_NN and_CC publish-subscribe_NN models_NNS ._.
+In_IN the_DT point_NN to_TO point_VB model_NN ,_, hosts_NNS send_VBP messages_NNS to_TO queues_NNS ._.
+Receivers_NNS can_MD be_VB registered_VBN with_IN some_DT specific_JJ queues_NNS ,_, and_CC can_MD asynchronously_RB retrieve_VB the_DT messages_NNS and_CC then_RB acknowledge_VBP them_PRP ._.
+The_DT publish-subscribe_NN model_NN is_VBZ based_VBN on_IN the_DT use_NN of_IN topics_NNS that_WDT can_MD be_VB subscribed_VBN to_TO by_IN clients_NNS ._.
+Messages_NNS are_VBP sent_VBN to_TO topics_NNS by_IN other_JJ clients_NNS and_CC are_VBP then_RB received_VBN in_IN an_DT asynchronous_JJ mode_NN by_IN all_PDT the_DT subscribed_VBN clients_NNS ._.
+Clients_NNS learn_VBP about_IN the_DT available_JJ topics_NNS and_CC queues_NNS through_IN Java_NNP Naming_NNP and_CC Directory_NNP Interface_NNP -LRB-_-LRB- JNDI_NNP -RRB-_-RRB- -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Queues_NNS and_CC topics_NNS are_VBP created_VBN by_IN an_DT administrator_NN on_IN the_DT provider_NN and_CC are_VBP registered_VBN with_IN the_DT JNDI_NNP interface_NN for_IN look-up_NN ._.
+In_IN the_DT next_JJ section_NN ,_, we_PRP introduce_VBP the_DT challenges_NNS of_IN mobile_JJ networks_NNS ,_, and_CC show_VB how_WRB JMS_NNP can_MD be_VB adapted_VBN to_TO cope_VB with_IN these_DT requirements_NNS ._.
+3_LS ._.
+JMS_NNP FOR_IN MOBILE_NNP COMPUTING_NNP Mobile_NNP networks_NNS vary_VBP very_RB widely_RB in_IN their_PRP$ characteristics_NNS ,_, from_IN nomadic_JJ networks_NNS in_IN which_WDT modes_NNS relocate_VBP whilst_IN offline_NN through_IN to_TO ad-hoc_JJ networks_NNS in_IN which_WDT modes_NNS move_VBP freely_RB and_CC in_IN which_WDT there_EX is_VBZ no_DT infrastructure_NN ._.
+Mobile_NNP ad-hoc_JJ networks_NNS are_VBP most_RBS generally_RB applicable_JJ in_IN situations_NNS where_WRB survivability_NN and_CC instant_JJ deployability_NN are_VBP key_JJ :_: most_RBS notably_RB in_IN military_JJ applications_NNS and_CC disaster_NN relief_NN ._.
+In_IN between_IN these_DT two_CD types_NNS of_IN ''_'' mobile_JJ ''_'' networks_NNS ,_, there_EX are_VBP ,_, however_RB ,_, a_DT number_NN of_IN possible_JJ heterogeneous_JJ combinations_NNS ,_, where_WRB nomadic_JJ and_CC ad-hoc_JJ paradigms_NNS are_VBP used_VBN to_TO interconnect_VB totally_RB unwired_JJ areas_NNS to_TO more_RBR structured_JJ networks_NNS -LRB-_-LRB- such_JJ as_IN a_DT LAN_NN or_CC the_DT Internet_NN -RRB-_-RRB- ._.
+Whilst_IN the_DT JMS_NNP specification_NN has_VBZ been_VBN extensively_RB implemented_VBN and_CC used_VBN in_IN traditional_JJ distributed_VBN systems_NNS ,_, adaptations_NNS for_IN mobile_JJ environments_NNS have_VBP been_VBN proposed_VBN only_RB recently_RB ._.
+The_DT challenges_NNS of_IN porting_VBG JMS_NNP to_TO mobile_JJ settings_NNS are_VBP considerable_JJ ;_: however_RB ,_, in_IN view_NN of_IN its_PRP$ widespread_JJ acceptance_NN and_CC use_NN ,_, there_EX are_VBP considerable_JJ advantages_NNS in_IN allowing_VBG the_DT adaptation_NN of_IN existing_VBG applications_NNS to_TO mobile_JJ environments_NNS and_CC in_IN allowing_VBG the_DT interoperation_NN of_IN applications_NNS in_IN the_DT wired_VBN and_CC wireless_JJ regions_NNS of_IN a_DT network_NN ._.
+In_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ,_, JMS_NNP was_VBD adapted_VBN to_TO a_DT nomadic_JJ mobile_JJ setting_NN ,_, where_WRB mobile_JJ hosts_NNS can_MD be_VB JMS_NNP clients_NNS and_CC communicate_VBP through_IN the_DT JMS_NNP provider_NN that_IN ,_, however_RB ,_, sits_VBZ on_IN a_DT backbone_NN network_NN ,_, providing_VBG reliability_NN and_CC persistence_NN ._.
+The_DT client_NN prototype_NN presented_VBN in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- is_VBZ very_RB lightweight_JJ ,_, due_JJ to_TO the_DT delegation_NN of_IN all_PDT the_DT heavyweight_JJ functionality_NN to_TO the_DT Middleware_NNP for_IN Pervasive_NNP and_CC ad-hoc_JJ Computing_NNP ###_CD provider_NN on_IN the_DT wired_VBN network_NN ._.
+However_RB ,_, this_DT approach_NN is_VBZ somewhat_RB limited_VBN in_IN terms_NNS of_IN widespread_JJ applicability_NN and_CC scalability_NN as_IN a_DT consequence_NN of_IN the_DT concentration_NN of_IN functionality_NN in_IN the_DT wired_VBN portion_NN of_IN the_DT network_NN ._.
+If_IN JMS_NNP is_VBZ to_TO be_VB adapted_VBN to_TO completely_RB ad-hoc_JJ environments_NNS ,_, where_WRB no_DT fixed_VBN infrastructure_NN is_VBZ available_JJ ,_, and_CC where_WRB nodes_NNS change_VBP location_NN and_CC status_NN very_RB dynamically_RB ,_, more_JJR issues_NNS must_MD be_VB taken_VBN into_IN consideration_NN ._.
+Firstly_RB ,_, discovery_NN needs_VBZ to_TO use_VB a_DT resilient_JJ but_CC distributed_VBN model_NN :_: in_IN this_DT extremely_RB dynamic_JJ environment_NN ,_, static_JJ solutions_NNS are_VBP unacceptable_JJ ._.
+As_IN discussed_VBN in_IN Section_NN #_# ,_, a_DT JMS_NNP administrator_NN defines_VBZ queues_NNS and_CC topics_NNS on_IN the_DT provider_NN ._.
+Clients_NNS can_MD then_RB learn_VB about_IN them_PRP using_VBG the_DT Java_NNP Naming_NNP and_CC Directory_NNP Interface_NNP -LRB-_-LRB- JNDI_NNP -RRB-_-RRB- ._.
+However_RB ,_, due_JJ to_TO the_DT way_NN JNDI_NN is_VBZ designed_VBN ,_, a_DT JNDI_NNP node_NN -LRB-_-LRB- or_CC more_JJR than_IN one_CD -RRB-_-RRB- needs_VBZ to_TO be_VB in_IN reach_NN in_IN order_NN to_TO obtain_VB a_DT binding_NN of_IN a_DT name_NN to_TO an_DT address_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, knowing_VBG where_WRB a_DT specific_JJ queue_NN /_: topic_NN is_VBZ -RRB-_-RRB- ._.
+In_IN mobile_JJ ad-hoc_JJ environments_NNS ,_, the_DT discovery_NN process_NN can_MD not_RB assume_VB the_DT existence_NN of_IN a_DT fixed_VBN set_NN of_IN discovery_NN servers_NNS that_WDT are_VBP always_RB reachable_JJ ,_, as_IN this_DT would_MD not_RB match_VB the_DT dynamicity_NN of_IN ad-hoc_JJ networks_NNS ._.
+Secondly_RB ,_, a_DT JMS_NNP Provider_NNP ,_, as_IN suggested_VBN by_IN the_DT JMS_NNP specification_NN ,_, also_RB needs_VBZ to_TO be_VB reachable_JJ by_IN each_DT node_NN in_IN the_DT network_NN ,_, in_IN order_NN to_TO communicate_VB ._.
+This_DT assumes_VBZ a_DT very_RB centralised_JJ architecture_NN ,_, which_WDT again_RB does_VBZ not_RB match_VB the_DT requirements_NNS of_IN a_DT mobile_JJ ad-hoc_JJ setting_NN ,_, in_IN which_WDT nodes_NNS may_MD be_VB moving_VBG and_CC sparse_JJ :_: a_DT more_RBR distributed_VBN and_CC dynamic_JJ solution_NN is_VBZ needed_VBN ._.
+Persistence_NN is_VBZ ,_, however_RB ,_, essential_JJ functionality_NN in_IN asynchronous_JJ communication_NN environments_NNS as_IN hosts_NNS are_VBP ,_, by_IN definition_NN ,_, connected_VBN at_IN different_JJ times_NNS ._.
+In_IN the_DT following_VBG section_NN ,_, we_PRP will_MD discuss_VB our_PRP$ experience_NN in_IN designing_VBG and_CC implementing_VBG JMS_NNP for_IN mobile_JJ ad-hoc_JJ networks_NNS ._.
+4_LS ._.
+JMSFOR_NNP MOBILE_NNP ad-hoc_JJ NETWORKS_NNS 4_CD ._.
+#_# Adaptation_NNP of_IN JMS_NNP for_IN Mobile_NNP ad-hoc_JJ Networks_NNP Developing_VBG applications_NNS for_IN mobile_JJ networks_NNS is_VBZ yet_RB more_RBR challenging_JJ :_: in_IN addition_NN to_TO the_DT same_JJ considerations_NNS as_IN for_IN infrastructured_JJ wireless_JJ environments_NNS ,_, such_JJ as_IN the_DT limited_JJ device_NN capabilities_NNS and_CC power_NN constraints_NNS ,_, there_EX are_VBP issues_NNS of_IN rate_NN of_IN change_NN of_IN network_NN connectivity_NN ,_, and_CC the_DT lack_NN of_IN a_DT static_JJ routing_VBG infrastructure_NN ._.
+Consequently_RB ,_, we_PRP now_RB describe_VBP an_DT initial_JJ attempt_NN to_TO adapt_VB the_DT JMS_NNP specification_NN to_TO target_VB the_DT particular_JJ requirements_NNS related_VBN to_TO ad-hoc_JJ scenarios_NNS ._.
+As_IN discussed_VBN in_IN Section_NN #_# ,_, a_DT JMS_NNP application_NN can_MD use_VB either_CC the_DT point_NN to_TO point_NN and_CC the_DT publish-subscribe_JJ styles_NNS of_IN messaging_NN ._.
+Point_NN to_TO Point_VB Model_NNP The_DT point_NN to_TO point_VB model_NN is_VBZ based_VBN on_IN the_DT concept_NN of_IN queues_NNS ,_, that_WDT are_VBP used_VBN to_TO enable_VB asynchronous_JJ communication_NN between_IN the_DT producer_NN of_IN a_DT message_NN and_CC possible_JJ different_JJ consumers_NNS ._.
+In_IN our_PRP$ solution_NN ,_, the_DT location_NN of_IN queues_NNS is_VBZ determined_VBN by_IN a_DT negotiation_NN process_NN that_WDT is_VBZ application_NN dependent_JJ ._.
+For_IN example_NN ,_, let_VB us_PRP suppose_VB that_IN it_PRP is_VBZ possible_JJ to_TO know_VB a_DT priori_FW ,_, or_CC it_PRP is_VBZ possible_JJ to_TO determine_VB dynamically_RB ,_, that_IN a_DT certain_JJ host_NN is_VBZ the_DT receiver_NN of_IN the_DT most_JJS part_NN of_IN messages_NNS sent_VBN to_TO a_DT particular_JJ queue_NN ._.
+In_IN this_DT case_NN ,_, the_DT optimum_JJ location_NN of_IN the_DT queue_NN may_MD well_RB be_VB on_IN this_DT particular_JJ host_NN ._.
+In_IN general_JJ ,_, it_PRP is_VBZ worth_JJ noting_VBG that_IN ,_, according_VBG to_TO the_DT JMS_NNP specification_NN and_CC suggested_VBD design_NN patterns_NNS ,_, it_PRP is_VBZ common_JJ and_CC preferable_JJ for_IN a_DT client_NN to_TO have_VB all_DT of_IN its_PRP$ messages_NNS delivered_VBN to_TO a_DT single_JJ queue_NN ._.
+Queues_NNS are_VBP advertised_VBN periodically_RB to_TO the_DT hosts_NNS that_WDT are_VBP within_IN transmission_NN range_NN or_CC that_DT are_VBP reachable_JJ by_IN means_NNS of_IN the_DT underlying_VBG synchronous_JJ communication_NN protocol_NN ,_, if_IN provided_VBN ._.
+It_PRP is_VBZ important_JJ to_TO note_VB that_IN ,_, at_IN the_DT middleware_JJ level_NN ,_, it_PRP is_VBZ logically_RB irrelevant_JJ whether_IN or_CC not_RB the_DT network_NN layer_NN implements_VBZ some_DT form_NN of_IN ad-hoc_JJ routing_VBG -LRB-_-LRB- though_IN considerably_RB more_RBR efficient_JJ if_IN it_PRP does_VBZ -RRB-_-RRB- ;_: the_DT middleware_NN only_RB considers_VBZ information_NN about_IN which_WDT nodes_NNS are_VBP actively_RB reachable_JJ at_IN any_DT point_NN in_IN time_NN ._.
+The_DT hosts_NNS that_WDT receive_VBP advertisement_NN messages_NNS add_VBP entries_NNS to_TO their_PRP$ JNDI_NN registry_NN ._.
+Each_DT entry_NN is_VBZ characterized_VBN by_IN a_DT lease_NN -LRB-_-LRB- a_DT mechanism_NN similar_JJ to_TO that_DT present_JJ in_IN Jini_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- -RRB-_-RRB- ._.
+A_DT lease_NN represents_VBZ the_DT time_NN of_IN validity_NN of_IN a_DT particular_JJ entry_NN ._.
+If_IN a_DT lease_NN is_VBZ not_RB refreshed_VBN -LRB-_-LRB- i_FW ._.
+e_LS ,_, its_PRP$ life_NN is_VBZ not_RB extended_VBN -RRB-_-RRB- ,_, it_PRP can_MD expire_VB and_CC ,_, consequently_RB ,_, the_DT entry_NN is_VBZ deleted_VBN from_IN the_DT registry_NN ._.
+In_IN other_JJ words_NNS ,_, the_DT host_NN assumes_VBZ that_IN the_DT queue_NN will_MD be_VB unreachable_JJ from_IN that_DT point_NN in_IN time_NN ._.
+This_DT may_MD be_VB caused_VBN ,_, for_IN example_NN ,_, if_IN a_DT host_NN storing_VBG the_DT queue_NN becomes_VBZ unreachable_JJ ._.
+A_DT host_NN that_WDT initiates_VBZ a_DT discovery_NN process_NN will_MD find_VB the_DT topics_NNS and_CC the_DT queues_NNS present_JJ in_IN its_PRP$ connected_JJ portion_NN of_IN the_DT network_NN in_IN a_DT straightforward_JJ manner_NN ._.
+In_IN order_NN to_TO deliver_VB a_DT message_NN to_TO a_DT host_NN that_WDT is_VBZ not_RB currently_RB in_IN reach1_NN ,_, we_PRP use_VBP an_DT asynchronous_JJ epidemic_JJ routing_VBG protocol_NN that_WDT will_MD be_VB discussed_VBN in_IN detail_NN in_IN Section_NN #_# ._.
+#_# ._.
+If_IN two_CD hosts_NNS are_VBP in_IN the_DT same_JJ cloud_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, a_DT connected_JJ path_NN exists_VBZ between_IN them_PRP -RRB-_-RRB- ,_, but_CC no_DT synchronous_JJ protocol_NN is_VBZ available_JJ ,_, the_DT messages_NNS are_VBP sent_VBN using_VBG the_DT epidemic_JJ protocol_NN ._.
+In_IN this_DT case_NN ,_, the_DT delivery_NN latency_NN will_MD be_VB low_JJ as_IN a_DT result_NN of_IN the_DT rapidity_NN of_IN propagation_NN of_IN the_DT infection_NN in_IN the_DT connected_JJ cloud_NN -LRB-_-LRB- see_VB also_RB the_DT simulation_NN results_VBZ in_IN Section_NN #_# -RRB-_-RRB- ._.
+Given_VBN the_DT existence_NN of_IN an_DT epidemic_JJ protocol_NN ,_, the_DT discovery_NN mechanism_NN consists_VBZ of_IN advertising_VBG the_DT queues_NNS to_TO the_DT hosts_NNS that_WDT are_VBP currently_RB unreachable_JJ using_VBG analogous_JJ mechanisms_NNS ._.
+Publish-Subscribe_NNP Model_NNP In_IN the_DT publish-subscribe_NN model_NN ,_, some_DT of_IN the_DT hosts_NNS are_VBP similarly_RB designated_VBN to_TO hold_VB topics_NNS and_CC store_NN subscriptions_NNS ,_, as_IN before_RB ._.
+Topics_NNS are_VBP advertised_VBN through_IN the_DT registry_NN in_IN the_DT same_JJ way_NN as_IN are_VBP queues_NNS ,_, and_CC a_DT client_NN wishing_VBG to_TO subscribe_VB to_TO a_DT topic_NN must_MD register_VB with_IN the_DT client_NN holding_VBG the_DT topic_NN ._.
+When_WRB a_DT client_NN wishes_VBZ to_TO send_VB a_DT message_NN to_TO the_DT topic_NN list_NN ,_, it_PRP sends_VBZ it_PRP to_TO the_DT topic_NN holder_NN -LRB-_-LRB- in_IN the_DT same_JJ way_NN as_IN it_PRP would_MD send_VB a_DT message_NN to_TO a_DT queue_NN -RRB-_-RRB- ._.
+The_DT topic_NN holder_NN then_RB forwards_RB the_DT message_NN to_TO all_DT subscribers_NNS ,_, using_VBG the_DT synchronous_JJ protocol_NN if_IN possible_JJ ,_, the_DT epidemic_JJ protocol_NN otherwise_RB ._.
+It_PRP is_VBZ worth_JJ noting_VBG that_IN we_PRP use_VBP a_DT single_JJ message_NN with_IN multiple_JJ recipients_NNS ,_, instead_RB of_IN multiple_JJ messages_NNS with_IN multiple_JJ recipients_NNS ._.
+When_WRB a_DT message_NN is_VBZ delivered_VBN to_TO one_CD of_IN the_DT subscribers_NNS ,_, this_DT recipient_JJ is_VBZ deleted_VBN from_IN the_DT list_NN ._.
+In_IN order_NN to_TO delete_VB the_DT other_JJ possible_JJ replicas_NNS ,_, we_PRP employ_VBP acknowledgment_NN messages_NNS -LRB-_-LRB- discussed_VBN in_IN Section_NN #_# ._.
+#_# -RRB-_-RRB- ,_, returned_VBD in_IN the_DT same_JJ way_NN as_IN a_DT normal_JJ message_NN ._.
+We_PRP have_VBP also_RB adapted_VBN the_DT concepts_NNS of_IN durable_JJ and_CC non_JJ durable_JJ subscriptions_NNS for_IN ad-hoc_JJ settings_NNS ._.
+In_IN fixed_VBN platforms_NNS ,_, durable_JJ subscriptions_NNS are_VBP maintained_VBN during_IN the_DT disconnections_NNS of_IN the_DT clients_NNS ,_, whether_IN these_DT are_VBP intentional_JJ or_CC are_VBP the_DT result_NN of_IN failures_NNS ._.
+In_IN traditional_JJ systems_NNS ,_, while_IN a_DT durable_JJ subscriber_NN is_VBZ disconnected_VBN from_IN the_DT server_NN ,_, it_PRP is_VBZ responsible_JJ for_IN storing_VBG messages_NNS ._.
+When_WRB the_DT durable_JJ subscriber_NN reconnects_NNS ,_, the_DT server_NN sends_VBZ it_PRP all_DT unexpired_JJ messages_NNS ._.
+The_DT problem_NN is_VBZ that_IN ,_, in_IN our_PRP$ scenario_NN ,_, disconnections_NNS are_VBP the_DT norm_NN 1_CD In_IN theory_NN ,_, it_PRP is_VBZ not_RB possible_JJ to_TO send_VB a_DT message_NN to_TO a_DT peer_VB that_DT has_VBZ never_RB been_VBN reachable_JJ in_IN the_DT past_NN ,_, since_IN there_EX can_MD be_VB no_DT entry_NN present_JJ in_IN the_DT registry_NN ._.
+However_RB ,_, to_TO overcome_VB this_DT possible_JJ limitation_NN ,_, we_PRP provide_VBP a_DT primitive_JJ through_IN which_WDT information_NN can_MD be_VB added_VBN to_TO the_DT registry_NN without_IN using_VBG the_DT normal_JJ channels_NNS ._.
+123_CD Middleware_NNP ####_CD Companion_NNP rather_RB than_IN the_DT exception_NN ._.
+In_IN other_JJ words_NNS ,_, we_PRP can_MD not_RB consider_VB disconnections_NNS as_IN failures_NNS ._.
+For_IN these_DT reasons_NNS ,_, we_PRP adopt_VBP a_DT slightly_RB different_JJ semantics_NNS ._.
+With_IN respect_NN to_TO durable_JJ subscriptions_NNS ,_, if_IN a_DT subscriber_NN becomes_VBZ disconnected_VBN ,_, notifications_NNS are_VBP not_RB stored_VBN but_CC are_VBP sent_VBN using_VBG the_DT epidemic_JJ protocol_NN rather_RB than_IN the_DT synchronous_JJ protocol_NN ._.
+In_IN other_JJ words_NNS ,_, durable_JJ notifications_NNS remain_VBP valid_JJ during_IN the_DT possible_JJ disconnections_NNS of_IN the_DT subscriber_NN ._.
+On_IN the_DT other_JJ hand_NN ,_, if_IN a_DT non-durable_JJ subscriber_NN becomes_VBZ disconnected_VBN ,_, its_PRP$ subscription_NN is_VBZ deleted_VBN ;_: in_IN other_JJ words_NNS ,_, during_IN disconnections_NNS ,_, notifications_NNS are_VBP not_RB sent_VBN using_VBG the_DT epidemic_JJ protocol_NN but_CC exploit_VBP only_RB the_DT synchronous_JJ protocol_NN ._.
+If_IN the_DT topic_NN becomes_VBZ accessible_JJ to_TO this_DT host_NN again_RB ,_, it_PRP must_MD make_VB another_DT subscription_NN in_IN order_NN to_TO receive_VB the_DT notifications_NNS ._.
+Unsubscription_NN messages_NNS are_VBP delivered_VBN in_IN the_DT same_JJ way_NN as_IN are_VBP subscription_NN messages_NNS ._.
+It_PRP is_VBZ important_JJ to_TO note_VB that_IN durable_JJ subscribers_NNS have_VBP explicitly_RB to_TO unsubscribe_VB from_IN a_DT topic_NN in_IN order_NN to_TO stop_VB the_DT notification_NN process_NN ;_: however_RB ,_, all_DT durable_JJ subscriptions_NNS have_VBP a_DT predefined_JJ expiration_NN time_NN in_IN order_NN to_TO cope_VB with_IN the_DT cases_NNS of_IN subscribers_NNS that_WDT do_VBP not_RB meet_VB again_RB because_IN of_IN their_PRP$ movements_NNS or_CC failures_NNS ._.
+This_DT feature_NN is_VBZ clearly_RB provided_VBN to_TO limit_VB the_DT number_NN of_IN the_DT unnecessary_JJ messages_NNS sent_VBN around_IN the_DT network_NN ._.
+4_LS ._.
+#_# Message_NN Delivery_NN using_VBG Epidemic_JJ Routing_VBG In_IN this_DT section_NN ,_, we_PRP examine_VBP one_CD possible_JJ mechanism_NN that_WDT will_MD allow_VB the_DT delivery_NN of_IN messages_NNS in_IN a_DT partially_RB connected_JJ network_NN ._.
+The_DT mechanism_NN we_PRP discuss_VBP is_VBZ intended_VBN for_IN the_DT purposes_NNS of_IN demonstrating_VBG feasibility_NN ;_: more_RBR efficient_JJ communication_NN mechanisms_NNS for_IN this_DT environment_NN are_VBP themselves_PRP complex_JJ ,_, and_CC are_VBP the_DT subject_NN of_IN another_DT paper_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+The_DT asynchronous_JJ message_NN delivery_NN described_VBN above_IN is_VBZ based_VBN on_IN a_DT typical_JJ pure_JJ epidemic-style_NN routing_VBG protocol_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+A_DT message_NN that_WDT needs_VBZ to_TO be_VB sent_VBN is_VBZ replicated_VBN on_IN each_DT host_NN in_IN reach_NN ._.
+In_IN this_DT way_NN ,_, copies_NNS of_IN the_DT messages_NNS are_VBP quickly_RB spread_VBN through_IN connected_VBN networks_NNS ,_, like_IN an_DT infection_NN ._.
+If_IN a_DT host_NN becomes_VBZ connected_JJ to_TO another_DT cloud_NN of_IN mobile_JJ nodes_NNS ,_, during_IN its_PRP$ movement_NN ,_, the_DT message_NN spreads_VBZ through_IN this_DT collection_NN of_IN hosts_NNS ._.
+Epidemic-style_JJ replication_NN of_IN data_NNS and_CC messages_NNS has_VBZ been_VBN exploited_VBN in_IN the_DT past_NN in_IN many_JJ fields_NNS starting_VBG with_IN the_DT distributed_VBN database_NN systems_NNS area_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+Within_IN epidemic_JJ routing_VBG ,_, each_DT host_NN maintains_VBZ a_DT buffer_NN containing_VBG the_DT messages_NNS that_IN it_PRP has_VBZ created_VBN and_CC the_DT replicas_NNS of_IN the_DT messages_NNS generated_VBN by_IN the_DT other_JJ hosts_NNS ._.
+To_TO improve_VB the_DT performance_NN ,_, a_DT hash-table_JJ indexes_NNS the_DT content_NN of_IN the_DT buffer_NN ._.
+When_WRB two_CD hosts_NNS connect_VBP ,_, the_DT host_NN with_IN the_DT smaller_JJR identifier_NN initiates_VBZ a_DT so-called_JJ anti-entropy_JJ session_NN ,_, sending_VBG a_DT list_NN containing_VBG the_DT unique_JJ identifiers_NNS of_IN the_DT messages_NNS that_IN it_PRP currently_RB stores_NNS ._.
+The_DT other_JJ host_NN evaluates_VBZ this_DT list_NN and_CC sends_VBZ back_RP a_DT list_NN containing_VBG the_DT identifiers_NNS it_PRP is_VBZ storing_VBG that_DT are_VBP not_RB present_JJ in_IN the_DT other_JJ host_NN ,_, together_RB with_IN the_DT messages_NNS that_IN the_DT other_JJ does_VBZ not_RB have_VB ._.
+The_DT host_NN that_WDT has_VBZ started_VBN the_DT session_NN receives_VBZ the_DT list_NN and_CC ,_, in_IN the_DT same_JJ way_NN ,_, sends_VBZ the_DT messages_NNS that_WDT are_VBP not_RB present_JJ in_IN the_DT other_JJ host_NN ._.
+Should_MD buffer_VB overflow_NN occur_VBP ,_, messages_NNS are_VBP dropped_VBN ._.
+The_DT reliability_NN offered_VBN by_IN this_DT protocol_NN is_VBZ typically_RB best_RB effort_NN ,_, since_IN there_EX is_VBZ no_DT guarantee_NN that_IN a_DT message_NN will_MD eventually_RB be_VB delivered_VBN to_TO its_PRP$ recipient_JJ ._.
+Clearly_RB ,_, the_DT delivery_NN ratio_NN of_IN the_DT protocol_NN increases_VBZ proportionally_RB to_TO the_DT maximum_NN allowed_VBD delay_NN time_NN and_CC the_DT buffer_NN size_NN in_IN each_DT host_NN -LRB-_-LRB- interesting_JJ simulation_NN results_NNS may_MD be_VB found_VBN in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- -RRB-_-RRB- ._.
+4_LS ._.
+#_# Adaptation_NN of_IN the_DT JMS_NNP Message_NNP Model_NNP In_IN this_DT section_NN ,_, we_PRP will_MD analyse_VB the_DT aspects_NNS of_IN our_PRP$ adaptation_NN of_IN the_DT specification_NN related_JJ to_TO the_DT so-called_JJ JMS_NNP Message_NNP Model_NNP -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+According_VBG to_TO this_DT ,_, JMS_NNP messages_NNS are_VBP characterised_VBN by_IN some_DT properties_NNS defined_VBN using_VBG the_DT header_NN field_NN ,_, which_WDT contains_VBZ values_NNS that_WDT are_VBP used_VBN by_IN both_CC clients_NNS and_CC providers_NNS for_IN their_PRP$ delivery_NN ._.
+The_DT aspects_NNS discussed_VBN in_IN the_DT remainder_NN of_IN this_DT section_NN are_VBP valid_JJ for_IN both_DT models_NNS -LRB-_-LRB- point_NN to_TO point_NN and_CC publish-subscribe_NN -RRB-_-RRB- ._.
+A_DT JMS_NNP message_NN can_MD be_VB persistent_JJ or_CC non-persistent_JJ ._.
+According_VBG to_TO the_DT JMS_NNP specification_NN ,_, persistent_JJ messages_NNS must_MD be_VB delivered_VBN with_IN a_DT higher_JJR degree_NN of_IN reliability_NN than_IN the_DT nonpersistent_JJ ones_NNS ._.
+However_RB ,_, it_PRP is_VBZ worth_JJ noting_VBG that_IN it_PRP is_VBZ not_RB possible_JJ to_TO ensure_VB once-and-only-once_JJ reliability_NN for_IN persistent_JJ messages_NNS as_IN defined_VBN in_IN the_DT specification_NN ,_, since_IN ,_, as_IN we_PRP discussed_VBD in_IN the_DT previous_JJ subsection_NN ,_, the_DT underlying_VBG epidemic_JJ protocol_NN can_MD guarantee_VB only_RB best-effort_JJ delivery_NN ._.
+However_RB ,_, clients_NNS maintain_VBP a_DT list_NN of_IN the_DT identifiers_NNS of_IN the_DT recently_RB received_VBN messages_NNS to_TO avoid_VB the_DT delivery_NN of_IN message_NN duplicates_VBZ ._.
+In_IN other_JJ words_NNS ,_, we_PRP provide_VBP the_DT applications_NNS with_IN at-mostonce_NN reliability_NN for_IN both_DT types_NNS of_IN messages_NNS ._.
+In_IN order_NN to_TO implement_VB different_JJ levels_NNS of_IN reliability_NN ,_, EMMA_NNP treats_VBZ persistent_JJ and_CC non-persistent_JJ messages_NNS differently_RB ,_, during_IN the_DT execution_NN of_IN the_DT anti-entropy_JJ epidemic_JJ protocol_NN ._.
+Since_IN the_DT message_NN buffer_NN space_NN is_VBZ limited_VBN ,_, persistent_JJ messages_NNS are_VBP preferentially_RB replicated_VBN using_VBG the_DT available_JJ free_JJ space_NN ._.
+If_IN this_DT is_VBZ insufficient_JJ and_CC non-persistent_JJ messages_NNS are_VBP present_JJ in_IN the_DT buffer_NN ,_, these_DT are_VBP replaced_VBN ._.
+Only_RB the_DT successful_JJ deliveries_NN of_IN the_DT persistent_JJ messages_NNS are_VBP notified_VBN to_TO the_DT senders_NNS ._.
+According_VBG to_TO the_DT JMS_NNP specification_NN ,_, it_PRP is_VBZ possible_JJ to_TO assign_VB a_DT priority_NN to_TO each_DT message_NN ._.
+The_DT messages_NNS with_IN higher_JJR priorities_NNS are_VBP delivered_VBN in_IN a_DT preferential_JJ way_NN ._.
+As_IN discussed_VBN above_IN ,_, persistent_JJ messages_NNS are_VBP prioritised_VBN above_IN the_DT non-persistent_JJ ones_NNS ._.
+Further_JJ selection_NN is_VBZ based_VBN on_IN their_PRP$ priorities_NNS ._.
+Messages_NNS with_IN higher_JJR priorities_NNS are_VBP treated_VBN in_IN a_DT preferential_JJ way_NN ._.
+In_IN fact_NN ,_, if_IN there_EX is_VBZ not_RB enough_JJ space_NN to_TO replicate_VB all_PDT the_DT persistent_JJ messages_NNS ,_, a_DT mechanism_NN based_VBN on_IN priorities_NNS is_VBZ used_VBN to_TO delete_VB and_CC replicate_VB non-persistent_JJ messages_NNS -LRB-_-LRB- and_CC ,_, if_IN necessary_JJ ,_, persistent_JJ messages_NNS -RRB-_-RRB- ._.
+Messages_NNS are_VBP deleted_VBN from_IN the_DT buffers_NNS using_VBG the_DT expiration_NN time_NN value_NN that_WDT can_MD be_VB set_VBN by_IN senders_NNS ._.
+This_DT is_VBZ a_DT way_NN to_TO free_JJ space_NN in_IN the_DT buffers_NNS -LRB-_-LRB- one_CD preferentially_RB deletes_VBZ older_JJR messages_NNS in_IN cases_NNS of_IN conflict_NN -RRB-_-RRB- ;_: to_TO eliminate_VB stale_JJ replicas_NNS in_IN the_DT system_NN ;_: and_CC to_TO limit_VB the_DT time_NN for_IN which_WDT destinations_NNS must_MD hold_VB message_NN identifiers_NNS to_TO dispose_VB of_IN duplicates_NNS ._.
+4_LS ._.
+#_# Reliability_NN and_CC Acknowledgment_NN Mechanisms_NNS As_IN already_RB discussed_VBN ,_, at-most-once_JJ message_NN delivery_NN is_VBZ the_DT best_JJS that_WDT can_MD be_VB achieved_VBN in_IN terms_NNS of_IN delivery_NN semantics_NNS in_IN partially_RB connected_VBN ad-hoc_JJ settings_NNS ._.
+However_RB ,_, it_PRP is_VBZ possible_JJ to_TO improve_VB the_DT reliability_NN of_IN the_DT system_NN with_IN efficient_JJ acknowledgment_NN mechanisms_NNS ._.
+EMMA_NNP provides_VBZ a_DT mechanism_NN for_IN failure_NN notification_NN to_TO applications_NNS if_IN the_DT acknowledgment_NN is_VBZ not_RB received_VBN within_IN a_DT given_VBN timeout_NN -LRB-_-LRB- that_WDT can_MD be_VB configured_VBN by_IN application_NN developers_NNS -RRB-_-RRB- ._.
+This_DT mechanism_NN is_VBZ the_DT one_CD that_WDT distinguishes_VBZ the_DT delivery_NN of_IN persistent_JJ and_CC non-persistent_JJ messages_NNS in_IN our_PRP$ JMS_NNP implementation_NN :_: the_DT deliveries_NN of_IN the_DT former_JJ are_VBP notified_VBN to_TO the_DT senders_NNS ,_, whereas_IN the_DT latter_JJ are_VBP not_RB ._.
+We_PRP use_VBP acknowledgment_NN messages_NNS not_RB only_RB to_TO inform_VB senders_NNS about_IN the_DT successful_JJ delivery_NN of_IN messages_NNS but_CC also_RB to_TO delete_VB the_DT replicas_NNS of_IN the_DT delivered_VBN messages_NNS that_WDT are_VBP still_RB present_JJ in_IN the_DT network_NN ._.
+Each_DT host_NN maintains_VBZ a_DT list_NN of_IN the_DT messages_NNS Middleware_NNP for_IN Pervasive_NNP and_CC ad-hoc_JJ Computing_NNP ###_CD successfully_RB delivered_VBN that_DT is_VBZ updated_VBN as_IN part_NN of_IN the_DT normal_JJ process_NN of_IN information_NN exchange_NN between_IN the_DT hosts_NNS ._.
+The_DT lists_NNS are_VBP exchanged_VBN during_IN the_DT first_JJ steps_NNS of_IN the_DT anti-entropic_JJ epidemic_JJ protocol_NN with_IN a_DT certain_JJ predefined_JJ frequency_NN ._.
+In_IN the_DT case_NN of_IN messages_NNS with_IN multiple_JJ recipients_NNS ,_, a_DT list_NN of_IN the_DT actual_JJ recipients_NNS is_VBZ also_RB stored_VBN ._.
+When_WRB a_DT host_NN receives_VBZ the_DT list_NN ,_, it_PRP checks_VBZ its_PRP$ message_NN buffer_NN and_CC updates_NNS it_PRP according_VBG to_TO the_DT following_VBG rules_NNS :_: -LRB-_-LRB- #_# -RRB-_-RRB- if_IN a_DT message_NN has_VBZ a_DT single_JJ recipient_JJ and_CC it_PRP has_VBZ been_VBN delivered_VBN ,_, it_PRP is_VBZ deleted_VBN from_IN the_DT buffer_NN ;_: -LRB-_-LRB- #_# -RRB-_-RRB- if_IN a_DT message_NN has_VBZ multiple_JJ recipients_NNS ,_, the_DT identifiers_NNS of_IN the_DT delivered_VBN hosts_NNS are_VBP deleted_VBN from_IN the_DT associated_VBN list_NN of_IN recipients_NNS ._.
+If_IN the_DT resulting_VBG length_NN of_IN the_DT list_NN of_IN recipients_NNS is_VBZ zero_CD ,_, the_DT message_NN is_VBZ deleted_VBN from_IN the_DT buffer_NN ._.
+These_DT lists_NNS have_VBP ,_, clearly_RB ,_, finite_JJ dimensions_NNS and_CC are_VBP implemented_VBN as_IN circular_JJ queues_NNS ._.
+This_DT simple_JJ mechanism_NN ,_, together_RB with_IN the_DT use_NN of_IN expiration_NN timestamps_NNS ,_, guarantees_NNS that_IN the_DT old_JJ acknowledgment_NN notifications_NNS are_VBP deleted_VBN from_IN the_DT system_NN after_IN a_DT limited_JJ period_NN of_IN time_NN ._.
+In_IN order_NN to_TO improve_VB the_DT reliability_NN of_IN EMMA_NNP ,_, a_DT design_NN mechanism_NN for_IN intelligent_JJ replication_NN of_IN queues_NNS and_CC topics_NNS based_VBN on_IN the_DT context_NN information_NN could_MD be_VB developed_VBN ._.
+However_RB this_DT is_VBZ not_RB yet_RB part_NN of_IN the_DT current_JJ architecture_NN of_IN EMMA_NNP ._.
+5_CD ._.
+IMPLEMENTATION_NN AND_CC PRELIMINARY_JJ EVALUATION_NN We_PRP implemented_VBD a_DT prototype_NN of_IN our_PRP$ platform_NN using_VBG the_DT J2ME_NNP Personal_NNP Profile_NNP ._.
+The_DT size_NN of_IN the_DT executable_JJ is_VBZ about_IN 250KB_NN including_VBG the_DT JMS_NNP #_# ._.
+#_# jar_NN file_NN ;_: this_DT is_VBZ a_DT perfectly_RB acceptable_JJ figure_NN given_VBN the_DT available_JJ memory_NN of_IN the_DT current_JJ mobile_JJ devices_NNS on_IN the_DT market_NN ._.
+We_PRP tested_VBD our_PRP$ prototype_NN on_IN HP_NNP IPaq_NNP PDAs_NNS running_VBG Linux_NNP ,_, interconnected_VBN with_IN WaveLan_NNP ,_, and_CC on_IN a_DT number_NN of_IN laptops_NNS with_IN the_DT same_JJ network_NN interface_NN ._.
+We_PRP also_RB evaluated_VBD the_DT middleware_JJ platform_NN using_VBG the_DT OMNET_NNP +_CC +_CC discrete_JJ event_NN simulator_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- in_IN order_NN to_TO explore_VB a_DT range_NN of_IN mobile_JJ scenarios_NNS that_WDT incorporated_VBD a_DT more_RBR realistic_JJ number_NN of_IN hosts_NNS than_IN was_VBD achievable_JJ experimentally_RB ._.
+More_RBR specifically_RB ,_, we_PRP assessed_VBD the_DT performance_NN of_IN the_DT system_NN in_IN terms_NNS of_IN delivery_NN ratio_NN and_CC average_JJ delay_NN ,_, varying_VBG the_DT density_NN of_IN population_NN and_CC the_DT buffer_NN size_NN ,_, and_CC using_VBG persistent_JJ and_CC non-persistent_JJ messages_NNS with_IN different_JJ priorities_NNS ._.
+The_DT simulation_NN results_VBZ show_NN that_IN the_DT EMMA_NNP ''_'' s_VBZ performance_NN ,_, in_IN terms_NNS of_IN delivery_NN ratio_NN and_CC delay_NN of_IN persistent_JJ messages_NNS with_IN higher_JJR priorities_NNS ,_, is_VBZ good_JJ ._.
+In_IN general_JJ ,_, it_PRP is_VBZ evident_JJ that_IN the_DT delivery_NN ratio_NN is_VBZ strongly_RB related_JJ to_TO the_DT correct_JJ dimensioning_NN of_IN the_DT buffers_NNS to_TO the_DT maximum_NN acceptable_JJ delay_NN ._.
+Moreover_RB ,_, the_DT epidemic_JJ algorithms_NNS are_VBP able_JJ to_TO guarantee_VB a_DT high_JJ delivery_NN ratio_NN if_IN one_CD evaluates_VBZ performance_NN over_IN a_DT time_NN interval_JJ sufficient_JJ for_IN the_DT dissemination_NN of_IN the_DT replicas_NNS of_IN messages_NNS -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, the_DT infection_NN spreading_NN -RRB-_-RRB- in_IN a_DT large_JJ portion_NN of_IN the_DT ad-hoc_JJ network_NN ._.
+One_CD consequence_NN of_IN the_DT dimensioning_VBG problem_NN is_VBZ that_IN scalability_NN may_MD be_VB seriously_RB impacted_VBN in_IN peer-to-peer_JJ middleware_NN for_IN mobile_JJ computing_NN due_JJ to_TO the_DT resource_NN poverty_NN of_IN the_DT devices_NNS -LRB-_-LRB- limited_JJ memory_NN to_TO store_VB temporarily_RB messages_NNS -RRB-_-RRB- and_CC the_DT number_NN of_IN possible_JJ interconnections_NNS in_IN ad-hoc_JJ settings_NNS ._.
+What_WP is_VBZ worse_JJR is_VBZ that_IN common_JJ forms_NNS of_IN commercial_JJ and_CC social_JJ organisation_NN -LRB-_-LRB- six_CD degrees_NNS of_IN separation_NN -RRB-_-RRB- mean_VBP that_IN even_RB modest_JJ TTL_NN values_NNS on_IN messages_NNS will_MD lead_VB to_TO widespread_JJ flooding_NN of_IN epidemic_JJ messages_NNS ._.
+This_DT problem_NN arises_VBZ because_IN of_IN the_DT lack_NN of_IN intelligence_NN in_IN the_DT epidemic_JJ protocol_NN ,_, and_CC can_MD be_VB addressed_VBN by_IN selecting_VBG carrier_NN nodes_NNS for_IN messages_NNS with_IN greater_JJR care_NN ._.
+The_DT details_NNS of_IN this_DT process_NN are_VBP ,_, however_RB ,_, outside_IN the_DT scope_NN of_IN this_DT paper_NN -LRB-_-LRB- but_CC may_MD be_VB found_VBN in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- -RRB-_-RRB- and_CC do_VBP not_RB affect_VB the_DT foundation_NN on_IN which_WDT the_DT EMMA_NNP middleware_NN is_VBZ based_VBN :_: the_DT ability_NN to_TO deliver_VB messages_NNS asynchronously_RB ._.
+6_CD ._.
+CRITICAL_NNP VIEW_NNP OF_IN THE_DT STATE_NN OF_IN THE_DT ART_NN The_DT design_NN of_IN middleware_JJ platforms_NNS for_IN mobile_JJ computing_NN requires_VBZ researchers_NNS to_TO answer_VB new_JJ and_CC fundamentally_RB different_JJ questions_NNS ;_: simply_RB assuming_VBG the_DT presence_NN of_IN wired_VBN portions_NNS of_IN the_DT network_NN on_IN which_WDT centralised_JJ functionality_NN can_MD reside_VB is_VBZ not_RB generalisable_JJ ._.
+Thus_RB ,_, it_PRP is_VBZ necessary_JJ to_TO investigate_VB novel_JJ design_NN principles_NNS and_CC to_TO devise_VB architectural_JJ patterns_NNS that_WDT differ_VBP from_IN those_DT traditionally_RB exploited_VBN in_IN the_DT design_NN of_IN middleware_NN for_IN fixed_VBN systems_NNS ._.
+As_IN an_DT example_NN ,_, consider_VB the_DT recent_JJ cross-layering_NN trend_NN in_IN ad-hoc_JJ networking_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+This_DT is_VBZ a_DT way_NN of_IN re-thinking_NN software_NN systems_NNS design_NN ,_, explicitly_RB abandoning_VBG the_DT classical_JJ forms_NNS of_IN layering_NN ,_, since_IN ,_, although_IN this_DT separation_NN of_IN concerns_NNS afford_VBP portability_NN ,_, it_PRP does_VBZ so_RB at_IN the_DT expense_NN of_IN potential_JJ efficiency_NN gains_NNS ._.
+We_PRP believe_VBP that_IN it_PRP is_VBZ possible_JJ to_TO view_VB our_PRP$ approach_NN as_IN an_DT instance_NN of_IN cross-layering_NN ._.
+In_IN fact_NN ,_, we_PRP have_VBP added_VBN the_DT epidemic_JJ network_NN protocol_NN at_IN middleware_JJ level_NN and_CC ,_, at_IN the_DT same_JJ time_NN ,_, we_PRP have_VBP used_VBN the_DT existing_VBG synchronous_JJ network_NN protocol_NN if_IN present_JJ both_CC in_IN delivering_VBG messages_NNS -LRB-_-LRB- traditional_JJ layering_NN -RRB-_-RRB- and_CC in_IN informing_VBG the_DT middleware_JJ about_IN when_WRB messages_NNS may_MD be_VB delivered_VBN by_IN revealing_VBG details_NNS of_IN the_DT forwarding_NN tables_NNS -LRB-_-LRB- layer_NN violation_NN -RRB-_-RRB- ._.
+For_IN this_DT reason_NN ,_, we_PRP prefer_VBP to_TO consider_VB them_PRP jointly_RB as_IN the_DT communication_NN layer_NN of_IN our_PRP$ platform_NN together_RB providing_VBG more_RBR efficient_JJ message_NN delivery_NN ._.
+Another_DT interesting_JJ aspect_NN is_VBZ the_DT exploitation_NN of_IN context_NN and_CC system_NN information_NN to_TO improve_VB the_DT performance_NN of_IN mobile_JJ middleware_JJ platforms_NNS ._.
+Again_RB ,_, as_IN a_DT result_NN of_IN adopting_VBG a_DT cross-layering_JJ methodology_NN ,_, we_PRP are_VBP able_JJ to_TO build_VB systems_NNS that_WDT gather_VBP information_NN from_IN the_DT underlying_VBG operating_NN system_NN and_CC communication_NN components_NNS in_IN order_NN to_TO allow_VB for_IN adaptation_NN of_IN behaviour_NN ._.
+We_PRP can_MD summarise_VB this_DT conceptual_JJ design_NN approach_NN by_IN saying_VBG that_IN middleware_JJ platforms_NNS must_MD be_VB not_RB only_RB context-aware_JJ -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, they_PRP should_MD be_VB able_JJ to_TO extract_NN and_CC analyse_VBP information_NN from_IN the_DT surrounding_VBG context_NN -RRB-_-RRB- but_CC also_RB system-aware_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, they_PRP should_MD be_VB able_JJ to_TO gather_VB information_NN from_IN the_DT software_NN and_CC hardware_NN components_NNS of_IN the_DT mobile_JJ system_NN -RRB-_-RRB- ._.
+A_DT number_NN of_IN middleware_JJ systems_NNS have_VBP been_VBN developed_VBN to_TO support_VB ad-hoc_JJ networking_VBG with_IN the_DT use_NN of_IN asynchronous_JJ communication_NN -LRB-_-LRB- such_JJ as_IN LIME_NNP ,_, XMIDDLE_NNP ,_, STEAM_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- -RRB-_-RRB- ._.
+In_IN particular_JJ ,_, the_DT STEAM_NN platform_NN is_VBZ an_DT interesting_JJ example_NN of_IN event-based_JJ middleware_NN for_IN ad-hoc_JJ networks_NNS ,_, providing_VBG location-aware_JJ message_NN delivery_NN and_CC an_DT effective_JJ solution_NN for_IN event_NN filtering_VBG ._.
+A_DT discussion_NN of_IN JMS_NNP ,_, and_CC its_PRP$ mobile_JJ realisation_NN ,_, has_VBZ already_RB been_VBN conducted_VBN in_IN Sections_NNS #_# and_CC #_# ._.
+The_DT Swiss_JJ company_NN Softwired_NNP has_VBZ developed_VBN the_DT first_JJ JMS_NNP middleware_NN for_IN mobile_JJ computing_NN ,_, called_VBN iBus_NNP Mobile_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+The_DT main_JJ components_NNS of_IN this_DT typically_RB infrastructure-based_JJ architecture_NN are_VBP the_DT JMS_NNP provider_NN ,_, the_DT so-called_JJ mobile_JJ JMS_NNP gateway_NN ,_, which_WDT is_VBZ deployed_VBN on_IN a_DT fixed_VBN host_NN and_CC a_DT lightweight_JJ JMS_NNP client_NN library_NN ._.
+The_DT gateway_NN is_VBZ used_VBN for_IN the_DT communication_NN between_IN the_DT application_NN server_NN and_CC mobile_JJ hosts_NNS ._.
+The_DT gateway_NN is_VBZ seen_VBN by_IN the_DT JMS_NNP provider_NN as_IN a_DT normal_JJ JMS_NNP client_NN ._.
+The_DT JMS_NNP provider_NN can_MD be_VB any_DT JMS-enabled_JJ application_NN server_NN ,_, such_JJ as_IN BEA_NNP Weblogic_NNP ._.
+Pronto_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- is_VBZ an_DT example_NN of_IN mid125_CD Middleware_NNP ####_CD Companion_NNP dleware_NN system_NN based_VBN on_IN messaging_VBG that_DT is_VBZ specifically_RB designed_VBN for_IN mobile_JJ environments_NNS ._.
+The_DT platform_NN is_VBZ composed_VBN of_IN three_CD classes_NNS of_IN components_NNS :_: mobile_JJ clients_NNS implementing_VBG the_DT JMS_NNP specification_NN ,_, gateways_NNS that_WDT control_VBP traffic_NN ,_, guaranteeing_VBG efficiency_NN and_CC possible_JJ user_NN customizations_NNS using_VBG different_JJ plug-ins_NNS and_CC JMS_NNP servers_NNS ._.
+Different_JJ configurations_NNS of_IN these_DT components_NNS are_VBP possible_JJ ;_: with_IN respect_NN to_TO mobile_JJ ad_NN hoc_FW networks_NNS applications_NNS ,_, the_DT most_RBS interesting_JJ is_VBZ Serverless_NNP JMS_NNP ._.
+The_DT aim_NN of_IN this_DT configuration_NN is_VBZ to_TO adapt_VB JMS_NNP to_TO a_DT decentralized_VBN model_NN ._.
+The_DT publish-subscribe_NN model_NN exploits_VBZ the_DT efficiency_NN and_CC the_DT scalability_NN of_IN the_DT underlying_VBG IP_NNP multicast_JJ protocol_NN ._.
+Unreliable_JJ and_CC reliable_JJ message_NN delivery_NN services_NNS are_VBP provided_VBN :_: reliability_NN is_VBZ provided_VBN through_IN a_DT negative_JJ acknowledgment-based_JJ protocol_NN ._.
+Pronto_NNP represents_VBZ a_DT good_JJ solution_NN for_IN infrastructure-based_JJ mobile_JJ networks_NNS but_CC it_PRP does_VBZ not_RB adequately_RB target_VB ad-hoc_JJ settings_NNS ,_, since_IN mobile_JJ nodes_NNS rely_VBP on_IN fixed_VBN servers_NNS for_IN the_DT exchange_NN of_IN messages_NNS ._.
+Other_JJ MOM_NN implemented_VBD for_IN mobile_JJ environments_NNS exist_VBP ;_: however_RB ,_, they_PRP are_VBP usually_RB straightforward_JJ extensions_NNS of_IN existing_VBG middleware_JJ -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+The_DT only_JJ implementation_NN of_IN MOM_NN specifically_RB designed_VBN for_IN mobile_JJ ad-hoc_JJ networks_NNS was_VBD developed_VBN at_IN the_DT University_NNP of_IN Newcastle_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+This_DT work_NN is_VBZ again_RB a_DT JMS_NNP adaptation_NN ;_: the_DT focus_NN of_IN that_DT implementation_NN is_VBZ on_IN group_NN communication_NN and_CC the_DT use_NN of_IN application_NN level_NN routing_VBG algorithms_NNS for_IN topic_NN delivery_NN of_IN messages_NNS ._.
+However_RB ,_, there_EX are_VBP a_DT number_NN of_IN differences_NNS in_IN the_DT focus_NN of_IN our_PRP$ work_NN ._.
+The_DT importance_NN that_IN we_PRP attribute_VBP to_TO disconnections_NNS makes_VBZ persistence_NN a_DT vital_JJ requirement_NN for_IN any_DT middleware_NN that_WDT needs_VBZ to_TO be_VB used_VBN in_IN mobile_JJ ad-hoc_JJ networks_NNS ._.
+The_DT authors_NNS of_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- signal_NN persistence_NN as_IN possible_JJ future_JJ work_NN ,_, not_RB considering_VBG the_DT fact_NN that_IN routing_VBG a_DT message_NN to_TO a_DT non-connected_JJ host_NN will_MD result_VB in_IN delivery_NN failure_NN ._.
+This_DT is_VBZ a_DT remarkable_JJ limitation_NN in_IN mobile_JJ settings_NNS where_WRB unpredictable_JJ disconnections_NNS are_VBP the_DT norm_NN rather_RB than_IN the_DT exception_NN ._.
+7_CD ._.
+ROADMAP_NN AND_CC CONCLUSIONS_NNS Asynchronous_JJ communication_NN is_VBZ a_DT useful_JJ communication_NN paradigm_NN for_IN mobile_JJ ad-hoc_JJ networks_NNS ,_, as_IN hosts_NNS are_VBP allowed_VBN to_TO come_VB ,_, go_VB and_CC pick_VB up_RP messages_NNS when_WRB convenient_JJ ,_, also_RB taking_VBG account_NN of_IN their_PRP$ resource_NN availability_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, power_NN ,_, connectivity_NN levels_NNS -RRB-_-RRB- ._.
+In_IN this_DT paper_NN we_PRP have_VBP described_VBN the_DT state_NN of_IN the_DT art_NN in_IN terms_NNS of_IN MOM_NN for_IN mobile_JJ systems_NNS ._.
+We_PRP have_VBP also_RB shown_VBN a_DT proof_NN of_IN concept_NN adaptation_NN of_IN JMS_NNP to_TO the_DT extreme_JJ scenario_NN of_IN partially_RB connected_VBN mobile_JJ ad-hoc_JJ networks_NNS ._.
+We_PRP have_VBP described_VBN and_CC discussed_VBN the_DT characteristics_NNS and_CC differences_NNS of_IN our_PRP$ solution_NN with_IN respect_NN to_TO traditional_JJ JMS_NNP implementations_NNS and_CC the_DT existing_VBG adaptations_NNS for_IN mobile_JJ settings_NNS ._.
+However_RB ,_, trade-offs_NNS between_IN application-level_JJ routing_VBG and_CC resource_NN usage_NN should_MD also_RB be_VB investigated_VBN ,_, as_IN mobile_JJ devices_NNS are_VBP commonly_RB power_NN /_: resource_NN scarce_JJ ._.
+A_DT key_JJ limitation_NN of_IN this_DT work_NN is_VBZ the_DT poorly_RB performing_VBG epidemic_JJ algorithm_NN and_CC an_DT important_JJ advance_NN in_IN the_DT practicability_NN of_IN this_DT work_NN requires_VBZ an_DT algorithm_NN that_WDT better_JJR balances_NNS the_DT needs_NNS of_IN efficiency_NN and_CC message_NN delivery_NN probability_NN ._.
+We_PRP are_VBP currently_RB working_VBG on_IN algorithms_NNS and_CC protocols_NNS that_IN ,_, exploiting_VBG probabilistic_JJ and_CC statistical_JJ techniques_NNS on_IN the_DT basis_NN of_IN small_JJ amounts_NNS of_IN exchanged_VBN information_NN ,_, are_VBP able_JJ to_TO improve_VB considerably_RB the_DT efficiency_NN in_IN terms_NNS of_IN resources_NNS -LRB-_-LRB- memory_NN ,_, bandwidth_NN ,_, etc_NN -RRB-_-RRB- and_CC the_DT reliability_NN of_IN our_PRP$ middleware_JJ platform_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+One_CD futuristic_JJ research_NN development_NN ,_, which_WDT may_MD take_VB these_DT ideas_NNS of_IN adaptation_NN of_IN messaging_VBG middleware_NN for_IN mobile_JJ environments_NNS further_RBR is_VBZ the_DT introduction_NN of_IN more_JJR mobility_NN oriented_VBN communication_NN extensions_NNS ,_, for_IN instance_NN the_DT support_NN of_IN geocast_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, the_DT ability_NN to_TO send_VB messages_NNS to_TO specific_JJ geographical_JJ areas_NNS -RRB-_-RRB- ._.
+8_CD ._.
+REFERENCES_NNS -LSB-_-LRB- #_# -RSB-_-RRB- M_NN ._.
+Conti_NNP ,_, G_NNP ._.
+Maselli_NNP ,_, G_NNP ._.
+Turi_NNP ,_, and_CC S_NN ._.
+Giordano_NNP ._.
+Cross-layering_NN in_IN Mobile_NNP ad-hoc_JJ Network_NNP Design_NNP ._.
+IEEE_NNP Computer_NNP ,_, ##_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 48-51_CD ,_, February_NNP ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- A_DT ._.
+Demers_NNS ,_, D_NN ._.
+Greene_NNP ,_, C_NNP ._.
+Hauser_NNP ,_, W_NNP ._.
+Irish_NNP ,_, J_NNP ._.
+Larson_NNP ,_, S_NN ._.
+Shenker_NNP ,_, H_NN ._.
+Sturgis_NNP ,_, D_NNP ._.
+Swinehart_NNP ,_, and_CC D_NN ._.
+Terry_NNP ._.
+Epidemic_JJ Algorithms_NNS for_IN Replicated_VBN Database_NN Maintenance_NN ._.
+In_IN Sixth_NNP Symposium_NNP on_IN Principles_NNS of_IN Distributed_VBN Computing_NNP ,_, pages_NNS 1-12_CD ,_, August_NNP ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- A_DT ._.
+Doria_NNP ,_, M_NN ._.
+Uden_NNP ,_, and_CC D_NN ._.
+P_NN ._.
+Pandey_NN ._.
+Providing_VBG connectivity_NN to_TO the_DT Saami_NNP nomadic_JJ community_NN ._.
+In_IN Proceedings_NNP of_IN the_DT Second_NNP International_NNP Conference_NNP on_IN Open_NNP Collaborative_NNP Design_NNP for_IN Sustainable_JJ Innovation_NN ,_, December_NNP ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- M_NN ._.
+Haahr_NNP ,_, R_NN ._.
+Cunningham_NNP ,_, and_CC V_NN ._.
+Cahill_NNP ._.
+Supporting_VBG CORBA_NNP applications_NNS in_IN a_DT Mobile_NNP Environment_NNP ._.
+In_IN 5th_JJ International_JJ Conference_NN on_IN Mobile_NNP Computing_NNP and_CC Networking_NNP -LRB-_-LRB- MOBICOM99_NN -RRB-_-RRB- ,_, pages_NNS 36-47_CD ._.
+ACM_NNP ,_, August_NNP 1999_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- M_NN ._.
+Hapner_NNP ,_, R_NN ._.
+Burridge_NNP ,_, R_NN ._.
+Sharma_FW ,_, J_NN ._.
+Fialli_NNP ,_, and_CC K_NN ._.
+Stout_NNP ._.
+Java_NNP Message_NNP Service_NNP Specification_NNP Version_NNP #_# ._.
+#_# ._.
+Sun_NNP Microsystems_NNPS ,_, Inc_NNP ._.
+,_, April_NNP ####_CD ._.
+http_NN :_: /_: /_: java_NN ._.
+sun_NN ._.
+com_NN /_: products_NNS /_: jms_NNS /_: ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- J_NN ._.
+Hart_NNP ._.
+WebSphere_NNP MQ_NNP :_: Connecting_VBG your_PRP$ applications_NNS without_IN complex_JJ programming_NN ._.
+IBM_NNP WebSphere_NNP Software_NNP White_NNP Papers_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- S_NN ._.
+Hayward_NNP and_CC M_NN ._.
+Pezzini_NNP ._.
+Marrying_VBG Middleware_NNP and_CC Mobile_NNP Computing_NNP ._.
+Gartner_NNP Group_NNP Research_NNP Report_NNP ,_, September_NNP ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- IBM_NNP ._.
+WebSphere_NNP MQ_NNP EveryPlace_NNP Version_NNP #_# ._.
+#_# ,_, November_NNP 2002_CD ._.
+http_NN :_: /_: /_: www-3_NN ._.
+ibm_NN ._.
+com_NN /_: software_NN /_: integration_NN /_: wmqe_NN /_: ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- ITU_NNP ._.
+Connecting_VBG remote_JJ communities_NNS ._.
+Documents_NNS of_IN the_DT World_NNP Summit_NNP on_IN Information_NNP Society_NNP ,_, ####_CD ._.
+http_NN :_: /_: /_: www_NN ._.
+itu_NN ._.
+int_NN /_: osg_NN /_: spu_NN /_: wsis-themes_NNS ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- S_NN ._.
+Maffeis_NNP ._.
+Introducing_VBG Wireless_NNP JMS_NNP ._.
+Softwired_NNP AG_NNP ,_, www_NN ._.
+sofwired-inc_NN ._.
+com_NN ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- C_NN ._.
+Mascolo_NNP ,_, L_NNP ._.
+Capra_NNP ,_, and_CC W_NN ._.
+Emmerich_NNP ._.
+Middleware_NNP for_IN Mobile_NNP Computing_NNP ._.
+In_IN E_NN ._.
+Gregori_NNP ,_, G_NNP ._.
+Anastasi_NNP ,_, and_CC S_NN ._.
+Basagni_NNP ,_, editors_NNS ,_, Advanced_NNP Lectures_NNPS on_IN Networking_NNP ,_, volume_NN ####_CD of_IN Lecture_NNP Notes_NNP in_IN Computer_NNP Science_NNP ,_, pages_NNS 20-58_CD ._.
+Springer_NNP Verlag_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Microsoft_NNP ._.
+Microsoft_NNP Message_NNP Queuing_NNP -LRB-_-LRB- MSMQ_NNP -RRB-_-RRB- Version_NN 2_CD ._.
+#_# Documentation_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- M_NN ._.
+Musolesi_NNP ,_, S_NN ._.
+Hailes_NNP ,_, and_CC C_NN ._.
+Mascolo_NNP ._.
+Adaptive_JJ routing_VBG for_IN intermittently_RB connected_VBN mobile_JJ ad-hoc_JJ networks_NNS ._.
+Technical_NNP report_NN ,_, UCL-CS_NNP Research_NNP Note_VB ,_, July_NNP ####_CD ._.
+Submitted_VBN for_IN Publication_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Sun_NNP Microsystems_NNPS ._.
+Java_NNP Naming_NNP and_CC Directory_NNP Interface_NNP -LRB-_-LRB- JNDI_NNP -RRB-_-RRB- Documentation_NNP Version_NNP #_# ._.
+#_# ._.
+####_NN ._.
+http_NN :_: /_: /_: java_NN ._.
+sun_NN ._.
+com_NN /_: products_NNS /_: jndi_NN /_: ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Sun_NNP Microsystems_NNPS ._.
+Jini_NNP Specification_NNP Version_NNP #_# ._.
+#_# ,_, ####_CD ._.
+http_NN :_: /_: /_: java_NN ._.
+sun_NN ._.
+com_NN /_: products_NNS /_: jini_NNS /_: ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- A_DT ._.
+Vahdat_NNP and_CC D_NNP ._.
+Becker_NNP ._.
+Epidemic_JJ routing_VBG for_IN Partially_RB Connected_VBN ad-hoc_JJ Networks_NNP ._.
+Technical_NNP Report_NNP CS-2000-06_NNP ,_, Department_NNP of_IN Computer_NNP Science_NNP ,_, Duke_NNP University_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- A_DT ._.
+Vargas_NNP ._.
+The_DT OMNeT_NN +_CC +_CC discrete_JJ event_NN simulation_NN system_NN ._.
+In_IN Proceedings_NNP of_IN the_DT European_JJ Simulation_NN Multiconference_NN -LRB-_-LRB- ESM_NN ''_'' ####_NN -RRB-_-RRB- ,_, Prague_NNP ,_, June_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- E_NN ._.
+Vollset_NNP ,_, D_NNP ._.
+Ingham_NNP ,_, and_CC P_NN ._.
+Ezhilchelvan_NNP ._.
+JMS_NNP on_IN Mobile_NNP ad-hoc_JJ Networks_NNP ._.
+In_IN Personal_NNP Wireless_NNP Communications_NNP -LRB-_-LRB- PWC_NNP -RRB-_-RRB- ,_, pages_NNS 40-52_CD ,_, Venice_NNP ,_, September_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- E_NN ._.
+Yoneki_NNP and_CC J_NNP ._.
+Bacon_NNP ._.
+Pronto_NNP :_: Mobilegateway_NN with_IN publish-subscribe_JJ paradigm_NN over_IN wireless_JJ network_NN ._.
+Technical_NNP Report_NNP ###_NNP ,_, University_NNP of_IN Cambridge_NNP ,_, Computer_NNP Laboratory_NNP ,_, February_NNP ####_CD ._.
+Middleware_NNP for_IN Pervasive_NNP and_CC ad-hoc_JJ Computing_NNP ###_CD

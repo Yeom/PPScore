@@ -1,0 +1,719 @@
+Beyond_IN PageRank_NNP :_: Machine_NNP Learning_NNP for_IN Static_NNP Ranking_NNP Matthew_NNP Richardson_NNP Microsoft_NNP Research_NNP One_CD Microsoft_NNP Way_NNP Redmond_NNP ,_, WA_NNP #####_CD +_CC #_# -LRB-_-LRB- ###_CD -RRB-_-RRB- 722-3325_CD mattri_NNS @_IN microsoft_NN ._.
+com_NN Amit_NNP Prakash_NNP MSN_NNP One_CD Microsoft_NNP Way_NNP Redmond_NNP ,_, WA_NNP #####_CD +_CC #_# -LRB-_-LRB- ###_CD -RRB-_-RRB- 705-6015_CD amitp_NN @_IN microsoft_NN ._.
+com_NN Eric_NNP Brill_NNP Microsoft_NNP Research_NNP One_CD Microsoft_NNP Way_NNP Redmond_NNP ,_, WA_NNP #####_CD +_CC #_# -LRB-_-LRB- ###_CD -RRB-_-RRB- 705-4992_CD brill_NN @_IN microsoft_NN ._.
+com_NN ABSTRACT_NN Since_IN the_DT publication_NN of_IN Brin_NNP and_CC Page_NNP ''_'' s_VBZ paper_NN on_IN PageRank_NNP ,_, many_JJ in_IN the_DT Web_NN community_NN have_VBP depended_VBN on_IN PageRank_NN for_IN the_DT static_JJ -LRB-_-LRB- query-independent_JJ -RRB-_-RRB- ordering_VBG of_IN Web_NN pages_NNS ._.
+We_PRP show_VBP that_IN we_PRP can_MD significantly_RB outperform_VB PageRank_NN using_VBG features_NNS that_WDT are_VBP independent_JJ of_IN the_DT link_NN structure_NN of_IN the_DT Web_NN ._.
+We_PRP gain_VBP a_DT further_JJ boost_NN in_IN accuracy_NN by_IN using_VBG data_NNS on_IN the_DT frequency_NN at_IN which_WDT users_NNS visit_VB Web_NN pages_NNS ._.
+We_PRP use_VBP RankNet_NNP ,_, a_DT ranking_JJ machine_NN learning_VBG algorithm_NN ,_, to_TO combine_VB these_DT and_CC other_JJ static_JJ features_NNS based_VBN on_IN anchor_NN text_NN and_CC domain_NN characteristics_NNS ._.
+The_DT resulting_VBG model_NN achieves_VBZ a_DT static_JJ ranking_JJ pairwise_JJ accuracy_NN of_IN ##_NN ._.
+#_# %_NN -LRB-_-LRB- vs_CC ._.
+##_NN ._.
+#_# %_NN for_IN PageRank_NN or_CC ##_CD %_NN for_IN random_JJ -RRB-_-RRB- ._.
+Categories_NNS and_CC Subject_NNP Descriptors_NNS I_PRP ._.
+#_# ._.
+#_# -LSB-_-LRB- Artificial_NNP Intelligence_NNP -RSB-_-RRB- :_: Learning_NNP ._.
+H_NN ._.
+#_# ._.
+#_# -LSB-_-LRB- Information_NNP Storage_NNP and_CC Retrieval_NNP -RSB-_-RRB- :_: Information_NNP Search_VB and_CC Retrieval_NNP ._.
+General_NNP Terms_NNS Algorithms_NNS ,_, Measurement_NNP ,_, Performance_NNP ,_, Experimentation_NN ._.
+1_LS ._.
+INTRODUCTION_NN Over_IN the_DT past_JJ decade_NN ,_, the_DT Web_NN has_VBZ grown_VBN exponentially_RB in_IN size_NN ._.
+Unfortunately_RB ,_, this_DT growth_NN has_VBZ not_RB been_VBN isolated_VBN to_TO good-quality_JJ pages_NNS ._.
+The_DT number_NN of_IN incorrect_JJ ,_, spamming_JJ ,_, and_CC malicious_JJ -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, phishing_NN -RRB-_-RRB- sites_NNS has_VBZ also_RB grown_VBN rapidly_RB ._.
+The_DT sheer_JJ number_NN of_IN both_DT good_JJ and_CC bad_JJ pages_NNS on_IN the_DT Web_NN has_VBZ led_VBN to_TO an_DT increasing_VBG reliance_NN on_IN search_NN engines_NNS for_IN the_DT discovery_NN of_IN useful_JJ information_NN ._.
+Users_NNS rely_VBP on_IN search_NN engines_NNS not_RB only_RB to_TO return_VB pages_NNS related_VBN to_TO their_PRP$ search_NN query_NN ,_, but_CC also_RB to_TO separate_VB the_DT good_JJ from_IN the_DT bad_JJ ,_, and_CC order_NN results_VBZ so_IN that_IN the_DT best_JJS pages_NNS are_VBP suggested_VBN first_RB ._.
+To_TO date_NN ,_, most_JJS work_NN on_IN Web_NN page_NN ranking_NN has_VBZ focused_VBN on_IN improving_VBG the_DT ordering_VBG of_IN the_DT results_NNS returned_VBD to_TO the_DT user_NN -LRB-_-LRB- querydependent_JJ ranking_NN ,_, or_CC dynamic_JJ ranking_NN -RRB-_-RRB- ._.
+However_RB ,_, having_VBG a_DT good_JJ query-independent_JJ ranking_NN -LRB-_-LRB- static_JJ ranking_NN -RRB-_-RRB- is_VBZ also_RB crucially_RB important_JJ for_IN a_DT search_NN engine_NN ._.
+A_DT good_JJ static_JJ ranking_JJ algorithm_NN provides_VBZ numerous_JJ benefits_NNS :_: Relevance_NN :_: The_DT static_JJ rank_NN of_IN a_DT page_NN provides_VBZ a_DT general_JJ indicator_NN to_TO the_DT overall_JJ quality_NN of_IN the_DT page_NN ._.
+This_DT is_VBZ a_DT useful_JJ input_NN to_TO the_DT dynamic_JJ ranking_JJ algorithm_NN ._.
+Efficiency_NN :_: Typically_RB ,_, the_DT search_NN engine_NN ''_'' s_NNS index_NN is_VBZ ordered_VBN by_IN static_JJ rank_NN ._.
+By_IN traversing_VBG the_DT index_NN from_IN highquality_NN to_TO low-quality_JJ pages_NNS ,_, the_DT dynamic_JJ ranker_NN may_MD abort_VB the_DT search_NN when_WRB it_PRP determines_VBZ that_IN no_DT later_JJ page_NN will_MD have_VB as_RB high_JJ of_IN a_DT dynamic_JJ rank_NN as_IN those_DT already_RB found_VBN ._.
+The_DT more_JJR accurate_JJ the_DT static_JJ rank_NN ,_, the_DT better_RBR this_DT early-stopping_JJ ability_NN ,_, and_CC hence_RB the_DT quicker_JJR the_DT search_NN engine_NN may_MD respond_VB to_TO queries_NNS ._.
+Crawl_VB Priority_NNP :_: The_DT Web_NN grows_VBZ and_CC changes_VBZ as_RB quickly_RB as_IN search_NN engines_NNS can_MD crawl_VB it_PRP ._.
+Search_VB engines_NNS need_VB a_DT way_NN to_TO prioritize_VB their_PRP$ crawl-to_JJ determine_VB which_WDT pages_NNS to_TO recrawl_NN ,_, how_WRB frequently_RB ,_, and_CC how_WRB often_RB to_TO seek_VB out_RP new_JJ pages_NNS ._.
+Among_IN other_JJ factors_NNS ,_, the_DT static_JJ rank_NN of_IN a_DT page_NN is_VBZ used_VBN to_TO determine_VB this_DT prioritization_NN ._.
+A_DT better_JJR static_JJ rank_NN thus_RB provides_VBZ the_DT engine_NN with_IN a_DT higher_JJR quality_NN ,_, more_JJR upto-date_JJ index_NN ._.
+Google_NNP is_VBZ often_RB regarded_VBN as_IN the_DT first_JJ commercially_RB successful_JJ search_NN engine_NN ._.
+Their_PRP$ ranking_NN was_VBD originally_RB based_VBN on_IN the_DT PageRank_NNP algorithm_NN -LSB-_-LRB- #_# -RSB-_-RRB- -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Due_JJ to_TO this_DT -LRB-_-LRB- and_CC possibly_RB due_JJ to_TO Google_NNP ''_'' s_VBZ promotion_NN of_IN PageRank_NN to_TO the_DT public_NN -RRB-_-RRB- ,_, PageRank_NN is_VBZ widely_RB regarded_VBN as_IN the_DT best_JJS method_NN for_IN the_DT static_JJ ranking_NN of_IN Web_NN pages_NNS ._.
+Though_IN PageRank_NNP has_VBZ historically_RB been_VBN thought_VBN to_TO perform_VB quite_RB well_RB ,_, there_EX has_VBZ yet_RB been_VBN little_JJ academic_JJ evidence_NN to_TO support_VB this_DT claim_NN ._.
+Even_RB worse_JJR ,_, there_EX has_VBZ recently_RB been_VBN work_NN showing_VBG that_IN PageRank_NN may_MD not_RB perform_VB any_DT better_JJR than_IN other_JJ simple_JJ measures_NNS on_IN certain_JJ tasks_NNS ._.
+Upstill_NNP et_FW al_FW ._.
+have_VB found_VBN that_IN for_IN the_DT task_NN of_IN finding_VBG home_NN pages_NNS ,_, the_DT number_NN of_IN pages_NNS linking_VBG to_TO a_DT page_NN and_CC the_DT type_NN of_IN URL_NN were_VBD as_RB ,_, or_CC more_RBR ,_, effective_JJ than_IN PageRank_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+They_PRP found_VBD similar_JJ results_NNS for_IN the_DT task_NN of_IN finding_VBG high_JJ quality_NN companies_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+PageRank_NNP has_VBZ also_RB been_VBN used_VBN in_IN systems_NNS for_IN TREC_NN ''_'' s_NNS very_RB large_JJ collection_NN and_CC Web_NN track_NN competitions_NNS ,_, but_CC with_IN much_RB less_JJR success_NN than_IN had_VBD been_VBN expected_VBN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Finally_RB ,_, Amento_NNP et_FW al_FW ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- found_VBD that_IN simple_JJ features_NNS ,_, such_JJ as_IN the_DT number_NN of_IN pages_NNS on_IN a_DT site_NN ,_, performed_VBN as_RB well_RB as_IN PageRank_NN ._.
+Despite_IN these_DT ,_, the_DT general_JJ belief_NN remains_VBZ among_IN many_JJ ,_, both_DT academic_JJ and_CC in_IN the_DT public_NN ,_, that_WDT PageRank_NNP is_VBZ an_DT essential_JJ factor_NN for_IN a_DT good_JJ static_JJ rank_NN ._.
+Failing_VBG this_DT ,_, it_PRP is_VBZ still_RB assumed_VBN that_IN using_VBG the_DT link_NN structure_NN is_VBZ crucial_JJ ,_, in_IN the_DT form_NN of_IN the_DT number_NN of_IN inlinks_NNS or_CC the_DT amount_NN of_IN anchor_NN text_NN ._.
+In_IN this_DT paper_NN ,_, we_PRP show_VBP there_EX are_VBP a_DT number_NN of_IN simple_JJ url_NN -_: or_CC pagebased_JJ features_NNS that_WDT significantly_RB outperform_VBP PageRank_NN -LRB-_-LRB- for_IN the_DT purposes_NNS of_IN statically_RB ranking_JJ Web_NN pages_NNS -RRB-_-RRB- despite_IN ignoring_VBG the_DT structure_NN of_IN the_DT Web_NN ._.
+We_PRP combine_VBP these_DT and_CC other_JJ static_JJ features_NNS using_VBG machine_NN learning_VBG to_TO achieve_VB a_DT ranking_JJ system_NN that_WDT is_VBZ significantly_RB better_JJR than_IN PageRank_NN -LRB-_-LRB- in_IN pairwise_JJ agreement_NN with_IN human_JJ labels_NNS -RRB-_-RRB- ._.
+A_DT machine_NN learning_VBG approach_NN for_IN static_JJ ranking_NN has_VBZ other_JJ advantages_NNS besides_IN the_DT quality_NN of_IN the_DT ranking_NN ._.
+Because_IN the_DT measure_NN consists_VBZ of_IN many_JJ features_NNS ,_, it_PRP is_VBZ harder_RBR for_IN malicious_JJ users_NNS to_TO manipulate_VB it_PRP -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, to_TO raise_VB their_PRP$ page_NN ''_'' s_NNS static_JJ rank_NN to_TO an_DT undeserved_JJ level_NN through_IN questionable_JJ techniques_NNS ,_, also_RB known_VBN as_IN Web_NN spamming_NN -RRB-_-RRB- ._.
+This_DT is_VBZ particularly_RB true_JJ if_IN the_DT feature_NN set_NN is_VBZ not_RB known_VBN ._.
+In_IN contrast_NN ,_, a_DT single_JJ measure_NN like_IN PageRank_NNP can_MD be_VB easier_JJR to_TO manipulate_VB because_IN spammers_NNS need_VBP only_RB concentrate_VB on_IN one_CD goal_NN :_: how_WRB to_TO cause_VB more_JJR pages_NNS to_TO point_VB to_TO their_PRP$ page_NN ._.
+With_IN an_DT algorithm_NN that_WDT learns_VBZ ,_, a_DT feature_NN that_WDT becomes_VBZ unusable_JJ due_JJ to_TO spammer_NN manipulation_NN will_MD simply_RB be_VB reduced_VBN or_CC removed_VBN from_IN the_DT final_JJ computation_NN of_IN rank_NN ._.
+This_DT flexibility_NN allows_VBZ a_DT ranking_JJ system_NN to_TO rapidly_RB react_VB to_TO new_JJ spamming_VBG techniques_NNS ._.
+A_DT machine_NN learning_VBG approach_NN to_TO static_JJ ranking_NN is_VBZ also_RB able_JJ to_TO take_VB advantage_NN of_IN any_DT advances_NNS in_IN the_DT machine_NN learning_NN field_NN ._.
+For_IN example_NN ,_, recent_JJ work_NN on_IN adversarial_JJ classification_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- suggests_VBZ that_IN it_PRP may_MD be_VB possible_JJ to_TO explicitly_RB model_VB the_DT Web_NN page_NN spammer_NN ''_'' s_NNS -LRB-_-LRB- the_DT adversary_NN -RRB-_-RRB- actions_NNS ,_, adjusting_VBG the_DT ranking_JJ model_NN in_IN advance_NN of_IN the_DT spammer_NN ''_'' s_NNS attempts_VBZ to_TO circumvent_VB it_PRP ._.
+Another_DT example_NN is_VBZ the_DT elimination_NN of_IN outliers_NNS in_IN constructing_VBG the_DT model_NN ,_, which_WDT helps_VBZ reduce_VB the_DT effect_NN that_WDT unique_JJ sites_NNS may_MD have_VB on_IN the_DT overall_JJ quality_NN of_IN the_DT static_JJ rank_NN ._.
+By_IN moving_VBG static_JJ ranking_NN to_TO a_DT machine_NN learning_VBG framework_NN ,_, we_PRP not_RB only_RB gain_VB in_IN accuracy_NN ,_, but_CC also_RB gain_VB in_IN the_DT ability_NN to_TO react_VB to_TO spammer_NN ''_'' s_NNS actions_NNS ,_, to_TO rapidly_RB add_VB new_JJ features_NNS to_TO the_DT ranking_JJ algorithm_NN ,_, and_CC to_TO leverage_NN advances_NNS in_IN the_DT rapidly_RB growing_VBG field_NN of_IN machine_NN learning_NN ._.
+Finally_RB ,_, we_PRP believe_VBP there_EX will_MD be_VB significant_JJ advantages_NNS to_TO using_VBG this_DT technique_NN for_IN other_JJ domains_NNS ,_, such_JJ as_IN searching_VBG a_DT local_JJ hard_JJ drive_NN or_CC a_DT corporation_NN ''_'' s_NNS intranet_NN ._.
+These_DT are_VBP domains_NNS where_WRB the_DT link_NN structure_NN is_VBZ particularly_RB weak_JJ -LRB-_-LRB- or_CC non-existent_JJ -RRB-_-RRB- ,_, but_CC there_EX are_VBP other_JJ domain-specific_JJ features_NNS that_WDT could_MD be_VB just_RB as_IN powerful_JJ ._.
+For_IN example_NN ,_, the_DT author_NN of_IN an_DT intranet_JJ page_NN and_CC his_PRP$ /_: her_PRP$ position_NN in_IN the_DT organization_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, CEO_NNP ,_, manager_NN ,_, or_CC developer_NN -RRB-_-RRB- could_MD provide_VB significant_JJ clues_NNS as_IN to_TO the_DT importance_NN of_IN that_DT page_NN ._.
+A_DT machine_NN learning_VBG approach_NN thus_RB allows_VBZ rapid_JJ development_NN of_IN a_DT good_JJ static_JJ algorithm_NN in_IN new_JJ domains_NNS ._.
+This_DT paper_NN ''_'' s_NNS contribution_NN is_VBZ a_DT systematic_JJ study_NN of_IN static_JJ features_NNS ,_, including_VBG PageRank_NNP ,_, for_IN the_DT purposes_NNS of_IN -LRB-_-LRB- statically_RB -RRB-_-RRB- ranking_JJ Web_NN pages_NNS ._.
+Previous_JJ studies_NNS on_IN PageRank_NNP typically_RB used_VBD subsets_NNS of_IN the_DT Web_NN that_WDT are_VBP significantly_RB smaller_JJR -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, the_DT TREC_NN VLC2_NN corpus_NN ,_, used_VBN by_IN many_JJ ,_, contains_VBZ only_RB ##_CD million_CD pages_NNS -RRB-_-RRB- ._.
+Also_RB ,_, the_DT performance_NN of_IN PageRank_NN and_CC other_JJ static_JJ features_NNS has_VBZ typically_RB been_VBN evaluated_VBN in_IN the_DT context_NN of_IN a_DT complete_JJ system_NN for_IN dynamic_JJ ranking_NN ,_, or_CC for_IN other_JJ tasks_NNS such_JJ as_IN question_NN answering_NN ._.
+In_IN contrast_NN ,_, we_PRP explore_VBP the_DT use_NN of_IN PageRank_NN and_CC other_JJ features_NNS for_IN the_DT direct_JJ task_NN of_IN statically_RB ranking_JJ Web_NN pages_NNS ._.
+We_PRP first_RB briefly_RB describe_VBP the_DT PageRank_NNP algorithm_NN ._.
+In_IN Section_NN #_# we_PRP introduce_VBP RankNet_NNP ,_, the_DT machine_NN learning_NN technique_NN used_VBN to_TO combine_VB static_JJ features_NNS into_IN a_DT final_JJ ranking_NN ._.
+Section_NN #_# describes_VBZ the_DT static_JJ features_NNS ._.
+The_DT heart_NN of_IN the_DT paper_NN is_VBZ in_IN Section_NN #_# ,_, which_WDT presents_VBZ our_PRP$ experiments_NNS and_CC results_NNS ._.
+We_PRP conclude_VBP with_IN a_DT discussion_NN of_IN related_JJ and_CC future_JJ work_NN ._.
+2_LS ._.
+PAGERANK_NNP The_NNP basic_JJ idea_NN behind_IN PageRank_NNP is_VBZ simple_JJ :_: a_DT link_NN from_IN a_DT Web_NN page_NN to_TO another_DT can_MD be_VB seen_VBN as_IN an_DT endorsement_NN of_IN that_DT page_NN ._.
+In_IN general_JJ ,_, links_NNS are_VBP made_VBN by_IN people_NNS ._.
+As_IN such_JJ ,_, they_PRP are_VBP indicative_JJ of_IN the_DT quality_NN of_IN the_DT pages_NNS to_TO which_WDT they_PRP point_VBP -_: when_WRB creating_VBG a_DT page_NN ,_, an_DT author_NN presumably_RB chooses_VBZ to_TO link_VB to_TO pages_NNS deemed_VBD to_TO be_VB of_IN good_JJ quality_NN ._.
+We_PRP can_MD take_VB advantage_NN of_IN this_DT linkage_NN information_NN to_TO order_VB Web_NN pages_NNS according_VBG to_TO their_PRP$ perceived_VBN quality_NN ._.
+Imagine_VB a_DT Web_NN surfer_NN who_WP jumps_VBZ from_IN Web_NN page_NN to_TO Web_NN page_NN ,_, choosing_VBG with_IN uniform_JJ probability_NN which_WDT link_VBP to_TO follow_VB at_IN each_DT step_NN ._.
+In_IN order_NN to_TO reduce_VB the_DT effect_NN of_IN dead-ends_NNS or_CC endless_JJ cycles_NNS the_DT surfer_NN will_MD occasionally_RB jump_VB to_TO a_DT random_JJ page_NN with_IN some_DT small_JJ probability_NN ,_, or_CC when_WRB on_IN a_DT page_NN with_IN no_DT out-links_NNS ._.
+If_IN averaged_VBN over_IN a_DT sufficient_JJ number_NN of_IN steps_NNS ,_, the_DT probability_NN the_DT surfer_NN is_VBZ on_IN page_NN j_NN at_IN some_DT point_NN in_IN time_NN is_VBZ given_VBN by_IN the_DT formula_NN :_: +_CC =_JJ ji_NN i_FW iP_FW N_NN jP_NN B_NN F_NN -RRB-_-RRB- -LRB-_-LRB- -RRB-_-RRB- #_# -LRB-_-LRB- -RRB-_-RRB- -LRB-_-LRB- -LRB-_-LRB- #_# -RRB-_-RRB- Where_WRB Fi_NNP is_VBZ the_DT set_NN of_IN pages_NNS that_WDT page_NN i_FW links_NNS to_TO ,_, and_CC Bj_NNP is_VBZ the_DT set_NN of_IN pages_NNS that_WDT link_VBP to_TO page_NN j_NN ._.
+The_DT PageRank_NN score_NN for_IN node_NN j_NN is_VBZ defined_VBN as_IN this_DT probability_NN :_: PR_NN -LRB-_-LRB- j_NN -RRB-_-RRB- =_JJ P_NN -LRB-_-LRB- j_NN -RRB-_-RRB- ._.
+Because_IN equation_NN -LRB-_-LRB- #_# -RRB-_-RRB- is_VBZ recursive_JJ ,_, it_PRP must_MD be_VB iteratively_RB evaluated_VBN until_IN P_NN -LRB-_-LRB- j_NN -RRB-_-RRB- converges_VBZ -LRB-_-LRB- typically_RB ,_, the_DT initial_JJ distribution_NN for_IN P_NN -LRB-_-LRB- j_NN -RRB-_-RRB- is_VBZ uniform_JJ -RRB-_-RRB- ._.
+The_DT intuition_NN is_VBZ ,_, because_IN a_DT random_JJ surfer_NN would_MD end_VB up_RP at_IN the_DT page_NN more_RBR frequently_RB ,_, it_PRP is_VBZ likely_RB a_DT better_JJR page_NN ._.
+An_DT alternative_JJ view_NN for_IN equation_NN -LRB-_-LRB- #_# -RRB-_-RRB- is_VBZ that_IN each_DT page_NN is_VBZ assigned_VBN a_DT quality_NN ,_, P_NN -LRB-_-LRB- j_NN -RRB-_-RRB- ._.
+A_DT page_NN gives_VBZ an_DT equal_JJ share_NN of_IN its_PRP$ quality_NN to_TO each_DT page_NN it_PRP points_VBZ to_TO ._.
+PageRank_NN is_VBZ computationally_RB expensive_JJ ._.
+Our_PRP$ collection_NN of_IN #_# billion_CD pages_NNS contains_VBZ approximately_RB ###_CD billion_CD links_NNS ._.
+Computing_NNP PageRank_NNP requires_VBZ iterating_VBG over_IN these_DT billions_NNS of_IN links_NNS multiple_JJ times_NNS -LRB-_-LRB- until_IN convergence_NN -RRB-_-RRB- ._.
+It_PRP requires_VBZ large_JJ amounts_NNS of_IN memory_NN -LRB-_-LRB- or_CC very_RB smart_JJ caching_NN schemes_NNS that_WDT slow_VBP the_DT computation_NN down_IN even_RB further_JJ -RRB-_-RRB- ,_, and_CC if_IN spread_VBN across_IN multiple_JJ machines_NNS ,_, requires_VBZ significant_JJ communication_NN between_IN them_PRP ._.
+Though_NNP much_JJ work_NN has_VBZ been_VBN done_VBN on_IN optimizing_VBG the_DT PageRank_NN computation_NN -LRB-_-LRB- see_VB e_LS ._.
+g_NN ._.
+,_, -LSB-_-LRB- ##_CD -RSB-_-RRB- and_CC -LSB-_-LRB- #_# -RSB-_-RRB- -RRB-_-RRB- ,_, it_PRP remains_VBZ a_DT relatively_RB slow_JJ ,_, computationally_RB expensive_JJ property_NN to_TO compute_VB ._.
+3_LS ._.
+RANKNET_NNP Much_JJ work_NN in_IN machine_NN learning_NN has_VBZ been_VBN done_VBN on_IN the_DT problems_NNS of_IN classification_NN and_CC regression_NN ._.
+Let_VB X_NN =_JJ -LCB-_-LRB- xi_NN -RCB-_-RRB- be_VB a_DT collection_NN of_IN feature_NN vectors_NNS -LRB-_-LRB- typically_RB ,_, a_DT feature_NN is_VBZ any_DT real_JJ valued_VBN number_NN -RRB-_-RRB- ,_, and_CC Y_NN =_JJ -LCB-_-LRB- yi_NN -RCB-_-RRB- be_VB a_DT collection_NN of_IN associated_VBN classes_NNS ,_, where_WRB yi_NN is_VBZ the_DT class_NN of_IN the_DT object_NN described_VBN by_IN feature_NN vector_NN xi_NN ._.
+The_DT classification_NN problem_NN is_VBZ to_TO learn_VB a_DT function_NN f_FW that_WDT maps_VBZ yi_NN =_JJ f_FW -LRB-_-LRB- xi_NN -RRB-_-RRB- ,_, for_IN all_DT i_FW ._.
+When_WRB yi_NN is_VBZ real-valued_VBN as_RB well_RB ,_, this_DT is_VBZ called_VBN regression_NN ._.
+Static_JJ ranking_NN can_MD be_VB seen_VBN as_IN a_DT regression_NN problem_NN ._.
+If_IN we_PRP let_VBD xi_NN represent_VBP features_NNS of_IN page_NN i_FW ,_, and_CC yi_NN be_VB a_DT value_NN -LRB-_-LRB- say_VB ,_, the_DT rank_NN -RRB-_-RRB- for_IN each_DT page_NN ,_, we_PRP could_MD learn_VB a_DT regression_NN function_NN that_WDT mapped_VBD each_DT page_NN ''_'' s_NNS features_NNS to_TO their_PRP$ rank_NN ._.
+However_RB ,_, this_DT over-constrains_NNS the_DT problem_NN we_PRP wish_VBP to_TO solve_VB ._.
+All_DT we_PRP really_RB care_VB about_RB is_VBZ the_DT order_NN of_IN the_DT pages_NNS ,_, not_RB the_DT actual_JJ value_NN assigned_VBN to_TO them_PRP ._.
+Recent_JJ work_NN on_IN this_DT ranking_JJ problem_NN -LSB-_-LRB- #_# -RSB-_-RRB- -LSB-_-LRB- ##_CD -RSB-_-RRB- -LSB-_-LRB- ##_CD -RSB-_-RRB- directly_RB attempts_VBZ to_TO optimize_VB the_DT ordering_VBG of_IN the_DT objects_NNS ,_, rather_RB than_IN the_DT value_NN assigned_VBN to_TO them_PRP ._.
+For_IN these_DT ,_, let_VB Z_NN =_JJ -LCB-_-LRB- -RCB-_-RRB- be_VB a_DT collection_NN of_IN pairs_NNS of_IN items_NNS ,_, where_WRB item_NN i_FW should_MD be_VB assigned_VBN a_DT higher_JJR value_NN than_IN item_NN j_NN ._.
+The_DT goal_NN of_IN the_DT ranking_JJ problem_NN ,_, then_RB ,_, is_VBZ to_TO learn_VB a_DT function_NN f_FW such_JJ that_IN ,_, -RRB-_-RRB- -LRB-_-LRB- -RRB-_-RRB- -LRB-_-LRB- ,_, ,_, ji_FW ffji_FW xxZ_NN >_JJR 708_CD Note_NN that_IN ,_, as_IN with_IN learning_VBG a_DT regression_NN function_NN ,_, the_DT result_NN of_IN this_DT process_NN is_VBZ a_DT function_NN -LRB-_-LRB- f_LS -RRB-_-RRB- that_WDT maps_VBZ feature_NN vectors_NNS to_TO real_JJ values_NNS ._.
+This_DT function_NN can_MD still_RB be_VB applied_VBN anywhere_RB that_IN a_DT regressionlearned_JJ function_NN could_MD be_VB applied_VBN ._.
+The_DT only_JJ difference_NN is_VBZ the_DT technique_NN used_VBN to_TO learn_VB the_DT function_NN ._.
+By_IN directly_RB optimizing_VBG the_DT ordering_VBG of_IN objects_NNS ,_, these_DT methods_NNS are_VBP able_JJ to_TO learn_VB a_DT function_NN that_WDT does_VBZ a_DT better_JJR job_NN of_IN ranking_JJ than_IN do_VBP regression_NN techniques_NNS ._.
+We_PRP used_VBD RankNet_NNP -LSB-_-LRB- #_# -RSB-_-RRB- ,_, one_CD of_IN the_DT aforementioned_JJ techniques_NNS for_IN learning_VBG ranking_JJ functions_NNS ,_, to_TO learn_VB our_PRP$ static_JJ rank_NN function_NN ._.
+RankNet_NNP is_VBZ a_DT straightforward_JJ modification_NN to_TO the_DT standard_JJ neural_JJ network_NN back-prop_JJ algorithm_NN ._.
+As_IN with_IN back-prop_JJ ,_, RankNet_NNP attempts_VBZ to_TO minimize_VB the_DT value_NN of_IN a_DT cost_NN function_NN by_IN adjusting_VBG each_DT weight_NN in_IN the_DT network_NN according_VBG to_TO the_DT gradient_NN of_IN the_DT cost_NN function_NN with_IN respect_NN to_TO that_DT weight_NN ._.
+The_DT difference_NN is_VBZ that_IN ,_, while_IN a_DT typical_JJ neural_JJ network_NN cost_NN function_NN is_VBZ based_VBN on_IN the_DT difference_NN between_IN the_DT network_NN output_NN and_CC the_DT desired_VBN output_NN ,_, the_DT RankNet_NNP cost_NN function_NN is_VBZ based_VBN on_IN the_DT difference_NN between_IN a_DT pair_NN of_IN network_NN outputs_NNS ._.
+That_DT is_VBZ ,_, for_IN each_DT pair_NN of_IN feature_NN vectors_NNS in_IN the_DT training_NN set_NN ,_, RankNet_NNP computes_VBZ the_DT network_NN outputs_VBZ oi_NN and_CC oj_NN ._.
+Since_IN vector_NN i_FW is_VBZ supposed_VBN to_TO be_VB ranked_VBN higher_JJR than_IN vector_NN j_NN ,_, the_DT larger_JJR is_VBZ oj-oi_JJ ,_, the_DT larger_JJR the_DT cost_NN ._.
+RankNet_NNP also_RB allows_VBZ the_DT pairs_NNS in_IN Z_NN to_TO be_VB weighted_VBN with_IN a_DT confidence_NN -LRB-_-LRB- posed_VBN as_IN the_DT probability_NN that_IN the_DT pair_NN satisfies_VBZ the_DT ordering_VBG induced_VBN by_IN the_DT ranking_JJ function_NN -RRB-_-RRB- ._.
+In_IN this_DT paper_NN ,_, we_PRP used_VBD a_DT probability_NN of_IN one_CD for_IN all_DT pairs_NNS ._.
+In_IN the_DT next_JJ section_NN ,_, we_PRP will_MD discuss_VB the_DT features_NNS used_VBN in_IN our_PRP$ feature_NN vectors_NNS ,_, xi_NN ._.
+4_LS ._.
+FEATURES_NNS To_TO apply_VB RankNet_NNP -LRB-_-LRB- or_CC other_JJ machine_NN learning_NN techniques_NNS -RRB-_-RRB- to_TO the_DT ranking_JJ problem_NN ,_, we_PRP needed_VBD to_TO extract_VB a_DT set_NN of_IN features_NNS from_IN each_DT page_NN ._.
+We_PRP divided_VBD our_PRP$ feature_NN set_VBN into_IN four_CD ,_, mutually_RB exclusive_JJ ,_, categories_NNS :_: page-level_NN -LRB-_-LRB- Page_NNP -RRB-_-RRB- ,_, domain-level_JJ -LRB-_-LRB- Domain_NN -RRB-_-RRB- ,_, anchor_NN text_NN and_CC inlinks_NNS -LRB-_-LRB- Anchor_NNP -RRB-_-RRB- ,_, and_CC popularity_NN -LRB-_-LRB- Popularity_NN -RRB-_-RRB- ._.
+We_PRP also_RB optionally_RB used_VBN the_DT PageRank_NN of_IN a_DT page_NN as_IN a_DT feature_NN ._.
+Below_IN ,_, we_PRP describe_VBP each_DT of_IN these_DT feature_NN categories_NNS in_IN more_JJR detail_NN ._.
+PageRank_NNP We_PRP computed_VBD PageRank_NN on_IN a_DT Web_NN graph_NN of_IN #_# billion_CD crawled_VBD pages_NNS -LRB-_-LRB- and_CC ##_CD billion_CD known_VBN URLs_NNS linked_VBN to_TO by_IN these_DT pages_NNS -RRB-_-RRB- ._.
+This_DT represents_VBZ a_DT significant_JJ portion_NN of_IN the_DT Web_NN ,_, and_CC is_VBZ approximately_RB the_DT same_JJ number_NN of_IN pages_NNS as_RB are_VBP used_VBN by_IN Google_NNP ,_, Yahoo_NNP ,_, and_CC MSN_NNP for_IN their_PRP$ search_NN engines_NNS ._.
+Because_IN PageRank_NN is_VBZ a_DT graph-based_JJ algorithm_NN ,_, it_PRP is_VBZ important_JJ that_IN it_PRP be_VB run_VBN on_IN as_RB large_JJ a_DT subset_NN of_IN the_DT Web_NN as_IN possible_JJ ._.
+Most_JJS previous_JJ studies_NNS on_IN PageRank_NNP used_VBD subsets_NNS of_IN the_DT Web_NN that_WDT are_VBP significantly_RB smaller_JJR -LRB-_-LRB- e_LS ._.
+g_NN ._.
+the_DT TREC_NN VLC2_NN corpus_NN ,_, used_VBN by_IN many_JJ ,_, contains_VBZ only_RB ##_CD million_CD pages_NNS -RRB-_-RRB- We_PRP computed_VBD PageRank_NNP using_VBG the_DT standard_JJ value_NN of_IN #_# ._.
+##_NN for_IN ._.
+Popularity_NN Another_DT feature_NN we_PRP used_VBD is_VBZ the_DT actual_JJ popularity_NN of_IN a_DT Web_NN page_NN ,_, measured_VBN as_IN the_DT number_NN of_IN times_NNS that_IN it_PRP has_VBZ been_VBN visited_VBN by_IN users_NNS over_IN some_DT period_NN of_IN time_NN ._.
+We_PRP have_VBP access_NN to_TO such_JJ data_NNS from_IN users_NNS who_WP have_VBP installed_VBN the_DT MSN_NNP toolbar_NN and_CC have_VBP opted_VBN to_TO provide_VB it_PRP to_TO MSN_NNP ._.
+The_DT data_NNS is_VBZ aggregated_VBN into_IN a_DT count_NN ,_, for_IN each_DT Web_NN page_NN ,_, of_IN the_DT number_NN of_IN users_NNS who_WP viewed_VBD that_IN page_NN ._.
+Though_IN popularity_NN data_NNS is_VBZ generally_RB unavailable_JJ ,_, there_EX are_VBP two_CD other_JJ sources_NNS for_IN it_PRP ._.
+The_DT first_JJ is_VBZ from_IN proxy_NN logs_NNS ._.
+For_IN example_NN ,_, a_DT university_NN that_WDT requires_VBZ its_PRP$ students_NNS to_TO use_VB a_DT proxy_NN has_VBZ a_DT record_NN of_IN all_PDT the_DT pages_NNS they_PRP have_VBP visited_VBN while_IN on_IN campus_NN ._.
+Unfortunately_RB ,_, proxy_NN data_NNS is_VBZ quite_RB biased_VBN and_CC relatively_RB small_JJ ._.
+Another_DT source_NN ,_, internal_JJ to_TO search_VB engines_NNS ,_, are_VBP records_NNS of_IN which_WDT results_VBZ their_PRP$ users_NNS clicked_VBD on_IN ._.
+Such_JJ data_NNS was_VBD used_VBN by_IN the_DT search_NN engine_NN Direct_JJ Hit_VBN ,_, and_CC has_VBZ recently_RB been_VBN explored_VBN for_IN dynamic_JJ ranking_JJ purposes_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+An_DT advantage_NN of_IN the_DT toolbar_NN data_NNS over_IN this_DT is_VBZ that_IN it_PRP contains_VBZ information_NN about_IN URL_NN visits_NNS that_WDT are_VBP not_RB just_RB the_DT result_NN of_IN a_DT search_NN ._.
+The_DT raw_JJ popularity_NN is_VBZ processed_VBN into_IN a_DT number_NN of_IN features_NNS such_JJ as_IN the_DT number_NN of_IN times_NNS a_DT page_NN was_VBD viewed_VBN and_CC the_DT number_NN of_IN times_NNS any_DT page_NN in_IN the_DT domain_NN was_VBD viewed_VBN ._.
+More_JJR details_NNS are_VBP provided_VBN in_IN section_NN #_# ._.
+#_# ._.
+Anchor_NNP text_NN and_CC inlinks_NNS These_DT features_NNS are_VBP based_VBN on_IN the_DT information_NN associated_VBN with_IN links_NNS to_TO the_DT page_NN in_IN question_NN ._.
+It_PRP includes_VBZ features_NNS such_JJ as_IN the_DT total_JJ amount_NN of_IN text_NN in_IN links_NNS pointing_VBG to_TO the_DT page_NN -LRB-_-LRB- anchor_NN text_NN -RRB-_-RRB- ,_, the_DT number_NN of_IN unique_JJ words_NNS in_IN that_DT text_NN ,_, etc_FW ._.
+Page_NNP This_DT category_NN consists_VBZ of_IN features_NNS which_WDT may_MD be_VB determined_VBN by_IN looking_VBG at_IN the_DT page_NN -LRB-_-LRB- and_CC its_PRP$ URL_NN -RRB-_-RRB- alone_RB ._.
+We_PRP used_VBD only_RB eight_CD ,_, simple_JJ features_NNS such_JJ as_IN the_DT number_NN of_IN words_NNS in_IN the_DT body_NN ,_, the_DT frequency_NN of_IN the_DT most_RBS common_JJ term_NN ,_, etc_FW ._.
+Domain_NN This_DT category_NN contains_VBZ features_NNS that_WDT are_VBP computed_VBN as_IN averages_NNS across_IN all_DT pages_NNS in_IN the_DT domain_NN ._.
+For_IN example_NN ,_, the_DT average_JJ number_NN of_IN outlinks_NNS on_IN any_DT page_NN and_CC the_DT average_JJ PageRank_NN ._.
+Many_JJ of_IN these_DT features_NNS have_VBP been_VBN used_VBN by_IN others_NNS for_IN ranking_JJ Web_NN pages_NNS ,_, particularly_RB the_DT anchor_NN and_CC page_NN features_NNS ._.
+As_IN mentioned_VBN ,_, the_DT evaluation_NN is_VBZ typically_RB for_IN dynamic_JJ ranking_NN ,_, and_CC we_PRP wish_VBP to_TO evaluate_VB the_DT use_NN of_IN them_PRP for_IN static_JJ ranking_NN ._.
+Also_RB ,_, to_TO our_PRP$ knowledge_NN ,_, this_DT is_VBZ the_DT first_JJ study_NN on_IN the_DT use_NN of_IN actual_JJ page_NN visitation_NN popularity_NN for_IN static_JJ ranking_NN ._.
+The_DT closest_JJS similar_JJ work_NN is_VBZ on_IN using_VBG click-through_JJ behavior_NN -LRB-_-LRB- that_WDT is_VBZ ,_, which_WDT search_VBP engine_NN results_VBZ the_DT users_NNS click_VBP on_IN -RRB-_-RRB- to_TO affect_VB dynamic_JJ ranking_NN -LRB-_-LRB- see_VB e_LS ._.
+g_NN ._.
+,_, -LSB-_-LRB- ##_CD -RSB-_-RRB- -RRB-_-RRB- ._.
+Because_IN we_PRP use_VBP a_DT wide_JJ variety_NN of_IN features_NNS to_TO come_VB up_RP with_IN a_DT static_JJ ranking_NN ,_, we_PRP refer_VBP to_TO this_DT as_IN fRank_NN -LRB-_-LRB- for_IN feature-based_JJ ranking_NN -RRB-_-RRB- ._.
+fRank_NN uses_VBZ RankNet_NNP and_CC the_DT set_NN of_IN features_NNS described_VBN in_IN this_DT section_NN to_TO learn_VB a_DT ranking_JJ function_NN for_IN Web_NN pages_NNS ._.
+Unless_IN otherwise_RB specified_VBN ,_, fRank_NN was_VBD trained_VBN with_IN all_DT of_IN the_DT features_NNS ._.
+5_CD ._.
+EXPERIMENTS_NNS In_IN this_DT section_NN ,_, we_PRP will_MD demonstrate_VB that_IN we_PRP can_MD out_RB perform_VB PageRank_NN by_IN applying_VBG machine_NN learning_VBG to_TO a_DT straightforward_JJ set_NN of_IN features_NNS ._.
+Before_IN the_DT results_NNS ,_, we_PRP first_RB discuss_VBP the_DT data_NNS ,_, the_DT performance_NN metric_JJ ,_, and_CC the_DT training_NN method_NN ._.
+5_CD ._.
+#_# Data_NNS In_IN order_NN to_TO evaluate_VB the_DT quality_NN of_IN a_DT static_JJ ranking_NN ,_, we_PRP needed_VBD a_DT gold_JJ standard_JJ defining_VBG the_DT correct_JJ ordering_VBG for_IN a_DT set_NN of_IN pages_NNS ._.
+For_IN this_DT ,_, we_PRP employed_VBD a_DT dataset_NN which_WDT contains_VBZ human_JJ judgments_NNS for_IN #####_CD queries_NNS ._.
+For_IN each_DT query_NN ,_, a_DT number_NN of_IN results_NNS are_VBP manually_RB assigned_VBN a_DT rating_NN ,_, from_IN #_# to_TO #_# ,_, by_IN human_JJ judges_NNS ._.
+The_DT rating_NN is_VBZ meant_VBN to_TO be_VB a_DT measure_NN of_IN how_WRB relevant_JJ the_DT result_NN is_VBZ for_IN the_DT query_NN ,_, where_WRB #_# means_VBZ poor_JJ and_CC #_# means_VBZ excellent_JJ ._.
+There_EX are_VBP approximately_RB 500k_JJ judgments_NNS in_IN all_DT ,_, or_CC an_DT average_NN of_IN ##_CD ratings_NNS per_IN query_NN ._.
+The_DT queries_NNS are_VBP selected_VBN by_IN randomly_RB choosing_VBG queries_NNS from_IN among_IN those_DT issued_VBN to_TO the_DT MSN_NNP search_NN engine_NN ._.
+The_DT probability_NN that_IN a_DT query_NN is_VBZ selected_VBN is_VBZ proportional_JJ to_TO its_PRP$ frequency_NN among_IN all_DT 709_CD of_IN the_DT queries_NNS ._.
+As_IN a_DT result_NN ,_, common_JJ queries_NNS are_VBP more_RBR likely_JJ to_TO be_VB judged_VBN than_IN uncommon_JJ queries_NNS ._.
+As_IN an_DT example_NN of_IN how_WRB diverse_JJ the_DT queries_NNS are_VBP ,_, the_DT first_JJ four_CD queries_NNS in_IN the_DT training_NN set_NN are_VBP chef_NN schools_NNS ,_, chicagoland_NN speedway_NN ,_, eagles_VBZ fan_NN club_NN ,_, and_CC Turkish_JJ culture_NN ._.
+The_DT documents_NNS selected_VBN for_IN judging_VBG are_VBP those_DT that_WDT we_PRP expected_VBD would_MD ,_, on_IN average_NN ,_, be_VB reasonably_RB relevant_JJ -LRB-_-LRB- for_IN example_NN ,_, the_DT top_JJ ten_CD documents_NNS returned_VBN by_IN MSN_NNP ''_'' s_VBZ search_NN engine_NN -RRB-_-RRB- ._.
+This_DT provides_VBZ significantly_RB more_JJR information_NN than_IN randomly_RB selecting_VBG documents_NNS on_IN the_DT Web_NN ,_, the_DT vast_JJ majority_NN of_IN which_WDT would_MD be_VB irrelevant_JJ to_TO a_DT given_VBN query_NN ._.
+Because_IN of_IN this_DT process_NN ,_, the_DT judged_VBN pages_NNS tend_VBP to_TO be_VB of_IN higher_JJR quality_NN than_IN the_DT average_JJ page_NN on_IN the_DT Web_NN ,_, and_CC tend_VB to_TO be_VB pages_NNS that_WDT will_MD be_VB returned_VBN for_IN common_JJ search_NN queries_NNS ._.
+This_DT bias_NN is_VBZ good_JJ when_WRB evaluating_VBG the_DT quality_NN of_IN static_JJ ranking_NN for_IN the_DT purposes_NNS of_IN index_NN ordering_VBG and_CC returning_VBG relevant_JJ documents_NNS ._.
+This_DT is_VBZ because_IN the_DT most_RBS important_JJ portion_NN of_IN the_DT index_NN to_TO be_VB well-ordered_JJ and_CC relevant_JJ is_VBZ the_DT portion_NN that_WDT is_VBZ frequently_RB returned_VBN for_IN search_NN queries_NNS ._.
+Because_IN of_IN this_DT bias_NN ,_, however_RB ,_, the_DT results_NNS in_IN this_DT paper_NN are_VBP not_RB applicable_JJ to_TO crawl_VB prioritization_NN ._.
+In_IN order_NN to_TO obtain_VB experimental_JJ results_NNS on_IN crawl_NN prioritization_NN ,_, we_PRP would_MD need_VB ratings_NNS on_IN a_DT random_JJ sample_NN of_IN Web_NN pages_NNS ._.
+To_TO convert_VB the_DT data_NNS from_IN query-dependent_JJ to_TO query-independent_JJ ,_, we_PRP simply_RB removed_VBD the_DT query_NN ,_, taking_VBG the_DT maximum_NN over_IN judgments_NNS for_IN a_DT URL_NN that_WDT appears_VBZ in_IN more_JJR than_IN one_CD query_NN ._.
+The_DT reasoning_NN behind_IN this_DT is_VBZ that_IN a_DT page_NN that_WDT is_VBZ relevant_JJ for_IN some_DT query_NN and_CC irrelevant_JJ for_IN another_DT is_VBZ probably_RB a_DT decent_JJ page_NN and_CC should_MD have_VB a_DT high_JJ static_JJ rank_NN ._.
+Because_IN we_PRP evaluated_VBD the_DT pages_NNS on_IN queries_NNS that_WDT occur_VBP frequently_RB ,_, our_PRP$ data_NNS indicates_VBZ the_DT correct_JJ index_NN ordering_VBG ,_, and_CC assigns_VBZ high_JJ value_NN to_TO pages_NNS that_WDT are_VBP likely_JJ to_TO be_VB relevant_JJ to_TO a_DT common_JJ query_NN ._.
+We_PRP randomly_RB assigned_VBD queries_NNS to_TO a_DT training_NN ,_, validation_NN ,_, or_CC test_NN set_NN ,_, such_JJ that_IN they_PRP contained_VBD ##_CD %_NN ,_, #_# %_NN ,_, and_CC #_# %_NN of_IN the_DT queries_NNS ,_, respectively_RB ._.
+Each_DT set_NN contains_VBZ all_DT of_IN the_DT ratings_NNS for_IN a_DT given_VBN query_NN ,_, and_CC no_DT query_NN appears_VBZ in_IN more_JJR than_IN one_CD set_NN ._.
+The_DT training_NN set_NN was_VBD used_VBN to_TO train_VB fRank_NNP ._.
+The_DT validation_NN set_NN was_VBD used_VBN to_TO select_VB the_DT model_NN that_WDT had_VBD the_DT highest_JJS performance_NN ._.
+The_DT test_NN set_NN was_VBD used_VBN for_IN the_DT final_JJ results_NNS ._.
+This_DT data_NNS gives_VBZ us_PRP a_DT query-independent_JJ ordering_VBG of_IN pages_NNS ._.
+The_DT goal_NN for_IN a_DT static_JJ ranking_JJ algorithm_NN will_MD be_VB to_TO reproduce_VB this_DT ordering_VBG as_IN closely_RB as_IN possible_JJ ._.
+In_IN the_DT next_JJ section_NN ,_, we_PRP describe_VBP the_DT measure_NN we_PRP used_VBD to_TO evaluate_VB this_DT ._.
+5_CD ._.
+#_# Measure_NN We_PRP chose_VBD to_TO use_VB pairwise_JJ accuracy_NN to_TO evaluate_VB the_DT quality_NN of_IN a_DT static_JJ ranking_NN ._.
+The_DT pairwise_JJ accuracy_NN is_VBZ the_DT fraction_NN of_IN time_NN that_IN the_DT ranking_JJ algorithm_NN and_CC human_JJ judges_NNS agree_VBP on_IN the_DT ordering_VBG of_IN a_DT pair_NN of_IN Web_NN pages_NNS ._.
+If_IN S_NN -LRB-_-LRB- x_NN -RRB-_-RRB- is_VBZ the_DT static_JJ ranking_JJ assigned_VBN to_TO page_NN x_NN ,_, and_CC H_NN -LRB-_-LRB- x_NN -RRB-_-RRB- is_VBZ the_DT human_JJ judgment_NN of_IN relevance_NN for_IN x_NN ,_, then_RB consider_VB the_DT following_VBG sets_NNS :_: -RRB-_-RRB- -RCB-_-RRB- -LRB-_-LRB- -RRB-_-RRB- -LRB-_-LRB- :_: ,_, -LCB-_-LRB- yHxHyx_NNP >_JJR =_JJ pH_NN and_CC -RRB-_-RRB- -RCB-_-RRB- -LRB-_-LRB- -RRB-_-RRB- -LRB-_-LRB- :_: ,_, -LCB-_-LRB- ySxSyx_NNP >_JJR =_JJ pS_NN The_DT pairwise_JJ accuracy_NN is_VBZ the_DT portion_NN of_IN Hp_NNP that_WDT is_VBZ also_RB contained_VBN in_IN Sp_NN :_: p_NN pp_NN H_NN SH_NN =_JJ accuracypairwise_NN This_DT measure_NN was_VBD chosen_VBN for_IN two_CD reasons_NNS ._.
+First_RB ,_, the_DT discrete_JJ human_JJ judgments_NNS provide_VBP only_RB a_DT partial_JJ ordering_VBG over_IN Web_NN pages_NNS ,_, making_VBG it_PRP difficult_JJ to_TO apply_VB a_DT measure_NN such_JJ as_IN the_DT Spearman_NNP rank_NN order_NN correlation_NN coefficient_NN -LRB-_-LRB- in_IN the_DT pairwise_JJ accuracy_NN measure_NN ,_, a_DT pair_NN of_IN documents_NNS with_IN the_DT same_JJ human_JJ judgment_NN does_VBZ not_RB affect_VB the_DT score_NN -RRB-_-RRB- ._.
+Second_RB ,_, the_DT pairwise_JJ accuracy_NN has_VBZ an_DT intuitive_JJ meaning_NN :_: it_PRP is_VBZ the_DT fraction_NN of_IN pairs_NNS of_IN documents_NNS that_IN ,_, when_WRB the_DT humans_NNS claim_VBP one_CD is_VBZ better_JJR than_IN the_DT other_JJ ,_, the_DT static_JJ rank_NN algorithm_NN orders_NNS them_PRP correctly_RB ._.
+5_CD ._.
+#_# Method_NNP We_PRP trained_VBD fRank_NN -LRB-_-LRB- a_DT RankNet_NN based_VBN neural_JJ network_NN -RRB-_-RRB- using_VBG the_DT following_VBG parameters_NNS ._.
+We_PRP used_VBD a_DT fully_RB connected_VBN #_# layer_NN network_NN ._.
+The_DT hidden_JJ layer_NN had_VBD ##_CD hidden_JJ nodes_NNS ._.
+The_DT input_NN weights_NNS to_TO this_DT layer_NN were_VBD all_DT initialized_VBN to_TO be_VB zero_CD ._.
+The_DT output_NN layer_NN -LRB-_-LRB- just_RB a_DT single_JJ node_NN -RRB-_-RRB- weights_NNS were_VBD initialized_VBN using_VBG a_DT uniform_JJ random_JJ distribution_NN in_IN the_DT range_NN -LSB-_-LRB- -_: #_# ._.
+#_# ,_, #_# ._.
+#_# -RSB-_-RRB- ._.
+We_PRP used_VBD tanh_NN as_IN the_DT transfer_NN function_NN from_IN the_DT inputs_NNS to_TO the_DT hidden_JJ layer_NN ,_, and_CC a_DT linear_JJ function_NN from_IN the_DT hidden_JJ layer_NN to_TO the_DT output_NN ._.
+The_DT cost_NN function_NN is_VBZ the_DT pairwise_JJ cross_NN entropy_NN cost_NN function_NN as_IN discussed_VBN in_IN section_NN #_# ._.
+The_DT features_NNS in_IN the_DT training_NN set_NN were_VBD normalized_VBN to_TO have_VB zero_CD mean_NN and_CC unit_NN standard_JJ deviation_NN ._.
+The_DT same_JJ linear_JJ transformation_NN was_VBD then_RB applied_VBN to_TO the_DT features_NNS in_IN the_DT validation_NN and_CC test_NN sets_NNS ._.
+For_IN training_NN ,_, we_PRP presented_VBD the_DT network_NN with_IN #_# million_CD pairings_NNS of_IN pages_NNS ,_, where_WRB one_CD page_NN had_VBD a_DT higher_JJR rating_NN than_IN the_DT other_JJ ._.
+The_DT pairings_NNS were_VBD chosen_VBN uniformly_RB at_IN random_JJ -LRB-_-LRB- with_IN replacement_NN -RRB-_-RRB- from_IN all_DT possible_JJ pairings_NNS ._.
+When_WRB forming_VBG the_DT pairs_NNS ,_, we_PRP ignored_VBD the_DT magnitude_NN of_IN the_DT difference_NN between_IN the_DT ratings_NNS -LRB-_-LRB- the_DT rating_NN spread_NN -RRB-_-RRB- for_IN the_DT two_CD URLs_NNS ._.
+Hence_RB ,_, the_DT weight_NN for_IN each_DT pair_NN was_VBD constant_JJ -LRB-_-LRB- one_CD -RRB-_-RRB- ,_, and_CC the_DT probability_NN of_IN a_DT pair_NN being_VBG selected_VBN was_VBD independent_JJ of_IN its_PRP$ rating_NN spread_NN ._.
+We_PRP trained_VBD the_DT network_NN for_IN ##_CD epochs_NNS ._.
+On_IN each_DT epoch_NN ,_, the_DT training_NN pairs_NNS were_VBD randomly_RB shuffled_VBN ._.
+The_DT initial_JJ training_NN rate_NN was_VBD 0_CD ._.
+###_NN ._.
+At_IN each_DT epoch_NN ,_, we_PRP checked_VBD the_DT error_NN on_IN the_DT training_NN set_NN ._.
+If_IN the_DT error_NN had_VBD increased_VBN ,_, then_RB we_PRP decreased_VBD the_DT training_NN rate_NN ,_, under_IN the_DT hypothesis_NN that_IN the_DT network_NN had_VBD probably_RB overshot_NN ._.
+The_DT training_NN rate_NN at_IN each_DT epoch_NN was_VBD thus_RB set_VBN to_TO :_: Training_VBG rate_NN =_JJ 1_CD +_CC Where_WRB is_VBZ the_DT initial_JJ rate_NN -LRB-_-LRB- #_# ._.
+###_NN -RRB-_-RRB- ,_, and_CC is_VBZ the_DT number_NN of_IN times_NNS the_DT training_NN set_VBN error_NN has_VBZ increased_VBN ._.
+After_IN each_DT epoch_NN ,_, we_PRP measured_VBD the_DT performance_NN of_IN the_DT neural_JJ network_NN on_IN the_DT validation_NN set_NN ,_, using_VBG #_# million_CD pairs_NNS -LRB-_-LRB- chosen_VBN randomly_RB with_IN replacement_NN -RRB-_-RRB- ._.
+The_DT network_NN with_IN the_DT highest_JJS pairwise_JJ accuracy_NN on_IN the_DT validation_NN set_NN was_VBD selected_VBN ,_, and_CC then_RB tested_VBN on_IN the_DT test_NN set_NN ._.
+We_PRP report_VBP the_DT pairwise_JJ accuracy_NN on_IN the_DT test_NN set_NN ,_, calculated_VBN using_VBG all_DT possible_JJ pairs_NNS ._.
+These_DT parameters_NNS were_VBD determined_VBN and_CC fixed_VBN before_IN the_DT static_JJ rank_NN experiments_NNS in_IN this_DT paper_NN ._.
+In_IN particular_JJ ,_, the_DT choice_NN of_IN initial_JJ training_NN rate_NN ,_, number_NN of_IN epochs_NNS ,_, and_CC training_NN rate_NN decay_NN function_NN were_VBD taken_VBN directly_RB from_IN Burges_NNP et_FW al_FW -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+Though_IN we_PRP had_VBD the_DT option_NN of_IN preprocessing_VBG any_DT of_IN the_DT features_NNS before_IN they_PRP were_VBD input_NN to_TO the_DT neural_JJ network_NN ,_, we_PRP refrained_VBD from_IN doing_VBG so_RB on_IN most_JJS of_IN them_PRP ._.
+The_DT only_JJ exception_NN was_VBD the_DT popularity_NN features_NNS ._.
+As_IN with_IN most_JJS Web_NN phenomenon_NN ,_, we_PRP found_VBD that_IN the_DT distribution_NN of_IN site_NN popularity_NN is_VBZ Zipfian_NNP ._.
+To_TO reduce_VB the_DT dynamic_JJ range_NN ,_, and_CC hopefully_RB make_VB the_DT feature_NN more_RBR useful_JJ ,_, we_PRP presented_VBD the_DT network_NN with_IN both_CC the_DT unpreprocessed_JJ ,_, as_RB well_RB as_IN the_DT logarithm_NN ,_, of_IN the_DT popularity_NN features_NNS -LRB-_-LRB- As_IN with_IN the_DT others_NNS ,_, the_DT logarithmic_JJ feature_NN values_NNS were_VBD also_RB normalized_VBN to_TO have_VB zero_CD mean_NN and_CC unit_NN standard_JJ deviation_NN -RRB-_-RRB- ._.
+710_CD Applying_VBG fRank_NN to_TO a_DT document_NN is_VBZ computationally_RB efficient_JJ ,_, taking_VBG time_NN that_WDT is_VBZ only_RB linear_JJ in_IN the_DT number_NN of_IN input_NN features_NNS ;_: it_PRP is_VBZ thus_RB within_IN a_DT constant_JJ factor_NN of_IN other_JJ simple_JJ machine_NN learning_VBG methods_NNS such_JJ as_IN nave_NN Bayes_NNS ._.
+In_IN our_PRP$ experiments_NNS ,_, computing_VBG the_DT fRank_NN for_IN all_DT five_CD billion_CD Web_NN pages_NNS was_VBD approximately_RB ###_JJ times_NNS faster_RBR than_IN computing_VBG the_DT PageRank_NN for_IN the_DT same_JJ set_NN ._.
+5_CD ._.
+#_# Results_NNS As_IN Table_NNP #_# shows_NNS ,_, fRank_NN significantly_RB outperforms_VBZ PageRank_NNP for_IN the_DT purposes_NNS of_IN static_JJ ranking_NN ._.
+With_IN a_DT pairwise_JJ accuracy_NN of_IN ##_NN ._.
+#_# %_NN ,_, fRank_NN more_JJR than_IN doubles_VBZ the_DT accuracy_NN of_IN PageRank_NN -LRB-_-LRB- relative_JJ to_TO the_DT baseline_NN of_IN ##_CD %_NN ,_, which_WDT is_VBZ the_DT accuracy_NN that_WDT would_MD be_VB achieved_VBN by_IN a_DT random_JJ ordering_VBG of_IN Web_NN pages_NNS -RRB-_-RRB- ._.
+Note_VB that_IN one_CD of_IN fRank_NN ''_'' s_NNS input_NN features_NNS is_VBZ the_DT PageRank_NN of_IN the_DT page_NN ,_, so_IN we_PRP would_MD expect_VB it_PRP to_TO perform_VB no_DT worse_JJR than_IN PageRank_NN ._.
+The_DT significant_JJ increase_NN in_IN accuracy_NN implies_VBZ that_IN the_DT other_JJ features_NNS -LRB-_-LRB- anchor_NN ,_, popularity_NN ,_, etc_FW ._. -RRB-_-RRB-
+do_VB in_IN fact_NN contain_VBP useful_JJ information_NN regarding_VBG the_DT overall_JJ quality_NN of_IN a_DT page_NN ._.
+Table_NNP #_# :_: Basic_JJ Results_NNS Technique_NNP Accuracy_NNP -LRB-_-LRB- %_NN -RRB-_-RRB- None_NN -LRB-_-LRB- Baseline_NN -RRB-_-RRB- ##_NN ._.
+##_NN PageRank_NN ##_CD ._.
+##_RB fRank_NNP ##_NNP ._.
+##_NN There_EX are_VBP a_DT number_NN of_IN decisions_NNS that_WDT go_VBP into_IN the_DT computation_NN of_IN PageRank_NNP ,_, such_JJ as_IN how_WRB to_TO deal_VB with_IN pages_NNS that_WDT have_VBP no_DT outlinks_NNS ,_, the_DT choice_NN of_IN ,_, numeric_JJ precision_NN ,_, convergence_NN threshold_NN ,_, etc_FW ._.
+We_PRP were_VBD able_JJ to_TO obtain_VB a_DT computation_NN of_IN PageRank_NN from_IN a_DT completely_RB independent_JJ implementation_NN -LRB-_-LRB- provided_VBN by_IN Marc_NNP Najork_NNP -RRB-_-RRB- that_WDT varied_VBD somewhat_RB in_IN these_DT parameters_NNS ._.
+It_PRP achieved_VBD a_DT pairwise_JJ accuracy_NN of_IN ##_NN ._.
+##_CD %_NN ,_, nearly_RB identical_JJ to_TO that_DT obtained_VBN by_IN our_PRP$ implementation_NN ._.
+We_PRP thus_RB concluded_VBD that_IN the_DT quality_NN of_IN the_DT PageRank_NNP is_VBZ not_RB sensitive_JJ to_TO these_DT minor_JJ variations_NNS in_IN algorithm_NN ,_, nor_CC was_VBD PageRank_NNP ''_'' s_VBZ low_JJ accuracy_NN due_JJ to_TO problems_NNS with_IN our_PRP$ implementation_NN of_IN it_PRP ._.
+We_PRP also_RB wanted_VBD to_TO find_VB how_WRB well_RB each_DT feature_NN set_VBN performed_VBN ._.
+To_TO answer_VB this_DT ,_, for_IN each_DT feature_NN set_NN ,_, we_PRP trained_VBD and_CC tested_VBD fRank_NN using_VBG only_RB that_DT set_NN of_IN features_NNS ._.
+The_DT results_NNS are_VBP shown_VBN in_IN Table_NNP #_# ._.
+As_IN can_MD be_VB seen_VBN ,_, every_DT single_JJ feature_NN set_VBD individually_RB outperformed_VBN PageRank_NN on_IN this_DT test_NN ._.
+Perhaps_RB the_DT most_RBS interesting_JJ result_NN is_VBZ that_IN the_DT Page-level_NN features_NNS had_VBD the_DT highest_JJS performance_NN out_IN of_IN all_PDT the_DT feature_NN sets_NNS ._.
+This_DT is_VBZ surprising_JJ because_IN these_DT are_VBP features_NNS that_WDT do_VBP not_RB depend_VB on_IN the_DT overall_JJ graph_NN structure_NN of_IN the_DT Web_NN ,_, nor_CC even_RB on_IN what_WP pages_NNS point_VBP to_TO a_DT given_VBN page_NN ._.
+This_DT is_VBZ contrary_JJ to_TO the_DT common_JJ belief_NN that_IN the_DT Web_NN graph_NN structure_NN is_VBZ the_DT key_JJ to_TO finding_VBG a_DT good_JJ static_JJ ranking_NN of_IN Web_NN pages_NNS ._.
+Table_NNP #_# :_: Results_NNS for_IN individual_JJ feature_NN sets_NNS ._.
+Feature_NNP Set_VB Accuracy_NNP -LRB-_-LRB- %_NN -RRB-_-RRB- PageRank_NN ##_NN ._.
+##_NN Popularity_NN ##_NN ._.
+##_JJ Anchor_NNP ##_NN ._.
+##_JJ Page_NNP ##_NN ._.
+##_NN Domain_NN ##_NN ._.
+##_NN All_DT Features_NNS ##_VBP ._.
+##_NN Because_IN we_PRP are_VBP using_VBG a_DT two-layer_JJ neural_JJ network_NN ,_, the_DT features_NNS in_IN the_DT learned_VBN network_NN can_MD interact_VB with_IN each_DT other_JJ in_IN interesting_JJ ,_, nonlinear_JJ ways_NNS ._.
+This_DT means_VBZ that_IN a_DT particular_JJ feature_NN that_WDT appears_VBZ to_TO have_VB little_JJ value_NN in_IN isolation_NN could_MD actually_RB be_VB very_RB important_JJ when_WRB used_VBN in_IN combination_NN with_IN other_JJ features_NNS ._.
+To_TO measure_VB the_DT final_JJ contribution_NN of_IN a_DT feature_NN set_NN ,_, in_IN the_DT context_NN of_IN all_PDT the_DT other_JJ features_NNS ,_, we_PRP performed_VBD an_DT ablation_NN study_NN ._.
+That_DT is_VBZ ,_, for_IN each_DT set_NN of_IN features_NNS ,_, we_PRP trained_VBD a_DT network_NN to_TO contain_VB all_DT of_IN the_DT features_NNS except_IN that_DT set_NN ._.
+We_PRP then_RB compared_VBD the_DT performance_NN of_IN the_DT resulting_VBG network_NN to_TO the_DT performance_NN of_IN the_DT network_NN with_IN all_DT of_IN the_DT features_NNS ._.
+Table_NNP #_# shows_VBZ the_DT results_NNS of_IN this_DT experiment_NN ,_, where_WRB the_DT decrease_NN in_IN accuracy_NN is_VBZ the_DT difference_NN in_IN pairwise_JJ accuracy_NN between_IN the_DT network_NN trained_VBN with_IN all_DT of_IN the_DT features_NNS ,_, and_CC the_DT network_NN missing_VBG the_DT given_VBN feature_NN set_NN ._.
+Table_NNP #_# :_: Ablation_NN study_NN ._.
+Shown_VBN is_VBZ the_DT decrease_NN in_IN accuracy_NN when_WRB we_PRP train_VBP a_DT network_NN that_WDT has_VBZ all_DT but_CC the_DT given_VBN set_NN of_IN features_NNS ._.
+The_DT last_JJ line_NN is_VBZ shows_VBZ the_DT effect_NN of_IN removing_VBG the_DT anchor_NN ,_, PageRank_NN ,_, and_CC domain_NN features_NNS ,_, hence_RB a_DT model_NN containing_VBG no_DT network_NN or_CC link-based_JJ information_NN whatsoever_RB ._.
+Feature_NNP Set_VB Decrease_NN in_IN Accuracy_NNP PageRank_NNP #_# ._.
+##_NN Popularity_NN #_# ._.
+##_JJ Anchor_NNP #_# ._.
+##_JJ Page_NNP #_# ._.
+##_NN Domain_NN Anchor_NNP ,_, PageRank_NNP &_CC Domain_NN 0_CD ._.
+##_NN 0_CD ._.
+##_IN The_DT results_NNS of_IN the_DT ablation_NN study_NN are_VBP consistent_JJ with_IN the_DT individual_JJ feature_NN set_VBN study_NN ._.
+Both_DT show_VBP that_IN the_DT most_RBS important_JJ feature_NN set_NN is_VBZ the_DT Page-level_JJ feature_NN set_NN ,_, and_CC the_DT second_JJ most_RBS important_JJ is_VBZ the_DT popularity_NN feature_NN set_NN ._.
+Finally_RB ,_, we_PRP wished_VBD to_TO see_VB how_WRB the_DT performance_NN of_IN fRank_NN improved_VBD as_IN we_PRP added_VBD features_NNS ;_: we_PRP wanted_VBD to_TO find_VB at_IN what_WDT point_NN adding_VBG more_JJR feature_NN sets_NNS became_VBD relatively_RB useless_JJ ._.
+Beginning_VBG with_IN no_DT features_NNS ,_, we_PRP greedily_RB added_VBD the_DT feature_NN set_VBD that_IN improved_VBN performance_NN the_DT most_JJS ._.
+The_DT results_NNS are_VBP shown_VBN in_IN Table_NNP #_# ._.
+For_IN example_NN ,_, the_DT fourth_JJ line_NN of_IN the_DT table_NN shows_VBZ that_IN fRank_NN using_VBG the_DT page_NN ,_, popularity_NN ,_, and_CC anchor_NN features_NNS outperformed_VBD any_DT network_NN that_WDT used_VBD the_DT page_NN ,_, popularity_NN ,_, and_CC some_DT other_JJ feature_NN set_NN ,_, and_CC that_IN the_DT performance_NN of_IN this_DT network_NN was_VBD ##_CD ._.
+##_CD %_NN ._.
+Table_NNP #_# :_: fRank_NN performance_NN as_IN feature_NN sets_NNS are_VBP added_VBN ._.
+At_IN each_DT row_NN ,_, the_DT feature_NN set_VBD that_IN gave_VBD the_DT greatest_JJS increase_NN in_IN accuracy_NN was_VBD added_VBN to_TO the_DT list_NN of_IN features_NNS -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, we_PRP conducted_VBD a_DT greedy_JJ search_NN over_IN feature_NN sets_NNS -RRB-_-RRB- ._.
+Feature_NNP Set_VB Accuracy_NNP -LRB-_-LRB- %_NN -RRB-_-RRB- None_NN ##_NN ._.
+##_NN +_CC Page_NNP ##_CD ._.
+##_NN +_CC Popularity_NN ##_NN ._.
+##_NN +_CC Anchor_NNP ##_NNP ._.
+##_NN +_CC PageRank_NN ##_NN ._.
+##_NN +_CC Domain_NN ##_NN ._.
+##_NN 711_CD Finally_RB ,_, we_PRP present_VBP a_DT qualitative_JJ comparison_NN of_IN PageRank_NN vs_CC ._.
+fRank_NN ._.
+In_IN Table_NNP #_# are_VBP the_DT top_JJ ten_CD URLs_NNS returned_VBD for_IN PageRank_NNP and_CC for_IN fRank_NN ._.
+PageRank_NN ''_'' s_NNS results_NNS are_VBP heavily_RB weighted_JJ towards_IN technology_NN sites_NNS ._.
+It_PRP contains_VBZ two_CD QuickTime_NNP URLs_NNS -LRB-_-LRB- Apple_NNP ''_'' s_VBZ video_NN playback_NN software_NN -RRB-_-RRB- ,_, as_RB well_RB as_IN Internet_NNP Explorer_NNP and_CC FireFox_NNP URLs_NNP -LRB-_-LRB- both_DT of_IN which_WDT are_VBP Web_NN browsers_NNS -RRB-_-RRB- ._.
+fRank_NN ,_, on_IN the_DT other_JJ hand_NN ,_, contains_VBZ more_RBR consumer-oriented_JJ sites_NNS such_JJ as_IN American_NNP Express_NNP ,_, Target_NN ,_, Dell_NNP ,_, etc_FW ._.
+PageRank_NN ''_'' s_NNS bias_NN toward_IN technology_NN can_MD be_VB explained_VBN through_IN two_CD processes_NNS ._.
+First_RB ,_, there_EX are_VBP many_JJ pages_NNS with_IN buttons_NNS at_IN the_DT bottom_JJ suggesting_VBG that_IN the_DT site_NN is_VBZ optimized_VBN for_IN Internet_NN Explorer_NNP ,_, or_CC that_IN the_DT visitor_NN needs_VBZ QuickTime_NNP ._.
+These_DT generally_RB link_VBP back_RB to_TO ,_, in_IN these_DT examples_NNS ,_, the_DT Internet_NNP Explorer_NNP and_CC QuickTime_NNP download_VBP sites_NNS ._.
+Consequently_RB ,_, PageRank_NN ranks_NNS those_DT pages_NNS highly_RB ._.
+Though_IN these_DT pages_NNS are_VBP important_JJ ,_, they_PRP are_VBP not_RB as_RB important_JJ as_IN it_PRP may_MD seem_VB by_IN looking_VBG at_IN the_DT link_NN structure_NN alone_RB ._.
+One_CD fix_NN for_IN this_DT is_VBZ to_TO add_VB information_NN about_IN the_DT link_NN to_TO the_DT PageRank_NNP computation_NN ,_, such_JJ as_IN the_DT size_NN of_IN the_DT text_NN ,_, whether_IN it_PRP was_VBD at_IN the_DT bottom_NN of_IN the_DT page_NN ,_, etc_FW ._.
+The_DT other_JJ bias_NN comes_VBZ from_IN the_DT fact_NN that_IN the_DT population_NN of_IN Web_NN site_NN authors_NNS is_VBZ different_JJ than_IN the_DT population_NN of_IN Web_NN users_NNS ._.
+Web_NN authors_NNS tend_VBP to_TO be_VB technologically-oriented_JJ ,_, and_CC thus_RB their_PRP$ linking_VBG behavior_NN reflects_VBZ those_DT interests_NNS ._.
+fRank_NN ,_, by_IN knowing_VBG the_DT actual_JJ visitation_NN popularity_NN of_IN a_DT site_NN -LRB-_-LRB- the_DT popularity_NN feature_NN set_NN -RRB-_-RRB- ,_, is_VBZ able_JJ to_TO eliminate_VB some_DT of_IN that_DT bias_NN ._.
+It_PRP has_VBZ the_DT ability_NN to_TO depend_VB more_RBR on_IN where_WRB actual_JJ Web_NN users_NNS visit_VB rather_RB than_IN where_WRB the_DT Web_NN site_NN authors_NNS have_VBP linked_VBN ._.
+The_DT results_NNS confirm_VBP that_IN fRank_NN outperforms_VBZ PageRank_NNP in_IN pairwise_JJ accuracy_NN ._.
+The_DT two_CD most_RBS important_JJ feature_NN sets_NNS are_VBP the_DT page_NN and_CC popularity_NN features_NNS ._.
+This_DT is_VBZ surprising_JJ ,_, as_IN the_DT page_NN features_VBZ consisted_VBD only_RB of_IN a_DT few_JJ -LRB-_-LRB- #_# -RRB-_-RRB- simple_JJ features_NNS ._.
+Further_JJ experiments_NNS found_VBD that_IN ,_, of_IN the_DT page_NN features_NNS ,_, those_DT based_VBN on_IN the_DT text_NN of_IN the_DT page_NN -LRB-_-LRB- as_IN opposed_VBN to_TO the_DT URL_NN -RRB-_-RRB- performed_VBD the_DT best_JJS ._.
+In_IN the_DT next_JJ section_NN ,_, we_PRP explore_VBP the_DT popularity_NN feature_NN in_IN more_RBR detail_NN ._.
+5_CD ._.
+#_# Popularity_NNP Data_NNP As_IN mentioned_VBN in_IN section_NN #_# ,_, our_PRP$ popularity_NN data_NNS came_VBD from_IN MSN_NNP toolbar_NN users_NNS ._.
+For_IN privacy_NN reasons_NNS ,_, we_PRP had_VBD access_NN only_RB to_TO an_DT aggregate_NN count_NN of_IN ,_, for_IN each_DT URL_NN ,_, how_WRB many_JJ times_NNS it_PRP was_VBD visited_VBN by_IN any_DT toolbar_NN user_NN ._.
+This_DT limited_VBD the_DT possible_JJ features_NNS we_PRP could_MD derive_VB from_IN this_DT data_NNS ._.
+For_IN possible_JJ extensions_NNS ,_, see_VBP section_NN #_# ._.
+#_# ,_, future_JJ work_NN ._.
+For_IN each_DT URL_NN in_IN our_PRP$ train_NN and_CC test_NN sets_NNS ,_, we_PRP provided_VBD a_DT feature_NN to_TO fRank_NN which_WDT was_VBD how_WRB many_JJ times_NNS it_PRP had_VBD been_VBN visited_VBN by_IN a_DT toolbar_NN user_NN ._.
+However_RB ,_, this_DT feature_NN was_VBD quite_RB noisy_JJ and_CC sparse_JJ ,_, particularly_RB for_IN URLs_NNS with_IN query_NN parameters_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, http_NN :_: /_: /_: search_NN ._.
+msn_NN ._.
+com_NN /_: results_NNS ._.
+aspx_NN ?_.
+q_NN =_JJ machine_NN +_CC learning_VBG &_CC form_NN =_JJ QBHP_NN -RRB-_-RRB- ._.
+One_CD solution_NN was_VBD to_TO provide_VB an_DT additional_JJ feature_NN which_WDT was_VBD the_DT number_NN of_IN times_NNS any_DT URL_NN at_IN the_DT given_VBN domain_NN was_VBD visited_VBN by_IN a_DT toolbar_NN user_NN ._.
+Adding_VBG this_DT feature_NN dramatically_RB improved_VBD the_DT performance_NN of_IN fRank_NN ._.
+We_PRP took_VBD this_DT one_CD step_NN further_RBR and_CC used_VBD the_DT built-in_JJ hierarchical_JJ structure_NN of_IN URLs_NNS to_TO construct_VB many_JJ levels_NNS of_IN backoff_NN between_IN the_DT full_JJ URL_NN and_CC the_DT domain_NN ._.
+We_PRP did_VBD this_DT by_IN using_VBG the_DT set_NN of_IN features_NNS shown_VBN in_IN Table_NNP #_# ._.
+Table_NNP #_# :_: URL_NN functions_NNS used_VBN to_TO compute_VB the_DT Popularity_NN feature_NN set_NN ._.
+Function_NN Example_NNP Exact_JJ URL_NN cnn_NN ._.
+com_NN /_: ####_CD /_: tech_NN /_: wikipedia_NN ._.
+html_NN ?_.
+v_LS =_JJ mobile_JJ No_DT Params_NN cnn_NN ._.
+com_NN /_: ####_CD /_: tech_NN /_: wikipedia_NN ._.
+html_JJ Page_NNP wikipedia_NN ._.
+html_NN URL-1_NN cnn_NN ._.
+com_NN /_: ####_CD /_: tech_NN URL-2_NN cnn_NN ._.
+com_NN /_: ####_CD Domain_NN cnn_NN ._.
+com_NN Domain_NN +_CC #_# cnn_NN ._.
+com_NN /_: ####_CD Each_DT URL_NN was_VBD assigned_VBN one_CD feature_NN for_IN each_DT function_NN shown_VBN in_IN the_DT table_NN ._.
+The_DT value_NN of_IN the_DT feature_NN was_VBD the_DT count_NN of_IN the_DT number_NN of_IN times_NNS a_DT toolbar_NN user_NN visited_VBD a_DT URL_NN ,_, where_WRB the_DT function_NN applied_VBD to_TO that_DT URL_NN matches_VBZ the_DT function_NN applied_VBD to_TO the_DT URL_NN in_IN question_NN ._.
+For_IN example_NN ,_, a_DT user_NN ''_'' s_VBZ visit_NN to_TO cnn_NN ._.
+com_NN /_: ####_CD /_: sports_NNS ._.
+html_NN would_MD increment_NN the_DT Domain_NN and_CC Domain_NN +_CC #_# features_NNS for_IN the_DT URL_NN cnn_NN ._.
+com_NN /_: ####_CD /_: tech_NN /_: wikipedia_NN ._.
+html_NN ._.
+As_IN seen_VBN in_IN Table_NNP #_# ,_, adding_VBG the_DT domain_NN counts_VBZ significantly_RB improved_VBN the_DT quality_NN of_IN the_DT popularity_NN feature_NN ,_, and_CC adding_VBG the_DT numerous_JJ backoff_NN functions_NNS listed_VBN in_IN Table_NNP #_# improved_VBD the_DT accuracy_NN even_RB further_RBR ._.
+Table_NNP #_# :_: Effect_NN of_IN adding_VBG backoff_NN to_TO the_DT popularity_NN feature_NN set_VBN Features_NNS Accuracy_NNP -LRB-_-LRB- %_NN -RRB-_-RRB- URL_NN count_NN ##_NN ._.
+##_RB URL_NN and_CC Domain_NN counts_NNS ##_VBP ._.
+##_NN All_DT backoff_JJ functions_NNS -LRB-_-LRB- Table_NNP #_# -RRB-_-RRB- ##_RB ._.
+##_RB Table_NNP #_# :_: Top_JJ ten_CD URLs_NNS for_IN PageRank_NNP vs_CC ._.
+fRank_NN PageRank_NNP fRank_NNP google_NNP ._.
+com_NN google_NN ._.
+com_NN apple_NN ._.
+com_NN /_: quicktime_NN /_: download_NN yahoo_NN ._.
+com_NN amazon_NN ._.
+com_NN americanexpress_NN ._.
+com_NN yahoo_NN ._.
+com_NN hp_NN ._.
+com_NN microsoft_NN ._.
+com_NN /_: windows_NNS /_: ie_FW target_NN ._.
+com_NN apple_NN ._.
+com_NN /_: quicktime_NN bestbuy_NN ._.
+com_NN mapquest_NN ._.
+com_NN dell_NN ._.
+com_NN ebay_NN ._.
+com_NN autotrader_NN ._.
+com_NN mozilla_NN ._.
+org_NN /_: products_NNS /_: firefox_NN dogpile_NN ._.
+com_NN ftc_NN ._.
+gov_NN bankofamerica_NN ._.
+com_NN 712_CD Backing_NN off_IN to_TO subsets_NNS of_IN the_DT URL_NN is_VBZ one_CD technique_NN for_IN dealing_VBG with_IN the_DT sparsity_NN of_IN data_NNS ._.
+It_PRP is_VBZ also_RB informative_JJ to_TO see_VB how_WRB the_DT performance_NN of_IN fRank_NN depends_VBZ on_IN the_DT amount_NN of_IN popularity_NN data_NNS that_IN we_PRP have_VBP collected_VBN ._.
+In_IN Figure_NNP #_# we_PRP show_VBP the_DT performance_NN of_IN fRank_NN trained_VBN with_IN only_RB the_DT popularity_NN feature_NN set_VBD vs_CC ._.
+the_DT amount_NN of_IN data_NNS we_PRP have_VBP for_IN the_DT popularity_NN feature_NN set_NN ._.
+Each_DT day_NN ,_, we_PRP receive_VBP additional_JJ popularity_NN data_NNS ,_, and_CC as_IN can_MD be_VB seen_VBN in_IN the_DT plot_NN ,_, this_DT increases_VBZ the_DT performance_NN of_IN fRank_NN ._.
+The_DT relation_NN is_VBZ logarithmic_JJ :_: doubling_VBG the_DT amount_NN of_IN popularity_NN data_NNS provides_VBZ a_DT constant_JJ improvement_NN in_IN pairwise_JJ accuracy_NN ._.
+In_IN summary_NN ,_, we_PRP have_VBP found_VBN that_IN the_DT popularity_NN features_NNS provide_VBP a_DT useful_JJ boost_NN to_TO the_DT overall_JJ fRank_NN accuracy_NN ._.
+Gathering_VBG more_JJR popularity_NN data_NNS ,_, as_RB well_RB as_IN employing_VBG simple_JJ backoff_NN strategies_NNS ,_, improve_VB this_DT boost_NN even_RB further_RBR ._.
+5_CD ._.
+#_# Summary_NNP of_IN Results_NNS The_DT experiments_NNS provide_VBP a_DT number_NN of_IN conclusions_NNS ._.
+First_RB ,_, fRank_NN performs_VBZ significantly_RB better_JJR than_IN PageRank_NNP ,_, even_RB without_IN any_DT information_NN about_IN the_DT Web_NN graph_NN ._.
+Second_RB ,_, the_DT page_NN level_NN and_CC popularity_NN features_NNS were_VBD the_DT most_RBS significant_JJ contributors_NNS to_TO pairwise_JJ accuracy_NN ._.
+Third_NNP ,_, by_IN collecting_VBG more_JJR popularity_NN data_NNS ,_, we_PRP can_MD continue_VB to_TO improve_VB fRank_NN ''_'' s_NNS performance_NN ._.
+The_DT popularity_NN data_NNS provides_VBZ two_CD benefits_NNS to_TO fRank_NNP ._.
+First_RB ,_, we_PRP see_VBP that_IN qualitatively_RB ,_, fRank_NN ''_'' s_NNS ordering_VBG of_IN Web_NN pages_NNS has_VBZ a_DT more_RBR favorable_JJ bias_NN than_IN PageRank_NN ''_'' s_NNS ._.
+fRank_NN ''_'' s_NNS ordering_VBG seems_VBZ to_TO correspond_VB to_TO what_WP Web_NN users_NNS ,_, rather_RB than_IN Web_NN page_NN authors_NNS ,_, prefer_VBP ._.
+Second_RB ,_, the_DT popularity_NN data_NNS is_VBZ more_RBR timely_JJ than_IN PageRank_NN ''_'' s_NNS link_VBP information_NN ._.
+The_DT toolbar_NN provides_VBZ information_NN about_IN which_WDT Web_NN pages_NNS people_NNS find_VBP interesting_JJ right_RB now_RB ,_, whereas_IN links_NNS are_VBP added_VBN to_TO pages_NNS more_RBR slowly_RB ,_, as_IN authors_NNS find_VBP the_DT time_NN and_CC interest_NN ._.
+6_CD ._.
+RELATED_JJ AND_CC FUTURE_JJ WORK_VBP 6_CD ._.
+#_# Improvements_NNP to_TO PageRank_NNP Since_IN the_DT original_JJ PageRank_NNP paper_NN ,_, there_EX has_VBZ been_VBN work_NN on_IN improving_VBG it_PRP ._.
+Much_JJ of_IN that_DT work_NN centers_NNS on_IN speeding_VBG up_RP and_CC parallelizing_VBG the_DT computation_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+One_CD recognized_VBD problem_NN with_IN PageRank_NN is_VBZ that_IN of_IN topic_NN drift_NN :_: A_DT page_NN about_IN dogs_NNS will_MD have_VB high_JJ PageRank_NN if_IN it_PRP is_VBZ linked_VBN to_TO by_IN many_JJ pages_NNS that_WDT themselves_PRP have_VBP high_JJ rank_NN ,_, regardless_RB of_IN their_PRP$ topic_NN ._.
+In_IN contrast_NN ,_, a_DT search_NN engine_NN user_NN looking_VBG for_IN good_JJ pages_NNS about_IN dogs_NNS would_MD likely_RB prefer_VB to_TO find_VB pages_NNS that_WDT are_VBP pointed_JJ to_TO by_IN many_JJ pages_NNS that_WDT are_VBP themselves_PRP about_IN dogs_NNS ._.
+Hence_RB ,_, a_DT link_NN that_WDT is_VBZ on_IN topic_NN should_MD have_VB higher_JJR weight_NN than_IN a_DT link_NN that_WDT is_VBZ not_RB ._.
+Richardson_NNP and_CC Domingos_NNP ''_'' s_VBZ Query_NNP Dependent_NNP PageRank_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- and_CC Haveliwala_NN ''_'' s_NNS Topic-Sensitive_JJ PageRank_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- are_VBP two_CD approaches_NNS that_WDT tackle_VBP this_DT problem_NN ._.
+Other_JJ variations_NNS to_TO PageRank_NNP include_VBP differently_RB weighting_NN links_NNS for_IN inter_NN -_: vs_CC ._.
+intra-domain_JJ links_NNS ,_, adding_VBG a_DT backwards_RB step_VB to_TO the_DT random_JJ surfer_NN to_TO simulate_VB the_DT back_JJ button_NN on_IN most_JJS browsers_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- and_CC modifying_VBG the_DT jump_NN probability_NN -LRB-_-LRB- -RRB-_-RRB- -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+See_VB Langville_NNP and_CC Meyer_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- for_IN a_DT good_JJ survey_NN of_IN these_DT ,_, and_CC other_JJ modifications_NNS to_TO PageRank_NNP ._.
+6_CD ._.
+#_# Other_JJ related_JJ work_NN PageRank_NN is_VBZ not_RB the_DT only_JJ link_NN analysis_NN algorithm_NN used_VBN for_IN ranking_JJ Web_NN pages_NNS ._.
+The_DT most_RBS well-known_JJ other_JJ is_VBZ HITS_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, which_WDT is_VBZ used_VBN by_IN the_DT Teoma_NNP search_NN engine_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+HITS_NNS produces_VBZ a_DT list_NN of_IN hubs_NNS and_CC authorities_NNS ,_, where_WRB hubs_NNS are_VBP pages_NNS that_WDT point_VBP to_TO many_JJ authority_NN pages_NNS ,_, and_CC authorities_NNS are_VBP pages_NNS that_WDT are_VBP pointed_JJ to_TO by_IN many_JJ hubs_NNS ._.
+Previous_JJ work_NN has_VBZ shown_VBN HITS_NNS to_TO perform_VB comparably_RB to_TO PageRank_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+One_CD field_NN of_IN interest_NN is_VBZ that_IN of_IN static_JJ index_NN pruning_NN -LRB-_-LRB- see_VB e_LS ._.
+g_NN ._.
+,_, Carmel_NNP et_FW al_FW ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- -RRB-_-RRB- ._.
+Static_JJ index_NN pruning_NN methods_NNS reduce_VB the_DT size_NN of_IN the_DT search_NN engine_NN ''_'' s_NNS index_NN by_IN removing_VBG documents_NNS that_WDT are_VBP unlikely_JJ to_TO be_VB returned_VBN by_IN a_DT search_NN query_NN ._.
+The_DT pruning_NN is_VBZ typically_RB done_VBN based_VBN on_IN the_DT frequency_NN of_IN query_NN terms_NNS ._.
+Similarly_RB ,_, Pandey_NN and_CC Olston_JJ -LSB-_-LRB- ##_CD -RSB-_-RRB- suggest_VBP crawling_VBG pages_NNS frequently_RB if_IN they_PRP are_VBP likely_JJ to_TO incorrectly_RB appear_VB -LRB-_-LRB- or_CC not_RB appear_VB -RRB-_-RRB- as_IN a_DT result_NN of_IN a_DT search_NN ._.
+Similar_JJ methods_NNS could_MD be_VB incorporated_VBN into_IN the_DT static_JJ rank_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, how_WRB many_JJ frequent_JJ queries_NNS contain_VBP words_NNS found_VBN on_IN this_DT page_NN -RRB-_-RRB- ._.
+Others_NNS have_VBP investigated_VBN the_DT effect_NN that_WDT PageRank_NNP has_VBZ on_IN the_DT Web_NN at_IN large_JJ -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+They_PRP argue_VBP that_IN pages_NNS with_IN high_JJ PageRank_NN are_VBP more_RBR likely_JJ to_TO be_VB found_VBN by_IN Web_NN users_NNS ,_, thus_RB more_RBR likely_JJ to_TO be_VB linked_VBN to_TO ,_, and_CC thus_RB more_RBR likely_JJ to_TO maintain_VB a_DT higher_JJR PageRank_NN than_IN other_JJ pages_NNS ._.
+The_DT same_JJ may_MD occur_VB for_IN the_DT popularity_NN data_NNS ._.
+If_IN we_PRP increase_VBP the_DT ranking_NN for_IN popular_JJ pages_NNS ,_, they_PRP are_VBP more_RBR likely_JJ to_TO be_VB clicked_VBN on_IN ,_, thus_RB further_JJ increasing_VBG their_PRP$ popularity_NN ._.
+Cho_NNP et_FW al_FW ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- argue_VBP that_IN a_DT more_RBR appropriate_JJ measure_NN of_IN Web_NN page_NN quality_NN would_MD depend_VB on_IN not_RB only_RB the_DT current_JJ link_NN structure_NN of_IN the_DT Web_NN ,_, but_CC also_RB on_IN the_DT change_NN in_IN that_DT link_NN structure_NN ._.
+The_DT same_JJ technique_NN may_MD be_VB applicable_JJ to_TO popularity_NN data_NNS :_: the_DT change_NN in_IN popularity_NN of_IN a_DT page_NN may_MD be_VB more_RBR informative_JJ than_IN the_DT absolute_JJ popularity_NN ._.
+One_CD interesting_JJ related_JJ work_NN is_VBZ that_IN of_IN Ivory_NNP and_CC Hearst_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Their_PRP$ goal_NN was_VBD to_TO build_VB a_DT model_NN of_IN Web_NN sites_NNS that_WDT are_VBP considered_VBN high_JJ quality_NN from_IN the_DT perspective_NN of_IN content_NN ,_, structure_NN and_CC navigation_NN ,_, visual_JJ design_NN ,_, functionality_NN ,_, interactivity_NN ,_, and_CC overall_JJ experience_NN ._.
+They_PRP used_VBD over_IN ###_CD page_NN level_NN features_NNS ,_, as_RB well_RB as_IN features_NNS encompassing_VBG the_DT performance_NN and_CC structure_NN of_IN the_DT site_NN ._.
+This_DT let_VBD them_PRP qualitatively_RB describe_VBP the_DT qualities_NNS of_IN a_DT page_NN that_WDT make_VBP it_PRP appear_VB attractive_JJ -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, rare_JJ use_NN of_IN italics_NNS ,_, at_IN least_JJS #_# point_NN font_NN ,_, -RRB-_-RRB- ,_, and_CC -LRB-_-LRB- in_IN later_JJ work_NN -RRB-_-RRB- to_TO build_VB a_DT system_NN that_WDT assists_VBZ novel_JJ Web_NN page_NN authors_NNS in_IN creating_VBG quality_NN pages_NNS by_IN evaluating_VBG it_PRP according_VBG to_TO these_DT features_NNS ._.
+The_DT primary_JJ differences_NNS between_IN this_DT work_NN and_CC ours_PRP are_VBP the_DT goal_NN -LRB-_-LRB- discovering_VBG what_WP constitutes_VBZ a_DT good_JJ Web_NN page_NN vs_CC ._.
+ordering_VBG Web_NN pages_NNS for_IN the_DT purposes_NNS of_IN Web_NN search_NN -RRB-_-RRB- ,_, the_DT size_NN of_IN the_DT study_NN -LRB-_-LRB- they_PRP used_VBD a_DT dataset_NN of_IN less_JJR than_IN ####_CD pages_NNS vs_CC ._.
+our_PRP$ set_NN of_IN ###_CD ,_, ###_CD -RRB-_-RRB- ,_, and_CC our_PRP$ comparison_NN with_IN PageRank_NN ._.
+y_NN =_JJ #_# ._.
+577Ln_NN -LRB-_-LRB- x_NN -RRB-_-RRB- +_CC ##_NN ._.
+###_NN R_NN 2_CD =_JJ #_# ._.
+####_NN 58_CD 58_CD ._.
+#_# 59_CD 59_CD ._.
+#_# 60_CD 60_CD ._.
+#_# 61_CD 1_CD ##_CD ###_CD Days_NNS of_IN Toolbar_NNP Data_NNP PairwiseAccuracy_NNP Figure_NNP #_# :_: Relation_NN between_IN the_DT amount_NN of_IN popularity_NN data_NNS and_CC the_DT performance_NN of_IN the_DT popularity_NN feature_NN set_NN ._.
+Note_VB the_DT x-axis_NN is_VBZ a_DT logarithmic_JJ scale_NN ._.
+713_CD Nevertheless_RB ,_, their_PRP$ work_NN provides_VBZ insights_NNS to_TO additional_JJ useful_JJ static_JJ features_NNS that_IN we_PRP could_MD incorporate_VB into_IN fRank_NN in_IN the_DT future_NN ._.
+Recent_JJ work_NN on_IN incorporating_VBG novel_JJ features_NNS into_IN dynamic_JJ ranking_JJ includes_VBZ that_IN by_IN Joachims_NNP et_FW al_FW ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- ,_, who_WP investigate_VBP the_DT use_NN of_IN implicit_JJ feedback_NN from_IN users_NNS ,_, in_IN the_DT form_NN of_IN which_WDT search_NN engine_NN results_NNS are_VBP clicked_VBN on_IN ._.
+Craswell_NNP et_FW al_FW ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- present_VBP a_DT method_NN for_IN determining_VBG the_DT best_JJS transformation_NN to_TO apply_VB to_TO query_VB independent_JJ features_NNS -LRB-_-LRB- such_JJ as_IN those_DT used_VBN in_IN this_DT paper_NN -RRB-_-RRB- for_IN the_DT purposes_NNS of_IN improving_VBG dynamic_JJ ranking_NN ._.
+Other_JJ work_NN ,_, such_JJ as_IN Boyan_NNP et_FW al_FW ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- and_CC Bartell_NNP et_FW al_FW ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- apply_VB machine_NN learning_NN for_IN the_DT purposes_NNS of_IN improving_VBG the_DT overall_JJ relevance_NN of_IN a_DT search_NN engine_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, the_DT dynamic_JJ ranking_NN -RRB-_-RRB- ._.
+They_PRP do_VBP not_RB apply_VB their_PRP$ techniques_NNS to_TO the_DT problem_NN of_IN static_JJ ranking_NN ._.
+6_CD ._.
+#_# Future_JJ work_NN There_EX are_VBP many_JJ ways_NNS in_IN which_WDT we_PRP would_MD like_VB to_TO extend_VB this_DT work_NN ._.
+First_RB ,_, fRank_NN uses_VBZ only_RB a_DT small_JJ number_NN of_IN features_NNS ._.
+We_PRP believe_VBP we_PRP could_MD achieve_VB even_RB more_RBR significant_JJ results_NNS with_IN more_JJR features_NNS ._.
+In_IN particular_JJ the_DT existence_NN ,_, or_CC lack_NN thereof_RB ,_, of_IN certain_JJ words_NNS could_MD prove_VB very_RB significant_JJ -LRB-_-LRB- for_IN instance_NN ,_, under_IN construction_NN probably_RB signifies_VBZ a_DT low_JJ quality_NN page_NN -RRB-_-RRB- ._.
+Other_JJ features_NNS could_MD include_VB the_DT number_NN of_IN images_NNS on_IN a_DT page_NN ,_, size_NN of_IN those_DT images_NNS ,_, number_NN of_IN layout_NN elements_NNS -LRB-_-LRB- tables_NNS ,_, divs_NNS ,_, and_CC spans_NNS -RRB-_-RRB- ,_, use_NN of_IN style_NN sheets_NNS ,_, conforming_VBG to_TO W3C_NN standards_NNS -LRB-_-LRB- like_IN XHTML_NNP #_# ._.
+#_# Strict_JJ -RRB-_-RRB- ,_, background_NN color_NN of_IN a_DT page_NN ,_, etc_FW ._.
+Many_JJ pages_NNS are_VBP generated_VBN dynamically_RB ,_, the_DT contents_NNS of_IN which_WDT may_MD depend_VB on_IN parameters_NNS in_IN the_DT URL_NN ,_, the_DT time_NN of_IN day_NN ,_, the_DT user_NN visiting_VBG the_DT site_NN ,_, or_CC other_JJ variables_NNS ._.
+For_IN such_JJ pages_NNS ,_, it_PRP may_MD be_VB useful_JJ to_TO apply_VB the_DT techniques_NNS found_VBN in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- to_TO form_VB a_DT static_JJ approximation_NN for_IN the_DT purposes_NNS of_IN extracting_VBG features_NNS ._.
+The_DT resulting_VBG grammar_NN describing_VBG the_DT page_NN could_MD itself_PRP be_VB a_DT source_NN of_IN additional_JJ features_NNS describing_VBG the_DT complexity_NN of_IN the_DT page_NN ,_, such_JJ as_IN how_WRB many_JJ non-terminal_JJ nodes_NNS it_PRP has_VBZ ,_, the_DT depth_NN of_IN the_DT grammar_NN tree_NN ,_, etc_FW ._.
+fRank_NN allows_VBZ one_CD to_TO specify_VB a_DT confidence_NN in_IN each_DT pairing_NN of_IN documents_NNS ._.
+In_IN the_DT future_NN ,_, we_PRP will_MD experiment_NN with_IN probabilities_NNS that_WDT depend_VBP on_IN the_DT difference_NN in_IN human_JJ judgments_NNS between_IN the_DT two_CD items_NNS in_IN the_DT pair_NN ._.
+For_IN example_NN ,_, a_DT pair_NN of_IN documents_NNS where_WRB one_CD was_VBD rated_VBN #_# and_CC the_DT other_JJ #_# should_MD have_VB a_DT higher_JJR confidence_NN than_IN a_DT pair_NN of_IN documents_NNS rated_VBN #_# and_CC #_# ._.
+The_DT experiments_NNS in_IN this_DT paper_NN are_VBP biased_VBN toward_IN pages_NNS that_WDT have_VBP higher_JJR than_IN average_JJ quality_NN ._.
+Also_RB ,_, fRank_NN with_IN all_DT of_IN the_DT features_NNS can_MD only_RB be_VB applied_VBN to_TO pages_NNS that_WDT have_VBP already_RB been_VBN crawled_VBN ._.
+Thus_RB ,_, fRank_NN is_VBZ primarily_RB useful_JJ for_IN index_NN ordering_VBG and_CC improving_VBG relevance_NN ,_, not_RB for_IN directing_VBG the_DT crawl_NN ._.
+We_PRP would_MD like_VB to_TO investigate_VB a_DT machine_NN learning_VBG approach_NN for_IN crawl_NN prioritization_NN as_RB well_RB ._.
+It_PRP may_MD be_VB that_IN a_DT combination_NN of_IN methods_NNS is_VBZ best_JJS :_: for_IN example_NN ,_, using_VBG PageRank_NNP to_TO select_VB the_DT best_JJS #_# billion_CD of_IN the_DT ##_CD billion_CD pages_NNS on_IN the_DT Web_NN ,_, then_RB using_VBG fRank_NN to_TO order_VB the_DT index_NN and_CC affect_VB search_NN relevancy_NN ._.
+Another_DT interesting_JJ direction_NN for_IN exploration_NN is_VBZ to_TO incorporate_VB fRank_NN and_CC page-level_JJ features_NNS directly_RB into_IN the_DT PageRank_NNP computation_NN itself_PRP ._.
+Work_NN on_IN biasing_VBG the_DT PageRank_NNP jump_NN vector_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, and_CC transition_NN matrix_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, have_VBP demonstrated_VBN the_DT feasibility_NN and_CC advantages_NNS of_IN such_PDT an_DT approach_NN ._.
+There_EX is_VBZ reason_NN to_TO believe_VB that_IN a_DT direct_JJ application_NN of_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ,_, using_VBG the_DT fRank_NN of_IN a_DT page_NN for_IN its_PRP$ relevance_NN ,_, could_MD lead_VB to_TO an_DT improved_VBN overall_JJ static_JJ rank_NN ._.
+Finally_RB ,_, the_DT popularity_NN data_NNS can_MD be_VB used_VBN in_IN other_JJ interesting_JJ ways_NNS ._.
+The_DT general_JJ surfing_NN and_CC searching_VBG habits_NNS of_IN Web_NN users_NNS varies_VBZ by_IN time_NN of_IN day_NN ._.
+Activity_NN in_IN the_DT morning_NN ,_, daytime_JJ ,_, and_CC evening_NN are_VBP often_RB quite_RB different_JJ -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, reading_VBG the_DT news_NN ,_, solving_VBG problems_NNS ,_, and_CC accessing_VBG entertainment_NN ,_, respectively_RB -RRB-_-RRB- ._.
+We_PRP can_MD gain_VB insight_NN into_IN these_DT differences_NNS by_IN using_VBG the_DT popularity_NN data_NNS ,_, divided_VBN into_IN segments_NNS of_IN the_DT day_NN ._.
+When_WRB a_DT query_NN is_VBZ issued_VBN ,_, we_PRP would_MD then_RB use_VB the_DT popularity_NN data_NNS matching_VBG the_DT time_NN of_IN query_NN in_IN order_NN to_TO do_VB the_DT ranking_NN of_IN Web_NN pages_NNS ._.
+We_PRP also_RB plan_VBP to_TO explore_VB popularity_NN features_NNS that_WDT use_VBP more_JJR than_IN just_RB the_DT counts_NNS of_IN how_WRB often_RB a_DT page_NN was_VBD visited_VBN ._.
+For_IN example_NN ,_, how_WRB long_JJ users_NNS tended_VBD to_TO dwell_VB on_IN a_DT page_NN ,_, did_VBD they_PRP leave_VBP the_DT page_NN by_IN clicking_VBG a_DT link_NN or_CC by_IN hitting_VBG the_DT back_JJ button_NN ,_, etc_FW ._.
+Fox_NNP et_FW al_FW ._.
+did_VBD a_DT study_NN that_WDT showed_VBD that_IN features_NNS such_JJ as_IN this_DT can_MD be_VB valuable_JJ for_IN the_DT purposes_NNS of_IN dynamic_JJ ranking_JJ -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Finally_RB ,_, the_DT popularity_NN data_NNS could_MD be_VB used_VBN as_IN the_DT label_NN rather_RB than_IN as_IN a_DT feature_NN ._.
+Using_VBG fRank_NN in_IN this_DT way_NN to_TO predict_VB the_DT popularity_NN of_IN a_DT page_NN may_MD useful_JJ for_IN the_DT tasks_NNS of_IN relevance_NN ,_, efficiency_NN ,_, and_CC crawl_NN priority_NN ._.
+There_EX is_VBZ also_RB significantly_RB more_JJR popularity_NN data_NNS than_IN human_JJ labeled_JJ data_NNS ,_, potentially_RB enabling_VBG more_RBR complex_JJ machine_NN learning_VBG methods_NNS ,_, and_CC significantly_RB more_RBR features_NNS ._.
+7_CD ._.
+CONCLUSIONS_NNS A_DT good_JJ static_JJ ranking_NN is_VBZ an_DT important_JJ component_NN for_IN today_NN ''_'' s_VBZ search_NN engines_NNS and_CC information_NN retrieval_NN systems_NNS ._.
+We_PRP have_VBP demonstrated_VBN that_IN PageRank_NN does_VBZ not_RB provide_VB a_DT very_RB good_JJ static_JJ ranking_NN ;_: there_EX are_VBP many_JJ simple_JJ features_NNS that_WDT individually_RB out_IN perform_VB PageRank_NNP ._.
+By_IN combining_VBG many_JJ static_JJ features_NNS ,_, fRank_NN achieves_VBZ a_DT ranking_NN that_WDT has_VBZ a_DT significantly_RB higher_JJR pairwise_JJ accuracy_NN than_IN PageRank_NN alone_RB ._.
+A_DT qualitative_JJ evaluation_NN of_IN the_DT top_JJ documents_NNS shows_VBZ that_IN fRank_NN is_VBZ less_RBR technology-biased_JJ than_IN PageRank_NN ;_: by_IN using_VBG popularity_NN data_NNS ,_, it_PRP is_VBZ biased_VBN toward_IN pages_NNS that_WDT Web_NN users_NNS ,_, rather_RB than_IN Web_NN authors_NNS ,_, visit_NN ._.
+The_DT machine_NN learning_VBG component_NN of_IN fRank_NN gives_VBZ it_PRP the_DT additional_JJ benefit_NN of_IN being_VBG more_RBR robust_JJ against_IN spammers_NNS ,_, and_CC allows_VBZ it_PRP to_TO leverage_NN further_RB developments_NNS in_IN the_DT machine_NN learning_VBG community_NN in_IN areas_NNS such_JJ as_IN adversarial_JJ classification_NN ._.
+We_PRP have_VBP only_RB begun_VBN to_TO explore_VB the_DT options_NNS ,_, and_CC believe_VBP that_IN significant_JJ strides_NNS can_MD be_VB made_VBN in_IN the_DT area_NN of_IN static_JJ ranking_NN by_IN further_JJ experimentation_NN with_IN additional_JJ features_NNS ,_, other_JJ machine_NN learning_NN techniques_NNS ,_, and_CC additional_JJ sources_NNS of_IN data_NNS ._.
+8_CD ._.
+ACKNOWLEDGMENTS_NNP Thank_VB you_PRP to_TO Marc_NNP Najork_NNP for_IN providing_VBG us_PRP with_IN additional_JJ PageRank_NN computations_NNS and_CC to_TO Timo_NNP Burkard_NNP for_IN assistance_NN with_IN the_DT popularity_NN data_NNS ._.
+Many_JJ thanks_NNS to_TO Chris_NNP Burges_NNP for_IN providing_VBG code_NN and_CC significant_JJ support_NN in_IN using_VBG training_NN RankNets_NNS ._.
+Also_RB ,_, we_PRP thank_VBP Susan_NNP Dumais_NNP and_CC Nick_NNP Craswell_NNP for_IN their_PRP$ edits_NNS and_CC suggestions_NNS ._.
+9_CD ._.
+REFERENCES_NNS -LSB-_-LRB- #_# -RSB-_-RRB- B_NN ._.
+Amento_NNP ,_, L_NNP ._.
+Terveen_NNP ,_, and_CC W_NN ._.
+Hill_NNP ._.
+Does_VBZ authority_NN mean_VB quality_NN ?_.
+Predicting_VBG expert_JJ quality_NN ratings_NNS of_IN Web_NN documents_NNS ._.
+In_IN Proceedings_NNP of_IN the_DT 23rd_JJ Annual_JJ International_NNP ACM_NNP SIGIR_NNP Conference_NNP on_IN Research_NNP and_CC Development_NNP in_IN Information_NNP Retrieval_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- B_NN ._.
+Bartell_NNP ,_, G_NNP ._.
+Cottrell_NNP ,_, and_CC R_NN ._.
+Belew_NNP ._.
+Automatic_NNP combination_NN of_IN multiple_JJ ranked_VBD retrieval_NN systems_NNS ._.
+In_IN Proceedings_NNP of_IN the_DT 17th_JJ Annual_JJ International_NNP ACM_NNP SIGIR_NNP Conference_NNP on_IN Research_NNP and_CC Development_NNP in_IN Information_NNP Retrieval_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- P_NN ._.
+Boldi_NNP ,_, M_NN ._.
+Santini_NNP ,_, and_CC S_NN ._.
+Vigna_NNP ._.
+PageRank_NN as_IN a_DT function_NN of_IN the_DT damping_VBG factor_NN ._.
+In_IN Proceedings_NNP of_IN the_DT International_NNP World_NNP Wide_NN Web_NN Conference_NN ,_, May_NNP ####_CD ._.
+714_CD -LSB-_-LRB- #_# -RSB-_-RRB- J_NN ._.
+Boyan_NNP ,_, D_NNP ._.
+Freitag_NNP ,_, and_CC T_NN ._.
+Joachims_NNP ._.
+A_DT machine_NN learning_VBG architecture_NN for_IN optimizing_VBG web_NN search_NN engines_NNS ._.
+In_IN AAAI_NNP Workshop_NNP on_IN Internet_NNP Based_VBD Information_NNP Systems_NNP ,_, August_NNP 1996_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- S_NN ._.
+Brin_NNP and_CC L_NNP ._.
+Page_NNP ._.
+The_DT anatomy_NN of_IN a_DT large-scale_JJ hypertextual_JJ web_NN search_NN engine_NN ._.
+In_IN Proceedings_NNP of_IN the_DT Seventh_NNP International_NNP Wide_NN Web_NN Conference_NN ,_, Brisbane_NNP ,_, Australia_NNP ,_, ####_CD ._.
+Elsevier_NNP ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- A_DT ._.
+Broder_NNP ,_, R_NN ._.
+Lempel_NNP ,_, F_NN ._.
+Maghoul_NNP ,_, and_CC J_NN ._.
+Pederson_NNP ._.
+Efficient_JJ PageRank_NN approximation_NN via_IN graph_NN aggregation_NN ._.
+In_IN Proceedings_NNP of_IN the_DT International_NNP World_NNP Wide_NN Web_NN Conference_NN ,_, May_NNP ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- C_NN ._.
+Burges_NNP ,_, T_NN ._.
+Shaked_NNP ,_, E_NNP ._.
+Renshaw_NNP ,_, A_NNP ._.
+Lazier_NNP ,_, M_NN ._.
+Deeds_NNS ,_, N_NN ._.
+Hamilton_NNP ,_, G_NNP ._.
+Hullender_NNP ._.
+Learning_VBG to_TO rank_VB using_VBG gradient_NN descent_NN ._.
+In_IN Proceedings_NNP of_IN the_DT 22nd_JJ International_NNP Conference_NN on_IN Machine_NN Learning_NNP ,_, Bonn_NNP ,_, Germany_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- D_NN ._.
+Carmel_NNP ,_, D_NNP ._.
+Cohen_NNP ,_, R_NN ._.
+Fagin_NNP ,_, E_NNP ._.
+Farchi_NNP ,_, M_NN ._.
+Herscovici_NNP ,_, Y_NN ._.
+S_NN ._.
+Maarek_NNP ,_, and_CC A_NN ._.
+Soffer_NNP ._.
+Static_JJ index_NN pruning_NN for_IN information_NN retrieval_NN systems_NNS ._.
+In_IN Proceedings_NNP of_IN the_DT 24th_JJ Annual_JJ International_NNP ACM_NNP SIGIR_NNP Conference_NNP on_IN Research_NNP and_CC Development_NNP in_IN Information_NNP Retrieval_NNP ,_, pages_NNS 43-50_CD ,_, New_NNP Orleans_NNP ,_, Louisiana_NNP ,_, USA_NNP ,_, September_NNP ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- J_NN ._.
+Cho_NNP and_CC S_NN ._.
+Roy_NNP ._.
+Impact_NN of_IN search_NN engines_NNS on_IN page_NN popularity_NN ._.
+In_IN Proceedings_NNP of_IN the_DT International_NNP World_NNP Wide_NN Web_NN Conference_NN ,_, May_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+Cho_NNP ,_, S_NN ._.
+Roy_NNP ,_, R_NN ._.
+Adams_NNP ._.
+Page_NNP Quality_NNP :_: In_IN search_NN of_IN an_DT unbiased_JJ web_NN ranking_NN ._.
+In_IN Proceedings_NNP of_IN the_DT ACM_NNP SIGMOD_NNP 2005_CD Conference_NN ._.
+Baltimore_NNP ,_, Maryland_NNP ._.
+June_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- N_NN ._.
+Craswell_NNP ,_, S_NN ._.
+Robertson_NNP ,_, H_NN ._.
+Zaragoza_NNP ,_, and_CC M_NN ._.
+Taylor_NNP ._.
+Relevance_NN weighting_NN for_IN query_NN independent_JJ evidence_NN ._.
+In_IN Proceedings_NNP of_IN the_DT 28th_JJ Annual_JJ Conference_NN on_IN Research_NNP and_CC Development_NNP in_IN Information_NNP Retrieval_NNP -LRB-_-LRB- SIGIR_NNP -RRB-_-RRB- ,_, August_NNP ,_, 2005_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- N_NN ._.
+Dalvi_NNP ,_, P_NN ._.
+Domingos_NNP ,_, Mausam_NNP ,_, S_NN ._.
+Sanghai_NNP ,_, D_NNP ._.
+Verma_NNP ._.
+Adversarial_JJ Classification_NN ._.
+In_IN Proceedings_NNP of_IN the_DT Tenth_NNP International_NNP Conference_NNP on_IN Knowledge_NNP Discovery_NNP and_CC Data_NNP Mining_NNP -LRB-_-LRB- pp_NN ._.
+99-108_CD -RRB-_-RRB- ,_, Seattle_NNP ,_, WA_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- O_NN ._.
+Dekel_NNP ,_, C_NNP ._.
+Manning_NNP ,_, and_CC Y_NN ._.
+Singer_NNP ._.
+Log-linear_JJ models_NNS for_IN label-ranking_NN ._.
+In_IN Advances_NNS in_IN Neural_NNP Information_NNP Processing_NNP Systems_NNPS ##_NN ._.
+Cambridge_NNP ,_, MA_NNP :_: MIT_NNP Press_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- S_NN ._.
+Fox_NNP ,_, K_NNP S_NN ._.
+Fox_NNP ,_, K_NNP ._.
+Karnawat_NNP ,_, M_NN ._.
+Mydland_NN ,_, S_NN ._.
+T_NN ._.
+Dumais_NNP and_CC T_NN ._.
+White_NNP -LRB-_-LRB- ####_CD -RRB-_-RRB- ._.
+Evaluating_VBG implicit_JJ measures_NNS to_TO improve_VB the_DT search_NN experiences_NNS ._.
+In_IN the_DT ACM_NNP Transactions_NNS on_IN Information_NNP Systems_NNP ,_, ##_CD -LRB-_-LRB- #_# -RRB-_-RRB- ,_, pp_NN ._.
+147-168_CD ._.
+April_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- T_NN ._.
+Haveliwala_NNP ._.
+Efficient_JJ computation_NN of_IN PageRank_NN ._.
+Stanford_NNP University_NNP Technical_NNP Report_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- T_NN ._.
+Haveliwala_NNP ._.
+Topic-sensitive_JJ PageRank_NN ._.
+In_IN Proceedings_NNP of_IN the_DT International_NNP World_NNP Wide_NN Web_NN Conference_NN ,_, May_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- D_NN ._.
+Hawking_VBG and_CC N_NN ._.
+Craswell_NNP ._.
+Very_RB large_JJ scale_NN retrieval_NN and_CC Web_NN search_NN ._.
+In_IN D_NN ._.
+Harman_NNP and_CC E_NNP ._.
+Voorhees_NNP -LRB-_-LRB- eds_NNS -RRB-_-RRB- ,_, The_DT TREC_NNP Book_NNP ._.
+MIT_NNP Press_NNP ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- R_NN ._.
+Herbrich_NNP ,_, T_NN ._.
+Graepel_NN ,_, and_CC K_NN ._.
+Obermayer_NNP ._.
+Support_NN vector_NN learning_VBG for_IN ordinal_JJ regression_NN ._.
+In_IN Proceedings_NNP of_IN the_DT Ninth_NNP International_NNP Conference_NNP on_IN Artificial_NNP Neural_NNP Networks_NNP ,_, pp_NN ._.
+97-102_NN ._.
+####_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- M_NN ._.
+Ivory_NNP and_CC M_NN ._.
+Hearst_NNP ._.
+Statistical_JJ profiles_NNS of_IN highly-rated_JJ Web_NN sites_NNS ._.
+In_IN Proceedings_NNP of_IN the_DT ACM_NNP SIGCHI_NNP Conference_NN on_IN Human_JJ Factors_NNS in_IN Computing_NNP Systems_NNPS ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- T_NN ._.
+Joachims_NNP ._.
+Optimizing_VBG search_NN engines_NNS using_VBG clickthrough_JJ data_NNS ._.
+In_IN Proceedings_NNP of_IN the_DT ACM_NNP Conference_NN on_IN Knowledge_NNP Discovery_NNP and_CC Data_NNP Mining_NNP -LRB-_-LRB- KDD_NNP -RRB-_-RRB- ,_, ####_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- T_NN ._.
+Joachims_NNP ,_, L_NNP ._.
+Granka_NNP ,_, B_NN ._.
+Pang_NNP ,_, H_NN ._.
+Hembrooke_NNP ,_, and_CC G_NN ._.
+Gay_NNS ._.
+Accurately_RB Interpreting_VBG Clickthrough_NNP Data_NNP as_IN Implicit_NNP Feedback_NNP ._.
+In_IN Proceedings_NNP of_IN the_DT Conference_NN on_IN Research_NNP and_CC Development_NNP in_IN Information_NNP Retrieval_NNP -LRB-_-LRB- SIGIR_NNP -RRB-_-RRB- ,_, ####_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+Kleinberg_NNP ._.
+Authoritative_JJ sources_NNS in_IN a_DT hyperlinked_JJ environment_NN ._.
+Journal_NNP of_IN the_DT ACM_NNP ##_CD :_: #_# ,_, pp_NN ._.
+604-32_JJ ._.
+####_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- A_DT ._.
+Langville_NNP and_CC C_NNP ._.
+Meyer_NNP ._.
+Deeper_JJR inside_IN PageRank_NNP ._.
+Internet_NNP Mathematics_NNP #_# -LRB-_-LRB- #_# -RRB-_-RRB- :_: 335-380_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- F_NN ._.
+Matthieu_NNP and_CC M_NN ._.
+Bouklit_NNP ._.
+The_DT effect_NN of_IN the_DT back_JJ button_NN in_IN a_DT random_JJ walk_NN :_: application_NN for_IN PageRank_NNP ._.
+In_IN Alternate_JJ track_NN papers_NNS and_CC posters_NNS of_IN the_DT Thirteenth_NNP International_NNP World_NNP Wide_NN Web_NN Conference_NN ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- F_NN ._.
+McSherry_NNP ._.
+A_DT uniform_JJ approach_NN to_TO accelerated_VBN PageRank_NNP computation_NN ._.
+In_IN Proceedings_NNP of_IN the_DT International_NNP World_NNP Wide_NN Web_NN Conference_NN ,_, May_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Y_NN ._.
+Minamide_NNP ._.
+Static_JJ approximation_NN of_IN dynamically_RB generated_VBN Web_NN pages_NNS ._.
+In_IN Proceedings_NNP of_IN the_DT International_NNP World_NNP Wide_NN Web_NN Conference_NN ,_, May_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- L_NN ._.
+Page_NNP ,_, S_NN ._.
+Brin_NNP ,_, R_NN ._.
+Motwani_NNP ,_, and_CC T_NN ._.
+Winograd_NNP ._.
+The_DT PageRank_NNP citation_NN ranking_NN :_: Bringing_VBG order_NN to_TO the_DT web_NN ._.
+Technical_NNP report_NN ,_, Stanford_NNP University_NNP ,_, Stanford_NNP ,_, CA_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- S_NN ._.
+Pandey_NN and_CC C_NN ._.
+Olston_NNP ._.
+User-centric_JJ Web_NN crawling_VBG ._.
+In_IN Proceedings_NNP of_IN the_DT International_NNP World_NNP Wide_NN Web_NN Conference_NN ,_, May_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- M_NN ._.
+Richardson_NNP and_CC P_NN ._.
+Domingos_NNP ._.
+The_DT intelligent_JJ surfer_NN :_: probabilistic_JJ combination_NN of_IN link_NN and_CC content_NN information_NN in_IN PageRank_NNP ._.
+In_IN Advances_NNS in_IN Neural_NNP Information_NNP Processing_NNP Systems_NNPS ##_NN ,_, pp_NN ._.
+1441-1448_CD ._.
+Cambridge_NNP ,_, MA_NNP :_: MIT_NNP Press_NNP ,_, 2002_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- C_NN ._.
+Sherman_NNP ._.
+Teoma_NNP vs_CC ._.
+Google_NNP ,_, Round_NNP #_# ._.
+Available_JJ from_IN World_NNP Wide_NN Web_NN -LRB-_-LRB- http_NN :_: /_: /_: dc_NN ._.
+internet_NN ._.
+com_NN /_: news_NN /_: article_NN ._.
+php_NN /_: 1002061_CD -RRB-_-RRB- ,_, ####_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- T_NN ._.
+Upstill_NNP ,_, N_NNP ._.
+Craswell_NNP ,_, and_CC D_NN ._.
+Hawking_VBG ._.
+Predicting_VBG fame_NN and_CC fortune_NN :_: PageRank_NN or_CC indegree_NN ?_. ._.
+In_IN the_DT Eighth_NNP Australasian_NNP Document_NNP Computing_NNP Symposium_NNP ._.
+####_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- T_NN ._.
+Upstill_NNP ,_, N_NNP ._.
+Craswell_NNP ,_, and_CC D_NN ._.
+Hawking_VBG ._.
+Query-independent_JJ evidence_NN in_IN home_NN page_NN finding_NN ._.
+In_IN ACM_NNP Transactions_NNS on_IN Information_NNP Systems_NNP ._.
+####_NN ._.
+715_CD

@@ -1,0 +1,734 @@
+A_DT Study_NN of_IN Poisson_NNP Query_NNP Generation_NNP Model_NNP for_IN Information_NNP Retrieval_NNP Qiaozhu_NNP Mei_NNP ,_, Hui_NNP Fang_NNP ,_, Chengxiang_NNP Zhai_NNP Department_NNP of_IN Computer_NNP Science_NNP University_NNP of_IN Illinois_NNP at_IN Urbana-Champaign_NNP Urbana_NNP ,_, IL_NN #####_CD -LCB-_-LRB- qmei2_NN ,_, hfang_NN ,_, czhai_NN -RCB-_-RRB- @_SYM uiuc_NN ._.
+edu_NN ABSTRACT_NN Many_JJ variants_NNS of_IN language_NN models_NNS have_VBP been_VBN proposed_VBN for_IN information_NN retrieval_NN ._.
+Most_JJS existing_VBG models_NNS are_VBP based_VBN on_IN multinomial_JJ distribution_NN and_CC would_MD score_VB documents_NNS based_VBN on_IN query_NN likelihood_NN computed_VBD based_VBN on_IN a_DT query_NN generation_NN probabilistic_JJ model_NN ._.
+In_IN this_DT paper_NN ,_, we_PRP propose_VBP and_CC study_VBP a_DT new_JJ family_NN of_IN query_NN generation_NN models_NNS based_VBN on_IN Poisson_NNP distribution_NN ._.
+We_PRP show_VBP that_IN while_IN in_IN their_PRP$ simplest_JJS forms_NNS ,_, the_DT new_JJ family_NN of_IN models_NNS and_CC the_DT existing_VBG multinomial_JJ models_NNS are_VBP equivalent_JJ ,_, they_PRP behave_VBP differently_RB for_IN many_JJ smoothing_VBG methods_NNS ._.
+We_PRP show_VBP that_IN the_DT Poisson_NNP model_NN has_VBZ several_JJ advantages_NNS over_IN the_DT multinomial_JJ model_NN ,_, including_VBG naturally_RB accommodating_VBG per-term_JJ smoothing_NN and_CC allowing_VBG for_IN more_JJR accurate_JJ background_NN modeling_NN ._.
+We_PRP present_VBP several_JJ variants_NNS of_IN the_DT new_JJ model_NN corresponding_VBG to_TO different_JJ smoothing_NN methods_NNS ,_, and_CC evaluate_VB them_PRP on_IN four_CD representative_JJ TREC_NN test_NN collections_NNS ._.
+The_DT results_NNS show_VBP that_IN while_IN their_PRP$ basic_JJ models_NNS perform_VBP comparably_RB ,_, the_DT Poisson_NNP model_NN can_MD outperform_VB multinomial_JJ model_NN with_IN per-term_JJ smoothing_NN ._.
+The_DT performance_NN can_MD be_VB further_RB improved_VBN with_IN two-stage_JJ smoothing_NN ._.
+Categories_NNS and_CC Subject_NNP Descriptors_NNPS :_: H_NN ._.
+#_# ._.
+#_# -LSB-_-LRB- Information_NNP Search_VB and_CC Retrieval_NN -RSB-_-RRB- :_: Retrieval_NNP Models_NNS General_NNP Terms_NNS :_: Algorithms_NNS 1_CD ._.
+INTRODUCTION_NN As_IN a_DT new_JJ type_NN of_IN probabilistic_JJ retrieval_NN models_NNS ,_, language_NN models_NNS have_VBP been_VBN shown_VBN to_TO be_VB effective_JJ for_IN many_JJ retrieval_NN tasks_NNS -LSB-_-LRB- ##_CD ,_, ##_CD ,_, ##_CD ,_, #_# -RSB-_-RRB- ._.
+Among_IN many_JJ variants_NNS of_IN language_NN models_NNS proposed_VBN ,_, the_DT most_RBS popular_JJ and_CC fundamental_JJ one_NN is_VBZ the_DT query-generation_JJ language_NN model_NN -LSB-_-LRB- ##_CD ,_, ##_CD -RSB-_-RRB- ,_, which_WDT leads_VBZ to_TO the_DT query-likelihood_JJ scoring_VBG method_NN for_IN ranking_JJ documents_NNS ._.
+In_IN such_PDT a_DT model_NN ,_, given_VBN a_DT query_NN q_NN and_CC a_DT document_NN d_NN ,_, we_PRP compute_VBP the_DT likelihood_NN of_IN generating_VBG query_NN q_NN with_IN a_DT model_NN estimated_VBN based_VBN on_IN document_NN d_NN ,_, i_FW ._.
+e_LS ._.
+,_, the_DT conditional_JJ probability_NN p_NN -LRB-_-LRB- q_JJ |_NN d_NN -RRB-_-RRB- ._.
+We_PRP can_MD then_RB rank_VB documents_NNS based_VBN on_IN the_DT likelihood_NN of_IN generating_VBG the_DT query_NN ._.
+Virtually_RB all_PDT the_DT existing_VBG query_NN generation_NN language_NN models_NNS are_VBP based_VBN on_IN either_CC multinomial_JJ distribution_NN -LSB-_-LRB- ##_CD ,_, #_# ,_, ##_NN -RSB-_-RRB- or_CC multivariate_JJ Bernoulli_NNP distribution_NN -LSB-_-LRB- ##_CD ,_, ##_CD -RSB-_-RRB- ._.
+The_DT multinomial_JJ distribution_NN is_VBZ especially_RB popular_JJ and_CC also_RB shown_VBN to_TO be_VB quite_RB effective_JJ ._.
+The_DT heavy_JJ use_NN of_IN multinomial_JJ distribution_NN is_VBZ partly_RB due_JJ to_TO the_DT fact_NN that_IN it_PRP has_VBZ been_VBN successfully_RB used_VBN in_IN speech_NN recognition_NN ,_, where_WRB multinomial_JJ distribution_NN is_VBZ a_DT natural_JJ choice_NN for_IN modeling_NN the_DT occurrence_NN of_IN a_DT particular_JJ word_NN in_IN a_DT particular_JJ position_NN in_IN text_NN ._.
+Compared_VBN with_IN multivariate_JJ Bernoulli_NNP ,_, multinomial_JJ distribution_NN has_VBZ the_DT advantage_NN of_IN being_VBG able_JJ to_TO model_VB the_DT frequency_NN of_IN terms_NNS in_IN the_DT query_NN ;_: in_IN contrast_NN ,_, multivariate_JJ Bernoulli_NNP only_RB models_NNS the_DT presence_NN and_CC absence_NN of_IN query_NN terms_NNS ,_, thus_RB can_MD not_RB capture_VB different_JJ frequencies_NNS of_IN query_NN terms_NNS ._.
+However_RB ,_, multivariate_JJ Bernoulli_NNP also_RB has_VBZ one_CD potential_JJ advantage_NN over_IN multinomial_JJ from_IN the_DT viewpoint_NN of_IN retrieval_NN :_: in_IN a_DT multinomial_JJ distribution_NN ,_, the_DT probabilities_NNS of_IN all_PDT the_DT terms_NNS must_MD sum_VB to_TO #_# ,_, making_VBG it_PRP hard_JJ to_TO accommodate_VB per-term_JJ smoothing_NN ,_, while_IN in_IN a_DT multivariate_JJ Bernoulli_NNP ,_, the_DT presence_NN probabilities_NNS of_IN different_JJ terms_NNS are_VBP completely_RB independent_JJ of_IN each_DT other_JJ ,_, easily_RB accommodating_VBG per-term_JJ smoothing_NN and_CC weighting_NN ._.
+Note_VB that_DT term_NN absence_NN is_VBZ also_RB indirectly_RB captured_VBN in_IN a_DT multinomial_JJ model_NN through_IN the_DT constraint_NN that_IN all_PDT the_DT term_NN probabilities_NNS must_MD sum_VB to_TO #_# ._.
+In_IN this_DT paper_NN ,_, we_PRP propose_VBP and_CC study_VBP a_DT new_JJ family_NN of_IN query_NN generation_NN models_NNS based_VBN on_IN the_DT Poisson_NNP distribution_NN ._.
+In_IN this_DT new_JJ family_NN of_IN models_NNS ,_, we_PRP model_VBP the_DT frequency_NN of_IN each_DT term_NN independently_RB with_IN a_DT Poisson_NNP distribution_NN ._.
+To_TO score_VB a_DT document_NN ,_, we_PRP would_MD first_RB estimate_VB a_DT multivariate_JJ Poisson_NNP model_NN based_VBN on_IN the_DT document_NN ,_, and_CC then_RB score_VBP it_PRP based_VBN on_IN the_DT likelihood_NN of_IN the_DT query_NN given_VBN by_IN the_DT estimated_VBN Poisson_NNP model_NN ._.
+In_IN some_DT sense_NN ,_, the_DT Poisson_NNP model_NN combines_VBZ the_DT advantage_NN of_IN multinomial_JJ in_IN modeling_NN term_NN frequency_NN and_CC the_DT advantage_NN of_IN the_DT multivariate_JJ Bernoulli_NNP in_IN accommodating_VBG per-term_JJ smoothing_NN ._.
+Indeed_RB ,_, similar_JJ to_TO the_DT multinomial_JJ distribution_NN ,_, the_DT Poisson_NNP distribution_NN models_NNS term_NN frequencies_NNS ,_, but_CC without_IN the_DT constraint_NN that_IN all_PDT the_DT term_NN probabilities_NNS must_MD sum_VB to_TO #_# ,_, and_CC similar_JJ to_TO multivariate_JJ Bernoulli_NNP ,_, it_PRP models_NNS each_DT term_NN independently_RB ,_, thus_RB can_MD easily_RB accommodate_VB per-term_JJ smoothing_NN ._.
+As_IN in_IN the_DT existing_VBG work_NN on_IN multinomial_JJ language_NN models_NNS ,_, smoothing_NN is_VBZ critical_JJ for_IN this_DT new_JJ family_NN of_IN models_NNS ._.
+We_PRP derive_VBP several_JJ smoothing_VBG methods_NNS for_IN Poisson_NNP model_NN in_IN parallel_NN to_TO those_DT used_VBN for_IN multinomial_JJ distributions_NNS ,_, and_CC compare_VB the_DT corresponding_JJ retrieval_NN models_NNS with_IN those_DT based_VBN on_IN multinomial_JJ distributions_NNS ._.
+We_PRP find_VBP that_IN while_IN with_IN some_DT smoothing_NN methods_NNS ,_, the_DT new_JJ model_NN and_CC the_DT multinomial_JJ model_NN lead_NN to_TO exactly_RB the_DT same_JJ formula_NN ,_, with_IN some_DT other_JJ smoothing_NN methods_NNS they_PRP diverge_VBP ,_, and_CC the_DT Poisson_NNP model_NN brings_VBZ in_IN more_JJR flexibility_NN for_IN smoothing_NN ._.
+In_IN particular_JJ ,_, a_DT key_JJ difference_NN is_VBZ that_IN the_DT Poisson_NNP model_NN can_MD naturally_RB accommodate_VB perterm_NN smoothing_NN ,_, which_WDT is_VBZ hard_JJ to_TO achieve_VB with_IN a_DT multinomial_JJ model_NN without_IN heuristic_NN twist_NN of_IN the_DT semantics_NNS of_IN a_DT generative_JJ model_NN ._.
+We_PRP exploit_VBP this_DT potential_JJ advantage_NN to_TO develop_VB a_DT new_JJ term-dependent_JJ smoothing_NN algorithm_NN for_IN Poisson_NNP model_NN and_CC show_VBP that_IN this_DT new_JJ smoothing_NN algorithm_NN can_MD improve_VB performance_NN over_IN term-independent_JJ smoothing_NN algorithms_NNS using_VBG either_CC Poisson_NNP or_CC multinomial_JJ model_NN ._.
+This_DT advantage_NN is_VBZ seen_VBN for_IN both_DT one-stage_JJ and_CC two-stage_JJ smoothing_NN ._.
+Another_DT potential_JJ advantage_NN of_IN the_DT Poisson_NNP model_NN is_VBZ that_IN its_PRP$ corresponding_JJ background_NN model_NN for_IN smoothing_NN can_MD be_VB improved_VBN through_IN using_VBG a_DT mixture_NN model_NN that_WDT has_VBZ a_DT closed_JJ form_NN formula_NN ._.
+This_DT new_JJ background_NN model_NN is_VBZ shown_VBN to_TO outperform_VB the_DT standard_JJ background_NN model_NN and_CC reduce_VB the_DT sensitivity_NN of_IN retrieval_NN performance_NN to_TO the_DT smoothing_NN parameter_NN ._.
+The_DT rest_NN of_IN the_DT paper_NN is_VBZ organized_VBN as_IN follows_VBZ ._.
+In_IN Section_NN #_# ,_, we_PRP introduce_VBP the_DT new_JJ family_NN of_IN query_NN generation_NN models_NNS with_IN Poisson_NNP distribution_NN ,_, and_CC present_JJ various_JJ smoothing_NN methods_NNS which_WDT lead_VBP to_TO different_JJ retrieval_NN functions_NNS ._.
+In_IN Section_NN #_# ,_, we_PRP analytically_RB compare_VBP the_DT Poisson_NNP language_NN model_NN with_IN the_DT multinomial_JJ language_NN model_NN ,_, from_IN the_DT perspective_NN of_IN retrieval_NN ._.
+We_PRP then_RB design_NN empirical_JJ experiments_NNS to_TO compare_VB the_DT two_CD families_NNS of_IN language_NN models_NNS in_IN Section_NN #_# ._.
+We_PRP discuss_VBP the_DT related_JJ work_NN in_IN #_# and_CC conclude_VBP in_IN #_# ._.
+2_LS ._.
+QUERY_NNP GENERATION_NNP WITH_IN POISSON_NNP PROCESS_NNP In_IN the_DT query_NN generation_NN framework_NN ,_, a_DT basic_JJ assumption_NN is_VBZ that_IN a_DT query_NN is_VBZ generated_VBN with_IN a_DT model_NN estimated_VBN based_VBN on_IN a_DT document_NN ._.
+In_IN most_JJS existing_VBG work_NN -LSB-_-LRB- ##_CD ,_, #_# ,_, ##_NN ,_, ##_NN -RSB-_-RRB- ,_, people_NNS assume_VBP that_IN each_DT query_NN word_NN is_VBZ sampled_VBN independently_RB from_IN a_DT multinomial_JJ distribution_NN ._.
+Alternatively_RB ,_, we_PRP assume_VBP that_IN a_DT query_NN is_VBZ generated_VBN by_IN sampling_NN the_DT frequency_NN of_IN words_NNS from_IN a_DT series_NN of_IN independent_JJ Poisson_NNP processes_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+2_LS ._.
+#_# The_DT Generation_NNP Process_VB Let_VB V_NN =_JJ -LCB-_-LRB- w1_NN ,_, ..._: ,_, wn_NN -RCB-_-RRB- be_VB a_DT vocabulary_NN set_NN ._.
+Let_VB w_NN be_VB a_DT piece_NN of_IN text_NN composed_VBN by_IN an_DT author_NN and_CC c_NN -LRB-_-LRB- w1_NN -RRB-_-RRB- ,_, ..._: ,_, c_NN -LRB-_-LRB- wn_NN -RRB-_-RRB- be_VB a_DT frequency_NN vector_NN representing_VBG w_NN ,_, where_WRB c_NN -LRB-_-LRB- wi_NN ,_, w_NN -RRB-_-RRB- is_VBZ the_DT frequency_NN count_NN of_IN term_NN wi_NN in_IN text_NN w_NN ._.
+In_IN retrieval_NN ,_, w_NN could_MD be_VB either_CC a_DT query_NN or_CC a_DT document_NN ._.
+We_PRP consider_VBP the_DT frequency_NN counts_NNS of_IN the_DT n_NN unique_JJ terms_NNS in_IN w_NN as_IN n_NN different_JJ types_NNS of_IN events_NNS ,_, sampled_VBN from_IN n_NN independent_JJ homogeneous_JJ Poisson_NNP processes_NNS ,_, respectively_RB ._.
+Suppose_VB t_NN is_VBZ the_DT time_NN period_NN during_IN which_WDT the_DT author_NN composed_VBN the_DT text_NN ._.
+With_IN a_DT homogeneous_JJ Poisson_NNP process_NN ,_, the_DT frequency_NN count_NN of_IN each_DT event_NN ,_, i_FW ._.
+e_LS ._.
+,_, the_DT number_NN of_IN occurrences_NNS of_IN wi_NN ,_, follows_VBZ a_DT Poisson_NNP distribution_NN with_IN associated_VBN parameter_NN it_PRP ,_, where_WRB i_FW is_VBZ a_DT rate_NN parameter_NN characterizing_VBG the_DT expected_VBN number_NN of_IN wi_NN in_IN a_DT unit_NN time_NN ._.
+The_DT probability_NN density_NN function_NN of_IN such_PDT a_DT Poisson_NNP Distribution_NN is_VBZ given_VBN by_IN P_NN -LRB-_-LRB- c_NN -LRB-_-LRB- wi_NN ,_, w_NN -RRB-_-RRB- =_JJ k_NN |_VBD it_PRP -RRB-_-RRB- =_JJ eit_NN -LRB-_-LRB- it_PRP -RRB-_-RRB- k_NN k_NN !_.
+Without_IN losing_VBG generality_NN ,_, we_PRP set_VBD t_NN to_TO the_DT length_NN of_IN the_DT text_NN w_NN -LRB-_-LRB- people_NNS write_VB one_CD word_NN in_IN a_DT unit_NN time_NN -RRB-_-RRB- ,_, i_FW ._.
+e_LS ._.
+,_, t_NN =_JJ |_CD w_NN |_NN ._.
+With_IN n_NN such_JJ independent_JJ Poisson_NNP processes_NNS ,_, each_DT explaining_VBG the_DT generation_NN of_IN one_CD term_NN in_IN the_DT vocabulary_NN ,_, the_DT likelihood_NN of_IN w_NN to_TO be_VB generated_VBN from_IN such_JJ Poisson_NNP processes_NNS can_MD be_VB written_VBN as_IN p_NN -LRB-_-LRB- w_NN |_NN -RRB-_-RRB- =_JJ n_NN i_FW =_JJ #_# p_NN -LRB-_-LRB- c_NN -LRB-_-LRB- wi_NN ,_, w_NN -RRB-_-RRB- |_NN -RRB-_-RRB- =_JJ n_NN i_FW =_JJ #_# ei_FW |_FW w_FW |_FW -LRB-_-LRB- i_FW |_FW w_FW |_FW -RRB-_-RRB- c_NN -LRB-_-LRB- wi_NN ,_, w_NN -RRB-_-RRB- c_NN -LRB-_-LRB- wi_NN ,_, w_NN -RRB-_-RRB- !_.
+where_WRB =_JJ -LCB-_-LRB- #_# ,_, ..._: ,_, n_NN -RCB-_-RRB- and_CC |_NN w_NN |_NN =_JJ n_NN i_FW =_JJ #_# c_NN -LRB-_-LRB- wi_NN ,_, w_NN -RRB-_-RRB- ._.
+We_PRP refer_VBP to_TO these_DT n_NN independent_JJ Poisson_NNP processes_NNS with_IN parameter_NN as_IN a_DT Poisson_NNP Language_NNP Model_NNP ._.
+Let_VB D_NN =_JJ -LCB-_-LRB- d1_NN ,_, ..._: ,_, dm_NN -RCB-_-RRB- be_VB an_DT observed_VBN set_NN of_IN document_NN samples_NNS generated_VBN from_IN the_DT Poisson_NNP process_NN above_IN ._.
+The_DT maximum_NN likelihood_NN estimate_NN -LRB-_-LRB- MLE_NN -RRB-_-RRB- of_IN i_FW is_VBZ i_FW =_JJ dD_NN c_NN -LRB-_-LRB- wi_NN ,_, d_NN -RRB-_-RRB- dD_NN w_NN V_NN c_NN -LRB-_-LRB- w_NN ,_, d_NN -RRB-_-RRB- Note_VBP that_IN this_DT MLE_NN is_VBZ different_JJ from_IN the_DT MLE_NNP for_IN the_DT Poisson_NNP distribution_NN without_IN considering_VBG the_DT document_NN lengths_NNS ,_, which_WDT appears_VBZ in_IN -LSB-_-LRB- ##_NN ,_, ##_NN -RSB-_-RRB- ._.
+Given_VBN a_DT document_NN d_NN ,_, we_PRP may_MD estimate_VB a_DT Poisson_NNP language_NN model_NN d_NN using_VBG d_NN as_IN a_DT sample_NN ._.
+The_DT likelihood_NN that_IN a_DT query_NN q_NN is_VBZ generated_VBN from_IN the_DT document_NN language_NN model_NN d_NN can_MD be_VB written_VBN as_IN p_NN -LRB-_-LRB- q_JJ |_NN d_NN -RRB-_-RRB- =_JJ wV_NN p_NN -LRB-_-LRB- c_NN -LRB-_-LRB- w_NN ,_, q_NN -RRB-_-RRB- |_CD d_NN -RRB-_-RRB- -LRB-_-LRB- #_# -RRB-_-RRB- This_DT representation_NN is_VBZ clearly_RB different_JJ from_IN the_DT multinomial_JJ query_NN generation_NN model_NN as_IN -LRB-_-LRB- #_# -RRB-_-RRB- the_DT likelihood_NN includes_VBZ all_PDT the_DT terms_NNS in_IN the_DT vocabulary_NN V_NN ,_, instead_RB of_IN only_RB those_DT appearing_VBG in_IN q_NN ,_, and_CC -LRB-_-LRB- #_# -RRB-_-RRB- instead_RB of_IN the_DT appearance_NN of_IN terms_NNS ,_, the_DT event_NN space_NN of_IN this_DT model_NN is_VBZ the_DT frequencies_NNS of_IN each_DT term_NN ._.
+In_IN practice_NN ,_, we_PRP have_VBP the_DT flexibility_NN to_TO choose_VB the_DT vocabulary_NN V_NN ._.
+In_IN one_CD extreme_NN ,_, we_PRP can_MD use_VB the_DT vocabulary_NN of_IN the_DT whole_JJ collection_NN ._.
+However_RB ,_, this_DT may_MD bring_VB in_RP noise_NN and_CC considerable_JJ computational_JJ cost_NN ._.
+In_IN the_DT other_JJ extreme_JJ ,_, we_PRP may_MD focus_VB on_IN the_DT terms_NNS in_IN the_DT query_NN and_CC ignore_VB other_JJ terms_NNS ,_, but_CC some_DT useful_JJ information_NN may_MD be_VB lost_VBN by_IN ignoring_VBG the_DT nonquery_JJ terms_NNS ._.
+As_IN a_DT compromise_NN ,_, we_PRP may_MD conflate_VB all_PDT the_DT non-query_JJ terms_NNS as_IN one_CD single_JJ pseudo_JJ term_NN ._.
+In_IN other_JJ words_NNS ,_, we_PRP may_MD assume_VB that_IN there_EX is_VBZ exactly_RB one_CD non-query_JJ term_NN in_IN the_DT vocabulary_NN for_IN each_DT query_NN ._.
+In_IN our_PRP$ experiments_NNS ,_, we_PRP adopt_VBP this_DT pseudo_NN non-query_JJ term_NN strategy_NN ._.
+A_DT document_NN can_MD be_VB scored_VBN with_IN the_DT likelihood_NN in_IN Equation_NN #_# ._.
+However_RB ,_, if_IN a_DT query_NN term_NN is_VBZ unseen_JJ in_IN the_DT document_NN ,_, the_DT MLE_NNP of_IN the_DT Poisson_NNP distribution_NN would_MD assign_VB zero_CD probability_NN to_TO the_DT term_NN ,_, causing_VBG the_DT probability_NN of_IN the_DT query_NN to_TO be_VB zero_CD ._.
+As_IN in_IN existing_VBG language_NN modeling_NN approaches_NNS ,_, the_DT main_JJ challenge_NN of_IN constructing_VBG a_DT reasonable_JJ retrieval_NN model_NN is_VBZ to_TO find_VB a_DT smoothed_VBN language_NN model_NN for_IN p_NN -LRB-_-LRB- |_CD d_NN -RRB-_-RRB- ._.
+2_LS ._.
+#_# Smoothing_VBG in_IN Poisson_NNP Retrieval_NNP Model_NNP In_IN general_JJ ,_, we_PRP want_VBP to_TO assign_VB non-zero_JJ rates_NNS for_IN the_DT query_NN terms_NNS that_WDT are_VBP not_RB seen_VBN in_IN document_NN d_NN ._.
+Many_JJ smoothing_NN methods_NNS have_VBP been_VBN proposed_VBN for_IN multinomial_JJ language_NN models_NNS -LSB-_-LRB- #_# ,_, ##_NN ,_, ##_NN -RSB-_-RRB- ._.
+In_IN general_JJ ,_, we_PRP have_VBP to_TO discount_VB the_DT probabilities_NNS of_IN some_DT words_NNS seen_VBN in_IN the_DT text_NN to_TO leave_VB some_DT extra_JJ probability_NN mass_NN to_TO assign_VB to_TO the_DT unseen_JJ words_NNS ._.
+In_IN Poisson_NNP language_NN models_NNS ,_, however_RB ,_, we_PRP do_VBP not_RB have_VB the_DT same_JJ constraint_NN as_IN in_IN a_DT multinomial_JJ model_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, wV_NN p_NN -LRB-_-LRB- w_NN |_CD d_NN -RRB-_-RRB- =_JJ #_# -RRB-_-RRB- ._.
+Thus_RB we_PRP do_VBP not_RB have_VB to_TO discount_VB the_DT probability_NN of_IN seen_VBN words_NNS in_IN order_NN to_TO give_VB a_DT non-zero_JJ rate_NN to_TO an_DT unseen_JJ word_NN ._.
+Instead_RB ,_, we_PRP only_RB need_VBP to_TO guarantee_VB that_IN k_NN =_JJ #_# ,_, #_# ,_, #_# ,_, ..._: p_NN -LRB-_-LRB- c_NN -LRB-_-LRB- w_NN ,_, d_NN -RRB-_-RRB- =_JJ k_NN |_NN d_NN -RRB-_-RRB- =_JJ #_# ._.
+In_IN this_DT section_NN ,_, we_PRP introduce_VBP three_CD different_JJ strategies_NNS to_TO smooth_VB a_DT Poisson_NNP language_NN model_NN ,_, and_CC show_VB how_WRB they_PRP lead_VBP to_TO different_JJ retrieval_NN functions_NNS ._.
+2_LS ._.
+#_# ._.
+#_# Bayesian_NNP Smoothing_NNP using_VBG Gamma_NNP Prior_RB Following_VBG the_DT risk_NN minimization_NN framework_NN in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ,_, we_PRP assume_VBP that_IN a_DT document_NN is_VBZ generated_VBN by_IN the_DT arrival_NN of_IN terms_NNS in_IN a_DT time_NN period_NN of_IN |_NN d_NN |_CD according_VBG to_TO the_DT document_NN language_NN model_NN ,_, which_WDT essentially_RB consists_VBZ of_IN a_DT vector_NN of_IN Poisson_NNP rates_NNS for_IN each_DT term_NN ,_, i_FW ._.
+e_LS ._.
+,_, d_NN =_JJ d_NN ,_, #_# ,_, ..._: ,_, d_NN ,_, |_CD V_NN |_NN ._.
+A_DT document_NN is_VBZ assumed_VBN to_TO be_VB generated_VBN from_IN a_DT potentially_RB different_JJ model_NN ._.
+Given_VBN a_DT particular_JJ document_NN d_NN ,_, we_PRP want_VBP to_TO estimate_VB d_NN ._.
+The_DT rate_NN of_IN a_DT term_NN is_VBZ estimated_VBN independently_RB of_IN other_JJ terms_NNS ._.
+We_PRP use_VBP Bayesian_JJ estimation_NN with_IN the_DT following_VBG Gamma_NN prior_RB ,_, which_WDT has_VBZ two_CD parameters_NNS ,_, and_CC :_: Gamma_NN -LRB-_-LRB- |_CD ,_, -RRB-_-RRB- =_JJ -LRB-_-LRB- -RRB-_-RRB- 1_CD e_SYM For_IN each_DT term_NN w_NN ,_, the_DT parameters_NNS w_NN and_CC w_NN are_VBP chosen_VBN to_TO be_VB w_NN =_JJ C_NN ,_, w_NN and_CC w_NN =_JJ ,_, where_WRB is_VBZ a_DT parameter_NN and_CC C_NN ,_, w_NN is_VBZ the_DT rate_NN of_IN w_NN estimated_VBN from_IN some_DT background_NN language_NN model_NN ,_, usually_RB the_DT collection_NN language_NN model_NN ._.
+The_DT posterior_JJ distribution_NN of_IN d_NN is_VBZ given_VBN by_IN p_NN -LRB-_-LRB- d_NN |_CD d_NN ,_, C_NN -RRB-_-RRB- wV_NN ew_NN -LRB-_-LRB- |_CD d_NN |_NN +_CC -RRB-_-RRB- c_NN -LRB-_-LRB- w_NN ,_, d_NN -RRB-_-RRB- +_CC C_NN ,_, w1_NN w_NN which_WDT is_VBZ a_DT product_NN of_IN |_CD V_NN |_CD Gamma_NNP distributions_NNS with_IN parameters_NNS c_NN -LRB-_-LRB- w_NN ,_, d_NN -RRB-_-RRB- +_CC C_NN ,_, w_NN and_CC |_NN d_NN |_NN +_CC for_IN each_DT word_NN w_NN ._.
+Given_VBN that_IN the_DT Gamma_NNP mean_NN is_VBZ ,_, we_PRP have_VBP d_NN ,_, w_NN =_JJ d_NN ,_, w_NN d_NN ,_, wp_NN -LRB-_-LRB- d_NN ,_, w_NN |_NN d_NN ,_, C_NN -RRB-_-RRB- dd_NN ,_, w_NN =_JJ c_NN -LRB-_-LRB- w_NN ,_, d_NN -RRB-_-RRB- +_CC C_NN ,_, w_NN |_NN d_NN |_NN +_CC This_DT is_VBZ precisely_RB the_DT smoothed_VBN estimate_NN of_IN multinomial_JJ language_NN model_NN with_IN Dirichlet_JJ prior_JJ -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+2_LS ._.
+#_# ._.
+#_# Interpolation_NN -LRB-_-LRB- Jelinek-Mercer_NN -RRB-_-RRB- Smoothing_VBG Another_DT straightforward_JJ method_NN is_VBZ to_TO decompose_VB the_DT query_NN generation_NN model_NN as_IN a_DT mixture_NN of_IN two_CD component_NN models_NNS ._.
+One_CD is_VBZ the_DT document_NN language_NN model_NN estimated_VBN with_IN maximum_NN likelihood_NN estimator_NN ,_, and_CC the_DT other_JJ is_VBZ a_DT model_NN estimated_VBN from_IN the_DT collection_NN background_NN ,_, p_NN -LRB-_-LRB- |_CD C_NN -RRB-_-RRB- ,_, which_WDT assigns_VBZ non-zero_JJ rate_NN to_TO w_VB ._.
+For_IN example_NN ,_, we_PRP may_MD use_VB an_DT interpolation_NN coefficient_NN between_IN #_# and_CC #_# -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, -LSB-_-LRB- #_# ,_, #_# -RSB-_-RRB- -RRB-_-RRB- ._.
+With_IN this_DT simple_JJ interpolation_NN ,_, we_PRP can_MD score_VB a_DT document_NN with_IN Score_NN -LRB-_-LRB- d_NN ,_, q_NN -RRB-_-RRB- =_JJ wV_NN log_NN -LRB-_-LRB- -LRB-_-LRB- #_# -RRB-_-RRB- p_NN -LRB-_-LRB- c_NN -LRB-_-LRB- w_NN ,_, q_NN -RRB-_-RRB- |_CD d_NN -RRB-_-RRB- +_CC p_NN -LRB-_-LRB- c_NN -LRB-_-LRB- w_NN ,_, q_NN -RRB-_-RRB- |_CD C_NN -RRB-_-RRB- -RRB-_-RRB- -LRB-_-LRB- #_# -RRB-_-RRB- Using_VBG the_DT maximum_NN likelihood_NN estimator_NN for_IN p_NN -LRB-_-LRB- |_CD d_NN -RRB-_-RRB- ,_, we_PRP have_VBP d_NN ,_, w_NN =_JJ c_NN -LRB-_-LRB- w_NN ,_, d_NN -RRB-_-RRB- |_CD d_NN |_NN ,_, thus_RB Equation_NN #_# becomes_VBZ Score_NN -LRB-_-LRB- d_NN ,_, q_NN -RRB-_-RRB- wdq_NN -LSB-_-LRB- log_NN -LRB-_-LRB- #_# +_CC 1_CD ed_VBN ,_, w_FW |_FW q_FW |_FW -LRB-_-LRB- d_NN ,_, w_FW |_FW q_FW |_FW -RRB-_-RRB- c_NN -LRB-_-LRB- w_NN ,_, q_NN -RRB-_-RRB- c_NN -LRB-_-LRB- w_NN ,_, q_NN -RRB-_-RRB- !_.
+p_NN -LRB-_-LRB- c_NN -LRB-_-LRB- w_NN ,_, q_NN -RRB-_-RRB- |_CD C_NN -RRB-_-RRB- -RRB-_-RRB- log_NN -LRB-_-LRB- #_# -RRB-_-RRB- ed_VBD ,_, w_VB |_CD q_JJ |_NN +_CC p_NN -LRB-_-LRB- c_NN -LRB-_-LRB- w_NN ,_, q_NN -RRB-_-RRB- =_JJ #_# |_CD C_NN -RRB-_-RRB- 1_CD +_CC p_NN -LRB-_-LRB- c_NN -LRB-_-LRB- w_NN ,_, q_NN -RRB-_-RRB- =_JJ #_# |_CD C_NN -RRB-_-RRB- -RSB-_-RRB- +_CC wd_NN log_NN -LRB-_-LRB- #_# -RRB-_-RRB- ed_VBD ,_, w_VB |_CD q_JJ |_NN +_CC p_NN -LRB-_-LRB- c_NN -LRB-_-LRB- w_NN ,_, q_NN -RRB-_-RRB- =_JJ #_# |_CD C_NN -RRB-_-RRB- 1_CD +_CC p_NN -LRB-_-LRB- c_NN -LRB-_-LRB- w_NN ,_, q_NN -RRB-_-RRB- =_JJ #_# |_CD C_NN -RRB-_-RRB- We_PRP can_MD also_RB use_VB a_DT Poisson_NNP language_NN model_NN for_IN p_NN -LRB-_-LRB- |_CD C_NN -RRB-_-RRB- ,_, or_CC use_VB some_DT other_JJ frequency-based_JJ models_NNS ._.
+In_IN the_DT retrieval_NN formula_NN above_IN ,_, the_DT first_JJ summation_NN can_MD be_VB computed_VBN efficiently_RB ._.
+The_DT second_JJ summation_NN can_MD be_VB actually_RB treated_VBN as_IN a_DT document_NN prior_RB ,_, which_WDT penalizes_VBZ long_JJ documents_NNS ._.
+As_IN the_DT second_JJ summation_NN is_VBZ difficult_JJ to_TO compute_VB efficiently_RB ,_, we_PRP conflate_VBP all_DT non-query_JJ terms_NNS as_IN one_CD pseudo_NN non-queryterm_JJ ,_, denoted_VBN as_IN N_NN ._.
+Using_VBG the_DT pseudo-term_JJ formulation_NN and_CC a_DT Poisson_NNP collection_NN model_NN ,_, we_PRP can_MD rewrite_VB the_DT retrieval_NN formula_NN as_IN Score_NN -LRB-_-LRB- d_NN ,_, q_NN -RRB-_-RRB- wdq_NN log_NN -LRB-_-LRB- #_# +_CC 1_CD ed_VBN ,_, w_NN -LRB-_-LRB- d_NN ,_, w_FW |_FW q_FW |_FW -RRB-_-RRB- c_NN -LRB-_-LRB- w_NN ,_, q_NN -RRB-_-RRB- ed_VBD ,_, C_NN |_CD q_JJ |_NN -LRB-_-LRB- d_NN ,_, C_NN -RRB-_-RRB- c_NN -LRB-_-LRB- w_NN ,_, q_NN -RRB-_-RRB- -RRB-_-RRB- +_CC log_NN -LRB-_-LRB- #_# -RRB-_-RRB- ed_VBD ,_, N_NN |_CD q_JJ |_NN +_CC eC_NN ,_, N_NN |_CD q_JJ |_NN 1_CD +_CC eC_NNP ,_, N_NNP |_CD q_JJ |_NN -LRB-_-LRB- #_# -RRB-_-RRB- where_WRB d_NN ,_, N_NN =_JJ |_CD d_NN |_CD wq_NN c_NN -LRB-_-LRB- w_NN ,_, d_NN -RRB-_-RRB- |_CD d_NN |_NN and_CC C_NN ,_, N_NN =_JJ |_CD C_NN |_CD wq_NN c_NN -LRB-_-LRB- w_NN ,_, C_NN -RRB-_-RRB- |_CD C_NN |_NN ._.
+2_LS ._.
+#_# ._.
+#_# Two-Stage_NNP Smoothing_NNP As_IN discussed_VBN in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ,_, smoothing_NN plays_VBZ two_CD roles_NNS in_IN retrieval_NN :_: -LRB-_-LRB- #_# -RRB-_-RRB- to_TO improve_VB the_DT estimation_NN of_IN the_DT document_NN language_NN model_NN ,_, and_CC -LRB-_-LRB- #_# -RRB-_-RRB- to_TO explain_VB the_DT common_JJ terms_NNS in_IN the_DT query_NN ._.
+In_IN order_NN to_TO distinguish_VB the_DT content_NN and_CC non-discriminative_JJ words_NNS in_IN a_DT query_NN ,_, we_PRP follow_VBP -LSB-_-LRB- ##_CD -RSB-_-RRB- and_CC assume_VB that_IN a_DT query_NN is_VBZ generated_VBN by_IN sampling_NN from_IN a_DT two-component_JJ mixture_NN of_IN Poisson_NNP language_NN models_NNS ,_, with_IN one_CD component_NN being_VBG the_DT document_NN model_NN d_NN and_CC the_DT other_JJ being_VBG a_DT query_NN background_NN language_NN model_NN p_NN -LRB-_-LRB- |_CD U_NN -RRB-_-RRB- ._.
+p_NN -LRB-_-LRB- |_CD U_NN -RRB-_-RRB- models_NNS the_DT typical_JJ term_NN frequencies_NNS in_IN the_DT user_NN ''_'' s_NNS queries_NNS ._.
+We_PRP may_MD then_RB score_VB each_DT document_NN with_IN the_DT query_NN likelihood_NN computed_VBN using_VBG the_DT following_VBG two-stage_JJ smoothing_NN model_NN :_: p_NN -LRB-_-LRB- c_NN -LRB-_-LRB- w_NN ,_, q_NN -RRB-_-RRB- |_CD d_NN ,_, U_NNP -RRB-_-RRB- =_JJ -LRB-_-LRB- #_# -RRB-_-RRB- p_NN -LRB-_-LRB- c_NN -LRB-_-LRB- w_NN ,_, q_NN -RRB-_-RRB- |_CD d_NN -RRB-_-RRB- +_CC p_NN -LRB-_-LRB- c_NN -LRB-_-LRB- w_NN ,_, q_NN -RRB-_-RRB- |_CD U_NNP -RRB-_-RRB- -LRB-_-LRB- #_# -RRB-_-RRB- where_WRB is_VBZ a_DT parameter_NN ,_, roughly_RB indicating_VBG the_DT amount_NN of_IN noise_NN in_IN q_NN ._.
+This_DT looks_VBZ similar_JJ to_TO the_DT interpolation_NN smoothing_NN ,_, except_IN that_DT p_NN -LRB-_-LRB- |_CD d_NN -RRB-_-RRB- now_RB should_MD be_VB a_DT smoothed_VBN language_NN model_NN ,_, instead_RB of_IN the_DT one_CD estimated_VBN with_IN MLE_NN ._.
+With_IN no_DT prior_JJ knowledge_NN on_IN p_NN -LRB-_-LRB- |_CD U_NN -RRB-_-RRB- ,_, we_PRP could_MD set_VB it_PRP to_TO p_NN -LRB-_-LRB- |_CD C_NN -RRB-_-RRB- ._.
+Any_DT smoothing_NN methods_NNS for_IN the_DT document_NN language_NN model_NN can_MD be_VB used_VBN to_TO estimate_VB p_NN -LRB-_-LRB- |_CD d_NN -RRB-_-RRB- such_JJ as_IN the_DT Gamma_NNP smoothing_NN as_IN discussed_VBN in_IN Section_NN #_# ._.
+#_# ._.
+#_# ._.
+The_DT empirical_JJ study_NN of_IN the_DT smoothing_NN methods_NNS is_VBZ presented_VBN in_IN Section_NN #_# ._.
+3_LS ._.
+ANALYSIS_NN OF_IN POISSON_NNP LANGUAGE_NNP MODEL_NNP From_IN the_DT previous_JJ section_NN ,_, we_PRP notice_VBP that_IN the_DT Poisson_NNP language_NN model_NN has_VBZ a_DT strong_JJ connection_NN to_TO the_DT multinomial_JJ language_NN model_NN ._.
+This_DT is_VBZ expected_VBN since_IN they_PRP both_DT belong_VBP to_TO the_DT exponential_JJ family_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+However_RB ,_, there_EX are_VBP many_JJ differences_NNS when_WRB these_DT two_CD families_NNS of_IN models_NNS are_VBP applied_VBN with_IN different_JJ smoothing_NN methods_NNS ._.
+From_IN the_DT perspective_NN of_IN retrieval_NN ,_, will_MD these_DT two_CD language_NN models_NNS perform_VBP equivalently_RB ?_.
+If_IN not_RB ,_, which_WDT model_VBP provides_VBZ more_JJR benefits_NNS to_TO retrieval_NN ,_, or_CC provides_VBZ flexibility_NN which_WDT could_MD lead_VB to_TO potential_JJ benefits_NNS ?_.
+In_IN this_DT section_NN ,_, we_PRP analytically_RB discuss_VBP the_DT retrieval_NN features_NNS of_IN the_DT Poisson_NNP language_NN models_NNS ,_, by_IN comparing_VBG their_PRP$ behavior_NN with_IN that_DT of_IN the_DT multinomial_JJ language_NN models_NNS ._.
+3_LS ._.
+#_# The_DT Equivalence_NN of_IN Basic_JJ Models_NNS Let_VB us_PRP begin_VB with_IN the_DT assumption_NN that_IN all_PDT the_DT query_NN terms_NNS appear_VBP in_IN every_DT document_NN ._.
+Under_IN this_DT assumption_NN ,_, no_DT smoothing_NN is_VBZ needed_VBN ._.
+A_DT document_NN can_MD be_VB scored_VBN by_IN the_DT log_NN likelihood_NN of_IN the_DT query_NN with_IN the_DT maximum_NN likelihood_NN estimate_NN :_: Score_NN -LRB-_-LRB- d_NN ,_, q_NN -RRB-_-RRB- =_JJ wV_NN log_NN ed_VBD ,_, w_FW |_FW q_FW |_FW -LRB-_-LRB- d_NN ,_, w_FW |_FW q_FW |_FW -RRB-_-RRB- c_NN -LRB-_-LRB- w_NN ,_, q_NN -RRB-_-RRB- c_NN -LRB-_-LRB- w_NN ,_, q_NN -RRB-_-RRB- !_.
+-LRB-_-LRB- #_# -RRB-_-RRB- Using_VBG the_DT MLE_NNP ,_, we_PRP have_VBP d_NN ,_, w_NN =_JJ c_NN -LRB-_-LRB- w_NN ,_, d_NN -RRB-_-RRB- wV_NN c_NN -LRB-_-LRB- w_NN ,_, d_NN -RRB-_-RRB- ._.
+Thus_RB Score_NN -LRB-_-LRB- d_NN ,_, q_NN -RRB-_-RRB- c_NN -LRB-_-LRB- w_NN ,_, q_NN -RRB-_-RRB- >_JJR #_# c_NN -LRB-_-LRB- w_NN ,_, q_NN -RRB-_-RRB- log_NN c_NN -LRB-_-LRB- w_NN ,_, d_NN -RRB-_-RRB- wV_NN c_NN -LRB-_-LRB- w_NN ,_, d_NN -RRB-_-RRB- This_DT is_VBZ exactly_RB the_DT log_NN likelihood_NN of_IN the_DT query_NN if_IN the_DT document_NN language_NN model_NN is_VBZ a_DT multinomial_JJ with_IN maximum_NN likelihood_NN estimate_NN ._.
+Indeed_RB ,_, even_RB with_IN Gamma_NN smoothing_NN ,_, when_WRB plugging_VBG d_NN ,_, w_NN =_JJ c_NN -LRB-_-LRB- w_NN ,_, d_NN -RRB-_-RRB- +_CC C_NN ,_, w_NN |_NN d_NN |_NN +_CC and_CC C_NN ,_, w_NN =_JJ c_NN -LRB-_-LRB- w_NN ,_, C_NN -RRB-_-RRB- |_NN C_NN |_CD into_IN Equation_NN #_# ,_, it_PRP is_VBZ easy_JJ to_TO show_VB that_IN Score_NN -LRB-_-LRB- d_NN ,_, q_NN -RRB-_-RRB- wqd_NN c_NN -LRB-_-LRB- w_NN ,_, q_NN -RRB-_-RRB- log_NN -LRB-_-LRB- #_# +_CC c_NN -LRB-_-LRB- w_NN ,_, d_NN -RRB-_-RRB- c_NN -LRB-_-LRB- w_NN ,_, C_NN -RRB-_-RRB- |_CD C_NN |_NN -RRB-_-RRB- +_CC |_CD q_JJ |_NNS log_VBP |_CD d_NN |_NN +_CC -LRB-_-LRB- #_# -RRB-_-RRB- which_WDT is_VBZ exactly_RB the_DT Dirichlet_NNP retrieval_NN formula_NN in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ._.
+Note_VB that_IN this_DT equivalence_JJ holds_VBZ only_RB when_WRB the_DT document_NN length_NN variation_NN is_VBZ modeled_VBN with_IN Poisson_NNP process_NN ._.
+This_DT derivation_NN indicates_VBZ the_DT equivalence_JJ of_IN the_DT basic_JJ Poisson_NNP and_CC multinomial_JJ language_NN models_NNS for_IN retrieval_NN ._.
+With_IN other_JJ smoothing_NN strategies_NNS ,_, however_RB ,_, the_DT two_CD models_NNS would_MD be_VB different_JJ ._.
+Nevertheless_RB ,_, with_IN this_DT equivalence_JJ in_IN basic_JJ models_NNS ,_, we_PRP could_MD expect_VB that_IN the_DT Poisson_NNP language_NN model_NN performs_VBZ comparably_RB to_TO the_DT multinomial_JJ language_NN model_NN in_IN retrieval_NN ,_, if_IN only_RB simple_JJ smoothing_NN is_VBZ explored_VBN ._.
+Based_VBN on_IN this_DT equivalence_JJ analysis_NN ,_, one_CD may_MD ask_VB ,_, why_WRB we_PRP should_MD pursue_VB the_DT Poisson_NNP language_NN model_NN ._.
+In_IN the_DT following_VBG sections_NNS ,_, we_PRP show_VBP that_IN despite_IN the_DT equivalence_JJ in_IN their_PRP$ basic_JJ models_NNS ,_, the_DT Poisson_NNP language_NN model_NN brings_VBZ in_IN extra_JJ flexibility_NN for_IN exploring_VBG advanced_JJ techniques_NNS on_IN various_JJ retrieval_NN features_NNS ,_, which_WDT could_MD not_RB be_VB achieved_VBN with_IN multinomial_JJ language_NN models_NNS ._.
+3_LS ._.
+#_# Term_NNP Dependent_NNP Smoothing_NNP One_CD flexibility_NN of_IN the_DT Poisson_NNP language_NN model_NN is_VBZ that_IN it_PRP provides_VBZ a_DT natural_JJ framework_NN to_TO accommodate_VB term_NN dependent_JJ -LRB-_-LRB- per-term_JJ -RRB-_-RRB- smoothing_NN ._.
+Existing_VBG work_NN on_IN language_NN model_NN smoothing_NN has_VBZ already_RB shown_VBN that_IN different_JJ types_NNS of_IN queries_NNS should_MD be_VB smoothed_VBN differently_RB according_VBG to_TO how_WRB discriminative_JJ the_DT query_NN terms_NNS are_VBP ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- also_RB predicted_VBD that_IN different_JJ terms_NNS should_MD have_VB a_DT different_JJ smoothing_NN weights_NNS ._.
+With_IN multinomial_JJ query_NN generation_NN models_NNS ,_, people_NNS usually_RB use_VBP a_DT single_JJ smoothing_NN coefficient_NN to_TO control_VB the_DT combination_NN of_IN the_DT document_NN model_NN and_CC the_DT background_NN model_NN -LSB-_-LRB- ##_CD ,_, ##_CD -RSB-_-RRB- ._.
+This_DT parameter_NN can_MD be_VB made_VBN specific_JJ for_IN different_JJ queries_NNS ,_, but_CC always_RB has_VBZ to_TO be_VB a_DT constant_JJ for_IN all_PDT the_DT terms_NNS ._.
+This_DT is_VBZ mandatory_JJ since_IN a_DT multinomial_JJ language_NN model_NN has_VBZ the_DT constraint_NN that_WDT wV_NN p_NN -LRB-_-LRB- w_NN |_CD d_NN -RRB-_-RRB- =_JJ #_# ._.
+However_RB ,_, from_IN retrieval_NN perspective_NN ,_, different_JJ terms_NNS may_MD need_VB to_TO be_VB smoothed_VBN differently_RB even_RB if_IN they_PRP are_VBP in_IN the_DT same_JJ query_NN ._.
+For_IN example_NN ,_, a_DT non-discriminative_JJ term_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, the_DT ,_, is_VBZ -RRB-_-RRB- is_VBZ expected_VBN to_TO be_VB explained_VBN more_RBR with_IN the_DT background_NN model_NN ,_, while_IN a_DT content_JJ term_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, retrieval_NN ,_, bush_NN -RRB-_-RRB- in_IN the_DT query_NN should_MD be_VB explained_VBN with_IN the_DT document_NN model_NN ._.
+Therefore_RB ,_, a_DT better_JJR way_NN of_IN smoothing_NN would_MD be_VB to_TO set_VB the_DT interpolation_NN coefficient_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, in_IN Formula_NNP #_# and_CC Formula_NNP #_# -RRB-_-RRB- specifically_RB for_IN each_DT term_NN ._.
+Since_IN the_DT Poisson_NNP language_NN model_NN does_VBZ not_RB have_VB the_DT sum-to-one_NN constraint_NN across_IN terms_NNS ,_, it_PRP can_MD easily_RB accommodate_VB per-term_JJ smoothing_NN without_IN needing_VBG to_TO heuristically_RB twist_VB the_DT semantics_NNS of_IN a_DT generative_JJ model_NN as_IN in_IN the_DT case_NN of_IN multinomial_JJ language_NN models_NNS ._.
+Below_IN we_PRP present_VBP a_DT possible_JJ way_NN to_TO explore_VB term_NN dependent_JJ smoothing_VBG with_IN Poisson_NNP language_NN models_NNS ._.
+Essentially_RB ,_, we_PRP want_VBP to_TO use_VB a_DT term-specific_JJ smoothing_NN coefficient_NN in_IN the_DT linear_JJ combination_NN ,_, denoted_VBN as_IN w_NN ._.
+This_DT coefficient_NN should_MD intuitively_RB be_VB larger_JJR if_IN w_NN is_VBZ a_DT common_JJ word_NN and_CC smaller_JJR if_IN it_PRP is_VBZ a_DT content_JJ word_NN ._.
+The_DT key_JJ problem_NN is_VBZ to_TO find_VB a_DT method_NN to_TO assign_VB reasonable_JJ values_NNS to_TO w_VB ._.
+Empirical_JJ tuning_NN is_VBZ infeasible_JJ for_IN so_RB many_JJ parameters_NNS ._.
+We_PRP may_MD instead_RB estimate_VB the_DT parameters_NNS =_JJ -LCB-_-LRB- #_# ,_, ..._: ,_, |_CD V_NN |_CD -RCB-_-RRB- by_IN maximizing_VBG the_DT likelihood_NN of_IN the_DT query_NN given_VBN the_DT mixture_NN model_NN of_IN p_NN -LRB-_-LRB- q_NN |_CD Q_NNP -RRB-_-RRB- and_CC p_NN -LRB-_-LRB- q_NN |_CD U_NNP -RRB-_-RRB- ,_, where_WRB Q_NNP is_VBZ the_DT true_JJ query_NN model_NN to_TO generate_VB the_DT query_NN and_CC p_NN -LRB-_-LRB- q_NN |_CD U_NNP -RRB-_-RRB- is_VBZ a_DT query_NN background_NN model_NN as_IN discussed_VBN in_IN Section_NN #_# ._.
+#_# ._.
+#_# ._.
+With_IN the_DT model_NN p_NN -LRB-_-LRB- q_NN |_CD Q_NNP -RRB-_-RRB- hidden_VBN ,_, the_DT query_NN likelihood_NN is_VBZ p_NN -LRB-_-LRB- q_JJ |_NN ,_, U_NNP -RRB-_-RRB- =_JJ Q_NNP wV_NN -LRB-_-LRB- -LRB-_-LRB- #_# w_FW -RRB-_-RRB- p_NN -LRB-_-LRB- c_NN -LRB-_-LRB- w_NN ,_, q_NN -RRB-_-RRB- |_CD Q_NNP -RRB-_-RRB- +_CC wp_NN -LRB-_-LRB- c_NN -LRB-_-LRB- w_NN ,_, q_NN -RRB-_-RRB- |_CD U_NNP -RRB-_-RRB- -RRB-_-RRB- P_NN -LRB-_-LRB- Q_NNP |_CD U_NNP -RRB-_-RRB- dQ_NNP If_IN we_PRP have_VBP relevant_JJ documents_NNS for_IN each_DT query_NN ,_, we_PRP can_MD approximate_JJ the_DT query_NN model_NN space_NN with_IN the_DT language_NN models_NNS of_IN all_PDT the_DT relevant_JJ documents_NNS ._.
+Without_IN relevant_JJ documents_NNS ,_, we_PRP opt_VBP to_TO approximate_JJ the_DT query_NN model_NN space_NN with_IN the_DT models_NNS of_IN all_PDT the_DT documents_NNS in_IN the_DT collection_NN ._.
+Setting_VBG p_NN -LRB-_-LRB- |_CD U_NN -RRB-_-RRB- as_IN p_NN -LRB-_-LRB- |_CD C_NN -RRB-_-RRB- ,_, the_DT query_NN likelihood_NN becomes_VBZ p_NN -LRB-_-LRB- q_JJ |_NN ,_, U_NNP -RRB-_-RRB- =_JJ dC_NN d_NN wV_NN -LRB-_-LRB- -LRB-_-LRB- 1w_NN -RRB-_-RRB- p_NN -LRB-_-LRB- c_NN -LRB-_-LRB- w_NN ,_, q_NN -RRB-_-RRB- |_CD d_NN -RRB-_-RRB- +_CC wp_NN -LRB-_-LRB- c_NN -LRB-_-LRB- w_NN ,_, q_NN -RRB-_-RRB- |_CD C_NN -RRB-_-RRB- -RRB-_-RRB- where_WRB d_NN =_JJ p_NN -LRB-_-LRB- d_NN |_CD U_NNP -RRB-_-RRB- ._.
+p_NN -LRB-_-LRB- |_CD d_NN -RRB-_-RRB- is_VBZ an_DT estimated_VBN Poisson_NNP language_NN model_NN for_IN document_NN d_NN ._.
+If_IN we_PRP have_VBP prior_RB knowledge_NN on_IN p_NN -LRB-_-LRB- d_NN |_CD U_NNP -RRB-_-RRB- ,_, such_JJ as_IN which_WDT documents_NNS are_VBP relevant_JJ to_TO the_DT query_NN ,_, we_PRP can_MD set_VB d_NN accordingly_RB ,_, because_IN what_WP we_PRP want_VBP is_VBZ to_TO find_VB that_IN can_MD maximize_VB the_DT likelihood_NN of_IN the_DT query_NN given_VBN relevant_JJ documents_NNS ._.
+Without_IN this_DT prior_JJ knowledge_NN ,_, we_PRP can_MD leave_VB d_NN as_IN free_JJ parameters_NNS ,_, and_CC use_VB the_DT EM_NNP algorithm_NN to_TO estimate_VB d_NN and_CC ._.
+The_DT updating_VBG functions_NNS are_VBP given_VBN as_IN -LRB-_-LRB- k_NN +_CC #_# -RRB-_-RRB- d_NN =_JJ d_NN wV_NN -LRB-_-LRB- -LRB-_-LRB- #_# w_FW -RRB-_-RRB- p_NN -LRB-_-LRB- c_NN -LRB-_-LRB- w_NN ,_, q_NN -RRB-_-RRB- |_CD d_NN -RRB-_-RRB- +_CC wp_NN -LRB-_-LRB- c_NN -LRB-_-LRB- w_NN ,_, q_NN -RRB-_-RRB- |_CD C_NN -RRB-_-RRB- -RRB-_-RRB- dC_NN d_NN wV_NN -LRB-_-LRB- -LRB-_-LRB- #_# w_FW -RRB-_-RRB- p_NN -LRB-_-LRB- c_NN -LRB-_-LRB- w_NN ,_, q_NN -RRB-_-RRB- |_CD d_NN -RRB-_-RRB- +_CC wp_NN -LRB-_-LRB- c_NN -LRB-_-LRB- w_NN ,_, q_NN -RRB-_-RRB- |_CD C_NN -RRB-_-RRB- -RRB-_-RRB- and_CC -LRB-_-LRB- k_NN +_CC #_# -RRB-_-RRB- w_NN =_JJ dC_NN d_NN wp_NN -LRB-_-LRB- c_NN -LRB-_-LRB- w_NN ,_, q_NN -RRB-_-RRB- |_CD C_NN -RRB-_-RRB- -RRB-_-RRB- -LRB-_-LRB- #_# w_FW -RRB-_-RRB- p_NN -LRB-_-LRB- c_NN -LRB-_-LRB- w_NN ,_, q_NN -RRB-_-RRB- |_CD d_NN -RRB-_-RRB- +_CC wp_NN -LRB-_-LRB- c_NN -LRB-_-LRB- w_NN ,_, q_NN -RRB-_-RRB- |_CD C_NN -RRB-_-RRB- -RRB-_-RRB- As_IN discussed_VBN in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ,_, we_PRP only_RB need_VBP to_TO run_VB the_DT EM_NNP algorithm_NN for_IN several_JJ iterations_NNS ,_, thus_RB the_DT computational_JJ cost_NN is_VBZ relatively_RB low_JJ ._.
+We_PRP again_RB assume_VB our_PRP$ vocabulary_NN containing_VBG all_DT query_NN terms_NNS plus_CC a_DT pseudo_NN non-query_JJ term_NN ._.
+Note_VB that_IN the_DT function_NN does_VBZ not_RB give_VB an_DT explicit_JJ way_NN of_IN estimating_VBG the_DT coefficient_NN for_IN the_DT unseen_JJ non-query_JJ term_NN ._.
+In_IN our_PRP$ experiments_NNS ,_, we_PRP set_VBD it_PRP to_TO the_DT average_NN over_IN w_NN of_IN all_DT query_NN terms_NNS ._.
+With_IN this_DT flexibility_NN ,_, we_PRP expect_VBP Poisson_NNP language_NN models_NNS could_MD improve_VB the_DT retrieval_NN performance_NN ,_, especially_RB for_IN verbose_JJ queries_NNS ,_, where_WRB the_DT query_NN terms_NNS have_VBP various_JJ discriminative_JJ values_NNS ._.
+In_IN Section_NN #_# ,_, we_PRP use_VBP empirical_JJ experiments_NNS to_TO prove_VB this_DT hypothesis_NN ._.
+3_LS ._.
+#_# Mixture_NNP Background_NNP Models_NNS Another_DT flexibility_NN is_VBZ to_TO explore_VB different_JJ background_NN -LRB-_-LRB- collection_NN -RRB-_-RRB- models_NNS -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, p_NN -LRB-_-LRB- |_CD U_NN -RRB-_-RRB- ,_, or_CC p_NN -LRB-_-LRB- |_CD C_NN -RRB-_-RRB- -RRB-_-RRB- ._.
+One_CD common_JJ assumption_NN made_VBN in_IN language_NN modeling_NN information_NN retrieval_NN is_VBZ that_IN the_DT background_NN model_NN is_VBZ a_DT homogeneous_JJ model_NN of_IN the_DT document_NN models_NNS -LSB-_-LRB- ##_NNS ,_, ##_NN -RSB-_-RRB- ._.
+Similarly_RB ,_, we_PRP can_MD also_RB make_VB the_DT assumption_NN that_IN the_DT collection_NN model_NN is_VBZ a_DT Poisson_NNP language_NN model_NN ,_, with_IN the_DT rates_NNS C_NN ,_, w_NN =_JJ dC_NN c_NN -LRB-_-LRB- w_NN ,_, d_NN -RRB-_-RRB- |_CD C_NN |_NN ._.
+However_RB ,_, this_DT assumption_NN usually_RB does_VBZ not_RB hold_VB ,_, since_IN the_DT collection_NN is_VBZ far_RB more_RBR complex_JJ than_IN a_DT single_JJ document_NN ._.
+Indeed_RB ,_, the_DT collection_NN usually_RB consists_VBZ of_IN a_DT mixture_NN of_IN documents_NNS with_IN various_JJ genres_NNS ,_, authors_NNS ,_, and_CC topics_NNS ,_, etc_FW ._.
+Treating_VBG the_DT collection_NN model_NN as_IN a_DT mixture_NN of_IN document_NN models_NNS ,_, instead_RB of_IN a_DT single_JJ pseudo-document_NN model_NN is_VBZ more_RBR reasonable_JJ ._.
+Existing_VBG work_NN of_IN multinomial_JJ language_NN modeling_NN has_VBZ already_RB shown_VBN that_IN a_DT better_JJR modeling_NN of_IN background_NN improves_VBZ the_DT retrieval_NN performance_NN ,_, such_JJ as_IN clusters_NNS -LSB-_-LRB- ##_NNS ,_, ##_NN -RSB-_-RRB- ,_, neighbor_NN documents_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, and_CC aspects_NNS -LSB-_-LRB- #_# ,_, ##_NN -RSB-_-RRB- ._.
+All_PDT the_DT approaches_NNS can_MD be_VB easily_RB adopted_VBN using_VBG Poisson_NNP language_NN models_NNS ._.
+However_RB ,_, a_DT common_JJ problem_NN of_IN these_DT approaches_NNS is_VBZ that_IN they_PRP all_DT require_VBP heavy_JJ computation_NN to_TO construct_VB the_DT background_NN model_NN ._.
+With_IN Poisson_NNP language_NN modeling_NN ,_, we_PRP show_VBP that_IN it_PRP is_VBZ possible_JJ to_TO model_VB the_DT mixture_NN background_NN without_IN paying_VBG for_IN the_DT heavy_JJ computational_JJ cost_NN ._.
+Poisson_NNP Mixture_NNP -LSB-_-LRB- #_# -RSB-_-RRB- has_VBZ been_VBN proposed_VBN to_TO model_VB a_DT collection_NN of_IN documents_NNS ,_, which_WDT can_MD fit_VB the_DT data_NNS much_RB better_JJR than_IN a_DT single_JJ Poisson_NNP ._.
+The_DT basic_JJ idea_NN is_VBZ to_TO assume_VB that_IN the_DT collection_NN is_VBZ generated_VBN from_IN a_DT mixture_NN of_IN Poisson_NNP models_NNS ,_, which_WDT has_VBZ the_DT general_JJ form_NN of_IN p_NN -LRB-_-LRB- x_NN =_JJ k_NN |_CD PM_NN -RRB-_-RRB- =_JJ p_NN -LRB-_-LRB- -RRB-_-RRB- p_NN -LRB-_-LRB- x_NN =_JJ k_NN |_NN -RRB-_-RRB- d_NN p_NN -LRB-_-LRB- |_NN -RRB-_-RRB- is_VBZ a_DT single_JJ Poisson_NNP model_NN and_CC p_NN -LRB-_-LRB- -RRB-_-RRB- is_VBZ an_DT arbitrary_JJ probability_NN density_NN function_NN ._.
+There_EX are_VBP three_CD well_RB known_VBN Poisson_NNP mixtures_NNS -LSB-_-LRB- #_# -RSB-_-RRB- :_: 2-Poisson_NN ,_, Negative_JJ Binomial_NNP ,_, and_CC the_DT Katz_NNP ''_'' s_VBZ K-Mixture_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+Note_VB that_IN the_DT 2-Poisson_NN model_NN has_VBZ actually_RB been_VBN explored_VBN in_IN probabilistic_JJ retrieval_NN models_NNS ,_, which_WDT led_VBD to_TO the_DT well-known_JJ BM25_NN formula_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+All_PDT these_DT mixtures_NNS have_VBP closed_VBN forms_NNS ,_, and_CC can_MD be_VB estimated_VBN from_IN the_DT collection_NN of_IN documents_NNS efficiently_RB ._.
+This_DT is_VBZ an_DT advantage_NN over_IN the_DT multinomial_JJ mixture_NN models_NNS ,_, such_JJ as_IN PLSI_NN -LSB-_-LRB- #_# -RSB-_-RRB- and_CC LDA_NN -LSB-_-LRB- #_# -RSB-_-RRB- ,_, for_IN retrieval_NN ._.
+For_IN example_NN ,_, the_DT probability_NN density_NN function_NN of_IN Katz_NNP ''_'' s_NNS K-Mixture_NN is_VBZ given_VBN as_IN p_NN -LRB-_-LRB- c_NN -LRB-_-LRB- w_NN -RRB-_-RRB- =_JJ k_NN |_NN w_NN ,_, w_NN -RRB-_-RRB- =_JJ -LRB-_-LRB- #_# w_FW -RRB-_-RRB- k_NN ,_, #_# +_CC w_NN w_NN +_CC #_# -LRB-_-LRB- w_NN w_NN +_CC #_# -RRB-_-RRB- k_NN where_WRB k_NN ,_, #_# =_JJ #_# when_WRB k_NN =_JJ #_# ,_, and_CC #_# otherwise_RB ._.
+With_IN the_DT observation_NN of_IN a_DT collection_NN of_IN documents_NNS ,_, w_NN and_CC w_NN can_MD be_VB estimated_VBN as_IN w_NN =_JJ cf_NN -LRB-_-LRB- w_NN -RRB-_-RRB- df_NN -LRB-_-LRB- w_NN -RRB-_-RRB- df_NN -LRB-_-LRB- w_NN -RRB-_-RRB- and_CC w_NN =_JJ cf_NN -LRB-_-LRB- w_NN -RRB-_-RRB- Nw_NN where_WRB cf_NN -LRB-_-LRB- w_NN -RRB-_-RRB- and_CC df_NN -LRB-_-LRB- w_NN -RRB-_-RRB- are_VBP the_DT collection_NN frequency_NN and_CC document_NN frequency_NN of_IN w_NN ,_, and_CC N_NN is_VBZ the_DT number_NN of_IN documents_NNS in_IN the_DT collection_NN ._.
+To_TO account_VB for_IN the_DT different_JJ document_NN lengths_NNS ,_, we_PRP assume_VBP that_IN w_NN is_VBZ a_DT reasonable_JJ estimation_NN for_IN generating_VBG a_DT document_NN of_IN the_DT average_JJ length_NN ,_, and_CC use_NN =_JJ w_NN avdl_NN |_CD q_NN |_CD to_TO generate_VB the_DT query_NN ._.
+This_DT Poisson_NNP mixture_NN model_NN can_MD be_VB easily_RB used_VBN to_TO replace_VB P_NN -LRB-_-LRB- |_CD C_NN -RRB-_-RRB- in_IN the_DT retrieval_NN functions_VBZ #_# and_CC #_# ._.
+3_LS ._.
+#_# Other_JJ Possible_JJ Flexibilities_NNS In_IN addition_NN to_TO term_NN dependent_JJ smoothing_NN and_CC efficient_JJ mixture_NN background_NN ,_, a_DT Poisson_NNP language_NN model_NN has_VBZ also_RB some_DT other_JJ potential_JJ advantages_NNS ._.
+For_IN example_NN ,_, in_IN Section_NN #_# ,_, we_PRP see_VBP that_IN Formula_NNP #_# introduces_VBZ a_DT component_NN which_WDT does_VBZ document_NN length_NN penalization_NN ._.
+Intuitively_RB ,_, when_WRB the_DT document_NN has_VBZ more_JJR unique_JJ words_NNS ,_, it_PRP will_MD be_VB penalized_VBN more_RBR ._.
+On_IN the_DT other_JJ hand_NN ,_, if_IN a_DT document_NN is_VBZ exactly_RB n_NN copies_NNS of_IN another_DT document_NN ,_, it_PRP would_MD not_RB get_VB over_IN penalized_VBN ._.
+This_DT feature_NN is_VBZ desirable_JJ and_CC not_RB achieved_VBN with_IN the_DT Dirichlet_NNP model_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+Potentially_RB ,_, this_DT component_NN could_MD penalize_VB a_DT document_NN according_VBG to_TO what_WP types_NNS of_IN terms_NNS it_PRP contains_VBZ ._.
+With_IN term_NN specific_JJ settings_NNS of_IN ,_, we_PRP could_MD get_VB even_RB more_RBR flexibility_NN for_IN document_NN length_NN normalization_NN ._.
+Pseudo-feedback_NN is_VBZ yet_RB another_DT interesting_JJ direction_NN where_WRB the_DT Poission_NNP model_NN might_MD be_VB able_JJ to_TO show_VB its_PRP$ advantage_NN ._.
+With_IN model-based_JJ feedback_NN ,_, we_PRP could_MD again_RB relax_VB the_DT combination_NN coefficients_NNS of_IN the_DT feedback_NN model_NN and_CC the_DT background_NN model_NN ,_, and_CC allow_VBP different_JJ terms_NNS to_TO contribute_VB differently_RB to_TO the_DT feedback_NN model_NN ._.
+We_PRP could_MD also_RB utilize_VB the_DT relevant_JJ documents_NNS to_TO learn_VB better_JJR per-term_JJ smoothing_NN coefficients_NNS ._.
+4_LS ._.
+EVALUATION_NN In_IN Section_NN #_# ,_, we_PRP analytically_RB compared_VBD the_DT Poisson_NNP language_NN models_NNS and_CC multinomial_JJ language_NN models_NNS from_IN the_DT perspective_NN of_IN query_NN generation_NN and_CC retrieval_NN ._.
+In_IN this_DT section_NN ,_, we_PRP compare_VBP these_DT two_CD families_NNS of_IN models_NNS empirically_RB ._.
+Experiment_NN results_NNS show_VBP that_IN the_DT Poisson_NNP model_NN with_IN perterm_NN smoothing_NN outperforms_VBZ multinomial_JJ model_NN ,_, and_CC the_DT performance_NN can_MD be_VB further_RB improved_VBN with_IN two-stage_JJ smoothing_NN ._.
+Using_VBG Poisson_NNP mixture_NN as_IN background_NN model_NN also_RB improves_VBZ the_DT retrieval_NN performance_NN ._.
+4_LS ._.
+#_# Datasets_NNPS Since_IN retrieval_NN performance_NN could_MD significantly_RB vary_VB from_IN one_CD test_NN collection_NN to_TO another_DT ,_, and_CC from_IN one_CD query_NN to_TO another_DT ,_, we_PRP select_VBP four_CD representative_JJ TREC_NN test_NN collections_NNS :_: AP_NN ,_, Trec7_NN ,_, Trec8_NN ,_, and_CC Wt2g_NN -LRB-_-LRB- Web_NN -RRB-_-RRB- ._.
+To_TO cover_VB different_JJ types_NNS of_IN queries_NNS ,_, we_PRP follow_VBP -LSB-_-LRB- ##_CD ,_, #_# -RSB-_-RRB- ,_, and_CC construct_NN short-keyword_NN -LRB-_-LRB- SK_NN ,_, keyword_JJ title_NN -RRB-_-RRB- ,_, short-verbose_NN -LRB-_-LRB- SV_NN ,_, one_CD sentence_NN description_NN -RRB-_-RRB- ,_, and_CC long-verbose_NN -LRB-_-LRB- LV_NN ,_, multiple_JJ sentences_NNS -RRB-_-RRB- queries_NNS ._.
+The_DT documents_NNS are_VBP stemmed_VBN with_IN the_DT Porter_NNP ''_'' s_VBZ stemmer_NN ,_, and_CC we_PRP do_VBP not_RB remove_VB any_DT stop_NN word_NN ._.
+For_IN each_DT parameter_NN ,_, we_PRP vary_VBP its_PRP$ value_NN to_TO cover_VB a_DT reasonably_RB wide_JJ range_NN ._.
+4_LS ._.
+#_# Comparison_NN to_TO Multinomial_JJ We_PRP compare_VBP the_DT performance_NN of_IN the_DT Poisson_NNP retrieval_NN models_NNS and_CC multinomial_JJ retrieval_NN models_NNS using_VBG interpolation_NN -LRB-_-LRB- JelinekMercer_NNP ,_, JM_NN -RRB-_-RRB- smoothing_NN and_CC Bayesian_JJ smoothing_VBG with_IN conjugate_NN priors_NNS ._.
+Table_NNP #_# shows_VBZ that_IN the_DT two_CD JM-smoothed_JJ models_NNS perform_VBP similarly_RB on_IN all_DT data_NNS sets_NNS ._.
+Since_IN the_DT Dirichlet_NNP Smoothing_NNP for_IN multinomial_JJ language_NN model_NN and_CC the_DT Gamma_NNP Smoothing_NNP for_IN Poisson_NNP language_NN model_NN lead_VBP to_TO the_DT same_JJ retrieval_NN formula_NN ,_, the_DT performance_NN of_IN these_DT two_CD models_NNS are_VBP jointly_RB presented_VBN ._.
+We_PRP see_VBP that_IN Dirichlet_NNP /_: Gamma_NNP smoothing_VBG methods_NNS outperform_VBP both_CC Jelinek-Mercer_JJ smoothing_NN methods_NNS ._.
+The_DT parameter_NN sensitivity_NN curves_NNS for_IN two_CD Jelinek-Mercer_NN 0_CD #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# 0_CD 0_CD ._.
+##_NN 0_CD ._.
+#_# 0_CD ._.
+##_NN 0_CD ._.
+#_# 0_CD ._.
+##_NN 0_CD ._.
+#_# Dataset_NNP :_: Trec8_NN Parameter_NN :_: AveragePrecision_NNP JMMultinomial_NNP :_: LV_NN JMMultinomial_NN :_: SV_NN JMMultinomial_NN :_: SK_NN JMPoisson_NN :_: SK_NN JMPoisson_NN :_: SV_NN JMPoisson_NN :_: LV_NNP Figure_NNP #_# :_: Poisson_NNP and_CC multinomial_JJ performs_VBZ similarly_RB with_IN Jelinek-Mercer_JJ smoothing_NN smoothing_NN methods_NNS are_VBP shown_VBN in_IN Figure_NNP #_# ._.
+Clearly_RB ,_, these_DT two_CD methods_NNS perform_VBP similarly_RB either_RB in_IN terms_NNS of_IN optimality_NNP Data_NNP Query_NNP JM-Multinomial_JJ JM-Poisson_NN Dirichlet_NNP /_: Gamma_NNP Per-term_NNP 2-Stage_NNP Poisson_NNP MAP_NN InitPr_JJ Pr_NN @_IN 5d_JJ MAP_NN InitPr_JJ Pr_NN @_IN 5d_JJ MAP_NN InitPr_JJ Pr_NN @_IN 5d_JJ MAP_NN InitPr_JJ Pr_NN @_IN 5d_JJ AP88-89_NN SK_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_CD SV_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_CD *_SYM #_# ._.
+###_NN #_# ._.
+###_CD LV_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_CD *_SYM #_# ._.
+###_NN #_# ._.
+###_NN Trec7_NN SK_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_CD SV_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_CD *_SYM #_# ._.
+###_NN #_# ._.
+###_CD LV_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+##_NN #_# ._.
+###_CD *_SYM #_# ._.
+###_NN #_# ._.
+###_NN Trec8_NN SK_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_CD SV_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_CD *_SYM #_# ._.
+###_NN #_# ._.
+###_CD LV_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_CD *_SYM #_# ._.
+###_NN #_# ._.
+###_CD Web_NN SK_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_CD SV_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_CD *_SYM #_# ._.
+###_NN #_# ._.
+###_CD LV_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_CD *_SYM #_# ._.
+###_NN #_# ._.
+###_RB Table_NNP #_# :_: Performance_NNP comparison_NN between_IN Poisson_NNP and_CC Multinomial_JJ retrieval_NN models_NNS :_: basic_JJ models_NNS perform_VBP comparably_RB ;_: term_NN dependent_JJ two-stage_JJ smoothing_NN significantly_RB improves_VBZ Poisson_NNP An_DT asterisk_NN -LRB-_-LRB- *_NN -RRB-_-RRB- indicates_VBZ that_IN the_DT difference_NN between_IN the_DT performance_NN of_IN the_DT term_NN dependent_JJ two-stage_JJ smoothing_NN and_CC that_IN of_IN the_DT Dirichlet_NNP /_: Gamma_NNP single_JJ smoothing_NN is_VBZ statistically_RB significant_JJ according_VBG to_TO the_DT Wilcoxon_NNP signed_VBD rank_JJ test_NN at_IN the_DT level_NN of_IN #_# ._.
+##_NN ._.
+or_CC sensitivity_NN ._.
+This_DT similarity_NN of_IN performance_NN is_VBZ expected_VBN as_IN we_PRP discussed_VBD in_IN Section_NN #_# ._.
+#_# ._.
+Although_IN the_DT Poisson_NNP model_NN and_CC multinomial_JJ model_NN are_VBP similar_JJ in_IN terms_NNS of_IN the_DT basic_JJ model_NN and_CC /_: or_CC with_IN simple_JJ smoothing_NN methods_NNS ,_, the_DT Poisson_NNP model_NN has_VBZ great_JJ potential_JJ and_CC flexibility_NN to_TO be_VB further_RB improved_VBN ._.
+As_IN shown_VBN in_IN the_DT rightmost_JJ column_NN of_IN Table_NNP #_# ,_, term_NN dependent_JJ two-stage_JJ Poisson_NNP model_NN consistently_RB outperforms_VBZ the_DT basic_JJ smoothing_NN models_NNS ,_, especially_RB for_IN verbose_JJ queries_NNS ._.
+This_DT model_NN is_VBZ given_VBN in_IN Formula_NNP #_# ,_, with_IN a_DT Gamma_NN smoothing_NN for_IN the_DT document_NN model_NN p_NN -LRB-_-LRB- |_CD d_NN -RRB-_-RRB- ,_, and_CC w_NN ,_, which_WDT is_VBZ term_NN dependent_JJ ._.
+The_DT parameter_NN of_IN the_DT first_JJ stage_NN Gamma_NN smoothing_NN is_VBZ empirically_RB tuned_VBN ._.
+The_DT combination_NN coefficients_NNS -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, -RRB-_-RRB- ,_, are_VBP estimated_VBN with_IN the_DT EM_NNP algorithm_NN in_IN Section_NN #_# ._.
+#_# ._.
+The_DT parameter_NN sensitivity_NN curves_NNS for_IN Dirichlet_NNP /_: Gamma_NNP and_CC the_DT per-term_JJ two-stage_JJ smoothing_NN model_NN are_VBP plotted_VBN in_IN Figure_NNP #_# ._.
+The_DT per-term_JJ two-stage_JJ smoothing_NN method_NN is_VBZ less_RBR sensitive_JJ to_TO the_DT parameter_NN than_IN Dirichlet_JJ /_: Gamma_NNP ,_, and_CC yields_NNS better_JJR optimal_JJ performance_NN ._.
+0_CD ####_CD ####_CD ####_CD ####_CD ####_CD ####_CD ####_CD ####_CD ####_CD #####_CD 0_CD ._.
+#_# 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+#_# 0_CD ._.
+##_NN Dataset_NNP :_: AP_NN ;_: Query_NNP Type_NN :_: SV_NNP Parameter_NNP :_: AveragePrecision_NNP Dirichlet_NNP /_: Gamma_NNP Smoothing_NNP Term_NNP Dependent_NNP 2Stage_NNP Figure_NNP #_# :_: Term_NN dependent_JJ two-stage_JJ smoothing_NN of_IN Poisson_NNP outperforms_VBZ Dirichlet_NNP /_: Gamma_NNP In_IN the_DT following_VBG subsections_NNS ,_, we_PRP conduct_VBP experiments_NNS to_TO demonstrate_VB how_WRB the_DT flexibility_NN of_IN the_DT Poisson_NNP model_NN could_MD be_VB utilized_VBN to_TO achieve_VB better_JJR performance_NN ,_, which_WDT we_PRP can_MD not_RB achieve_VB with_IN multinomial_JJ language_NN models_NNS ._.
+4_LS ._.
+#_# Term_NNP Dependent_NNP Smoothing_NNP To_TO test_VB the_DT effectiveness_NN of_IN the_DT term_NN dependent_JJ smoothing_NN ,_, we_PRP conduct_VBP the_DT following_VBG two_CD experiments_NNS ._.
+In_IN the_DT first_JJ experiment_NN ,_, we_PRP relax_VBP the_DT constant_JJ coefficient_NN in_IN the_DT simple_JJ Jelinek-Mercer_JJ smoothing_NN formula_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, Formula_NNP #_# -RRB-_-RRB- ,_, and_CC use_VB the_DT EM_NNP algorithm_NN proposed_VBN in_IN Section_NN #_# ._.
+#_# to_TO find_VB a_DT w_NN for_IN each_DT unique_JJ term_NN ._.
+Since_IN we_PRP are_VBP using_VBG the_DT EM_NNP algorithm_NN to_TO iteratively_RB estimate_VB the_DT parameters_NNS ,_, we_PRP usually_RB do_VBP not_RB want_VB the_DT probability_NN of_IN p_NN -LRB-_-LRB- |_CD d_NN -RRB-_-RRB- to_TO be_VB zero_CD ._.
+We_PRP then_RB use_VBP a_DT simple_JJ Laplace_NNP method_NN to_TO slightly_RB smooth_VB the_DT document_NN model_NN before_IN it_PRP goes_VBZ into_IN the_DT EM_NNP iterations_NNS ._.
+The_DT documents_NNS are_VBP then_RB still_RB scored_VBN with_IN Formula_NN #_# ,_, but_CC using_VBG learnt_VBN w_NN ._.
+The_DT results_NNS are_VBP labeled_VBN with_IN JM_NN +_CC L_NN ._.
+in_IN Table_NNP #_# ._.
+Data_NNS Q_NNP JM_NN JM_NN JM_NN +_CC L_NN ._.
+2-Stage_JJ 2-Stage_NN -LRB-_-LRB- MAP_NN -RRB-_-RRB- PT_NN :_: No_DT Yes_UH Yes_UH No_DT Yes_UH AP_NN SK_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_CD *_SYM SV_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_CD *_SYM #_# ._.
+###_NN #_# ._.
+###_CD *_SYM Trec7_NN SK_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_CD SV_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_CD *_SYM #_# ._.
+###_NN #_# ._.
+###_NN Trec8_NN SK_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_CD *_SYM #_# ._.
+###_NN #_# ._.
+###_CD SV_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_CD *_SYM #_# ._.
+###_NN #_# ._.
+###_CD *_SYM Web_NN SK_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_CD *_SYM #_# ._.
+###_NN #_# ._.
+###_CD *_SYM SV_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_CD *_SYM #_# ._.
+###_NN #_# ._.
+###_CD *_SYM Table_NNP #_# :_: Term_NN dependent_JJ smoothing_NN improves_VBZ retrieval_NN performance_NN An_DT asterisk_NN -LRB-_-LRB- *_NN -RRB-_-RRB- in_IN Column_NNP #_# indicates_VBZ that_IN the_DT difference_NN between_IN the_DT JM_NN +_CC L_NN ._.
+method_NN and_CC JM_NN method_NN is_VBZ statistically_RB significant_JJ ;_: an_DT asterisk_NN -LRB-_-LRB- *_NN -RRB-_-RRB- in_IN Column_NNP #_# means_VBZ that_IN the_DT difference_NN between_IN term_NN dependent_JJ two-stage_JJ method_NN and_CC query_NN dependent_JJ two-stage_JJ method_NN is_VBZ statistically_RB significant_JJ ;_: PT_NN stands_VBZ for_IN per-term_NN ._.
+With_IN term_NN dependent_JJ coefficients_NNS ,_, the_DT performance_NN of_IN the_DT Jelinek-Mercer_NNP Poisson_NNP model_NN is_VBZ improved_VBN in_IN most_JJS cases_NNS ._.
+However_RB ,_, in_IN some_DT cases_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, Trec7_NN /_: SV_NN -RRB-_-RRB- ,_, it_PRP performs_VBZ poorly_RB ._.
+This_DT might_MD be_VB caused_VBN by_IN the_DT problem_NN of_IN EM_NNP estimation_NN with_IN unsmoothed_JJ document_NN models_NNS ._.
+Once_RB non-zero_JJ probability_NN is_VBZ assigned_VBN to_TO all_PDT the_DT terms_NNS before_IN entering_VBG the_DT EM_NNP iteration_NN ,_, the_DT performance_NN on_IN verbose_JJ queries_NNS can_MD be_VB improved_VBN significantly_RB ._.
+This_DT indicates_VBZ that_IN there_EX is_VBZ still_RB room_NN to_TO find_VB better_JJR methods_NNS to_TO estimate_VB w_NN ._.
+Please_VB note_NN that_IN neither_CC the_DT perterm_NN JM_NN method_NN nor_CC the_DT JM_NN +_CC L_NN ._.
+method_NN has_VBZ a_DT parameter_NN to_TO tune_VB ._.
+As_IN shown_VBN in_IN Table_NNP #_# ,_, the_DT term_NN dependent_JJ two-stage_JJ smoothing_NN can_MD significantly_RB improve_VB retrieval_NN performance_NN ._.
+To_TO understand_VB whether_IN the_DT improvement_NN is_VBZ contributed_VBN by_IN the_DT term_NN dependent_JJ smoothing_NN or_CC the_DT two-stage_JJ smoothing_NN framework_NN ,_, we_PRP design_VBP another_DT experiment_NN to_TO compare_VB the_DT perterm_JJ two-stage_JJ smoothing_NN with_IN the_DT two-stage_JJ smoothing_NN method_NN proposed_VBN in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ._.
+Their_PRP$ method_NN managed_VBD to_TO find_VB coefficients_NNS specific_JJ to_TO the_DT query_NN ,_, thus_RB a_DT verbose_JJ query_NN would_MD use_VB a_DT higher_JJR ._.
+However_RB ,_, since_IN their_PRP$ model_NN is_VBZ based_VBN on_IN multinomial_JJ language_NN modeling_NN ,_, they_PRP could_MD not_RB get_VB per-term_JJ coefficients_NNS ._.
+We_PRP adopt_VBP their_PRP$ method_NN to_TO the_DT Poisson_NNP two-stage_JJ smoothing_NN ,_, and_CC also_RB estimate_VBP a_DT per-query_JJ coefficient_NN for_IN all_PDT the_DT terms_NNS ._.
+We_PRP compare_VBP the_DT performance_NN of_IN such_PDT a_DT model_NN with_IN the_DT per-term_JJ two-stage_JJ smoothing_NN model_NN ,_, and_CC present_VB the_DT results_NNS in_IN the_DT right_JJ two_CD columns_NNS in_IN Table_NNP #_# ._.
+Again_RB ,_, we_PRP see_VBP that_IN the_DT per-term_JJ two-stage_JJ smoothing_NN outperforms_VBZ the_DT per-query_JJ two-stage_JJ smoothing_NN ,_, especially_RB for_IN verbose_JJ queries_NNS ._.
+The_DT improvement_NN is_VBZ not_RB as_RB large_JJ as_IN how_WRB the_DT perterm_NN smoothing_NN method_NN improves_VBZ over_IN Dirichlet_NNP /_: Gamma_NNP ._.
+This_DT is_VBZ expected_VBN ,_, since_IN the_DT per-query_JJ smoothing_NN has_VBZ already_RB addressed_VBN the_DT query_NN discrimination_NN problem_NN to_TO some_DT extent_NN ._.
+This_DT experiment_NN shows_VBZ that_IN even_RB if_IN the_DT smoothing_NN is_VBZ already_RB per-query_JJ ,_, making_VBG it_PRP per-term_NN is_VBZ still_RB beneficial_JJ ._.
+In_IN brief_NN ,_, the_DT per-term_JJ smoothing_NN improved_VBD the_DT retrieval_NN performance_NN of_IN both_CC one-stage_JJ and_CC two-stage_JJ smoothing_NN method_NN ._.
+4_LS ._.
+#_# Mixture_NNP Background_NNP Model_NNP In_IN this_DT section_NN ,_, we_PRP conduct_VBP experiments_NNS to_TO examine_VB the_DT benefits_NNS of_IN using_VBG a_DT mixture_NN background_NN model_NN without_IN extra_JJ computational_JJ cost_NN ,_, which_WDT can_MD not_RB be_VB achieved_VBN for_IN multinomial_JJ models_NNS ._.
+Specifically_RB ,_, in_IN retrieval_NN formula_NN #_# ,_, instead_RB of_IN using_VBG a_DT single_JJ Poisson_NNP distribution_NN to_TO model_VB the_DT background_NN p_NN -LRB-_-LRB- |_CD C_NN -RRB-_-RRB- ,_, we_PRP use_VBP Katz_NNP ''_'' s_VBZ K-Mixture_NNP model_NN ,_, which_WDT is_VBZ essentially_RB a_DT mixture_NN of_IN Poisson_NNP distributions_NNS ._.
+p_NN -LRB-_-LRB- |_CD C_NN -RRB-_-RRB- can_MD be_VB computed_VBN efficiently_RB with_IN simple_JJ collection_NN statistics_NNS ,_, as_IN discussed_VBN in_IN Section_NN #_# ._.
+#_# ._.
+Data_NNS Query_NNP JM_NN ._.
+Poisson_NNP JM_NN ._.
+K-Mixture_NN AP_NN SK_NN #_# ._.
+###_NN #_# ._.
+###_CD SV_NN #_# ._.
+###_NN #_# ._.
+###_CD *_SYM Trec-7_CD SK_NNS #_# ._.
+###_NN #_# ._.
+###_CD SV_NN #_# ._.
+###_NN #_# ._.
+###_CD *_SYM Trec-8_CD SK_NNS #_# ._.
+###_NN #_# ._.
+###_CD SV_NN #_# ._.
+###_NN #_# ._.
+###_CD *_SYM Web_NN SK_NN #_# ._.
+###_NN #_# ._.
+###_CD SV_NN #_# ._.
+###_NN #_# ._.
+###_CD *_SYM Table_NNP #_# :_: K-Mixture_NN background_NN model_NN improves_VBZ retrieval_NN performance_NN The_DT performance_NN of_IN the_DT JM_NN retrieval_NN model_NN with_IN single_JJ Poisson_NNP background_NN and_CC with_IN Katz_NNP ''_'' s_VBZ K-Mixture_NN background_NN model_NN is_VBZ compared_VBN in_IN Table_NNP #_# ._.
+Clearly_RB ,_, using_VBG K-Mixture_NN to_TO model_VB the_DT background_NN model_NN outperforms_VBZ the_DT single_JJ Poisson_NNP background_NN model_NN in_IN most_JJS cases_NNS ,_, especially_RB for_IN verbose_JJ queries_NNS where_WRB the_DT improvement_NN is_VBZ statistically_RB significant_JJ ._.
+Figure_NNP #_# shows_VBZ that_IN the_DT performance_NN changes_NNS over_IN different_JJ parameters_NNS for_IN short_JJ verbose_NN queries_NNS ._.
+The_DT model_NN using_VBG K-Mixture_NN background_NN is_VBZ less_RBR sensitive_JJ than_IN the_DT one_CD using_VBG single_JJ Poisson_NNP background_NN ._.
+Given_VBN that_IN this_DT type_NN of_IN mixture_NN 0_CD #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# 0_CD 0_CD ._.
+##_NN 0_CD ._.
+#_# 0_CD ._.
+##_NN 0_CD ._.
+#_# 0_CD ._.
+##_NNP Data_NNP :_: Trec8_NN ;_: Query_NNP :_: SV_NNP Parameter_NNP :_: AveragePrecision_NNP Poisson_NNP Background_NNP KMixture_NNP Background_NNP Figure_NNP #_# :_: K-Mixture_NN background_NN model_NN deviates_VBZ the_DT sensitivity_NN of_IN verbose_JJ queries_NNS background_NN model_NN does_VBZ not_RB require_VB any_DT extra_JJ computation_NN cost_NN ,_, it_PRP would_MD be_VB interesting_JJ to_TO study_VB whether_IN using_VBG other_JJ mixture_NN Poisson_NNP models_NNS ,_, such_JJ as_IN 2-Poisson_NN and_CC negative_JJ Binomial_NNP ,_, could_MD help_VB the_DT performance_NN ._.
+5_CD ._.
+RELATED_JJ WORK_VBP To_TO the_DT best_JJS of_IN our_PRP$ knowledge_NN ,_, there_EX has_VBZ been_VBN no_DT study_NN of_IN query_NN generation_NN models_NNS based_VBN on_IN Poisson_NNP distribution_NN ._.
+Language_NN models_NNS have_VBP been_VBN shown_VBN to_TO be_VB effective_JJ for_IN many_JJ retrieval_NN tasks_NNS -LSB-_-LRB- ##_CD ,_, ##_CD ,_, ##_CD ,_, #_# -RSB-_-RRB- ._.
+The_DT most_RBS popular_JJ and_CC fundamental_JJ one_NN is_VBZ the_DT query-generation_JJ language_NN model_NN -LSB-_-LRB- ##_CD ,_, 13_CD -RSB-_-RRB- ._.
+All_DT existing_VBG query_NN generation_NN language_NN models_NNS are_VBP based_VBN on_IN either_CC multinomial_JJ distribution_NN -LSB-_-LRB- ##_CD ,_, #_# ,_, ##_NN ,_, ##_NN -RSB-_-RRB- or_CC multivariate_JJ Bernoulli_NNP distribution_NN -LSB-_-LRB- ##_CD ,_, ##_CD ,_, ##_CD -RSB-_-RRB- ._.
+We_PRP introduce_VBP a_DT new_JJ family_NN of_IN language_NN models_NNS ,_, based_VBN on_IN Poisson_NNP distribution_NN ._.
+Poisson_NNP distribution_NN has_VBZ been_VBN previously_RB studied_VBN in_IN the_DT document_NN generation_NN models_NNS -LSB-_-LRB- ##_CD ,_, ##_CD ,_, #_# ,_, ##_NN -RSB-_-RRB- ,_, leading_VBG to_TO the_DT development_NN of_IN one_CD of_IN the_DT most_RBS effective_JJ retrieval_NN formula_NN BM25_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- studies_VBZ the_DT parallel_JJ derivation_NN of_IN three_CD different_JJ retrieval_NN models_NNS which_WDT is_VBZ related_JJ to_TO our_PRP$ comparison_NN of_IN Poisson_NNP and_CC multinomial_JJ ._.
+However_RB ,_, the_DT Poisson_NNP model_NN in_IN their_PRP$ paper_NN is_VBZ still_RB under_IN the_DT document_NN generation_NN framework_NN ,_, and_CC also_RB does_VBZ not_RB account_VB for_IN the_DT document_NN length_NN variation_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- introduces_VBZ a_DT way_NN to_TO empirically_RB search_VB for_IN an_DT exponential_JJ model_NN for_IN the_DT documents_NNS ._.
+Poisson_NNP mixtures_NNS -LSB-_-LRB- #_# -RSB-_-RRB- such_JJ as_IN 2-Poisson_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, Negative_JJ multinomial_JJ ,_, and_CC Katz_NNP ''_'' s_VBZ KMixture_NN -LSB-_-LRB- #_# -RSB-_-RRB- has_VBZ shown_VBN to_TO be_VB effective_JJ to_TO model_NN and_CC retrieve_VB documents_NNS ._.
+Once_RB again_RB ,_, none_NN of_IN this_DT work_NN explores_VBZ Poisson_NNP distribution_NN in_IN the_DT query_NN generation_NN framework_NN ._.
+Language_NN model_NN smoothing_NN -LSB-_-LRB- #_# ,_, ##_NN ,_, ##_NN -RSB-_-RRB- and_CC background_NN structures_NNS -LSB-_-LRB- ##_CD ,_, ##_CD ,_, ##_CD ,_, ##_CD -RSB-_-RRB- have_VBP been_VBN studied_VBN with_IN multinomial_JJ language_NN models_NNS ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- analytically_RB shows_VBZ that_IN term_NN specific_JJ smoothing_NN could_MD be_VB useful_JJ ._.
+We_PRP show_VBP that_IN Poisson_NNP language_NN model_NN is_VBZ natural_JJ to_TO accommodate_VB the_DT per-term_JJ smoothing_NN without_IN heuristic_NN twist_NN of_IN the_DT semantics_NNS of_IN a_DT generative_JJ model_NN ,_, and_CC is_VBZ able_JJ to_TO efficiently_RB better_JJR model_NN the_DT mixture_NN background_NN ,_, both_CC analytically_RB and_CC empirically_RB ._.
+6_CD ._.
+CONCLUSIONS_NNS We_PRP present_VBP a_DT new_JJ family_NN of_IN query_NN generation_NN language_NN models_NNS for_IN retrieval_NN based_VBN on_IN Poisson_NNP distribution_NN ._.
+We_PRP derive_VBP several_JJ smoothing_VBG methods_NNS for_IN this_DT family_NN of_IN models_NNS ,_, including_VBG single-stage_JJ smoothing_NN and_CC two-stage_JJ smoothing_NN ._.
+We_PRP compare_VBP the_DT new_JJ models_NNS with_IN the_DT popular_JJ multinomial_JJ retrieval_NN models_NNS both_CC analytically_RB and_CC experimentally_RB ._.
+Our_PRP$ analysis_NN shows_VBZ that_IN while_IN our_PRP$ new_JJ models_NNS and_CC multinomial_JJ models_NNS are_VBP equivalent_JJ under_IN some_DT assumptions_NNS ,_, they_PRP are_VBP generally_RB different_JJ with_IN some_DT important_JJ differences_NNS ._.
+In_IN particular_JJ ,_, we_PRP show_VBP that_IN Poisson_NNP has_VBZ an_DT advantage_NN over_IN multinomial_JJ in_IN naturally_RB accommodating_VBG per-term_JJ smoothing_NN ._.
+We_PRP exploit_VBP this_DT property_NN to_TO develop_VB a_DT new_JJ per-term_JJ smoothing_NN algorithm_NN for_IN Poisson_NNP language_NN models_NNS ,_, which_WDT is_VBZ shown_VBN to_TO outperform_VB term-independent_JJ smoothing_NN for_IN both_DT Poisson_NNP and_CC multinomial_JJ models_NNS ._.
+Furthermore_RB ,_, we_PRP show_VBP that_IN a_DT mixture_NN background_NN model_NN for_IN Poisson_NNP can_MD be_VB used_VBN to_TO improve_VB the_DT performance_NN and_CC robustness_NN over_IN the_DT standard_JJ Poisson_NNP background_NN model_NN ._.
+Our_PRP$ work_NN opens_VBZ up_RP many_JJ interesting_JJ directions_NNS for_IN further_JJ exploration_NN in_IN this_DT new_JJ family_NN of_IN models_NNS ._.
+Further_JJ exploring_VBG the_DT flexibilities_NNS over_IN multinomial_JJ language_NN models_NNS ,_, such_JJ as_IN length_NN normalization_NN and_CC pseudo-feedback_NN could_MD be_VB good_JJ future_NN work_NN ._.
+It_PRP is_VBZ also_RB appealing_VBG to_TO find_VB robust_JJ methods_NNS to_TO learn_VB the_DT per-term_JJ smoothing_NN coefficients_NNS without_IN additional_JJ computation_NN cost_NN ._.
+7_CD ._.
+ACKNOWLEDGMENTS_NNS We_PRP thank_VBP the_DT anonymous_JJ SIGIR_NNP ##_CD reviewers_NNS for_IN their_PRP$ useful_JJ comments_NNS ._.
+This_DT material_NN is_VBZ based_VBN in_IN part_NN upon_IN work_NN supported_VBN by_IN the_DT National_NNP Science_NNP Foundation_NNP under_IN award_NN numbers_NNS IIS-0347933_NN and_CC #######_NN ._.
+8_CD ._.
+REFERENCES_NNS -LSB-_-LRB- #_# -RSB-_-RRB- D_NN ._.
+Blei_NNP ,_, A_NNP ._.
+Ng_NN ,_, and_CC M_NN ._.
+Jordan_NNP ._.
+Latent_JJ dirichlet_JJ allocation_NN ._.
+Journal_NNP of_IN Machine_NNP Learning_NNP Research_NNP ,_, 3_CD :_: 993-1022_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- S_NN ._.
+F_NN ._.
+Chen_NNP and_CC J_NNP ._.
+Goodman_NNP ._.
+An_DT empirical_JJ study_NN of_IN smoothing_NN techniques_NNS for_IN language_NN modeling_NN ._.
+Technical_NNP Report_NNP TR-10-98_NN ,_, Harvard_NNP University_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- K_NNP ._.
+Church_NNP and_CC W_NNP ._.
+Gale_NNP ._.
+Poisson_NNP mixtures_NNS ._.
+Nat_NN ._.
+Lang_NNP ._.
+Eng_NNP ._.
+,_, #_# -LRB-_-LRB- #_# -RRB-_-RRB- :_: 163-190_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- W_NN ._.
+B_NN ._.
+Croft_NNP and_CC J_NNP ._.
+Lafferty_NNP ,_, editors_NNS ._.
+Language_NN Modeling_NN and_CC Information_NN Retrieval_NN ._.
+Kluwer_NNP Academic_NNP Publishers_NNPS ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- H_NN ._.
+Fang_NNP ,_, T_NN ._.
+Tao_NNP ,_, and_CC C_NN ._.
+Zhai_NNP ._.
+A_DT formal_JJ study_NN of_IN information_NN retrieval_NN heuristics_NNS ._.
+In_IN Proceedings_NNP of_IN the_DT 27th_JJ annual_JJ international_JJ ACM_NNP SIGIR_NNP conference_NN on_IN Research_NNP and_CC development_NN in_IN information_NN retrieval_NN ,_, pages_NNS 49-56_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- D_NN ._.
+Hiemstra_NNP ._.
+Using_VBG Language_NN Models_NNS for_IN Information_NNP Retrieval_NNP ._.
+PhD_NN thesis_NN ,_, University_NNP of_IN Twente_NNP ,_, Enschede_NNP ,_, Netherlands_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- D_NN ._.
+Hiemstra_NNP ._.
+Term-specific_JJ smoothing_NN for_IN the_DT language_NN modeling_NN approach_NN to_TO information_NN retrieval_NN :_: the_DT importance_NN of_IN a_DT query_NN term_NN ._.
+In_IN Proceedings_NNP of_IN the_DT 25th_JJ annual_JJ international_JJ ACM_NNP SIGIR_NNP conference_NN on_IN Research_NNP and_CC development_NN in_IN information_NN retrieval_NN ,_, pages_NNS 35-41_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- T_NN ._.
+Hofmann_NNP ._.
+Probabilistic_NNP latent_JJ semantic_JJ indexing_NN ._.
+In_IN Proceedings_NNP of_IN ACM_NNP SIGIR_NNP ''_'' ##_NN ,_, pages_NNS 50-57_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- S_NN ._.
+M_NN ._.
+Katz_NNP ._.
+Distribution_NN of_IN content_NN words_NNS and_CC phrases_NNS in_IN text_NN and_CC language_NN modelling_NN ._.
+Nat_NN ._.
+Lang_NNP ._.
+Eng_NNP ._.
+,_, 2_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 15-59_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- O_NN ._.
+Kurland_NNP and_CC L_NNP ._.
+Lee_NNP ._.
+Corpus_NNP structure_NN ,_, language_NN models_NNS ,_, and_CC ad-hoc_JJ information_NN retrieval_NN ._.
+In_IN Proceedings_NNP of_IN the_DT 27th_JJ annual_JJ international_JJ ACM_NNP SIGIR_NNP conference_NN on_IN Research_NNP and_CC development_NN in_IN information_NN retrieval_NN ,_, pages_NNS 194-201_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+Lafferty_NNP and_CC C_NNP ._.
+Zhai_NNP ._.
+Document_NNP language_NN models_NNS ,_, query_NN models_NNS ,_, and_CC risk_NN minimization_NN for_IN information_NN retrieval_NN ._.
+In_IN Proceedings_NNP of_IN SIGIR_NNP ''_'' ##_NN ,_, pages_NNS 111-119_CD ,_, Sept_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+Lafferty_NNP and_CC C_NNP ._.
+Zhai_NNP ._.
+Probabilistic_NNP IR_NNP models_NNS based_VBN on_IN query_NN and_CC document_NN generation_NN ._.
+In_IN Proceedings_NNP of_IN the_DT Language_NN Modeling_NN and_CC IR_NN workshop_NN ,_, pages_NNS 1-5_CD ,_, May_NNP ##_SYM -_: June_NNP #_# ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+Lafferty_NNP and_CC C_NNP ._.
+Zhai_NNP ._.
+Probabilistic_JJ relevance_NN models_NNS based_VBN on_IN document_NN and_CC query_NN generation_NN ._.
+In_IN W_NN ._.
+B_NN ._.
+Croft_NNP and_CC J_NNP ._.
+Lafferty_NNP ,_, editors_NNS ,_, Language_NN Modeling_NN and_CC Information_NN Retrieval_NN ._.
+Kluwer_NNP Academic_NNP Publishers_NNPS ,_, 2003_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- V_NN ._.
+Lavrenko_NNP and_CC B_NNP ._.
+Croft_NNP ._.
+Relevance-based_JJ language_NN models_NNS ._.
+In_IN Proceedings_NNP of_IN SIGIR_NNP ''_'' ##_NN ,_, pages_NNS 120-127_CD ,_, Sept_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- X_NN ._.
+Liu_NNP and_CC W_NNP ._.
+B_NN ._.
+Croft_NNP ._.
+Cluster-based_JJ retrieval_NN using_VBG language_NN models_NNS ._.
+In_IN Proceedings_NNP of_IN the_DT 27th_JJ annual_JJ international_JJ ACM_NNP SIGIR_NNP conference_NN on_IN Research_NNP and_CC development_NN in_IN information_NN retrieval_NN ,_, pages_NNS 186-193_CD ,_, 2004_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- E_NN ._.
+L_NN ._.
+Margulis_NNP ._.
+Modelling_VBG documents_NNS with_IN multiple_JJ poisson_NN distributions_NNS ._.
+Inf_NNP ._.
+Process_VB ._.
+Manage_VB ._.
+,_, 29_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 215-227_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- A_DT ._.
+McCallum_NNP and_CC K_NNP ._.
+Nigam_NNP ._.
+A_DT comparison_NN of_IN event_NN models_NNS for_IN naive_JJ bayes_NNS text_NN classification_NN ._.
+In_IN Proceedings_NNP of_IN AAAI-98_NNP Workshop_NNP on_IN Learning_NNP for_IN Text_VB Categorization_NN ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- D_NN ._.
+Metzler_NNP ,_, V_NNP ._.
+Lavrenko_NNP ,_, and_CC W_NN ._.
+B_NN ._.
+Croft_NNP ._.
+Formal_JJ multiple-bernoulli_JJ models_NNS for_IN language_NN modeling_NN ._.
+In_IN Proceedings_NNP of_IN the_DT 27th_JJ annual_JJ international_JJ ACM_NNP SIGIR_NNP conference_NN on_IN Research_NNP and_CC development_NN in_IN information_NN retrieval_NN ,_, pages_NNS 540-541_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- D_NN ._.
+H_NN ._.
+Miller_NNP ,_, T_NN ._.
+Leek_NNP ,_, and_CC R_NN ._.
+Schwartz_NNP ._.
+A_DT hidden_JJ Markov_NNP model_NN information_NN retrieval_NN system_NN ._.
+In_IN Proceedings_NNP of_IN the_DT ####_CD ACM_NNP SIGIR_NNP Conference_NNP on_IN Research_NNP and_CC Development_NNP in_IN Information_NNP Retrieval_NNP ,_, pages_NNS 214-221_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- A_DT ._.
+Papoulis_NNP ._.
+Probability_NN ,_, random_JJ variables_NNS and_CC stochastic_JJ processes_NNS ._.
+New_NNP York_NNP :_: McGraw-Hill_NNP ,_, ####_CD ,_, 2nd_JJ ed_NN ._.
+,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+M_NN ._.
+Ponte_NNP and_CC W_NNP ._.
+B_NN ._.
+Croft_NNP ._.
+A_DT language_NN modeling_NN approach_NN to_TO information_NN retrieval_NN ._.
+In_IN Proceedings_NNP of_IN the_DT 21st_JJ annual_JJ international_JJ ACM_NNP SIGIR_NNP conference_NN on_IN Research_NNP and_CC development_NN in_IN information_NN retrieval_NN ,_, pages_NNS 275-281_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- S_NN ._.
+Robertson_NNP and_CC S_NN ._.
+Walker_NNP ._.
+Some_DT simple_JJ effective_JJ approximations_NNS to_TO the_DT 2-poisson_JJ model_NN for_IN probabilistic_JJ weighted_JJ retrieval_NN ._.
+In_IN Proceedings_NNP of_IN SIGIR_NNP ''_'' ##_NN ,_, pages_NNS 232-241_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- S_NN ._.
+E_NN ._.
+Robertson_NNP ,_, S_NN ._.
+Walker_NNP ,_, S_NN ._.
+Jones_NNP ,_, M_NN ._.
+M_NN ._.
+Hancock-Beaulieu_NNP ,_, and_CC M_NN ._.
+Gatford_NNP ._.
+Okapi_NNP at_IN TREC-3_NN ._.
+In_IN D_NN ._.
+K_NN ._.
+Harman_NNP ,_, editor_NN ,_, The_DT Third_JJ Text_VB REtrieval_NNP Conference_NNP -LRB-_-LRB- TREC-3_NN -RRB-_-RRB- ,_, pages_NNS 109-126_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- T_NN ._.
+Roelleke_NNP and_CC J_NNP ._.
+Wang_NNP ._.
+A_DT parallel_JJ derivation_NN of_IN probabilistic_JJ information_NN retrieval_NN models_NNS ._.
+In_IN Proceedings_NNP of_IN the_DT 29th_JJ annual_JJ international_JJ ACM_NNP SIGIR_NNP conference_NN on_IN Research_NNP and_CC development_NN in_IN information_NN retrieval_NN ,_, pages_NNS 107-114_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- T_NN ._.
+Tao_NNP ,_, X_NN ._.
+Wang_NNP ,_, Q_NNP ._.
+Mei_NNP ,_, and_CC C_NN ._.
+Zhai_NNP ._.
+Language_NN model_NN information_NN retrieval_NN with_IN document_NN expansion_NN ._.
+In_IN Proceedings_NNP of_IN HLT_NNP /_: NAACL_NNP ####_CD ,_, pages_NNS 407-414_CD ,_, 2006_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+Teevan_NNP and_CC D_NNP ._.
+R_NN ._.
+Karger_NNP ._.
+Empirical_JJ development_NN of_IN an_DT exponential_JJ probabilistic_JJ model_NN for_IN text_NN retrieval_NN :_: using_VBG textual_JJ analysis_NN to_TO build_VB a_DT better_JJR model_NN ._.
+In_IN Proceedings_NNP of_IN the_DT 26th_JJ annual_JJ international_JJ ACM_NNP SIGIR_NNP conference_NN on_IN Research_NNP and_CC development_NN in_IN informaion_NN retrieval_NN ,_, pages_NNS 18-25_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- X_NN ._.
+Wei_NNP and_CC W_NNP ._.
+B_NN ._.
+Croft_NNP ._.
+Lda-based_JJ document_NN models_NNS for_IN ad-hoc_JJ retrieval_NN ._.
+In_IN Proceedings_NNP of_IN the_DT 29th_JJ annual_JJ international_JJ ACM_NNP SIGIR_NNP conference_NN on_IN Research_NNP and_CC development_NN in_IN information_NN retrieval_NN ,_, pages_NNS 178-185_CD ,_, 2006_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- C_NN ._.
+Zhai_NNP and_CC J_NNP ._.
+Lafferty_NNP ._.
+A_DT study_NN of_IN smoothing_VBG methods_NNS for_IN language_NN models_NNS applied_VBD to_TO ad-hoc_JJ information_NN retrieval_NN ._.
+In_IN Proceedings_NNP of_IN ACM_NNP SIGIR_NNP ''_'' ##_NN ,_, pages_NNS 334-342_CD ,_, Sept_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- C_NN ._.
+Zhai_NNP and_CC J_NNP ._.
+Lafferty_NNP ._.
+Two-stage_JJ language_NN models_NNS for_IN information_NN retrieval_NN ._.
+In_IN Proceedings_NNP of_IN ACM_NNP SIGIR_NNP ''_'' ##_NN ,_, pages_NNS 49-56_CD ,_, Aug_NNP ####_CD ._.

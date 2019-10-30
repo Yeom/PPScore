@@ -1,0 +1,781 @@
+Combining_VBG Content_NN and_CC Link_NN for_IN Classification_NN using_VBG Matrix_NNP Factorization_NNP Shenghuo_NNP Zhu_NNP Kai_NNP Yu_NNP Yun_NNP Chi_NNP Yihong_NNP Gong_NNP -LCB-_-LRB- zsh_NN ,_, kyu_NN ,_, ychi_NN ,_, ygong_NN -RCB-_-RRB- @_SYM sv_NN ._.
+nec-labs_NNS ._.
+com_NN NEC_NNP Laboratories_NNP America_NNP ,_, Inc_NNP ._.
+10080_CD North_NNP Wolfe_NNP Road_NNP SW3-350_NNP Cupertino_NNP ,_, CA_NNP #####_NNP ,_, USA_NNP ABSTRACT_NN The_DT world_NN wide_JJ web_NN contains_VBZ rich_JJ textual_JJ contents_NNS that_WDT are_VBP interconnected_VBN via_IN complex_NN hyperlinks_NNS ._.
+This_DT huge_JJ database_NN violates_VBZ the_DT assumption_NN held_VBN by_IN most_JJS of_IN conventional_JJ statistical_JJ methods_NNS that_WDT each_DT web_NN page_NN is_VBZ considered_VBN as_IN an_DT independent_JJ and_CC identical_JJ sample_NN ._.
+It_PRP is_VBZ thus_RB difficult_JJ to_TO apply_VB traditional_JJ mining_NN or_CC learning_VBG methods_NNS for_IN solving_VBG web_NN mining_NN problems_NNS ,_, e_LS ._.
+g_NN ._.
+,_, web_NN page_NN classification_NN ,_, by_IN exploiting_VBG both_CC the_DT content_NN and_CC the_DT link_NN structure_NN ._.
+The_DT research_NN in_IN this_DT direction_NN has_VBZ recently_RB received_VBN considerable_JJ attention_NN but_CC are_VBP still_RB in_IN an_DT early_JJ stage_NN ._.
+Though_IN a_DT few_JJ methods_NNS exploit_VBP both_CC the_DT link_NN structure_NN or_CC the_DT content_NN information_NN ,_, some_DT of_IN them_PRP combine_VBP the_DT only_JJ authority_NN information_NN with_IN the_DT content_NN information_NN ,_, and_CC the_DT others_NNS first_RB decompose_VB the_DT link_NN structure_NN into_IN hub_NN and_CC authority_NN features_NNS ,_, then_RB apply_VB them_PRP as_IN additional_JJ document_NN features_NNS ._.
+Being_VBG practically_RB attractive_JJ for_IN its_PRP$ great_JJ simplicity_NN ,_, this_DT paper_NN aims_VBZ to_TO design_VB an_DT algorithm_NN that_WDT exploits_VBZ both_CC the_DT content_NN and_CC linkage_NN information_NN ,_, by_IN carrying_VBG out_RP a_DT joint_JJ factorization_NN on_IN both_CC the_DT linkage_NN adjacency_NN matrix_NN and_CC the_DT document-term_NN matrix_NN ,_, and_CC derives_VBZ a_DT new_JJ representation_NN for_IN web_NN pages_NNS in_IN a_DT low-dimensional_JJ factor_NN space_NN ,_, without_IN explicitly_RB separating_VBG them_PRP as_IN content_NN ,_, hub_NN or_CC authority_NN factors_NNS ._.
+Further_JJ analysis_NN can_MD be_VB performed_VBN based_VBN on_IN the_DT compact_JJ representation_NN of_IN web_NN pages_NNS ._.
+In_IN the_DT experiments_NNS ,_, the_DT proposed_VBN method_NN is_VBZ compared_VBN with_IN state-of-the-art_JJ methods_NNS and_CC demonstrates_VBZ an_DT excellent_JJ accuracy_NN in_IN hypertext_NN classification_NN on_IN the_DT WebKB_NN and_CC Cora_NN benchmarks_NNS ._.
+Categories_NNS and_CC Subject_NNP Descriptors_NNPS :_: H_NN ._.
+#_# ._.
+#_# -LSB-_-LRB- Information_NNP Systems_NNP -RSB-_-RRB- :_: Information_NNP Search_VB and_CC Retrieval_NNP General_NNP Terms_NNS :_: Algorithms_NNS ,_, Experimentation_NN 1_CD ._.
+INTRODUCTION_NN With_IN the_DT advance_NN of_IN the_DT World_NNP Wide_NN Web_NN ,_, more_JJR and_CC more_RBR hypertext_NN documents_NNS become_VBP available_JJ on_IN the_DT Web_NN ._.
+Some_DT examples_NNS of_IN such_JJ data_NNS include_VBP organizational_JJ and_CC personal_JJ web_NN pages_NNS -LRB-_-LRB- e_LS ._.
+g_NN ,_, the_DT WebKB_NN benchmark_NN data_NNS set_VBN ,_, which_WDT contains_VBZ university_NN web_NN pages_NNS -RRB-_-RRB- ,_, research_NN papers_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, data_NNS in_IN CiteSeer_NNP -RRB-_-RRB- ,_, online_JJ news_NN articles_NNS ,_, and_CC customer-generated_JJ media_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, blogs_NNS -RRB-_-RRB- ._.
+Comparing_VBG to_TO data_NNS in_IN traditional_JJ information_NN management_NN ,_, in_IN addition_NN to_TO content_NN ,_, these_DT data_NNS on_IN the_DT Web_NN also_RB contain_VBP links_NNS :_: e_LS ._.
+g_NN ._.
+,_, hyperlinks_NNS from_IN a_DT student_NN ''_'' s_NNS homepage_NN pointing_VBG to_TO the_DT homepage_NN of_IN her_PRP$ advisor_NN ,_, paper_NN citations_NNS ,_, sources_NNS of_IN a_DT news_NN article_NN ,_, comments_NNS of_IN one_CD blogger_NN on_IN posts_NNS from_IN another_DT blogger_NN ,_, and_CC so_RB on_IN ._.
+Performing_VBG information_NN management_NN tasks_NNS on_IN such_JJ structured_JJ data_NNS raises_VBZ many_JJ new_JJ research_NN challenges_NNS ._.
+In_IN the_DT following_VBG discussion_NN ,_, we_PRP use_VBP the_DT task_NN of_IN web_NN page_NN classification_NN as_IN an_DT illustrating_VBG example_NN ,_, while_IN the_DT techniques_NNS we_PRP develop_VBP in_IN later_JJ sections_NNS are_VBP applicable_JJ equally_RB well_RB to_TO many_JJ other_JJ tasks_NNS in_IN information_NN retrieval_NN and_CC data_NNS mining_NN ._.
+For_IN the_DT classification_NN problem_NN of_IN web_NN pages_NNS ,_, a_DT simple_JJ approach_NN is_VBZ to_TO treat_VB web_NN pages_NNS as_IN independent_JJ documents_NNS ._.
+The_DT advantage_NN of_IN this_DT approach_NN is_VBZ that_IN many_JJ off-the-shelf_JJ classification_NN tools_NNS can_MD be_VB directly_RB applied_VBN to_TO the_DT problem_NN ._.
+However_RB ,_, this_DT approach_NN relies_VBZ only_RB on_IN the_DT content_NN of_IN web_NN pages_NNS and_CC ignores_VBZ the_DT structure_NN of_IN links_NNS among_IN them_PRP ._.
+Link_NN structures_NNS provide_VBP invaluable_JJ information_NN about_IN properties_NNS of_IN the_DT documents_NNS as_IN well_RB as_IN relationships_NNS among_IN them_PRP ._.
+For_IN example_NN ,_, in_IN the_DT WebKB_NN dataset_NN ,_, the_DT link_NN structure_NN provides_VBZ additional_JJ insights_NNS about_IN the_DT relationship_NN among_IN documents_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, links_NNS often_RB pointing_VBG from_IN a_DT student_NN to_TO her_PRP$ advisor_NN or_CC from_IN a_DT faculty_NN member_NN to_TO his_PRP$ projects_NNS -RRB-_-RRB- ._.
+Since_IN some_DT links_NNS among_IN these_DT documents_NNS imply_VBP the_DT inter-dependence_NN among_IN the_DT documents_NNS ,_, the_DT usual_JJ i_LS ._.
+i_LS ._.
+d_NN ._.
+-LRB-_-LRB- independent_JJ and_CC identical_JJ distributed_VBN -RRB-_-RRB- assumption_NN of_IN documents_NNS does_VBZ not_RB hold_VB any_DT more_JJR ._.
+From_IN this_DT point_NN of_IN view_NN ,_, the_DT traditional_JJ classification_NN methods_NNS that_WDT ignore_VBP the_DT link_NN structure_NN may_MD not_RB be_VB suitable_JJ ._.
+On_IN the_DT other_JJ hand_NN ,_, a_DT few_JJ studies_NNS ,_, for_IN example_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, rely_VBP solely_RB on_IN link_NN structures_NNS ._.
+It_PRP is_VBZ however_RB a_DT very_RB rare_JJ case_NN that_WDT content_JJ information_NN can_MD be_VB ignorable_JJ ._.
+For_IN example_NN ,_, in_IN the_DT Cora_NNP dataset_NNP ,_, the_DT content_NN of_IN a_DT research_NN article_NN abstract_JJ largely_RB determines_VBZ the_DT category_NN of_IN the_DT article_NN ._.
+To_TO improve_VB the_DT performance_NN of_IN web_NN page_NN classification_NN ,_, therefore_RB ,_, both_DT link_NN structure_NN and_CC content_NN information_NN should_MD be_VB taken_VBN into_IN consideration_NN ._.
+To_TO achieve_VB this_DT goal_NN ,_, a_DT simple_JJ approach_NN is_VBZ to_TO convert_VB one_CD type_NN of_IN information_NN to_TO the_DT other_JJ ._.
+For_IN example_NN ,_, in_IN spam_NN blog_NN classification_NN ,_, Kolari_NNP et_FW al_FW ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- concatenate_NN outlink_NN features_VBZ with_IN the_DT content_NN features_NNS of_IN the_DT blog_NN ._.
+In_IN document_NN classification_NN ,_, Kurland_NNP and_CC Lee_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- convert_VBP content_JJ similarity_NN among_IN documents_NNS into_IN weights_NNS of_IN links_NNS ._.
+However_RB ,_, link_NN and_CC content_NN information_NN have_VBP different_JJ properties_NNS ._.
+For_IN example_NN ,_, a_DT link_NN is_VBZ an_DT actual_JJ piece_NN of_IN evidence_NN that_IN represents_VBZ an_DT asymmetric_JJ relationship_NN whereas_IN the_DT content_NN similarity_NN is_VBZ usually_RB defined_VBN conceptually_RB for_IN every_DT pair_NN of_IN documents_NNS in_IN a_DT symmetric_JJ way_NN ._.
+Therefore_RB ,_, directly_RB converting_VBG one_CD type_NN of_IN information_NN to_TO the_DT other_JJ usually_RB degrades_VBZ the_DT quality_NN of_IN information_NN ._.
+On_IN the_DT other_JJ hand_NN ,_, there_EX exist_VBP some_DT studies_NNS ,_, as_IN we_PRP will_MD discuss_VB in_IN detail_NN in_IN related_JJ work_NN ,_, that_WDT consider_VBP link_NN information_NN and_CC content_NN information_NN separately_RB and_CC then_RB combine_VBP them_PRP ._.
+We_PRP argue_VBP that_IN such_PDT an_DT approach_NN ignores_VBZ the_DT inherent_JJ consistency_NN between_IN link_NN and_CC content_NN information_NN and_CC therefore_RB fails_VBZ to_TO combine_VB the_DT two_CD seamlessly_RB ._.
+Some_DT work_NN ,_, such_JJ as_IN -LSB-_-LRB- #_# -RSB-_-RRB- ,_, incorporates_VBZ link_NN information_NN using_VBG cocitation_NN similarity_NN ,_, but_CC this_DT may_MD not_RB fully_RB capture_VB the_DT global_JJ link_NN structure_NN ._.
+In_IN Figure_NNP #_# ,_, for_IN example_NN ,_, web_NN pages_NNS v6_NN and_CC v7_NN co-cite_NN web_NN page_NN v8_NN ,_, implying_VBG that_IN v6_NN and_CC v7_NN are_VBP similar_JJ to_TO each_DT other_JJ ._.
+In_IN turns_NNS ,_, v4_NN and_CC v5_NN should_MD be_VB similar_JJ to_TO each_DT other_JJ ,_, since_IN v4_NN and_CC v5_NN cite_VBP similar_JJ web_NN pages_NNS v6_NN and_CC v7_NN ,_, respectively_RB ._.
+But_CC using_VBG cocitation_NN similarity_NN ,_, the_DT similarity_NN between_IN v4_NN and_CC v5_NN is_VBZ zero_CD without_IN considering_VBG other_JJ information_NN ._.
+v1_NN v2_NN v3_NN v4_NN v5_NN v6_NN v7_NN v8_CD Figure_NNP #_# :_: An_DT example_NN of_IN link_NN structure_NN In_IN this_DT paper_NN ,_, we_PRP propose_VBP a_DT simple_JJ technique_NN for_IN analyzing_VBG inter-connected_JJ documents_NNS ,_, such_JJ as_IN web_NN pages_NNS ,_, using_VBG factor_NN analysis_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+In_IN the_DT proposed_VBN technique_NN ,_, both_DT content_JJ information_NN and_CC link_NN structures_NNS are_VBP seamlessly_RB combined_VBN through_IN a_DT single_JJ set_NN of_IN latent_JJ factors_NNS ._.
+Our_PRP$ model_NN contains_VBZ two_CD components_NNS ._.
+The_DT first_JJ component_NN captures_VBZ the_DT content_JJ information_NN ._.
+This_DT component_NN has_VBZ a_DT form_NN similar_JJ to_TO that_DT of_IN the_DT latent_JJ topics_NNS in_IN the_DT Latent_JJ Semantic_NNP Indexing_NN -LRB-_-LRB- LSI_NNP -RRB-_-RRB- -LSB-_-LRB- #_# -RSB-_-RRB- in_IN traditional_JJ information_NN retrieval_NN ._.
+That_DT is_VBZ ,_, documents_NNS are_VBP decomposed_VBN into_IN latent_JJ topics_NNS /_: factors_NNS ,_, which_WDT in_IN turn_NN are_VBP represented_VBN as_IN term_NN vectors_NNS ._.
+The_DT second_JJ component_NN captures_VBZ the_DT information_NN contained_VBD in_IN the_DT underlying_VBG link_NN structure_NN ,_, such_JJ as_IN links_NNS from_IN homepages_NNS of_IN students_NNS to_TO those_DT of_IN faculty_NN members_NNS ._.
+A_DT factor_NN can_MD be_VB loosely_RB considered_VBN as_IN a_DT type_NN of_IN documents_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, those_DT homepages_NNS belonging_VBG to_TO students_NNS -RRB-_-RRB- ._.
+It_PRP is_VBZ worth_JJ noting_VBG that_IN we_PRP do_VBP not_RB explicitly_RB define_VB the_DT semantic_JJ of_IN a_DT factor_NN a_DT priori_FW ._.
+Instead_RB ,_, similar_JJ to_TO LSI_NNP ,_, the_DT factors_NNS are_VBP learned_VBN from_IN the_DT data_NNS ._.
+Traditional_JJ factor_NN analysis_NN models_NNS the_DT variables_NNS associated_VBN with_IN entities_NNS through_IN the_DT factors_NNS ._.
+However_RB ,_, in_IN analysis_NN of_IN link_NN structures_NNS ,_, we_PRP need_VBP to_TO model_VB the_DT relationship_NN of_IN two_CD ends_NNS of_IN links_NNS ,_, i_FW ._.
+e_LS ._.
+,_, edges_NNS between_IN vertex_NN pairs_NNS ._.
+Therefore_RB ,_, the_DT model_NN should_MD involve_VB factors_NNS of_IN both_DT vertices_NNS of_IN the_DT edge_NN ._.
+This_DT is_VBZ a_DT key_JJ difference_NN between_IN traditional_JJ factor_NN analysis_NN and_CC our_PRP$ model_NN ._.
+In_IN our_PRP$ model_NN ,_, we_PRP connect_VBP two_CD components_NNS through_IN a_DT set_NN of_IN shared_JJ factors_NNS ,_, that_DT is_VBZ ,_, the_DT latent_JJ factors_NNS in_IN the_DT second_JJ component_NN -LRB-_-LRB- for_IN contents_NNS -RRB-_-RRB- are_VBP tied_VBN to_TO the_DT factors_NNS in_IN the_DT first_JJ component_NN -LRB-_-LRB- for_IN links_NNS -RRB-_-RRB- ._.
+By_IN doing_VBG this_DT ,_, we_PRP search_VBP for_IN a_DT unified_VBN set_NN of_IN latent_JJ factors_NNS that_WDT best_JJS explains_VBZ both_DT content_NN and_CC link_NN structures_NNS simultaneously_RB and_CC seamlessly_RB ._.
+In_IN the_DT formulation_NN ,_, we_PRP perform_VBP factor_NN analysis_NN based_VBN on_IN matrix_NN factorization_NN :_: solution_NN to_TO the_DT first_JJ component_NN is_VBZ based_VBN on_IN factorizing_VBG the_DT term-document_NN matrix_NN derived_VBN from_IN content_NN features_NNS ;_: solution_NN to_TO the_DT second_JJ component_NN is_VBZ based_VBN on_IN factorizing_VBG the_DT adjacency_NN matrix_NN derived_VBN from_IN links_NNS ._.
+Because_IN the_DT two_CD factorizations_NNS share_VBP a_DT common_JJ base_NN ,_, the_DT discovered_VBN bases_NNS -LRB-_-LRB- latent_JJ factors_NNS -RRB-_-RRB- explain_VBP both_CC content_JJ information_NN and_CC link_NN structures_NNS ,_, and_CC are_VBP then_RB used_VBN in_IN further_JJ information_NN management_NN tasks_NNS such_JJ as_IN classification_NN ._.
+This_DT paper_NN is_VBZ organized_VBN as_IN follows_VBZ ._.
+Section_NN #_# reviews_VBZ related_JJ work_NN ._.
+Section_NN #_# presents_VBZ the_DT proposed_JJ approach_NN to_TO analyze_VB the_DT web_NN page_NN based_VBN on_IN the_DT combined_VBN information_NN of_IN links_NNS and_CC content_NN ._.
+Section_NN #_# extends_VBZ the_DT basic_JJ framework_NN and_CC a_DT few_JJ variants_NNS for_IN fine_JJ tune_NN ._.
+Section_NN #_# shows_VBZ the_DT experiment_NN results_VBZ ._.
+Section_NN #_# discusses_VBZ the_DT details_NNS of_IN this_DT approach_NN and_CC Section_NN #_# concludes_VBZ ._.
+2_LS ._.
+RELATED_JJ WORK_VBP In_IN the_DT content_NN analysis_NN part_NN ,_, our_PRP$ approach_NN is_VBZ closely_RB related_JJ to_TO Latent_JJ Semantic_JJ Indexing_NN -LRB-_-LRB- LSI_NNP -RRB-_-RRB- -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+LSI_NNP maps_VBZ documents_NNS into_IN a_DT lower_JJR dimensional_JJ latent_JJ space_NN ._.
+The_DT latent_JJ space_NN implicitly_RB captures_VBZ a_DT large_JJ portion_NN of_IN information_NN of_IN documents_NNS ,_, therefore_RB it_PRP is_VBZ called_VBN the_DT latent_JJ semantic_JJ space_NN ._.
+The_DT similarity_NN between_IN documents_NNS could_MD be_VB defined_VBN by_IN the_DT dot_NN products_NNS of_IN the_DT corresponding_JJ vectors_NNS of_IN documents_NNS in_IN the_DT latent_JJ space_NN ._.
+Analysis_NN tasks_NNS ,_, such_JJ as_IN classification_NN ,_, could_MD be_VB performed_VBN on_IN the_DT latent_JJ space_NN ._.
+The_DT commonly_RB used_VBN singular_JJ value_NN decomposition_NN -LRB-_-LRB- SVD_NN -RRB-_-RRB- method_NN ensures_VBZ that_IN the_DT data_NNS points_NNS in_IN the_DT latent_JJ space_NN can_MD optimally_RB reconstruct_VB the_DT original_JJ documents_NNS ._.
+Though_IN our_PRP$ approach_NN also_RB uses_VBZ latent_JJ space_NN to_TO represent_VB web_NN pages_NNS -LRB-_-LRB- documents_NNS -RRB-_-RRB- ,_, we_PRP consider_VBP the_DT link_NN structure_NN as_RB well_RB as_IN the_DT content_NN of_IN web_NN pages_NNS ._.
+In_IN the_DT link_NN analysis_NN approach_NN ,_, the_DT framework_NN of_IN hubs_NNS and_CC authorities_NNS -LRB-_-LRB- HITS_NNS -RRB-_-RRB- -LSB-_-LRB- ##_CD -RSB-_-RRB- puts_VBZ web_NN page_NN into_IN two_CD categories_NNS ,_, hubs_NNS and_CC authorities_NNS ._.
+Using_VBG recursive_JJ notion_NN ,_, a_DT hub_NN is_VBZ a_DT web_NN page_NN with_IN many_JJ outgoing_JJ links_NNS to_TO authorities_NNS ,_, while_IN an_DT authority_NN is_VBZ a_DT web_NN page_NN with_IN many_JJ incoming_JJ links_NNS from_IN hubs_NNS ._.
+Instead_RB of_IN using_VBG two_CD categories_NNS ,_, PageRank_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- uses_VBZ a_DT single_JJ category_NN for_IN the_DT recursive_JJ notion_NN ,_, an_DT authority_NN is_VBZ a_DT web_NN page_NN with_IN many_JJ incoming_JJ links_NNS from_IN authorities_NNS ._.
+He_PRP et_FW al_FW ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- propose_VBP a_DT clustering_NN algorithm_NN for_IN web_NN document_NN clustering_NN ._.
+The_DT algorithm_NN incorporates_VBZ link_NN structure_NN and_CC the_DT co-citation_NN patterns_NNS ._.
+In_IN the_DT algorithm_NN ,_, all_DT links_NNS are_VBP treated_VBN as_IN undirected_JJ edge_NN of_IN the_DT link_NN graph_NN ._.
+The_DT content_JJ information_NN is_VBZ only_RB used_VBN for_IN weighing_VBG the_DT links_NNS by_IN the_DT textual_JJ similarity_NN of_IN both_DT ends_NNS of_IN the_DT links_NNS ._.
+Zhang_NNP et_FW al_FW ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- uses_VBZ the_DT undirected_JJ graph_NN regularization_NN framework_NN for_IN document_NN classification_NN ._.
+Achlioptas_NNP et_FW al_FW -LSB-_-LRB- #_# -RSB-_-RRB- decompose_VB the_DT web_NN into_IN hub_NN and_CC authority_NN attributes_NNS then_RB combine_VBP them_PRP with_IN content_NN ._.
+Zhou_NNP et_FW al_FW ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- and_CC -LSB-_-LRB- ##_CD -RSB-_-RRB- propose_VBP a_DT directed_VBN graph_NN regularization_NN framework_NN for_IN semi-supervised_JJ learning_NN ._.
+The_DT framework_NN combines_VBZ the_DT hub_NN and_CC authority_NN information_NN of_IN web_NN pages_NNS ._.
+But_CC it_PRP is_VBZ difficult_JJ to_TO combine_VB the_DT content_NN information_NN into_IN that_DT framework_NN ._.
+Our_PRP$ approach_NN consider_VB the_DT content_NN and_CC the_DT directed_VBN linkage_NN between_IN topics_NNS of_IN source_NN and_CC destination_NN web_NN pages_NNS in_IN one_CD step_NN ,_, which_WDT implies_VBZ the_DT topic_NN combines_VBZ the_DT information_NN of_IN web_NN page_NN as_IN authorities_NNS and_CC as_IN hubs_NNS in_IN a_DT single_JJ set_NN of_IN factors_NNS ._.
+Cohn_NNP and_CC Hofmann_NNP -LSB-_-LRB- #_# -RSB-_-RRB- construct_NN the_DT latent_JJ space_NN from_IN both_DT content_NN and_CC link_NN information_NN ,_, using_VBG content_NN analysis_NN based_VBN on_IN probabilistic_JJ LSI_NNP -LRB-_-LRB- PLSI_NNP -RRB-_-RRB- -LSB-_-LRB- ##_CD -RSB-_-RRB- and_CC link_NN analysis_NN based_VBN on_IN PHITS_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+The_DT major_JJ difference_NN between_IN the_DT approach_NN of_IN -LSB-_-LRB- #_# -RSB-_-RRB- -LRB-_-LRB- PLSI_NN +_CC PHITS_NN -RRB-_-RRB- and_CC our_PRP$ approach_NN is_VBZ in_IN the_DT part_NN of_IN link_NN analysis_NN ._.
+In_IN PLSI_NN +_CC PHITS_NN ,_, the_DT link_NN is_VBZ constructed_VBN with_IN the_DT linkage_NN from_IN the_DT topic_NN of_IN the_DT source_NN web_NN page_NN to_TO the_DT destination_NN web_NN page_NN ._.
+In_IN the_DT model_NN ,_, the_DT outgoing_JJ links_NNS of_IN the_DT destination_NN web_NN page_NN have_VBP no_DT effect_NN on_IN the_DT source_NN web_NN page_NN ._.
+In_IN other_JJ words_NNS ,_, the_DT overall_JJ link_NN structure_NN is_VBZ not_RB utilized_VBN in_IN PHITS_NNP ._.
+In_IN our_PRP$ approach_NN ,_, the_DT link_NN is_VBZ constructed_VBN with_IN the_DT linkage_NN between_IN the_DT factor_NN of_IN the_DT source_NN web_NN page_NN and_CC the_DT factor_NN of_IN the_DT destination_NN web_NN page_NN ,_, instead_RB of_IN the_DT destination_NN web_NN page_NN itself_PRP ._.
+The_DT factor_NN of_IN the_DT destination_NN web_NN page_NN contains_VBZ information_NN of_IN its_PRP$ outgoing_JJ links_NNS ._.
+In_IN turn_NN ,_, such_JJ information_NN is_VBZ passed_VBN to_TO the_DT factor_NN of_IN the_DT source_NN web_NN page_NN ._.
+As_IN the_DT result_NN of_IN matrix_NN factorization_NN ,_, the_DT factor_NN forms_VBZ a_DT factor_NN graph_NN ,_, a_DT miniature_NN of_IN the_DT original_JJ graph_NN ,_, preserving_VBG the_DT major_JJ structure_NN of_IN the_DT original_JJ graph_NN ._.
+Taskar_NNP et_FW al_FW ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- propose_VBP relational_JJ Markov_NNP networks_NNS -LRB-_-LRB- RMNs_NNS -RRB-_-RRB- for_IN entity_NN classification_NN ,_, by_IN describing_VBG a_DT conditional_JJ distribution_NN of_IN entity_NN classes_NNS given_VBN entity_NN attributes_NNS and_CC relationships_NNS ._.
+The_DT model_NN was_VBD applied_VBN to_TO web_NN page_NN classification_NN ,_, where_WRB web_NN pages_NNS are_VBP entities_NNS and_CC hyperlinks_NNS are_VBP treated_VBN as_IN relationships_NNS ._.
+RMNs_NNS apply_VBP conditional_JJ random_JJ fields_NNS to_TO define_VB a_DT set_NN of_IN potential_JJ functions_NNS on_IN cliques_NNS of_IN random_JJ variables_NNS ,_, where_WRB the_DT link_NN structure_NN provides_VBZ hints_NNS to_TO form_VB the_DT cliques_NNS ._.
+However_RB the_DT model_NN does_VBZ not_RB give_VB an_DT off-the-shelf_JJ solution_NN ,_, because_IN the_DT success_NN highly_RB depends_VBZ on_IN the_DT arts_NNS of_IN designing_VBG the_DT potential_JJ functions_NNS ._.
+On_IN the_DT other_JJ hand_NN ,_, the_DT inference_NN for_IN RMNs_NNS is_VBZ intractable_JJ and_CC requires_VBZ belief_NN propagation_NN ._.
+The_DT following_VBG are_VBP some_DT work_NN on_IN combining_VBG documents_NNS and_CC links_NNS ,_, but_CC the_DT methods_NNS are_VBP loosely_RB related_VBN to_TO our_PRP$ approach_NN ._.
+The_DT experiments_NNS of_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- show_VBP that_IN using_VBG terms_NNS from_IN the_DT linked_VBN document_NN improves_VBZ the_DT classification_NN accuracy_NN ._.
+Chakrabarti_NNP et_FW al_FW ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- use_NN co-citation_NN information_NN in_IN their_PRP$ classification_NN model_NN ._.
+Joachims_NNP et_FW al_FW ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- combine_VBP text_NN kernels_NNS and_CC co-citation_NN kernels_NNS for_IN classification_NN ._.
+Oh_UH et_FW al_FW -LSB-_-LRB- ##_CD -RSB-_-RRB- use_VB the_DT Naive_JJ Bayesian_JJ frame_NN to_TO combine_VB link_NN information_NN with_IN content_NN ._.
+3_LS ._.
+OUR_NNP APPROACH_NNP In_IN this_DT section_NN we_PRP will_MD first_RB introduce_VB a_DT novel_JJ matrix_NN factorization_NN method_NN ,_, which_WDT is_VBZ more_RBR suitable_JJ than_IN conventional_JJ matrix_NN factorization_NN methods_NNS for_IN link_NN analysis_NN ._.
+Then_RB we_PRP will_MD introduce_VB our_PRP$ approach_NN that_IN jointly_RB factorizes_VBZ the_DT document-term_JJ matrix_NN and_CC link_NN matrix_NN and_CC obtains_VBZ compact_JJ and_CC highly_RB indicative_JJ factors_NNS for_IN representing_VBG documents_NNS or_CC web_NN pages_NNS ._.
+3_LS ._.
+#_# Link_VB Matrix_NNP Factorization_NNP Suppose_VB we_PRP have_VBP a_DT directed_VBN graph_NN G_NN =_JJ -LRB-_-LRB- V_NN ,_, E_NN -RRB-_-RRB- ,_, where_WRB the_DT vertex_NN set_VBN V_NN =_JJ -LCB-_-LRB- vi_LS -RCB-_-RRB- n_NN i_FW =_JJ #_# represents_VBZ the_DT web_NN pages_NNS and_CC the_DT edge_NN set_VBN E_NN represents_VBZ the_DT hyperlinks_NNS between_IN web_NN pages_NNS ._.
+Let_VB A_NN =_JJ -LCB-_-LRB- asd_NN -RCB-_-RRB- denotes_VBZ the_DT nn_NN adjacency_NN matrix_NN of_IN G_NN ,_, which_WDT is_VBZ also_RB called_VBN the_DT link_NN matrix_NN in_IN this_DT paper_NN ._.
+For_IN a_DT pair_NN of_IN vertices_NNS ,_, vs_CC and_CC vd_NN ,_, let_VB asd_NN =_JJ #_# when_WRB there_EX is_VBZ an_DT edge_NN from_IN vs_CC to_TO vd_NN ,_, and_CC asd_NN =_JJ #_# ,_, otherwise_RB ._.
+Note_VB that_DT A_NN is_VBZ an_DT asymmetric_JJ matrix_NN ,_, because_IN hyperlinks_NNS are_VBP directed_VBN ._.
+Most_JJS machine_NN learning_VBG algorithms_NNS assume_VB a_DT feature-vector_JJ representation_NN of_IN instances_NNS ._.
+For_IN web_NN page_NN classification_NN ,_, however_RB ,_, the_DT link_NN graph_NN does_VBZ not_RB readily_RB give_VB such_PDT a_DT vector_NN representation_NN for_IN web_NN pages_NNS ._.
+If_IN one_CD directly_RB uses_VBZ each_DT row_NN or_CC column_NN of_IN A_DT for_IN the_DT job_NN ,_, she_PRP will_MD suffer_VB a_DT very_RB high_JJ computational_JJ cost_NN because_IN the_DT dimensionality_NN equals_VBZ to_TO the_DT number_NN of_IN web_NN pages_NNS ._.
+On_IN the_DT other_JJ hand_NN ,_, it_PRP will_MD produces_VBZ a_DT poor_JJ classification_NN accuracy_NN -LRB-_-LRB- see_VB our_PRP$ experiments_NNS in_IN Section_NN #_# -RRB-_-RRB- ,_, because_IN A_DT is_VBZ extremely_RB sparse1_NN ._.
+The_DT idea_NN of_IN link_NN matrix_NN factorization_NN is_VBZ to_TO derive_VB a_DT high-quality_JJ feature_NN representation_NN Z_NN of_IN web_NN pages_NNS based_VBN on_IN analyzing_VBG the_DT link_NN matrix_NN A_NN ,_, where_WRB Z_NN is_VBZ an_DT n_NN l_NN matrix_NN ,_, with_IN each_DT row_NN being_VBG the_DT ldimensional_JJ feature_NN vector_NN of_IN a_DT web_NN page_NN ._.
+The_DT new_JJ representation_NN of_IN web_NN pages_NNS captures_VBZ the_DT principal_JJ factors_NNS of_IN the_DT link_NN structure_NN and_CC makes_VBZ further_JJ processing_NN more_RBR efficient_JJ ._.
+One_CD may_MD use_VB a_DT method_NN similar_JJ to_TO LSI_NNP ,_, to_TO apply_VB the_DT well-known_JJ principal_JJ component_NN analysis_NN -LRB-_-LRB- PCA_NN -RRB-_-RRB- for_IN deriving_VBG Z_NN from_IN A_DT ._.
+The_DT corresponding_JJ optimization_NN problem_NN #_# is_VBZ min_NN Z_NN ,_, U_NNP A_NNP ZU_NNP #_# F_NN +_CC U_NN #_# F_NN -LRB-_-LRB- #_# -RRB-_-RRB- where_WRB is_VBZ a_DT small_JJ positive_JJ number_NN ,_, U_NNP is_VBZ an_DT l_NN n_NN matrix_NN ,_, and_CC F_NN is_VBZ the_DT Frobenius_NNP norm_NN ._.
+The_DT optimization_NN aims_VBZ to_TO approximate_JJ A_NN by_IN ZU_NNP ,_, a_DT product_NN of_IN two_CD low-rank_JJ matrices_NNS ,_, with_IN a_DT regularization_NN on_IN U_NNP ._.
+In_IN the_DT end_NN ,_, the_DT i-th_JJ row_NN vector_NN of_IN Z_NN can_MD be_VB thought_VBN as_IN the_DT hub_NN feature_NN vector_NN of_IN vertex_NN vi_LS ,_, and_CC the_DT row_NN vector_NN of_IN U_NNP can_MD be_VB thought_VBN as_IN the_DT authority_NN features_NNS ._.
+A_DT link_NN generation_NN model_NN proposed_VBN in_IN -LSB-_-LRB- #_# -RSB-_-RRB- is_VBZ similar_JJ to_TO the_DT PCA_NNP approach_NN ._.
+Since_IN A_DT is_VBZ a_DT nonnegative_JJ matrix_NN here_RB ,_, one_PRP can_MD also_RB consider_VB to_TO put_VB nonnegative_JJ constraints_NNS on_IN U_NNP and_CC Z_NN ,_, which_WDT produces_VBZ an_DT algorithm_NN similar_JJ to_TO PLSA_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- and_CC NMF_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+1_CD Due_JJ to_TO the_DT sparsity_NN of_IN A_NN ,_, links_NNS from_IN two_CD similar_JJ pages_NNS may_MD not_RB share_VB any_DT common_JJ target_NN pages_NNS ,_, which_WDT makes_VBZ them_PRP to_TO appear_VB dissimilar_JJ ._.
+However_RB the_DT two_CD pages_NNS may_MD be_VB indirectly_RB linked_VBN to_TO many_JJ common_JJ pages_NNS via_IN their_PRP$ neighbors_NNS ._.
+2_CD Another_DT equivalent_JJ form_NN is_VBZ minZ_NN ,_, U_NNP A_NNP ZU_NNP #_# F_NN ,_, s_NNS ._.
+t_NN ._.
+U_NNP U_NNP =_JJ I_CD ._.
+The_DT solution_NN Z_NN is_VBZ identical_JJ subject_NN to_TO a_DT scaling_NN factor_NN ._.
+However_RB ,_, despite_IN its_PRP$ popularity_NN in_IN matrix_NN analysis_NN ,_, PCA_NN -LRB-_-LRB- or_CC other_JJ similar_JJ methods_NNS like_IN PLSA_NN -RRB-_-RRB- is_VBZ restrictive_JJ for_IN link_NN matrix_NN factorization_NN ._.
+The_DT major_JJ problem_NN is_VBZ that_IN ,_, PCA_NNP ignores_VBZ the_DT fact_NN that_IN the_DT rows_NNS and_CC columns_NNS of_IN A_DT are_VBP indexed_VBN by_IN exactly_RB the_DT same_JJ set_NN of_IN objects_NNS -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, web_NN pages_NNS -RRB-_-RRB- ._.
+The_DT approximating_VBG matrix_NN A_NN =_JJ ZU_NN shows_VBZ no_DT evidence_NN that_IN links_NNS are_VBP within_IN the_DT same_JJ set_NN of_IN objects_NNS ._.
+To_TO see_VB the_DT drawback_NN ,_, let_VB ''_'' s_VBZ consider_VB a_DT link_NN transitivity_NN situation_NN vi_LS vs_CC vj_NN ,_, where_WRB page_NN i_FW is_VBZ linked_VBN to_TO page_NN s_NNS which_WDT itself_PRP is_VBZ linked_VBN to_TO page_NN j_NN ._.
+Since_IN A_NN =_JJ ZU_NN treats_VBZ A_DT as_IN links_NNS from_IN web_NN pages_NNS -LCB-_-LRB- vi_LS -RCB-_-RRB- to_TO a_DT different_JJ set_NN of_IN objects_NNS ,_, let_VB it_PRP be_VB denoted_VBN by_IN -LCB-_-LRB- oi_NN -RCB-_-RRB- ,_, A_NN =_JJ ZU_NN actually_RB splits_VBZ an_DT linked_VBN object_NN os_NNS from_IN vs_CC and_CC breaks_NNS down_IN the_DT link_NN path_NN into_IN two_CD parts_NNS vi_LS os_NNS and_CC vs_CC oj_NN ._.
+This_DT is_VBZ obviously_RB a_DT miss_VBP interpretation_NN to_TO the_DT original_JJ link_NN path_NN ._.
+To_TO overcome_VB the_DT problem_NN of_IN PCA_NNP ,_, in_IN this_DT paper_NN we_PRP suggest_VBP to_TO use_VB a_DT different_JJ factorization_NN :_: min_NN Z_NN ,_, U_NNP A_NNP ZUZ_NNP #_# F_NN +_CC U_NN #_# F_NN -LRB-_-LRB- #_# -RRB-_-RRB- where_WRB U_NNP is_VBZ an_DT l_NN l_NN full_JJ matrix_NN ._.
+Note_VB that_IN U_NNP is_VBZ not_RB symmetric_JJ ,_, thus_RB ZUZ_NN produces_VBZ an_DT asymmetric_JJ matrix_NN ,_, which_WDT is_VBZ the_DT case_NN of_IN A_NN ._.
+Again_RB ,_, each_DT row_NN vector_NN of_IN Z_NN corresponds_VBZ to_TO a_DT feature_NN vector_NN of_IN a_DT web_NN pages_NNS ._.
+The_DT new_JJ approximating_NN form_NN A_NN =_JJ ZUZ_NN puts_VBZ a_DT clear_JJ meaning_NN that_IN the_DT links_NNS are_VBP between_IN the_DT same_JJ set_NN of_IN objects_NNS ,_, represented_VBN by_IN features_NNS Z_NN ._.
+The_DT factor_NN model_NN actually_RB maps_VBZ each_DT vertex_NN ,_, vi_LS ,_, into_IN a_DT vector_NN zi_NN =_JJ -LCB-_-LRB- zi_NN ,_, k_NN ;_: #_# k_NN l_NN -RCB-_-RRB- in_IN the_DT Rl_NN space_NN ._.
+We_PRP call_VBP the_DT Rl_NN space_NN the_DT factor_NN space_NN ._.
+Then_RB ,_, -LCB-_-LRB- zi_NN -RCB-_-RRB- encodes_VBZ the_DT information_NN of_IN incoming_JJ and_CC outgoing_JJ connectivity_NN of_IN vertices_NNS -LCB-_-LRB- vi_LS -RCB-_-RRB- ._.
+The_DT factor_NN loadings_NNS ,_, U_NNP ,_, explain_VB how_WRB these_DT observed_VBN connections_NNS happened_VBD based_VBN on_IN -LCB-_-LRB- zi_NN -RCB-_-RRB- ._.
+Once_RB we_PRP have_VBP the_DT vector_NN zi_NN ,_, we_PRP can_MD use_VB many_JJ traditional_JJ classification_NN methods_NNS -LRB-_-LRB- such_JJ as_IN SVMs_NNS -RRB-_-RRB- or_CC clustering_NN tools_NNS -LRB-_-LRB- such_JJ as_IN K-Means_NNS -RRB-_-RRB- to_TO perform_VB the_DT analysis_NN ._.
+Illustration_NNP Based_VBD on_IN a_DT Synthetic_JJ Problem_NNP To_TO further_RB illustrate_VB the_DT advantages_NNS of_IN the_DT proposed_VBN link_NN matrix_NN factorization_NN Eq_NN ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- ,_, let_VB us_PRP consider_VB the_DT graph_NN in_IN Figure_NNP #_# ._.
+Given_VBN v1_NN v2_NN v3_NN v4_NN v5_NN v6_NN v7_NN v8_CD Figure_NNP #_# :_: Summarize_VB Figure_NNP #_# with_IN a_DT factor_NN graph_NN these_DT observations_NNS ,_, we_PRP can_MD summarize_VB the_DT graph_NN by_IN grouping_VBG as_IN factor_NN graph_NN depicted_VBN in_IN Figure_NNP #_# ._.
+In_IN the_DT next_JJ we_PRP preform_VBP the_DT two_CD factorization_NN methods_NNS Eq_NN ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- and_CC Eq_NN ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- on_IN this_DT link_NN matrix_NN ._.
+A_DT good_JJ low-rank_JJ representation_NN should_MD reveal_VB the_DT structure_NN of_IN the_DT factor_NN graph_NN ._.
+First_RB we_PRP try_VBP PCA-like_JJ decomposition_NN ,_, solving_VBG Eq_NN ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- and_CC obtaining_VBG Z_NN =_JJ U_NN =_JJ 2_CD 6_CD 6_CD 6_CD 6_CD 6_CD 6_CD 6_CD 6_CD 6_CD 6_CD 6_CD 6_CD 6_CD 6_CD 6_CD 6_CD 4_CD 1_CD ._.
+#_# ._.
+#_# #_# #_# 0_CD #_# ._.
+#_# ._.
+#_# ._.
+#_# 0_CD #_# ._.
+#_# ._.
+#_# ._.
+#_# 0_CD #_# ._.
+#_# ._.
+#_# ._.
+#_# 0_CD #_# ._.
+#_# ._.
+#_# ._.
+#_# ._.
+#_# ._.
+#_# #_# #_# #_# ._.
+#_# ._.
+#_# #_# #_# #_# 0_CD #_# #_# #_# #_# 3_CD 7_CD 7_CD 7_CD 7_CD 7_CD 7_CD 7_CD 7_CD 7_CD 7_CD 7_CD 7_CD 7_CD 7_CD 7_CD 7_CD 5_CD 2_CD 6_CD 6_CD 6_CD 6_CD 6_CD 6_CD 6_CD 6_CD 6_CD 6_CD 6_CD 6_CD 6_CD 6_CD 6_CD 6_CD 4_CD 0_CD #_# #_# #_# #_# ._.
+#_# ._.
+#_# #_# #_# #_# ._.
+#_# ._.
+#_# #_# #_# #_# 0_CD #_# #_# ._.
+#_# ._.
+#_# ._.
+#_# 0_CD #_# ._.
+#_# ._.
+#_# ._.
+#_# 0_CD #_# ._.
+#_# ._.
+#_# ._.
+#_# 0_CD #_# ._.
+#_# ._.
+#_# ._.
+#_# ._.
+#_# ._.
+#_# #_# #_# #_# 3_CD 7_CD 7_CD 7_CD 7_CD 7_CD 7_CD 7_CD 7_CD 7_CD 7_CD 7_CD 7_CD 7_CD 7_CD 7_CD 7_CD 5_CD We_PRP can_MD see_VB that_IN the_DT row_NN vectors_NNS of_IN v6_NN and_CC v7_NN are_VBP the_DT same_JJ in_IN Z_NN ,_, indicating_VBG that_IN v6_NN and_CC v7_NN have_VBP the_DT same_JJ hub_NN attributes_NNS ._.
+The_DT row_NN vectors_NNS of_IN v2_NN and_CC v3_NN are_VBP the_DT same_JJ in_IN U_NNP ,_, indicating_VBG that_IN v2_NN and_CC v3_NN have_VBP the_DT same_JJ authority_NN attributes_NNS ._.
+It_PRP is_VBZ not_RB clear_JJ to_TO see_VB the_DT similarity_NN between_IN v4_NN and_CC v5_NN ,_, because_IN their_PRP$ inlinks_NNS -LRB-_-LRB- and_CC outlinks_NNS -RRB-_-RRB- are_VBP different_JJ ._.
+Then_RB ,_, we_PRP factorize_VBP A_DT by_IN ZUZ_NN via_IN solving_VBG Eq_NN ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- ,_, and_CC obtain_VB the_DT results_NNS Z_NN =_JJ U_NN =_JJ 2_CD 6_CD 6_CD 6_CD 6_CD 6_CD 6_CD 6_CD 6_CD 6_CD 6_CD 6_CD 6_CD 6_CD 6_CD 6_CD 6_CD 4_CD ._.
+#_# ._.
+#_# ._.
+#_# ._.
+#_# ._.
+#_# ._.
+#_# ._.
+#_# ._.
+#_# ._.
+#_# ._.
+#_# ._.
+#_# ._.
+#_# ._.
+#_# ._.
+#_# ._.
+#_# ._.
+#_# ._.
+#_# ._.
+#_# ._.
+#_# ._.
+#_# ._.
+#_# ._.
+#_# ._.
+#_# ._.
+#_# ._.
+#_# ._.
+#_# ._.
+#_# ._.
+#_# ._.
+#_# ._.
+#_# ._.
+#_# ._.
+#_# ._.
+#_# ._.
+#_# ._.
+#_# ._.
+#_# ._.
+#_# ._.
+#_# ._.
+#_# ._.
+#_# 3_CD 7_CD 7_CD 7_CD 7_CD 7_CD 7_CD 7_CD 7_CD 7_CD 7_CD 7_CD 7_CD 7_CD 7_CD 7_CD 7_CD 5_CD 2_CD 6_CD 6_CD 6_CD 6_CD 6_CD 6_CD 6_CD 6_CD 4_CD ._.
+#_# ._.
+#_# ._.
+#_# ._.
+#_# ._.
+#_# ._.
+#_# ._.
+#_# ._.
+#_# ._.
+#_# ._.
+#_# ._.
+#_# ._.
+#_# ._.
+#_# ._.
+#_# ._.
+#_# ._.
+#_# ._.
+#_# ._.
+#_# ._.
+#_# ._.
+#_# ._.
+#_# ._.
+#_# ._.
+#_# ._.
+#_# ._.
+#_# 3_CD 7_CD 7_CD 7_CD 7_CD 7_CD 7_CD 7_CD 7_CD 5_CD The_DT resultant_JJ Z_NN is_VBZ very_RB consistent_JJ with_IN the_DT clustering_NN structure_NN of_IN vertices_NNS :_: the_DT row_NN vectors_NNS of_IN v2_NN and_CC v3_NN are_VBP the_DT same_JJ ,_, those_DT of_IN v4_NN and_CC v5_NN are_VBP the_DT same_JJ ,_, those_DT of_IN v6_NN and_CC v7_NN are_VBP the_DT same_JJ ._.
+Even_RB interestingly_RB ,_, if_IN we_PRP add_VBP constraints_NNS to_TO ensure_VB Z_NN and_CC U_NN be_VB nonnegative_JJ ,_, we_PRP have_VBP Z_NN =_JJ U_NN =_JJ 2_CD 6_CD 6_CD 6_CD 6_CD 6_CD 6_CD 6_CD 6_CD 6_CD 6_CD 6_CD 6_CD 6_CD 6_CD 6_CD 6_CD 4_CD 1_CD ._.
+#_# #_# #_# #_# 0_CD ._.
+#_# #_# #_# #_# 0_CD ._.
+#_# #_# #_# #_# 0_CD #_# ._.
+#_# #_# #_# 0_CD #_# ._.
+#_# #_# #_# 0_CD #_# #_# ._.
+#_# #_# 0_CD #_# #_# ._.
+#_# #_# 0_CD #_# #_# #_# #_# ._.
+3_CD 7_CD 7_CD 7_CD 7_CD 7_CD 7_CD 7_CD 7_CD 7_CD 7_CD 7_CD 7_CD 7_CD 7_CD 7_CD 7_CD 5_CD 2_CD 6_CD 6_CD 6_CD 6_CD 6_CD 6_CD 6_CD 6_CD 4_CD 0_CD #_# ._.
+#_# #_# #_# 0_CD #_# ._.
+#_# #_# #_# 0_CD #_# #_# ._.
+#_# #_# 0_CD #_# #_# #_# #_# ._.
+0_CD #_# #_# #_# #_# 3_CD 7_CD 7_CD 7_CD 7_CD 7_CD 7_CD 7_CD 7_CD 5_CD which_WDT clearly_RB tells_VBZ the_DT assignment_NN of_IN vertices_NNS to_TO clusters_NNS from_IN Z_NN and_CC the_DT links_NNS of_IN factor_NN graph_NN from_IN U_NNP ._.
+When_WRB the_DT interpretability_NN is_VBZ not_RB critical_JJ in_IN some_DT tasks_NNS ,_, for_IN example_NN ,_, classification_NN ,_, we_PRP found_VBD that_IN it_PRP achieves_VBZ better_JJR accuracies_NNS without_IN the_DT nonnegative_JJ constraints_NNS ._.
+Given_VBN our_PRP$ above_JJ analysis_NN ,_, it_PRP is_VBZ clear_JJ that_IN the_DT factorization_NN ZUZ_NN is_VBZ more_RBR expressive_JJ than_IN ZU_NNP in_IN representing_VBG the_DT link_NN matrix_NN A_NN ._.
+3_LS ._.
+#_# Content_NNP Matrix_NNP Factorization_NNP Now_RB let_VB us_PRP consider_VB the_DT content_NN information_NN on_IN the_DT vertices_NNS ._.
+To_TO combine_VB the_DT link_NN information_NN and_CC content_NN information_NN ,_, we_PRP want_VBP to_TO use_VB the_DT same_JJ latent_JJ space_NN to_TO approximate_JJ the_DT content_NN as_IN the_DT latent_JJ space_NN for_IN the_DT links_NNS ._.
+Using_VBG the_DT bag-of-words_NNS approach_NN ,_, we_PRP denote_VBP the_DT content_NN of_IN web_NN pages_NNS by_IN an_DT nm_NN matrix_NN C_NN ,_, each_DT of_IN whose_WP$ rows_NNS represents_VBZ a_DT document_NN ,_, each_DT column_NN represents_VBZ a_DT keyword_NN ,_, where_WRB m_NN is_VBZ the_DT number_NN of_IN keywords_NNS ._.
+Like_IN the_DT latent_JJ semantic_JJ indexing_NN -LRB-_-LRB- LSI_NNP -RRB-_-RRB- -LSB-_-LRB- #_# -RSB-_-RRB- ,_, the_DT l-dimensional_JJ latent_JJ space_NN for_IN words_NNS is_VBZ denoted_VBN by_IN an_DT m_NN l_NN matrix_NN V_NN ._.
+Therefore_RB ,_, we_PRP use_VBP ZV_NN to_TO approximate_JJ matrix_NN C_NN ,_, min_NN V_NN ,_, Z_NN C_NN ZV_NN #_# F_NN +_CC V_NN #_# F_NN ,_, -LRB-_-LRB- #_# -RRB-_-RRB- where_WRB is_VBZ a_DT small_JJ positive_JJ number_NN ,_, V_NN #_# F_NN serves_VBZ as_IN a_DT regularization_NN term_NN to_TO improve_VB the_DT robustness_NN ._.
+3_LS ._.
+#_# Joint_NNP Link-Content_NNP Matrix_NNP Factorization_NNP There_EX are_VBP many_JJ ways_NNS to_TO employ_VB both_CC the_DT content_NN and_CC link_NN information_NN for_IN web_NN page_NN classification_NN ._.
+Our_PRP$ idea_NN in_IN this_DT paper_NN is_VBZ not_RB to_TO simply_RB combine_VB them_PRP ,_, but_CC rather_RB to_TO fuse_NN them_PRP into_IN a_DT single_JJ ,_, consistent_JJ ,_, and_CC compact_JJ feature_NN representation_NN ._.
+To_TO achieve_VB this_DT goal_NN ,_, we_PRP solve_VBP the_DT following_VBG problem_NN ,_, min_NN U_NN ,_, V_NN ,_, Z_NN n_NN J_NN -LRB-_-LRB- U_NN ,_, V_NN ,_, Z_NN -RRB-_-RRB- def_NN =_JJ A_NN ZUZ_NN #_# F_NN +_CC C_NN ZV_NN #_# F_NN +_CC U_NN #_# F_NN +_CC V_NN #_# F_NN o_NN ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- Eq_NN ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- is_VBZ the_DT joined_VBN matrix_NN factorization_NN of_IN A_NN and_CC C_NN with_IN regularization_NN ._.
+The_DT new_JJ representation_NN Z_NN is_VBZ ensured_VBN to_TO capture_VB both_CC the_DT structures_NNS of_IN the_DT link_NN matrix_NN A_NN and_CC the_DT content_NN matrix_NN C_NN ._.
+Once_RB we_PRP find_VBP the_DT optimal_JJ Z_NN ,_, we_PRP can_MD apply_VB the_DT traditional_JJ classification_NN or_CC clustering_NN methods_NNS on_IN vectorial_JJ data_NNS Z_NN ._.
+The_DT relationship_NN among_IN these_DT matrices_NNS can_MD be_VB depicted_VBN as_IN Figure_NNP #_# ._.
+A_DT Y_NN C_NN U_NNP Z_NNP V_NNP Figure_NNP #_# :_: Relationship_NN among_IN the_DT matrices_NNS ._.
+Node_VB Y_NN is_VBZ the_DT target_NN of_IN classification_NN ._.
+Eq_NN ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- can_MD be_VB solved_VBN using_VBG gradient_NN methods_NNS ,_, such_JJ as_IN the_DT conjugate_NN gradient_NN method_NN and_CC quasi-Newton_JJ methods_NNS ._.
+Then_RB main_JJ computation_NN of_IN gradient_NN methods_NNS is_VBZ evaluating_VBG the_DT object_NN function_NN J_NN and_CC its_PRP$ gradients_NNS against_IN variables_NNS ,_, J_NNP U_NNP =_JJ Z_NN ZUZ_NN Z_NN Z_NN AZ_NNP +_CC U_NNP ,_, J_NNP V_NN =_JJ V_NN Z_NN Z_NN C_NN Z_NN +_CC V_NN ,_, J_NN Z_NN =_JJ ZU_NN Z_NN ZU_NN +_CC ZUZ_NNP ZU_NNP A_NNP ZU_NNP AZU_NNP +_CC ZV_NNP V_NNP CV_NNP ._.
+Because_IN of_IN the_DT sparsity_NN of_IN A_NN ,_, the_DT computational_JJ complexity_NN of_IN multiplication_NN of_IN A_NN and_CC Z_NN is_VBZ O_NN -LRB-_-LRB- Al_NNP -RRB-_-RRB- ,_, where_WRB A_NN is_VBZ the_DT number_NN of_IN nonzero_NN entries_NNS in_IN A_DT ._.
+Similarly_RB ,_, the_DT computational_JJ complexity_NN of_IN C_NN Z_NN and_CC CV_NN is_VBZ O_NN -LRB-_-LRB- C_NN l_NN -RRB-_-RRB- ,_, where_WRB C_NN is_VBZ the_DT number_NN of_IN nonzero_NN entries_NNS in_IN C_NN ._.
+The_DT computational_JJ complexity_NN of_IN the_DT rest_NN multiplications_NNS in_IN the_DT gradient_NN computation_NN is_VBZ O_NN -LRB-_-LRB- nl2_NN -RRB-_-RRB- ._.
+Therefore_RB ,_, the_DT total_JJ computational_JJ complexity_NN in_IN one_CD iteration_NN is_VBZ O_NN -LRB-_-LRB- Al_NNP +_CC C_NNP l_NN +_CC nl2_NN -RRB-_-RRB- ._.
+The_DT number_NN of_IN links_NNS and_CC the_DT number_NN of_IN words_NNS in_IN a_DT web_NN page_NN are_VBP relatively_RB small_JJ comparing_VBG to_TO the_DT number_NN of_IN web_NN pages_NNS ,_, and_CC are_VBP almost_RB constant_JJ as_IN the_DT number_NN of_IN web_NN pages_NNS /_: documents_NNS increases_NNS ,_, i_FW ._.
+e_LS ._.
+A_DT =_JJ O_NN -LRB-_-LRB- n_NN -RRB-_-RRB- and_CC C_NN =_JJ O_NN -LRB-_-LRB- n_NN -RRB-_-RRB- ._.
+Therefore_RB ,_, theoretically_RB the_DT computation_NN time_NN is_VBZ almost_RB linear_JJ to_TO the_DT number_NN of_IN web_NN pages_NNS /_: documents_NNS ,_, n_NN ._.
+4_LS ._.
+SUPERVISED_VBN MATRIX_NNP FACTORIZATION_NNP Consider_VB a_DT web_NN page_NN classification_NN problem_NN ._.
+We_PRP can_MD solve_VB Eq_NN ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- to_TO obtain_VB Z_NN as_IN Section_NN #_# ,_, then_RB use_VB a_DT traditional_JJ classifier_NN to_TO perform_VB classification_NN ._.
+However_RB ,_, this_DT approach_NN does_VBZ not_RB take_VB data_NNS labels_NNS into_IN account_NN in_IN the_DT first_JJ step_NN ._.
+Believing_VBG that_DT using_VBG data_NNS labels_NNS improves_VBZ the_DT accuracy_NN by_IN obtaining_VBG a_DT better_JJR Z_NN for_IN the_DT classification_NN ,_, we_PRP consider_VBP to_TO use_VB the_DT data_NNS labels_NNS to_TO guide_VB the_DT matrix_NN factorization_NN ,_, called_VBN supervised_JJ matrix_NN factorization_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Because_IN some_DT data_NNS used_VBN in_IN the_DT matrix_NN factorization_NN have_VBP no_DT label_NN information_NN ,_, the_DT supervised_JJ matrix_NN factorization_NN falls_VBZ into_IN the_DT category_NN of_IN semi-supervised_JJ learning_NN ._.
+Let_VB C_NNP be_VB the_DT set_NN of_IN classes_NNS ._.
+For_IN simplicity_NN ,_, we_PRP first_RB consider_VB binary_JJ class_NN problem_NN ,_, i_FW ._.
+e_LS ._.
+C_NN =_JJ -LCB-_-LRB- #_# ,_, #_# -RCB-_-RRB- ._.
+Assume_VB we_PRP know_VBP the_DT labels_NNS -LCB-_-LRB- yi_NNS -RCB-_-RRB- for_IN vertices_NNS in_IN T_NN V_NN ._.
+We_PRP want_VBP to_TO find_VB a_DT hypothesis_NN h_NN :_: V_NNP R_NNP ,_, such_JJ that_IN we_PRP assign_VBP vi_LS to_TO #_# when_WRB h_NN -LRB-_-LRB- vi_LS -RRB-_-RRB- #_# ,_, #_# otherwise_RB ._.
+We_PRP assume_VBP a_DT transform_VB from_IN the_DT latent_JJ space_NN to_TO R_NN is_VBZ linear_JJ ,_, i_FW ._.
+e_LS ._.
+h_NN -LRB-_-LRB- vi_LS -RRB-_-RRB- =_JJ w_NN -LRB-_-LRB- vi_LS -RRB-_-RRB- +_CC b_NN =_JJ w_NN zi_NN +_CC b_NN ,_, -LRB-_-LRB- #_# -RRB-_-RRB- School_NNP course_NN dept_NN ._.
+faculty_NN other_JJ project_NN staff_NN student_NN total_JJ Cornell_NNP ##_CD #_# ##_CD ###_CD ##_CD ##_CD ###_CD ###_CD Texas_NNP ##_NN #_# ##_CD ###_CD ##_CD #_# ###_CD ###_CD Washington_NNP ##_CD #_# ##_CD ###_CD ##_CD ##_CD ###_CD ####_CD Wisconsin_NNP ##_NN #_# ##_CD ###_CD ##_CD ##_CD ###_CD ####_CD Table_NNP #_# :_: Dataset_NNP of_IN WebKB_NNP where_WRB w_NN and_CC b_NN are_VBP parameters_NNS to_TO estimate_VB ._.
+Here_RB ,_, w_NN is_VBZ the_DT norm_NN of_IN the_DT decision_NN boundary_NN ._.
+Similar_JJ to_TO Support_NN Vector_NNP Machines_NNP -LRB-_-LRB- SVMs_NNS -RRB-_-RRB- -LSB-_-LRB- #_# -RSB-_-RRB- ,_, we_PRP can_MD use_VB the_DT hinge_NN loss_NN to_TO measure_VB the_DT loss_NN ,_, X_NN i_FW :_: viT_NN -LSB-_-LRB- #_# yih_FW -LRB-_-LRB- vi_LS -RRB-_-RRB- -RSB-_-RRB- +_CC ,_, where_WRB -LSB-_-LRB- x_CC -RSB-_-RRB- +_CC is_VBZ x_CC if_IN x_CC #_# ,_, #_# if_IN x_NN <_JJR #_# ._.
+However_RB ,_, the_DT hinge_NN loss_NN is_VBZ not_RB smooth_VB at_IN the_DT hinge_NN point_NN ,_, which_WDT makes_VBZ it_PRP difficult_JJ to_TO apply_VB gradient_NN methods_NNS on_IN the_DT problem_NN ._.
+To_TO overcome_VB the_DT difficulty_NN ,_, we_PRP use_VBP a_DT smoothed_VBN version_NN of_IN hinge_NN loss_NN for_IN each_DT data_NNS point_NN ,_, g_NN -LRB-_-LRB- yih_NN -LRB-_-LRB- vi_LS -RRB-_-RRB- -RRB-_-RRB- ,_, -LRB-_-LRB- #_# -RRB-_-RRB- where_WRB g_NN -LRB-_-LRB- x_NN -RRB-_-RRB- =_JJ 8_CD >_JJR <_JJR >_JJR :_: 0_CD when_WRB x_CC #_# ,_, 1_CD x_CC when_WRB x_CC #_# ,_, 1_CD 4_CD -LRB-_-LRB- x_NN #_# -RRB-_-RRB- #_# when_WRB #_# <_JJR x_NN <_JJR #_# ._.
+We_PRP reduce_VBP a_DT multiclass_JJ problem_NN into_IN multiple_JJ binary_JJ ones_NNS ._.
+One_CD simple_JJ scheme_NN of_IN reduction_NN is_VBZ the_DT one-against-rest_JJ coding_VBG scheme_NN ._.
+In_IN the_DT one-against-rest_JJ scheme_NN ,_, we_PRP assign_VBP a_DT label_NN vector_NN for_IN each_DT class_NN label_NN ._.
+The_DT element_NN of_IN a_DT label_NN vector_NN is_VBZ #_# if_IN the_DT data_NNS point_NN belongs_VBZ the_DT corresponding_JJ class_NN ,_, #_# ,_, if_IN the_DT data_NNS point_NN does_VBZ not_RB belong_VB the_DT corresponding_JJ class_NN ,_, #_# ,_, if_IN the_DT data_NNS point_NN is_VBZ not_RB labeled_VBN ._.
+Let_VB Y_NN be_VB the_DT label_NN matrix_NN ,_, each_DT column_NN of_IN which_WDT is_VBZ a_DT label_NN vector_NN ._.
+Therefore_RB ,_, Y_NN is_VBZ a_DT matrix_NN of_IN n_NN c_NN ,_, where_WRB c_NN is_VBZ the_DT number_NN of_IN classes_NNS ,_, |_NN C_NN |_NN ._.
+Then_RB the_DT values_NNS of_IN Eq_NN ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- form_VBP a_DT matrix_NN H_NN =_JJ ZW_NN +_CC 1b_NN ,_, -LRB-_-LRB- #_# -RRB-_-RRB- where_WRB #_# is_VBZ a_DT vector_NN of_IN size_NN n_NN ,_, whose_WP$ elements_NNS are_VBP all_DT one_CD ,_, W_NNP is_VBZ a_DT c_NN l_NN parameter_NN matrix_NN ,_, and_CC b_NN is_VBZ a_DT parameter_NN vector_NN of_IN size_NN c_NN ._.
+The_DT total_JJ loss_NN is_VBZ proportional_JJ to_TO the_DT sum_NN of_IN Eq_NN ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- over_IN all_DT labeled_VBN data_NNS points_NNS and_CC the_DT classes_NNS ,_, LY_NN -LRB-_-LRB- W_NN ,_, b_NN ,_, Z_NN -RRB-_-RRB- =_JJ X_NN i_FW :_: viT_NN ,_, jC_NN g_NN -LRB-_-LRB- YijHij_NN -RRB-_-RRB- ,_, where_WRB is_VBZ the_DT parameter_NN to_TO scale_VB the_DT term_NN ._.
+To_TO derive_VB a_DT robust_JJ solution_NN ,_, we_PRP also_RB use_VBP Tikhonov_NNP regularization_NN for_IN W_NN ,_, W_NN -LRB-_-LRB- W_NN -RRB-_-RRB- =_JJ 2_CD W_NN #_# F_NN ,_, where_WRB is_VBZ the_DT parameter_NN to_TO scale_VB the_DT term_NN ._.
+Then_RB the_DT supervised_JJ matrix_NN factorization_NN problem_NN becomes_VBZ min_NN U_NN ,_, V_NN ,_, Z_NN ,_, W_NN ,_, b_NN Js_NN -LRB-_-LRB- U_NN ,_, V_NN ,_, Z_NN ,_, W_NN ,_, b_NN -RRB-_-RRB- -LRB-_-LRB- #_# -RRB-_-RRB- where_WRB Js_NNP -LRB-_-LRB- U_NNP ,_, V_NNP ,_, Z_NN ,_, W_NN ,_, b_NN -RRB-_-RRB- =_JJ J_NN -LRB-_-LRB- U_NN ,_, V_NN ,_, Z_NN -RRB-_-RRB- +_CC LY_NN -LRB-_-LRB- W_NN ,_, b_NN ,_, Z_NN -RRB-_-RRB- +_CC W_NN -LRB-_-LRB- W_NN -RRB-_-RRB- ._.
+We_PRP can_MD also_RB use_VB gradient_NN methods_NNS to_TO solve_VB the_DT problem_NN of_IN Eq_NN ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- ._.
+The_DT gradients_NNS are_VBP Js_NNP U_NNP =_JJ J_NN U_NNP ,_, Js_NNP V_NN =_JJ J_NN V_NN ,_, Js_NNP Z_NN =_JJ J_NN Z_NN +_CC GW_NNP ,_, Js_NNP W_NNP =_JJ G_NN Z_NN +_CC W_NN ,_, Js_NN b_NN =_JJ G_NN #_# ,_, where_WRB G_NN is_VBZ an_DT nc_NN matrix_NN ,_, whose_WP$ ik-th_JJ element_NN is_VBZ Yikg_NNP -LRB-_-LRB- YikHik_NNP -RRB-_-RRB- ,_, and_CC g_NN -LRB-_-LRB- x_NN -RRB-_-RRB- =_JJ 8_CD >_JJR <_JJR >_JJR :_: 0_CD when_WRB x_CC #_# ,_, 1_CD when_WRB x_CC #_# ,_, 1_CD 2_CD -LRB-_-LRB- x_NN #_# -RRB-_-RRB- when_WRB #_# <_JJR x_NN <_JJR #_# ._.
+Once_RB we_PRP obtain_VB w_NN ,_, b_NN ,_, and_CC Z_NN ,_, we_PRP can_MD apply_VB h_NN on_IN the_DT vertices_NNS with_IN unknown_JJ class_NN labels_NNS ,_, or_CC apply_VB traditional_JJ classification_NN algorithms_NNS on_IN Z_NN to_TO get_VB the_DT classification_NN results_VBZ ._.
+5_CD ._.
+EXPERIMENTS_NNS 5_CD ._.
+#_# Data_NNS Description_NN In_IN this_DT section_NN ,_, we_PRP perform_VBP classification_NN on_IN two_CD datasets_NNS ,_, to_TO demonstrate_VB the_DT our_PRP$ approach_NN ._.
+The_DT two_CD datasets_NNS are_VBP the_DT WebKB_NNP data_NN set_NN -LSB-_-LRB- #_# -RSB-_-RRB- and_CC the_DT Cora_NNP data_NN set_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+The_DT WebKB_NNP data_NN set_NN consists_VBZ of_IN about_IN ####_CD web_NN pages_NNS from_IN computer_NN science_NN departments_NNS of_IN four_CD schools_NNS -LRB-_-LRB- Cornell_NNP ,_, Texas_NNP ,_, Washington_NNP ,_, and_CC Wisconsin_NNP -RRB-_-RRB- ._.
+The_DT web_NN pages_NNS are_VBP classified_VBN into_IN seven_CD categories_NNS ._.
+The_DT numbers_NNS of_IN pages_NNS in_IN each_DT category_NN are_VBP shown_VBN in_IN Table_NNP #_# ._.
+The_DT Cora_NNP data_NN set_NN consists_VBZ of_IN the_DT abstracts_NNS and_CC references_NNS of_IN about_IN ##_NN ,_, ###_CD computer_NN science_NN research_NN papers_NNS ._.
+We_PRP use_VBP part_NN of_IN them_PRP to_TO categorize_VB into_IN one_CD of_IN subfields_NNS of_IN data_NNS structure_NN -LRB-_-LRB- DS_NN -RRB-_-RRB- ,_, hardware_NN and_CC architecture_NN -LRB-_-LRB- HA_NN -RRB-_-RRB- ,_, machine_NN learning_NN -LRB-_-LRB- ML_NN -RRB-_-RRB- ,_, and_CC programing_VBG language_NN -LRB-_-LRB- PL_NN -RRB-_-RRB- ._.
+We_PRP remove_VBP those_DT articles_NNS without_IN reference_NN to_TO other_JJ articles_NNS in_IN the_DT set_NN ._.
+The_DT number_NN of_IN papers_NNS and_CC the_DT number_NN of_IN subfields_NNS in_IN each_DT area_NN are_VBP shown_VBN in_IN Table_NNP #_# ._.
+area_NN #_# of_IN papers_NNS #_# of_IN subfields_NNS Data_NNS structure_NN -LRB-_-LRB- DS_NN -RRB-_-RRB- ###_CD #_# Hardware_NN and_CC architecture_NN -LRB-_-LRB- HA_NN -RRB-_-RRB- ###_CD #_# Machine_NN learning_NN -LRB-_-LRB- ML_NN -RRB-_-RRB- ####_CD #_# Programing_VBG language_NN -LRB-_-LRB- PL_NN -RRB-_-RRB- ####_CD #_# Table_NNP #_# :_: Dataset_NNP of_IN Cora_NNP 5_CD ._.
+#_# Methods_NNS The_DT task_NN of_IN the_DT experiments_NNS is_VBZ to_TO classify_VB the_DT data_NNS based_VBN on_IN their_PRP$ content_JJ information_NN and_CC /_: or_CC link_NN structure_NN ._.
+We_PRP use_VBP the_DT following_VBG methods_NNS :_: 65_CD 70_CD 75_CD 80_CD 85_CD 90_CD 95_CD 100_CD WisconsinWashingtonTexasCornell_NNP accuracy_NN -LRB-_-LRB- %_NN -RRB-_-RRB- dataset_NN SVM_NN on_IN content_NN SVM_NN on_IN link_NN SVM_NN on_IN link-content_JJ Directed_NNP graph_NN reg_NN ._.
+PLSI_NN +_CC PHITS_NN link-content_JJ MF_NN link-content_JJ sup_NN ._.
+MF_NN method_NN Cornell_NNP Texas_NNP Washington_NNP Wisconsin_NNP SVM_NNP on_IN content_JJ ##_NN ._.
+##_NN #_# ._.
+##_NN ##_CD ._.
+##_NN #_# ._.
+##_NN ##_CD ._.
+##_NN #_# ._.
+##_NN ##_CD ._.
+##_NN #_# ._.
+##_NN SVM_NN on_IN links_NNS ##_VBP ._.
+##_NN #_# ._.
+##_NN ##_CD ._.
+##_NN #_# ._.
+##_NN ##_CD ._.
+##_NN #_# ._.
+##_NN ##_CD ._.
+##_NN #_# ._.
+##_NN SVM_NN on_IN link-content_JJ ##_NN ._.
+##_NN #_# ._.
+##_NN ##_CD ._.
+##_NN #_# ._.
+##_NN ##_CD ._.
+##_NN #_# ._.
+##_NN ##_CD ._.
+##_NN #_# ._.
+##_NN Directed_NNP graph_NN regularization_NN ##_NN ._.
+##_NN #_# ._.
+##_NN ##_CD ._.
+##_NN #_# ._.
+##_NN ##_CD ._.
+##_NN #_# ._.
+##_NN ##_CD ._.
+##_NN #_# ._.
+##_SYM PLSI_NN +_CC PHITS_NN ##_CD ._.
+##_NN #_# ._.
+##_NN ##_CD ._.
+##_NN #_# ._.
+##_NN ##_CD ._.
+##_NN #_# ._.
+##_NN ##_CD ._.
+##_NN #_# ._.
+##_NN link-content_JJ MF_NN ##_NN ._.
+##_NN #_# ._.
+##_NN ##_CD ._.
+##_NN #_# ._.
+##_NN ##_CD ._.
+##_NN #_# ._.
+##_NN ##_CD ._.
+##_NN #_# ._.
+##_NN link-content_JJ sup_NN ._.
+MF_NN ##_NN ._.
+##_NN #_# ._.
+##_NN ##_CD ._.
+##_NN #_# ._.
+##_NN ##_CD ._.
+##_NN #_# ._.
+##_NN ##_CD ._.
+##_NN #_# ._.
+##_RB Table_NNP #_# :_: Classification_NN accuracy_NN -LRB-_-LRB- mean_VB std-err_JJ %_NN -RRB-_-RRB- on_IN WebKB_NN data_NNS set_VBP SVM_NN on_IN content_NN We_PRP apply_VBP support_NN vector_NN machines_NNS -LRB-_-LRB- SVM_NN -RRB-_-RRB- on_IN the_DT content_NN of_IN documents_NNS ._.
+The_DT features_NNS are_VBP the_DT bag-ofwords_NNS and_CC all_DT word_NN are_VBP stemmed_VBN ._.
+This_DT method_NN ignores_VBZ link_NN structure_NN in_IN the_DT data_NNS ._.
+Linear_JJ SVM_NN is_VBZ used_VBN ._.
+The_DT regularization_NN parameter_NN of_IN SVM_NNP is_VBZ selected_VBN using_VBG the_DT cross-validation_NN method_NN ._.
+The_DT implementation_NN of_IN SVM_NNP used_VBN in_IN the_DT experiments_NNS is_VBZ libSVM_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+SVM_NN on_IN links_NNS We_PRP treat_VBP links_NNS as_IN the_DT features_NNS of_IN each_DT document_NN ,_, i_FW ._.
+e_LS ._.
+the_DT i-th_JJ feature_NN is_VBZ link-to-pagei_JJ ._.
+We_PRP apply_VBP SVM_NN on_IN link_NN features_NNS ._.
+This_DT method_NN uses_VBZ link_NN information_NN ,_, but_CC not_RB the_DT link_NN structure_NN ._.
+SVM_NN on_IN link-content_JJ We_PRP combine_VBP the_DT features_NNS of_IN the_DT above_JJ two_CD methods_NNS ._.
+We_PRP use_VBP different_JJ weights_NNS for_IN these_DT two_CD set_NN of_IN features_NNS ._.
+The_DT weights_NNS are_VBP also_RB selected_VBN using_VBG crossvalidation_NN ._.
+Directed_NNP graph_NN regularization_NN This_DT method_NN is_VBZ described_VBN in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- and_CC -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+This_DT method_NN is_VBZ solely_RB based_VBN on_IN link_NN structure_NN ._.
+PLSI_NN +_CC PHITS_NN This_DT method_NN is_VBZ described_VBN in_IN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+This_DT method_NN combines_VBZ text_NN content_NN information_NN and_CC link_NN structure_NN for_IN analysis_NN ._.
+The_DT PHITS_NNP algorithm_NN is_VBZ in_IN spirit_NN similar_JJ to_TO Eq_NN ._.
+#_# ,_, with_IN an_DT additional_JJ nonnegative_JJ constraint_NN ._.
+It_PRP models_NNS the_DT outgoing_JJ and_CC in-coming_JJ structures_NNS separately_RB ._.
+Link-content_JJ MF_NN This_DT is_VBZ our_PRP$ approach_NN of_IN matrix_NN factorization_NN described_VBN in_IN Section_NN #_# ._.
+We_PRP use_VBP ##_CD latent_JJ factors_NNS for_IN Z_NN ._.
+After_IN we_PRP compute_VBP Z_NN ,_, we_PRP train_VBP a_DT linear_JJ SVM_NN using_VBG Z_NN as_IN the_DT feature_NN vectors_NNS ,_, then_RB apply_VB SVM_NN on_IN testing_NN portion_NN of_IN Z_NN to_TO obtain_VB the_DT final_JJ result_NN ,_, because_IN of_IN the_DT multiclass_JJ output_NN ._.
+Link-content_JJ sup_NN ._.
+MF_NN This_DT method_NN is_VBZ our_PRP$ approach_NN of_IN the_DT supervised_JJ matrix_NN factorization_NN in_IN Section_NN #_# ._.
+We_PRP use_VBP ##_CD latent_JJ factors_NNS for_IN Z_NN ._.
+After_IN we_PRP compute_VBP Z_NN ,_, we_PRP train_VBP a_DT linear_JJ SVM_NN on_IN the_DT training_NN portion_NN of_IN Z_NN ,_, then_RB apply_VB SVM_NN on_IN testing_NN portion_NN of_IN Z_NN to_TO obtain_VB the_DT final_JJ result_NN ,_, because_IN of_IN the_DT multiclass_JJ output_NN ._.
+We_PRP randomly_RB split_VBD data_NNS into_IN five_CD folds_VBZ and_CC repeat_VB the_DT experiment_NN for_IN five_CD times_NNS ,_, for_IN each_DT time_NN we_PRP use_VBP one_CD fold_NN for_IN test_NN ,_, four_CD other_JJ folds_VBZ for_IN training_NN ._.
+During_IN the_DT training_NN process_NN ,_, we_PRP use_VBP the_DT crossvalidation_NN to_TO select_VB all_DT model_NN parameters_NNS ._.
+We_PRP measure_VBP the_DT results_NNS by_IN the_DT classification_NN accuracy_NN ,_, i_FW ._.
+e_LS ._.
+,_, the_DT percentage_NN of_IN the_DT number_NN of_IN correct_JJ classified_VBN documents_NNS in_IN the_DT entire_JJ data_NN set_NN ._.
+The_DT results_NNS are_VBP shown_VBN as_IN the_DT average_JJ classification_NN accuracies_NNS and_CC it_PRP standard_JJ deviation_NN over_IN the_DT five_CD repeats_NNS ._.
+5_CD ._.
+#_# Results_NNS The_DT average_JJ classification_NN accuracies_NNS for_IN the_DT WebKB_NNP data_NN set_NN are_VBP shown_VBN in_IN Table_NNP #_# ._.
+For_IN this_DT task_NN ,_, the_DT accuracies_NNS of_IN SVM_NN on_IN links_NNS are_VBP worse_JJR than_IN that_DT of_IN SVM_NN on_IN content_NN ._.
+But_CC the_DT directed_VBN graph_NN regularization_NN ,_, which_WDT is_VBZ also_RB based_VBN on_IN link_NN alone_RB ,_, achieves_VBZ a_DT much_RB higher_JJR accuracy_NN ._.
+This_DT implies_VBZ that_IN the_DT link_NN structure_NN plays_VBZ an_DT important_JJ role_NN in_IN the_DT classification_NN of_IN this_DT dataset_NN ,_, but_CC individual_JJ links_NNS in_IN a_DT web_NN page_NN give_VBP little_JJ information_NN ._.
+The_DT combination_NN of_IN link_NN and_CC content_NN using_VBG SVM_NNP achieves_VBZ similar_JJ accuracy_NN as_IN that_DT of_IN SVM_NN on_IN content_NN alone_RB ,_, which_WDT confirms_VBZ individual_JJ links_NNS in_IN a_DT web_NN page_NN give_VBP little_JJ information_NN ._.
+Since_IN our_PRP$ approach_NN consider_VB the_DT link_NN structure_NN as_RB well_RB as_IN the_DT content_NN information_NN ,_, our_PRP$ two_CD methods_NNS give_VBP results_VBZ a_DT highest_JJS accuracies_NNS among_IN these_DT approaches_NNS ._.
+The_DT difference_NN between_IN the_DT results_NNS of_IN our_PRP$ two_CD methods_NNS is_VBZ not_RB significant_JJ ._.
+However_RB in_IN the_DT experiments_NNS below_IN ,_, we_PRP show_VBP the_DT difference_NN between_IN them_PRP ._.
+The_DT classification_NN accuracies_NNS for_IN the_DT Cora_NNP data_NN set_NN are_VBP shown_VBN in_IN Table_NNP #_# ._.
+In_IN this_DT experiment_NN ,_, the_DT accuracies_NNS of_IN SVM_NN on_IN the_DT combination_NN of_IN links_NNS and_CC content_NN are_VBP higher_JJR than_IN either_DT SVM_NN on_IN content_NN or_CC SVM_NN on_IN links_NNS ._.
+This_DT indicates_VBZ both_CC content_NN and_CC links_NNS are_VBP infor45_NN 50_CD 55_CD 60_CD 65_CD 70_CD 75_CD 80_CD PLMLHADS_NN accuracy_NN -LRB-_-LRB- %_NN -RRB-_-RRB- dataset_NN SVM_NN on_IN content_NN SVM_NN on_IN link_NN SVM_NN on_IN link-content_JJ Directed_NNP graph_NN reg_NN ._.
+PLSI_NN +_CC PHITS_NN link-content_JJ MF_NN link-content_JJ sup_NN ._.
+MF_NN method_NN DS_NN HA_NN ML_NN PL_NN SVM_NN on_IN content_JJ ##_NN ._.
+##_NN #_# ._.
+##_NN ##_CD ._.
+##_NN #_# ._.
+##_NN ##_CD ._.
+##_NN #_# ._.
+##_NN ##_CD ._.
+##_NN #_# ._.
+##_NN SVM_NN on_IN links_NNS ##_VBP ._.
+##_NN #_# ._.
+##_NN ##_CD ._.
+##_NN #_# ._.
+##_NN ##_CD ._.
+##_NN #_# ._.
+##_NN ##_CD ._.
+##_NN #_# ._.
+##_NN SVM_NN on_IN link-content_JJ ##_NN ._.
+##_NN #_# ._.
+##_NN ##_CD ._.
+##_NN #_# ._.
+##_NN ##_CD ._.
+##_NN #_# ._.
+##_NN ##_CD ._.
+##_NN #_# ._.
+##_NN Directed_NNP graph_NN regularization_NN ##_NN ._.
+##_NN #_# ._.
+##_NN ##_CD ._.
+##_NN #_# ._.
+##_NN ##_CD ._.
+##_NN #_# ._.
+##_NN ##_CD ._.
+##_NN #_# ._.
+##_SYM PLSI_NN +_CC PHITS_NN ##_CD ._.
+##_NN #_# ._.
+##_NN ##_CD ._.
+##_NN #_# ._.
+##_NN ##_CD ._.
+##_NN #_# ._.
+##_NN ##_CD ._.
+##_NN #_# ._.
+##_NN link-content_JJ MF_NN ##_NN ._.
+##_NN #_# ._.
+##_NN ##_CD ._.
+##_NN #_# ._.
+##_NN ##_CD ._.
+##_NN #_# ._.
+##_NN ##_CD ._.
+##_NN #_# ._.
+##_NN link-content_JJ sup_NN ._.
+MF_NN ##_NN ._.
+##_NN #_# ._.
+##_NN ##_CD ._.
+##_NN #_# ._.
+##_NN ##_CD ._.
+##_NN #_# ._.
+##_NN ##_CD ._.
+##_NN #_# ._.
+##_RB Table_NNP #_# :_: Classification_NN accuracy_NN -LRB-_-LRB- mean_VB std-err_JJ %_NN -RRB-_-RRB- on_IN Cora_NNP data_NNS set_VBD mative_JJ for_IN classifying_VBG the_DT articles_NNS into_IN subfields_NNS ._.
+The_DT method_NN of_IN directed_VBN graph_NN regularization_NN does_VBZ not_RB perform_VB as_RB good_JJ as_IN SVM_NN on_IN link-content_JJ ,_, which_WDT confirms_VBZ the_DT importance_NN of_IN the_DT article_NN content_NN in_IN this_DT task_NN ._.
+Though_IN our_PRP$ method_NN of_IN link-content_JJ matrix_NN factorization_NN perform_VB slightly_RB better_JJR than_IN other_JJ methods_NNS ,_, our_PRP$ method_NN of_IN linkcontent_NN supervised_VBD matrix_NN factorization_NN outperform_VBP significantly_RB ._.
+5_CD ._.
+#_# The_DT Number_NN of_IN Factors_NNS As_IN we_PRP discussed_VBD in_IN Section_NN #_# ,_, the_DT computational_JJ complexity_NN of_IN each_DT iteration_NN for_IN solving_VBG the_DT optimization_NN problem_NN is_VBZ quadratic_JJ to_TO the_DT number_NN of_IN factors_NNS ._.
+We_PRP perform_VBP experiments_NNS to_TO study_VB how_WRB the_DT number_NN of_IN factors_NNS affects_VBZ the_DT accuracy_NN of_IN predication_NN ._.
+We_PRP use_VBP different_JJ numbers_NNS of_IN factors_NNS for_IN the_DT Cornell_NNP data_NNS of_IN WebKB_NNP data_NNS set_NN and_CC the_DT machine_NN learning_NN -LRB-_-LRB- ML_NN -RRB-_-RRB- data_NNS of_IN Cora_NNP data_NNS set_NN ._.
+The_DT result_NN shown_VBN in_IN Figure_NNP #_# -LRB-_-LRB- a_DT -RRB-_-RRB- and_CC #_# -LRB-_-LRB- b_NN -RRB-_-RRB- ._.
+The_DT figures_NNS show_VBP that_IN the_DT accuracy_NN 88_CD 89_CD 90_CD 91_CD 92_CD 93_CD 94_CD 95_CD 0_CD ##_CD ##_CD ##_CD ##_CD ##_NN accuracy_NN -LRB-_-LRB- %_NN -RRB-_-RRB- number_NN of_IN factors_NNS link-content_JJ sup_NN ._.
+MF_NN link-content_JJ MF_NN -LRB-_-LRB- a_DT -RRB-_-RRB- Cornell_NNP data_NNS 62_CD 64_CD 66_CD 68_CD 70_CD 72_CD 74_CD 76_CD 78_CD 80_CD 0_CD ##_CD ##_CD ##_CD ##_CD ##_NN accuracy_NN -LRB-_-LRB- %_NN -RRB-_-RRB- number_NN of_IN factors_NNS link-content_JJ sup_NN ._.
+MF_NN link-content_JJ MF_NN -LRB-_-LRB- b_NN -RRB-_-RRB- ML_NN data_NNS Figure_NN #_# :_: Accuracy_NNP vs_CC number_NN of_IN factors_NNS increases_VBZ as_IN the_DT number_NN of_IN factors_NNS increases_NNS ._.
+It_PRP is_VBZ a_DT different_JJ concept_NN from_IN choosing_VBG the_DT optimal_JJ number_NN of_IN clusters_NNS in_IN clustering_NN application_NN ._.
+It_PRP is_VBZ how_WRB much_JJ information_NN to_TO represent_VB in_IN the_DT latent_JJ variables_NNS ._.
+We_PRP have_VBP considered_VBN the_DT regularization_NN over_IN the_DT factors_NNS ,_, which_WDT avoids_VBZ the_DT overfit_NN problem_NN for_IN a_DT large_JJ number_NN of_IN factors_NNS ._.
+To_TO choose_VB of_IN the_DT number_NN of_IN factors_NNS ,_, we_PRP need_VBP to_TO consider_VB the_DT trade-off_NN between_IN the_DT accuracy_NN and_CC the_DT computation_NN time_NN ,_, which_WDT is_VBZ quadratic_JJ to_TO the_DT number_NN of_IN factors_NNS ._.
+The_DT difference_NN between_IN the_DT method_NN of_IN matrix_NN factorization_NN and_CC that_IN of_IN supervised_JJ one_CD decreases_VBZ as_IN the_DT number_NN of_IN factors_NNS increases_NNS ._.
+This_DT indicates_VBZ that_IN the_DT usefulness_NN of_IN supervised_JJ matrix_NN factorization_NN at_IN lower_JJR number_NN of_IN factors_NNS ._.
+6_CD ._.
+DISCUSSIONS_NNS The_DT loss_NN functions_VBZ LA_NNP in_IN Eq_NNP ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- and_CC LC_NN in_IN Eq_NN ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- use_VBP squared_VBN loss_NN due_JJ to_TO computationally_RB convenience_NN ._.
+Actually_RB ,_, squared_VBD loss_NN does_VBZ not_RB precisely_RB describe_VBP the_DT underlying_VBG noise_NN model_NN ,_, because_IN the_DT weights_NNS of_IN adjacency_NN matrix_NN can_MD only_RB take_VB nonnegative_JJ values_NNS ,_, in_IN our_PRP$ case_NN ,_, zero_CD or_CC one_CD only_RB ,_, and_CC the_DT components_NNS of_IN content_NN matrix_NN C_NN can_MD only_RB take_VB nonnegative_JJ integers_NNS ._.
+Therefore_RB ,_, we_PRP can_MD apply_VB other_JJ types_NNS of_IN loss_NN ,_, such_JJ as_IN hinge_NN loss_NN or_CC smoothed_VBD hinge_NN loss_NN ,_, e_LS ._.
+g_NN ._.
+LA_NNP -LRB-_-LRB- U_NNP ,_, Z_NN -RRB-_-RRB- =_JJ h_NN -LRB-_-LRB- A_NN ,_, ZUZ_NN -RRB-_-RRB- ,_, where_WRB h_NN -LRB-_-LRB- A_NN ,_, B_NN -RRB-_-RRB- =_JJ P_NN i_FW ,_, j_NN -LSB-_-LRB- #_# AijBij_NNP -RSB-_-RRB- +_CC ._.
+In_IN our_PRP$ paper_NN ,_, we_PRP mainly_RB discuss_VBP the_DT application_NN of_IN classification_NN ._.
+A_DT entry_NN of_IN matrix_NN Z_NN means_VBZ the_DT relationship_NN of_IN a_DT web_NN page_NN and_CC a_DT factor_NN ._.
+The_DT values_NNS of_IN the_DT entries_NNS are_VBP the_DT weights_NNS of_IN linear_JJ model_NN ,_, instead_RB of_IN the_DT probabilities_NNS of_IN web_NN pages_NNS belonging_VBG to_TO latent_JJ topics_NNS ._.
+Therefore_RB ,_, we_PRP allow_VBP the_DT components_NNS take_VBP any_DT possible_JJ real_JJ values_NNS ._.
+When_WRB we_PRP come_VBP to_TO the_DT clustering_NN application_NN ,_, we_PRP can_MD use_VB this_DT model_NN to_TO find_VB Z_NN ,_, then_RB apply_VB K-means_NNS to_TO partition_NN the_DT web_NN pages_NNS into_IN clusters_NNS ._.
+Actually_RB ,_, we_PRP can_MD use_VB the_DT idea_NN of_IN nonnegative_JJ matrix_NN factorization_NN for_IN clustering_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- to_TO directly_RB cluster_VB web_NN pages_NNS ._.
+As_IN the_DT example_NN with_IN nonnegative_JJ constraints_NNS shown_VBN in_IN Section_NN #_# ,_, we_PRP represent_VBP each_DT cluster_NN by_IN a_DT latent_JJ topic_NN ,_, i_FW ._.
+e_LS ._.
+the_DT dimensionality_NN of_IN the_DT latent_JJ space_NN is_VBZ set_VBN to_TO the_DT number_NN of_IN clusters_NNS we_PRP want_VBP ._.
+Then_RB the_DT problem_NN of_IN Eq_NN ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- becomes_VBZ min_NN U_NN ,_, V_NN ,_, Z_NN J_NN -LRB-_-LRB- U_NN ,_, V_NN ,_, Z_NN -RRB-_-RRB- ,_, s_NNS ._.
+t_NN ._.
+Z_NN #_# ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- Solving_VBG Eq_NN ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- ,_, we_PRP can_MD obtain_VB more_RBR interpretable_JJ results_NNS ,_, which_WDT could_MD be_VB used_VBN for_IN clustering_NN ._.
+7_CD ._.
+CONCLUSIONS_NNS In_IN this_DT paper_NN ,_, we_PRP study_VBP the_DT problem_NN of_IN how_WRB to_TO combine_VB the_DT information_NN of_IN content_NN and_CC links_NNS for_IN web_NN page_NN analysis_NN ,_, mainly_RB on_IN classification_NN application_NN ._.
+We_PRP propose_VBP a_DT simple_JJ approach_NN using_VBG factors_NNS to_TO model_VB the_DT text_NN content_NN and_CC link_NN structure_NN of_IN web_NN pages_NNS /_: documents_NNS ._.
+The_DT directed_VBN links_NNS are_VBP generated_VBN from_IN the_DT linear_JJ combination_NN of_IN linkage_NN of_IN between_IN source_NN and_CC destination_NN factors_NNS ._.
+By_IN sharing_VBG factors_NNS between_IN text_NN content_NN and_CC link_NN structure_NN ,_, it_PRP is_VBZ easy_JJ to_TO combine_VB both_CC the_DT content_NN information_NN and_CC link_NN structure_NN ._.
+Our_PRP$ experiments_NNS show_VBP our_PRP$ approach_NN is_VBZ effective_JJ for_IN classification_NN ._.
+We_PRP also_RB discuss_VBP an_DT extension_NN for_IN clustering_NN application_NN ._.
+Acknowledgment_NNP We_PRP would_MD like_VB to_TO thank_VB Dr_NNP ._.
+Dengyong_NNP Zhou_NNP for_IN sharing_VBG his_PRP$ code_NN of_IN his_PRP$ algorithm_NN ._.
+Also_RB ,_, thanks_NNS to_TO the_DT reviewers_NNS for_IN constructive_JJ comments_NNS ._.
+8_CD ._.
+REFERENCES_NNS -LSB-_-LRB- #_# -RSB-_-RRB- CMU_NNP world_NN wide_JJ knowledge_NN base_NN -LRB-_-LRB- WebKB_NN -RRB-_-RRB- project_NN ._.
+Available_JJ at_IN http_NN :_: /_: /_: www_NN ._.
+cs_NNS ._.
+cmu_NN ._.
+edu_FW /_: WebKB_NN /_: ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- D_NN ._.
+Achlioptas_NNP ,_, A_NNP ._.
+Fiat_NNP ,_, A_NNP ._.
+R_NN ._.
+Karlin_NNP ,_, and_CC F_NN ._.
+McSherry_NNP ._.
+Web_NN search_NN via_IN hub_NN synthesis_NN ._.
+In_IN IEEE_NNP Symposium_NNP on_IN Foundations_NNPS of_IN Computer_NNP Science_NNP ,_, pages_NNS 500-509_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- S_NN ._.
+Chakrabarti_NNP ,_, B_NN ._.
+E_NN ._.
+Dom_NNP ,_, and_CC P_NN ._.
+Indyk_NNP ._.
+Enhanced_VBN hypertext_NN categorization_NN using_VBG hyperlinks_NNS ._.
+In_IN L_NN ._.
+M_NN ._.
+Haas_NNP and_CC A_NNP ._.
+Tiwary_NNP ,_, editors_NNS ,_, Proceedings_NNP of_IN SIGMOD-98_NNP ,_, ACM_NNP International_NNP Conference_NNP on_IN Management_NNP of_IN Data_NNP ,_, pages_NNS 307-318_CD ,_, Seattle_NNP ,_, US_NNP ,_, ####_CD ._.
+ACM_NNP Press_NNP ,_, New_NNP York_NNP ,_, US_NNP ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- C_NN ._.
+-_: C_NN ._.
+Chang_NNP and_CC C_NNP ._.
+-_: J_NN ._.
+Lin_NNP ._.
+LIBSVM_NNP :_: a_DT library_NN for_IN support_NN vector_NN machines_NNS ,_, ####_CD ._.
+Software_NNP available_JJ at_IN http_NN :_: /_: /_: www_NN ._.
+csie_NN ._.
+ntu_NN ._.
+edu_NN ._.
+tw_NN /_: cjlin_NN /_: libsvm_NN ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- D_NN ._.
+Cohn_NNP and_CC H_NNP ._.
+Chang_NNP ._.
+Learning_VBG to_TO probabilistically_RB identify_VB authoritative_JJ documents_NNS ._.
+Proc_NNP ._.
+ICML_NN ####_CD ._.
+pp_NN ._.
+167-174_CD ._.
+,_, 2000_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- D_NN ._.
+Cohn_NNP and_CC T_NN ._.
+Hofmann_NNP ._.
+The_DT missing_VBG link_NN -_: a_DT probabilistic_JJ model_NN of_IN document_NN content_NN and_CC hypertext_NN connectivity_NN ._.
+In_IN T_NN ._.
+K_NN ._.
+Leen_NNP ,_, T_NN ._.
+G_NN ._.
+Dietterich_NNP ,_, and_CC V_NN ._.
+Tresp_NNP ,_, editors_NNS ,_, Advances_NNS in_IN Neural_NNP Information_NNP Processing_NNP Systems_NNPS ##_NN ,_, pages_NNS 430-436_CD ._.
+MIT_NNP Press_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- C_NN ._.
+Cortes_NNP and_CC V_NNP ._.
+Vapnik_NNP ._.
+Support-vector_JJ networks_NNS ._.
+Machine_NN Learning_NNP ,_, ##_CD :_: ###_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- S_NN ._.
+C_NN ._.
+Deerwester_NNP ,_, S_NN ._.
+T_NN ._.
+Dumais_NNP ,_, T_NN ._.
+K_NN ._.
+Landauer_NNP ,_, G_NNP ._.
+W_NN ._.
+Furnas_NNP ,_, and_CC R_NN ._.
+A_DT ._.
+Harshman_NNP ._.
+Indexing_NN by_IN latent_JJ semantic_JJ analysis_NN ._.
+Journal_NNP of_IN the_DT American_NNP Society_NNP of_IN Information_NNP Science_NNP ,_, ##_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 391-407_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- X_NN ._.
+He_PRP ,_, H_NN ._.
+Zha_NNP ,_, C_NNP ._.
+Ding_NNP ,_, and_CC H_NN ._.
+Simon_NNP ._.
+Web_NN document_NN clustering_NN using_VBG hyperlink_NN structures_NNS ._.
+Computational_JJ Statistics_NNS and_CC Data_NNS Analysis_NN ,_, ##_NN -LRB-_-LRB- #_# -RRB-_-RRB- :_: 19-45_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- T_NN ._.
+Hofmann_NNP ._.
+Probabilistic_NNP latent_JJ semantic_JJ indexing_NN ._.
+In_IN Proceedings_NNP of_IN the_DT Twenty-Second_NNP Annual_JJ International_NNP SIGIR_NNP Conference_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- T_NN ._.
+Joachims_NNP ,_, N_NNP ._.
+Cristianini_NNP ,_, and_CC J_NN ._.
+Shawe-Taylor_NNP ._.
+Composite_NNP kernels_NNS for_IN hypertext_NN categorisation_NN ._.
+In_IN C_NN ._.
+Brodley_NN and_CC A_NN ._.
+Danyluk_NNP ,_, editors_NNS ,_, Proceedings_NNP of_IN ICML-01_NN ,_, 18th_JJ International_NNP Conference_NN on_IN Machine_NN Learning_NNP ,_, pages_NNS 250-257_CD ,_, Williams_NNP College_NNP ,_, US_NNP ,_, ####_CD ._.
+Morgan_NNP Kaufmann_NNP Publishers_NNPS ,_, San_NNP Francisco_NNP ,_, US_NNP ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+M_NN ._.
+Kleinberg_NNP ._.
+Authoritative_JJ sources_NNS in_IN a_DT hyperlinked_JJ environment_NN ._.
+J_NN ._.
+ACM_NNP ,_, ##_CD :_: 604-632_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- P_NN ._.
+Kolari_NNP ,_, T_NN ._.
+Finin_NN ,_, and_CC A_NN ._.
+Joshi_NNP ._.
+SVMs_NNS for_IN the_DT Blogosphere_NNP :_: Blog_NNP Identification_NN and_CC Splog_NNP Detection_NN ._.
+In_IN AAAI_NNP Spring_NNP Symposium_NNP on_IN Computational_NNP Approaches_NNPS to_TO Analysing_NNP Weblogs_NNP ,_, March_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- O_NN ._.
+Kurland_NNP and_CC L_NNP ._.
+Lee_NNP ._.
+Pagerank_NN without_IN hyperlinks_NNS :_: structural_JJ re-ranking_NN using_VBG links_NNS induced_VBN by_IN language_NN models_NNS ._.
+In_IN SIGIR_NN ''_'' ##_NN :_: Proceedings_NNP of_IN the_DT 28th_JJ annual_JJ international_JJ ACM_NNP SIGIR_NNP conference_NN on_IN Research_NNP and_CC development_NN in_IN information_NN retrieval_NN ,_, pages_NNS 306-313_CD ,_, New_NNP York_NNP ,_, NY_NNP ,_, USA_NNP ,_, ####_CD ._.
+ACM_NNP Press_NNP ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- A_DT ._.
+McCallum_NNP ,_, K_NNP ._.
+Nigam_NNP ,_, J_NNP ._.
+Rennie_NNP ,_, and_CC K_NN ._.
+Seymore_NNP ._.
+Automating_VBG the_DT contruction_NN of_IN internet_NN portals_NNS with_IN machine_NN learning_NN ._.
+Information_NNP Retrieval_NNP Journal_NNP ,_, #_# -LRB-_-LRB- 127-163_CD -RRB-_-RRB- ,_, ####_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- H_NN ._.
+-_: J_NN ._.
+Oh_UH ,_, S_NN ._.
+H_NN ._.
+Myaeng_NNP ,_, and_CC M_NN ._.
+-_: H_NN ._.
+Lee_NNP ._.
+A_DT practical_JJ hypertext_NN catergorization_NN method_NN using_VBG links_NNS and_CC incrementally_RB available_JJ class_NN information_NN ._.
+In_IN SIGIR_NN ''_'' ##_NN :_: Proceedings_NNP of_IN the_DT 23rd_JJ annual_JJ international_JJ ACM_NNP SIGIR_NNP conference_NN on_IN Research_NNP and_CC development_NN in_IN information_NN retrieval_NN ,_, pages_NNS 264-271_CD ,_, New_NNP York_NNP ,_, NY_NNP ,_, USA_NNP ,_, ####_CD ._.
+ACM_NNP Press_NNP ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- L_NN ._.
+Page_NNP ,_, S_NN ._.
+Brin_NNP ,_, R_NN ._.
+Motowani_NNP ,_, and_CC T_NN ._.
+Winograd_NNP ._.
+PageRank_NNP citation_NN ranking_NN :_: bring_VB order_NN to_TO the_DT web_NN ._.
+Stanford_NNP Digital_NNP Library_NNP working_VBG paper_NN 1997-0072_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- C_NN ._.
+Spearman_NNP ._.
+General_NNP Intelligence_NNP ,_, objectively_RB determined_VBN and_CC measured_VBN ._.
+The_DT American_NNP Journal_NNP of_IN Psychology_NNP ,_, 15_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 201-292_CD ,_, Apr_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- B_NN ._.
+Taskar_NNP ,_, P_NN ._.
+Abbeel_NNP ,_, and_CC D_NN ._.
+Koller_NNP ._.
+Discriminative_JJ probabilistic_JJ models_NNS for_IN relational_JJ data_NNS ._.
+In_IN Proceedings_NNP of_IN 18th_JJ International_NNP UAI_NNP Conference_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- W_NN ._.
+Xu_NNP ,_, X_NN ._.
+Liu_NNP ,_, and_CC Y_NN ._.
+Gong_NNP ._.
+Document_NNP clustering_NN based_VBN on_IN non-negative_JJ matrix_NN factorization_NN ._.
+In_IN SIGIR_NN ''_'' ##_NN :_: Proceedings_NNP of_IN the_DT 26th_JJ annual_JJ international_JJ ACM_NNP SIGIR_NNP conference_NN on_IN Research_NNP and_CC development_NN in_IN informaion_NN retrieval_NN ,_, pages_NNS 267-273_CD ._.
+ACM_NNP Press_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Y_NN ._.
+Yang_NNP ,_, S_NN ._.
+Slattery_NNP ,_, and_CC R_NN ._.
+Ghani_NNP ._.
+A_DT study_NN of_IN approaches_NNS to_TO hypertext_NN categorization_NN ._.
+Journal_NNP of_IN Intelligent_NNP Information_NNP Systems_NNP ,_, ##_CD -LRB-_-LRB- 2-3_CD -RRB-_-RRB- :_: 219-241_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- K_NN ._.
+Yu_NNP ,_, S_NN ._.
+Yu_NNP ,_, and_CC V_NN ._.
+Tresp_NNP ._.
+Multi-label_JJ informed_VBN latent_JJ semantic_JJ indexing_NN ._.
+In_IN SIGIR_NN ''_'' ##_NN :_: Proceedings_NNP of_IN the_DT 28th_JJ annual_JJ international_JJ ACM_NNP SIGIR_NNP conference_NN on_IN Research_NNP and_CC development_NN in_IN information_NN retrieval_NN ,_, pages_NNS 258-265_CD ,_, New_NNP York_NNP ,_, NY_NNP ,_, USA_NNP ,_, ####_CD ._.
+ACM_NNP Press_NNP ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- T_NN ._.
+Zhang_NNP ,_, A_NNP ._.
+Popescul_NNP ,_, and_CC B_NN ._.
+Dom_NNP ._.
+Linear_JJ prediction_NN models_NNS with_IN graph_NN regularization_NN for_IN web-page_JJ categorization_NN ._.
+In_IN KDD_NNP ''_'' ##_CD :_: Proceedings_NNP of_IN the_DT 12th_JJ ACM_NN SIGKDD_JJ international_JJ conference_NN on_IN Knowledge_NN discovery_NN and_CC data_NNS mining_NN ,_, pages_NNS 821-826_CD ,_, New_NNP York_NNP ,_, NY_NNP ,_, USA_NNP ,_, 2006_CD ._.
+ACM_NNP Press_NNP ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- D_NN ._.
+Zhou_NNP ,_, J_NNP ._.
+Huang_NNP ,_, and_CC B_NN ._.
+Scholkopf_NNP ._.
+Learning_NNP from_IN labeled_VBN and_CC unlabeled_JJ data_NNS on_IN a_DT directed_VBN graph_NN ._.
+In_IN Proceedings_NNP of_IN the_DT 22nd_JJ International_NNP Conference_NN on_IN Machine_NN Learning_NNP ,_, Bonn_NNP ,_, Germany_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- D_NN ._.
+Zhou_NNP ,_, B_NN ._.
+Scholkopf_NNP ,_, and_CC T_NN ._.
+Hofmann_NNP ._.
+Semi-supervised_JJ learning_NN on_IN directed_VBN graphs_NNS ._.
+Proc_NNP ._.
+Neural_JJ Info_NN ._.
+Processing_NNP Systems_NNPS ,_, ####_CD ._.

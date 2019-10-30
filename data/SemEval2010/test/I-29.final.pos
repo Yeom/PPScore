@@ -1,0 +1,431 @@
+Distributed_VBN Management_NN of_IN Flexible_NNP Times_NNP Schedules_NNP Stephen_NNP F_NN ._.
+Smith_NNP ,_, Anthony_NNP Gallagher_NNP ,_, Terry_NNP Zimmerman_NNP ,_, Laura_NNP Barbulescu_NNP ,_, Zachary_NNP Rubinstein_NNP The_NNP Robotics_NNP Institute_NNP ,_, Carnegie_NNP Mellon_NNP University_NNP 5000_CD Forbes_NNP Avenue_NNP ,_, Pittsburgh_NNP PA_NN #####_CD -LCB-_-LRB- sfs_NNS ,_, anthonyg_NN ,_, wizim_NN ,_, laurabar_NN ,_, zbr_NN -RCB-_-RRB- @_SYM cs_NNS ._.
+cmu_NN ._.
+edu_NN ABSTRACT_NN We_PRP consider_VBP the_DT problem_NN of_IN managing_VBG schedules_NNS in_IN an_DT uncertain_JJ ,_, distributed_VBN environment_NN ._.
+We_PRP assume_VBP a_DT team_NN of_IN collaborative_JJ agents_NNS ,_, each_DT responsible_JJ for_IN executing_VBG a_DT portion_NN of_IN a_DT globally_RB pre-established_JJ schedule_NN ,_, but_CC none_NN possessing_VBG a_DT global_JJ view_NN of_IN either_CC the_DT problem_NN or_CC solution_NN ._.
+The_DT goal_NN is_VBZ to_TO maximize_VB the_DT joint_JJ quality_NN obtained_VBN from_IN the_DT activities_NNS executed_VBN by_IN all_DT agents_NNS ,_, given_VBN that_IN ,_, during_IN execution_NN ,_, unexpected_JJ events_NNS will_MD force_VB changes_NNS to_TO some_DT prescribed_VBN activities_NNS and_CC reduce_VB the_DT utility_NN of_IN executing_VBG others_NNS ._.
+We_PRP describe_VBP an_DT agent_NN architecture_NN for_IN solving_VBG this_DT problem_NN that_WDT couples_VBZ two_CD basic_JJ mechanisms_NNS :_: -LRB-_-LRB- #_# -RRB-_-RRB- a_DT flexible_JJ times_NNS representation_NN of_IN the_DT agent_NN ''_'' s_NNS schedule_NN -LRB-_-LRB- using_VBG a_DT Simple_JJ Temporal_JJ Network_NNP -RRB-_-RRB- and_CC -LRB-_-LRB- #_# -RRB-_-RRB- an_DT incremental_JJ rescheduling_NN procedure_NN ._.
+The_DT former_JJ hedges_NNS against_IN temporal_JJ uncertainty_NN by_IN allowing_VBG execution_NN to_TO proceed_VB from_IN a_DT set_NN of_IN feasible_JJ solutions_NNS ,_, and_CC the_DT latter_JJ acts_NNS to_TO revise_VB the_DT agent_NN ''_'' s_NNS schedule_NN when_WRB execution_NN is_VBZ forced_VBN outside_IN of_IN this_DT set_NN of_IN solutions_NNS or_CC when_WRB execution_NN events_NNS reduce_VB the_DT expected_VBN value_NN of_IN this_DT feasible_JJ solution_NN set_NN ._.
+Basic_JJ coordination_NN with_IN other_JJ agents_NNS is_VBZ achieved_VBN simply_RB by_IN communicating_VBG schedule_NN changes_NNS to_TO those_DT agents_NNS with_IN inter-dependent_JJ activities_NNS ._.
+Then_RB ,_, as_IN time_NN permits_NNS ,_, the_DT core_NN local_JJ problem_NN solving_VBG infra-structure_NN is_VBZ used_VBN to_TO drive_VB an_DT inter-agent_JJ option_NN generation_NN and_CC query_NN process_NN ,_, aimed_VBN at_IN identifying_VBG opportunities_NNS for_IN solution_NN improvement_NN through_IN joint_JJ change_NN ._.
+Using_VBG a_DT simulator_NN to_TO model_VB the_DT environment_NN ,_, we_PRP compare_VBP the_DT performance_NN of_IN our_PRP$ multi-agent_JJ system_NN with_IN that_DT of_IN an_DT expected_VBN optimal_JJ -LRB-_-LRB- but_CC non-scalable_JJ -RRB-_-RRB- centralized_VBD MDP_NN solver_NN ._.
+Categories_NNS and_CC Subject_NNP Descriptors_NNS I_PRP ._.
+#_# ._.
+##_NN -LSB-_-LRB- Computing_NNP Methodologies_NNPS -RSB-_-RRB- :_: Artificial_JJ IntelligenceDistributed_NNP Artificial_NNP Intelligence_NNP General_NNP Terms_NNS Algorithms_NNS ,_, Design_NN 1_CD ._.
+INTRODUCTION_NN The_DT practical_JJ constraints_NNS of_IN many_JJ application_NN environments_NNS require_VBP distributed_VBN management_NN of_IN executing_VBG plans_NNS and_CC schedules_NNS ._.
+Such_JJ factors_NNS as_IN geographical_JJ separation_NN of_IN executing_VBG agents_NNS ,_, limitations_NNS on_IN communication_NN bandwidth_NN ,_, constraints_NNS relating_VBG to_TO chain_NN of_IN command_NN and_CC the_DT high_JJ tempo_NN of_IN execution_NN dynamics_NNS may_MD all_DT preclude_VB any_DT single_JJ agent_NN from_IN obtaining_VBG a_DT complete_JJ global_JJ view_NN of_IN the_DT problem_NN ,_, and_CC hence_RB necessitate_VBP collaborative_JJ yet_RB localized_JJ planning_NN and_CC scheduling_NN decisions_NNS ._.
+In_IN this_DT paper_NN ,_, we_PRP consider_VBP the_DT problem_NN of_IN managing_NN and_CC executing_VBG schedules_NNS in_IN an_DT uncertain_JJ and_CC distributed_VBN environment_NN as_IN defined_VBN by_IN the_DT DARPA_NNP Coordinators_NNPS program_NN ._.
+We_PRP assume_VBP a_DT team_NN of_IN collaborative_JJ agents_NNS ,_, each_DT responsible_JJ for_IN executing_VBG a_DT portion_NN of_IN a_DT globally_RB preestablished_VBN schedule_NN ,_, but_CC none_NN possessing_VBG a_DT global_JJ view_NN of_IN either_CC the_DT problem_NN or_CC solution_NN ._.
+The_DT team_NN goal_NN is_VBZ to_TO maximize_VB the_DT total_JJ quality_NN of_IN all_DT activities_NNS executed_VBN by_IN all_DT agents_NNS ,_, given_VBN that_IN unexpected_JJ events_NNS will_MD force_VB changes_NNS to_TO pre-scheduled_JJ activities_NNS and_CC alter_VB the_DT utility_NN of_IN executing_VBG others_NNS as_IN execution_NN unfolds_VBZ ._.
+To_TO provide_VB a_DT basis_NN for_IN distributed_VBN coordination_NN ,_, each_DT agent_NN is_VBZ aware_JJ of_IN dependencies_NNS between_IN its_PRP$ scheduled_JJ activities_NNS and_CC those_DT of_IN other_JJ agents_NNS ._.
+Each_DT agent_NN is_VBZ also_RB given_VBN a_DT pre-computed_JJ set_NN of_IN local_JJ contingency_NN -LRB-_-LRB- fall-back_JJ -RRB-_-RRB- options_NNS ._.
+Central_NNP to_TO our_PRP$ approach_NN to_TO solving_VBG this_DT multi-agent_JJ problem_NN is_VBZ an_DT incremental_JJ flexible-times_NNS scheduling_NN framework_NN ._.
+In_IN a_DT flexible-times_JJ representation_NN of_IN an_DT agent_NN ''_'' s_NNS schedule_NN ,_, the_DT execution_NN intervals_NNS associated_VBN with_IN scheduled_VBN activities_NNS are_VBP not_RB fixed_VBN ,_, but_CC instead_RB are_VBP allowed_VBN to_TO float_VB within_IN imposed_VBN time_NN and_CC activity_NN sequencing_NN constraints_NNS ._.
+This_DT representation_NN allows_VBZ the_DT explicit_JJ use_NN of_IN slack_NN as_IN a_DT hedge_NN against_IN simple_JJ forms_NNS of_IN executional_JJ uncertainty_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, activity_NN durations_NNS -RRB-_-RRB- ,_, and_CC its_PRP$ underlying_JJ implementation_NN as_IN a_DT Simple_JJ Temporal_JJ Network_NNP -LRB-_-LRB- STN_NNP -RRB-_-RRB- model_NN provides_VBZ efficient_JJ updating_VBG and_CC consistency_NN enforcement_NN mechanisms_NNS ._.
+The_DT advantages_NNS of_IN flexible_JJ times_NNS frameworks_NNS have_VBP been_VBN demonstrated_VBN in_IN various_JJ centralized_JJ planning_NN and_CC scheduling_NN contexts_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, -LSB-_-LRB- ##_CD ,_, #_# ,_, #_# ,_, 10_CD ,_, ##_CD -RSB-_-RRB- -RRB-_-RRB- ._.
+However_RB their_PRP$ use_NN in_IN distributed_VBN problem_NN solving_VBG settings_NNS has_VBZ been_VBN quite_RB sparse_JJ -LRB-_-LRB- -LSB-_-LRB- #_# -RSB-_-RRB- is_VBZ one_CD exception_NN -RRB-_-RRB- ,_, and_CC prior_RB approaches_VBZ to_TO multi-agent_JJ scheduling_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, -LSB-_-LRB- #_# ,_, ##_NN ,_, #_# -RSB-_-RRB- -RRB-_-RRB- have_VBP generally_RB operated_VBN with_IN fixed-times_JJ representations_NNS of_IN agent_NN schedules_NNS ._.
+We_PRP define_VBP an_DT agent_NN architecture_NN centered_VBN around_IN incremental_JJ management_NN of_IN a_DT flexible_JJ times_NNS schedule_NN ._.
+The_DT underlying_VBG STN-based_JJ representation_NN is_VBZ used_VBN -LRB-_-LRB- #_# -RRB-_-RRB- to_TO loosen_VB the_DT coupling_NN between_IN executor_NN and_CC scheduler_NN threads_NNS ,_, -LRB-_-LRB- #_# -RRB-_-RRB- to_TO retain_VB a_DT basic_JJ ability_NN to_TO absorb_VB unexpected_JJ executional_JJ delays_NNS -LRB-_-LRB- or_CC speedups_NNS -RRB-_-RRB- ,_, and_CC -LRB-_-LRB- #_# -RRB-_-RRB- to_TO provide_VB a_DT basic_JJ criterion_NN for_IN detecting_VBG the_DT need_NN for_IN schedule_NN change_NN ._.
+Local_JJ change_NN is_VBZ ac484_NN 978-81-904262-7-5_CD -LRB-_-LRB- RPS_NN -RRB-_-RRB- c_NN ####_CD IFAAMAS_NNP Figure_NNP #_# :_: A_DT two_CD agent_NN C_NN TAEMS_NN problem_NN ._.
+complished_VBN by_IN an_DT incremental_JJ scheduler_NN ,_, designed_VBN to_TO maximize_VB quality_NN while_IN attempting_VBG to_TO minimize_VB schedule_NN change_NN ._.
+To_TO this_DT schedule_NN management_NN infra-structure_NN ,_, we_PRP add_VBP two_CD mechanisms_NNS for_IN multi-agent_JJ coordination_NN ._.
+Basic_JJ coordination_NN with_IN other_JJ agents_NNS is_VBZ achieved_VBN by_IN simple_JJ communication_NN of_IN local_JJ schedule_NN changes_NNS to_TO other_JJ agents_NNS with_IN interdependent_JJ activities_NNS ._.
+Layered_VBN over_IN this_DT is_VBZ a_DT non-local_JJ option_NN generation_NN and_CC evaluation_NN process_NN -LRB-_-LRB- similar_JJ in_IN some_DT respects_NNS to_TO -LSB-_-LRB- #_# -RSB-_-RRB- -RRB-_-RRB- ,_, aimed_VBN at_IN identification_NN of_IN opportunities_NNS for_IN global_JJ improvement_NN through_IN joint_JJ changes_NNS to_TO the_DT schedules_NNS of_IN multiple_JJ agents_NNS ._.
+This_DT latter_JJ process_NN uses_VBZ analysis_NN of_IN detected_VBN conflicts_NNS in_IN the_DT STN_NN as_IN a_DT basis_NN for_IN generating_VBG options_NNS ._.
+The_DT remainder_NN of_IN the_DT paper_NN is_VBZ organized_VBN as_IN follows_VBZ ._.
+We_PRP begin_VBP by_IN briefly_NN summarizing_VBG the_DT general_JJ distributed_VBN scheduling_NN problem_NN of_IN interest_NN in_IN our_PRP$ work_NN ._.
+Next_RB ,_, we_PRP introduce_VBP the_DT agent_NN architecture_NN we_PRP have_VBP developed_VBN to_TO solve_VB this_DT problem_NN and_CC sketch_NN its_PRP$ operation_NN ._.
+In_IN the_DT following_VBG sections_NNS ,_, we_PRP describe_VBP the_DT components_NNS of_IN the_DT architecture_NN in_IN more_RBR detail_NN ,_, considering_VBG in_IN turn_NN issues_NNS relating_VBG to_TO executing_VBG agent_NN schedules_NNS ,_, incrementally_RB revising_VBG agent_NN schedules_NNS and_CC coordinating_VBG schedule_NN changes_NNS among_IN multiple_JJ agents_NNS ._.
+We_PRP then_RB give_VBP some_DT experimental_JJ results_NNS to_TO indicate_VB current_JJ system_NN performance_NN ._.
+Finally_RB we_PRP conclude_VBP with_IN a_DT brief_JJ discussion_NN of_IN current_JJ research_NN plans_NNS ._.
+2_LS ._.
+THE_DT COORDINATORS_NNS PROBLEM_NN As_IN indicated_VBN above_IN the_DT distributed_VBN schedule_NN management_NN problem_NN that_IN we_PRP address_VBP in_IN this_DT paper_NN is_VBZ that_IN put_VBN forth_RB by_IN the_DT DARPA_NNP Coordinators_NNPS program_NN ._.
+The_DT Coordinators_NNS problem_NN is_VBZ concerned_JJ generally_RB with_IN the_DT collaborative_JJ execution_NN of_IN a_DT joint_JJ mission_NN by_IN a_DT team_NN of_IN agents_NNS in_IN a_DT highly_RB dynamic_JJ environment_NN ._.
+A_DT mission_NN is_VBZ formulated_VBN as_IN a_DT network_NN of_IN tasks_NNS ,_, which_WDT are_VBP distributed_VBN among_IN the_DT agents_NNS by_IN the_DT MASS_NNP simulator_NN such_JJ that_IN no_DT agent_NN has_VBZ a_DT complete_JJ ,_, objective_JJ view_NN of_IN the_DT whole_JJ problem_NN ._.
+Instead_RB ,_, each_DT agent_NN receives_VBZ only_RB a_DT subjective_JJ view_NN containing_VBG just_RB the_DT portion_NN of_IN the_DT task_NN network_NN that_WDT relates_VBZ to_TO ground_VB tasks_NNS that_IN it_PRP is_VBZ responsible_JJ for_IN and_CC any_DT remote_JJ tasks_NNS that_WDT have_VBP interdependencies_NNS with_IN these_DT local_JJ tasks_NNS ._.
+A_DT pre-computed_JJ initial_JJ schedule_NN is_VBZ also_RB distributed_VBN to_TO the_DT agents_NNS ,_, and_CC each_DT agent_NN ''_'' s_NNS schedule_NN indicates_VBZ which_WDT of_IN its_PRP$ local_JJ tasks_NNS should_MD be_VB executed_VBN and_CC when_WRB ._.
+Each_DT task_NN has_VBZ an_DT associated_JJ quality_NN value_NN which_WDT accrues_VBZ if_IN it_PRP is_VBZ successfully_RB executed_VBN within_IN its_PRP$ constraints_NNS ,_, and_CC the_DT overall_JJ goal_NN is_VBZ to_TO maximize_VB the_DT quality_NN obtained_VBN during_IN execution_NN ._.
+Figure_NNP #_# :_: Subjective_JJ view_NN for_IN Agent_NNP #_# ._.
+As_IN execution_NN proceeds_NNS ,_, agents_NNS must_MD react_VB to_TO unexpected_JJ results_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, task_NN delays_NNS ,_, failures_NNS -RRB-_-RRB- and_CC changes_NNS to_TO the_DT mission_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, new_JJ tasks_NNS ,_, deadline_NN changes_NNS -RRB-_-RRB- generated_VBN by_IN the_DT simulator_NN ,_, recognize_VBP when_WRB scheduled_VBN tasks_NNS are_VBP no_RB longer_RB feasible_JJ or_CC desirable_JJ ,_, and_CC coordinate_VB with_IN each_DT other_JJ to_TO take_VB corrective_JJ ,_, quality-maximizing_JJ rescheduling_NN actions_NNS that_WDT keep_VBP execution_NN of_IN the_DT overall_JJ mission_NN moving_VBG forward_RB ._.
+Problems_NNS are_VBP formally_RB specified_VBN using_VBG a_DT version_NN of_IN the_DT TAEMS_NN language_NN -LRB-_-LRB- Task_NNP Analysis_NNP ,_, Environment_NNP Modeling_NNP and_CC Simulation_NNP -RRB-_-RRB- -LSB-_-LRB- #_# -RSB-_-RRB- called_VBN C_NN TAEMS_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+Within_IN C_NN TAEMS_NNS ,_, tasks_NNS are_VBP represented_VBN hierarchically_RB ,_, as_IN shown_VBN in_IN the_DT example_NN in_IN Figure_NNP #_# ._.
+At_IN the_DT highest_JJS ,_, most_RBS abstract_JJ level_NN ,_, the_DT root_NN of_IN the_DT tree_NN is_VBZ a_DT special_JJ task_NN called_VBD the_DT task_NN group_NN ._.
+On_IN successive_JJ levels_NNS ,_, tasks_NNS constitute_VBP aggregate_NN activities_NNS ,_, which_WDT can_MD be_VB decomposed_VBN into_IN sets_NNS of_IN subtasks_NNS and_CC /_: or_CC primitive_JJ activities_NNS ,_, termed_VBN methods_NNS ._.
+Methods_NNS appear_VBP at_IN the_DT leaf_NN level_NN of_IN C_NN TAEMS_NN task_NN structures_NNS and_CC are_VBP those_DT that_WDT are_VBP directly_RB executable_JJ in_IN the_DT world_NN ._.
+Each_DT declared_VBD method_NN m_NN can_MD only_RB be_VB executed_VBN by_IN a_DT specified_VBN agent_NN -LRB-_-LRB- denoted_VBN by_IN ag_NN :_: AgentN_NN in_IN Figure_NNP #_# -RRB-_-RRB- and_CC each_DT agent_NN can_MD be_VB executing_VBG at_IN most_JJS one_CD method_NN at_IN any_DT given_VBN time_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+agents_NNS are_VBP unit-capacity_JJ resources_NNS -RRB-_-RRB- ._.
+Method_NN durations_NNS and_CC quality_NN are_VBP typically_RB specified_VBN as_IN discrete_JJ probability_NN distributions_NNS ,_, and_CC hence_RB known_VBN with_IN certainty_NN only_RB after_IN they_PRP have_VBP been_VBN executed_VBN ._.
+#_# It_PRP is_VBZ also_RB possible_JJ for_IN a_DT method_NN to_TO fail_VB unexpectedly_RB in_IN execution_NN ,_, in_IN which_WDT case_NN the_DT reported_VBN quality_NN is_VBZ zero_CD ._.
+For_IN each_DT task_NN ,_, a_DT quality_NN accumulation_NN function_NN qaf_NN is_VBZ defined_VBN ,_, which_WDT specifies_VBZ when_WRB and_CC how_WRB a_DT task_NN accumulates_VBZ quality_NN as_IN its_PRP$ subtasks_NNS -LRB-_-LRB- methods_NNS -RRB-_-RRB- are_VBP executed_VBN ._.
+For_IN example_NN ,_, a_DT task_NN with_IN a_DT min_NN qaf_NN will_MD accrue_VB the_DT quality_NN of_IN its_PRP$ child_NN with_IN lowest_JJS quality_NN if_IN all_DT its_PRP$ children_NNS execute_VB and_CC accumulate_VB positive_JJ quality_NN ._.
+Tasks_NNS with_IN sum_NN or_CC max_NN qafs_NNS acquire_VBP quality_NN as_RB soon_RB as_IN one_CD child_NN executes_VBZ with_IN positive_JJ quality_NN ;_: as_IN their_PRP$ qaf_NN names_NNS suggest_VBP ,_, their_PRP$ respective_JJ values_NNS ultimately_RB will_MD be_VB the_DT total_JJ or_CC maximum_JJ quality_NN of_IN all_DT children_NNS that_WDT executed_VBD ._.
+A_DT sync-sum_JJ task_NN will_MD accrue_VB quality_NN only_RB for_IN those_DT children_NNS that_WDT commence_VBP execution_NN concurrently_RB with_IN the_DT first_JJ child_NN that_WDT executes_VBZ ,_, while_IN an_DT exactly-one_JJ task_NN accrues_VBZ quality_NN only_RB if_IN precisely_RB one_CD of_IN its_PRP$ children_NNS executes_VBZ ._.
+Inter-dependencies_NNS between_IN tasks_NNS /_: methods_NNS in_IN the_DT problem_NN are_VBP modeled_VBN via_IN non-local_JJ effects_NNS -LRB-_-LRB- nles_NNS -RRB-_-RRB- ._.
+Two_CD types_NNS of_IN nles_NNS can_MD be_VB specified_VBN :_: hard_JJ and_CC soft_JJ ._.
+Hard_JJ nles_NNS express_VBP 1_CD For_IN simplicity_NN ,_, Figures_NNS #_# and_CC #_# show_VBP only_RB fixed_VBN values_NNS for_IN method_NN quality_NN and_CC duration_NN ._.
+The_DT Sixth_NNP Intl_NNP ._.
+Joint_NNP Conf_NNP ._.
+on_IN Autonomous_NNP Agents_NNPS and_CC Multi-Agent_NNP Systems_NNP -LRB-_-LRB- AAMAS_NNP ##_CD -RRB-_-RRB- ###_CD causal_JJ preconditions_NNS :_: for_IN example_NN ,_, the_DT enables_VBZ nle_NN in_IN Figure_NNP 1_CD stipulates_VBZ that_IN the_DT target_NN method_NN M5_NN can_MD not_RB be_VB executed_VBN until_IN the_DT source_NN M4_NN accumulates_VBZ quality_NN ._.
+Soft_JJ nles_NNS ,_, which_WDT include_VBP facilitates_NNS and_CC hinders_VBZ ,_, are_VBP not_RB required_VBN constraints_NNS ;_: however_RB ,_, when_WRB they_PRP are_VBP in_IN play_NN ,_, they_PRP amplify_VBP -LRB-_-LRB- or_CC dampen_VB -RRB-_-RRB- the_DT quality_NN and_CC duration_NN of_IN the_DT target_NN task_NN ._.
+Any_DT given_VBN task_NN or_CC method_NN a_DT can_MD also_RB be_VB constrained_VBN by_IN an_DT earliest_JJS start_NN time_NN and_CC a_DT deadline_NN ,_, specifying_VBG the_DT window_NN in_IN which_WDT a_DT can_MD be_VB feasibly_RB executed_VBN ._.
+a_DT may_MD also_RB inherit_VB these_DT constraints_NNS from_IN ancestor_NN tasks_NNS at_IN any_DT higher_JJR level_NN in_IN the_DT task_NN structure_NN ,_, and_CC its_PRP$ effective_JJ execution_NN window_NN will_MD be_VB defined_VBN by_IN the_DT tightest_JJS of_IN these_DT constraints_NNS ._.
+Figure_NNP #_# shows_VBZ the_DT complete_JJ objective_NN view_NN of_IN a_DT simple_JJ #_# agent_NN problem_NN ._.
+Figure_NNP #_# shows_VBZ the_DT subjective_JJ view_NN available_JJ to_TO agent_NN #_# for_IN the_DT same_JJ problem_NN ._.
+In_IN what_WDT follows_VBZ ,_, we_PRP will_MD sometimes_RB use_VB the_DT term_NN activity_NN to_TO refer_VB generically_RB to_TO both_DT task_NN and_CC method_NN nodes_NNS ._.
+3_LS ._.
+OVERVIEW_NN OF_IN APPROACH_NNP Our_PRP$ solution_NN framework_NN combines_VBZ two_CD basic_JJ principles_NNS for_IN coping_VBG with_IN the_DT problem_NN of_IN managing_VBG multi-agent_JJ schedules_NNS in_IN an_DT uncertain_JJ and_CC time_NN stressed_JJ execution_NN environment_NN ._.
+First_NNP is_VBZ the_DT use_NN of_IN a_DT STN-based_JJ flexible_JJ times_NNS representation_NN of_IN solution_NN constraints_NNS ,_, which_WDT allows_VBZ execution_NN to_TO be_VB driven_VBN by_IN a_DT set_NN of_IN schedules_NNS rather_RB than_IN a_DT single_JJ point_NN solution_NN ._.
+This_DT provides_VBZ a_DT basic_JJ hedge_NN against_IN temporal_JJ uncertainty_NN and_CC can_MD be_VB used_VBN to_TO modulate_VB the_DT need_NN for_IN solution_NN revision_NN ._.
+The_DT second_JJ principle_NN is_VBZ to_TO first_JJ respond_NN locally_RB to_TO exceptional_JJ events_NNS ,_, and_CC then_RB ,_, as_IN time_NN permits_NNS ,_, explore_VB nonlocal_JJ options_NNS -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, options_NNS involving_VBG change_NN by_IN #_# or_CC more_JJR agents_NNS -RRB-_-RRB- for_IN global_JJ solution_NN improvement_NN ._.
+This_DT provides_VBZ a_DT means_NN for_IN keeping_VBG pace_NN with_IN execution_NN ,_, and_CC for_IN tying_VBG the_DT amount_NN of_IN effort_NN spent_VBN in_IN more_JJR global_JJ multi-agent_JJ solution_NN improvement_NN to_TO the_DT time_NN available_JJ ._.
+Both_DT local_JJ and_CC non-local_JJ problem_NN solving_VBG time_NN is_VBZ further_JJ minimized_VBN by_IN the_DT use_NN of_IN a_DT core_NN incremental_JJ scheduling_NN procedure_NN ._.
+Figure_NNP #_# :_: Agent_NNP Architecture_NNP ._.
+Our_PRP$ solution_NN framework_NN is_VBZ made_VBN concrete_NN in_IN the_DT agent_NN architecture_NN depicted_VBN in_IN Figure_NNP #_# ._.
+In_IN its_PRP$ most_JJS basic_JJ form_NN ,_, an_DT agent_NN comprises_VBZ four_CD principal_JJ components_NNS -_: an_DT Executor_NNP ,_, a_DT Scheduler_NNP ,_, a_DT Distributed_VBN State_NN Manager_NN -LRB-_-LRB- DSM_NNP -RRB-_-RRB- ,_, and_CC an_DT Options_NNPS Manager_NNP -_: all_DT of_IN which_WDT share_VBP a_DT common_JJ model_NN of_IN the_DT current_JJ problem_NN and_CC solution_NN state_NN that_WDT couples_VBZ a_DT domainlevel_JJ representation_NN of_IN the_DT subjective_JJ c_NN taems_NNS task_NN structure_NN to_TO an_DT underlying_JJ STN_NN ._.
+At_IN any_DT point_NN during_IN operation_NN ,_, the_DT currently_RB installed_VBN schedule_NN dictates_VBZ the_DT timing_NN and_CC sequence_NN of_IN domain-level_JJ activities_NNS that_WDT will_MD be_VB initiated_VBN by_IN the_DT agent_NN ._.
+The_DT Executor_NNP ,_, running_VBG in_IN its_PRP$ own_JJ thread_NN ,_, continually_RB monitors_VBZ the_DT enabling_VBG conditions_NNS of_IN various_JJ pending_VBG activities_NNS ,_, and_CC activates_VBZ the_DT next_JJ pending_JJ activity_NN as_RB soon_RB as_IN all_DT of_IN its_PRP$ causal_JJ and_CC temporal_JJ constraints_NNS are_VBP satisfied_JJ ._.
+When_WRB execution_NN results_NNS are_VBP received_VBN back_RB from_IN the_DT environment_NN -LRB-_-LRB- MASS_NN -RRB-_-RRB- and_CC /_: or_CC changes_NNS to_TO assumed_VBN external_JJ constraints_NNS are_VBP received_VBN from_IN other_JJ agents_NNS ,_, the_DT agent_NN ''_'' s_NNS model_NN of_IN current_JJ state_NN is_VBZ updated_VBN ._.
+In_IN cases_NNS where_WRB this_DT update_VBP leads_VBZ to_TO inconsistency_NN in_IN the_DT STN_NN or_CC it_PRP is_VBZ otherwise_RB recognized_VBN that_IN the_DT current_JJ local_JJ schedule_NN might_MD now_RB be_VB improved_VBN ,_, the_DT Scheduler_NNP ,_, running_VBG on_IN a_DT separate_JJ thread_NN ,_, is_VBZ invoked_VBN to_TO revise_VB the_DT current_JJ solution_NN and_CC install_VB a_DT new_JJ schedule_NN ._.
+Whenever_NNP local_JJ schedule_NN constraints_NNS change_VBP either_CC in_IN response_NN to_TO a_DT current_JJ state_NN update_VBP or_CC through_IN manipulation_NN by_IN the_DT Scheduler_NNP ,_, the_DT DSM_NNP is_VBZ invoked_VBN to_TO communicate_VB these_DT changes_NNS to_TO interested_JJ agents_NNS -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, those_DT agents_NNS that_WDT share_VBP dependencies_NNS and_CC have_VBP overlapping_VBG subjective_JJ views_NNS -RRB-_-RRB- ._.
+After_IN responding_VBG locally_RB to_TO a_DT given_VBN state_NN update_VB and_CC communicating_VBG consequences_NNS ,_, the_DT agent_NN will_MD use_VB any_DT remaining_VBG computation_NN time_NN to_TO explore_VB possibilities_NNS for_IN improvement_NN through_IN joint_JJ change_NN ._.
+The_DT Option_NN Manager_NN utilizes_VBZ the_DT Scheduler_NN -LRB-_-LRB- in_IN this_DT case_NN in_IN hypothetical_JJ mode_NN -RRB-_-RRB- to_TO generate_VB one_CD or_CC more_JJR non-local_JJ options_NNS ,_, i_FW ._.
+e_LS ._.
+,_, identifying_VBG changes_NNS to_TO the_DT schedule_NN of_IN one_CD or_CC more_JJR other_JJ agents_NNS that_WDT will_MD enable_VB the_DT local_JJ agent_NN to_TO raise_VB the_DT quality_NN of_IN its_PRP$ schedule_NN ._.
+These_DT options_NNS are_VBP formulated_VBN and_CC communicated_VBN as_IN queries_NNS to_TO the_DT appropriate_JJ remote_JJ agents_NNS ,_, who_WP in_IN turn_NN hypothetically_RB evaluate_VB the_DT impact_NN of_IN proposed_VBN changes_NNS from_IN their_PRP$ local_JJ perspective_NN ._.
+In_IN those_DT cases_NNS where_WRB global_JJ improvement_NN is_VBZ verified_VBN ,_, joint_JJ changes_NNS are_VBP committed_VBN to_TO ._.
+In_IN the_DT following_VBG sections_NNS we_PRP consider_VBP the_DT mechanics_NNS of_IN these_DT components_NNS in_IN more_JJR detail_NN ._.
+4_LS ._.
+THE_DT SCHEDULER_NN As_IN indicated_VBN above_IN ,_, our_PRP$ agent_NN scheduler_NN operates_VBZ incrementally_RB ._.
+Incremental_JJ scheduling_NN frameworks_NNS are_VBP ideally_RB suited_VBN for_IN domains_NNS requiring_VBG tight_JJ scheduler-execution_NN coupling_NN :_: rather_RB than_IN recomputing_VBG a_DT new_JJ schedule_NN in_IN response_NN to_TO every_DT change_NN ,_, they_PRP respond_VBP quickly_RB to_TO execution_NN events_NNS by_IN localizing_VBG changes_NNS and_CC making_VBG adjustments_NNS to_TO the_DT current_JJ schedule_NN to_TO accommodate_VB the_DT event_NN ._.
+There_EX is_VBZ an_DT inherent_JJ bias_NN toward_IN schedule_NN stability_NN which_WDT provides_VBZ better_JJR support_NN for_IN the_DT continuity_NN in_IN execution_NN ._.
+This_DT latter_JJ property_NN is_VBZ also_RB advantageous_JJ in_IN multi-agent_JJ settings_NNS ,_, since_IN solution_NN stability_NN tends_VBZ to_TO minimize_VB the_DT ripple_NN across_IN different_JJ agents_NNS ''_'' schedules_NNS ._.
+The_DT coupling_NN of_IN incremental_JJ scheduling_NN with_IN flexible_JJ times_NNS scheduling_NN adds_VBZ additional_JJ leverage_NN in_IN an_DT uncertain_JJ ,_, multiagent_JJ execution_NN environment_NN ._.
+As_IN mentioned_VBN earlier_RBR ,_, slack_NN can_MD be_VB used_VBN as_IN a_DT hedge_NN against_IN uncertain_JJ method_NN execution_NN times_NNS ._.
+It_PRP also_RB provides_VBZ a_DT basis_NN for_IN softening_VBG the_DT impact_NN of_IN inter-dependencies_NNS across_IN agents_NNS ._.
+In_IN this_DT section_NN ,_, we_PRP summarize_VBP the_DT core_NN scheduler_NN that_IN we_PRP have_VBP developed_VBN to_TO solve_VB the_DT Coordinators_NNPS problem_NN ._.
+In_IN subsequent_JJ sections_NNS we_PRP discuss_VBP its_PRP$ use_NN in_IN managing_VBG execution_NN and_CC coordinating_VBG with_IN other_JJ agents_NNS ._.
+4_LS ._.
+#_# STN_NNP Solution_NN Representation_NN To_TO maintain_VB the_DT range_NN of_IN admissible_JJ values_NNS for_IN the_DT start_NN and_CC end_NN times_NNS of_IN various_JJ methods_NNS in_IN a_DT given_VBN agent_NN ''_'' s_NNS sched486_VBP The_DT Sixth_NNP Intl_NNP ._.
+Joint_NNP Conf_NNP ._.
+on_IN Autonomous_NNP Agents_NNPS and_CC Multi-Agent_NNP Systems_NNP -LRB-_-LRB- AAMAS_NNP ##_CD -RRB-_-RRB- ule_NN ,_, all_DT problem_NN and_CC scheduling_NN constraints_NNS impacting_VBG these_DT times_NNS are_VBP encoded_VBN in_IN an_DT underlying_VBG Simple_NN Temporal_JJ Network_NNP -LRB-_-LRB- STN_NNP -RRB-_-RRB- -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+An_DT STN_NN represents_VBZ temporal_JJ constraints_NNS as_IN a_DT graph_NN G_NN ,_, where_WRB nodes_NNS in_IN N_NN represent_VBP the_DT set_NN of_IN time_NN points_NNS of_IN interest_NN ,_, and_CC edges_NNS in_IN E_NN are_VBP distances_NNS between_IN pairs_NNS of_IN time_NN points_NNS in_IN N_NN ._.
+A_DT special_JJ time_NN point_NN ,_, called_VBN calendar_NN zero_CD grounds_NNS the_DT network_NN and_CC has_VBZ the_DT value_NN 0_CD ._.
+Constraints_NNS on_IN activities_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+release_NN time_NN ,_, due_JJ time_NN ,_, duration_NN -RRB-_-RRB- and_CC relationships_NNS between_IN activities_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+parentchild_NN relation_NN ,_, enables_VBZ -RRB-_-RRB- are_VBP uniformly_RB represented_VBN as_IN temporal_JJ constraints_NNS -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, edges_NNS -RRB-_-RRB- between_IN relevant_JJ start_NN and_CC finish_NN time_NN points_NNS ._.
+An_DT agent_NN ''_'' s_NNS schedule_NN is_VBZ designated_VBN as_IN a_DT total_JJ ordering_VBG of_IN selected_VBN methods_NNS by_IN posting_VBG precedence_NN constraints_NNS between_IN the_DT end_NN and_CC start_VB points_NNS of_IN each_DT ordered_VBN pair_NN ._.
+As_IN new_JJ methods_NNS are_VBP inserted_VBN into_IN a_DT schedule_NN or_CC external_JJ state_NN updates_NNS require_VBP adjustments_NNS to_TO existing_VBG constraints_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, substitution_NN of_IN an_DT actual_JJ duration_NN constraint_NN ,_, tightening_NN of_IN a_DT deadline_NN -RRB-_-RRB- ,_, the_DT network_NN propagates_VBZ constraints_NNS and_CC maintains_VBZ lower_JJR and_CC upper_JJ bounds_NNS on_IN all_DT time_NN points_NNS in_IN the_DT network_NN ._.
+This_DT is_VBZ accomplished_VBN efficiently_RB via_IN the_DT use_NN of_IN a_DT standard_JJ all-pairs_JJ shortest_JJS path_NN algorithm_NN ;_: in_IN our_PRP$ implementation_NN ,_, we_PRP take_VBP advantage_NN of_IN an_DT incremental_JJ procedure_NN based_VBN on_IN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+As_IN bounds_NNS are_VBP updated_VBN ,_, a_DT consistency_NN check_NN is_VBZ made_VBN for_IN the_DT presence_NN of_IN negative_JJ cycles_NNS ,_, and_CC the_DT absence_NN of_IN any_DT such_JJ cycle_NN ensures_VBZ the_DT continued_JJ temporal_JJ feasibility_NN of_IN the_DT network_NN -LRB-_-LRB- and_CC hence_RB the_DT schedule_NN -RRB-_-RRB- ._.
+Otherwise_RB a_DT conflict_NN has_VBZ been_VBN detected_VBN ,_, and_CC some_DT amount_NN of_IN constraint_NN retraction_NN is_VBZ necessary_JJ to_TO restore_VB feasibility_NN ._.
+4_LS ._.
+#_# Maintaining_VBG High-Quality_NNP Schedules_NNP The_NNP scheduler_NN consists_VBZ of_IN two_CD basic_JJ components_NNS :_: a_DT quality_NN propagator_NN and_CC an_DT activity_NN allocator_NN that_WDT work_VBP in_IN a_DT tightly_RB integrated_VBN loop_NN ._.
+The_DT quality_NN propagator_NN analyzes_VBZ the_DT activity_NN hierarchy_NN and_CC collects_VBZ a_DT set_NN of_IN methods_NNS that_WDT -LRB-_-LRB- if_IN scheduled_VBN -RRB-_-RRB- would_MD maximize_VB the_DT quality_NN of_IN the_DT agent_NN ''_'' s_NNS local_JJ problem_NN ._.
+The_DT methods_NNS are_VBP collected_VBN without_IN regard_NN for_IN resource_NN contention_NN ;_: in_IN essence_NN ,_, the_DT quality_NN propagator_NN optimally_RB solves_VBZ a_DT relaxed_VBN problem_NN where_WRB agents_NNS are_VBP capable_JJ of_IN performing_VBG an_DT infinite_JJ number_NN of_IN activities_NNS at_IN once_RB ._.
+The_DT allocator_NN selects_VBZ methods_NNS from_IN this_DT list_NN and_CC attempts_VBZ to_TO install_VB them_PRP in_IN the_DT agent_NN ''_'' s_NNS schedule_NN ._.
+Failure_NN to_TO do_VB so_RB reinvokes_VBZ the_DT quality_NN propagator_NN with_IN the_DT problematic_JJ activity_NN excluded_VBN ._.
+The_DT Quality_NNP Propagator_NNP -_: The_NNP quality_NN propagator_NN performs_VBZ the_DT following_VBG actions_NNS on_IN the_DT C_NN TAEMS_VBZ task_NN structure_NN :_: Computes_VBZ the_DT quality_NN of_IN all_DT activities_NNS in_IN the_DT task_NN structure_NN :_: The_DT expected_VBN quality_NN qual_JJ -LRB-_-LRB- m_NN -RRB-_-RRB- of_IN a_DT method_NN m_NN is_VBZ computed_VBN from_IN the_DT probability_NN distribution_NN of_IN the_DT execution_NN outcomes_NNS ._.
+The_DT quality_NN qual_JJ -LRB-_-LRB- t_NN -RRB-_-RRB- of_IN a_DT task_NN t_NN is_VBZ computed_VBN by_IN applying_VBG its_PRP$ qaf_NN to_TO the_DT assessed_VBN quality_NN of_IN its_PRP$ children_NNS ._.
+Generates_VBZ a_DT list_NN of_IN contributors_NNS for_IN each_DT task_NN :_: methods_NNS that_IN ,_, if_IN scheduled_VBN ,_, will_MD maximize_VB the_DT quality_NN obtained_VBN by_IN the_DT task_NN ._.
+Generates_VBZ a_DT list_NN of_IN activators_NNS for_IN each_DT task_NN :_: methods_NNS that_IN ,_, if_IN scheduled_VBN ,_, are_VBP sufficient_JJ to_TO qualify_VB the_DT task_NN as_IN scheduled_VBN ._.
+Methods_NNS in_IN the_DT activators_NNS list_NN are_VBP chosen_VBN to_TO minimize_VB demands_NNS on_IN the_DT agent_NN ''_'' s_VBZ timeline_NN without_IN regard_NN to_TO quality_NN ._.
+The_DT first_JJ time_NN the_DT quality_NN propagator_NN is_VBZ invoked_VBN ,_, the_DT qualities_NNS of_IN all_DT tasks_NNS and_CC methods_NNS are_VBP calculated_VBN and_CC the_DT initial_JJ lists_NNS of_IN contributors_NNS and_CC activators_NNS are_VBP determined_VBN ._.
+Subsequent_JJ calls_NNS to_TO the_DT propagator_NN occur_VBP as_IN the_DT allocator_NN installs_VBZ methods_NNS on_IN the_DT agent_NN ''_'' s_NNS timeline_NN :_: failure_NN of_IN the_DT allocator_NN to_TO install_VB a_DT method_NN causes_VBZ the_DT propagator_NN to_TO recompute_VB a_DT new_JJ list_NN of_IN contributors_NNS and_CC activators_NNS ._.
+The_DT Activity_NN Allocator_NN -_: The_DT activity_NN allocator_NN seeks_VBZ to_TO install_VB the_DT contributors_NNS of_IN the_DT taskgroup_NN identified_VBN by_IN the_DT quality_NN propagator_NN onto_IN the_DT agent_NN ''_'' s_NNS timeline_NN ._.
+Any_DT currently_RB scheduled_VBN methods_NNS that_WDT do_VBP not_RB appear_VB in_IN the_DT contributors_NNS list_NN are_VBP first_JJ unscheduled_JJ and_CC removed_VBN from_IN the_DT timeline_NN ._.
+The_DT contributors_NNS are_VBP then_RB preprocessed_VBN using_VBG a_DT quality-centric_JJ heuristic_NN to_TO create_VB an_DT agenda_NN sorted_VBD in_IN decreasing_VBG quality_NN order_NN ._.
+In_IN addition_NN ,_, methods_NNS associated_VBN with_IN a_DT and_CC task_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, min_NN ,_, sumand_NN -RRB-_-RRB- are_VBP grouped_VBN consecutively_RB within_IN the_DT agenda_NN ._.
+Since_IN an_DT and_CC task_NN accumulates_VBZ quality_NN only_RB if_IN all_DT its_PRP$ children_NNS are_VBP scheduled_VBN ,_, this_DT biases_NNS the_DT scheduling_NN process_NN towards_IN failing_VBG early_JJ -LRB-_-LRB- and_CC regenerating_VBG contributors_NNS -RRB-_-RRB- when_WRB the_DT methods_NNS chosen_VBN for_IN the_DT and_CC can_MD not_RB together_RB be_VB allocated_VBN ._.
+The_DT allocator_NN iteratively_RB pops_VBZ the_DT first_JJ method_NN mnew_NN from_IN the_DT agenda_NN and_CC attempts_VBZ to_TO install_VB it_PRP ._.
+This_DT entails_VBZ first_RB checking_VBG that_IN all_DT activities_NNS that_WDT enable_VBP mnew_NN have_VBP been_VBN scheduled_VBN ,_, while_IN attempting_VBG to_TO install_VB any_DT enabler_NN that_WDT is_VBZ not_RB ._.
+If_IN any_DT of_IN the_DT enabler_NN activities_NNS fails_VBZ to_TO install_VB ,_, the_DT allocation_NN pass_NN fails_VBZ ._.
+When_WRB successful_JJ ,_, the_DT enables_VBZ constraints_NNS linking_VBG the_DT enabler_NN activities_NNS to_TO mnew_VB are_VBP activated_VBN ._.
+The_DT STN_NN rejects_VBZ an_DT infeasible_JJ enabler_NN constraint_NN by_IN returning_VBG a_DT conflict_NN ._.
+In_IN this_DT event_NN any_DT enabler_NN activities_NNS it_PRP has_VBZ scheduled_VBN are_VBP uninstalled_JJ and_CC the_DT allocator_NN returns_NNS failure_NN ._.
+Once_RB scheduling_NN of_IN enablers_NNS is_VBZ ensured_VBN ,_, a_DT feasible_JJ slot_NN on_IN the_DT agent_NN ''_'' s_NNS timeline_NN within_IN mnew_NN ''_'' s_NNS time_NN window_NN is_VBZ sought_VBN and_CC the_DT allocator_NN attempts_VBZ to_TO insert_VB mnew_NN between_IN two_CD currently_RB scheduled_VBN methods_NNS ._.
+At_IN the_DT STN_NN level_NN ,_, mnew_NN ''_'' s_NNS insertion_NN breaks_VBZ the_DT sequencing_NN constraint_NN between_IN the_DT two_CD extant_JJ timeline_NN methods_NNS and_CC attempts_NNS to_TO insert_VB two_CD new_JJ sequencing_NN constraints_NNS that_WDT chain_VBP mnew_NN to_TO these_DT methods_NNS ._.
+If_IN these_DT insertions_NNS succeed_VBP ,_, the_DT routine_JJ returns_NNS success_NN ,_, otherwise_RB the_DT two_CD extant_JJ timeline_NN methods_NNS are_VBP relinked_VBN and_CC allocation_NN attempts_VBZ the_DT next_JJ possible_JJ slot_NN for_IN mnew_NN insertion_NN ._.
+5_CD ._.
+THE_DT DYNAMICS_NNPS OF_IN EXECUTION_NNP Maintaining_VBG a_DT flexible-times_JJ schedule_NN enables_VBZ us_PRP to_TO use_VB a_DT conflict-driven_JJ approach_NN to_TO schedule_VB repair_NN :_: Rather_RB than_IN reacting_VBG to_TO every_DT event_NN in_IN the_DT execution_NN that_WDT may_MD impact_VB the_DT existing_VBG schedule_NN by_IN computing_VBG an_DT updated_VBN solution_NN ,_, the_DT STN_NN can_MD absorb_VB any_DT change_NN that_WDT does_VBZ not_RB cause_VB a_DT conflict_NN ._.
+Consequently_RB ,_, computation_NN -LRB-_-LRB- producing_VBG a_DT new_JJ schedule_NN -RRB-_-RRB- and_CC communication_NN costs_NNS -LRB-_-LRB- informing_VBG other_JJ agents_NNS of_IN changes_NNS that_WDT affect_VBP them_PRP -RRB-_-RRB- are_VBP minimized_VBN ._.
+One_CD basic_JJ mechanism_NN needed_VBN to_TO model_JJ execution_NN in_IN the_DT STN_NN is_VBZ a_DT dynamic_JJ model_NN for_IN current_JJ time_NN ._.
+We_PRP employ_VBP a_DT model_NN proposed_VBN by_IN -LSB-_-LRB- #_# -RSB-_-RRB- that_WDT establishes_VBZ a_DT current-time_JJ ''_'' time_NN point_NN and_CC includes_VBZ a_DT link_NN between_IN it_PRP and_CC the_DT calendar-zero_NN time_NN point_NN ._.
+As_IN each_DT method_NN is_VBZ scheduled_VBN ,_, a_DT simple_JJ precedence_NN constraint_NN between_IN the_DT current-time_JJ time_NN point_NN and_CC the_DT method_NN is_VBZ established_VBN ._.
+When_WRB the_DT scheduler_NN receives_VBZ a_DT current_JJ time_NN update_VBP ,_, the_DT link_NN between_IN calendar-zero_NN and_CC current-time_NN is_VBZ modified_VBN to_TO reflect_VB this_DT new_JJ time_NN ,_, and_CC the_DT constraint_NN propagates_VBZ to_TO all_DT scheduled_VBN methods_NNS ._.
+A_DT second_JJ issue_NN concerns_NNS synchronization_NN between_IN the_DT executor_NN and_CC the_DT scheduler_NN ,_, as_IN producer_NN and_CC consumer_NN of_IN the_DT schedule_NN running_VBG on_IN different_JJ threads_NNS within_IN a_DT given_VBN agent_NN ._.
+This_DT coordination_NN must_MD be_VB robust_JJ despite_IN the_DT fact_NN that_IN the_DT The_DT Sixth_NNP Intl_NNP ._.
+Joint_NNP Conf_NNP ._.
+on_IN Autonomous_NNP Agents_NNPS and_CC Multi-Agent_NNP Systems_NNP -LRB-_-LRB- AAMAS_NNP ##_CD -RRB-_-RRB- ###_CD executor_NN needs_VBZ to_TO start_VB methods_NNS for_IN execution_NN in_IN real-time_JJ even_RB while_IN the_DT scheduler_NN may_MD be_VB reassessing_VBG the_DT schedule_NN to_TO maximize_VB quality_NN ,_, and_CC /_: or_CC transmitting_VBG a_DT revised_VBN schedule_NN ._.
+If_IN the_DT executor_NN ,_, for_IN example_NN ,_, slates_VBZ a_DT method_NN for_IN execution_NN based_VBN on_IN current_JJ time_NN while_IN the_DT scheduler_NN is_VBZ instantiating_VBG a_DT revised_VBN schedule_NN in_IN which_WDT that_WDT method_NN is_VBZ no_RB longer_RB nextto-be-executed_JJ ,_, an_DT inconsistent_JJ state_NN may_MD arise_VB within_IN the_DT agent_NN architecture_NN ._.
+This_DT is_VBZ addressed_VBN in_IN part_NN by_IN introducing_VBG a_DT freeze_NN window_NN ;_: a_DT specified_VBN short_JJ -LRB-_-LRB- and_CC adjustable_JJ -RRB-_-RRB- time_NN period_NN beyond_IN current_JJ time_NN within_IN which_WDT any_DT activity_NN slated_VBN as_IN eligible_JJ to_TO start_VB in_IN the_DT current_JJ schedule_NN can_MD not_RB be_VB rescheduled_VBN by_IN the_DT scheduler_NN ._.
+The_DT scheduler_NN is_VBZ triggered_VBN in_IN response_NN to_TO various_JJ environmental_JJ messages_NNS ._.
+There_EX are_VBP two_CD types_NNS of_IN environmental_JJ message_NN classes_NNS that_IN we_PRP discuss_VBP here_RB as_IN execution_NN dynamics_NNS :_: #_# -RRB-_-RRB- feedback_NN as_IN a_DT result_NN of_IN method_NN execution_NN -_: both_CC the_DT agent_NN ''_'' s_NNS own_JJ and_CC that_IN of_IN other_JJ agents_NNS ,_, and_CC #_# -RRB-_-RRB- changes_NNS in_IN the_DT C_NN TAEMS_NN model_NN corresponding_VBG to_TO a_DT set_NN of_IN simulatordirected_JJ evolutions_NNS of_IN the_DT problem_NN and_CC environment_NN ._.
+Such_JJ messages_NNS are_VBP termed_VBN updates_NNS and_CC are_VBP treated_VBN by_IN the_DT scheduler_NN as_IN directives_NNS to_TO permanently_RB modify_VB parameters_NNS in_IN its_PRP$ model_NN ._.
+We_PRP discuss_VBP these_DT update_VBP types_NNS in_IN turn_NN here_RB and_CC defer_VB until_IN later_RB the_DT discussion_NN of_IN queries_NNS to_TO the_DT scheduler_NN ,_, a_DT ''_'' what-if_NN ''_'' mode_NN initiated_VBN by_IN a_DT remote_JJ agent_NN that_WDT is_VBZ pursuing_VBG higher_JJR global_JJ quality_NN ._.
+Whether_IN it_PRP is_VBZ invoked_VBN via_IN an_DT update_VBP or_CC a_DT query_NN ,_, the_DT scheduler_NN ''_'' s_NNS response_NN is_VBZ an_DT option_NN ;_: essentially_RB a_DT complete_JJ schedule_NN of_IN activities_NNS the_DT agent_NN can_MD execute_VB along_IN with_IN associated_VBN quality_NN metrics_NNS ._.
+We_PRP define_VBP a_DT local_JJ option_NN as_IN a_DT valid_JJ schedule_NN for_IN an_DT agent_NN ''_'' s_NNS activities_NNS ,_, which_WDT does_VBZ not_RB require_VB change_NN to_TO any_DT other_JJ agent_NN ''_'' s_NNS schedule_NN ._.
+The_DT overarching_JJ design_NN for_IN handling_VBG execution_NN dynamics_NNS aims_VBZ at_IN anytime_RB scheduling_VBG behavior_NN in_IN which_WDT a_DT local_JJ option_NN maximizing_VBG the_DT local_JJ view_NN of_IN quality_NN is_VBZ returned_VBN quickly_RB ,_, possibly_RB followed_VBN by_IN globally_RB higher_JJR quality_NN schedules_NNS that_WDT entail_VBP inter-agent_JJ coordination_NN if_IN available_JJ scheduler_NN cycles_NNS permit_VBP ._.
+As_IN such_JJ ,_, the_DT default_NN scheduling_NN mode_NN for_IN updates_NNS is_VBZ to_TO seek_VB the_DT highest_JJS quality_NN local_JJ option_NN according_VBG to_TO the_DT scheduler_NN ''_'' s_NNS search_NN strategy_NN ,_, instantiate_VB the_DT option_NN as_IN its_PRP$ current_JJ schedule_NN ,_, and_CC notify_VBP the_DT executor_NN of_IN the_DT revision_NN ._.
+5_CD ._.
+#_# Responding_VBG to_TO Activity_NN Execution_NN As_IN suggested_VBN earlier_RBR ,_, a_DT committed_JJ schedule_NN consists_VBZ of_IN a_DT sequence_NN of_IN methods_NNS ,_, each_DT with_IN a_DT designated_VBN -LSB-_-LRB- est_JJS ,_, lst_NN -RSB-_-RRB- start_NN time_NN window_NN -LRB-_-LRB- as_IN provided_VBN by_IN the_DT underlying_VBG STN_NN representation_NN -RRB-_-RRB- ._.
+The_DT executor_NN is_VBZ free_JJ to_TO execute_VB a_DT method_NN any_DT time_NN within_IN its_PRP$ start_NN time_NN window_NN ,_, once_RB any_DT additional_JJ enabling_VBG conditions_NNS have_VBP been_VBN confirmed_VBN ._.
+These_DT scheduled_VBN start_NN time_NN windows_NNS are_VBP established_VBN using_VBG the_DT expected_VBN duration_NN of_IN each_DT scheduled_VBN method_NN -LRB-_-LRB- derived_VBN from_IN associated_VBN method_NN duration_NN distributions_NNS during_IN schedule_NN construction_NN -RRB-_-RRB- ._.
+Of_IN course_NN as_IN execution_NN unfolds_VBZ ,_, actual_JJ method_NN durations_NNS may_MD deviate_VB from_IN these_DT expectations_NNS ._.
+In_IN these_DT cases_NNS ,_, the_DT flexibility_NN retained_VBN in_IN the_DT schedule_NN can_MD be_VB used_VBN to_TO absorb_VB some_DT of_IN this_DT unpredictability_NN and_CC modulate_VBP invocation_NN of_IN a_DT schedule_NN revision_NN process_NN ._.
+Consider_VB the_DT case_NN of_IN a_DT method_NN completion_NN message_NN ,_, one_CD of_IN the_DT environmental_JJ messages_NNS that_WDT could_MD be_VB communicated_VBN to_TO the_DT scheduler_NN as_IN an_DT execution_NN state_NN update_VBP ._.
+If_IN the_DT completion_NN time_NN is_VBZ coincident_JJ with_IN the_DT expected_VBN duration_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, it_PRP completes_VBZ exactly_RB as_IN expected_VBN -RRB-_-RRB- ,_, then_RB the_DT scheduler_NN ''_'' s_NNS response_NN is_VBZ to_TO simply_RB mark_VB it_PRP as_IN completed_VBN ''_'' and_CC the_DT agent_NN can_MD proceed_VB to_TO communicate_VB the_DT time_NN at_IN which_WDT it_PRP has_VBZ accumulated_VBN quality_NN to_TO any_DT remote_JJ agents_NNS linked_VBN to_TO this_DT method_NN ._.
+However_RB if_IN the_DT method_NN completes_VBZ with_IN a_DT duration_NN shorter_JJR than_IN expected_VBN a_DT rescheduling_VBG action_NN might_MD be_VB warranted_VBN ._.
+The_DT posting_VBG of_IN the_DT actual_JJ duration_NN in_IN the_DT STN_NN introduces_VBZ no_DT potential_NN for_IN conflict_NN in_IN this_DT case_NN ,_, either_CC with_IN the_DT latest_JJS start_NN times_NNS -LRB-_-LRB- lsts_NNS -RRB-_-RRB- of_IN local_JJ or_CC remote_JJ methods_NNS that_WDT depend_VBP on_IN this_DT method_NN as_IN an_DT enabler_NN ,_, or_CC to_TO successively_RB scheduled_VBN methods_NNS on_IN the_DT agent_NN ''_'' s_NNS timeline_NN ._.
+However_RB ,_, it_PRP may_MD present_VB a_DT possibility_NN for_IN exploiting_VBG the_DT unanticipated_JJ scheduling_NN slack_NN ._.
+The_DT flexible_JJ times_NNS representation_NN afforded_VBN by_IN the_DT STN_NN provides_VBZ a_DT quick_JJ means_NNS of_IN assessing_VBG whether_IN the_DT next_JJ method_NN on_IN the_DT timeline_NN can_MD begin_VB immediate_JJ execution_NN instead_RB of_IN waiting_VBG for_IN its_PRP$ previously_RB established_VBN earliest_JJS start_NN time_NN -LRB-_-LRB- est_NN -RRB-_-RRB- ._.
+If_IN indeed_RB the_DT est_NN of_IN the_DT next_JJ scheduled_JJ method_NN can_MD spring_VB back_RB to_TO current-time_JJ once_IN the_DT actual_JJ duration_NN constraint_NN is_VBZ substituted_VBN for_IN the_DT expected_VBN duration_NN constraint_NN ,_, then_RB the_DT schedule_NN can_MD be_VB left_VBN intact_JJ and_CC simply_RB communicated_VBN back_RB to_TO the_DT executor_NN ._.
+If_IN alternatively_RB ,_, other_JJ problem_NN constraints_NNS prevent_VBP this_DT relaxation_NN of_IN the_DT est_NN ,_, then_RB there_EX is_VBZ forced_VBN idle_JJ time_NN that_WDT may_MD be_VB exploited_VBN by_IN revising_VBG the_DT schedule_NN ,_, and_CC the_DT scheduler_NN is_VBZ invoked_VBN -LRB-_-LRB- always_RB respecting_VBG the_DT freeze_NN period_NN -RRB-_-RRB- ._.
+If_IN the_DT method_NN completes_VBZ later_RB than_IN expected_VBN ,_, then_RB there_EX is_VBZ no_DT need_NN for_IN rescheduling_VBG under_IN flexible_JJ times_NNS scheduling_NN unless_IN #_# -RRB-_-RRB- the_DT method_NN finishes_NNS later_RB than_IN the_DT lst_NN of_IN the_DT subsequent_JJ scheduled_JJ activity_NN ,_, or_CC #_# -RRB-_-RRB- it_PRP finishes_VBZ later_RB than_IN its_PRP$ deadline_NN ._.
+Thus_RB we_PRP only_RB invoke_VBP the_DT scheduler_NN if_IN ,_, upon_IN posting_VBG the_DT late_JJ finish_NN in_IN the_DT STN_NN ,_, a_DT constraint_NN violation_NN occurs_VBZ ._.
+In_IN the_DT latter_JJ case_NN no_DT quality_NN is_VBZ accrued_VBN and_CC rescheduling_NN is_VBZ mandated_VBN even_RB if_IN there_EX are_VBP no_DT conflicts_NNS with_IN subsequent_JJ scheduled_JJ activities_NNS ._.
+Other_JJ execution_NN status_NN updates_NNS the_DT agent_NN may_MD receive_VB include_VB :_: method_NN start_NN -_: If_IN a_DT method_NN sent_VBN for_IN execution_NN is_VBZ started_VBN within_IN its_PRP$ -LSB-_-LRB- est_NN ,_, lst_NN -RSB-_-RRB- window_NN ,_, the_DT response_NN is_VBZ to_TO mark_VB it_PRP as_IN ''_'' executing_VBG ''_'' ._.
+A_DT method_NN can_MD not_RB start_VB earlier_JJR than_IN when_WRB it_PRP is_VBZ transmitted_VBN by_IN the_DT executor_NN but_CC it_PRP is_VBZ possible_JJ for_IN it_PRP to_TO start_VB later_RB than_IN requested_VBN ._.
+If_IN the_DT posted_VBN start_NN time_NN causes_VBZ an_DT inconsistency_NN in_IN the_DT STN_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+because_IN the_DT expected_VBN method_NN duration_NN can_MD no_RB longer_RB be_VB accommodated_VBN -RRB-_-RRB- the_DT duration_NN constraint_NN in_IN the_DT STN_NN is_VBZ shortened_VBN based_VBN on_IN the_DT known_JJ distribution_NN until_IN either_CC consistency_NN is_VBZ restored_VBN or_CC rescheduling_NN is_VBZ mandated_VBN ._.
+method_NN failure_NN -_: Any_DT method_NN under_IN execution_NN may_MD fail_VB unexpectedly_RB ,_, garnering_VBG no_DT quality_NN for_IN the_DT agent_NN ._.
+At_IN this_DT point_NN rescheduling_NN is_VBZ mandated_VBN as_IN the_DT method_NN may_MD enable_VB other_JJ activities_NNS or_CC significantly_RB impact_NN quality_NN in_IN the_DT absence_NN of_IN local_JJ repair_NN ._.
+Again_RB ,_, the_DT executor_NN will_MD proceed_VB with_IN execution_NN of_IN the_DT next_JJ method_NN if_IN its_PRP$ start_NN time_NN arrives_VBZ before_RB the_DT revised_VBN schedule_NN is_VBZ committed_VBN ,_, and_CC the_DT scheduler_NN accommodates_VBZ this_DT by_IN respecting_VBG the_DT freeze_NN window_NN ._.
+current_JJ time_NN advances_NNS An_DT update_VBP on_IN ''_'' current_JJ time_NN ''_'' may_MD arrive_VB either_CC alone_RB or_CC as_IN part_NN of_IN any_DT of_IN the_DT previously_RB discussed_VBN updates_NNS ._.
+If_IN ,_, when_WRB updating_VBG the_DT currenttime_JJ link_NN in_IN the_DT STN_NN -LRB-_-LRB- as_IN described_VBN above_IN -RRB-_-RRB- ,_, a_DT conflict_NN results_VBZ ,_, the_DT execution_NN state_NN is_VBZ inconsistent_JJ with_IN the_DT schedule_NN ._.
+In_IN this_DT case_NN ,_, the_DT scheduler_NN proceeds_VBZ as_IN if_IN execution_NN were_VBD consistent_JJ with_IN its_PRP$ expectations_NNS ,_, subject_JJ to_TO possible_JJ later_JJ updates_NNS ._.
+488_CD The_DT Sixth_NNP Intl_NNP ._.
+Joint_NNP Conf_NNP ._.
+on_IN Autonomous_NNP Agents_NNPS and_CC Multi-Agent_NNP Systems_NNP -LRB-_-LRB- AAMAS_NNP ##_CD -RRB-_-RRB- 5_CD ._.
+#_# Responding_VBG to_TO Model_NNP Updates_NNP The_NNP agent_NN can_MD also_RB dynamically_RB receive_VB changes_NNS to_TO the_DT agent_NN ''_'' s_NNS underlying_VBG C_NN TAEMS_NN model_NN ._.
+Dynamic_NNP revisions_NNS in_IN the_DT outcome_NN distributions_NNS for_IN methods_NNS already_RB in_IN an_DT agent_NN ''_'' s_NNS subjective_JJ view_NN may_MD impact_VB the_DT assessed_VBN quality_NN and_CC /_: or_CC duration_NN values_NNS that_WDT shaped_VBD the_DT current_JJ schedule_NN ._.
+Similarly_RB ,_, dynamic_JJ revisions_NNS in_IN the_DT designated_VBN release_NN times_NNS and_CC deadlines_NNS for_IN methods_NNS and_CC tasks_NNS already_RB in_IN an_DT agent_NN ''_'' s_NNS subjective_JJ view_NN can_MD invalidate_VB an_DT extant_JJ schedule_NN or_CC present_JJ opportunities_NNS to_TO boost_VB quality_NN ._.
+It_PRP is_VBZ also_RB possible_JJ during_IN execution_NN to_TO receive_VB updates_NNS in_IN which_WDT new_JJ methods_NNS and_CC possibly_RB entire_JJ task_NN structures_NNS are_VBP given_VBN to_TO the_DT agent_NN for_IN inclusion_NN in_IN its_PRP$ subjective_JJ view_NN ._.
+Model_NNP changes_NNS that_WDT involve_VBP temporal_JJ constraints_NNS are_VBP handled_VBN in_IN much_JJ the_DT same_JJ fashion_NN as_IN described_VBN for_IN method_NN starts_NNS and_CC completions_NNS ,_, i_FW ._.
+e_LS ,_, rescheduling_NN is_VBZ required_VBN only_RB when_WRB the_DT posting_VBG of_IN the_DT revised_VBN constraints_NNS leads_VBZ to_TO an_DT STN_NN conflict_NN ._.
+In_IN the_DT case_NN of_IN non-temporal_JJ model_NN changes_NNS ,_, rescheduling_VBG action_NN is_VBZ currently_RB always_RB initiated_VBN ._.
+6_CD ._.
+INTER-AGENT_JJ COORDINATION_NNP Having_VBG responded_VBN locally_RB to_TO an_DT unexpected_JJ execution_NN result_NN or_CC model_NN change_NN ,_, it_PRP is_VBZ necessary_JJ to_TO communicate_VB the_DT consequences_NNS to_TO agents_NNS with_IN inter-dependent_JJ activities_NNS so_IN that_IN they_PRP can_MD align_VB their_PRP$ decisions_NNS accordingly_RB ._.
+Responses_NNS that_WDT look_VBP good_JJ locally_RB may_MD have_VB a_DT sub-optimal_JJ global_JJ effect_NN once_RB alignments_NNS are_VBP made_VBN ,_, and_CC hence_RB agents_NNS must_MD have_VB the_DT ability_NN to_TO seek_VB mutually_RB beneficial_JJ joint_JJ schedule_NN changes_NNS ._.
+In_IN this_DT section_NN we_PRP summarize_VBP the_DT coordination_NN mechanisms_NNS provided_VBN in_IN the_DT agent_NN architecture_NN to_TO address_VB these_DT issues_NNS ._.
+6_CD ._.
+#_# Communicating_VBG Non-Local_JJ Constraints_NNS A_DT basic_JJ means_NNS of_IN coordination_NN with_IN other_JJ agents_NNS is_VBZ provided_VBN by_IN the_DT Distributed_VBN State_NN Mechanism_NN -LRB-_-LRB- DSM_NNP -RRB-_-RRB- ,_, which_WDT is_VBZ responsible_JJ for_IN communicating_VBG changes_NNS made_VBN to_TO the_DT model_NN or_CC schedule_NN of_IN a_DT given_VBN agent_NN to_TO other_JJ interested_JJ agents_NNS ._.
+More_RBR specifically_RB ,_, the_DT DSM_NNP of_IN a_DT given_VBN agent_NN acts_VBZ to_TO push_VB any_DT changes_NNS made_VBN to_TO the_DT time_NN bounds_NNS ,_, quality_NN ,_, or_CC status_NN of_IN a_DT local_JJ task_NN /_: method_NN to_TO all_PDT the_DT other_JJ agents_NNS that_WDT have_VBP that_DT same_JJ task_NN /_: method_NN as_IN a_DT remote_JJ node_NN in_IN their_PRP$ subjective_JJ views_NNS ._.
+A_DT recipient_JJ agent_NN treats_VBZ any_DT communicated_VBN changes_NNS as_IN additional_JJ forms_NNS of_IN updates_NNS ,_, in_IN this_DT case_NN an_DT update_VBP that_IN modifies_VBZ the_DT current_JJ constraints_NNS associated_VBN with_IN non-local_JJ -LRB-_-LRB- but_CC inter-dependent_JJ -RRB-_-RRB- tasks_NNS or_CC methods_NNS ._.
+These_DT changes_NNS are_VBP handled_VBN identically_RB to_TO updates_NNS reflecting_VBG schedule_NN execution_NN results_VBZ ,_, potentially_RB triggering_VBG the_DT local_JJ scheduler_NN if_IN the_DT need_NN to_TO reschedule_VB is_VBZ detected_VBN ._.
+6_CD ._.
+#_# Generating_NNP Non-Local_NNP Options_NNPS As_IN mentioned_VBN in_IN the_DT previous_JJ section_NN ,_, the_DT agent_NN ''_'' s_NNS first_JJ response_NN to_TO any_DT given_VBN query_NN or_CC update_VB -LRB-_-LRB- either_CC from_IN execution_NN or_CC from_IN another_DT agent_NN -RRB-_-RRB- is_VBZ to_TO generate_VB one_CD or_CC more_JJR local_JJ options_NNS ._.
+Such_JJ options_NNS represent_VBP local_JJ schedule_NN changes_NNS that_WDT are_VBP consistent_JJ with_IN all_DT currently_RB known_VBN constraints_NNS originating_VBG from_IN other_JJ agents_NNS ''_'' schedules_NNS ,_, and_CC hence_RB can_MD be_VB implemented_VBN without_IN interaction_NN with_IN other_JJ agents_NNS ._.
+In_IN many_JJ cases_NNS ,_, however_RB ,_, a_DT larger-scoped_JJ change_NN to_TO the_DT schedules_NNS of_IN two_CD or_CC more_JJR agents_NNS can_MD produce_VB a_DT higher-quality_JJ response_NN ._.
+Exploration_NN of_IN opportunities_NNS for_IN such_JJ coordinated_VBN action_NN by_IN two_CD or_CC more_JJR agents_NNS is_VBZ the_DT responsibility_NN of_IN the_DT Options_NNPS Manager_NNP ._.
+Running_VBG in_IN lower_JJR priority_NN mode_NN than_IN the_DT Executor_NNP and_CC Scheduler_NNP ,_, the_DT Options_NNPS Manager_NNP initiates_VBZ a_DT non-local_JJ option_NN generation_NN and_CC evaluation_NN process_NN in_IN response_NN to_TO any_DT local_JJ schedule_NN change_NN made_VBN by_IN the_DT agent_NN if_IN computation_NN time_NN constraints_NNS permits_VBZ ._.
+Generally_RB speaking_VBG ,_, a_DT non-local_JJ option_NN identifies_VBZ certain_JJ relaxations_NNS -LRB-_-LRB- to_TO one_CD or_CC more_JJR constraints_NNS imposed_VBN by_IN methods_NNS that_WDT are_VBP scheduled_VBN by_IN one_CD or_CC more_JJR remote_JJ agents_NNS -RRB-_-RRB- that_WDT enable_VBP the_DT generation_NN of_IN a_DT higher_JJR quality_NN local_JJ schedule_NN ._.
+When_WRB found_VBN ,_, a_DT non-local_JJ option_NN is_VBZ used_VBN by_IN a_DT coordinating_VBG agent_NN to_TO formulate_VB queries_NNS to_TO any_DT other_JJ involved_JJ agents_NNS in_IN order_NN to_TO determine_VB the_DT impact_NN of_IN such_JJ constraint_NN relaxations_NNS on_IN their_PRP$ local_JJ schedules_NNS ._.
+If_IN the_DT combined_JJ quality_NN change_NN reported_VBD back_RB from_IN a_DT set_NN of_IN one_CD or_CC more_JJR relevant_JJ queries_NNS is_VBZ a_DT net_JJ gain_NN ,_, then_RB the_DT issuing_VBG agent_NN signals_NNS to_TO the_DT other_JJ involved_JJ agents_NNS to_TO commit_VB to_TO this_DT joint_JJ set_NN of_IN schedule_NN changes_NNS ._.
+The_DT Option_NN Manager_NN currently_RB employs_VBZ two_CD basic_JJ search_NN strategies_NNS for_IN generating_VBG non-local_JJ options_NNS ,_, each_DT exploiting_VBG the_DT local_JJ scheduler_NN in_IN hypothetical_JJ mode_NN ._.
+Optimistic_JJ Synchronization_NN -_: Optimistic_JJ synchronization_NN is_VBZ a_DT non-local_JJ option_NN generation_NN strategy_NN where_WRB search_NN is_VBZ used_VBN to_TO explore_VB the_DT impact_NN on_IN quality_NN if_IN optimistic_JJ assumptions_NNS are_VBP made_VBN about_IN currently_RB unscheduled_JJ remote_JJ enablers_NNS ._.
+More_RBR specifically_RB ,_, the_DT strategy_NN looks_VBZ for_IN would_MD be_VB contributor_NN methods_NNS that_WDT are_VBP currently_RB unscheduled_JJ due_JJ to_TO the_DT fact_NN that_IN one_CD or_CC more_JJR remote_JJ enabling_VBG -LRB-_-LRB- source_NN -RRB-_-RRB- tasks_NNS or_CC methods_NNS are_VBP not_RB currently_RB scheduled_VBN ._.
+For_IN each_DT such_JJ local_JJ method_NN ,_, the_DT set_NN of_IN remote_JJ enablers_NNS are_VBP hypothetically_RB activated_VBN ,_, and_CC the_DT scheduler_NN attempts_VBZ to_TO construct_VB a_DT new_JJ local_JJ schedule_NN under_IN these_DT optimistic_JJ assumptions_NNS ._.
+If_IN successful_JJ ,_, a_DT non-local_JJ option_NN is_VBZ generated_VBN ,_, specifying_VBG the_DT value_NN of_IN the_DT new_JJ ,_, higher_JJR quality_NN local_JJ schedule_NN ,_, the_DT temporal_JJ constraints_NNS on_IN the_DT local_JJ target_NN activity_NN ,_, and_CC the_DT set_NN of_IN must-schedule_JJ enabler_NN activities_NNS that_WDT must_MD be_VB scheduled_VBN by_IN remote_JJ agents_NNS in_IN order_NN to_TO achieve_VB this_DT local_JJ quality_NN ._.
+The_DT needed_VBN queries_NNS requesting_VBG the_DT quality_NN impact_NN of_IN scheduling_NN these_DT activities_NNS are_VBP then_RB formulated_VBN and_CC sent_VBN to_TO the_DT relevant_JJ remote_JJ agents_NNS ._.
+To_TO illustrate_VB ,_, consider_VB again_RB the_DT example_NN in_IN Figure_NNP #_# ._.
+The_DT maximum_JJ quality_NN that_WDT Agent1_NN can_MD contribute_VB to_TO the_DT task_NN group_NN is_VBZ ##_CD -LRB-_-LRB- by_IN scheduling_NN M1_NN ,_, M2_NN and_CC M3_NN -RRB-_-RRB- ._.
+Assume_VB that_IN this_DT is_VBZ Agent1_NN ''_'' s_NNS current_JJ schedule_NN ._.
+Given_VBN this_DT state_NN ,_, the_DT maximum_JJ quality_NN that_WDT Agent2_NN can_MD contribute_VB to_TO the_DT task_NN group_NN is_VBZ ##_CD ,_, and_CC the_DT total_JJ task_NN group_NN quality_NN would_MD then_RB be_VB ##_NN +_CC ##_NN =_JJ ##_CD ._.
+Using_VBG optimistic_JJ synchronization_NN ,_, Agent2_NN will_MD generate_VB a_DT non-local_JJ option_NN that_WDT indicates_VBZ that_IN if_IN M5_NN becomes_VBZ enabled_VBD ,_, both_DT M5_NN and_CC M6_NN would_MD be_VB scheduled_VBN ,_, and_CC the_DT quality_NN contributed_VBN by_IN Agent2_NN to_TO the_DT task_NN group_NN would_MD become_VB ##_NN ._.
+Agent2_NN sends_VBZ a_DT must_MD schedule_VB M4_NN query_NN to_TO Agent1_NN ._.
+Because_IN of_IN the_DT time_NN window_NN constraints_NNS ,_, Agent1_NN must_MD remove_VB M3_NN from_IN its_PRP$ schedule_NN to_TO get_VB M4_NN on_IN ,_, resulting_VBG in_IN a_DT new_JJ lower_JJR quality_NN schedule_NN of_IN #_# ._.
+However_RB ,_, when_WRB Agent2_NN receives_VBZ this_DT option_NN response_NN from_IN Agent1_NN ,_, it_PRP determines_VBZ that_IN the_DT total_JJ quality_NN accumulated_VBN for_IN the_DT task_NN group_NN would_MD be_VB #_# +_CC ##_NN =_JJ ##_CD ,_, a_DT net_JJ gain_NN of_IN ##_NN ._.
+Hence_RB ,_, Agent_NNP #_# signals_NNS to_TO Agent1_NN to_TO commit_VB to_TO this_DT non-local_JJ option_NN ._.
+Conflict-Driven_NNP Relaxation_NNP -_: A_NN second_JJ strategy_NN for_IN generating_VBG non-local_JJ options_NNS ,_, referred_VBN to_TO as_IN Conflict-Directed_NNP Relaxation_NNP ,_, utilizes_VBZ analysis_NN of_IN STN_NN conflicts_NNS to_TO identify_VB and_CC prioritize_VB external_JJ constraints_NNS to_TO relax_VB in_IN the_DT event_NN that_IN a_DT particular_JJ method_NN that_WDT would_MD increase_VB local_JJ quality_NN is_VBZ found_VBN to_TO be_VB unschedulable_JJ ._.
+Recall_VB that_IN if_IN a_DT method_NN can_MD not_RB be_VB feasibly_RB inserted_VBN into_IN the_DT schedule_NN ,_, an_DT attempt_NN to_TO do_VB so_RB will_MD generate_VB a_DT negative_JJ cycle_NN ._.
+Given_VBN this_DT cycle_NN ,_, the_DT mechanism_NN proceeds_VBZ in_IN three_CD steps_NNS ._.
+First_RB ,_, the_DT constraints_NNS involved_VBN in_IN the_DT cycle_NN are_VBP collected_VBN ._.
+Second_RB ,_, by_IN virtue_NN of_IN the_DT connections_NNS in_IN the_DT STN_NN to_TO the_DT domain-level_JJ C_NN TAEMS_NN model_NN ,_, this_DT set_NN is_VBZ filtered_VBN to_TO identify_VB the_DT subset_NN associated_VBN with_IN remote_JJ nodes_NNS ._.
+Third_NNP ,_, constraints_NNS in_IN this_DT subset_NN are_VBP selectively_RB retracted_VBN to_TO The_DT Sixth_NNP Intl_NNP ._.
+Joint_NNP Conf_NNP ._.
+on_IN Autonomous_NNP Agents_NNPS and_CC Multi-Agent_NNP Systems_NNP -LRB-_-LRB- AAMAS_NNP ##_CD -RRB-_-RRB- ###_CD Figure_NNP #_# :_: A_DT high_JJ quality_NN task_NN is_VBZ added_VBN to_TO the_DT task_NN structure_NN of_IN Agent2_NN ._.
+Figure_NNP #_# :_: If_IN M4_NN ,_, M5_NN and_CC M7_NN are_VBP scheduled_VBN ,_, a_DT conflict_NN is_VBZ detected_VBN by_IN the_DT STN_NNP ._.
+determine_VB if_IN STN_NN consistency_NN is_VBZ restored_VBN ._.
+If_IN successful_JJ ,_, a_DT non-local_JJ option_NN is_VBZ generated_VBN indicating_VBG which_WDT remote_JJ constraint_NN -LRB-_-LRB- s_NNS -RRB-_-RRB- must_MD be_VB relaxed_VBN and_CC by_IN how_WRB much_JJ to_TO allow_VB installation_NN of_IN the_DT new_JJ ,_, higher_JJR quality_NN local_JJ schedule_NN ._.
+To_TO illustrate_VB this_DT strategy_NN ,_, consider_VB Figure_NNP #_# where_WRB Agent1_NN has_VBZ M1_NN ,_, M2_NN and_CC M4_NN on_IN its_PRP$ timeline_NN ,_, and_CC therefore_RB est_NN -LRB-_-LRB- M4_NN -RRB-_-RRB- =_JJ 21_CD ._.
+Agent2_NN has_VBZ M5_NN and_CC M6_NN on_IN its_PRP$ timeline_NN ,_, with_IN est_NN -LRB-_-LRB- M5_NN -RRB-_-RRB- =_JJ 31_CD -LRB-_-LRB- M6_NN could_MD be_VB scheduled_VBN before_IN or_CC after_IN M5_NN -RRB-_-RRB- ._.
+Suppose_VB that_DT Agent2_NN receives_VBZ a_DT new_JJ task_NN M7_NN with_IN deadline_NN ##_NN -LRB-_-LRB- see_VB Figure_NNP #_# -RRB-_-RRB- ._.
+If_IN Agent2_NN could_MD schedule_VB M7_NN ,_, the_DT quality_NN contributed_VBN by_IN Agent2_NN to_TO the_DT task_NN group_NN would_MD be_VB ##_CD ._.
+However_RB ,_, an_DT attempt_NN to_TO schedule_VB M7_NN together_RB with_IN M5_NN and_CC M6_NN leads_VBZ to_TO a_DT conflict_NN ,_, since_IN the_DT est_NN -LRB-_-LRB- M7_NN -RRB-_-RRB- =_JJ ##_NN ,_, dur_NN -LRB-_-LRB- M7_NN -RRB-_-RRB- =_JJ ##_NN and_CC lft_NN -LRB-_-LRB- M7_NN -RRB-_-RRB- =_JJ ##_NN ._.
+Conflict-directed_JJ relaxation_NN by_IN Agent_NNP #_# suggests_VBZ relaxing_VBG the_DT lft_NN -LRB-_-LRB- M4_NN -RRB-_-RRB- by_IN #_# tick_VB to_TO ##_CD ,_, and_CC this_DT query_NN is_VBZ communicated_VBN to_TO Agent_NNP #_# ._.
+In_IN fact_NN ,_, by_IN retracting_VBG either_CC method_NN M1_NN or_CC M2_NN from_IN the_DT schedule_NN this_DT relaxation_NN can_MD be_VB accommodated_VBN with_IN no_DT quality_NN loss_NN to_TO Agent1_NN -LRB-_-LRB- due_JJ to_TO the_DT min_NN qaf_NN -RRB-_-RRB- ._.
+Upon_IN communication_NN of_IN this_DT fact_NN Agent_NNP #_# signals_NNS to_TO commit_VB ._.
+7_CD ._.
+EXPERIMENTAL_JJ RESULTS_NNS An_DT initial_JJ version_NN of_IN the_DT agent_NN described_VBN in_IN this_DT paper_NN was_VBD developed_VBN in_IN collaboration_NN with_IN SRI_NN International_NNP and_CC subjected_VBN to_TO the_DT independently_RB conducted_VBN Coordinators_NNS programmatic_JJ evaluation_NN ._.
+This_DT evaluation_NN involved_VBN over_IN ####_CD problem_NN instances_NNS randomly_RB generated_VBN by_IN a_DT scenario_NN generator_NN that_WDT was_VBD configured_VBN to_TO produce_VB scenarios_NNS of_IN varying_VBG Problem_NNP Class_NNP Description_NN Agent_NNP Class_NNP Quality_NNP OD_NNP Only_RB Dynamics_NNPS ''_'' ._.
+No_DT NLEs_NNS ._.
+##_NN ._.
+#_# %_NN -LRB-_-LRB- ###_CD probs_NNS -RRB-_-RRB- Actual_JJ task_NN duration_NN &_CC quality_NN vary_VBP according_VBG to_TO distribution_NN ._.
+INT_NNP Interdependent_NNP ''_'' ._.
+Frequent_JJ &_CC ###_CD %_NN -LRB-_-LRB- ###_CD probs_NNS -RRB-_-RRB- random_JJ -LRB-_-LRB- esp_NN ._.
+facilitates_NNS -RRB-_-RRB- CHAINS_VBZ Activities_NNS chained_JJ together_RB ##_CD ._.
+#_# %_NN -LRB-_-LRB- ###_CD probs_NNS -RRB-_-RRB- via_IN sequences_NNS of_IN enables_VBZ NLEs_NNS -LRB-_-LRB- 1-4_CD chains_NNS /_: prob_NN -RRB-_-RRB- TT_NN Temporal_JJ Tightness_NN ''_'' ._.
+Release_NNP -_: ##_NN ._.
+#_# %_NN -LRB-_-LRB- ###_CD probs_NNS -RRB-_-RRB- Deadline_NN windows_NNS preclude_VB preferred_VBN high_JJ quality_NN -LRB-_-LRB- longest_JJS duration_NN -RRB-_-RRB- tasks_NNS from_IN all_DT being_VBG scheduled_VBN ._.
+SYNC_NN Problems_NNS contain_VBP range_NN of_IN ##_NN ._.
+#_# %_NN -LRB-_-LRB- ###_CD probs_NNS -RRB-_-RRB- different_JJ Sync_NNP sum_NN tasks_NNS NTA_NNP New_NNP Task_NNP Arrival_NNP ''_'' ._.
+cTaems_NNS ##_CD ._.
+#_# %_NN -LRB-_-LRB- ###_CD probs_NNS -RRB-_-RRB- model_NN is_VBZ augmented_JJ with_IN new_JJ tasks_NNS dynamically_RB during_IN run_NN ._.
+OVERALL_NNP Avg_NNP :_: ##_CD ._.
+#_# %_NN -LRB-_-LRB- ####_CD probs_NNS -RRB-_-RRB- Std_NNP dev_NNP :_: #_# ._.
+##_RB Table_NNP #_# :_: Performance_NNP of_IN year_NN #_# agent_NN over_IN Coordinators_NNS evaluation_NN ._.
+Agent_NNP Quality_NNP ''_'' is_VBZ %_NN of_IN optimal_JJ ''_'' durations_NNS within_IN six_CD experiment_NN classes_NNS ._.
+These_DT classes_NNS ,_, summarized_VBN in_IN Table_NNP #_# ,_, were_VBD designed_VBN to_TO evaluate_VB key_JJ aspects_NNS of_IN a_DT set_NN of_IN Coordinators_NNS distributed_VBN scheduling_NN agents_NNS ,_, such_JJ as_IN their_PRP$ ability_NN to_TO handle_VB unexpected_JJ execution_NN results_NNS ,_, chains_NNS of_IN nle_NN ''_'' s_NNS involving_VBG multiple_JJ agents_NNS ,_, and_CC effective_JJ scheduling_NN of_IN new_JJ activities_NNS that_WDT arise_VBP unexpectedly_RB at_IN some_DT point_NN during_IN the_DT problem_NN run_NN ._.
+Year_NN #_# evaluation_NN problems_NNS were_VBD constrained_VBN to_TO be_VB small_JJ enough_JJ -LRB-_-LRB- #_# -_: ##_CD agents_NNS ,_, ##_SYM -_: ###_CD methods_NNS -RRB-_-RRB- such_JJ that_IN comparison_NN against_IN an_DT optimal_JJ centralized_JJ solver_NN was_VBD feasible_JJ ._.
+The_DT evaluation_NN team_NN employed_VBN an_DT MDP-based_JJ solver_NN capable_JJ of_IN unrolling_VBG the_DT entire_JJ search_NN space_NN for_IN these_DT problems_NNS ,_, choosing_VBG for_IN an_DT agent_NN at_IN each_DT execution_NN decision_NN point_NN the_DT activity_NN most_RBS likely_JJ to_TO produce_VB maximum_NN global_JJ quality_NN ._.
+This_DT established_VBD a_DT challenging_JJ benchmark_NN for_IN the_DT distributed_VBN agent_NN systems_NNS to_TO compare_VB against_IN ._.
+The_DT hardware_NN configuration_NN used_VBN by_IN the_DT evaluators_NNS instantiated_VBN and_CC ran_VBD one_CD agent_NN per_IN machine_NN ,_, dedicating_VBG a_DT separate_JJ machine_NN to_TO the_DT MASS_NNP simulator_NN ._.
+As_IN reported_VBN in_IN Table_NNP #_# ,_, the_DT year_NN #_# prototype_NN agent_NN clearly_RB compares_VBZ favorably_RB to_TO the_DT benchmark_NN on_IN all_DT classes_NNS ,_, coming_VBG within_IN #_# %_NN of_IN the_DT MDP_NN optimal_JJ averaged_VBD over_IN the_DT entire_JJ set_NN of_IN ####_CD problems_NNS ._.
+These_DT results_NNS are_VBP particularly_RB notable_JJ given_VBN that_IN each_DT agent_NN ''_'' s_NNS STN-based_JJ scheduler_NN does_VBZ very_RB little_JJ reasoning_NN over_IN the_DT success_NN probability_NN of_IN the_DT activity_NN sequences_VBZ it_PRP selects_VBZ to_TO execute_VB ._.
+Only_RB simple_JJ tactics_NNS were_VBD adopted_VBN to_TO explicitly_RB address_VB such_JJ uncertainty_NN ,_, such_JJ as_IN the_DT use_NN of_IN expected_VBN durations_NNS and_CC quality_NN for_IN activities_NNS and_CC a_DT policy_NN of_IN excluding_VBG from_IN consideration_NN those_DT activities_NNS with_IN failure_NN likelihood_NN of_IN >_JJR ##_CD %_NN ._.
+The_DT very_RB respectable_JJ agent_NN performance_NN can_MD be_VB at_IN least_JJS partially_RB credited_VBN to_TO the_DT fact_NN that_IN the_DT flexible_JJ times_NNS representation_NN employed_VBN by_IN the_DT scheduler_NN affords_VBZ it_PRP an_DT important_JJ buffer_NN against_IN the_DT uncertainty_NN of_IN execution_NN and_CC exogenous_JJ events_NNS ._.
+The_DT agent_NN turns_VBZ in_IN its_PRP$ lowest_JJS performance_NN on_IN the_DT TT_NN -LRB-_-LRB- Temporal_JJ Tightness_NN -RRB-_-RRB- experiment_NN classes_NNS ,_, and_CC an_DT examination_NN of_IN the_DT agent_NN trace_NN logs_NNS reveals_VBZ possible_JJ reasons_NNS ._.
+In_IN about_RB half_NN of_IN the_DT TT_NN problems_NNS the_DT year_NN #_# agent_NN under-performs_NNS on_IN ,_, the_DT specified_VBN time_NN windows_NNS within_IN which_WDT an_DT agent_NN ''_'' s_NNS ac490_IN The_DT Sixth_NNP Intl_NNP ._.
+Joint_NNP Conf_NNP ._.
+on_IN Autonomous_NNP Agents_NNPS and_CC Multi-Agent_NNP Systems_NNP -LRB-_-LRB- AAMAS_NNP ##_CD -RRB-_-RRB- tivities_NNS must_MD be_VB scheduled_VBN are_VBP so_RB tight_JJ that_IN any_DT scheduled_JJ activity_NN which_WDT executes_VBZ with_IN a_DT longer_JJR duration_NN than_IN the_DT expected_VBN value_NN ,_, causes_VBZ a_DT deadline_NN failure_NN ._.
+This_DT constitutes_VBZ a_DT case_NN where_WRB more_RBR sophisticated_JJ reasoning_NN over_IN success_NN probability_NN would_MD benefit_VB this_DT agent_NN ._.
+The_DT other_JJ half_NN of_IN underperforming_VBG TT_NN problems_NNS involve_VBP activities_NNS that_WDT depend_VBP on_IN facilitation_NN relationships_NNS in_IN order_NN to_TO fit_VB in_IN their_PRP$ time_NN windows_NNS -LRB-_-LRB- recall_NN that_WDT facilitation_NN increases_VBZ quality_NN and_CC decreases_VBZ duration_NN -RRB-_-RRB- ._.
+The_DT limited_JJ facilitates_NNS reasoning_NN performed_VBN by_IN the_DT year_NN #_# scheduler_NN sometimes_RB causes_VBZ failures_NNS to_TO install_VB a_DT heavily_RB facilitated_VBN initial_JJ schedule_NN ._.
+Even_RB when_WRB such_JJ activities_NNS are_VBP successfully_RB installed_VBN they_PRP tend_VBP to_TO be_VB prone_JJ to_TO deadline_NN failures_NNS -_: If_IN a_DT source-side_JJ activity_NN -LRB-_-LRB- s_NNS -RRB-_-RRB- either_CC fails_VBZ or_CC exceeds_VBZ its_PRP$ expected_JJ duration_NN the_DT resulting_VBG longer_JJR duration_NN of_IN the_DT target_NN activity_NN can_MD violate_VB its_PRP$ time_NN window_NN deadline_NN ._.
+8_CD ._.
+STATUS_NN AND_CC DIRECTIONS_NNS Our_PRP$ current_JJ research_NN efforts_NNS are_VBP aimed_VBN at_IN extending_VBG the_DT capabilities_NNS of_IN the_DT Year_NN #_# agent_NN and_CC scaling_VBG up_RP to_TO significantly_RB larger_JJR problems_NNS ._.
+Year_NN #_# programmatic_JJ evaluation_NN goals_NNS call_VBP for_IN solving_VBG problems_NNS on_IN the_DT order_NN of_IN ###_CD agents_NNS and_CC ##_NN ,_, ###_CD methods_NNS ._.
+This_DT scale_NN places_VBZ much_RB higher_JJR computational_JJ demands_NNS on_IN all_DT of_IN the_DT agent_NN ''_'' s_NNS components_NNS ._.
+We_PRP have_VBP recently_RB completed_VBN a_DT re-implementation_NN of_IN the_DT prototype_NN agent_NN designed_VBN to_TO address_VB some_DT recognized_VBN performance_NN issues_NNS ._.
+In_IN addition_NN to_TO verifying_VBG that_IN the_DT performance_NN on_IN Year_NN #_# problems_NNS is_VBZ matched_VBN or_CC exceeded_VBN ,_, we_PRP have_VBP recently_RB run_VBN some_DT successful_JJ tests_NNS with_IN the_DT agent_NN on_IN a_DT few_JJ ###_CD agent_NN problems_NNS ._.
+To_TO fully_RB address_VB various_JJ scale_NN up_IN issues_NNS ,_, we_PRP are_VBP investigating_VBG a_DT number_NN of_IN more_JJR advanced_JJ coordination_NN mechanisms_NNS ._.
+To_TO provide_VB more_JJR global_JJ perspective_NN to_TO local_JJ scheduling_NN decisions_NNS ,_, we_PRP are_VBP introducing_VBG mechanisms_NNS for_IN computing_NN ,_, communicating_VBG and_CC using_VBG estimates_NNS of_IN the_DT non-local_JJ impact_NN of_IN remote_JJ nodes_NNS ._.
+To_TO better_RBR address_VB the_DT problem_NN of_IN establishing_VBG inter-agent_JJ synchronization_NN points_NNS ,_, we_PRP expanding_VBG the_DT use_NN of_IN task_NN owners_NNS and_CC qaf-specifc_JJ protocols_NNS as_IN a_DT means_NN for_IN directing_VBG coordination_NN activity_NN ._.
+Finally_RB ,_, we_PRP plan_VBP to_TO explore_VB the_DT use_NN of_IN more_JJR advanced_JJ STN-driven_JJ coordination_NN mechanisms_NNS ,_, including_VBG the_DT use_NN of_IN temporal_JJ decoupling_NN -LSB-_-LRB- #_# -RSB-_-RRB- to_TO insulate_VB the_DT actions_NNS of_IN inter-dependent_JJ agents_NNS and_CC the_DT introduction_NN of_IN probability_NN sensitive_JJ contingency_NN schedules_NNS ._.
+9_CD ._.
+ACKNOWLEDGEMENTS_NNS The_DT Year_NN #_# agent_NN architecture_NN was_VBD developed_VBN in_IN collaboration_NN with_IN Andrew_NNP Agno_NNP ,_, Roger_NNP Mailler_NNP and_CC Regis_NNP Vincent_NNP of_IN SRI_NN International_NNP ._.
+This_DT paper_NN is_VBZ based_VBN on_IN work_NN supported_VBN by_IN the_DT Department_NNP of_IN Defense_NNP Advance_NNP Research_NNP Projects_NNP Agency_NNP -LRB-_-LRB- DARPA_NNP -RRB-_-RRB- under_IN Contract_NNP #_# FA8750-05-C0033_NN ._.
+Any_DT opinions_NNS findings_NNS and_CC conclusions_NNS or_CC recommendations_NNS expressed_VBN in_IN this_DT paper_NN are_VBP those_DT of_IN the_DT authors_NNS and_CC do_VBP not_RB necessarily_RB reflect_VB the_DT views_NNS of_IN DARPA_NNP ._.
+10_CD ._.
+REFERENCES_NNS -LSB-_-LRB- #_# -RSB-_-RRB- M_NN ._.
+Boddy_NNP ,_, B_NN ._.
+Horling_NNP ,_, J_NNP ._.
+Phelps_NNP ,_, R_NN ._.
+Goldman_NNP ,_, R_NN ._.
+Vincent_NNP ,_, A_NNP ._.
+Long_NNP ,_, and_CC B_NN ._.
+Kohout_NNP ._.
+C_NN taems_NNS language_NN specification_NN v_LS ._.
+#_# ._.
+##_NN ,_, October_NNP ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- A_DT ._.
+Cesta_NNP and_CC A_NNP ._.
+Oddi_NNP ._.
+Gaining_NNP efficiency_NN and_CC flexibility_NN in_IN the_DT simple_JJ temporal_JJ problem_NN ._.
+In_IN Proc_NNP ._.
+3rd_JJ Int_NN ._.
+Workshop_NNP on_IN Temporal_JJ Representation_NN and_CC Reasoning_NN ,_, Key_NN West_NNP FL_NN ,_, May_NNP ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- R_NN ._.
+Dechter_NNP ,_, I_PRP ._.
+Meiri_NNP ,_, and_CC J_NN ._.
+Pearl_NNP ._.
+Temporal_JJ constraint_NN networks_NNS ._.
+Artificial_JJ Intelligence_NNP ,_, ##_CD :_: 61-95_CD ,_, May_NNP ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- K_NNP ._.
+Decker_NNP ._.
+TMS_NNP :_: A_NNP framework_NN for_IN environment_NN centered_JJ analysis_NN &_CC design_NN of_IN coordination_NN mechanisms_NNS ._.
+In_IN G_NN ._.
+O_NN ''_'' Hare_NNP and_CC N_NNP ._.
+Jennings_NNP ,_, editors_NNS ,_, Foundations_NNS of_IN Distributed_VBN Artificial_NNP Intelligence_NNP ,_, chapter_NN ##_NN ,_, pages_NNS 429-448_CD ._.
+Wiley_NNP Inter-Science_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- K_NNP ._.
+Decker_NNP and_CC V_NNP ._.
+Lesser_RBR ._.
+Designing_NNP a_DT family_NN of_IN coordination_NN algorithms_NNS ._.
+In_IN Proc_NNP ._.
+1st_JJ ._.
+Int_NN ._.
+Conference_NN on_IN Multi-Agent_NNP Systems_NNPS ,_, San_NNP Francisco_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- A_DT ._.
+J_NN ._.
+Garvey_NNP ._.
+Design-To-Time_NNP Real-Time_NNP Scheduling_NNP ._.
+PhD_NN thesis_NN ,_, Univ_NNP ._.
+of_IN Massachusetts_NNP ,_, Feb_NNP ._.
+####_NN ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- L_NN ._.
+Hunsberger_NNP ._.
+Algorithms_NNS for_IN a_DT temporal_JJ decoupling_NN problem_NN in_IN multi-agent_JJ planning_NN ._.
+In_IN Proc_NNP ._.
+18th_JJ National_NNP Conference_NNP on_IN AI_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- S_NN ._.
+Lemai_NNP and_CC F_NN ._.
+Ingrand_NNP ._.
+Interleaving_VBG temporal_JJ planning_NN and_CC execution_NN in_IN robotics_NNS domains_NNS ._.
+In_IN Proc_NNP ._.
+19th_JJ National_NNP Conference_NNP on_IN AI_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- N_NN ._.
+Muscettola_NNP ,_, P_NN ._.
+P_NN ._.
+Nayak_NNP ,_, B_NN ._.
+Pell_NNP ,_, and_CC B_NN ._.
+C_NN ._.
+Williams_NNP ._.
+Remote_JJ agent_NN :_: To_TO boldly_RB go_VB where_WRB no_DT AI_NN system_NN has_VBZ gone_VBN before_RB ._.
+Artificial_JJ Intelligence_NNP ,_, 103_CD -LRB-_-LRB- 1-2_CD -RRB-_-RRB- :_: 5-47_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- W_NN ._.
+Ruml_NNP ,_, M_NN ._.
+B_NN ._.
+Do_VB ,_, and_CC M_NN ._.
+Fromherz_NNP ._.
+On-line_JJ planning_NN and_CC scheduling_NN of_IN high-speed_JJ manufacturing_NN ._.
+In_IN Proc_NNP ._.
+ICAPS-05_NN ,_, Monterey_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- I_PRP ._.
+Shu_NNP ,_, R_NN ._.
+Effinger_NNP ,_, and_CC B_NN ._.
+Williams_NNP ._.
+Enabling_VBG fast_JJ flexible_JJ planning_NN through_IN incremental_JJ temporal_JJ reasoning_NN with_IN conflict_NN extraction_NN ._.
+In_IN Proce_NNP ._.
+ICAPS-05_NN ,_, Monterey_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- S_NN ._.
+Smith_NNP and_CC C_NNP ._.
+Cheng_NNP ._.
+Slack-based_JJ heuristics_NNS for_IN constraint_NN satisfaction_NN scheduling_NN ._.
+In_IN Proc_NNP ._.
+12th_JJ National_NNP Conference_NNP on_IN AI_NNP ,_, Wash_NNP DC_NNP ,_, July_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- T_NN ._.
+Wagner_NNP ,_, A_NNP ._.
+Garvey_NNP ,_, and_CC V_NN ._.
+Lesser_RBR ._.
+Criteria-directed_JJ heuristic_NN task_NN scheduling_NN ._.
+International_NNP Journal_NNP of_IN Approximate_NNP Reasoning_NN ,_, ##_NN -LRB-_-LRB- #_# -RRB-_-RRB- :_: 91-118_CD ,_, ####_CD ._.
+The_DT Sixth_NNP Intl_NNP ._.
+Joint_NNP Conf_NNP ._.
+on_IN Autonomous_NNP Agents_NNPS and_CC Multi-Agent_NNP Systems_NNP -LRB-_-LRB- AAMAS_NNP ##_CD -RRB-_-RRB- ###_CD

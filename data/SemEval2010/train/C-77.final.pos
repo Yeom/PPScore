@@ -1,0 +1,722 @@
+Tracking_VBG Immediate_NNP Predecessors_NNP in_IN Distributed_VBN Computations_NNS Emmanuelle_NNP Anceaume_NNP Jean-Michel_NNP Helary_NNP Michel_NNP Raynal_NNP IRISA_NNP ,_, Campus_NNP Beaulieu_NNP 35042_CD Rennes_NNP Cedex_NNP ,_, France_NNP FirstName_NNP ._.
+LastName_NNP @_SYM irisa_FW ._.
+fr_NN ABSTRACT_NN A_NN distributed_VBN computation_NN is_VBZ usually_RB modeled_VBN as_IN a_DT partially_RB ordered_VBN set_NN of_IN relevant_JJ events_NNS -LRB-_-LRB- the_DT relevant_JJ events_NNS are_VBP a_DT subset_NN of_IN the_DT primitive_JJ events_NNS produced_VBN by_IN the_DT computation_NN -RRB-_-RRB- ._.
+An_DT important_JJ causality-related_JJ distributed_VBN computing_NN problem_NN ,_, that_IN we_PRP call_VBP the_DT Immediate_NNP Predecessors_NNP Tracking_NNP -LRB-_-LRB- IPT_NNP -RRB-_-RRB- problem_NN ,_, consists_VBZ in_IN associating_VBG with_IN each_DT relevant_JJ event_NN ,_, on_IN the_DT fly_NN and_CC without_IN using_VBG additional_JJ control_NN messages_NNS ,_, the_DT set_NN of_IN relevant_JJ events_NNS that_WDT are_VBP its_PRP$ immediate_JJ predecessors_NNS in_IN the_DT partial_JJ order_NN ._.
+So_RB ,_, IPT_NNP is_VBZ the_DT on-the-fly_JJ computation_NN of_IN the_DT transitive_JJ reduction_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, Hasse_NNP diagram_NN -RRB-_-RRB- of_IN the_DT causality_NN relation_NN defined_VBN by_IN a_DT distributed_VBN computation_NN ._.
+This_DT paper_NN addresses_VBZ the_DT IPT_NNP problem_NN :_: it_PRP presents_VBZ a_DT family_NN of_IN protocols_NNS that_WDT provides_VBZ each_DT relevant_JJ event_NN with_IN a_DT timestamp_NN that_WDT exactly_RB identifies_VBZ its_PRP$ immediate_JJ predecessors_NNS ._.
+The_DT family_NN is_VBZ defined_VBN by_IN a_DT general_JJ condition_NN that_WDT allows_VBZ application_NN messages_NNS to_TO piggyback_VB control_JJ information_NN whose_WP$ size_NN can_MD be_VB smaller_JJR than_IN n_NN -LRB-_-LRB- the_DT number_NN of_IN processes_NNS -RRB-_-RRB- ._.
+In_IN that_DT sense_NN ,_, this_DT family_NN defines_VBZ message_NN size-efficient_JJ IPT_NN protocols_NNS ._.
+According_VBG to_TO the_DT way_NN the_DT general_JJ condition_NN is_VBZ implemented_VBN ,_, different_JJ IPT_NNP protocols_NNS can_MD be_VB obtained_VBN ._.
+Two_CD of_IN them_PRP are_VBP exhibited_VBN ._.
+Categories_NNS and_CC Subject_NNP Descriptors_NNPS C_NNP ._.
+#_# ._.
+#_# -LSB-_-LRB- Distributed_VBN Systems_NNPS -RSB-_-RRB- :_: General_NNP Terms_NNS Asynchronous_JJ Distributed_VBN Computations_NNS 1_CD ._.
+INTRODUCTION_NN A_NN distributed_VBN computation_NN consists_VBZ of_IN a_DT set_NN of_IN processes_NNS that_WDT cooperate_VBP to_TO achieve_VB a_DT common_JJ goal_NN ._.
+A_DT main_JJ characteristic_NN of_IN these_DT computations_NNS lies_VBZ in_IN the_DT fact_NN that_IN the_DT processes_NNS do_VBP not_RB share_VB a_DT common_JJ global_JJ memory_NN ,_, and_CC communicate_VBP only_RB by_IN exchanging_VBG messages_NNS over_IN a_DT communication_NN network_NN ._.
+Moreover_RB ,_, message_NN transfer_NN delays_NNS are_VBP finite_JJ but_CC unpredictable_JJ ._.
+This_DT computation_NN model_NN defines_VBZ what_WP is_VBZ known_VBN as_IN the_DT asynchronous_JJ distributed_VBN system_NN model_NN ._.
+It_PRP is_VBZ particularly_RB important_JJ as_IN it_PRP includes_VBZ systems_NNS that_WDT span_VBP large_JJ geographic_JJ areas_NNS ,_, and_CC systems_NNS that_WDT are_VBP subject_JJ to_TO unpredictable_JJ loads_NNS ._.
+Consequently_RB ,_, the_DT concepts_NNS ,_, tools_NNS and_CC mechanisms_NNS developed_VBD for_IN asynchronous_JJ distributed_VBN systems_NNS reveal_VBP to_TO be_VB both_CC important_JJ and_CC general_JJ ._.
+Causality_NNP is_VBZ a_DT key_JJ concept_NN to_TO understand_VB and_CC master_VB the_DT behavior_NN of_IN asynchronous_JJ distributed_VBN systems_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+More_RBR precisely_RB ,_, given_VBN two_CD events_NNS e_LS and_CC f_SYM of_IN a_DT distributed_VBN computation_NN ,_, a_DT crucial_JJ problem_NN that_WDT has_VBZ to_TO be_VB solved_VBN in_IN a_DT lot_NN of_IN distributed_VBN applications_NNS is_VBZ to_TO know_VB whether_IN they_PRP are_VBP causally_RB related_JJ ,_, i_FW ._.
+e_LS ._.
+,_, if_IN the_DT occurrence_NN of_IN one_CD of_IN them_PRP is_VBZ a_DT consequence_NN of_IN the_DT occurrence_NN of_IN the_DT other_JJ ._.
+The_DT causal_JJ past_NN of_IN an_DT event_NN e_SYM is_VBZ the_DT set_NN of_IN events_NNS from_IN which_WDT e_SYM is_VBZ causally_RB dependent_JJ ._.
+Events_NNS that_WDT are_VBP not_RB causally_RB dependent_JJ are_VBP said_VBN to_TO be_VB concurrent_JJ ._.
+Vector_NNP clocks_VBZ -LSB-_-LRB- #_# ,_, ##_NN -RSB-_-RRB- have_VBP been_VBN introduced_VBN to_TO allow_VB processes_NNS to_TO track_VB causality_NN -LRB-_-LRB- and_CC concurrency_NN -RRB-_-RRB- between_IN the_DT events_NNS they_PRP produce_VBP ._.
+The_DT timestamp_NN of_IN an_DT event_NN produced_VBN by_IN a_DT process_NN is_VBZ the_DT current_JJ value_NN of_IN the_DT vector_NN clock_NN of_IN the_DT corresponding_JJ process_NN ._.
+In_IN that_DT way_NN ,_, by_IN associating_VBG vector_NN timestamps_NNS with_IN events_NNS it_PRP becomes_VBZ possible_JJ to_TO safely_RB decide_VB whether_IN two_CD events_NNS are_VBP causally_RB related_JJ or_CC not_RB ._.
+Usually_RB ,_, according_VBG to_TO the_DT problem_NN he_PRP focuses_VBZ on_IN ,_, a_DT designer_NN is_VBZ interested_JJ only_RB in_IN a_DT subset_NN of_IN the_DT events_NNS produced_VBN by_IN a_DT distributed_VBN execution_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, only_RB the_DT checkpoint_NN events_NNS are_VBP meaningful_JJ when_WRB one_CD is_VBZ interested_JJ in_IN determining_VBG consistent_JJ global_JJ checkpoints_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- -RRB-_-RRB- ._.
+It_PRP follows_VBZ that_IN detecting_VBG causal_JJ dependencies_NNS -LRB-_-LRB- or_CC concurrency_NN -RRB-_-RRB- on_IN all_PDT the_DT events_NNS of_IN the_DT distributed_VBN computation_NN is_VBZ not_RB desirable_JJ in_IN all_DT applications_NNS -LSB-_-LRB- #_# ,_, 15_CD -RSB-_-RRB- ._.
+In_IN other_JJ words_NNS ,_, among_IN all_PDT the_DT events_NNS that_WDT may_MD occur_VB in_IN a_DT distributed_VBN computation_NN ,_, only_RB a_DT subset_NN of_IN them_PRP are_VBP relevant_JJ ._.
+In_IN this_DT paper_NN ,_, we_PRP are_VBP interested_JJ in_IN the_DT restriction_NN of_IN the_DT causality_NN relation_NN to_TO the_DT subset_NN of_IN events_NNS defined_VBN as_IN being_VBG the_DT relevant_JJ events_NNS of_IN the_DT computation_NN ._.
+Being_VBG a_DT strict_JJ partial_JJ order_NN ,_, the_DT causality_NN relation_NN is_VBZ transitive_JJ ._.
+As_IN a_DT consequence_NN ,_, among_IN all_PDT the_DT relevant_JJ events_NNS that_WDT causally_RB precede_VBP a_DT given_VBN relevant_JJ event_NN e_SYM ,_, only_RB a_DT subset_NN are_VBP its_PRP$ immediate_JJ predecessors_NNS :_: those_DT are_VBP the_DT events_NNS f_LS such_PDT that_IN there_EX is_VBZ no_DT relevant_JJ event_NN on_IN any_DT causal_JJ path_NN from_IN f_FW to_TO e_LS ._.
+Unfortunately_RB ,_, given_VBN only_RB the_DT vector_NN timestamp_NN associated_VBN with_IN an_DT event_NN it_PRP is_VBZ not_RB possible_JJ to_TO determine_VB which_WDT events_NNS of_IN its_PRP$ causal_JJ past_NN are_VBP its_PRP$ immediate_JJ predecessors_NNS ._.
+This_DT comes_VBZ from_IN the_DT fact_NN that_IN the_DT vector_NN timestamp_NN associated_VBN with_IN e_SYM determines_VBZ ,_, for_IN each_DT process_NN ,_, the_DT last_JJ relevant_JJ event_NN belong210_NN ing_NN to_TO the_DT causal_JJ past_NN of_IN e_LS ,_, but_CC such_PDT an_DT event_NN is_VBZ not_RB necessarily_RB an_DT immediate_JJ predecessor_NN of_IN e_LS ._.
+However_RB ,_, some_DT applications_NNS -LSB-_-LRB- #_# ,_, #_# -RSB-_-RRB- require_VBP to_TO associate_VB with_IN each_DT relevant_JJ event_NN only_RB the_DT set_NN of_IN its_PRP$ immediate_JJ predecessors_NNS ._.
+Those_DT applications_NNS are_VBP mainly_RB related_JJ to_TO the_DT analysis_NN of_IN distributed_VBN computations_NNS ._.
+Some_DT of_IN those_DT analyses_NNS require_VBP the_DT construction_NN of_IN the_DT lattice_NN of_IN consistent_JJ cuts_NNS produced_VBN by_IN the_DT computation_NN -LSB-_-LRB- ##_CD ,_, ##_CD -RSB-_-RRB- ._.
+It_PRP is_VBZ shown_VBN in_IN -LSB-_-LRB- #_# -RSB-_-RRB- that_IN the_DT tracking_NN of_IN immediate_JJ predecessors_NNS allows_VBZ an_DT efficient_JJ on_IN the_DT fly_NN construction_NN of_IN this_DT lattice_NN ._.
+More_RBR generally_RB ,_, these_DT applications_NNS are_VBP interested_JJ in_IN the_DT very_JJ structure_NN of_IN the_DT causal_JJ past_NN ._.
+In_IN this_DT context_NN ,_, the_DT determination_NN of_IN the_DT immediate_JJ predecessors_NNS becomes_VBZ a_DT major_JJ issue_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+Additionally_RB ,_, in_IN some_DT circumstances_NNS ,_, this_DT determination_NN has_VBZ to_TO satisfy_VB behavior_NN constraints_NNS ._.
+If_IN the_DT communication_NN pattern_NN of_IN the_DT distributed_VBN computation_NN can_MD not_RB be_VB modified_VBN ,_, the_DT determination_NN has_VBZ to_TO be_VB done_VBN without_IN adding_VBG control_NN messages_NNS ._.
+When_WRB the_DT immediate_JJ predecessors_NNS are_VBP used_VBN to_TO monitor_VB the_DT computation_NN ,_, it_PRP has_VBZ to_TO be_VB done_VBN on_IN the_DT fly_NN ._.
+We_PRP call_VBP Immediate_NNP Predecessor_NNP Tracking_NNP -LRB-_-LRB- IPT_NNP -RRB-_-RRB- the_DT problem_NN that_WDT consists_VBZ in_IN determining_VBG on_IN the_DT fly_NN and_CC without_IN additional_JJ messages_NNS the_DT immediate_JJ predecessors_NNS of_IN relevant_JJ events_NNS ._.
+This_DT problem_NN consists_VBZ actually_RB in_IN determining_VBG the_DT transitive_JJ reduction_NN -LRB-_-LRB- Hasse_NN diagram_NN -RRB-_-RRB- of_IN the_DT causality_NN graph_NN generated_VBN by_IN the_DT relevant_JJ events_NNS of_IN the_DT computation_NN ._.
+Solving_VBG this_DT problem_NN requires_VBZ tracking_VBG causality_NN ,_, hence_RB using_VBG vector_NN clocks_NNS ._.
+Previous_JJ works_NNS have_VBP addressed_VBN the_DT efficient_JJ implementation_NN of_IN vector_NN clocks_NNS to_TO track_VB causal_JJ dependence_NN on_IN relevant_JJ events_NNS ._.
+Their_PRP$ aim_NN was_VBD to_TO reduce_VB the_DT size_NN of_IN timestamps_NNS attached_VBN to_TO messages_NNS ._.
+An_DT efficient_JJ vector_NN clock_NN implementation_NN suited_VBN to_TO systems_NNS with_IN fifo_NN channels_NNS is_VBZ proposed_VBN in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ._.
+Another_DT efficient_JJ implementation_NN that_WDT does_VBZ not_RB depend_VB on_IN channel_NN ordering_VBG property_NN is_VBZ described_VBN in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ._.
+The_DT notion_NN of_IN causal_JJ barrier_NN is_VBZ introduced_VBN in_IN -LSB-_-LRB- #_# ,_, ##_NN -RSB-_-RRB- to_TO reduce_VB the_DT size_NN of_IN control_NN information_NN required_VBN to_TO implement_VB causal_JJ multicast_NN ._.
+However_RB ,_, none_NN of_IN these_DT papers_NNS considers_VBZ the_DT IPT_NNP problem_NN ._.
+This_DT problem_NN has_VBZ been_VBN addressed_VBN for_IN the_DT first_JJ time_NN -LRB-_-LRB- to_TO our_PRP$ knowledge_NN -RRB-_-RRB- in_IN -LSB-_-LRB- #_# ,_, #_# -RSB-_-RRB- where_WRB an_DT IPT_NN protocol_NN is_VBZ described_VBN ,_, but_CC without_IN correctness_NN proof_NN ._.
+Moreover_RB ,_, in_IN this_DT protocol_NN ,_, timestamps_NNS attached_VBN to_TO messages_NNS are_VBP of_IN size_NN n_NN ._.
+This_DT raises_VBZ the_DT following_VBG question_NN which_WDT ,_, to_TO our_PRP$ knowledge_NN ,_, has_VBZ never_RB been_VBN answered_VBN :_: Are_VBP there_EX efficient_JJ vector_NN clock_NN implementation_NN techniques_NNS that_WDT are_VBP suitable_JJ for_IN the_DT IPT_NNP problem_NN ?_. ._.
+This_DT paper_NN has_VBZ three_CD main_JJ contributions_NNS :_: -LRB-_-LRB- #_# -RRB-_-RRB- a_DT positive_JJ answer_NN to_TO the_DT previous_JJ open_JJ question_NN ,_, -LRB-_-LRB- #_# -RRB-_-RRB- the_DT design_NN of_IN a_DT family_NN of_IN efficient_JJ IPT_NNP protocols_NNS ,_, and_CC -LRB-_-LRB- #_# -RRB-_-RRB- a_DT formal_JJ correctness_NN proof_NN of_IN the_DT associated_VBN protocols_NNS ._.
+From_IN a_DT methodological_JJ point_NN of_IN view_NN the_DT paper_NN uses_VBZ a_DT top-down_JJ approach_NN ._.
+It_PRP states_VBZ abstract_JJ properties_NNS from_IN which_WDT more_RBR concrete_JJ properties_NNS and_CC protocols_NNS are_VBP derived_VBN ._.
+The_DT family_NN of_IN IPT_NNP protocols_NNS is_VBZ defined_VBN by_IN a_DT general_JJ condition_NN that_WDT allows_VBZ application_NN messages_NNS to_TO piggyback_VB control_JJ information_NN whose_WP$ size_NN can_MD be_VB smaller_JJR than_IN the_DT system_NN size_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, smaller_JJR than_IN the_DT number_NN of_IN processes_NNS composing_VBG the_DT system_NN -RRB-_-RRB- ._.
+In_IN that_DT sense_NN ,_, this_DT family_NN defines_VBZ low_JJ cost_NN IPT_NN protocols_NNS when_WRB we_PRP consider_VBP the_DT message_NN size_NN ._.
+In_IN addition_NN to_TO efficiency_NN ,_, the_DT proposed_VBN approach_NN has_VBZ an_DT interesting_JJ design_NN property_NN ._.
+Namely_RB ,_, the_DT family_NN is_VBZ incrementally_RB built_VBN in_IN three_CD steps_NNS ._.
+The_DT basic_JJ vector_NN clock_NN protocol_NN is_VBZ first_JJ enriched_VBN by_IN adding_VBG to_TO each_DT process_NN a_DT boolean_NN vector_NN whose_WP$ management_NN allows_VBZ the_DT processes_NNS to_TO track_VB the_DT immediate_JJ predecessor_NN events_NNS ._.
+Then_RB ,_, a_DT general_JJ condition_NN is_VBZ stated_VBN to_TO reduce_VB the_DT size_NN of_IN the_DT control_NN information_NN carried_VBN by_IN messages_NNS ._.
+Finally_RB ,_, according_VBG to_TO the_DT way_NN this_DT condition_NN is_VBZ implemented_VBN ,_, three_CD IPT_NNP protocols_NNS are_VBP obtained_VBN ._.
+The_DT paper_NN is_VBZ composed_VBN of_IN seven_CD sections_NNS ._.
+Sections_NNS #_# introduces_VBZ the_DT computation_NN model_NN ,_, vector_NN clocks_NNS and_CC the_DT notion_NN of_IN relevant_JJ events_NNS ._.
+Section_NN #_# presents_VBZ the_DT first_JJ step_NN of_IN the_DT construction_NN that_WDT results_VBZ in_IN an_DT IPT_NN protocol_NN in_IN which_WDT each_DT message_NN carries_VBZ a_DT vector_NN clock_NN and_CC a_DT boolean_JJ array_NN ,_, both_DT of_IN size_NN n_NN -LRB-_-LRB- the_DT number_NN of_IN processes_NNS -RRB-_-RRB- ._.
+Section_NN #_# improves_VBZ this_DT protocol_NN by_IN providing_VBG the_DT general_JJ condition_NN that_WDT allows_VBZ a_DT message_NN to_TO carry_VB control_JJ information_NN whose_WP$ size_NN can_MD be_VB smaller_JJR than_IN n_NN ._.
+Section_NN #_# provides_VBZ instantiations_NNS of_IN this_DT condition_NN ._.
+Section_NN #_# provides_VBZ a_DT simulation_NN study_NN comparing_VBG the_DT behaviors_NNS of_IN the_DT proposed_VBN protocols_NNS ._.
+Finally_RB ,_, Section_NN #_# concludes_VBZ the_DT paper_NN ._.
+-LRB-_-LRB- Due_JJ to_TO space_NN limitations_NNS ,_, proofs_NNS of_IN lemmas_NNS and_CC theorems_NNS are_VBP omitted_VBN ._.
+They_PRP can_MD be_VB found_VBN in_IN -LSB-_-LRB- #_# -RSB-_-RRB- ._. -RRB-_-RRB-
+2_LS ._.
+MODEL_NN AND_CC VECTOR_NN CLOCK_NN 2_CD ._.
+#_# Distributed_VBN Computation_NN A_NN distributed_VBN program_NN is_VBZ made_VBN up_RP of_IN sequential_JJ local_JJ programs_NNS which_WDT communicate_VBP and_CC synchronize_VBP only_RB by_IN exchanging_VBG messages_NNS ._.
+A_DT distributed_VBN computation_NN describes_VBZ the_DT execution_NN of_IN a_DT distributed_VBN program_NN ._.
+The_DT execution_NN of_IN a_DT local_JJ program_NN gives_VBZ rise_NN to_TO a_DT sequential_JJ process_NN ._.
+Let_VB -LCB-_-LRB- P1_NN ,_, P2_NN ,_, ..._: ,_, Pn_NN -RCB-_-RRB- be_VB the_DT finite_JJ set_NN of_IN sequential_JJ processes_NNS of_IN the_DT distributed_VBN computation_NN ._.
+Each_DT ordered_VBN pair_NN of_IN communicating_VBG processes_NNS -LRB-_-LRB- Pi_NN ,_, Pj_NN -RRB-_-RRB- is_VBZ connected_VBN by_IN a_DT reliable_JJ channel_NN cij_NN through_IN which_WDT Pi_NNP can_MD send_VB messages_NNS to_TO Pj_NNP ._.
+We_PRP assume_VBP that_IN each_DT message_NN is_VBZ unique_JJ and_CC a_DT process_NN does_VBZ not_RB send_VB messages_NNS to_TO itself1_NN ._.
+Message_NN transmission_NN delays_NNS are_VBP finite_JJ but_CC unpredictable_JJ ._.
+Moreover_RB ,_, channels_NNS are_VBP not_RB necessarily_RB fifo_VB ._.
+Process_VB speeds_NNS are_VBP positive_JJ but_CC arbitrary_JJ ._.
+In_IN other_JJ words_NNS ,_, the_DT underlying_VBG computation_NN model_NN is_VBZ asynchronous_JJ ._.
+The_DT local_JJ program_NN associated_VBN with_IN Pi_NN can_MD include_VB send_VB ,_, receive_VB and_CC internal_JJ statements_NNS ._.
+The_DT execution_NN of_IN such_PDT a_DT statement_NN produces_VBZ a_DT corresponding_JJ send_VB /_: receive_VB /_: internal_JJ event_NN ._.
+These_DT events_NNS are_VBP called_VBN primitive_JJ events_NNS ._.
+Let_VB ex_FW i_FW be_VB the_DT x-th_JJ event_NN produced_VBN by_IN process_NN Pi_NN ._.
+The_DT sequence_NN hi_UH =_SYM e1_FW i_FW e2_FW i_FW ..._: ex_FW i_FW ..._: constitutes_VBZ the_DT history_NN of_IN Pi_NNP ,_, denoted_VBN Hi_NN ._.
+Let_VB H_NN =_JJ n_NN i_FW =_JJ 1Hi_NN be_VB the_DT set_NN of_IN events_NNS produced_VBN by_IN a_DT distributed_VBN computation_NN ._.
+This_DT set_NN is_VBZ structured_VBN as_IN a_DT partial_JJ order_NN by_IN Lamport_NNP ''_'' s_VBZ happened_VBN before_IN relation_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- -LRB-_-LRB- denoted_VBN hb_NN -RRB-_-RRB- and_CC defined_VBN as_IN follows_VBZ :_: ex_FW i_FW hb_NN ey_NN j_NN if_IN and_CC only_RB if_IN -LRB-_-LRB- i_FW =_JJ j_NN x_NN +_CC #_# =_JJ y_NN -RRB-_-RRB- -LRB-_-LRB- local_JJ precedence_NN -RRB-_-RRB- -LRB-_-LRB- m_NN :_: ex_FW i_FW =_JJ send_VB -LRB-_-LRB- m_NN -RRB-_-RRB- ey_NN j_NN =_JJ receive_VBP -LRB-_-LRB- m_NN -RRB-_-RRB- -RRB-_-RRB- -LRB-_-LRB- msg_NN prec_NN ._. -RRB-_-RRB-
+-LRB-_-LRB- ez_NN k_NN :_: ex_FW i_FW hb_NN ez_NN k_NN e_SYM z_SYM k_NN hb_NN ey_NN j_NN -RRB-_-RRB- -LRB-_-LRB- transitive_JJ closure_NN -RRB-_-RRB- ._.
+max_NN -LRB-_-LRB- ex_FW i_FW ,_, ey_NN j_NN -RRB-_-RRB- is_VBZ a_DT partial_JJ function_NN defined_VBN only_RB when_WRB ex_FW i_FW and_CC ey_FW j_FW are_VBP ordered_VBN ._.
+It_PRP is_VBZ defined_VBN as_IN follows_VBZ :_: max_NN -LRB-_-LRB- ex_FW i_FW ,_, ey_NN j_NN -RRB-_-RRB- =_JJ ex_FW i_FW if_IN ey_NN j_NN hb_NN ex_FW i_FW ,_, max_NN -LRB-_-LRB- ex_FW i_FW ,_, ey_NN j_NN -RRB-_-RRB- =_JJ ey_NN i_FW if_IN ex_FW i_FW hb_NN ey_NN j_NN ._.
+Clearly_RB the_DT restriction_NN of_IN hb_NN to_TO Hi_NN ,_, for_IN a_DT given_VBN i_LS ,_, is_VBZ a_DT total_JJ order_NN ._.
+Thus_RB we_PRP will_MD use_VB the_DT notation_NN ex_FW i_FW <_JJR ey_NN i_FW iff_FW x_NN <_JJR y_CD ._.
+Throughout_IN the_DT paper_NN ,_, we_PRP will_MD use_VB the_DT following_VBG notation_NN :_: if_IN e_SYM Hi_FW is_VBZ not_RB the_DT first_JJ event_NN produced_VBN by_IN Pi_NN ,_, then_RB pred_VBD -LRB-_-LRB- e_LS -RRB-_-RRB- denotes_VBZ the_DT event_NN immediately_RB preceding_VBG e_SYM in_IN the_DT sequence_NN Hi_NN ._.
+If_IN e_SYM is_VBZ the_DT first_JJ event_NN produced_VBN by_IN Pi_NN ,_, then_RB pred_VBD -LRB-_-LRB- e_LS -RRB-_-RRB- is_VBZ denoted_VBN by_IN -LRB-_-LRB- meaning_NN that_IN there_EX is_VBZ no_DT such_JJ event_NN -RRB-_-RRB- ,_, and_CC e_SYM Hi_NNP :_: <_JJR e_LS ._.
+The_DT partial_JJ order_NN bH_NN =_JJ -LRB-_-LRB- H_NN ,_, hb_NN -RRB-_-RRB- constitutes_VBZ a_DT formal_JJ model_NN of_IN the_DT distributed_VBN computation_NN it_PRP is_VBZ associated_VBN with_IN ._.
+1_CD This_DT assumption_NN is_VBZ only_RB in_IN order_NN to_TO get_VB simple_JJ protocols_NNS ._.
+211_CD P1_NN P2_NN P3_NN -LSB-_-LRB- #_# ,_, #_# ,_, #_# -RSB-_-RRB- -LSB-_-LRB- #_# ,_, #_# ,_, #_# -RSB-_-RRB- -LSB-_-LRB- #_# ,_, #_# ,_, #_# -RSB-_-RRB- -LSB-_-LRB- #_# ,_, #_# ,_, #_# -RSB-_-RRB- -LRB-_-LRB- #_# ,_, #_# -RRB-_-RRB- -LSB-_-LRB- #_# ,_, #_# ,_, #_# -RSB-_-RRB- -LRB-_-LRB- #_# ,_, #_# -RRB-_-RRB- -LSB-_-LRB- #_# ,_, #_# ,_, #_# -RSB-_-RRB- -LRB-_-LRB- #_# ,_, #_# -RRB-_-RRB- -LRB-_-LRB- #_# ,_, #_# -RRB-_-RRB- -LRB-_-LRB- #_# ,_, #_# -RRB-_-RRB- -LRB-_-LRB- #_# ,_, #_# -RRB-_-RRB- -LRB-_-LRB- #_# ,_, #_# -RRB-_-RRB- -LRB-_-LRB- #_# ,_, #_# -RRB-_-RRB- -LSB-_-LRB- #_# ,_, #_# ,_, #_# -RSB-_-RRB- -LSB-_-LRB- #_# ,_, #_# ,_, #_# -RSB-_-RRB- -LRB-_-LRB- #_# ,_, #_# -RRB-_-RRB- -LRB-_-LRB- #_# ,_, #_# -RRB-_-RRB- -LRB-_-LRB- #_# ,_, #_# -RRB-_-RRB- -LRB-_-LRB- #_# ,_, #_# -RRB-_-RRB- -LRB-_-LRB- #_# ,_, #_# -RRB-_-RRB- -LRB-_-LRB- #_# ,_, #_# -RRB-_-RRB- -LRB-_-LRB- #_# ,_, #_# -RRB-_-RRB- -LRB-_-LRB- #_# ,_, #_# -RRB-_-RRB- Figure_NNP #_# :_: Timestamped_NNP Relevant_NNP Events_NNS and_CC Immediate_NNP Predecessors_NNP Graph_NNP -LRB-_-LRB- Hasse_NNP Diagram_NNP -RRB-_-RRB- 2_CD ._.
+#_# Relevant_JJ Events_NNS For_IN a_DT given_VBN observer_NN of_IN a_DT distributed_VBN computation_NN ,_, only_RB some_DT events_NNS are_VBP relevant2_NN -LSB-_-LRB- #_# ,_, #_# ,_, ##_NN -RSB-_-RRB- ._.
+An_DT interesting_JJ example_NN of_IN what_WP an_DT observation_NN is_VBZ ,_, is_VBZ the_DT detection_NN of_IN predicates_NNS on_IN consistent_JJ global_JJ states_NNS of_IN a_DT distributed_VBN computation_NN -LSB-_-LRB- #_# ,_, 6_CD ,_, #_# ,_, #_# ,_, ##_NN ,_, ##_NN -RSB-_-RRB- ._.
+In_IN that_DT case_NN ,_, a_DT relevant_JJ event_NN corresponds_VBZ to_TO the_DT modification_NN of_IN a_DT local_JJ variable_NN involved_VBN in_IN the_DT global_JJ predicate_NN ._.
+Another_DT example_NN is_VBZ the_DT checkpointing_NN problem_NN where_WRB a_DT relevant_JJ event_NN is_VBZ the_DT definition_NN of_IN a_DT local_JJ checkpoint_NN -LSB-_-LRB- ##_CD ,_, ##_CD ,_, ##_CD -RSB-_-RRB- ._.
+The_DT left_JJ part_NN of_IN Figure_NNP #_# depicts_VBZ a_DT distributed_VBN computation_NN using_VBG the_DT classical_JJ space-time_NN diagram_NN ._.
+In_IN this_DT figure_NN ,_, only_RB relevant_JJ events_NNS are_VBP represented_VBN ._.
+The_DT sequence_NN of_IN relevant_JJ events_NNS produced_VBN by_IN process_NN Pi_NN is_VBZ denoted_VBN by_IN Ri_NNP ,_, and_CC R_NN =_JJ n_NN i_FW =_JJ 1Ri_NN H_NN denotes_VBZ the_DT set_NN of_IN all_DT relevant_JJ events_NNS ._.
+Let_VB be_VB the_DT relation_NN on_IN R_NN defined_VBN in_IN the_DT following_JJ way_NN :_: -LRB-_-LRB- e_LS ,_, f_LS -RRB-_-RRB- R_NN R_NN :_: -LRB-_-LRB- e_LS f_LS -RRB-_-RRB- -LRB-_-LRB- e_SYM hb_VBP f_LS -RRB-_-RRB- ._.
+The_DT poset_NN -LRB-_-LRB- R_NN ,_, -RRB-_-RRB- constitutes_VBZ an_DT abstraction_NN of_IN the_DT distributed_VBN computation_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+In_IN the_DT following_VBG we_PRP consider_VBP a_DT distributed_VBN computation_NN at_IN such_PDT an_DT abstraction_NN level_NN ._.
+Moreover_RB ,_, without_IN loss_NN of_IN generality_NN we_PRP consider_VBP that_IN the_DT set_NN of_IN relevant_JJ events_NNS is_VBZ a_DT subset_NN of_IN the_DT internal_JJ events_NNS -LRB-_-LRB- if_IN a_DT communication_NN event_NN has_VBZ to_TO be_VB observed_VBN ,_, a_DT relevant_JJ internal_JJ event_NN can_MD be_VB generated_VBN just_RB before_IN a_DT send_VB and_CC just_RB after_IN a_DT receive_VBP communication_NN event_NN occurred_VBD -RRB-_-RRB- ._.
+Each_DT relevant_JJ event_NN is_VBZ identified_VBN by_IN a_DT pair_NN -LRB-_-LRB- process_NN id_NN ,_, sequence_NN number_NN -RRB-_-RRB- ._.
+Definition_NN #_# ._.
+The_DT relevant_JJ causal_JJ past_NN of_IN an_DT event_NN e_SYM H_NN is_VBZ the_DT -LRB-_-LRB- partially_RB ordered_VBN -RRB-_-RRB- subset_NN of_IN relevant_JJ events_NNS f_LS such_PDT that_IN f_FW hb_FW e_LS ._.
+It_PRP is_VBZ denoted_VBN -LRB-_-LRB- e_LS -RRB-_-RRB- ._.
+We_PRP have_VBP -LRB-_-LRB- e_LS -RRB-_-RRB- =_JJ -LCB-_-LRB- f_FW R_NN |_FW f_FW hb_NN e_SYM -RCB-_-RRB- ._.
+Note_VB that_IN ,_, if_IN e_LS R_NN then_RB -LRB-_-LRB- e_LS -RRB-_-RRB- =_JJ -LCB-_-LRB- f_FW R_NN |_FW f_FW e_SYM -RCB-_-RRB- ._.
+In_IN the_DT computation_NN described_VBN in_IN Figure_NNP #_# ,_, we_PRP have_VBP ,_, for_IN the_DT event_NN e_SYM identified_VBN -LRB-_-LRB- #_# ,_, #_# -RRB-_-RRB- :_: -LRB-_-LRB- e_LS -RRB-_-RRB- =_JJ -LCB-_-LRB- -LRB-_-LRB- #_# ,_, #_# -RRB-_-RRB- ,_, -LRB-_-LRB- #_# ,_, #_# -RRB-_-RRB- ,_, -LRB-_-LRB- #_# ,_, #_# -RRB-_-RRB- ,_, -LRB-_-LRB- #_# ,_, #_# -RRB-_-RRB- -RCB-_-RRB- ._.
+The_DT following_VBG properties_NNS are_VBP immediate_JJ consequences_NNS of_IN the_DT previous_JJ definitions_NNS ._.
+Let_VB e_SYM H_NN ._.
+CP1_NN If_IN e_SYM is_VBZ not_RB a_DT receive_VB event_NN then_RB -LRB-_-LRB- e_LS -RRB-_-RRB- =_JJ 8_CD <_JJR :_: if_IN pred_VBN -LRB-_-LRB- e_LS -RRB-_-RRB- =_JJ ,_, -LRB-_-LRB- pred_JJ -LRB-_-LRB- e_LS -RRB-_-RRB- -RRB-_-RRB- -LCB-_-LRB- pred_VBN -LRB-_-LRB- e_LS -RRB-_-RRB- -RCB-_-RRB- if_IN pred_VBN -LRB-_-LRB- e_LS -RRB-_-RRB- R_NN ,_, -LRB-_-LRB- pred_JJ -LRB-_-LRB- e_LS -RRB-_-RRB- -RRB-_-RRB- if_IN pred_VBN -LRB-_-LRB- e_LS -RRB-_-RRB- R_NN ._.
+CP2_NN If_IN e_SYM is_VBZ a_DT receive_VBP event_NN -LRB-_-LRB- of_IN a_DT message_NN m_NN -RRB-_-RRB- then_RB -LRB-_-LRB- e_LS -RRB-_-RRB- =_JJ 8_CD >_JJR >_JJR <_JJR >_JJR >_JJR :_: -LRB-_-LRB- send_VB -LRB-_-LRB- m_NN -RRB-_-RRB- -RRB-_-RRB- if_IN pred_VBN -LRB-_-LRB- e_LS -RRB-_-RRB- =_JJ ,_, -LRB-_-LRB- pred_JJ -LRB-_-LRB- e_LS -RRB-_-RRB- -RRB-_-RRB- -LRB-_-LRB- send_VB -LRB-_-LRB- m_NN -RRB-_-RRB- -RRB-_-RRB- -LCB-_-LRB- pred_VBN -LRB-_-LRB- e_LS -RRB-_-RRB- -RCB-_-RRB- if_IN pred_VBN -LRB-_-LRB- e_LS -RRB-_-RRB- R_NN ,_, -LRB-_-LRB- pred_JJ -LRB-_-LRB- e_LS -RRB-_-RRB- -RRB-_-RRB- -LRB-_-LRB- send_VB -LRB-_-LRB- m_NN -RRB-_-RRB- -RRB-_-RRB- if_IN pred_VBN -LRB-_-LRB- e_LS -RRB-_-RRB- R_NN ._.
+2_CD Those_DT events_NNS are_VBP sometimes_RB called_VBN observable_JJ events_NNS ._.
+Definition_NN #_# ._.
+Let_VB e_SYM Hi_FW ._.
+For_IN every_DT j_NN such_JJ that_IN -LRB-_-LRB- e_LS -RRB-_-RRB- Rj_NN =_JJ ,_, the_DT last_JJ relevant_JJ event_NN of_IN Pj_NN with_IN respect_NN to_TO e_SYM is_VBZ :_: lastr_NN -LRB-_-LRB- e_SYM ,_, j_NN -RRB-_-RRB- =_JJ max_NN -LCB-_-LRB- f_FW |_FW f_FW -LRB-_-LRB- e_LS -RRB-_-RRB- Rj_NN -RCB-_-RRB- ._.
+When_WRB -LRB-_-LRB- e_LS -RRB-_-RRB- Rj_NN =_JJ ,_, lastr_NN -LRB-_-LRB- e_SYM ,_, j_NN -RRB-_-RRB- is_VBZ denoted_VBN by_IN -LRB-_-LRB- meaning_NN that_IN there_EX is_VBZ no_DT such_JJ event_NN -RRB-_-RRB- ._.
+Let_VB us_PRP consider_VB the_DT event_NN e_SYM identified_VBN -LRB-_-LRB- #_# ,_, #_# -RRB-_-RRB- in_IN Figure_NNP #_# ._.
+We_PRP have_VBP lastr_NN -LRB-_-LRB- e_SYM ,_, #_# -RRB-_-RRB- =_JJ -LRB-_-LRB- #_# ,_, #_# -RRB-_-RRB- ,_, lastr_NN -LRB-_-LRB- e_SYM ,_, #_# -RRB-_-RRB- =_JJ -LRB-_-LRB- #_# ,_, #_# -RRB-_-RRB- ,_, lastr_NN -LRB-_-LRB- e_SYM ,_, #_# -RRB-_-RRB- =_JJ -LRB-_-LRB- #_# ,_, #_# -RRB-_-RRB- ._.
+The_DT following_VBG properties_NNS relate_VBP the_DT events_NNS lastr_NN -LRB-_-LRB- e_SYM ,_, j_NN -RRB-_-RRB- and_CC lastr_NN -LRB-_-LRB- f_FW ,_, j_NN -RRB-_-RRB- for_IN all_PDT the_DT predecessors_NNS f_LS of_IN e_SYM in_IN the_DT relation_NN hb_NN ._.
+These_DT properties_NNS follow_VBP directly_RB from_IN the_DT definitions_NNS ._.
+Let_VB e_SYM Hi_FW ._.
+LR0_NN e_SYM Hi_FW :_: lastr_NN -LRB-_-LRB- e_SYM ,_, i_LS -RRB-_-RRB- =_JJ 8_CD <_JJR :_: if_IN pred_VBN -LRB-_-LRB- e_LS -RRB-_-RRB- =_JJ ,_, pred_JJ -LRB-_-LRB- e_LS -RRB-_-RRB- if_IN pred_VBN -LRB-_-LRB- e_LS -RRB-_-RRB- R_NN ,_, lastr_NN -LRB-_-LRB- pred_JJ -LRB-_-LRB- e_LS -RRB-_-RRB- ,_, i_LS -RRB-_-RRB- if_IN pred_VBN -LRB-_-LRB- e_LS -RRB-_-RRB- R_NN ._.
+LR1_NN If_IN e_SYM is_VBZ not_RB a_DT receipt_NN event_NN :_: j_NN =_JJ i_FW :_: lastr_NN -LRB-_-LRB- e_SYM ,_, j_NN -RRB-_-RRB- =_JJ lastr_NN -LRB-_-LRB- pred_JJ -LRB-_-LRB- e_LS -RRB-_-RRB- ,_, j_NN -RRB-_-RRB- ._.
+LR2_NN If_IN e_SYM is_VBZ a_DT receive_VBP event_NN of_IN m_NN :_: j_NN =_JJ i_FW :_: lastr_NN -LRB-_-LRB- e_SYM ,_, j_NN -RRB-_-RRB- =_JJ max_NN -LRB-_-LRB- lastr_NN -LRB-_-LRB- pred_JJ -LRB-_-LRB- e_LS -RRB-_-RRB- ,_, j_NN -RRB-_-RRB- ,_, lastr_NN -LRB-_-LRB- send_VB -LRB-_-LRB- m_NN -RRB-_-RRB- ,_, j_NN -RRB-_-RRB- -RRB-_-RRB- ._.
+2_LS ._.
+#_# Vector_NNP Clock_NN System_NNP Definition_NNP As_IN a_DT fundamental_JJ concept_NN associated_VBN with_IN the_DT causality_NN theory_NN ,_, vector_NN clocks_NNS have_VBP been_VBN introduced_VBN in_IN ####_CD ,_, simultaneously_RB and_CC independently_RB by_IN Fidge_NN -LSB-_-LRB- #_# -RSB-_-RRB- and_CC Mattern_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+A_DT vector_NN clock_NN system_NN is_VBZ a_DT mechanism_NN that_WDT associates_VBZ timestamps_NNS with_IN events_NNS in_IN such_JJ a_DT way_NN that_IN the_DT comparison_NN of_IN their_PRP$ timestamps_NNS indicates_VBZ whether_IN the_DT corresponding_JJ events_NNS are_VBP or_CC are_VBP not_RB causally_RB related_JJ -LRB-_-LRB- and_CC ,_, if_IN they_PRP are_VBP ,_, which_WDT one_CD is_VBZ the_DT first_JJ -RRB-_-RRB- ._.
+More_RBR precisely_RB ,_, each_DT process_NN Pi_NN has_VBZ a_DT vector_NN of_IN integers_NNS V_NN Ci_NN -LSB-_-LRB- #_# ._. ._.
+n_NN -RSB-_-RRB- such_JJ that_IN V_NN Ci_NN -LSB-_-LRB- j_NN -RSB-_-RRB- is_VBZ the_DT number_NN of_IN relevant_JJ events_NNS produced_VBN by_IN Pj_NN ,_, that_WDT belong_VBP to_TO the_DT current_JJ relevant_JJ causal_JJ past_NN of_IN Pi_NN ._.
+Note_VB that_DT V_NN Ci_NN -LSB-_-LRB- i_FW -RSB-_-RRB- counts_VBZ the_DT number_NN of_IN relevant_JJ events_NNS produced_VBN so_RB far_RB by_IN Pi_NN ._.
+When_WRB a_DT process_NN Pi_NN produces_VBZ a_DT -LRB-_-LRB- relevant_JJ -RRB-_-RRB- event_NN e_SYM ,_, it_PRP associates_VBZ with_IN e_SYM a_DT vector_NN timestamp_NN whose_WP$ value_NN -LRB-_-LRB- denoted_VBN e_LS ._.
+V_NN C_NN -RRB-_-RRB- is_VBZ equal_JJ to_TO the_DT current_JJ value_NN of_IN V_NN Ci_NN ._.
+Vector_NNP Clock_NN Implementation_NN The_DT following_VBG implementation_NN of_IN vector_NN clocks_NNS -LSB-_-LRB- #_# ,_, ##_NN -RSB-_-RRB- is_VBZ based_VBN on_IN the_DT observation_NN that_IN i_FW ,_, e_SYM Hi_FW ,_, j_NN :_: e_LS ._.
+V_NN Ci_NN -LSB-_-LRB- j_NN -RSB-_-RRB- =_JJ y_NN lastr_NN -LRB-_-LRB- e_SYM ,_, j_NN -RRB-_-RRB- =_JJ ey_NN j_NN where_WRB e_LS ._.
+V_NN Ci_NN is_VBZ the_DT value_NN of_IN V_NN Ci_NN just_RB after_IN the_DT occurrence_NN of_IN e_SYM -LRB-_-LRB- this_DT relation_NN results_VBZ directly_RB from_IN the_DT properties_NNS LR0_NN ,_, LR1_NN ,_, and_CC LR2_NN -RRB-_-RRB- ._.
+Each_DT process_NN Pi_NN manages_VBZ its_PRP$ vector_NN clock_NN V_NN Ci_NN -LSB-_-LRB- #_# ._. ._.
+n_NN -RSB-_-RRB- according_VBG to_TO the_DT following_VBG rules_NNS :_: VC0_NN V_NN Ci_NN -LSB-_-LRB- #_# ._. ._.
+n_NN -RSB-_-RRB- is_VBZ initialized_VBN to_TO -LSB-_-LRB- #_# ,_, ..._: ,_, #_# -RSB-_-RRB- ._.
+VC1_NN Each_DT time_NN it_PRP produces_VBZ a_DT relevant_JJ event_NN e_SYM ,_, Pi_NNP increments_NNS its_PRP$ vector_NN clock_NN entry_NN V_NN Ci_NN -LSB-_-LRB- i_FW -RSB-_-RRB- -LRB-_-LRB- V_NN Ci_NN -LSB-_-LRB- i_FW -RSB-_-RRB- :_: =_JJ V_NN Ci_NN -LSB-_-LRB- i_FW -RSB-_-RRB- +_CC #_# -RRB-_-RRB- to_TO 212_CD indicate_VBP it_PRP has_VBZ produced_VBN one_CD more_JJR relevant_JJ event_NN ,_, then_RB Pi_NNP associates_VBZ with_IN e_SYM the_DT timestamp_NN e_LS ._.
+V_NN C_NN =_JJ V_NN Ci_NN ._.
+VC2_NN When_WRB a_DT process_NN Pi_NN sends_VBZ a_DT message_NN m_NN ,_, it_PRP attaches_VBZ to_TO m_NN the_DT current_JJ value_NN of_IN V_NN Ci_NN ._.
+Let_VB m_NN ._.
+V_NN C_NN denote_VBP this_DT value_NN ._.
+VC3_NN When_WRB Pi_NN receives_VBZ a_DT message_NN m_NN ,_, it_PRP updates_NNS its_PRP$ vector_NN clock_NN as_IN follows_VBZ :_: k_NN :_: V_NNP Ci_NNP -LSB-_-LRB- k_NN -RSB-_-RRB- :_: =_JJ max_NN -LRB-_-LRB- V_NN Ci_NN -LSB-_-LRB- k_NN -RSB-_-RRB- ,_, m_NN ._.
+V_NN C_NN -LSB-_-LRB- k_NN -RSB-_-RRB- -RRB-_-RRB- ._.
+3_LS ._.
+IMMEDIATE_JJ PREDECESSORS_NNS In_IN this_DT section_NN ,_, the_DT Immediate_NNP Predecessor_NNP Tracking_NNP -LRB-_-LRB- IPT_NNP -RRB-_-RRB- problem_NN is_VBZ stated_VBN -LRB-_-LRB- Section_NN #_# ._.
+#_# -RRB-_-RRB- ._.
+Then_RB ,_, some_DT technical_JJ properties_NNS of_IN immediate_JJ predecessors_NNS are_VBP stated_VBN and_CC proved_VBN -LRB-_-LRB- Section_NN #_# ._.
+#_# -RRB-_-RRB- ._.
+These_DT properties_NNS are_VBP used_VBN to_TO design_VB the_DT basic_JJ IPT_NNP protocol_NN and_CC prove_VB its_PRP$ correctness_NN -LRB-_-LRB- Section_NN #_# ._.
+#_# -RRB-_-RRB- ._.
+This_DT IPT_NN protocol_NN ,_, previously_RB presented_VBN in_IN -LSB-_-LRB- #_# -RSB-_-RRB- without_IN proof_NN ,_, is_VBZ built_VBN from_IN a_DT vector_NN clock_NN protocol_NN by_IN adding_VBG the_DT management_NN of_IN a_DT local_JJ boolean_JJ array_NN at_IN each_DT process_NN ._.
+3_LS ._.
+#_# The_DT IPT_NNP Problem_NNP As_IN indicated_VBN in_IN the_DT introduction_NN ,_, some_DT applications_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, analysis_NN of_IN distributed_VBN executions_NNS -LSB-_-LRB- #_# -RSB-_-RRB- ,_, detection_NN of_IN distributed_VBN properties_NNS -LSB-_-LRB- #_# -RSB-_-RRB- -RRB-_-RRB- require_VBP to_TO determine_VB -LRB-_-LRB- on-the-fly_JJ and_CC without_IN additional_JJ messages_NNS -RRB-_-RRB- the_DT transitive_JJ reduction_NN of_IN the_DT relation_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, we_PRP must_MD not_RB consider_VB transitive_JJ causal_JJ dependency_NN -RRB-_-RRB- ._.
+Given_VBN two_CD relevant_JJ events_NNS f_LS and_CC e_LS ,_, we_PRP say_VBP that_IN f_FW is_VBZ an_DT immediate_JJ predecessor_NN of_IN e_SYM if_IN f_FW e_SYM and_CC there_EX is_VBZ no_DT relevant_JJ event_NN g_NN such_JJ that_IN f_FW g_NN e_LS ._.
+Definition_NN #_# ._.
+The_DT Immediate_NNP Predecessor_NNP Tracking_NNP -LRB-_-LRB- IPT_NNP -RRB-_-RRB- problem_NN consists_VBZ in_IN associating_VBG with_IN each_DT relevant_JJ event_NN e_SYM the_DT set_NN of_IN relevant_JJ events_NNS that_WDT are_VBP its_PRP$ immediate_JJ predecessors_NNS ._.
+Moreover_RB ,_, this_DT has_VBZ to_TO be_VB done_VBN on_IN the_DT fly_NN and_CC without_IN additional_JJ control_NN message_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, without_IN modifying_VBG the_DT communication_NN pattern_NN of_IN the_DT computation_NN -RRB-_-RRB- ._.
+As_IN noted_VBN in_IN the_DT Introduction_NN ,_, the_DT IPT_NNP problem_NN is_VBZ the_DT computation_NN of_IN the_DT Hasse_NNP diagram_NN associated_VBN with_IN the_DT partially_RB ordered_VBN set_NN of_IN the_DT relevant_JJ events_NNS produced_VBN by_IN a_DT distributed_VBN computation_NN ._.
+3_LS ._.
+#_# Formal_JJ Properties_NNPS of_IN IPT_NNP In_IN order_NN to_TO design_VB a_DT protocol_NN solving_VBG the_DT IPT_NNP problem_NN ,_, it_PRP is_VBZ useful_JJ to_TO consider_VB the_DT notion_NN of_IN immediate_JJ relevant_JJ predecessor_NN of_IN any_DT event_NN ,_, whether_IN relevant_JJ or_CC not_RB ._.
+First_RB ,_, we_PRP observe_VBP that_IN ,_, by_IN definition_NN ,_, the_DT immediate_JJ predecessor_NN on_IN Pj_NN of_IN an_DT event_NN e_SYM is_VBZ necessarily_RB the_DT lastr_NN -LRB-_-LRB- e_SYM ,_, j_NN -RRB-_-RRB- event_NN ._.
+Second_RB ,_, for_IN lastr_NN -LRB-_-LRB- e_SYM ,_, j_NN -RRB-_-RRB- to_TO be_VB immediate_JJ predecessor_NN of_IN e_LS ,_, there_EX must_MD not_RB be_VB another_DT lastr_NN -LRB-_-LRB- e_SYM ,_, k_NN -RRB-_-RRB- event_NN on_IN a_DT path_NN between_IN lastr_NN -LRB-_-LRB- e_SYM ,_, j_NN -RRB-_-RRB- and_CC e_LS ._.
+These_DT observations_NNS are_VBP formalized_VBN in_IN the_DT following_VBG definition_NN :_: Definition_NNP #_# ._.
+Let_VB e_SYM Hi_FW ._.
+The_DT set_NN of_IN immediate_JJ relevant_JJ predecessors_NNS of_IN e_SYM -LRB-_-LRB- denoted_VBN IP_NNP -LRB-_-LRB- e_LS -RRB-_-RRB- -RRB-_-RRB- ,_, is_VBZ the_DT set_NN of_IN the_DT relevant_JJ events_NNS lastr_NN -LRB-_-LRB- e_SYM ,_, j_NN -RRB-_-RRB- -LRB-_-LRB- j_NN =_JJ #_# ,_, ..._: ,_, n_NN -RRB-_-RRB- such_JJ that_IN k_NN :_: lastr_NN -LRB-_-LRB- e_SYM ,_, j_NN -RRB-_-RRB- -LRB-_-LRB- lastr_NN -LRB-_-LRB- e_SYM ,_, k_NN -RRB-_-RRB- -RRB-_-RRB- ._.
+It_PRP follows_VBZ from_IN this_DT definition_NN that_WDT IP_NNP -LRB-_-LRB- e_LS -RRB-_-RRB- -LCB-_-LRB- lastr_NN -LRB-_-LRB- e_SYM ,_, j_NN -RRB-_-RRB- |_CD j_NN =_JJ 1_CD ,_, ..._: ,_, n_NN -RCB-_-RRB- -LRB-_-LRB- e_LS -RRB-_-RRB- ._.
+When_WRB we_PRP consider_VBP Figure_NNP #_# ,_, The_DT graph_NN depicted_VBN in_IN its_PRP$ right_JJ part_NN describes_VBZ the_DT immediate_JJ predecessors_NNS of_IN the_DT relevant_JJ events_NNS of_IN the_DT computation_NN defined_VBN in_IN its_PRP$ left_JJ part_NN ,_, more_RBR precisely_RB ,_, a_DT directed_JJ edge_NN -LRB-_-LRB- e_SYM ,_, f_LS -RRB-_-RRB- means_VBZ that_IN the_DT relevant_JJ event_NN e_SYM is_VBZ an_DT immediate_JJ predecessor_NN of_IN the_DT relevant_JJ event_NN f_FW -LRB-_-LRB- #_# -RRB-_-RRB- ._.
+The_DT following_VBG lemmas_NNS show_VBP how_WRB the_DT set_NN of_IN immediate_JJ predecessors_NNS of_IN an_DT event_NN is_VBZ related_VBN to_TO those_DT of_IN its_PRP$ predecessors_NNS in_IN the_DT relation_NN hb_NN ._.
+They_PRP will_MD be_VB used_VBN to_TO design_VB and_CC prove_VB the_DT protocols_NNS solving_VBG the_DT IPT_NNP problem_NN ._.
+To_TO ease_VB the_DT reading_NN of_IN the_DT paper_NN ,_, their_PRP$ proofs_NNS are_VBP presented_VBN in_IN Appendix_NN A_NN ._.
+The_DT intuitive_JJ meaning_NN of_IN the_DT first_JJ lemma_NN is_VBZ the_DT following_NN :_: if_IN e_SYM is_VBZ not_RB a_DT receive_VB event_NN ,_, all_PDT the_DT causal_JJ paths_NNS arriving_VBG at_IN e_SYM have_VBP pred_VBN -LRB-_-LRB- e_LS -RRB-_-RRB- as_IN next-to-last_JJ event_NN ._.
+So_RB ,_, if_IN pred_VBN -LRB-_-LRB- e_LS -RRB-_-RRB- is_VBZ a_DT relevant_JJ event_NN ,_, all_PDT the_DT relevant_JJ events_NNS belonging_VBG to_TO its_PRP$ relevant_JJ causal_JJ past_NN are_VBP separated_VBN from_IN e_SYM by_IN pred_JJ -LRB-_-LRB- e_LS -RRB-_-RRB- ,_, and_CC pred_VBD -LRB-_-LRB- e_LS -RRB-_-RRB- becomes_VBZ the_DT only_JJ immediate_JJ predecessor_NN of_IN e_LS ._.
+In_IN other_JJ words_NNS ,_, the_DT event_NN pred_VBD -LRB-_-LRB- e_LS -RRB-_-RRB- constitutes_VBZ a_DT reset_NN w_NN ._.
+r_NN ._.
+t_NN ._.
+the_DT set_NN of_IN immediate_JJ predecessors_NNS of_IN e_LS ._.
+On_IN the_DT other_JJ hand_NN ,_, if_IN pred_VBN -LRB-_-LRB- e_LS -RRB-_-RRB- is_VBZ not_RB relevant_JJ ,_, it_PRP does_VBZ not_RB separate_VB its_PRP$ relevant_JJ causal_JJ past_NN from_IN e_LS ._.
+Lemma_NNP #_# ._.
+If_IN e_SYM is_VBZ not_RB a_DT receive_VB event_NN ,_, IP_NNP -LRB-_-LRB- e_LS -RRB-_-RRB- is_VBZ equal_JJ to_TO :_: if_IN pred_VBN -LRB-_-LRB- e_LS -RRB-_-RRB- =_JJ ,_, -LCB-_-LRB- pred_VBN -LRB-_-LRB- e_LS -RRB-_-RRB- -RCB-_-RRB- if_IN pred_VBN -LRB-_-LRB- e_LS -RRB-_-RRB- R_NN ,_, IP_NNP -LRB-_-LRB- pred_VBN -LRB-_-LRB- e_LS -RRB-_-RRB- -RRB-_-RRB- if_IN pred_VBN -LRB-_-LRB- e_LS -RRB-_-RRB- R_NN ._.
+The_DT intuitive_JJ meaning_NN of_IN the_DT next_JJ lemma_NN is_VBZ as_IN follows_VBZ :_: if_IN e_SYM is_VBZ a_DT receive_VBP event_NN receive_VBP -LRB-_-LRB- m_NN -RRB-_-RRB- ,_, the_DT causal_JJ paths_NNS arriving_VBG at_IN e_SYM have_VBP either_CC pred_VBN -LRB-_-LRB- e_LS -RRB-_-RRB- or_CC send_VB -LRB-_-LRB- m_NN -RRB-_-RRB- as_IN next-to-last_JJ events_NNS ._.
+If_IN pred_JJ -LRB-_-LRB- e_LS -RRB-_-RRB- is_VBZ relevant_JJ ,_, as_IN explained_VBN in_IN the_DT previous_JJ lemma_NN ,_, this_DT event_NN hides_VBZ from_IN e_SYM all_DT its_PRP$ relevant_JJ causal_JJ past_NN and_CC becomes_VBZ an_DT immediate_JJ predecessor_NN of_IN e_LS ._.
+Concerning_VBG the_DT last_JJ relevant_JJ predecessors_NNS of_IN send_VBP -LRB-_-LRB- m_NN -RRB-_-RRB- ,_, only_RB those_DT that_WDT are_VBP not_RB predecessors_NNS of_IN pred_JJ -LRB-_-LRB- e_LS -RRB-_-RRB- remain_VBP immediate_JJ predecessors_NNS of_IN e_LS ._.
+Lemma_NNP #_# ._.
+Let_VB e_SYM Hi_FW be_VB the_DT receive_VB event_NN of_IN a_DT message_NN m_NN ._.
+If_IN pred_JJ -LRB-_-LRB- e_LS -RRB-_-RRB- Ri_NNP ,_, then_RB ,_, j_NN ,_, IP_NNP -LRB-_-LRB- e_LS -RRB-_-RRB- Rj_NN is_VBZ equal_JJ to_TO :_: -LCB-_-LRB- pred_VBN -LRB-_-LRB- e_LS -RRB-_-RRB- -RCB-_-RRB- if_IN j_NN =_JJ i_FW ,_, if_IN lastr_NN -LRB-_-LRB- pred_JJ -LRB-_-LRB- e_LS -RRB-_-RRB- ,_, j_NN -RRB-_-RRB- lastr_NN -LRB-_-LRB- send_VB -LRB-_-LRB- m_NN -RRB-_-RRB- ,_, j_NN -RRB-_-RRB- ,_, IP_NNP -LRB-_-LRB- send_VB -LRB-_-LRB- m_NN -RRB-_-RRB- -RRB-_-RRB- Rj_NN if_IN lastr_NN -LRB-_-LRB- pred_JJ -LRB-_-LRB- e_LS -RRB-_-RRB- ,_, j_NN -RRB-_-RRB- <_JJR lastr_NN -LRB-_-LRB- send_VB -LRB-_-LRB- m_NN -RRB-_-RRB- ,_, j_NN -RRB-_-RRB- ._.
+The_DT intuitive_JJ meaning_NN of_IN the_DT next_JJ lemma_NN is_VBZ the_DT following_NN :_: if_IN e_SYM is_VBZ a_DT receive_VBP event_NN receive_VBP -LRB-_-LRB- m_NN -RRB-_-RRB- ,_, and_CC pred_VBD -LRB-_-LRB- e_LS -RRB-_-RRB- is_VBZ not_RB relevant_JJ ,_, the_DT last_JJ relevant_JJ events_NNS in_IN the_DT relevant_JJ causal_JJ past_NN of_IN e_SYM are_VBP obtained_VBN by_IN merging_VBG those_DT of_IN pred_JJ -LRB-_-LRB- e_LS -RRB-_-RRB- and_CC those_DT of_IN send_VB -LRB-_-LRB- m_NN -RRB-_-RRB- and_CC by_IN taking_VBG the_DT latest_JJS on_IN each_DT process_NN ._.
+So_RB ,_, the_DT immediate_JJ predecessors_NNS of_IN e_SYM are_VBP either_CC those_DT of_IN pred_JJ -LRB-_-LRB- e_LS -RRB-_-RRB- or_CC those_DT of_IN send_VB -LRB-_-LRB- m_NN -RRB-_-RRB- ._.
+On_IN a_DT process_NN where_WRB the_DT last_JJ relevant_JJ events_NNS of_IN pred_JJ -LRB-_-LRB- e_LS -RRB-_-RRB- and_CC of_IN send_VBP -LRB-_-LRB- m_NN -RRB-_-RRB- are_VBP the_DT same_JJ event_NN f_FW ,_, none_NN of_IN the_DT paths_NNS from_IN f_FW to_TO e_SYM must_MD contain_VB another_DT relevant_JJ event_NN ,_, and_CC thus_RB ,_, f_FW must_MD be_VB immediate_JJ predecessor_NN of_IN both_DT events_NNS pred_VBD -LRB-_-LRB- e_LS -RRB-_-RRB- and_CC send_VB -LRB-_-LRB- m_NN -RRB-_-RRB- ._.
+Lemma_NNP #_# ._.
+Let_VB e_SYM Hi_FW be_VB the_DT receive_VB event_NN of_IN a_DT message_NN m_NN ._.
+If_IN pred_JJ -LRB-_-LRB- e_LS -RRB-_-RRB- Ri_NNP ,_, then_RB ,_, j_NN ,_, IP_NNP -LRB-_-LRB- e_LS -RRB-_-RRB- Rj_NN is_VBZ equal_JJ to_TO :_: IP_NNP -LRB-_-LRB- pred_VBN -LRB-_-LRB- e_LS -RRB-_-RRB- -RRB-_-RRB- Rj_NN if_IN lastr_NN -LRB-_-LRB- pred_JJ -LRB-_-LRB- e_LS -RRB-_-RRB- ,_, j_NN -RRB-_-RRB- >_JJR lastr_NN -LRB-_-LRB- send_VB -LRB-_-LRB- m_NN -RRB-_-RRB- ,_, j_NN -RRB-_-RRB- ,_, IP_NNP -LRB-_-LRB- send_VB -LRB-_-LRB- m_NN -RRB-_-RRB- -RRB-_-RRB- Rj_NN if_IN lastr_NN -LRB-_-LRB- pred_JJ -LRB-_-LRB- e_LS -RRB-_-RRB- ,_, j_NN -RRB-_-RRB- <_JJR lastr_NN -LRB-_-LRB- send_VB -LRB-_-LRB- m_NN -RRB-_-RRB- ,_, j_NN -RRB-_-RRB- IP_NNP -LRB-_-LRB- pred_VBN -LRB-_-LRB- e_LS -RRB-_-RRB- -RRB-_-RRB- IP_NNP -LRB-_-LRB- send_VB -LRB-_-LRB- m_NN -RRB-_-RRB- -RRB-_-RRB- Rj_NN if_IN lastr_NN -LRB-_-LRB- pred_JJ -LRB-_-LRB- e_LS -RRB-_-RRB- ,_, j_NN -RRB-_-RRB- =_JJ lastr_NN -LRB-_-LRB- send_VB -LRB-_-LRB- m_NN -RRB-_-RRB- ,_, j_NN -RRB-_-RRB- ._.
+3_LS ._.
+#_# A_DT Basic_JJ IPT_NNP Protocol_NNP The_NNP basic_JJ protocol_NN proposed_VBN here_RB associates_VBZ with_IN each_DT relevant_JJ event_NN e_SYM ,_, an_DT attribute_NN encoding_VBG the_DT set_NN IP_NNP -LRB-_-LRB- e_LS -RRB-_-RRB- of_IN its_PRP$ immediate_JJ predecessors_NNS ._.
+From_IN the_DT previous_JJ lemmas_NNS ,_, the_DT set_NN 3_CD Actually_RB ,_, this_DT graph_NN is_VBZ the_DT Hasse_NNP diagram_NN of_IN the_DT partial_JJ order_NN associated_VBN with_IN the_DT distributed_VBN computation_NN ._.
+213_CD IP_NNP -LRB-_-LRB- e_LS -RRB-_-RRB- of_IN any_DT event_NN e_SYM depends_VBZ on_IN the_DT sets_NNS IP_NNP of_IN the_DT events_NNS pred_VBD -LRB-_-LRB- e_LS -RRB-_-RRB- and_CC /_: or_CC send_VB -LRB-_-LRB- m_NN -RRB-_-RRB- -LRB-_-LRB- when_WRB e_SYM =_JJ receive_VBP -LRB-_-LRB- m_NN -RRB-_-RRB- -RRB-_-RRB- ._.
+Hence_RB the_DT idea_NN to_TO introduce_VB a_DT data_NN structure_NN allowing_VBG to_TO manage_VB the_DT sets_NNS IPs_NNS inductively_RB on_IN the_DT poset_NN -LRB-_-LRB- H_NN ,_, hb_NN -RRB-_-RRB- ._.
+To_TO take_VB into_IN account_NN the_DT information_NN from_IN pred_JJ -LRB-_-LRB- e_LS -RRB-_-RRB- ,_, each_DT process_NN manages_VBZ a_DT boolean_JJ array_NN IPi_NNS such_JJ that_IN ,_, e_SYM Hi_FW the_DT value_NN of_IN IPi_NNP when_WRB e_SYM occurs_VBZ -LRB-_-LRB- denoted_VBN e_LS ._.
+IPi_NNS -RRB-_-RRB- is_VBZ the_DT boolean_JJ array_NN representation_NN of_IN the_DT set_VBN IP_NNP -LRB-_-LRB- e_LS -RRB-_-RRB- ._.
+More_RBR precisely_RB ,_, j_NN :_: IPi_NN -LSB-_-LRB- j_NN -RSB-_-RRB- =_JJ 1_CD lastr_NN -LRB-_-LRB- e_SYM ,_, j_NN -RRB-_-RRB- IP_NNP -LRB-_-LRB- e_LS -RRB-_-RRB- ._.
+As_IN recalled_VBN in_IN Section_NN #_# ._.
+#_# ,_, the_DT knowledge_NN of_IN lastr_NN -LRB-_-LRB- e_SYM ,_, j_NN -RRB-_-RRB- -LRB-_-LRB- for_IN every_DT e_SYM and_CC every_DT j_NN -RRB-_-RRB- is_VBZ based_VBN on_IN the_DT management_NN of_IN vectors_NNS V_NN Ci_NN ._.
+Thus_RB ,_, the_DT set_NN IP_NNP -LRB-_-LRB- e_LS -RRB-_-RRB- is_VBZ determined_VBN in_IN the_DT following_JJ way_NN :_: IP_NNP -LRB-_-LRB- e_LS -RRB-_-RRB- =_JJ -LCB-_-LRB- ey_NN j_NN |_CD e_LS ._.
+V_NN Ci_NN -LSB-_-LRB- j_NN -RSB-_-RRB- =_JJ y_NN e_LS ._.
+IPi_NN -LSB-_-LRB- j_NN -RSB-_-RRB- =_JJ #_# ,_, j_NN =_JJ #_# ,_, ..._: ,_, n_NN -RCB-_-RRB- Each_DT process_NN Pi_NN updates_NNS IPi_NNP according_VBG to_TO the_DT Lemmas_NNP #_# ,_, 2_CD ,_, and_CC #_# :_: 1_CD ._.
+It_PRP results_VBZ from_IN Lemma_NNP #_# that_IN ,_, if_IN e_SYM is_VBZ not_RB a_DT receive_VB event_NN ,_, the_DT current_JJ value_NN of_IN IPi_NNP is_VBZ sufficient_JJ to_TO determine_VB e_LS ._.
+IPi_NNP ._.
+It_PRP results_VBZ from_IN Lemmas_NNP #_# and_CC #_# that_IN ,_, if_IN e_SYM is_VBZ a_DT receive_VBP event_NN -LRB-_-LRB- e_SYM =_JJ receive_VBP -LRB-_-LRB- m_NN -RRB-_-RRB- -RRB-_-RRB- ,_, then_RB determining_VBG e_LS ._.
+IPi_NN involves_VBZ information_NN related_JJ to_TO the_DT event_NN send_VB -LRB-_-LRB- m_NN -RRB-_-RRB- ._.
+More_RBR precisely_RB ,_, this_DT information_NN involves_VBZ IP_NNP -LRB-_-LRB- send_VB -LRB-_-LRB- m_NN -RRB-_-RRB- -RRB-_-RRB- and_CC the_DT timestamp_NN of_IN send_VB -LRB-_-LRB- m_NN -RRB-_-RRB- -LRB-_-LRB- needed_VBN to_TO compare_VB the_DT events_NNS lastr_NN -LRB-_-LRB- send_VB -LRB-_-LRB- m_NN -RRB-_-RRB- ,_, j_NN -RRB-_-RRB- and_CC lastr_NN -LRB-_-LRB- pred_JJ -LRB-_-LRB- e_LS -RRB-_-RRB- ,_, j_NN -RRB-_-RRB- ,_, for_IN every_DT j_NN -RRB-_-RRB- ._.
+So_RB ,_, both_DT vectors_NNS send_VBP -LRB-_-LRB- m_NN -RRB-_-RRB- ._.
+V_NN Cj_NN and_CC send_VB -LRB-_-LRB- m_NN -RRB-_-RRB- ._.
+IPj_NN -LRB-_-LRB- assuming_VBG send_VB -LRB-_-LRB- m_NN -RRB-_-RRB- produced_VBN by_IN Pj_NN -RRB-_-RRB- are_VBP attached_VBN to_TO message_NN m_NN ._.
+2_LS ._.
+Moreover_RB ,_, IPi_NNS must_MD be_VB updated_VBN upon_IN the_DT occurrence_NN of_IN each_DT event_NN ._.
+In_IN fact_NN ,_, the_DT value_NN of_IN IPi_NNP just_RB after_IN an_DT event_NN e_SYM is_VBZ used_VBN to_TO determine_VB the_DT value_NN succ_NN -LRB-_-LRB- e_LS -RRB-_-RRB- ._.
+IPi_NNP ._.
+In_IN particular_JJ ,_, as_IN stated_VBN in_IN the_DT Lemmas_NNP ,_, the_DT determination_NN of_IN succ_NN -LRB-_-LRB- e_LS -RRB-_-RRB- ._.
+IPi_NN depends_VBZ on_IN whether_IN e_SYM is_VBZ relevant_JJ or_CC not_RB ._.
+Thus_RB ,_, the_DT value_NN of_IN IPi_NNP just_RB after_IN the_DT occurrence_NN of_IN event_NN e_SYM must_MD keep_VB track_NN of_IN this_DT event_NN ._.
+The_DT following_VBG protocol_NN ,_, previously_RB presented_VBN in_IN -LSB-_-LRB- #_# -RSB-_-RRB- without_IN proof_NN ,_, ensures_VBZ the_DT correct_JJ management_NN of_IN arrays_NNS V_NN Ci_NN -LRB-_-LRB- as_IN in_IN Section_NN #_# ._.
+#_# -RRB-_-RRB- and_CC IPi_NN -LRB-_-LRB- according_VBG to_TO the_DT Lemmas_NNP of_IN Section_NNP 3_CD ._.
+#_# -RRB-_-RRB- ._.
+The_DT timestamp_NN associated_VBN with_IN a_DT relevant_JJ event_NN e_SYM is_VBZ denoted_VBN e_LS ._.
+TS_NN ._.
+R0_NN Initialization_NN :_: Both_DT V_NN Ci_NN -LSB-_-LRB- #_# ._. ._.
+n_NN -RSB-_-RRB- and_CC IPi_NN -LSB-_-LRB- #_# ._. ._.
+n_NN -RSB-_-RRB- are_VBP initialized_VBN to_TO -LSB-_-LRB- #_# ,_, ..._: ,_, #_# -RSB-_-RRB- ._.
+R1_NN Each_DT time_NN it_PRP produces_VBZ a_DT relevant_JJ event_NN e_SYM :_: -_: Pi_NN associates_NNS with_IN e_SYM the_DT timestamp_NN e_LS ._.
+TS_NN defined_VBD as_IN follows_VBZ e_LS ._.
+TS_NN =_SYM -LCB-_-LRB- -LRB-_-LRB- k_NN ,_, V_NN Ci_NN -LSB-_-LRB- k_NN -RSB-_-RRB- -RRB-_-RRB- |_CD IPi_NN -LSB-_-LRB- k_NN -RSB-_-RRB- =_JJ #_# -RCB-_-RRB- ,_, -_: Pi_NN increments_NNS its_PRP$ vector_NN clock_NN entry_NN V_NN Ci_NN -LSB-_-LRB- i_FW -RSB-_-RRB- -LRB-_-LRB- namely_RB it_PRP executes_VBZ V_NN Ci_NN -LSB-_-LRB- i_FW -RSB-_-RRB- :_: =_JJ V_NN Ci_NN -LSB-_-LRB- i_FW -RSB-_-RRB- +_CC #_# -RRB-_-RRB- ,_, -_: Pi_NN resets_VBZ IPi_NNP :_: =_JJ i_FW :_: IPi_NN -LSB-_-LRB- -RSB-_-RRB- :_: =_JJ #_# ;_: IPi_NN -LSB-_-LRB- i_FW -RSB-_-RRB- :_: =_JJ #_# ._.
+R2_NN When_WRB Pi_NN sends_VBZ a_DT message_NN m_NN to_TO Pj_NNP ,_, it_PRP attaches_VBZ to_TO m_NN the_DT current_JJ values_NNS of_IN V_NN Ci_NN -LRB-_-LRB- denoted_VBN m_NN ._.
+V_NN C_NN -RRB-_-RRB- and_CC the_DT boolean_JJ array_NN IPi_NN -LRB-_-LRB- denoted_VBN m_NN ._.
+IP_NNP -RRB-_-RRB- ._.
+R3_NN When_WRB it_PRP receives_VBZ a_DT message_NN m_NN from_IN Pj_NNP ,_, Pi_NNP executes_VBZ the_DT following_VBG updates_NNS :_: k_NN -LSB-_-LRB- #_# ._. ._.
+n_NN -RSB-_-RRB- :_: case_NN V_NN Ci_NN -LSB-_-LRB- k_NN -RSB-_-RRB- <_JJR m_NN ._.
+V_NN C_NN -LSB-_-LRB- k_NN -RSB-_-RRB- thenV_NN Ci_NN -LSB-_-LRB- k_NN -RSB-_-RRB- :_: =_JJ m_NN ._.
+V_NN C_NN -LSB-_-LRB- k_NN -RSB-_-RRB- ;_: IPi_NN -LSB-_-LRB- k_NN -RSB-_-RRB- :_: =_JJ m_NN ._.
+IP_NNP -LSB-_-LRB- k_NN -RSB-_-RRB- V_NN Ci_NN -LSB-_-LRB- k_NN -RSB-_-RRB- =_JJ m_NN ._.
+V_NN C_NN -LSB-_-LRB- k_NN -RSB-_-RRB- then_RB IPi_NN -LSB-_-LRB- k_NN -RSB-_-RRB- :_: =_JJ min_NN -LRB-_-LRB- IPi_NN -LSB-_-LRB- k_NN -RSB-_-RRB- ,_, m_NN ._.
+IP_NNP -LSB-_-LRB- k_NN -RSB-_-RRB- -RRB-_-RRB- V_NN Ci_NN -LSB-_-LRB- k_NN -RSB-_-RRB- >_JJR m_NN ._.
+V_NN C_NN -LSB-_-LRB- k_NN -RSB-_-RRB- then_RB skip_VB endcase_JJ The_DT proof_NN of_IN the_DT following_VBG theorem_NN directly_RB follows_VBZ from_IN Lemmas_NNP #_# ,_, #_# and_CC #_# ._.
+Theorem_NNP #_# ._.
+The_DT protocol_NN described_VBN in_IN Section_NN #_# ._.
+#_# solves_VBZ the_DT IPT_NNP problem_NN :_: for_IN any_DT relevant_JJ event_NN e_SYM ,_, the_DT timestamp_NN e_LS ._.
+TS_NN contains_VBZ the_DT identifiers_NNS of_IN all_DT its_PRP$ immediate_JJ predecessors_NNS and_CC no_DT other_JJ event_NN identifier_NN ._.
+4_LS ._.
+A_DT GENERAL_JJ CONDITION_NN This_DT section_NN addresses_NNS a_DT previously_RB open_JJ problem_NN ,_, namely_RB ,_, How_WRB to_TO solve_VB the_DT IPT_NNP problem_NN without_IN requiring_VBG each_DT application_NN message_NN to_TO piggyback_VB a_DT whole_JJ vector_NN clock_NN and_CC a_DT whole_JJ boolean_JJ array_NN ?_. ._.
+First_RB ,_, a_DT general_JJ condition_NN that_WDT characterizes_VBZ which_WDT entries_NNS of_IN vectors_NNS V_NN Ci_NN and_CC IPi_NN can_MD be_VB omitted_VBN from_IN the_DT control_NN information_NN attached_VBN to_TO a_DT message_NN sent_VBN in_IN the_DT computation_NN ,_, is_VBZ defined_VBN -LRB-_-LRB- Section_NN #_# ._.
+#_# -RRB-_-RRB- ._.
+It_PRP is_VBZ then_RB shown_VBN -LRB-_-LRB- Section_NN #_# ._.
+#_# -RRB-_-RRB- that_IN this_DT condition_NN is_VBZ both_CC sufficient_JJ and_CC necessary_JJ ._.
+However_RB ,_, this_DT general_JJ condition_NN can_MD not_RB be_VB locally_RB evaluated_VBN by_IN a_DT process_NN that_WDT is_VBZ about_IN to_TO send_VB a_DT message_NN ._.
+Thus_RB ,_, locally_RB evaluable_JJ approximations_NNS of_IN this_DT general_JJ condition_NN must_MD be_VB defined_VBN ._.
+To_TO each_DT approximation_NN corresponds_VBZ a_DT protocol_NN ,_, implemented_VBN with_IN additional_JJ local_JJ data_NNS structures_NNS ._.
+In_IN that_DT sense_NN ,_, the_DT general_JJ condition_NN defines_VBZ a_DT family_NN of_IN IPT_NNP protocols_NNS ,_, that_IN solve_VB the_DT previously_RB open_JJ problem_NN ._.
+This_DT issue_NN is_VBZ addressed_VBN in_IN Section_NN #_# ._.
+4_LS ._.
+#_# To_TO Transmit_VB or_CC Not_RB to_TO Transmit_VB Control_NNP Information_NNP Let_VB us_PRP consider_VB the_DT previous_JJ IPT_NNP protocol_NN -LRB-_-LRB- Section_NN #_# ._.
+#_# -RRB-_-RRB- ._.
+Rule_NN R3_NN shows_VBZ that_IN a_DT process_NN Pj_NN does_VBZ not_RB systematically_RB update_VB each_DT entry_NN V_NN Cj_NN -LSB-_-LRB- k_NN -RSB-_-RRB- each_DT time_NN it_PRP receives_VBZ a_DT message_NN m_NN from_IN a_DT process_NN Pi_NNP :_: there_EX is_VBZ no_DT update_VB of_IN V_NN Cj_NN -LSB-_-LRB- k_NN -RSB-_-RRB- when_WRB V_NN Cj_NN -LSB-_-LRB- k_NN -RSB-_-RRB- m_NN ._.
+V_NN C_NN -LSB-_-LRB- k_NN -RSB-_-RRB- ._.
+In_IN such_PDT a_DT case_NN ,_, the_DT value_NN m_NN ._.
+V_NN C_NN -LSB-_-LRB- k_NN -RSB-_-RRB- is_VBZ useless_JJ ,_, and_CC could_MD be_VB omitted_VBN from_IN the_DT control_NN information_NN transmitted_VBN with_IN m_NN by_IN Pi_NN to_TO Pj_NNP ._.
+Similarly_RB ,_, some_DT entries_NNS IPj_NN -LSB-_-LRB- k_NN -RSB-_-RRB- are_VBP not_RB updated_VBN when_WRB a_DT message_NN m_NN from_IN Pi_NN is_VBZ received_VBN by_IN Pj_NN ._.
+This_DT occurs_VBZ when_WRB 0_CD m_NN ._.
+V_NN C_NN -LSB-_-LRB- k_NN -RSB-_-RRB- ,_, or_CC when_WRB m_NN ._.
+V_NN C_NN -LSB-_-LRB- k_NN -RSB-_-RRB- =_JJ #_# -LRB-_-LRB- in_IN the_DT latest_JJS case_NN ,_, as_IN m_NN ._.
+IP_NNP -LSB-_-LRB- k_NN -RSB-_-RRB- =_JJ IPi_NN -LSB-_-LRB- k_NN -RSB-_-RRB- =_JJ #_# then_RB no_DT update_VB of_IN IPj_NN -LSB-_-LRB- k_NN -RSB-_-RRB- is_VBZ necessary_JJ -RRB-_-RRB- ._.
+Differently_RB ,_, some_DT other_JJ entries_NNS are_VBP systematically_RB reset_VB to_TO #_# -LRB-_-LRB- this_DT occurs_VBZ when_WRB #_# <_JJR V_NN Cj_NN -LSB-_-LRB- k_NN -RSB-_-RRB- =_JJ m_NN ._.
+V_NN C_NN -LSB-_-LRB- k_NN -RSB-_-RRB- m_NN ._.
+IP_NNP -LSB-_-LRB- k_NN -RSB-_-RRB- =_JJ #_# -RRB-_-RRB- ._.
+These_DT observations_NNS lead_VBP to_TO the_DT definition_NN of_IN the_DT condition_NN K_NN -LRB-_-LRB- m_NN ,_, k_NN -RRB-_-RRB- that_WDT characterizes_VBZ which_WDT entries_NNS of_IN vectors_NNS V_NN Ci_NN and_CC IPi_NN can_MD be_VB omitted_VBN from_IN the_DT control_NN information_NN attached_VBN to_TO a_DT message_NN m_NN sent_VBN by_IN a_DT process_NN Pi_NN to_TO a_DT process_NN Pj_NNP :_: Definition_NNP #_# ._.
+K_NN -LRB-_-LRB- m_NN ,_, k_NN -RRB-_-RRB- -LRB-_-LRB- send_VB -LRB-_-LRB- m_NN -RRB-_-RRB- ._.
+V_NN Ci_NN -LSB-_-LRB- k_NN -RSB-_-RRB- =_JJ #_# -RRB-_-RRB- -LRB-_-LRB- send_VB -LRB-_-LRB- m_NN -RRB-_-RRB- ._.
+V_NN Ci_NN -LSB-_-LRB- k_NN -RSB-_-RRB- <_JJR pred_CD -LRB-_-LRB- receive_VB -LRB-_-LRB- m_NN -RRB-_-RRB- -RRB-_-RRB- ._.
+V_NN Cj_NN -LSB-_-LRB- k_NN -RSB-_-RRB- -RRB-_-RRB- ;_: -LRB-_-LRB- send_VB -LRB-_-LRB- m_NN -RRB-_-RRB- ._.
+V_NN Ci_NN -LSB-_-LRB- k_NN -RSB-_-RRB- =_JJ pred_JJ -LRB-_-LRB- receive_VB -LRB-_-LRB- m_NN -RRB-_-RRB- -RRB-_-RRB- ._.
+V_NN Cj_NN -LSB-_-LRB- k_NN -RSB-_-RRB- -RRB-_-RRB- -LRB-_-LRB- send_VB -LRB-_-LRB- m_NN -RRB-_-RRB- ._.
+IPi_NN -LSB-_-LRB- k_NN -RSB-_-RRB- =_JJ #_# -RRB-_-RRB- ._.
+4_LS ._.
+#_# A_DT Necessary_JJ and_CC Sufficient_JJ Condition_NN We_PRP show_VBP here_RB that_IN the_DT condition_NN K_NN -LRB-_-LRB- m_NN ,_, k_NN -RRB-_-RRB- is_VBZ both_DT necessary_JJ and_CC sufficient_JJ to_TO decide_VB which_WDT triples_NNS of_IN the_DT form_NN -LRB-_-LRB- k_NN ,_, send_VB -LRB-_-LRB- m_NN -RRB-_-RRB- ._.
+V_NN Ci_NN -LSB-_-LRB- k_NN -RSB-_-RRB- ,_, send_VB -LRB-_-LRB- m_NN -RRB-_-RRB- ._.
+IPi_NN -LSB-_-LRB- k_NN -RSB-_-RRB- -RRB-_-RRB- can_MD be_VB omitted_VBN in_IN an_DT outgoing_JJ message_NN m_NN sent_VBN by_IN Pi_NN to_TO Pj_NNP ._.
+A_DT triple_JJ attached_VBN to_TO m_NN will_MD also_RB be_VB denoted_VBN -LRB-_-LRB- k_NN ,_, m_NN ._.
+V_NN C_NN -LSB-_-LRB- k_NN -RSB-_-RRB- ,_, m_NN ._.
+IP_NNP -LSB-_-LRB- k_NN -RSB-_-RRB- -RRB-_-RRB- ._.
+Due_JJ to_TO space_NN limitations_NNS ,_, the_DT proofs_NNS of_IN Lemma_NNP #_# and_CC Lemma_NNP #_# are_VBP given_VBN in_IN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+-LRB-_-LRB- The_DT proof_NN of_IN Theorem_NNP #_# follows_VBZ directly_RB from_IN these_DT lemmas_NNS ._. -RRB-_-RRB-
+214_CD Lemma_NNP #_# ._.
+-LRB-_-LRB- Sufficiency_NN -RRB-_-RRB- If_IN K_NN -LRB-_-LRB- m_NN ,_, k_NN -RRB-_-RRB- is_VBZ true_JJ ,_, then_RB the_DT triple_JJ -LRB-_-LRB- k_NN ,_, m_NN ._.
+V_NN C_NN -LSB-_-LRB- k_NN -RSB-_-RRB- ,_, m_NN ._.
+IP_NNP -LSB-_-LRB- k_NN -RSB-_-RRB- -RRB-_-RRB- is_VBZ useless_JJ with_IN respect_NN to_TO the_DT correct_JJ management_NN of_IN IPj_NN -LSB-_-LRB- k_NN -RSB-_-RRB- and_CC V_NN Cj_NN -LSB-_-LRB- k_NN -RSB-_-RRB- ._.
+Lemma_NNP #_# ._.
+-LRB-_-LRB- Necessity_NN -RRB-_-RRB- If_IN K_NN -LRB-_-LRB- m_NN ,_, k_NN -RRB-_-RRB- is_VBZ false_JJ ,_, then_RB the_DT triple_JJ -LRB-_-LRB- k_NN ,_, m_NN ._.
+V_NN C_NN -LSB-_-LRB- k_NN -RSB-_-RRB- ,_, m_NN ._.
+IP_NNP -LSB-_-LRB- k_NN -RSB-_-RRB- -RRB-_-RRB- is_VBZ necessary_JJ to_TO ensure_VB the_DT correct_JJ management_NN of_IN IPj_NN -LSB-_-LRB- k_NN -RSB-_-RRB- and_CC V_NN Cj_NN -LSB-_-LRB- k_NN -RSB-_-RRB- ._.
+Theorem_NNP #_# ._.
+When_WRB a_DT process_NN Pi_NN sends_VBZ m_NN to_TO a_DT process_NN Pj_NN ,_, the_DT condition_NN K_NN -LRB-_-LRB- m_NN ,_, k_NN -RRB-_-RRB- is_VBZ both_DT necessary_JJ and_CC sufficient_JJ not_RB to_TO transmit_VB the_DT triple_JJ -LRB-_-LRB- k_NN ,_, send_VB -LRB-_-LRB- m_NN -RRB-_-RRB- ._.
+V_NN Ci_NN -LSB-_-LRB- k_NN -RSB-_-RRB- ,_, send_VB -LRB-_-LRB- m_NN -RRB-_-RRB- ._.
+IPi_NN -LSB-_-LRB- k_NN -RSB-_-RRB- -RRB-_-RRB- ._.
+5_CD ._.
+A_DT FAMILY_NN OF_IN IPT_NNP PROTOCOLS_NNS BASED_NN ON_IN EVALUABLE_JJ CONDITIONS_NNS It_PRP results_VBZ from_IN the_DT previous_JJ theorem_NN that_IN ,_, if_IN Pi_NN could_MD evaluate_VB K_NN -LRB-_-LRB- m_NN ,_, k_NN -RRB-_-RRB- when_WRB it_PRP sends_VBZ m_NN to_TO Pj_NNP ,_, this_DT would_MD allow_VB us_PRP improve_VB the_DT previous_JJ IPT_NNP protocol_NN in_IN the_DT following_JJ way_NN :_: in_IN rule_NN R2_NN ,_, the_DT triple_JJ -LRB-_-LRB- k_NN ,_, V_NN Ci_NN -LSB-_-LRB- k_NN -RSB-_-RRB- ,_, IPi_NN -LSB-_-LRB- k_NN -RSB-_-RRB- -RRB-_-RRB- is_VBZ transmitted_VBN with_IN m_NN only_RB if_IN K_NN -LRB-_-LRB- m_NN ,_, k_NN -RRB-_-RRB- ._.
+Moreover_RB ,_, rule_NN R3_NN is_VBZ appropriately_RB modified_VBN to_TO consider_VB only_RB triples_NNS carried_VBN by_IN m_NN ._.
+However_RB ,_, as_IN previously_RB mentioned_VBN ,_, Pi_NN can_MD not_RB locally_RB evaluate_VB K_NN -LRB-_-LRB- m_NN ,_, k_NN -RRB-_-RRB- when_WRB it_PRP is_VBZ about_IN to_TO send_VB m_NN ._.
+More_RBR precisely_RB ,_, when_WRB Pi_NN sends_VBZ m_NN to_TO Pj_NNP ,_, Pi_NNP knows_VBZ the_DT exact_JJ values_NNS of_IN send_VBP -LRB-_-LRB- m_NN -RRB-_-RRB- ._.
+V_NN Ci_NN -LSB-_-LRB- k_NN -RSB-_-RRB- and_CC send_VB -LRB-_-LRB- m_NN -RRB-_-RRB- ._.
+IPi_NN -LSB-_-LRB- k_NN -RSB-_-RRB- -LRB-_-LRB- they_PRP are_VBP the_DT current_JJ values_NNS of_IN V_NN Ci_NN -LSB-_-LRB- k_NN -RSB-_-RRB- and_CC IPi_NN -LSB-_-LRB- k_NN -RSB-_-RRB- -RRB-_-RRB- ._.
+But_CC ,_, as_IN far_RB as_IN the_DT value_NN of_IN pred_JJ -LRB-_-LRB- receive_VB -LRB-_-LRB- m_NN -RRB-_-RRB- -RRB-_-RRB- ._.
+V_NN Cj_NN -LSB-_-LRB- k_NN -RSB-_-RRB- is_VBZ concerned_VBN ,_, two_CD cases_NNS are_VBP possible_JJ ._.
+Case_NN -LRB-_-LRB- i_LS -RRB-_-RRB- :_: If_IN pred_VBN -LRB-_-LRB- receive_VB -LRB-_-LRB- m_NN -RRB-_-RRB- -RRB-_-RRB- hb_NN send_VB -LRB-_-LRB- m_NN -RRB-_-RRB- ,_, then_RB Pi_NN can_MD know_VB the_DT value_NN of_IN pred_JJ -LRB-_-LRB- receive_VB -LRB-_-LRB- m_NN -RRB-_-RRB- -RRB-_-RRB- ._.
+V_NN Cj_NN -LSB-_-LRB- k_NN -RSB-_-RRB- and_CC consequently_RB can_MD evaluate_VB K_NN -LRB-_-LRB- m_NN ,_, k_NN -RRB-_-RRB- ._.
+Case_NN -LRB-_-LRB- ii_LS -RRB-_-RRB- :_: If_IN pred_VBN -LRB-_-LRB- receive_VB -LRB-_-LRB- m_NN -RRB-_-RRB- -RRB-_-RRB- and_CC send_VB -LRB-_-LRB- m_NN -RRB-_-RRB- are_VBP concurrent_JJ ,_, Pi_NN can_MD not_RB know_VB the_DT value_NN of_IN pred_JJ -LRB-_-LRB- receive_VB -LRB-_-LRB- m_NN -RRB-_-RRB- -RRB-_-RRB- ._.
+V_NN Cj_NN -LSB-_-LRB- k_NN -RSB-_-RRB- and_CC consequently_RB can_MD not_RB evaluate_VB K_NN -LRB-_-LRB- m_NN ,_, k_NN -RRB-_-RRB- ._.
+Moreover_RB ,_, when_WRB it_PRP sends_VBZ m_NN to_TO Pj_NNP ,_, whatever_WDT the_DT case_NN -LRB-_-LRB- i_FW or_CC ii_LS -RRB-_-RRB- that_WDT actually_RB occurs_VBZ ,_, Pi_NNP has_VBZ no_DT way_NN to_TO know_VB which_WDT case_NN does_VBZ occur_VB ._.
+Hence_RB the_DT idea_NN to_TO define_VB evaluable_JJ approximations_NNS of_IN the_DT general_JJ condition_NN ._.
+Let_VB K_NNP -LRB-_-LRB- m_NN ,_, k_NN -RRB-_-RRB- be_VB an_DT approximation_NN of_IN K_NN -LRB-_-LRB- m_NN ,_, k_NN -RRB-_-RRB- ,_, that_WDT can_MD be_VB evaluated_VBN by_IN a_DT process_NN Pi_NN when_WRB it_PRP sends_VBZ a_DT message_NN m_NN ._.
+To_TO be_VB correct_JJ ,_, the_DT condition_NN K_NN must_MD ensure_VB that_IN ,_, every_DT time_NN Pi_NN should_MD transmit_VB a_DT triple_JJ -LRB-_-LRB- k_NN ,_, V_NN Ci_NN -LSB-_-LRB- k_NN -RSB-_-RRB- ,_, IPi_NN -LSB-_-LRB- k_NN -RSB-_-RRB- -RRB-_-RRB- according_VBG to_TO Theorem_NNP #_# -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, each_DT time_NN K_NN -LRB-_-LRB- m_NN ,_, k_NN -RRB-_-RRB- -RRB-_-RRB- ,_, then_RB Pi_NN transmits_VBZ this_DT triple_JJ when_WRB it_PRP uses_VBZ condition_NN K_NN ._.
+Hence_RB ,_, the_DT definition_NN of_IN a_DT correct_JJ evaluable_JJ approximation_NN :_: Definition_NNP #_# ._.
+A_DT condition_NN K_NN ,_, locally_RB evaluable_JJ by_IN a_DT process_NN when_WRB it_PRP sends_VBZ a_DT message_NN m_NN to_TO another_DT process_NN ,_, is_VBZ correct_JJ if_IN -LRB-_-LRB- m_NN ,_, k_NN -RRB-_-RRB- :_: K_NN -LRB-_-LRB- m_NN ,_, k_NN -RRB-_-RRB- K_NN -LRB-_-LRB- m_NN ,_, k_NN -RRB-_-RRB- or_CC ,_, equivalently_RB ,_, -LRB-_-LRB- m_NN ,_, k_NN -RRB-_-RRB- :_: K_NN -LRB-_-LRB- m_NN ,_, k_NN -RRB-_-RRB- K_NN -LRB-_-LRB- m_NN ,_, k_NN -RRB-_-RRB- ._.
+This_DT definition_NN means_VBZ that_IN a_DT protocol_NN evaluating_VBG K_NN to_TO decide_VB which_WDT triples_NNS must_MD be_VB attached_VBN to_TO messages_NNS ,_, does_VBZ not_RB miss_VB triples_NNS whose_WP$ transmission_NN is_VBZ required_VBN by_IN Theorem_NNP #_# ._.
+Let_VB us_PRP consider_VB the_DT constant_JJ condition_NN -LRB-_-LRB- denoted_VBN K1_NN -RRB-_-RRB- ,_, that_WDT is_VBZ always_RB false_JJ ,_, i_FW ._.
+e_LS ._.
+,_, -LRB-_-LRB- m_NN ,_, k_NN -RRB-_-RRB- :_: K1_NN -LRB-_-LRB- m_NN ,_, k_NN -RRB-_-RRB- =_JJ false_JJ ._.
+This_DT trivially_RB correct_JJ approximation_NN of_IN K_NNP actually_RB corresponds_VBZ to_TO the_DT particular_JJ IPT_NN protocol_NN described_VBN in_IN Section_NN #_# -LRB-_-LRB- in_IN which_WDT each_DT message_NN carries_VBZ a_DT whole_JJ vector_NN clock_NN and_CC a_DT whole_JJ boolean_NN vector_NN -RRB-_-RRB- ._.
+The_DT next_JJ section_NN presents_VBZ a_DT better_JJR approximation_NN of_IN K_NN -LRB-_-LRB- denoted_VBN K2_NN -RRB-_-RRB- ._.
+5_CD ._.
+#_# A_DT Boolean_JJ Matrix-Based_JJ Evaluable_JJ Condition_NN Condition_NN K2_NN is_VBZ based_VBN on_IN the_DT observation_NN that_IN condition_NN K_NN is_VBZ composed_VBN of_IN sub-conditions_NNS ._.
+Some_DT of_IN them_PRP can_MD be_VB Pj_NNP send_VB -LRB-_-LRB- m_NN -RRB-_-RRB- Pi_NN V_NN Ci_NN -LSB-_-LRB- k_NN -RSB-_-RRB- =_JJ x_NN IPi_NN -LSB-_-LRB- k_NN -RSB-_-RRB- =_JJ #_# V_NN Cj_NN -LSB-_-LRB- k_NN -RSB-_-RRB- x_CC receive_VB -LRB-_-LRB- m_NN -RRB-_-RRB- Figure_NN #_# :_: The_DT Evaluable_JJ Condition_NN K2_NN locally_RB evaluated_VBN while_IN the_DT others_NNS can_MD not_RB ._.
+More_RBR precisely_RB ,_, K_NNP a_DT -LRB-_-LRB- b_NN -RRB-_-RRB- ,_, where_WRB a_DT send_VB -LRB-_-LRB- m_NN -RRB-_-RRB- ._.
+V_NN Ci_NN -LSB-_-LRB- k_NN -RSB-_-RRB- =_JJ #_# and_CC b_NN send_VBP -LRB-_-LRB- m_NN -RRB-_-RRB- ._.
+IPi_NN -LSB-_-LRB- k_NN -RSB-_-RRB- =_JJ #_# are_VBP locally_RB evaluable_JJ ,_, whereas_IN send_VB -LRB-_-LRB- m_NN -RRB-_-RRB- ._.
+V_NN Ci_NN -LSB-_-LRB- k_NN -RSB-_-RRB- <_JJR pred_CD -LRB-_-LRB- receive_VB -LRB-_-LRB- m_NN -RRB-_-RRB- -RRB-_-RRB- ._.
+V_NN Cj_NN -LSB-_-LRB- k_NN -RSB-_-RRB- and_CC send_VB -LRB-_-LRB- m_NN -RRB-_-RRB- ._.
+V_NN Ci_NN -LSB-_-LRB- k_NN -RSB-_-RRB- =_JJ pred_JJ -LRB-_-LRB- receive_VB -LRB-_-LRB- m_NN -RRB-_-RRB- -RRB-_-RRB- ._.
+V_NN Cj_NN -LSB-_-LRB- k_NN -RSB-_-RRB- are_VBP not_RB ._.
+But_CC ,_, from_IN easy_JJ boolean_JJ calculus_NN ,_, a_DT -LRB-_-LRB- -LRB-_-LRB- -RRB-_-RRB- b_NN -RRB-_-RRB- =_JJ a_DT -LRB-_-LRB- b_NN -RRB-_-RRB- K_NN ._.
+This_DT leads_VBZ to_TO condition_NN K_NN a_DT -LRB-_-LRB- b_NN -RRB-_-RRB- ,_, where_WRB =_JJ send_VB -LRB-_-LRB- m_NN -RRB-_-RRB- ._.
+V_NN Ci_NN -LSB-_-LRB- k_NN -RSB-_-RRB- pred_VBD -LRB-_-LRB- receive_VB -LRB-_-LRB- m_NN -RRB-_-RRB- -RRB-_-RRB- ._.
+V_NN Cj_NN -LSB-_-LRB- k_NN -RSB-_-RRB- ,_, i_FW ._.
+e_LS ._.
+,_, K_NN -LRB-_-LRB- send_VB -LRB-_-LRB- m_NN -RRB-_-RRB- ._.
+V_NN Ci_NN -LSB-_-LRB- k_NN -RSB-_-RRB- pred_VBD -LRB-_-LRB- receive_VB -LRB-_-LRB- m_NN -RRB-_-RRB- -RRB-_-RRB- ._.
+V_NN Cj_NN -LSB-_-LRB- k_NN -RSB-_-RRB- send_VBP -LRB-_-LRB- m_NN -RRB-_-RRB- ._.
+IPi_NN -LSB-_-LRB- k_NN -RSB-_-RRB- =_JJ #_# -RRB-_-RRB- send_VBP -LRB-_-LRB- m_NN -RRB-_-RRB- ._.
+V_NN Ci_NN -LSB-_-LRB- k_NN -RSB-_-RRB- =_JJ #_# ._.
+So_RB ,_, Pi_NNP needs_VBZ to_TO approximate_JJ the_DT predicate_NN send_VB -LRB-_-LRB- m_NN -RRB-_-RRB- ._.
+V_NN Ci_NN -LSB-_-LRB- k_NN -RSB-_-RRB- pred_VBD -LRB-_-LRB- receive_VB -LRB-_-LRB- m_NN -RRB-_-RRB- -RRB-_-RRB- ._.
+V_NN Cj_NN -LSB-_-LRB- k_NN -RSB-_-RRB- ._.
+To_TO be_VB correct_JJ ,_, this_DT approximation_NN has_VBZ to_TO be_VB a_DT locally_RB evaluable_JJ predicate_NN ci_NN -LRB-_-LRB- j_NN ,_, k_NN -RRB-_-RRB- such_JJ that_IN ,_, when_WRB Pi_NN is_VBZ about_IN to_TO send_VB a_DT message_NN m_NN to_TO Pj_NNP ,_, ci_NN -LRB-_-LRB- j_NN ,_, k_NN -RRB-_-RRB- -LRB-_-LRB- send_VB -LRB-_-LRB- m_NN -RRB-_-RRB- ._.
+V_NN Ci_NN -LSB-_-LRB- k_NN -RSB-_-RRB- pred_VBD -LRB-_-LRB- receive_VB -LRB-_-LRB- m_NN -RRB-_-RRB- -RRB-_-RRB- ._.
+V_NN Cj_NN -LSB-_-LRB- k_NN -RSB-_-RRB- -RRB-_-RRB- ._.
+Informally_RB ,_, that_DT means_VBZ that_IN ,_, when_WRB ci_NN -LRB-_-LRB- j_NN ,_, k_NN -RRB-_-RRB- holds_VBZ ,_, the_DT local_JJ context_NN of_IN Pi_NN allows_VBZ to_TO deduce_VB that_IN the_DT receipt_NN of_IN m_NN by_IN Pj_NNP will_MD not_RB lead_VB to_TO V_NN Cj_NN -LSB-_-LRB- k_NN -RSB-_-RRB- update_VBP -LRB-_-LRB- Pj_NN knows_VBZ as_RB much_JJ as_IN Pi_NN about_IN Pk_NN -RRB-_-RRB- ._.
+Hence_RB ,_, the_DT concrete_JJ condition_NN K2_NN is_VBZ the_DT following_NN :_: K2_NN send_VB -LRB-_-LRB- m_NN -RRB-_-RRB- ._.
+V_NN Ci_NN -LSB-_-LRB- k_NN -RSB-_-RRB- =_JJ #_# -LRB-_-LRB- ci_NN -LRB-_-LRB- j_NN ,_, k_NN -RRB-_-RRB- send_VBP -LRB-_-LRB- m_NN -RRB-_-RRB- ._.
+IPi_NN -LSB-_-LRB- k_NN -RSB-_-RRB- =_JJ #_# -RRB-_-RRB- ._.
+Let_VB us_PRP now_RB examine_VBP the_DT design_NN of_IN such_PDT a_DT predicate_NN -LRB-_-LRB- denoted_VBN ci_NN -RRB-_-RRB- ._.
+First_RB ,_, the_DT case_NN j_NN =_JJ i_FW can_MD be_VB ignored_VBN ,_, since_IN it_PRP is_VBZ assumed_VBN -LRB-_-LRB- Section_NN #_# ._.
+#_# -RRB-_-RRB- that_IN a_DT process_NN never_RB sends_VBZ a_DT message_NN to_TO itself_PRP ._.
+Second_RB ,_, in_IN the_DT case_NN j_NN =_JJ k_NN ,_, the_DT relation_NN send_VB -LRB-_-LRB- m_NN -RRB-_-RRB- ._.
+V_NN Ci_NN -LSB-_-LRB- j_NN -RSB-_-RRB- pred_VBD -LRB-_-LRB- receive_VB -LRB-_-LRB- m_NN -RRB-_-RRB- -RRB-_-RRB- ._.
+V_NN Cj_NN -LSB-_-LRB- j_NN -RSB-_-RRB- is_VBZ always_RB true_JJ ,_, because_IN the_DT receipt_NN of_IN m_NN by_IN Pj_NN can_MD not_RB update_VB V_NN Cj_NN -LSB-_-LRB- j_NN -RSB-_-RRB- ._.
+Thus_RB ,_, j_NN =_JJ i_FW :_: ci_NN -LRB-_-LRB- j_NN ,_, j_NN -RRB-_-RRB- must_MD be_VB true_JJ ._.
+Now_RB ,_, let_VB us_PRP consider_VB the_DT case_NN where_WRB j_NN =_JJ i_FW and_CC j_NN =_JJ k_NN -LRB-_-LRB- Figure_NN #_# -RRB-_-RRB- ._.
+Suppose_VB that_IN there_EX exists_VBZ an_DT event_NN e_SYM =_JJ receive_VBP -LRB-_-LRB- m_NN -RRB-_-RRB- with_IN e_SYM <_JJR send_VB -LRB-_-LRB- m_NN -RRB-_-RRB- ,_, m_NN sent_VBN by_IN Pj_NN and_CC piggybacking_VBG the_DT triple_JJ -LRB-_-LRB- k_NN ,_, m_NN ._.
+V_NN C_NN -LSB-_-LRB- k_NN -RSB-_-RRB- ,_, m_NN ._.
+IP_NNP -LSB-_-LRB- k_NN -RSB-_-RRB- -RRB-_-RRB- ,_, and_CC m_NN ._.
+V_NN C_NN -LSB-_-LRB- k_NN -RSB-_-RRB- V_NN Ci_NN -LSB-_-LRB- k_NN -RSB-_-RRB- -LRB-_-LRB- hence_RB m_NN ._.
+V_NN C_NN -LSB-_-LRB- k_NN -RSB-_-RRB- =_JJ receive_VBP -LRB-_-LRB- m_NN -RRB-_-RRB- ._.
+V_NN Ci_NN -LSB-_-LRB- k_NN -RSB-_-RRB- -RRB-_-RRB- ._.
+As_IN V_NN Cj_NN -LSB-_-LRB- k_NN -RSB-_-RRB- can_MD not_RB decrease_VB this_DT means_VBZ that_IN ,_, as_RB long_RB as_IN V_NN Ci_NN -LSB-_-LRB- k_NN -RSB-_-RRB- does_VBZ not_RB increase_VB ,_, for_IN every_DT message_NN m_NN sent_VBN by_IN Pi_NN to_TO Pj_NN we_PRP have_VBP the_DT following_NN :_: send_VB -LRB-_-LRB- m_NN -RRB-_-RRB- ._.
+V_NN Ci_NN -LSB-_-LRB- k_NN -RSB-_-RRB- =_JJ receive_VBP -LRB-_-LRB- m_NN -RRB-_-RRB- ._.
+V_NN Ci_NN -LSB-_-LRB- k_NN -RSB-_-RRB- =_JJ send_VB -LRB-_-LRB- m_NN -RRB-_-RRB- ._.
+V_NN Cj_NN -LSB-_-LRB- k_NN -RSB-_-RRB- receive_VBP -LRB-_-LRB- m_NN -RRB-_-RRB- ._.
+V_NN Cj_NN -LSB-_-LRB- k_NN -RSB-_-RRB- ,_, i_FW ._.
+e_LS ._.
+,_, ci_NN -LRB-_-LRB- j_NN ,_, k_NN -RRB-_-RRB- must_MD remain_VB true_JJ ._.
+In_IN other_JJ words_NNS ,_, once_RB ci_NN -LRB-_-LRB- j_NN ,_, k_NN -RRB-_-RRB- is_VBZ true_JJ ,_, the_DT only_JJ event_NN of_IN Pi_NN that_WDT could_MD reset_VB it_PRP to_TO false_JJ is_VBZ either_CC the_DT receipt_NN of_IN a_DT message_NN that_WDT increases_VBZ V_NN Ci_NN -LSB-_-LRB- k_NN -RSB-_-RRB- or_CC ,_, if_IN k_NN =_JJ i_FW ,_, the_DT occurrence_NN of_IN a_DT relevant_JJ event_NN -LRB-_-LRB- that_WDT increases_VBZ V_NN Ci_NN -LSB-_-LRB- i_FW -RSB-_-RRB- -RRB-_-RRB- ._.
+Similarly_RB ,_, once_RB ci_NN -LRB-_-LRB- j_NN ,_, k_NN -RRB-_-RRB- is_VBZ false_JJ ,_, the_DT only_JJ event_NN that_WDT can_MD set_VB it_PRP to_TO true_JJ is_VBZ the_DT receipt_NN of_IN a_DT message_NN m_NN from_IN Pj_NNP ,_, piggybacking_VBG the_DT triple_JJ -LRB-_-LRB- k_NN ,_, m_NN ._.
+V_NN C_NN -LSB-_-LRB- k_NN -RSB-_-RRB- ,_, m_NN ._.
+IP_NNP -LSB-_-LRB- k_NN -RSB-_-RRB- -RRB-_-RRB- with_IN m_NN ._.
+V_NN C_NN -LSB-_-LRB- k_NN -RSB-_-RRB- V_NN Ci_NN -LSB-_-LRB- k_NN -RSB-_-RRB- ._.
+In_IN order_NN to_TO implement_VB the_DT local_JJ predicates_NNS ci_NN -LRB-_-LRB- j_NN ,_, k_NN -RRB-_-RRB- ,_, each_DT process_NN Pi_NN is_VBZ equipped_VBN with_IN a_DT boolean_JJ matrix_NN Mi_NN -LRB-_-LRB- as_IN in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- -RRB-_-RRB- such_JJ that_IN M_NN -LSB-_-LRB- j_NN ,_, k_NN -RSB-_-RRB- =_JJ #_# ci_NN -LRB-_-LRB- j_NN ,_, k_NN -RRB-_-RRB- ._.
+It_PRP follows_VBZ from_IN the_DT previous_JJ discussion_NN that_IN this_DT matrix_NN is_VBZ managed_VBN according_VBG to_TO the_DT following_VBG rules_NNS -LRB-_-LRB- note_NN that_IN its_PRP$ i-th_JJ line_NN is_VBZ not_RB significant_JJ -LRB-_-LRB- case_NN j_NN =_JJ i_LS -RRB-_-RRB- ,_, and_CC that_IN its_PRP$ diagonal_NN is_VBZ always_RB equal_JJ to_TO #_# -RRB-_-RRB- :_: M0_NN Initialization_NN :_: -LRB-_-LRB- j_NN ,_, k_NN -RRB-_-RRB- :_: Mi_FW -LSB-_-LRB- j_NN ,_, k_NN -RSB-_-RRB- is_VBZ initialized_VBN to_TO #_# ._.
+215_CD M1_NN Each_DT time_NN it_PRP produces_VBZ a_DT relevant_JJ event_NN e_SYM :_: Pi_NN resets4_NN the_DT ith_NN column_NN of_IN its_PRP$ matrix_NN :_: j_NN =_JJ i_FW :_: Mi_FW -LSB-_-LRB- j_NN ,_, i_FW -RSB-_-RRB- :_: =_JJ #_# ._.
+M2_NN When_WRB Pi_NN sends_VBZ a_DT message_NN :_: no_DT update_VBP of_IN Mi_NN occurs_VBZ ._.
+M3_NN When_WRB it_PRP receives_VBZ a_DT message_NN m_NN from_IN Pj_NNP ,_, Pi_NNP executes_VBZ the_DT following_VBG updates_NNS :_: k_NN -LSB-_-LRB- #_# ._. ._.
+n_NN -RSB-_-RRB- :_: case_NN V_NN Ci_NN -LSB-_-LRB- k_NN -RSB-_-RRB- <_JJR m_NN ._.
+V_NN C_NN -LSB-_-LRB- k_NN -RSB-_-RRB- then_RB =_JJ i_FW ,_, j_NN ,_, k_NN :_: Mi_FW -LSB-_-LRB- ,_, k_NN -RSB-_-RRB- :_: =_JJ #_# ;_: Mi_FW -LSB-_-LRB- j_NN ,_, k_NN -RSB-_-RRB- :_: =_JJ #_# V_NN Ci_NN -LSB-_-LRB- k_NN -RSB-_-RRB- =_JJ m_NN ._.
+V_NN C_NN -LSB-_-LRB- k_NN -RSB-_-RRB- then_RB Mi_FW -LSB-_-LRB- j_NN ,_, k_NN -RSB-_-RRB- :_: =_JJ #_# V_NN Ci_NN -LSB-_-LRB- k_NN -RSB-_-RRB- >_JJR m_NN ._.
+V_NN C_NN -LSB-_-LRB- k_NN -RSB-_-RRB- then_RB skip_VB endcase_JJ The_DT following_VBG lemma_NN results_NNS from_IN rules_NNS M0-M3_NN ._.
+The_DT theorem_NN that_WDT follows_VBZ shows_NNS that_WDT condition_NN K2_NN -LRB-_-LRB- m_NN ,_, k_NN -RRB-_-RRB- is_VBZ correct_JJ ._.
+-LRB-_-LRB- Both_DT are_VBP proved_VBN in_IN -LSB-_-LRB- #_# -RSB-_-RRB- ._. -RRB-_-RRB-
+Lemma_NNP #_# ._.
+i_LS ,_, m_NN sent_VBN by_IN Pi_NN to_TO Pj_NNP ,_, k_NN ,_, we_PRP have_VBP :_: send_VB -LRB-_-LRB- m_NN -RRB-_-RRB- ._.
+Mi_FW -LSB-_-LRB- j_NN ,_, k_NN -RSB-_-RRB- =_JJ #_# send_VB -LRB-_-LRB- m_NN -RRB-_-RRB- ._.
+V_NN Ci_NN -LSB-_-LRB- k_NN -RSB-_-RRB- pred_VBD -LRB-_-LRB- receive_VB -LRB-_-LRB- m_NN -RRB-_-RRB- -RRB-_-RRB- ._.
+V_NN Cj_NN -LSB-_-LRB- k_NN -RSB-_-RRB- ._.
+Theorem_NNP #_# ._.
+Let_VB m_NN be_VB a_DT message_NN sent_VBN by_IN Pi_NN to_TO Pj_NNP ._.
+Let_VB K2_NN -LRB-_-LRB- m_NN ,_, k_NN -RRB-_-RRB- -LRB-_-LRB- -LRB-_-LRB- send_VB -LRB-_-LRB- m_NN -RRB-_-RRB- ._.
+Mi_FW -LSB-_-LRB- j_NN ,_, k_NN -RSB-_-RRB- =_JJ #_# -RRB-_-RRB- -LRB-_-LRB- send_VB -LRB-_-LRB- m_NN -RRB-_-RRB- ._.
+IPi_NN -LSB-_-LRB- k_NN -RSB-_-RRB- =_JJ 1_CD -RRB-_-RRB- -LRB-_-LRB- send_VB -LRB-_-LRB- m_NN -RRB-_-RRB- ._.
+V_NN Ci_NN -LSB-_-LRB- k_NN -RSB-_-RRB- =_JJ #_# -RRB-_-RRB- -RRB-_-RRB- ._.
+We_PRP have_VBP :_: K2_NN -LRB-_-LRB- m_NN ,_, k_NN -RRB-_-RRB- K_NN -LRB-_-LRB- m_NN ,_, k_NN -RRB-_-RRB- ._.
+5_CD ._.
+#_# Resulting_VBG IPT_NNP Protocol_NNP The_NNP complete_JJ text_NN of_IN the_DT IPT_NNP protocol_NN based_VBN on_IN the_DT previous_JJ discussion_NN follows_VBZ ._.
+RM0_NN Initialization_NN :_: -_: Both_CC V_NN Ci_NN -LSB-_-LRB- #_# ._. ._.
+n_NN -RSB-_-RRB- and_CC IPi_NN -LSB-_-LRB- #_# ._. ._.
+n_NN -RSB-_-RRB- are_VBP set_VBN to_TO -LSB-_-LRB- #_# ,_, ..._: ,_, #_# -RSB-_-RRB- ,_, and_CC -LRB-_-LRB- j_NN ,_, k_NN -RRB-_-RRB- :_: Mi_FW -LSB-_-LRB- j_NN ,_, k_NN -RSB-_-RRB- is_VBZ set_VBN to_TO #_# ._.
+RM1_NN Each_DT time_NN it_PRP produces_VBZ a_DT relevant_JJ event_NN e_SYM :_: -_: Pi_NN associates_NNS with_IN e_SYM the_DT timestamp_NN e_LS ._.
+TS_NN defined_VBD as_IN follows_VBZ :_: e_LS ._.
+TS_NN =_SYM -LCB-_-LRB- -LRB-_-LRB- k_NN ,_, V_NN Ci_NN -LSB-_-LRB- k_NN -RSB-_-RRB- -RRB-_-RRB- |_CD IPi_NN -LSB-_-LRB- k_NN -RSB-_-RRB- =_JJ #_# -RCB-_-RRB- ,_, -_: Pi_NN increments_NNS its_PRP$ vector_NN clock_NN entry_NN V_NN Ci_NN -LSB-_-LRB- i_FW -RSB-_-RRB- -LRB-_-LRB- namely_RB ,_, it_PRP executes_VBZ V_NN Ci_NN -LSB-_-LRB- i_FW -RSB-_-RRB- :_: =_JJ V_NN Ci_NN -LSB-_-LRB- i_FW -RSB-_-RRB- +_CC #_# -RRB-_-RRB- ,_, -_: Pi_NN resets_VBZ IPi_NNP :_: =_JJ i_FW :_: IPi_NN -LSB-_-LRB- -RSB-_-RRB- :_: =_JJ #_# ;_: IPi_NN -LSB-_-LRB- i_FW -RSB-_-RRB- :_: =_JJ #_# ._.
+-_: Pi_NN resets_VBZ the_DT ith_NN column_NN of_IN its_PRP$ boolean_JJ matrix_NN :_: j_NN =_JJ i_FW :_: Mi_FW -LSB-_-LRB- j_NN ,_, i_FW -RSB-_-RRB- :_: =_JJ #_# ._.
+RM2_NN When_WRB Pi_NN sends_VBZ a_DT message_NN m_NN to_TO Pj_NNP ,_, it_PRP attaches_VBZ to_TO m_NN the_DT set_NN of_IN triples_NNS -LRB-_-LRB- each_DT made_VBN up_IN of_IN a_DT process_NN id_NN ,_, an_DT integer_NN and_CC a_DT boolean_NN -RRB-_-RRB- :_: -LCB-_-LRB- -LRB-_-LRB- k_NN ,_, V_NN Ci_NN -LSB-_-LRB- k_NN -RSB-_-RRB- ,_, IPi_NN -LSB-_-LRB- k_NN -RSB-_-RRB- -RRB-_-RRB- |_NN -LRB-_-LRB- Mi_NN -LSB-_-LRB- j_NN ,_, k_NN -RSB-_-RRB- =_JJ #_# IPi_SYM -LSB-_-LRB- k_NN -RSB-_-RRB- =_JJ #_# -RRB-_-RRB- -LRB-_-LRB- V_NN Ci_NN -LSB-_-LRB- k_NN -RSB-_-RRB- >_JJR #_# -RRB-_-RRB- -RCB-_-RRB- ._.
+RM3_NN When_WRB Pi_NN receives_VBZ a_DT message_NN m_NN from_IN Pj_NNP ,_, it_PRP executes_VBZ the_DT following_VBG updates_NNS :_: -LRB-_-LRB- k_NN ,_, m_NN ._.
+V_NN C_NN -LSB-_-LRB- k_NN -RSB-_-RRB- ,_, m_NN ._.
+IP_NNP -LSB-_-LRB- k_NN -RSB-_-RRB- -RRB-_-RRB- carried_VBN by_IN m_NN :_: case_NN V_NN Ci_NN -LSB-_-LRB- k_NN -RSB-_-RRB- <_JJR m_NN ._.
+V_NN C_NN -LSB-_-LRB- k_NN -RSB-_-RRB- then_RB V_NN Ci_NN -LSB-_-LRB- k_NN -RSB-_-RRB- :_: =_JJ m_NN ._.
+V_NN C_NN -LSB-_-LRB- k_NN -RSB-_-RRB- ;_: IPi_NN -LSB-_-LRB- k_NN -RSB-_-RRB- :_: =_JJ m_NN ._.
+IP_NNP -LSB-_-LRB- k_NN -RSB-_-RRB- ;_: =_JJ i_FW ,_, j_NN ,_, k_NN :_: Mi_FW -LSB-_-LRB- ,_, k_NN -RSB-_-RRB- :_: =_JJ #_# ;_: 4_CD Actually_RB ,_, the_DT value_NN of_IN this_DT column_NN remains_VBZ constant_JJ after_IN its_PRP$ first_JJ update_VB ._.
+In_IN fact_NN ,_, j_NN ,_, Mi_NN -LSB-_-LRB- j_NN ,_, i_FW -RSB-_-RRB- can_MD be_VB set_VBN to_TO #_# only_RB upon_IN the_DT receipt_NN of_IN a_DT message_NN from_IN Pj_NNP ,_, carrying_VBG the_DT value_NN V_NN Cj_NN -LSB-_-LRB- i_FW -RSB-_-RRB- ._.
+But_CC ,_, as_IN Mj_NN -LSB-_-LRB- i_FW ,_, i_FW -RSB-_-RRB- =_JJ #_# ,_, Pj_NN does_VBZ not_RB send_VB V_NN Cj_NN -LSB-_-LRB- i_FW -RSB-_-RRB- to_TO Pi_NNP ._.
+So_RB ,_, it_PRP is_VBZ possible_JJ to_TO improve_VB the_DT protocol_NN by_IN executing_VBG this_DT reset_NN of_IN the_DT column_NN Mi_NN -LSB-_-LRB- ,_, i_FW -RSB-_-RRB- only_RB when_WRB Pi_NNP produces_VBZ its_PRP$ first_JJ relevant_JJ event_NN ._.
+Mi_FW -LSB-_-LRB- j_NN ,_, k_NN -RSB-_-RRB- :_: =_JJ #_# V_NN Ci_NN -LSB-_-LRB- k_NN -RSB-_-RRB- =_JJ m_NN ._.
+V_NN C_NN -LSB-_-LRB- k_NN -RSB-_-RRB- then_RB IPi_NN -LSB-_-LRB- k_NN -RSB-_-RRB- :_: =_JJ min_NN -LRB-_-LRB- IPi_NN -LSB-_-LRB- k_NN -RSB-_-RRB- ,_, m_NN ._.
+IP_NNP -LSB-_-LRB- k_NN -RSB-_-RRB- -RRB-_-RRB- ;_: Mi_FW -LSB-_-LRB- j_NN ,_, k_NN -RSB-_-RRB- :_: =_JJ #_# V_NN Ci_NN -LSB-_-LRB- k_NN -RSB-_-RRB- >_JJR m_NN ._.
+V_NN C_NN -LSB-_-LRB- k_NN -RSB-_-RRB- then_RB skip_VB endcase_NN 5_CD ._.
+#_# A_DT Tradeoff_NN The_DT condition_NN K2_NN -LRB-_-LRB- m_NN ,_, k_NN -RRB-_-RRB- shows_VBZ that_IN a_DT triple_JJ has_VBZ not_RB to_TO be_VB transmitted_VBN when_WRB -LRB-_-LRB- Mi_FW -LSB-_-LRB- j_NN ,_, k_NN -RSB-_-RRB- =_JJ #_# IPi_SYM -LSB-_-LRB- k_NN -RSB-_-RRB- =_JJ #_# -RRB-_-RRB- -LRB-_-LRB- V_NN Ci_NN -LSB-_-LRB- k_NN -RSB-_-RRB- >_JJR 0_CD -RRB-_-RRB- ._.
+Let_VB us_PRP first_RB observe_VBP that_IN the_DT management_NN of_IN IPi_NN -LSB-_-LRB- k_NN -RSB-_-RRB- is_VBZ governed_VBN by_IN the_DT application_NN program_NN ._.
+More_RBR precisely_RB ,_, the_DT IPT_NNP protocol_NN does_VBZ not_RB define_VB which_WDT are_VBP the_DT relevant_JJ events_NNS ,_, it_PRP has_VBZ only_RB to_TO guarantee_VB a_DT correct_JJ management_NN of_IN IPi_NN -LSB-_-LRB- k_NN -RSB-_-RRB- ._.
+Differently_RB ,_, the_DT matrix_NN Mi_NN does_VBZ not_RB belong_VB to_TO the_DT problem_NN specification_NN ,_, it_PRP is_VBZ an_DT auxiliary_JJ variable_NN of_IN the_DT IPT_NNP protocol_NN ,_, which_WDT manages_VBZ it_PRP so_RB as_IN to_TO satisfy_VB the_DT following_VBG implication_NN when_WRB Pi_NNP sends_VBZ m_NN to_TO Pj_NNP :_: -LRB-_-LRB- Mi_FW -LSB-_-LRB- j_NN ,_, k_NN -RSB-_-RRB- =_JJ 1_CD -RRB-_-RRB- -LRB-_-LRB- pred_VBN -LRB-_-LRB- receive_VB -LRB-_-LRB- m_NN -RRB-_-RRB- -RRB-_-RRB- ._.
+V_NN Cj_NN -LSB-_-LRB- k_NN -RSB-_-RRB- send_VBP -LRB-_-LRB- m_NN -RRB-_-RRB- ._.
+V_NN Ci_NN -LSB-_-LRB- k_NN -RSB-_-RRB- -RRB-_-RRB- ._.
+The_DT fact_NN that_IN the_DT management_NN of_IN Mi_NNP is_VBZ governed_VBN by_IN the_DT protocol_NN and_CC not_RB by_IN the_DT application_NN program_NN leaves_VBZ open_JJ the_DT possibility_NN to_TO design_VB a_DT protocol_NN where_WRB more_RBR entries_NNS of_IN Mi_NNP are_VBP equal_JJ to_TO #_# ._.
+This_DT can_MD make_VB the_DT condition_NN K2_NN -LRB-_-LRB- m_NN ,_, k_NN -RRB-_-RRB- more_RBR often_RB satisfied5_JJ and_CC can_MD consequently_RB allow_VB the_DT protocol_NN to_TO transmit_VB less_JJR triples_NNS ._.
+We_PRP show_VBP here_RB that_IN it_PRP is_VBZ possible_JJ to_TO transmit_VB less_JJR triples_NNS at_IN the_DT price_NN of_IN transmitting_VBG a_DT few_JJ additional_JJ boolean_NN vectors_NNS ._.
+The_DT previous_JJ IPT_NNP matrix-based_JJ protocol_NN -LRB-_-LRB- Section_NN #_# ._.
+#_# -RRB-_-RRB- is_VBZ modified_VBN in_IN the_DT following_JJ way_NN ._.
+The_DT rules_NNS RM2_NN and_CC RM3_NN are_VBP replaced_VBN with_IN the_DT modified_VBN rules_NNS RM2_NN ''_'' and_CC RM3_NN ''_'' -LRB-_-LRB- Mi_NNP -LSB-_-LRB- ,_, k_NN -RSB-_-RRB- denotes_VBZ the_DT kth_NN column_NN of_IN Mi_NNP -RRB-_-RRB- ._.
+RM2_NN ''_'' When_WRB Pi_NN sends_VBZ a_DT message_NN m_NN to_TO Pj_NNP ,_, it_PRP attaches_VBZ to_TO m_NN the_DT following_VBG set_NN of_IN 4-uples_NNS -LRB-_-LRB- each_DT made_VBN up_IN of_IN a_DT process_NN id_NN ,_, an_DT integer_NN ,_, a_DT boolean_NN and_CC a_DT boolean_NN vector_NN -RRB-_-RRB- :_: -LCB-_-LRB- -LRB-_-LRB- k_NN ,_, V_NN Ci_NN -LSB-_-LRB- k_NN -RSB-_-RRB- ,_, IPi_NN -LSB-_-LRB- k_NN -RSB-_-RRB- ,_, Mi_FW -LSB-_-LRB- ,_, k_NN -RSB-_-RRB- -RRB-_-RRB- |_NN -LRB-_-LRB- Mi_NN -LSB-_-LRB- j_NN ,_, k_NN -RSB-_-RRB- =_JJ #_# IPi_SYM -LSB-_-LRB- k_NN -RSB-_-RRB- =_JJ 0_CD -RRB-_-RRB- V_NN Ci_NN -LSB-_-LRB- k_NN -RSB-_-RRB- >_JJR #_# -RCB-_-RRB- ._.
+RM3_NN ''_'' When_WRB Pi_NN receives_VBZ a_DT message_NN m_NN from_IN Pj_NNP ,_, it_PRP executes_VBZ the_DT following_VBG updates_NNS :_: -LRB-_-LRB- k_NN ,_, m_NN ._.
+V_NN C_NN -LSB-_-LRB- k_NN -RSB-_-RRB- ,_, m_NN ._.
+IP_NNP -LSB-_-LRB- k_NN -RSB-_-RRB- ,_, m_NN ._.
+M_NN -LSB-_-LRB- #_# ._. ._.
+n_NN ,_, k_NN -RSB-_-RRB- -RRB-_-RRB- carried_VBN by_IN m_NN :_: case_NN V_NN Ci_NN -LSB-_-LRB- k_NN -RSB-_-RRB- <_JJR m_NN ._.
+V_NN C_NN -LSB-_-LRB- k_NN -RSB-_-RRB- then_RB V_NN Ci_NN -LSB-_-LRB- k_NN -RSB-_-RRB- :_: =_JJ m_NN ._.
+V_NN C_NN -LSB-_-LRB- k_NN -RSB-_-RRB- ;_: IPi_NN -LSB-_-LRB- k_NN -RSB-_-RRB- :_: =_JJ m_NN ._.
+IP_NNP -LSB-_-LRB- k_NN -RSB-_-RRB- ;_: =_JJ i_FW :_: Mi_FW -LSB-_-LRB- ,_, k_NN -RSB-_-RRB- :_: =_JJ m_NN ._.
+M_NN -LSB-_-LRB- ,_, k_NN -RSB-_-RRB- V_NN Ci_NN -LSB-_-LRB- k_NN -RSB-_-RRB- =_JJ m_NN ._.
+V_NN C_NN -LSB-_-LRB- k_NN -RSB-_-RRB- then_RB IPi_NN -LSB-_-LRB- k_NN -RSB-_-RRB- :_: =_JJ min_NN -LRB-_-LRB- IPi_NN -LSB-_-LRB- k_NN -RSB-_-RRB- ,_, m_NN ._.
+IP_NNP -LSB-_-LRB- k_NN -RSB-_-RRB- -RRB-_-RRB- ;_: =_JJ i_FW :_: Mi_FW -LSB-_-LRB- ,_, k_NN -RSB-_-RRB- :_: =_JJ max_NN -LRB-_-LRB- Mi_NN -LSB-_-LRB- ,_, k_NN -RSB-_-RRB- ,_, m_NN ._.
+M_NN -LSB-_-LRB- ,_, k_NN -RSB-_-RRB- -RRB-_-RRB- V_NN Ci_NN -LSB-_-LRB- k_NN -RSB-_-RRB- >_JJR m_NN ._.
+V_NN C_NN -LSB-_-LRB- k_NN -RSB-_-RRB- then_RB skip_VB endcase_NN Similarly_RB to_TO the_DT proofs_NNS described_VBN in_IN -LSB-_-LRB- #_# -RSB-_-RRB- ,_, it_PRP is_VBZ possible_JJ to_TO prove_VB that_IN the_DT previous_JJ protocol_NN still_RB satisfies_VBZ the_DT property_NN proved_VBD in_IN Lemma_NNP #_# ,_, namely_RB ,_, i_FW ,_, m_NN sent_VBN by_IN Pi_NN to_TO Pj_NNP ,_, k_NN we_PRP have_VBP -LRB-_-LRB- send_VB -LRB-_-LRB- m_NN -RRB-_-RRB- ._.
+Mi_FW -LSB-_-LRB- j_NN ,_, k_NN -RSB-_-RRB- =_JJ #_# -RRB-_-RRB- -LRB-_-LRB- send_VB -LRB-_-LRB- m_NN -RRB-_-RRB- ._.
+V_NN Ci_NN -LSB-_-LRB- k_NN -RSB-_-RRB- pred_VBD -LRB-_-LRB- receive_VB -LRB-_-LRB- m_NN -RRB-_-RRB- -RRB-_-RRB- ._.
+V_NN Cj_NN -LSB-_-LRB- k_NN -RSB-_-RRB- -RRB-_-RRB- ._.
+5_CD Let_VB us_PRP consider_VB the_DT previously_RB described_VBN protocol_NN -LRB-_-LRB- Section_NN 5_CD ._.
+#_# -RRB-_-RRB- where_WRB the_DT value_NN of_IN each_DT matrix_NN entry_NN Mi_NN -LSB-_-LRB- j_NN ,_, k_NN -RSB-_-RRB- is_VBZ always_RB equal_JJ to_TO #_# ._.
+The_DT reader_NN can_MD easily_RB verify_VB that_IN this_DT setting_VBG correctly_RB implements_VBZ the_DT matrix_NN ._.
+Moreover_RB ,_, K2_NN -LRB-_-LRB- m_NN ,_, k_NN -RRB-_-RRB- is_VBZ then_RB always_RB false_JJ :_: it_PRP actually_RB coincides_VBZ with_IN K1_NN -LRB-_-LRB- k_NN ,_, m_NN -RRB-_-RRB- -LRB-_-LRB- which_WDT corresponds_VBZ to_TO the_DT case_NN where_WRB whole_JJ vectors_NNS have_VBP to_TO be_VB transmitted_VBN with_IN each_DT message_NN -RRB-_-RRB- ._.
+216_CD Intuitively_RB ,_, the_DT fact_NN that_IN some_DT columns_NNS of_IN matrices_NNS M_NN are_VBP attached_VBN to_TO application_NN messages_NNS allows_VBZ a_DT transitive_JJ transmission_NN of_IN information_NN ._.
+More_RBR precisely_RB ,_, the_DT relevant_JJ history_NN of_IN Pk_NN known_VBN by_IN Pj_NN is_VBZ transmitted_VBN to_TO a_DT process_NN Pi_NN via_IN a_DT causal_JJ sequence_NN of_IN messages_NNS from_IN Pj_NN to_TO Pi_NN ._.
+In_IN contrast_NN ,_, the_DT protocol_NN described_VBN in_IN Section_NN #_# ._.
+#_# used_VBN only_RB a_DT direct_JJ transmission_NN of_IN this_DT information_NN ._.
+In_IN fact_NN ,_, as_IN explained_VBN Section_NN #_# ._.
+#_# ,_, the_DT predicate_NN c_NN -LRB-_-LRB- locally_RB implemented_VBN by_IN the_DT matrix_NN M_NN -RRB-_-RRB- was_VBD based_VBN on_IN the_DT existence_NN of_IN a_DT message_NN m_NN sent_VBN by_IN Pj_NN to_TO Pi_NNP ,_, piggybacking_VBG the_DT triple_JJ -LRB-_-LRB- k_NN ,_, m_NN ._.
+V_NN C_NN -LSB-_-LRB- k_NN -RSB-_-RRB- ,_, m_NN ._.
+IP_NNP -LSB-_-LRB- k_NN -RSB-_-RRB- -RRB-_-RRB- ,_, and_CC m_NN ._.
+V_NN C_NN -LSB-_-LRB- k_NN -RSB-_-RRB- V_NN Ci_NN -LSB-_-LRB- k_NN -RSB-_-RRB- ,_, i_FW ._.
+e_LS ._.
+,_, on_IN the_DT existence_NN of_IN a_DT direct_JJ transmission_NN of_IN information_NN -LRB-_-LRB- by_IN the_DT message_NN m_NN -RRB-_-RRB- ._.
+The_DT resulting_VBG IPT_NNP protocol_NN -LRB-_-LRB- defined_VBN by_IN the_DT rules_NNS RM0_NN ,_, RM1_NN ,_, RM2_NN ''_'' and_CC RM3_NN ''_'' -RRB-_-RRB- uses_VBZ the_DT same_JJ condition_NN K2_NN -LRB-_-LRB- m_NN ,_, k_NN -RRB-_-RRB- as_IN the_DT previous_JJ one_CD ._.
+It_PRP shows_VBZ an_DT interesting_JJ tradeoff_NN between_IN the_DT number_NN of_IN triples_NNS -LRB-_-LRB- k_NN ,_, V_NN Ci_NN -LSB-_-LRB- k_NN -RSB-_-RRB- ,_, IPi_NN -LSB-_-LRB- k_NN -RSB-_-RRB- -RRB-_-RRB- whose_WP$ transmission_NN is_VBZ saved_VBN and_CC the_DT number_NN of_IN boolean_NN vectors_NNS that_WDT have_VBP to_TO be_VB additionally_RB piggybacked_VBN ._.
+It_PRP is_VBZ interesting_JJ to_TO notice_VB that_IN the_DT size_NN of_IN this_DT additional_JJ information_NN is_VBZ bounded_VBN while_IN each_DT triple_JJ includes_VBZ a_DT non-bounded_JJ integer_NN -LRB-_-LRB- namely_RB a_DT vector_NN clock_NN value_NN -RRB-_-RRB- ._.
+6_CD ._.
+EXPERIMENTAL_JJ STUDY_NN This_DT section_NN compares_VBZ the_DT behaviors_NNS of_IN the_DT previous_JJ protocols_NNS ._.
+This_DT comparison_NN is_VBZ done_VBN with_IN a_DT simulation_NN study_NN ._.
+IPT1_NN denotes_VBZ the_DT protocol_NN presented_VBN in_IN Section_NN #_# ._.
+#_# that_WDT uses_VBZ the_DT condition_NN K1_NN -LRB-_-LRB- m_NN ,_, k_NN -RRB-_-RRB- -LRB-_-LRB- which_WDT is_VBZ always_RB equal_JJ to_TO false_JJ -RRB-_-RRB- ._.
+IPT2_NN denotes_VBZ the_DT protocol_NN presented_VBN in_IN Section_NN #_# ._.
+#_# that_WDT uses_VBZ the_DT condition_NN K2_NN -LRB-_-LRB- m_NN ,_, k_NN -RRB-_-RRB- where_WRB messages_NNS carry_VBP triples_NNS ._.
+Finally_RB ,_, IPT3_NN denotes_VBZ the_DT protocol_NN presented_VBN in_IN Section_NN #_# ._.
+#_# that_WDT also_RB uses_VBZ the_DT condition_NN K2_NN -LRB-_-LRB- m_NN ,_, k_NN -RRB-_-RRB- but_CC where_WRB messages_NNS carry_VBP additional_JJ boolean_NN vectors_NNS ._.
+This_DT section_NN does_VBZ not_RB aim_VB to_TO provide_VB an_DT in-depth_JJ simulation_NN study_NN of_IN the_DT protocols_NNS ,_, but_CC rather_RB presents_VBZ a_DT general_JJ view_NN on_IN the_DT protocol_NN behaviors_NNS ._.
+To_TO this_DT end_NN ,_, it_PRP compares_VBZ IPT2_NN and_CC IPT3_NN with_IN regard_NN to_TO IPT1_NN ._.
+More_RBR precisely_RB ,_, for_IN IPT2_NN the_DT aim_NN was_VBD to_TO evaluate_VB the_DT gain_NN in_IN terms_NNS of_IN triples_NNS -LRB-_-LRB- k_NN ,_, V_NN Ci_NN -LSB-_-LRB- k_NN -RSB-_-RRB- ,_, IPi_NN -LSB-_-LRB- k_NN -RSB-_-RRB- -RRB-_-RRB- not_RB transmitted_VBN with_IN respect_NN to_TO the_DT systematic_JJ transmission_NN of_IN whole_JJ vectors_NNS as_IN done_VBN in_IN IPT1_NN ._.
+For_IN IPT3_NN ,_, the_DT aim_NN was_VBD to_TO evaluate_VB the_DT tradeoff_NN between_IN the_DT additional_JJ boolean_NN vectors_NNS transmitted_VBD and_CC the_DT number_NN of_IN saved_VBN triples_NNS ._.
+The_DT behavior_NN of_IN each_DT protocol_NN was_VBD analyzed_VBN on_IN a_DT set_NN of_IN programs_NNS ._.
+6_CD ._.
+#_# Simulation_NNP Parameters_NNPS The_DT simulator_NN provides_VBZ different_JJ parameters_NNS enabling_VBG to_TO tune_VB both_CC the_DT communication_NN and_CC the_DT processes_NNS features_NNS ._.
+These_DT parameters_NNS allow_VBP to_TO set_VB the_DT number_NN of_IN processes_NNS for_IN the_DT simulated_JJ computation_NN ,_, to_TO vary_VB the_DT rate_NN of_IN communication_NN -LRB-_-LRB- send_VB /_: receive_VB -RRB-_-RRB- events_NNS ,_, and_CC to_TO alter_VB the_DT time_NN duration_NN between_IN two_CD consecutive_JJ relevant_JJ events_NNS ._.
+Moreover_RB ,_, to_TO be_VB independent_JJ of_IN a_DT particular_JJ topology_NN of_IN the_DT underlying_JJ network_NN ,_, a_DT fully_RB connected_JJ network_NN is_VBZ assumed_VBN ._.
+Internal_JJ events_NNS have_VBP not_RB been_VBN considered_VBN ._.
+Since_IN the_DT presence_NN of_IN the_DT triples_NNS -LRB-_-LRB- k_NN ,_, V_NN Ci_NN -LSB-_-LRB- k_NN -RSB-_-RRB- ,_, IPi_NN -LSB-_-LRB- k_NN -RSB-_-RRB- -RRB-_-RRB- piggybacked_VBN by_IN a_DT message_NN strongly_RB depends_VBZ on_IN the_DT frequency_NN at_IN which_WDT relevant_JJ events_NNS are_VBP produced_VBN by_IN a_DT process_NN ,_, different_JJ time_NN distributions_NNS between_IN two_CD consecutive_JJ relevant_JJ events_NNS have_VBP been_VBN implemented_VBN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, normal_JJ ,_, uniform_JJ ,_, and_CC Poisson_NNP distributions_NNS -RRB-_-RRB- ._.
+The_DT senders_NNS of_IN messages_NNS are_VBP chosen_VBN according_VBG to_TO a_DT random_JJ law_NN ._.
+To_TO exhibit_VB particular_JJ configurations_NNS of_IN a_DT distributed_VBN computation_NN a_DT given_VBN scenario_NN can_MD be_VB provided_VBN to_TO the_DT simulator_NN ._.
+Message_NN transmission_NN delays_NNS follow_VBP a_DT standard_JJ normal_JJ distribution_NN ._.
+Finally_RB ,_, the_DT last_JJ parameter_NN of_IN the_DT simulator_NN is_VBZ the_DT number_NN of_IN send_VB events_NNS that_WDT occurred_VBD during_IN a_DT simulation_NN ._.
+6_CD ._.
+#_# Parameter_NNP Settings_NNPS To_TO compare_VB the_DT behavior_NN of_IN the_DT three_CD IPT_NNP protocols_NNS ,_, we_PRP performed_VBD a_DT large_JJ number_NN of_IN simulations_NNS using_VBG different_JJ parameters_NNS setting_VBG ._.
+We_PRP set_VBD to_TO ##_VB the_DT number_NN of_IN processes_NNS participating_VBG to_TO a_DT distributed_VBN computation_NN ._.
+The_DT number_NN of_IN communication_NN events_NNS during_IN the_DT simulation_NN has_VBZ been_VBN set_VBN to_TO 10_CD ###_CD ._.
+The_DT parameter_NN of_IN the_DT Poisson_NNP time_NN distribution_NN -LRB-_-LRB- is_VBZ the_DT average_JJ number_NN of_IN relevant_JJ events_NNS in_IN a_DT given_VBN time_NN interval_NN -RRB-_-RRB- has_VBZ been_VBN set_VBN so_IN that_IN the_DT relevant_JJ events_NNS are_VBP generated_VBN at_IN the_DT beginning_NN of_IN the_DT simulation_NN ._.
+With_IN the_DT uniform_JJ time_NN distribution_NN ,_, a_DT relevant_JJ event_NN is_VBZ generated_VBN -LRB-_-LRB- in_IN the_DT average_NN -RRB-_-RRB- every_DT ##_NN communication_NN events_NNS ._.
+The_DT location_NN parameter_NN of_IN the_DT standard_JJ normal_JJ time_NN distribution_NN has_VBZ been_VBN set_VBN so_IN that_IN the_DT occurrence_NN of_IN relevant_JJ events_NNS is_VBZ shifted_VBN around_IN the_DT third_JJ part_NN of_IN the_DT simulation_NN experiment_NN ._.
+As_IN noted_VBN previously_RB ,_, the_DT simulator_NN can_MD be_VB fed_VBN with_IN a_DT given_VBN scenario_NN ._.
+This_DT allows_VBZ to_TO analyze_VB the_DT worst_JJS case_NN scenarios_NNS for_IN IPT2_NN and_CC IPT3_NN ._.
+These_DT scenarios_NNS correspond_VBP to_TO the_DT case_NN where_WRB the_DT relevant_JJ events_NNS are_VBP generated_VBN at_IN the_DT maximal_JJ frequency_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, each_DT time_NN a_DT process_NN sends_VBZ or_CC receives_VBZ a_DT message_NN ,_, it_PRP produces_VBZ a_DT relevant_JJ event_NN -RRB-_-RRB- ._.
+Finally_RB ,_, the_DT three_CD IPT_NNP protocols_NNS are_VBP analyzed_VBN with_IN the_DT same_JJ simulation_NN parameters_NNS ._.
+6_CD ._.
+#_# Simulation_NNP Results_NNS The_DT results_NNS are_VBP displayed_VBN on_IN the_DT Figures_NNS #_# ._.
+a-3_NN ._.
+d_NN ._.
+These_DT figures_NNS plot_VBP the_DT gain_NN of_IN the_DT protocols_NNS in_IN terms_NNS of_IN the_DT number_NN of_IN triples_NNS that_WDT are_VBP not_RB transmitted_VBN -LRB-_-LRB- y_JJ axis_NN -RRB-_-RRB- with_IN respect_NN to_TO the_DT number_NN of_IN communication_NN events_NNS -LRB-_-LRB- x_CC axis_NN -RRB-_-RRB- ._.
+From_IN these_DT figures_NNS ,_, we_PRP observe_VBP that_IN ,_, whatever_WDT the_DT time_NN distribution_NN followed_VBN by_IN the_DT relevant_JJ events_NNS ,_, both_DT IPT2_NN and_CC IPT3_NN exhibit_VBP a_DT behavior_NN better_JJR than_IN IPT1_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, the_DT total_JJ number_NN of_IN piggybacked_VBN triples_NNS is_VBZ lower_JJR in_IN IPT2_NN and_CC IPT3_NN than_IN in_IN IPT1_NN -RRB-_-RRB- ,_, even_RB in_IN the_DT worst_JJS case_NN ._.
+Let_VB us_PRP consider_VB the_DT worst_JJS scenario_NN ._.
+In_IN that_DT case_NN ,_, the_DT gain_NN is_VBZ obtained_VBN at_IN the_DT very_JJ beginning_NN of_IN the_DT simulation_NN and_CC lasts_VBZ as_RB long_JJ as_IN it_PRP exists_VBZ a_DT process_NN Pj_NN for_IN which_WDT k_NN :_: V_NN Cj_NN -LSB-_-LRB- k_NN -RSB-_-RRB- =_JJ #_# ._.
+In_IN that_DT case_NN ,_, the_DT condition_NN k_NN :_: K_NNP -LRB-_-LRB- m_NN ,_, k_NN -RRB-_-RRB- is_VBZ satisfied_JJ ._.
+As_RB soon_RB as_IN k_NN :_: V_NN Cj_NN -LSB-_-LRB- k_NN -RSB-_-RRB- =_JJ #_# ,_, both_DT IPT2_NN and_CC IPT3_NN behave_VBP as_IN IPT1_NN -LRB-_-LRB- the_DT shape_NN of_IN the_DT curve_NN becomes_VBZ flat_JJ -RRB-_-RRB- since_IN the_DT condition_NN K_NN -LRB-_-LRB- m_NN ,_, k_NN -RRB-_-RRB- is_VBZ no_DT longer_RBR satisfied_JJ ._.
+Figure_NNP #_# ._.
+a_DT shows_NNS that_WDT during_IN the_DT first_JJ events_NNS of_IN the_DT simulation_NN ,_, the_DT slope_NN of_IN curves_NNS IPT2_NN and_CC IPT3_NN are_VBP steep_JJ ._.
+The_DT same_JJ occurs_VBZ in_IN Figure_NNP #_# ._.
+d_NN -LRB-_-LRB- that_IN depicts_VBZ the_DT worst_JJS case_NN scenario_NN -RRB-_-RRB- ._.
+Then_RB the_DT slope_NN of_IN these_DT curves_NNS decreases_VBZ and_CC remains_VBZ constant_JJ until_IN the_DT end_NN of_IN the_DT simulation_NN ._.
+In_IN fact_NN ,_, as_RB soon_RB as_IN V_NN Cj_NN -LSB-_-LRB- k_NN -RSB-_-RRB- becomes_VBZ greater_JJR than_IN #_# ,_, the_DT condition_NN K_NN -LRB-_-LRB- m_NN ,_, k_NN -RRB-_-RRB- reduces_VBZ to_TO -LRB-_-LRB- Mi_FW -LSB-_-LRB- j_NN ,_, k_NN -RSB-_-RRB- =_JJ #_# IPi_SYM -LSB-_-LRB- k_NN -RSB-_-RRB- =_JJ #_# -RRB-_-RRB- ._.
+Figure_NNP #_# ._.
+b_NN displays_VBZ an_DT interesting_JJ feature_NN ._.
+It_PRP considers_VBZ =_JJ 100_CD ._.
+As_IN the_DT relevant_JJ events_NNS are_VBP taken_VBN only_RB during_IN the_DT very_JJ beginning_NN of_IN the_DT simulation_NN ,_, this_DT figure_NN exhibits_VBZ a_DT very_RB steep_JJ slope_NN as_IN the_DT other_JJ figures_NNS ._.
+The_DT figure_NN shows_VBZ that_IN ,_, as_RB soon_RB as_IN no_DT more_JJR relevant_JJ events_NNS are_VBP taken_VBN ,_, on_IN average_NN ,_, ##_CD %_NN of_IN the_DT triples_NNS are_VBP not_RB piggybacked_VBN by_IN the_DT messages_NNS ._.
+This_DT shows_VBZ the_DT importance_NN of_IN matrix_NN Mi_NNP ._.
+Furthermore_RB ,_, IPT3_NN benefits_NNS from_IN transmitting_VBG additional_JJ boolean_NN vectors_NNS to_TO save_VB triple_JJ transmissions_NNS ._.
+The_DT Figures_NNS #_# ._.
+a-3_NN ._.
+c_NN show_NN that_IN the_DT average_JJ gain_NN of_IN IPT3_NN with_IN respect_NN to_TO IPT2_NN is_VBZ close_JJ to_TO ##_CD %_NN ._.
+Finally_RB ,_, Figure_NNP #_# ._.
+c_NN underlines_VBZ even_RB more_RBR the_DT importance_NN 217_CD of_IN matrix_NN Mi_NNP ._.
+When_WRB very_RB few_JJ relevant_JJ events_NNS are_VBP taken_VBN ,_, IPT2_NN and_CC IPT3_NN turn_VBP out_RP to_TO be_VB very_RB efficient_JJ ._.
+Indeed_RB ,_, this_DT figure_NN shows_VBZ that_IN ,_, very_RB quickly_RB ,_, the_DT gain_NN in_IN number_NN of_IN triples_NNS that_WDT are_VBP saved_VBN is_VBZ very_RB high_JJ -LRB-_-LRB- actually_RB ,_, ##_CD %_NN of_IN the_DT triples_NNS are_VBP saved_VBN -RRB-_-RRB- ._.
+6_CD ._.
+#_# Lessons_NNPS Learned_VBD from_IN the_DT Simulation_NN Of_IN course_NN ,_, all_DT simulation_NN results_NNS are_VBP consistent_JJ with_IN the_DT theoretical_JJ results_NNS ._.
+IPT3_NN is_VBZ always_RB better_JJR than_IN or_CC equal_JJ to_TO IPT2_NN ,_, and_CC IPT2_NN is_VBZ always_RB better_JJR than_IN IPT1_NN ._.
+The_DT simulation_NN results_VBZ teach_VB us_PRP more_RBR :_: The_DT first_JJ lesson_NN we_PRP have_VBP learnt_VBN concerns_NNS the_DT matrix_NN Mi_NNP ._.
+Its_PRP$ use_NN is_VBZ quite_RB significant_JJ but_CC mainly_RB depends_VBZ on_IN the_DT time_NN distribution_NN followed_VBN by_IN the_DT relevant_JJ events_NNS ._.
+On_IN the_DT one_CD hand_NN ,_, when_WRB observing_VBG Figure_NNP #_# ._.
+b_NN where_WRB a_DT large_JJ number_NN of_IN relevant_JJ events_NNS are_VBP taken_VBN in_IN a_DT very_RB short_JJ time_NN ,_, IPT2_NN can_MD save_VB up_RP to_TO ##_CD %_NN of_IN the_DT triples_NNS ._.
+However_RB ,_, we_PRP could_MD have_VB expected_VBN a_DT more_RBR sensitive_JJ gain_NN of_IN IPT2_NN since_IN the_DT boolean_NN vector_NN IP_NNP tends_VBZ to_TO stabilize_VB to_TO -LSB-_-LRB- #_# ,_, ..._: ,_, #_# -RSB-_-RRB- when_WRB no_DT relevant_JJ events_NNS are_VBP taken_VBN ._.
+In_IN fact_NN ,_, as_IN discussed_VBN in_IN Section_NN #_# ._.
+#_# ,_, the_DT management_NN of_IN matrix_NN Mi_NN within_IN IPT2_NN does_VBZ not_RB allow_VB a_DT transitive_JJ transmission_NN of_IN information_NN but_CC only_RB a_DT direct_JJ transmission_NN of_IN this_DT information_NN ._.
+This_DT explains_VBZ why_WRB some_DT columns_NNS of_IN Mi_NNP may_MD remain_VB equal_JJ to_TO #_# while_IN they_PRP could_MD potentially_RB be_VB equal_JJ to_TO #_# ._.
+Differently_RB ,_, as_IN IPT3_NN benefits_NNS from_IN transmitting_VBG additional_JJ boolean_NN vectors_NNS -LRB-_-LRB- providing_VBG a_DT transitive_JJ transmission_NN information_NN -RRB-_-RRB- it_PRP reaches_VBZ a_DT gain_NN of_IN ##_CD %_NN ._.
+On_IN the_DT other_JJ hand_NN ,_, when_WRB very_RB few_JJ relevant_JJ events_NNS are_VBP taken_VBN in_IN a_DT large_JJ period_NN of_IN time_NN ,_, the_DT behavior_NN of_IN IPT2_NN and_CC IPT3_NN turns_VBZ out_RP to_TO be_VB very_RB efficient_JJ since_IN the_DT transmission_NN of_IN up_RB to_TO ##_CD %_NN of_IN the_DT triples_NNS is_VBZ saved_VBN ._.
+This_DT comes_VBZ from_IN the_DT fact_NN that_IN very_RB quickly_RB the_DT boolean_NN vector_NN IPi_NN tends_VBZ to_TO stabilize_VB to_TO -LSB-_-LRB- #_# ,_, ..._: ,_, #_# -RSB-_-RRB- and_CC that_IN matrix_NN Mi_NN contains_VBZ very_RB few_JJ 0_CD since_IN very_RB few_JJ relevant_JJ events_NNS have_VBP been_VBN taken_VBN ._.
+Thus_RB ,_, a_DT direct_JJ transmission_NN of_IN the_DT information_NN is_VBZ sufficient_JJ to_TO quickly_RB get_VB matrices_NNS Mi_NNP equal_JJ to_TO -LSB-_-LRB- #_# ,_, ..._: ,_, #_# -RSB-_-RRB- ,_, ..._: ,_, -LSB-_-LRB- #_# ,_, ..._: ,_, #_# -RSB-_-RRB- ._.
+The_DT second_JJ lesson_NN concerns_NNS IPT3_NN ,_, more_RBR precisely_RB ,_, the_DT tradeoff_NN between_IN the_DT additional_JJ piggybacking_VBG of_IN boolean_NN vectors_NNS and_CC the_DT number_NN of_IN triples_NNS whose_WP$ transmission_NN is_VBZ saved_VBN ._.
+With_IN n_NN =_JJ ##_CD ,_, adding_VBG ##_CD booleans_NNS to_TO a_DT triple_JJ does_VBZ not_RB substantially_RB increases_VBZ its_PRP$ size_NN ._.
+The_DT Figures_NNS #_# ._.
+a-3_NN ._.
+c_NN exhibit_VBP the_DT number_NN of_IN triples_NNS whose_WP$ transmission_NN is_VBZ saved_VBN :_: the_DT average_JJ gain_NN -LRB-_-LRB- in_IN number_NN of_IN triples_NNS -RRB-_-RRB- of_IN IPT3_NN with_IN respect_NN to_TO IPT2_NN is_VBZ about_IN ##_CD %_NN ._.
+7_CD ._.
+CONCLUSION_NN This_DT paper_NN has_VBZ addressed_VBN an_DT important_JJ causality-related_JJ distributed_VBN computing_NN problem_NN ,_, namely_RB ,_, the_DT Immediate_NNP Predecessors_NNP Tracking_NNP problem_NN ._.
+It_PRP has_VBZ presented_VBN a_DT family_NN of_IN protocols_NNS that_WDT provide_VBP each_DT relevant_JJ event_NN with_IN a_DT timestamp_NN that_WDT exactly_RB identify_VBP its_PRP$ immediate_JJ predecessors_NNS ._.
+The_DT family_NN is_VBZ defined_VBN by_IN a_DT general_JJ condition_NN that_WDT allows_VBZ application_NN messages_NNS to_TO piggyback_VB control_JJ information_NN whose_WP$ size_NN can_MD be_VB smaller_JJR than_IN n_NN -LRB-_-LRB- the_DT number_NN of_IN processes_NNS -RRB-_-RRB- ._.
+In_IN that_DT sense_NN ,_, this_DT family_NN defines_VBZ message_NN size-efficient_JJ IPT_NN protocols_NNS ._.
+According_VBG to_TO the_DT way_NN the_DT general_JJ condition_NN is_VBZ implemented_VBN ,_, different_JJ IPT_NNP protocols_NNS can_MD be_VB obtained_VBN ._.
+Three_CD of_IN them_PRP have_VBP been_VBN described_VBN and_CC analyzed_VBN with_IN simulation_NN experiments_NNS ._.
+Interestingly_RB ,_, it_PRP has_VBZ also_RB been_VBN shown_VBN that_IN the_DT efficiency_NN of_IN the_DT protocols_NNS -LRB-_-LRB- measured_VBN in_IN terms_NNS of_IN the_DT size_NN of_IN the_DT control_NN information_NN that_WDT is_VBZ not_RB piggybacked_VBN by_IN an_DT application_NN message_NN -RRB-_-RRB- depends_VBZ on_IN the_DT pattern_NN defined_VBN by_IN the_DT communication_NN events_NNS and_CC the_DT relevant_JJ events_NNS ._.
+Last_JJ but_CC not_RB least_JJS ,_, it_PRP is_VBZ interesting_JJ to_TO note_VB that_IN if_IN one_CD is_VBZ not_RB interested_JJ in_IN tracking_VBG the_DT immediate_JJ predecessor_NN events_NNS ,_, the_DT protocols_NNS presented_VBN in_IN the_DT paper_NN can_MD be_VB simplified_VBN by_IN suppressing_VBG the_DT IPi_NN booleans_NNS vectors_NNS -LRB-_-LRB- but_CC keeping_VBG the_DT boolean_JJ matrices_NNS Mi_NNP -RRB-_-RRB- ._.
+The_DT resulting_VBG protocols_NNS ,_, that_IN implement_VBP a_DT vector_NN clock_NN system_NN ,_, are_VBP particularly_RB efficient_JJ as_IN far_RB as_IN the_DT size_NN of_IN the_DT timestamp_NN carried_VBN by_IN each_DT message_NN is_VBZ concerned_VBN ._.
+Interestingly_RB ,_, this_DT efficiency_NN is_VBZ not_RB obtained_VBN at_IN the_DT price_NN of_IN additional_JJ assumptions_NNS -LRB-_-LRB- such_JJ as_IN fifo_NN channels_NNS -RRB-_-RRB- ._.
+8_CD ._.
+REFERENCES_NNS -LSB-_-LRB- #_# -RSB-_-RRB- Anceaume_NNP E_NNP ._.
+,_, Helary_JJ J_NN ._.
+-_: M_NN ._.
+and_CC Raynal_NNP M_NN ._.
+,_, Tracking_VBG Immediate_NNP Predecessors_NNP in_IN Distributed_VBN Computations_NNS ._.
+Res_NNP ._.
+Report_NNP #_# ####_CD ,_, IRISA_NN ,_, Univ_NNP ._.
+Rennes_NNP -LRB-_-LRB- France_NNP -RRB-_-RRB- ,_, ####_NN ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- Baldoni_NNP R_NN ._.
+,_, Prakash_NNP R_NNP ._.
+,_, Raynal_NNP M_NN ._.
+and_CC Singhal_NNP M_NN ._.
+,_, Efficient_JJ -_: Causal_NNP Broadcasting_NNP ._.
+Journal_NNP of_IN Computer_NNP Systems_NNPS Science_NNP and_CC Engineering_NNP ,_, ##_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 263-270_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- Chandy_NNP K_NNP ._.
+M_NN ._.
+and_CC Lamport_NNP L_NNP ._.
+,_, Distributed_VBN Snapshots_NNS :_: Determining_VBG Global_NNP States_NNPS of_IN Distributed_VBN Systems_NNPS ,_, ACM_NNP Transactions_NNS on_IN Computer_NNP Systems_NNPS ,_, #_# -LRB-_-LRB- #_# -RRB-_-RRB- :_: 63-75_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- Diehl_NNP C_NNP ._.
+,_, Jard_NN C_NN ._.
+and_CC Rampon_NNP J_NNP ._.
+-_: X_NN ._.
+,_, Reachability_NNP Analysis_NN of_IN Distributed_VBN Executions_NNS ,_, Proc_NNP ._.
+TAPSOFT_NN ''_'' ##_NN ,_, Springer-Verlag_NNP LNCS_NNP ###_CD ,_, pp_NN ._.
+629-643_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- Fidge_NN C_NN ._.
+J_NN ._.
+,_, Timestamps_NNP in_IN Message-Passing_NNP Systems_NNPS that_WDT Preserve_VB Partial_JJ Ordering_NNP ,_, Proc_NNP ._.
+11th_JJ Australian_JJ Computing_NNP Conference_NNP ,_, pp_NN ._.
+56-66_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- Fromentin_NN E_NN ._.
+,_, Jard_NN C_NN ._.
+,_, Jourdan_NNP G_NNP ._.
+-_: V_NN ._.
+and_CC Raynal_NNP M_NN ._.
+,_, On-the-fly_JJ Analysis_NN of_IN Distributed_VBN Computations_NNS ,_, IPL_NNP ,_, 54_CD :_: 267-274_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- Fromentin_NN E_NN ._.
+and_CC Raynal_NNP M_NN ._.
+,_, Shared_VBN Global_NNP States_NNPS in_IN Distributed_VBN Computations_NNS ,_, JCSS_NN ,_, ##_NN -LRB-_-LRB- #_# -RRB-_-RRB- :_: 522-528_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- Fromentin_NN E_NN ._.
+,_, Raynal_NNP M_NN ._.
+,_, Garg_NNP V_NNP ._.
+K_NN ._.
+and_CC Tomlinson_NNP A_NNP ._.
+,_, On-the-Fly_NNP Testing_NNP of_IN Regular_JJ Patterns_NN in_IN Distributed_VBN Computations_NNS ._.
+Proc_NNP ._.
+ICPP_NN ''_'' ##_NN ,_, Vol_NNP ._.
+#_# :_: 73-76_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- Garg_NNP V_NNP ._.
+K_NN ._.
+,_, Principles_NNS of_IN Distributed_VBN Systems_NNPS ,_, Kluwer_NNP Academic_NNP Press_NNP ,_, ###_CD pages_NNS ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Helary_JJ J_NN ._.
+-_: M_NN ._.
+,_, Mostefaoui_NNP A_NNP ._.
+,_, Netzer_NNP R_NNP ._.
+H_NN ._.
+B_NN ._.
+and_CC Raynal_NNP M_NN ._.
+,_, Communication-Based_JJ Prevention_NNP of_IN Useless_JJ Ckeckpoints_NNS in_IN Distributed_VBN Computations_NNS ._.
+Distributed_VBN Computing_NNP ,_, ##_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 29-43_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Helary_JJ J_NN ._.
+-_: M_NN ._.
+,_, Melideo_NNP G_NNP ._.
+and_CC Raynal_NNP M_NN ._.
+,_, Tracking_VBG Causality_NN in_IN Distributed_VBN Systems_NNPS :_: a_DT Suite_NN of_IN Efficient_JJ Protocols_NNS ._.
+Proc_NNP ._.
+SIROCCO_NNP ''_'' ##_NN ,_, Carleton_NNP University_NNP Press_NNP ,_, pp_NN ._.
+181-195_CD ,_, L_NN ''_'' Aquila_NNP -LRB-_-LRB- Italy_NNP -RRB-_-RRB- ,_, June_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Helary_JJ J_NN ._.
+-_: M_NN ._.
+,_, Netzer_NNP R_NNP ._.
+and_CC Raynal_NNP M_NN ._.
+,_, Consistency_NNP Issues_NNP in_IN Distributed_VBN Checkpoints_NNS ._.
+IEEE_NNP TSE_NNP ,_, 25_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 274-281_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Hurfin_NN M_NN ._.
+,_, Mizuno_NNP M_NN ._.
+,_, Raynal_NNP M_NN ._.
+and_CC Singhal_NNP M_NN ._.
+,_, Efficient_JJ Distributed_VBN Detection_NN of_IN Conjunction_NN of_IN Local_JJ Predicates_NNS in_IN Asynch_NNP Computations_NNS ._.
+IEEE_NNP TSE_NNP ,_, ##_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 664-677_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Lamport_NN L_NN ._.
+,_, Time_NNP ,_, Clocks_NNP and_CC the_DT Ordering_NNP of_IN Events_NNS in_IN a_DT Distributed_VBN System_NN ._.
+Comm_NNP ._.
+ACM_NNP ,_, ##_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 558-565_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Marzullo_NNP K_NNP ._.
+and_CC Sabel_NNP L_NNP ._.
+,_, Efficient_JJ Detection_NN of_IN a_DT Class_NN of_IN Stable_JJ Properties_NNPS ._.
+Distributed_VBN Computing_NNP ,_, #_# -LRB-_-LRB- #_# -RRB-_-RRB- :_: 81-91_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Mattern_NNP F_NN ._.
+,_, Virtual_JJ Time_NNP and_CC Global_NNP States_NNPS of_IN Distributed_VBN Systems_NNPS ._.
+Proc_NNP ._.
+Int_NN ._.
+Conf_NNP ._.
+Parallel_JJ and_CC Distributed_VBN Algorithms_NNS ,_, -LRB-_-LRB- Cosnard_NNP ,_, Quinton_NNP ,_, Raynal_NNP ,_, Robert_NNP Eds_NNP -RRB-_-RRB- ,_, North-Holland_NNP ,_, pp_NN ._.
+215-226_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Prakash_NN R_NN ._.
+,_, Raynal_NNP M_NN ._.
+and_CC Singhal_NNP M_NN ._.
+,_, An_DT Adaptive_JJ Causal_NNP Ordering_NNP Algorithm_NNP Suited_NNP to_TO Mobile_NNP Computing_NNP Environment_NNP ._.
+JPDC_NNP ,_, ##_CD :_: 190-204_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Raynal_NN M_NN ._.
+and_CC Singhal_NNP S_NN ._.
+,_, Logical_JJ Time_NN :_: Capturing_NNP Causality_NNP in_IN Distributed_VBN Systems_NNPS ._.
+IEEE_NNP Computer_NNP ,_, 29_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 49-57_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Singhal_NNP M_NN ._.
+and_CC Kshemkalyani_NNP A_NNP ._.
+,_, An_DT Efficient_JJ Implementation_NN of_IN Vector_NNP Clocks_NNP ._.
+IPL_NNP ,_, ##_CD :_: 47-52_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Wang_NNP Y_NN ._.
+M_NN ._.
+,_, Consistent_JJ Global_JJ Checkpoints_NNS That_WDT Contain_NNP a_DT Given_VBN Set_VB of_IN Local_JJ Checkpoints_NNS ._.
+IEEE_NNP TOC_NNP ,_, 46_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 456-468_CD ,_, ####_CD ._.
+218_CD 0_CD 1000_CD 2000_CD 3000_CD 4000_CD 5000_CD 6000_CD 0_CD ####_CD ####_CD ####_CD ####_CD #####_CD gaininnumberoftriples_NNS communication_NN events_NNS number_NN IPT1_NN IPT2_NN IPT3_NN relevant_JJ events_NNS -LRB-_-LRB- a_DT -RRB-_-RRB- The_DT relevant_JJ events_NNS follow_VBP a_DT uniform_JJ distribution_NN -LRB-_-LRB- ratio_NN =_JJ #_# /_: ##_CD -RRB-_-RRB- -5000_CD 0_CD 5000_CD 10000_CD 15000_CD 20000_CD 25000_CD 30000_CD 35000_CD 40000_CD 45000_CD 50000_CD 0_CD ####_CD ####_CD ####_CD ####_CD #####_CD gaininnumberoftriples_NNS communication_NN events_NNS number_NN IPT1_NN IPT2_NN IPT3_NN relevant_JJ events_NNS -LRB-_-LRB- b_NN -RRB-_-RRB- The_DT relevant_JJ events_NNS follow_VBP a_DT Poisson_NNP distribution_NN -LRB-_-LRB- =_JJ ###_NN -RRB-_-RRB- 0_CD 10000_CD 20000_CD 30000_CD 40000_CD 50000_CD 60000_CD 70000_CD 80000_CD 90000_CD 100000_CD 0_CD ####_CD ####_CD ####_CD ####_CD #####_CD gaininnumberoftriples_NNS communication_NN events_NNS number_NN IPT1_NN IPT2_NN IPT3_NN relevant_JJ events_NNS -LRB-_-LRB- c_NN -RRB-_-RRB- The_DT relevant_JJ events_NNS follow_VBP a_DT normal_JJ distribution_NN 0_CD 50_CD 100_CD 150_CD 200_CD 250_CD 300_CD 350_CD 400_CD 450_CD 1_CD ##_CD ###_CD ####_CD #####_CD gaininnumberoftriples_NNS communication_NN events_NNS number_NN IPT1_NN IPT2_NN IPT3_NN relevant_JJ events_NNS -LRB-_-LRB- d_NN -RRB-_-RRB- For_IN each_DT pi_NN ,_, pi_NN takes_VBZ a_DT relevant_JJ event_NN and_CC broadcast_NN to_TO all_DT processes_NNS Figure_NNP #_# :_: Experimental_JJ Results_NNS 219_CD

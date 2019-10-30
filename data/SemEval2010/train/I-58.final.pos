@@ -1,0 +1,503 @@
+An_DT Efficient_JJ Heuristic_NNP Approach_NNP for_IN Security_NNP Against_IN Multiple_JJ Adversaries_NNS Praveen_NNP Paruchuri_NNP ,_, Jonathan_NNP P_NN ._.
+Pearce_NNP ,_, Milind_NNP Tambe_NNP ,_, Fernando_NNP Ordonez_NNP University_NNP of_IN Southern_NNP California_NNP Los_NNP Angeles_NNP ,_, CA_NNP #####_NNP -LCB-_-LRB- paruchur_NN ,_, jppearce_NN ,_, tambe_NN ,_, fordon_NN -RCB-_-RRB- @_IN usc_NN ._.
+edu_NN Sarit_NNP Kraus_NNP Bar-Ilan_NNP University_NNP Ramat-Gan_NNP #####_NNP ,_, Israel_NNP sarit_NNP @_IN cs_NNS ._.
+biu_NN ._.
+ac_NN ._.
+il_NN ABSTRACT_NN In_IN adversarial_JJ multiagent_JJ domains_NNS ,_, security_NN ,_, commonly_RB defined_VBN as_IN the_DT ability_NN to_TO deal_VB with_IN intentional_JJ threats_NNS from_IN other_JJ agents_NNS ,_, is_VBZ a_DT critical_JJ issue_NN ._.
+This_DT paper_NN focuses_VBZ on_IN domains_NNS where_WRB these_DT threats_NNS come_VBP from_IN unknown_JJ adversaries_NNS ._.
+These_DT domains_NNS can_MD be_VB modeled_VBN as_IN Bayesian_JJ games_NNS ;_: much_JJ work_NN has_VBZ been_VBN done_VBN on_IN finding_VBG equilibria_NNS for_IN such_JJ games_NNS ._.
+However_RB ,_, it_PRP is_VBZ often_RB the_DT case_NN in_IN multiagent_JJ security_NN domains_NNS that_WDT one_CD agent_NN can_MD commit_VB to_TO a_DT mixed_JJ strategy_NN which_WDT its_PRP$ adversaries_NNS observe_VBP before_IN choosing_VBG their_PRP$ own_JJ strategies_NNS ._.
+In_IN this_DT case_NN ,_, the_DT agent_NN can_MD maximize_VB reward_NN by_IN finding_VBG an_DT optimal_JJ strategy_NN ,_, without_IN requiring_VBG equilibrium_NN ._.
+Previous_JJ work_NN has_VBZ shown_VBN this_DT problem_NN of_IN optimal_JJ strategy_NN selection_NN to_TO be_VB NP-hard_JJ ._.
+Therefore_RB ,_, we_PRP present_VBP a_DT heuristic_NN called_VBN ASAP_NNP ,_, with_IN three_CD key_JJ advantages_NNS to_TO address_VB the_DT problem_NN ._.
+First_RB ,_, ASAP_NN searches_NNS for_IN the_DT highest-reward_JJ strategy_NN ,_, rather_RB than_IN a_DT Bayes-Nash_JJ equilibrium_NN ,_, allowing_VBG it_PRP to_TO find_VB feasible_JJ strategies_NNS that_WDT exploit_VBP the_DT natural_JJ first-mover_NN advantage_NN of_IN the_DT game_NN ._.
+Second_RB ,_, it_PRP provides_VBZ strategies_NNS which_WDT are_VBP simple_JJ to_TO understand_VB ,_, represent_VB ,_, and_CC implement_VB ._.
+Third_NNP ,_, it_PRP operates_VBZ directly_RB on_IN the_DT compact_JJ ,_, Bayesian_JJ game_NN representation_NN ,_, without_IN requiring_VBG conversion_NN to_TO normal_JJ form_NN ._.
+We_PRP provide_VBP an_DT efficient_JJ Mixed_JJ Integer_NNP Linear_NNP Program_NNP -LRB-_-LRB- MILP_NNP -RRB-_-RRB- implementation_NN for_IN ASAP_NNP ,_, along_IN with_IN experimental_JJ results_NNS illustrating_VBG significant_JJ speedups_NNS and_CC higher_JJR rewards_NNS over_IN other_JJ approaches_NNS ._.
+Categories_NNS and_CC Subject_NNP Descriptors_NNS I_PRP ._.
+#_# ._.
+##_NN -LSB-_-LRB- Computing_NNP Methodologies_NNPS -RSB-_-RRB- :_: Artificial_NNP Intelligence_NNP :_: Distributed_VBN Artificial_NNP Intelligence_NNP -_: Intelligent_NNP Agents_NNPS General_NNP Terms_NNS Security_NNP ,_, Design_NNP ,_, Theory_NNP 1_CD ._.
+INTRODUCTION_NN In_IN many_JJ multiagent_JJ domains_NNS ,_, agents_NNS must_MD act_VB in_IN order_NN to_TO provide_VB security_NN against_IN attacks_NNS by_IN adversaries_NNS ._.
+A_DT common_JJ issue_NN that_WDT agents_NNS face_VBP in_IN such_JJ security_NN domains_NNS is_VBZ uncertainty_NN about_IN the_DT adversaries_NNS they_PRP may_MD be_VB facing_VBG ._.
+For_IN example_NN ,_, a_DT security_NN robot_NN may_MD need_VB to_TO make_VB a_DT choice_NN about_IN which_WDT areas_NNS to_TO patrol_NN ,_, and_CC how_WRB often_RB -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+However_RB ,_, it_PRP will_MD not_RB know_VB in_IN advance_NN exactly_RB where_WRB a_DT robber_NN will_MD choose_VB to_TO strike_VB ._.
+A_DT team_NN of_IN unmanned_JJ aerial_JJ vehicles_NNS -LRB-_-LRB- UAVs_NNS -RRB-_-RRB- -LSB-_-LRB- #_# -RSB-_-RRB- monitoring_VBG a_DT region_NN undergoing_VBG a_DT humanitarian_JJ crisis_NN may_MD also_RB need_VB to_TO choose_VB a_DT patrolling_NN policy_NN ._.
+They_PRP must_MD make_VB this_DT decision_NN without_IN knowing_VBG in_IN advance_NN whether_IN terrorists_NNS or_CC other_JJ adversaries_NNS may_MD be_VB waiting_VBG to_TO disrupt_VB the_DT mission_NN at_IN a_DT given_VBN location_NN ._.
+It_PRP may_MD indeed_RB be_VB possible_JJ to_TO model_VB the_DT motivations_NNS of_IN types_NNS of_IN adversaries_NNS the_DT agent_NN or_CC agent_NN team_NN is_VBZ likely_JJ to_TO face_VB in_IN order_NN to_TO target_VB these_DT adversaries_NNS more_RBR closely_RB ._.
+However_RB ,_, in_IN both_DT cases_NNS ,_, the_DT security_NN robot_NN or_CC UAV_NNP team_NN will_MD not_RB know_VB exactly_RB which_WDT kinds_NNS of_IN adversaries_NNS may_MD be_VB active_JJ on_IN any_DT given_VBN day_NN ._.
+A_DT common_JJ approach_NN for_IN choosing_VBG a_DT policy_NN for_IN agents_NNS in_IN such_JJ scenarios_NNS is_VBZ to_TO model_VB the_DT scenarios_NNS as_IN Bayesian_JJ games_NNS ._.
+A_DT Bayesian_JJ game_NN is_VBZ a_DT game_NN in_IN which_WDT agents_NNS may_MD belong_VB to_TO one_CD or_CC more_JJR types_NNS ;_: the_DT type_NN of_IN an_DT agent_NN determines_VBZ its_PRP$ possible_JJ actions_NNS and_CC payoffs_NNS ._.
+The_DT distribution_NN of_IN adversary_NN types_NNS that_IN an_DT agent_NN will_MD face_VB may_MD be_VB known_VBN or_CC inferred_VBN from_IN historical_JJ data_NNS ._.
+Usually_RB ,_, these_DT games_NNS are_VBP analyzed_VBN according_VBG to_TO the_DT solution_NN concept_NN of_IN a_DT Bayes-Nash_JJ equilibrium_NN ,_, an_DT extension_NN of_IN the_DT Nash_NNP equilibrium_NN for_IN Bayesian_JJ games_NNS ._.
+However_RB ,_, in_IN many_JJ settings_NNS ,_, a_DT Nash_NNP or_CC Bayes-Nash_JJ equilibrium_NN is_VBZ not_RB an_DT appropriate_JJ solution_NN concept_NN ,_, since_IN it_PRP assumes_VBZ that_IN the_DT agents_NNS ''_'' strategies_NNS are_VBP chosen_VBN simultaneously_RB -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+In_IN some_DT settings_NNS ,_, one_CD player_NN can_MD -LRB-_-LRB- or_CC must_MD -RRB-_-RRB- commit_VB to_TO a_DT strategy_NN before_IN the_DT other_JJ players_NNS choose_VB their_PRP$ strategies_NNS ._.
+These_DT scenarios_NNS are_VBP known_VBN as_IN Stackelberg_NNP games_NNS -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+In_IN a_DT Stackelberg_NNP game_NN ,_, a_DT leader_NN commits_VBZ to_TO a_DT strategy_NN first_RB ,_, and_CC then_RB a_DT follower_NN -LRB-_-LRB- or_CC group_NN of_IN followers_NNS -RRB-_-RRB- selfishly_RB optimize_VB their_PRP$ own_JJ rewards_NNS ,_, considering_VBG the_DT action_NN chosen_VBN by_IN the_DT leader_NN ._.
+For_IN example_NN ,_, the_DT security_NN agent_NN -LRB-_-LRB- leader_NN -RRB-_-RRB- must_MD first_RB commit_VB to_TO a_DT strategy_NN for_IN patrolling_NN various_JJ areas_NNS ._.
+This_DT strategy_NN could_MD be_VB a_DT mixed_JJ strategy_NN in_IN order_NN to_TO be_VB unpredictable_JJ to_TO the_DT robbers_NNS -LRB-_-LRB- followers_NNS -RRB-_-RRB- ._.
+The_DT robbers_NNS ,_, after_IN observing_VBG the_DT pattern_NN of_IN patrols_NNS over_IN time_NN ,_, can_MD then_RB choose_VB their_PRP$ strategy_NN -LRB-_-LRB- which_WDT location_NN to_TO rob_NN -RRB-_-RRB- ._.
+Often_RB ,_, the_DT leader_NN in_IN a_DT Stackelberg_NNP game_NN can_MD attain_VB a_DT higher_JJR reward_NN than_IN if_IN the_DT strategies_NNS were_VBD chosen_VBN simultaneously_RB ._.
+To_TO see_VB the_DT advantage_NN of_IN being_VBG the_DT leader_NN in_IN a_DT Stackelberg_NNP game_NN ,_, consider_VB a_DT simple_JJ game_NN with_IN the_DT payoff_NN table_NN as_IN shown_VBN in_IN Table_NNP #_# ._.
+The_DT leader_NN is_VBZ the_DT row_NN player_NN and_CC the_DT follower_NN is_VBZ the_DT column_NN player_NN ._.
+Here_RB ,_, the_DT leader_NN ''_'' s_NNS payoff_NN is_VBZ listed_VBN first_RB ._.
+1_CD #_# #_# 1_CD #_# ,_, #_# #_# ,_, #_# #_# ,_, ##_NN 2_CD #_# ,_, #_# #_# ,_, #_# #_# ,_, #_# Table_NNP #_# :_: Payoff_NN table_NN for_IN example_NN normal_JJ form_NN game_NN ._.
+The_DT only_JJ Nash_NNP equilibrium_NN for_IN this_DT game_NN is_VBZ when_WRB the_DT leader_NN plays_VBZ 2_CD and_CC the_DT follower_NN plays_VBZ #_# which_WDT gives_VBZ the_DT leader_NN a_DT payoff_NN of_IN #_# ._.
+311_CD 978-81-904262-7-5_CD -LRB-_-LRB- RPS_NN -RRB-_-RRB- c_NN ####_CD IFAAMAS_NNP However_RB ,_, if_IN the_DT leader_NN commits_VBZ to_TO a_DT uniform_JJ mixed_JJ strategy_NN of_IN playing_VBG #_# and_CC #_# with_IN equal_JJ -LRB-_-LRB- #_# ._.
+#_# -RRB-_-RRB- probability_NN ,_, the_DT follower_NN ''_'' s_NNS best_JJS response_NN is_VBZ to_TO play_VB #_# to_TO get_VB an_DT expected_VBN payoff_NN of_IN #_# -LRB-_-LRB- ##_NN and_CC #_# with_IN equal_JJ probability_NN -RRB-_-RRB- ._.
+The_DT leader_NN ''_'' s_NNS payoff_NN would_MD then_RB be_VB #_# -LRB-_-LRB- #_# and_CC #_# with_IN equal_JJ probability_NN -RRB-_-RRB- ._.
+In_IN this_DT case_NN ,_, the_DT leader_NN now_RB has_VBZ an_DT incentive_NN to_TO deviate_VB and_CC choose_VB a_DT pure_JJ strategy_NN of_IN #_# -LRB-_-LRB- to_TO get_VB a_DT payoff_NN of_IN 5_CD -RRB-_-RRB- ._.
+However_RB ,_, this_DT would_MD cause_VB the_DT follower_NN to_TO deviate_VB to_TO strategy_NN 2_CD as_RB well_RB ,_, resulting_VBG in_IN the_DT Nash_NNP equilibrium_NN ._.
+Thus_RB ,_, by_IN committing_VBG to_TO a_DT strategy_NN that_WDT is_VBZ observed_VBN by_IN the_DT follower_NN ,_, and_CC by_IN avoiding_VBG the_DT temptation_NN to_TO deviate_VB ,_, the_DT leader_NN manages_VBZ to_TO obtain_VB a_DT reward_NN higher_JJR than_IN that_DT of_IN the_DT best_JJS Nash_NNP equilibrium_NN ._.
+The_DT problem_NN of_IN choosing_VBG an_DT optimal_JJ strategy_NN for_IN the_DT leader_NN to_TO commit_VB to_TO in_IN a_DT Stackelberg_NNP game_NN is_VBZ analyzed_VBN in_IN -LSB-_-LRB- #_# -RSB-_-RRB- and_CC found_VBN to_TO be_VB NP-hard_JJ in_IN the_DT case_NN of_IN a_DT Bayesian_JJ game_NN with_IN multiple_JJ types_NNS of_IN followers_NNS ._.
+Thus_RB ,_, efficient_JJ heuristic_NN techniques_NNS for_IN choosing_VBG highreward_JJ strategies_NNS in_IN these_DT games_NNS is_VBZ an_DT important_JJ open_JJ issue_NN ._.
+Methods_NNS for_IN finding_VBG optimal_JJ leader_NN strategies_NNS for_IN non-Bayesian_JJ games_NNS -LSB-_-LRB- #_# -RSB-_-RRB- can_MD be_VB applied_VBN to_TO this_DT problem_NN by_IN converting_VBG the_DT Bayesian_JJ game_NN into_IN a_DT normal-form_JJ game_NN by_IN the_DT Harsanyi_NNP transformation_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+If_IN ,_, on_IN the_DT other_JJ hand_NN ,_, we_PRP wish_VBP to_TO compute_VB the_DT highest-reward_JJ Nash_NNP equilibrium_NN ,_, new_JJ methods_NNS using_VBG mixed-integer_JJ linear_JJ programs_NNS -LRB-_-LRB- MILPs_NNS -RRB-_-RRB- -LSB-_-LRB- ##_CD -RSB-_-RRB- may_MD be_VB used_VBN ,_, since_IN the_DT highest-reward_JJ Bayes-Nash_JJ equilibrium_NN is_VBZ equivalent_JJ to_TO the_DT corresponding_JJ Nash_NNP equilibrium_NN in_IN the_DT transformed_VBN game_NN ._.
+However_RB ,_, by_IN transforming_VBG the_DT game_NN ,_, the_DT compact_JJ structure_NN of_IN the_DT Bayesian_JJ game_NN is_VBZ lost_VBN ._.
+In_IN addition_NN ,_, since_IN the_DT Nash_NNP equilibrium_NN assumes_VBZ a_DT simultaneous_JJ choice_NN of_IN strategies_NNS ,_, the_DT advantages_NNS of_IN being_VBG the_DT leader_NN are_VBP not_RB considered_VBN ._.
+This_DT paper_NN introduces_VBZ an_DT efficient_JJ heuristic_NN method_NN for_IN approximating_VBG the_DT optimal_JJ leader_NN strategy_NN for_IN security_NN domains_NNS ,_, known_VBN as_IN ASAP_NN -LRB-_-LRB- Agent_NNP Security_NNP via_IN Approximate_NNP Policies_NNS -RRB-_-RRB- ._.
+This_DT method_NN has_VBZ three_CD key_JJ advantages_NNS ._.
+First_RB ,_, it_PRP directly_RB searches_VBZ for_IN an_DT optimal_JJ strategy_NN ,_, rather_RB than_IN a_DT Nash_NNP -LRB-_-LRB- or_CC Bayes-Nash_JJ -RRB-_-RRB- equilibrium_NN ,_, thus_RB allowing_VBG it_PRP to_TO find_VB high-reward_JJ non-equilibrium_JJ strategies_NNS like_IN the_DT one_CD in_IN the_DT above_JJ example_NN ._.
+Second_RB ,_, it_PRP generates_VBZ policies_NNS with_IN a_DT support_NN which_WDT can_MD be_VB expressed_VBN as_IN a_DT uniform_JJ distribution_NN over_IN a_DT multiset_NN of_IN fixed_VBN size_NN as_IN proposed_VBN in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ._.
+This_DT allows_VBZ for_IN policies_NNS that_WDT are_VBP simple_JJ to_TO understand_VB and_CC represent_VB -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, as_RB well_RB as_IN a_DT tunable_JJ parameter_NN -LRB-_-LRB- the_DT size_NN of_IN the_DT multiset_NN -RRB-_-RRB- that_WDT controls_VBZ the_DT simplicity_NN of_IN the_DT policy_NN ._.
+Third_NNP ,_, the_DT method_NN allows_VBZ for_IN a_DT Bayes-Nash_JJ game_NN to_TO be_VB expressed_VBN compactly_RB without_IN conversion_NN to_TO a_DT normal-form_JJ game_NN ,_, allowing_VBG for_IN large_JJ speedups_NNS over_IN existing_VBG Nash_NNP methods_NNS such_JJ as_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- and_CC -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+The_DT rest_NN of_IN the_DT paper_NN is_VBZ organized_VBN as_IN follows_VBZ ._.
+In_IN Section_NN #_# we_PRP fully_RB describe_VBP the_DT patrolling_NN domain_NN and_CC its_PRP$ properties_NNS ._.
+Section_NN #_# introduces_VBZ the_DT Bayesian_JJ game_NN ,_, the_DT Harsanyi_NNP transformation_NN ,_, and_CC existing_VBG methods_NNS for_IN finding_VBG an_DT optimal_JJ leader_NN ''_'' s_NNS strategy_NN in_IN a_DT Stackelberg_NNP game_NN ._.
+Then_RB ,_, in_IN Section_NN #_# the_DT ASAP_NN algorithm_NN is_VBZ presented_VBN for_IN normal-form_JJ games_NNS ,_, and_CC in_IN Section_NN #_# we_PRP show_VBP how_WRB it_PRP can_MD be_VB adapted_VBN to_TO the_DT structure_NN of_IN Bayesian_JJ games_NNS with_IN uncertain_JJ adversaries_NNS ._.
+Experimental_JJ results_NNS showing_VBG higher_JJR reward_NN and_CC faster_JJR policy_NN computation_NN over_IN existing_VBG Nash_NNP methods_NNS are_VBP shown_VBN in_IN Section_NN 6_CD ,_, and_CC we_PRP conclude_VBP with_IN a_DT discussion_NN of_IN related_JJ work_NN in_IN Section_NN #_# ._.
+2_LS ._.
+THE_DT PATROLLING_VBG DOMAIN_NN In_IN most_JJS security_NN patrolling_NN domains_NNS ,_, the_DT security_NN agents_NNS -LRB-_-LRB- like_IN UAVs_NNS -LSB-_-LRB- #_# -RSB-_-RRB- or_CC security_NN robots_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- -RRB-_-RRB- can_MD not_RB feasibly_RB patrol_NN all_DT areas_NNS all_PDT the_DT time_NN ._.
+Instead_RB ,_, they_PRP must_MD choose_VB a_DT policy_NN by_IN which_WDT they_PRP patrol_NN various_JJ routes_NNS at_IN different_JJ times_NNS ,_, taking_VBG into_IN account_NN factors_NNS such_JJ as_IN the_DT likelihood_NN of_IN crime_NN in_IN different_JJ areas_NNS ,_, possible_JJ targets_NNS for_IN crime_NN ,_, and_CC the_DT security_NN agents_NNS ''_'' own_JJ resources_NNS -LRB-_-LRB- number_NN of_IN security_NN agents_NNS ,_, amount_NN of_IN available_JJ time_NN ,_, fuel_NN ,_, etc_FW ._. -RRB-_-RRB- ._.
+It_PRP is_VBZ usually_RB beneficial_JJ for_IN this_DT policy_NN to_TO be_VB nondeterministic_JJ so_IN that_IN robbers_NNS can_MD not_RB safely_RB rob_NN certain_JJ locations_NNS ,_, knowing_VBG that_IN they_PRP will_MD be_VB safe_JJ from_IN the_DT security_NN agents_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+To_TO demonstrate_VB the_DT utility_NN of_IN our_PRP$ algorithm_NN ,_, we_PRP use_VBP a_DT simplified_VBN version_NN of_IN such_PDT a_DT domain_NN ,_, expressed_VBN as_IN a_DT game_NN ._.
+The_DT most_RBS basic_JJ version_NN of_IN our_PRP$ game_NN consists_VBZ of_IN two_CD players_NNS :_: the_DT security_NN agent_NN -LRB-_-LRB- the_DT leader_NN -RRB-_-RRB- and_CC the_DT robber_NN -LRB-_-LRB- the_DT follower_NN -RRB-_-RRB- in_IN a_DT world_NN consisting_VBG of_IN m_NN houses_NNS ,_, #_# ..._: m_NN ._.
+The_DT security_NN agent_NN ''_'' s_NNS set_VBN of_IN pure_JJ strategies_NNS consists_VBZ of_IN possible_JJ routes_NNS of_IN d_NN houses_NNS to_TO patrol_NN -LRB-_-LRB- in_IN an_DT order_NN -RRB-_-RRB- ._.
+The_DT security_NN agent_NN can_MD choose_VB a_DT mixed_JJ strategy_NN so_IN that_IN the_DT robber_NN will_MD be_VB unsure_JJ of_IN exactly_RB where_WRB the_DT security_NN agent_NN may_MD patrol_NN ,_, but_CC the_DT robber_NN will_MD know_VB the_DT mixed_JJ strategy_NN the_DT security_NN agent_NN has_VBZ chosen_VBN ._.
+For_IN example_NN ,_, the_DT robber_NN can_MD observe_VB over_IN time_NN how_WRB often_RB the_DT security_NN agent_NN patrols_NNS each_DT area_NN ._.
+With_IN this_DT knowledge_NN ,_, the_DT robber_NN must_MD choose_VB a_DT single_JJ house_NN to_TO rob_NN ._.
+We_PRP assume_VBP that_IN the_DT robber_NN generally_RB takes_VBZ a_DT long_JJ time_NN to_TO rob_VB a_DT house_NN ._.
+If_IN the_DT house_NN chosen_VBN by_IN the_DT robber_NN is_VBZ not_RB on_IN the_DT security_NN agent_NN ''_'' s_NNS route_NN ,_, then_RB the_DT robber_NN successfully_RB robs_VBZ it_PRP ._.
+Otherwise_RB ,_, if_IN it_PRP is_VBZ on_IN the_DT security_NN agent_NN ''_'' s_NNS route_NN ,_, then_RB the_DT earlier_JJR the_DT house_NN is_VBZ on_IN the_DT route_NN ,_, the_DT easier_JJR it_PRP is_VBZ for_IN the_DT security_NN agent_NN to_TO catch_VB the_DT robber_NN before_IN he_PRP finishes_VBZ robbing_VBG it_PRP ._.
+We_PRP model_VBP the_DT payoffs_NNS for_IN this_DT game_NN with_IN the_DT following_VBG variables_NNS :_: vl_NN ,_, x_NN :_: value_NN of_IN the_DT goods_NNS in_IN house_NN l_NN to_TO the_DT security_NN agent_NN ._.
+vl_NN ,_, q_NN :_: value_NN of_IN the_DT goods_NNS in_IN house_NN l_NN to_TO the_DT robber_NN ._.
+cx_NN :_: reward_NN to_TO the_DT security_NN agent_NN of_IN catching_VBG the_DT robber_NN ._.
+cq_NN :_: cost_NN to_TO the_DT robber_NN of_IN getting_VBG caught_VBN ._.
+pl_NN :_: probability_NN that_IN the_DT security_NN agent_NN can_MD catch_VB the_DT robber_NN at_IN the_DT lth_NN house_NN in_IN the_DT patrol_NN -LRB-_-LRB- pl_NN <_JJR pl_NN l_NN <_JJR l_NN -RRB-_-RRB- ._.
+The_DT security_NN agent_NN ''_'' s_NNS set_VBN of_IN possible_JJ pure_JJ strategies_NNS -LRB-_-LRB- patrol_NN routes_NNS -RRB-_-RRB- is_VBZ denoted_VBN by_IN X_NN and_CC includes_VBZ all_DT d-tuples_NNS i_FW =_JJ with_IN w1_NN ..._: wd_NN =_JJ #_# ..._: m_NN where_WRB no_DT two_CD elements_NNS are_VBP equal_JJ -LRB-_-LRB- the_DT agent_NN is_VBZ not_RB allowed_VBN to_TO return_VB to_TO the_DT same_JJ house_NN -RRB-_-RRB- ._.
+The_DT robber_NN ''_'' s_NNS set_VBN of_IN possible_JJ pure_JJ strategies_NNS -LRB-_-LRB- houses_NNS to_TO rob_NN -RRB-_-RRB- is_VBZ denoted_VBN by_IN Q_NNP and_CC includes_VBZ all_DT integers_NNS j_NN =_JJ #_# ..._: m_NN ._.
+The_DT payoffs_NNS -LRB-_-LRB- security_NN agent_NN ,_, robber_NN -RRB-_-RRB- for_IN pure_JJ strategies_NNS i_LS ,_, j_NN are_VBP :_: vl_NN ,_, x_NN ,_, vl_NN ,_, q_NN ,_, for_IN j_NN =_JJ l_NN /_: i_LS ._.
+plcx_NN +_CC -LRB-_-LRB- 1pl_JJ -RRB-_-RRB- -LRB-_-LRB- vl_NN ,_, x_NN -RRB-_-RRB- ,_, plcq_NN +_CC -LRB-_-LRB- 1pl_JJ -RRB-_-RRB- -LRB-_-LRB- vl_NN ,_, q_NN -RRB-_-RRB- ,_, for_IN j_NN =_JJ l_NN i_FW ._.
+With_IN this_DT structure_NN it_PRP is_VBZ possible_JJ to_TO model_VB many_JJ different_JJ types_NNS of_IN robbers_NNS who_WP have_VBP differing_VBG motivations_NNS ;_: for_IN example_NN ,_, one_CD robber_NN may_MD have_VB a_DT lower_JJR cost_NN of_IN getting_VBG caught_VBN than_IN another_DT ,_, or_CC may_MD value_VB the_DT goods_NNS in_IN the_DT various_JJ houses_NNS differently_RB ._.
+If_IN the_DT distribution_NN of_IN different_JJ robber_NN types_NNS is_VBZ known_VBN or_CC inferred_VBN from_IN historical_JJ data_NNS ,_, then_RB the_DT game_NN can_MD be_VB modeled_VBN as_IN a_DT Bayesian_JJ game_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+3_LS ._.
+BAYESIAN_NNP GAMES_NNP A_NNP Bayesian_JJ game_NN contains_VBZ a_DT set_NN of_IN N_NN agents_NNS ,_, and_CC each_DT agent_NN n_NN must_MD be_VB one_CD of_IN a_DT given_VBN set_NN of_IN types_NNS n_NN ._.
+For_IN our_PRP$ patrolling_NN domain_NN ,_, we_PRP have_VBP two_CD agents_NNS ,_, the_DT security_NN agent_NN and_CC the_DT robber_NN ._.
+#_# is_VBZ the_DT set_NN of_IN security_NN agent_NN types_NNS and_CC #_# is_VBZ the_DT set_NN of_IN robber_NN types_NNS ._.
+Since_IN there_EX is_VBZ only_RB one_CD type_NN of_IN security_NN agent_NN ,_, #_# contains_VBZ only_RB one_CD element_NN ._.
+During_IN the_DT game_NN ,_, the_DT robber_NN knows_VBZ its_PRP$ type_NN but_CC the_DT security_NN agent_NN does_VBZ not_RB know_VB the_DT robber_NN ''_'' s_NNS type_NN ._.
+For_IN each_DT agent_NN -LRB-_-LRB- the_DT security_NN agent_NN or_CC the_DT robber_NN -RRB-_-RRB- n_NN ,_, there_EX is_VBZ a_DT set_NN of_IN strategies_NNS n_NN and_CC a_DT utility_NN function_NN un_NN :_: #_# #_# #_# #_# ._.
+A_DT Bayesian_JJ game_NN can_MD be_VB transformed_VBN into_IN a_DT normal-form_JJ game_NN using_VBG the_DT Harsanyi_NNP transformation_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+Once_RB this_DT is_VBZ done_VBN ,_, new_JJ ,_, linear-program_JJ -LRB-_-LRB- LP_NN -RRB-_-RRB- -_: based_VBN methods_NNS for_IN finding_VBG high-reward_JJ strategies_NNS for_IN normal-form_JJ games_NNS -LSB-_-LRB- #_# -RSB-_-RRB- can_MD be_VB used_VBN to_TO find_VB a_DT strategy_NN in_IN the_DT transformed_VBN game_NN ;_: this_DT strategy_NN can_MD then_RB be_VB used_VBN for_IN the_DT Bayesian_JJ game_NN ._.
+While_IN methods_NNS exist_VBP for_IN finding_VBG Bayes-Nash_JJ equilibria_NNS directly_RB ,_, without_IN the_DT Harsanyi_NNP transformation_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, they_PRP find_VBP only_RB a_DT 312_CD The_DT Sixth_NNP Intl_NNP ._.
+Joint_NNP Conf_NNP ._.
+on_IN Autonomous_NNP Agents_NNPS and_CC Multi-Agent_NNP Systems_NNP -LRB-_-LRB- AAMAS_NNP ##_CD -RRB-_-RRB- single_JJ equilibrium_NN in_IN the_DT general_JJ case_NN ,_, which_WDT may_MD not_RB be_VB of_IN high_JJ reward_NN ._.
+Recent_JJ work_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- has_VBZ led_VBN to_TO efficient_JJ mixed-integer_JJ linear_JJ program_NN techniques_NNS to_TO find_VB the_DT best_JJS Nash_NNP equilibrium_NN for_IN a_DT given_VBN agent_NN ._.
+However_RB ,_, these_DT techniques_NNS do_VBP require_VB a_DT normal-form_JJ game_NN ,_, and_CC so_RB to_TO compare_VB the_DT policies_NNS given_VBN by_IN ASAP_NN against_IN the_DT optimal_JJ policy_NN ,_, as_RB well_RB as_IN against_IN the_DT highest-reward_JJ Nash_NNP equilibrium_NN ,_, we_PRP must_MD apply_VB these_DT techniques_NNS to_TO the_DT Harsanyi-transformed_JJ matrix_NN ._.
+The_DT next_JJ two_CD subsections_NNS elaborate_JJ on_IN how_WRB this_DT is_VBZ done_VBN ._.
+3_LS ._.
+#_# Harsanyi_NNP Transformation_NN The_DT first_JJ step_NN in_IN solving_VBG Bayesian_JJ games_NNS is_VBZ to_TO apply_VB the_DT Harsanyi_NNP transformation_NN -LSB-_-LRB- #_# -RSB-_-RRB- that_WDT converts_VBZ the_DT Bayesian_JJ game_NN into_IN a_DT normal_JJ form_NN game_NN ._.
+Given_VBN that_IN the_DT Harsanyi_NNP transformation_NN is_VBZ a_DT standard_JJ concept_NN in_IN game_NN theory_NN ,_, we_PRP explain_VBP it_PRP briefly_RB through_IN a_DT simple_JJ example_NN in_IN our_PRP$ patrolling_NN domain_NN without_IN introducing_VBG the_DT mathematical_JJ formulations_NNS ._.
+Let_VB us_PRP assume_VB there_EX are_VBP two_CD robber_NN types_NNS a_DT and_CC b_NN in_IN the_DT Bayesian_JJ game_NN ._.
+Robber_NNP a_DT will_MD be_VB active_JJ with_IN probability_NN ,_, and_CC robber_NN b_NN will_MD be_VB active_JJ with_IN probability_NN #_# ._.
+The_DT rules_NNS described_VBN in_IN Section_NN #_# allow_VB us_PRP to_TO construct_VB simple_JJ payoff_NN tables_NNS ._.
+Assume_VB that_IN there_EX are_VBP two_CD houses_NNS in_IN the_DT world_NN -LRB-_-LRB- #_# and_CC #_# -RRB-_-RRB- and_CC hence_RB there_EX are_VBP two_CD patrol_NN routes_NNS -LRB-_-LRB- pure_JJ strategies_NNS -RRB-_-RRB- for_IN the_DT agent_NN :_: -LCB-_-LRB- #_# ,_, #_# -RCB-_-RRB- and_CC -LCB-_-LRB- #_# ,_, #_# -RCB-_-RRB- ._.
+The_DT robber_NN can_MD rob_VB either_CC house_VB #_# or_CC house_NN #_# and_CC hence_RB he_PRP has_VBZ two_CD strategies_NNS -LRB-_-LRB- denoted_VBN as_IN 1l_NN ,_, 2l_NN for_IN robber_NN type_NN l_NN -RRB-_-RRB- ._.
+Since_IN there_EX are_VBP two_CD types_NNS assumed_VBN -LRB-_-LRB- denoted_VBN as_IN a_DT and_CC b_NN -RRB-_-RRB- ,_, we_PRP construct_VBP two_CD payoff_NN tables_NNS -LRB-_-LRB- shown_VBN in_IN Table_NNP #_# -RRB-_-RRB- corresponding_VBG to_TO the_DT security_NN agent_NN playing_VBG a_DT separate_JJ game_NN with_IN each_DT of_IN the_DT two_CD robber_NN types_NNS with_IN probabilities_NNS and_CC #_# ._.
+First_RB ,_, consider_VB robber_NN type_NN a_DT ._.
+Borrowing_VBG the_DT notation_NN from_IN the_DT domain_NN section_NN ,_, we_PRP assign_VBP the_DT following_VBG values_NNS to_TO the_DT variables_NNS :_: v1_NN ,_, x_NN =_JJ v1_NN ,_, q_NN =_JJ #_# /_: #_# ,_, v2_NN ,_, x_NN =_JJ v2_NN ,_, q_NN =_JJ #_# /_: #_# ,_, cx_NN =_JJ #_# /_: #_# ,_, cq_NN =_JJ #_# ,_, p1_NN =_JJ #_# ,_, p2_NN =_JJ #_# /_: #_# ._.
+Using_VBG these_DT values_NNS we_PRP construct_VBP a_DT base_NN payoff_NN table_NN as_IN the_DT payoff_NN for_IN the_DT game_NN against_IN robber_NN type_NN a_DT ._.
+For_IN example_NN ,_, if_IN the_DT security_NN agent_NN chooses_VBZ route_NN -LCB-_-LRB- #_# ,_, #_# -RCB-_-RRB- when_WRB robber_NN a_DT is_VBZ active_JJ ,_, and_CC robber_NN a_DT chooses_VBZ house_NN #_# ,_, the_DT robber_NN receives_VBZ a_DT reward_NN of_IN -_: #_# -LRB-_-LRB- for_IN being_VBG caught_VBN -RRB-_-RRB- and_CC the_DT agent_NN receives_VBZ a_DT reward_NN of_IN #_# ._.
+#_# for_IN catching_VBG the_DT robber_NN ._.
+The_DT payoffs_NNS for_IN the_DT game_NN against_IN robber_NN type_NN b_NN are_VBP constructed_VBN using_VBG different_JJ values_NNS ._.
+Security_NNP agent_NN :_: -LCB-_-LRB- #_# ,_, #_# -RCB-_-RRB- -LCB-_-LRB- #_# ,_, #_# -RCB-_-RRB- Robber_NNP a_DT 1a_NN -_: #_# ,_, ._.
+#_# -_: ._.
+###_NN ,_, ._.
+###_NN 2a_SYM -_: ._.
+###_NN ,_, -_: ._.
+###_SYM -_: #_# ,_, ._.
+#_# Robber_NNP b_NN 1b_SYM -_: ._.
+#_# ,_, ._.
+#_# -_: ._.
+###_NN ,_, ._.
+###_NN 2b_SYM -_: ._.
+###_NN ,_, -_: ._.
+###_SYM -_: ._.
+#_# ,_, ._.
+#_# Table_NNP #_# :_: Payoff_NN tables_NNS :_: Security_NNP Agent_NNP vs_CC Robbers_NNS a_DT and_CC b_NN Using_VBG the_DT Harsanyi_NNP technique_NN involves_VBZ introducing_VBG a_DT chance_NN node_NN ,_, that_WDT determines_VBZ the_DT robber_NN ''_'' s_NNS type_NN ,_, thus_RB transforming_VBG the_DT security_NN agent_NN ''_'' s_NNS incomplete_JJ information_NN regarding_VBG the_DT robber_NN into_IN imperfect_JJ information_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+The_DT Bayesian_JJ equilibrium_NN of_IN the_DT game_NN is_VBZ then_RB precisely_RB the_DT Nash_NNP equilibrium_NN of_IN the_DT imperfect_JJ information_NN game_NN ._.
+The_DT transformed_VBN ,_, normal-form_JJ game_NN is_VBZ shown_VBN in_IN Table_NNP #_# ._.
+In_IN the_DT transformed_VBN game_NN ,_, the_DT security_NN agent_NN is_VBZ the_DT column_NN player_NN ,_, and_CC the_DT set_NN of_IN all_DT robber_NN types_NNS together_RB is_VBZ the_DT row_NN player_NN ._.
+Suppose_VB that_DT robber_NN type_NN a_DT robs_NNS house_NN #_# and_CC robber_NN type_NN b_NN robs_VBZ house_NN #_# ,_, while_IN the_DT security_NN agent_NN chooses_VBZ patrol_NN -LCB-_-LRB- #_# ,_, #_# -RCB-_-RRB- ._.
+Then_RB ,_, the_DT security_NN agent_NN and_CC the_DT robber_NN receive_VBP an_DT expected_VBN payoff_NN corresponding_VBG to_TO their_PRP$ payoffs_NNS from_IN the_DT agent_NN encountering_VBG robber_NN a_DT at_IN house_NN #_# with_IN probability_NN and_CC robber_NN b_NN at_IN house_NN #_# with_IN probability_NN #_# ._.
+3_LS ._.
+#_# Finding_VBG an_DT Optimal_JJ Strategy_NNP Although_IN a_DT Nash_NNP equilibrium_NN is_VBZ the_DT standard_JJ solution_NN concept_NN for_IN games_NNS in_IN which_WDT agents_NNS choose_VBP strategies_NNS simultaneously_RB ,_, in_IN our_PRP$ security_NN domain_NN ,_, the_DT security_NN agent_NN -LRB-_-LRB- the_DT leader_NN -RRB-_-RRB- can_MD gain_VB an_DT advantage_NN by_IN committing_VBG to_TO a_DT mixed_JJ strategy_NN in_IN advance_NN ._.
+Since_IN the_DT followers_NNS -LRB-_-LRB- the_DT robbers_NNS -RRB-_-RRB- will_MD know_VB the_DT leader_NN ''_'' s_NNS strategy_NN ,_, the_DT optimal_JJ response_NN for_IN the_DT followers_NNS will_MD be_VB a_DT pure_JJ strategy_NN ._.
+Given_VBN the_DT common_JJ assumption_NN ,_, taken_VBN in_IN -LSB-_-LRB- #_# -RSB-_-RRB- ,_, in_IN the_DT case_NN where_WRB followers_NNS are_VBP indifferent_JJ ,_, they_PRP will_MD choose_VB the_DT strategy_NN that_WDT benefits_VBZ the_DT leader_NN ,_, there_EX must_MD exist_VB a_DT guaranteed_VBN optimal_JJ strategy_NN for_IN the_DT leader_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+From_IN the_DT Bayesian_JJ game_NN in_IN Table_NNP #_# ,_, we_PRP constructed_VBD the_DT Harsanyi_NNP transformed_VBD bimatrix_NN in_IN Table_NNP #_# ._.
+The_DT strategies_NNS for_IN each_DT player_NN -LRB-_-LRB- security_NN agent_NN or_CC robber_NN -RRB-_-RRB- in_IN the_DT transformed_VBN game_NN correspond_VBP to_TO all_DT combinations_NNS of_IN possible_JJ strategies_NNS taken_VBN by_IN each_DT of_IN that_DT player_NN ''_'' s_NNS types_NNS ._.
+Therefore_RB ,_, we_PRP denote_VBP X_NN =_JJ #_# 1_CD =_JJ #_# and_CC Q_NNP =_JJ #_# 2_, as_IN the_DT index_NN sets_NNS of_IN the_DT security_NN agent_NN and_CC robbers_NNS ''_'' pure_JJ strategies_NNS respectively_RB ,_, with_IN R_NN and_CC C_NN as_IN the_DT corresponding_JJ payoff_NN matrices_NNS ._.
+Rij_NN is_VBZ the_DT reward_NN of_IN the_DT security_NN agent_NN and_CC Cij_NN is_VBZ the_DT reward_NN of_IN the_DT robbers_NNS when_WRB the_DT security_NN agent_NN takes_VBZ pure_JJ strategy_NN i_FW and_CC the_DT robbers_NNS take_VBP pure_JJ strategy_NN j_NN ._.
+A_DT mixed_JJ strategy_NN for_IN the_DT security_NN agent_NN is_VBZ a_DT probability_NN distribution_NN over_IN its_PRP$ set_NN of_IN pure_JJ strategies_NNS and_CC will_MD be_VB represented_VBN by_IN a_DT vector_NN x_NN =_JJ -LRB-_-LRB- px1_NN ,_, px2_NN ,_, ..._: ,_, px_NN |_NN X_NN |_NN -RRB-_-RRB- ,_, where_WRB pxi_NN #_# and_CC P_NN pxi_NN =_JJ #_# ._.
+Here_RB ,_, pxi_NN is_VBZ the_DT probability_NN that_IN the_DT security_NN agent_NN will_MD choose_VB its_PRP$ ith_NN pure_JJ strategy_NN ._.
+The_DT optimal_JJ mixed_JJ strategy_NN for_IN the_DT security_NN agent_NN can_MD be_VB found_VBN in_IN time_NN polynomial_JJ in_IN the_DT number_NN of_IN rows_NNS in_IN the_DT normal_JJ form_NN game_NN using_VBG the_DT following_VBG linear_JJ program_NN formulation_NN from_IN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+For_IN every_DT possible_JJ pure_JJ strategy_NN j_NN by_IN the_DT follower_NN -LRB-_-LRB- the_DT set_NN of_IN all_DT robber_NN types_NNS -RRB-_-RRB- ,_, max_NN P_NN iX_NN pxiRij_NN s_NNS ._.
+t_NN ._.
+j_NN Q_NNP ,_, P_NN i1_NN pxiCij_NN P_NN i1_NN pxiCij_NN P_NN iX_NN pxi_NN =_JJ #_# iX_NNP ,_, pxi_NN >_JJR =_JJ #_# -LRB-_-LRB- #_# -RRB-_-RRB- Then_RB ,_, for_IN all_DT feasible_JJ follower_NN strategies_NNS j_NN ,_, choose_VB the_DT one_CD that_WDT maximizes_VBZ P_NN iX_NN pxiRij_NN ,_, the_DT reward_NN for_IN the_DT security_NN agent_NN -LRB-_-LRB- leader_NN -RRB-_-RRB- ._.
+The_DT pxi_NN variables_NNS give_VBP the_DT optimal_JJ strategy_NN for_IN the_DT security_NN agent_NN ._.
+Note_VB that_IN while_IN this_DT method_NN is_VBZ polynomial_JJ in_IN the_DT number_NN of_IN rows_NNS in_IN the_DT transformed_VBN ,_, normal-form_JJ game_NN ,_, the_DT number_NN of_IN rows_NNS increases_VBZ exponentially_RB with_IN the_DT number_NN of_IN robber_NN types_NNS ._.
+Using_VBG this_DT method_NN for_IN a_DT Bayesian_JJ game_NN thus_RB requires_VBZ running_VBG |_RB #_# |_CD |_CD #_# |_CD separate_JJ linear_JJ programs_NNS ._.
+This_DT is_VBZ no_DT surprise_NN ,_, since_IN finding_VBG the_DT leader_NN ''_'' s_NNS optimal_JJ strategy_NN in_IN a_DT Bayesian_NNP Stackelberg_NNP game_NN is_VBZ NP-hard_JJ -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+4_LS ._.
+HEURISTIC_NN APPROACHES_VBZ Given_VBN that_IN finding_VBG the_DT optimal_JJ strategy_NN for_IN the_DT leader_NN is_VBZ NP-hard_JJ ,_, we_PRP provide_VBP a_DT heuristic_NN approach_NN ._.
+In_IN this_DT heuristic_NN we_PRP limit_VBP the_DT possible_JJ mixed_JJ strategies_NNS of_IN the_DT leader_NN to_TO select_JJ actions_NNS with_IN probabilities_NNS that_WDT are_VBP integer_NN multiples_NNS of_IN #_# /_: k_NN for_IN a_DT predetermined_JJ integer_NN k_NN ._.
+Previous_JJ work_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- has_VBZ shown_VBN that_IN strategies_NNS with_IN high_JJ entropy_NN are_VBP beneficial_JJ for_IN security_NN applications_NNS when_WRB opponents_NNS ''_'' utilities_NNS are_VBP completely_RB unknown_JJ ._.
+In_IN our_PRP$ domain_NN ,_, if_IN utilities_NNS are_VBP not_RB considered_VBN ,_, this_DT method_NN will_MD result_VB in_IN uniform-distribution_JJ strategies_NNS ._.
+One_CD advantage_NN of_IN such_JJ strategies_NNS is_VBZ that_IN they_PRP are_VBP compact_JJ to_TO represent_VB -LRB-_-LRB- as_IN fractions_NNS -RRB-_-RRB- and_CC simple_JJ to_TO understand_VB ;_: therefore_RB they_PRP can_MD be_VB efficiently_RB implemented_VBN by_IN real_JJ organizations_NNS ._.
+We_PRP aim_VBP to_TO maintain_VB the_DT advantage_NN provided_VBN by_IN simple_JJ strategies_NNS for_IN our_PRP$ security_NN application_NN problem_NN ,_, incorporating_VBG the_DT effect_NN of_IN the_DT robbers_NNS ''_'' rewards_NNS on_IN the_DT security_NN agent_NN ''_'' s_NNS rewards_NNS ._.
+Thus_RB ,_, the_DT ASAP_NNP heuristic_NN will_MD produce_VB strategies_NNS which_WDT are_VBP k-uniform_NN ._.
+A_DT mixed_JJ strategy_NN is_VBZ denoted_VBN k-uniform_NN if_IN it_PRP is_VBZ a_DT uniform_JJ distribution_NN on_IN a_DT multiset_JJ S_NN of_IN pure_JJ strategies_NNS with_IN |_NN S_NN |_NN =_JJ k_NN ._.
+A_DT multiset_NN is_VBZ a_DT set_NN whose_WP$ elements_NNS may_MD be_VB repeated_VBN multiple_JJ times_NNS ;_: thus_RB ,_, for_IN example_NN ,_, the_DT mixed_JJ strategy_NN corresponding_VBG to_TO the_DT multiset_JJ -LCB-_-LRB- #_# ,_, #_# ,_, #_# -RCB-_-RRB- would_MD take_VB strategy_NN #_# The_DT Sixth_NNP Intl_NNP ._.
+Joint_NNP Conf_NNP ._.
+on_IN Autonomous_NNP Agents_NNPS and_CC Multi-Agent_NNP Systems_NNP -LRB-_-LRB- AAMAS_NNP ##_CD -RRB-_-RRB- ###_CD -LCB-_-LRB- #_# ,_, #_# -RCB-_-RRB- -LCB-_-LRB- #_# ,_, #_# -RCB-_-RRB- -LCB-_-LRB- 1a_NN ,_, 1b_NN -RCB-_-RRB- #_# ._.
+#_# -LRB-_-LRB- #_# -RRB-_-RRB- ,_, ._.
+#_# +_CC ._.
+#_# -LRB-_-LRB- #_# -RRB-_-RRB- ._.
+###_NN ._.
+###_NN -LRB-_-LRB- #_# -RRB-_-RRB- ,_, ._.
+###_NN +_CC ._.
+###_NN -LRB-_-LRB- #_# -RRB-_-RRB- -LCB-_-LRB- 1a_NN ,_, 2b_JJ -RCB-_-RRB- #_# ._.
+###_NN -LRB-_-LRB- #_# -RRB-_-RRB- ,_, ._.
+#_# ._.
+###_NN -LRB-_-LRB- #_# -RRB-_-RRB- ._.
+###_NN ._.
+#_# -LRB-_-LRB- #_# -RRB-_-RRB- ,_, ._.
+###_NN +_CC ._.
+#_# -LRB-_-LRB- #_# -RRB-_-RRB- -LCB-_-LRB- 2a_NN ,_, 1b_NN -RCB-_-RRB- ._.
+###_NN ._.
+#_# -LRB-_-LRB- #_# -RRB-_-RRB- ,_, ._.
+###_NN +_CC ._.
+#_# -LRB-_-LRB- #_# -RRB-_-RRB- #_# ._.
+###_NN -LRB-_-LRB- #_# -RRB-_-RRB- ,_, ._.
+#_# +_CC ._.
+###_NN -LRB-_-LRB- #_# -RRB-_-RRB- -LCB-_-LRB- 2a_NN ,_, 2b_JJ -RCB-_-RRB- ._.
+###_NN ._.
+###_NN -LRB-_-LRB- #_# -RRB-_-RRB- ,_, ._.
+###_NN ._.
+###_NN -LRB-_-LRB- #_# -RRB-_-RRB- #_# ._.
+#_# -LRB-_-LRB- #_# -RRB-_-RRB- ,_, ._.
+#_# +_CC ._.
+#_# -LRB-_-LRB- #_# -RRB-_-RRB- Table_NNP #_# :_: Harsanyi_NNP Transformed_NNP Payoff_NNP Table_NNP with_IN probability_NN #_# /_: #_# and_CC strategy_NN #_# with_IN probability_NN #_# /_: #_# ._.
+ASAP_NN allows_VBZ the_DT size_NN of_IN the_DT multiset_NN to_TO be_VB chosen_VBN in_IN order_NN to_TO balance_VB the_DT complexity_NN of_IN the_DT strategy_NN reached_VBN with_IN the_DT goal_NN that_IN the_DT identified_VBN strategy_NN will_MD yield_VB a_DT high_JJ reward_NN ._.
+Another_DT advantage_NN of_IN the_DT ASAP_NNP heuristic_NN is_VBZ that_IN it_PRP operates_VBZ directly_RB on_IN the_DT compact_JJ Bayesian_JJ representation_NN ,_, without_IN requiring_VBG the_DT Harsanyi_NNP transformation_NN ._.
+This_DT is_VBZ because_IN the_DT different_JJ follower_NN -LRB-_-LRB- robber_NN -RRB-_-RRB- types_NNS are_VBP independent_JJ of_IN each_DT other_JJ ._.
+Hence_RB ,_, evaluating_VBG the_DT leader_NN strategy_NN against_IN a_DT Harsanyi-transformed_JJ game_NN matrix_NN is_VBZ equivalent_JJ to_TO evaluating_VBG against_IN each_DT of_IN the_DT game_NN matrices_NNS for_IN the_DT individual_JJ follower_NN types_NNS ._.
+This_DT independence_NN property_NN is_VBZ exploited_VBN in_IN ASAP_NN to_TO yield_VB a_DT decomposition_NN scheme_NN ._.
+Note_VB that_IN the_DT LP_NN method_NN introduced_VBN by_IN -LSB-_-LRB- #_# -RSB-_-RRB- to_TO compute_VB optimal_JJ Stackelberg_NNP policies_NNS is_VBZ unlikely_JJ to_TO be_VB decomposable_JJ into_IN a_DT small_JJ number_NN of_IN games_NNS as_IN it_PRP was_VBD shown_VBN to_TO be_VB NP-hard_JJ for_IN Bayes-Nash_JJ problems_NNS ._.
+Finally_RB ,_, note_VBP that_IN ASAP_NN requires_VBZ the_DT solution_NN of_IN only_RB one_CD optimization_NN problem_NN ,_, rather_RB than_IN solving_VBG a_DT series_NN of_IN problems_NNS as_IN in_IN the_DT LP_NN method_NN of_IN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+For_IN a_DT single_JJ follower_NN type_NN ,_, the_DT algorithm_NN works_VBZ the_DT following_JJ way_NN ._.
+Given_VBN a_DT particular_JJ k_NN ,_, for_IN each_DT possible_JJ mixed_JJ strategy_NN x_NN for_IN the_DT leader_NN that_WDT corresponds_VBZ to_TO a_DT multiset_NN of_IN size_NN k_NN ,_, evaluate_VB the_DT leader_NN ''_'' s_NNS payoff_NN from_IN x_CC when_WRB the_DT follower_NN plays_VBZ a_DT reward-maximizing_JJ pure_JJ strategy_NN ._.
+We_PRP then_RB take_VBP the_DT mixed_JJ strategy_NN with_IN the_DT highest_JJS payoff_NN ._.
+We_PRP need_VBP only_RB to_TO consider_VB the_DT reward-maximizing_JJ pure_JJ strategies_NNS of_IN the_DT followers_NNS -LRB-_-LRB- robbers_NNS -RRB-_-RRB- ,_, since_IN for_IN a_DT given_VBN fixed_VBN strategy_NN x_NN of_IN the_DT security_NN agent_NN ,_, each_DT robber_NN type_NN faces_VBZ a_DT problem_NN with_IN fixed_VBN linear_JJ rewards_NNS ._.
+If_IN a_DT mixed_JJ strategy_NN is_VBZ optimal_JJ for_IN the_DT robber_NN ,_, then_RB so_RB are_VBP all_PDT the_DT pure_JJ strategies_NNS in_IN the_DT support_NN of_IN that_DT mixed_JJ strategy_NN ._.
+Note_VB also_RB that_IN because_IN we_PRP limit_VBP the_DT leader_NN ''_'' s_NNS strategies_NNS to_TO take_VB on_RP discrete_JJ values_NNS ,_, the_DT assumption_NN from_IN Section_NN #_# ._.
+#_# that_IN the_DT followers_NNS will_MD break_VB ties_NNS in_IN the_DT leader_NN ''_'' s_NNS favor_VBP is_VBZ not_RB significant_JJ ,_, since_IN ties_NNS will_MD be_VB unlikely_JJ to_TO arise_VB ._.
+This_DT is_VBZ because_RB ,_, in_IN domains_NNS where_WRB rewards_NNS are_VBP drawn_VBN from_IN any_DT random_JJ distribution_NN ,_, the_DT probability_NN of_IN a_DT follower_NN having_VBG more_JJR than_IN one_CD pure_JJ optimal_JJ response_NN to_TO a_DT given_VBN leader_NN strategy_NN approaches_VBZ zero_CD ,_, and_CC the_DT leader_NN will_MD have_VB only_RB a_DT finite_JJ number_NN of_IN possible_JJ mixed_JJ strategies_NNS ._.
+Our_PRP$ approach_NN to_TO characterize_VB the_DT optimal_JJ strategy_NN for_IN the_DT security_NN agent_NN makes_VBZ use_NN of_IN properties_NNS of_IN linear_JJ programming_NN ._.
+We_PRP briefly_RB outline_VBP these_DT results_NNS here_RB for_IN completeness_NN ,_, for_IN detailed_JJ discussion_NN and_CC proofs_NNS see_VBP one_CD of_IN many_JJ references_NNS on_IN the_DT topic_NN ,_, such_JJ as_IN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+Every_DT linear_JJ programming_NN problem_NN ,_, such_JJ as_IN :_: max_NN cT_NN x_CC |_CD Ax_NN =_JJ b_NN ,_, x_CC #_# ,_, has_VBZ an_DT associated_JJ dual_JJ linear_JJ program_NN ,_, in_IN this_DT case_NN :_: min_NN bT_NN y_NN |_CD AT_IN y_NN c_NN ._.
+These_DT primal_JJ /_: dual_JJ pairs_NNS of_IN problems_NNS satisfy_VBP weak_JJ duality_NN :_: For_IN any_DT x_NN and_CC y_NN primal_JJ and_CC dual_JJ feasible_JJ solutions_NNS respectively_RB ,_, cT_NN x_CC bT_NN y_NN ._.
+Thus_RB a_DT pair_NN of_IN feasible_JJ solutions_NNS is_VBZ optimal_JJ if_IN cT_NN x_NN =_JJ bT_NN y_NN ,_, and_CC the_DT problems_NNS are_VBP said_VBN to_TO satisfy_VB strong_JJ duality_NN ._.
+In_IN fact_NN if_IN a_DT linear_JJ program_NN is_VBZ feasible_JJ and_CC has_VBZ a_DT bounded_VBN optimal_JJ solution_NN ,_, then_RB the_DT dual_JJ is_VBZ also_RB feasible_JJ and_CC there_EX is_VBZ a_DT pair_NN x_NN ,_, y_NN that_WDT satisfies_VBZ cT_NN x_NN =_JJ bT_NN y_NN ._.
+These_DT optimal_JJ solutions_NNS are_VBP characterized_VBN with_IN the_DT following_VBG optimality_NN conditions_NNS -LRB-_-LRB- as_IN defined_VBN in_IN -LSB-_-LRB- #_# -RSB-_-RRB- -RRB-_-RRB- :_: primal_JJ feasibility_NN :_: Ax_NN =_JJ b_NN ,_, x_CC #_# dual_JJ feasibility_NN :_: AT_IN y_NN c_NN complementary_JJ slackness_NN :_: xi_NN -LRB-_-LRB- AT_IN y_NN c_NN -RRB-_-RRB- i_FW =_JJ #_# for_IN all_DT i_FW ._.
+Note_VB that_IN this_DT last_JJ condition_NN implies_VBZ that_IN cT_NN x_NN =_JJ xT_NN AT_IN y_NN =_JJ bT_NN y_NN ,_, which_WDT proves_VBZ optimality_NN for_IN primal_JJ dual_JJ feasible_JJ solutions_NNS x_CC and_CC y_NN ._.
+In_IN the_DT following_VBG subsections_NNS ,_, we_PRP first_RB define_VB the_DT problem_NN in_IN its_PRP$ most_RBS intuititive_JJ form_NN as_IN a_DT mixed-integer_JJ quadratic_JJ program_NN -LRB-_-LRB- MIQP_NN -RRB-_-RRB- ,_, and_CC then_RB show_VB how_WRB this_DT problem_NN can_MD be_VB converted_VBN into_IN a_DT mixedinteger_NN linear_JJ program_NN -LRB-_-LRB- MILP_NN -RRB-_-RRB- ._.
+4_LS ._.
+#_# Mixed-Integer_NNP Quadratic_NNP Program_NNP We_PRP begin_VBP with_IN the_DT case_NN of_IN a_DT single_JJ type_NN of_IN follower_NN ._.
+Let_VB the_DT leader_NN be_VB the_DT row_NN player_NN and_CC the_DT follower_NN the_DT column_NN player_NN ._.
+We_PRP denote_VBP by_IN x_CC the_DT vector_NN of_IN strategies_NNS of_IN the_DT leader_NN and_CC q_VB the_DT vector_NN of_IN strategies_NNS of_IN the_DT follower_NN ._.
+We_PRP also_RB denote_VBP X_NN and_CC Q_NNP the_DT index_NN sets_NNS of_IN the_DT leader_NN and_CC follower_NN ''_'' s_NNS pure_JJ strategies_NNS ,_, respectively_RB ._.
+The_DT payoff_NN matrices_NNS R_NN and_CC C_NN correspond_VBP to_TO :_: Rij_NN is_VBZ the_DT reward_NN of_IN the_DT leader_NN and_CC Cij_NN is_VBZ the_DT reward_NN of_IN the_DT follower_NN when_WRB the_DT leader_NN takes_VBZ pure_JJ strategy_NN i_FW and_CC the_DT follower_NN takes_VBZ pure_JJ strategy_NN j_NN ._.
+Let_VB k_NN be_VB the_DT size_NN of_IN the_DT multiset_NN ._.
+We_PRP first_RB fix_VB the_DT policy_NN of_IN the_DT leader_NN to_TO some_DT k-uniform_JJ policy_NN x_NN ._.
+The_DT value_NN xi_NN is_VBZ the_DT number_NN of_IN times_NNS pure_JJ strategy_NN i_FW is_VBZ used_VBN in_IN the_DT k-uniform_JJ policy_NN ,_, which_WDT is_VBZ selected_VBN with_IN probability_NN xi_NN /_: k_NN ._.
+We_PRP formulate_VBP the_DT optimization_NN problem_NN the_DT follower_NN solves_VBZ to_TO find_VB its_PRP$ optimal_JJ response_NN to_TO x_CC as_IN the_DT following_VBG linear_JJ program_NN :_: max_NN X_NN jQ_NN X_NN iX_NN 1_CD k_NN Cijxi_NNP qj_NN s_NNS ._.
+t_NN ._.
+P_NN jQ_NN qj_NN =_JJ #_# q_VB #_# ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- The_DT objective_JJ function_NN maximizes_VBZ the_DT follower_NN ''_'' s_NNS expected_VBN reward_NN given_VBN x_NN ,_, while_IN the_DT constraints_NNS make_VBP feasible_JJ any_DT mixed_JJ strategy_NN q_NN for_IN the_DT follower_NN ._.
+The_DT dual_JJ to_TO this_DT linear_JJ programming_NN problem_NN is_VBZ the_DT following_NN :_: min_NN a_DT s_NNS ._.
+t_NN ._.
+a_DT X_NN iX_NN 1_CD k_NN Cijxi_NN j_NN Q_NNP ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- From_IN strong_JJ duality_NN and_CC complementary_JJ slackness_NN we_PRP obtain_VBP that_IN the_DT follower_NN ''_'' s_NNS maximum_JJ reward_NN value_NN ,_, a_DT ,_, is_VBZ the_DT value_NN of_IN every_DT pure_JJ strategy_NN with_IN qj_NN >_JJR #_# ,_, that_DT is_VBZ in_IN the_DT support_NN of_IN the_DT optimal_JJ mixed_JJ strategy_NN ._.
+Therefore_RB each_DT of_IN these_DT pure_JJ strategies_NNS is_VBZ optimal_JJ ._.
+Optimal_JJ solutions_NNS to_TO the_DT follower_NN ''_'' s_NNS problem_NN are_VBP characterized_VBN by_IN linear_JJ programming_NN optimality_NN conditions_NNS :_: primal_JJ feasibility_NN constraints_NNS in_IN -LRB-_-LRB- #_# -RRB-_-RRB- ,_, dual_JJ feasibility_NN constraints_NNS in_IN -LRB-_-LRB- #_# -RRB-_-RRB- ,_, and_CC complementary_JJ slackness_NN qj_NN a_DT X_NN iX_NN 1_CD k_NN Cijxi_NNP !_.
+=_JJ #_# j_FW Q_NNP ._.
+These_DT conditions_NNS must_MD be_VB included_VBN in_IN the_DT problem_NN solved_VBN by_IN the_DT leader_NN in_IN order_NN to_TO consider_VB only_RB best_RB responses_NNS by_IN the_DT follower_NN to_TO the_DT k-uniform_JJ policy_NN x_NN ._.
+314_CD The_DT Sixth_NNP Intl_NNP ._.
+Joint_NNP Conf_NNP ._.
+on_IN Autonomous_NNP Agents_NNPS and_CC Multi-Agent_NNP Systems_NNP -LRB-_-LRB- AAMAS_NNP ##_CD -RRB-_-RRB- The_DT leader_NN seeks_VBZ the_DT k-uniform_JJ solution_NN x_NN that_WDT maximizes_VBZ its_PRP$ own_JJ payoff_NN ,_, given_VBN that_IN the_DT follower_NN uses_VBZ an_DT optimal_JJ response_NN q_NN -LRB-_-LRB- x_NN -RRB-_-RRB- ._.
+Therefore_RB the_DT leader_NN solves_VBZ the_DT following_VBG integer_NN problem_NN :_: max_NN X_NN iX_NN X_NN jQ_NN 1_CD k_NN Rijq_NN -LRB-_-LRB- x_NN -RRB-_-RRB- j_NN xi_NN s_NNS ._.
+t_NN ._.
+P_NN iX_NN xi_NN =_JJ k_NN xi_NN -LCB-_-LRB- #_# ,_, #_# ,_, ..._: ,_, k_NN -RCB-_-RRB- ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- Problem_NNP -LRB-_-LRB- #_# -RRB-_-RRB- maximizes_VBZ the_DT leader_NN ''_'' s_NNS reward_VBP with_IN the_DT follower_NN ''_'' s_NNS best_JJS response_NN -LRB-_-LRB- qj_NN for_IN fixed_JJ leader_NN ''_'' s_NNS policy_NN x_NN and_CC hence_RB denoted_VBN q_NN -LRB-_-LRB- x_NN -RRB-_-RRB- j_NN -RRB-_-RRB- by_IN selecting_VBG a_DT uniform_JJ policy_NN from_IN a_DT multiset_NN of_IN constant_JJ size_NN k_NN ._.
+We_PRP complete_VBP this_DT problem_NN by_IN including_VBG the_DT characterization_NN of_IN q_NN -LRB-_-LRB- x_NN -RRB-_-RRB- through_IN linear_JJ programming_NN optimality_NN conditions_NNS ._.
+To_TO simplify_VB writing_VBG the_DT complementary_JJ slackness_NN conditions_NNS ,_, we_PRP will_MD constrain_VB q_NN -LRB-_-LRB- x_NN -RRB-_-RRB- to_TO be_VB only_RB optimal_JJ pure_JJ strategies_NNS by_IN just_RB considering_VBG integer_NN solutions_NNS of_IN q_NN -LRB-_-LRB- x_NN -RRB-_-RRB- ._.
+The_DT leader_NN ''_'' s_NNS problem_NN becomes_VBZ :_: maxx_NN ,_, q_NN X_NN iX_NN X_NN jQ_NN 1_CD k_NN Rijxiqj_NN s_NNS ._.
+t_NN ._.
+P_NN i_FW xi_FW =_JJ kP_NN jQ_NN qj_NN =_JJ #_# 0_CD -LRB-_-LRB- a_DT P_NN iX_NN 1_CD k_NN Cijxi_NN -RRB-_-RRB- -LRB-_-LRB- #_# qj_NN -RRB-_-RRB- M_NN xi_NN -LCB-_-LRB- #_# ,_, #_# ,_, ..._: ,_, k_NN -RCB-_-RRB- qj_NN -LCB-_-LRB- #_# ,_, #_# -RCB-_-RRB- ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- Here_RB ,_, the_DT constant_JJ M_NN is_VBZ some_DT large_JJ number_NN ._.
+The_DT first_JJ and_CC fourth_JJ constraints_NNS enforce_VBP a_DT k-uniform_JJ policy_NN for_IN the_DT leader_NN ,_, and_CC the_DT second_JJ and_CC fifth_JJ constraints_NNS enforce_VBP a_DT feasible_JJ pure_JJ strategy_NN for_IN the_DT follower_NN ._.
+The_DT third_JJ constraint_NN enforces_VBZ dual_JJ feasibility_NN of_IN the_DT follower_NN ''_'' s_NNS problem_NN -LRB-_-LRB- leftmost_JJ inequality_NN -RRB-_-RRB- and_CC the_DT complementary_JJ slackness_NN constraint_NN for_IN an_DT optimal_JJ pure_JJ strategy_NN q_NN for_IN the_DT follower_NN -LRB-_-LRB- rightmost_JJ inequality_NN -RRB-_-RRB- ._.
+In_IN fact_NN ,_, since_IN only_RB one_CD pure_JJ strategy_NN can_MD be_VB selected_VBN by_IN the_DT follower_NN ,_, say_VBP qh_NN =_JJ #_# ,_, this_DT last_JJ constraint_NN enforces_VBZ that_IN a_DT =_JJ P_NN iX_NN 1_CD k_NN Cihxi_NNP imposing_VBG no_DT additional_JJ constraint_NN for_IN all_DT other_JJ pure_JJ strategies_NNS which_WDT have_VBP qj_NN =_JJ #_# ._.
+We_PRP conclude_VBP this_DT subsection_NN noting_VBG that_IN Problem_NNP -LRB-_-LRB- #_# -RRB-_-RRB- is_VBZ an_DT integer_NN program_NN with_IN a_DT non-convex_JJ quadratic_JJ objective_NN in_IN general_JJ ,_, as_IN the_DT matrix_NN R_NN need_MD not_RB be_VB positive-semi-definite_JJ ._.
+Efficient_JJ solution_NN methods_NNS for_IN non-linear_JJ ,_, non-convex_JJ integer_NN problems_NNS remains_VBZ a_DT challenging_JJ research_NN question_NN ._.
+In_IN the_DT next_JJ section_NN we_PRP show_VBP a_DT reformulation_NN of_IN this_DT problem_NN as_IN a_DT linear_JJ integer_NN programming_NN problem_NN ,_, for_IN which_WDT a_DT number_NN of_IN efficient_JJ commercial_JJ solvers_NNS exist_VBP ._.
+4_LS ._.
+#_# Mixed-Integer_NNP Linear_NNP Program_NNP We_PRP can_MD linearize_VB the_DT quadratic_JJ program_NN of_IN Problem_NNP #_# through_IN the_DT change_NN of_IN variables_NNS zij_NN =_JJ xiqj_NN ,_, obtaining_VBG the_DT following_VBG problem_NN maxq_NN ,_, z_SYM P_NN iX_NN P_NN jQ_NN 1_CD k_NN Rijzij_NN s_NNS ._.
+t_NN ._.
+P_NN iX_NN P_NN jQ_NN zij_NN =_JJ k_NN P_NN jQ_NN zij_NN k_NN kqj_NN P_NN iX_NN zij_NN k_NN P_NN jQ_NN qj_NN =_JJ #_# 0_CD -LRB-_-LRB- a_DT P_NN iX_NN 1_CD k_NN Cij_NN -LRB-_-LRB- P_NN hQ_NN zih_NN -RRB-_-RRB- -RRB-_-RRB- -LRB-_-LRB- #_# qj_NN -RRB-_-RRB- M_NN zij_NN -LCB-_-LRB- #_# ,_, #_# ,_, ..._: ,_, k_NN -RCB-_-RRB- qj_NN -LCB-_-LRB- #_# ,_, #_# -RCB-_-RRB- -LRB-_-LRB- #_# -RRB-_-RRB- PROPOSITION_NN #_# ._.
+Problems_NNS -LRB-_-LRB- #_# -RRB-_-RRB- and_CC -LRB-_-LRB- #_# -RRB-_-RRB- are_VBP equivalent_JJ ._.
+Proof_NNP :_: Consider_VB x_NN ,_, q_VB a_DT feasible_JJ solution_NN of_IN -LRB-_-LRB- #_# -RRB-_-RRB- ._.
+We_PRP will_MD show_VB that_IN q_NN ,_, zij_NN =_JJ xiqj_NN is_VBZ a_DT feasible_JJ solution_NN of_IN -LRB-_-LRB- #_# -RRB-_-RRB- of_IN same_JJ objective_JJ function_NN value_NN ._.
+The_DT equivalence_JJ of_IN the_DT objective_JJ functions_NNS ,_, and_CC constraints_NNS #_# ,_, #_# and_CC #_# of_IN -LRB-_-LRB- #_# -RRB-_-RRB- are_VBP satisfied_VBN by_IN construction_NN ._.
+The_DT fact_NN that_IN P_NN jQ_NN zij_NN =_JJ xi_NN as_IN P_NN jQ_NN qj_NN =_JJ #_# explains_VBZ constraints_NNS #_# ,_, #_# ,_, and_CC 5_CD of_IN -LRB-_-LRB- #_# -RRB-_-RRB- ._.
+Constraint_NN #_# of_IN -LRB-_-LRB- #_# -RRB-_-RRB- is_VBZ satisfied_JJ because_IN P_NN iX_NN zij_NN =_JJ kqj_NN ._.
+Let_VB us_PRP now_RB consider_VBP q_NN ,_, z_SYM feasible_JJ for_IN -LRB-_-LRB- #_# -RRB-_-RRB- ._.
+We_PRP will_MD show_VB that_IN q_NN and_CC xi_NN =_JJ P_NN jQ_NN zij_NN are_VBP feasible_JJ for_IN -LRB-_-LRB- #_# -RRB-_-RRB- with_IN the_DT same_JJ objective_JJ value_NN ._.
+In_IN fact_NN all_DT constraints_NNS of_IN -LRB-_-LRB- #_# -RRB-_-RRB- are_VBP readily_RB satisfied_VBN by_IN construction_NN ._.
+To_TO see_VB that_IN the_DT objectives_NNS match_VBP ,_, notice_VBP that_IN if_IN qh_NN =_JJ #_# then_RB the_DT third_JJ constraint_NN in_IN -LRB-_-LRB- #_# -RRB-_-RRB- implies_VBZ that_IN P_NN iX_NN zih_NN =_JJ k_NN ,_, which_WDT means_VBZ that_IN zij_NN =_JJ #_# for_IN all_DT i_FW X_NN and_CC all_DT j_NN =_JJ h_NN ._.
+Therefore_RB ,_, xiqj_NN =_JJ X_NN lQ_NN zilqj_NN =_JJ zihqj_NN =_JJ zij_NN ._.
+This_DT last_JJ equality_NN is_VBZ because_IN both_DT are_VBP #_# when_WRB j_NN =_JJ h_NN ._.
+This_DT shows_VBZ that_IN the_DT transformation_NN preserves_VBZ the_DT objective_JJ function_NN value_NN ,_, completing_VBG the_DT proof_NN ._.
+Given_VBN this_DT transformation_NN to_TO a_DT mixed-integer_JJ linear_JJ program_NN -LRB-_-LRB- MILP_NN -RRB-_-RRB- ,_, we_PRP now_RB show_VBP how_WRB we_PRP can_MD apply_VB our_PRP$ decomposition_NN technique_NN on_IN the_DT MILP_NN to_TO obtain_VB significant_JJ speedups_NNS for_IN Bayesian_JJ games_NNS with_IN multiple_JJ follower_NN types_NNS ._.
+5_CD ._.
+DECOMPOSITION_NN FOR_IN MULTIPLE_JJ ADVERSARIES_NNS The_DT MILP_NN developed_VBN in_IN the_DT previous_JJ section_NN handles_VBZ only_RB one_CD follower_NN ._.
+Since_IN our_PRP$ security_NN scenario_NN contains_VBZ multiple_JJ follower_NN -LRB-_-LRB- robber_NN -RRB-_-RRB- types_NNS ,_, we_PRP change_VBP the_DT response_NN function_NN for_IN the_DT follower_NN from_IN a_DT pure_JJ strategy_NN into_IN a_DT weighted_JJ combination_NN over_IN various_JJ pure_JJ follower_NN strategies_NNS where_WRB the_DT weights_NNS are_VBP probabilities_NNS of_IN occurrence_NN of_IN each_DT of_IN the_DT follower_NN types_NNS ._.
+5_CD ._.
+#_# Decomposed_VBN MIQP_NN To_TO admit_VB multiple_JJ adversaries_NNS in_IN our_PRP$ framework_NN ,_, we_PRP modify_VBP the_DT notation_NN defined_VBN in_IN the_DT previous_JJ section_NN to_TO reason_NN about_IN multiple_JJ follower_NN types_NNS ._.
+We_PRP denote_VBP by_IN x_CC the_DT vector_NN of_IN strategies_NNS of_IN the_DT leader_NN and_CC ql_VB the_DT vector_NN of_IN strategies_NNS of_IN follower_NN l_NN ,_, with_IN L_NN denoting_VBG the_DT index_NN set_NN of_IN follower_NN types_NNS ._.
+We_PRP also_RB denote_VBP by_IN X_NN and_CC Q_NNP the_DT index_NN sets_NNS of_IN leader_NN and_CC follower_NN l_NN ''_'' s_NNS pure_JJ strategies_NNS ,_, respectively_RB ._.
+We_PRP also_RB index_NN the_DT payoff_NN matrices_NNS on_IN each_DT follower_NN l_NN ,_, considering_VBG the_DT matrices_NNS Rl_NN and_CC Cl_NN ._.
+Using_VBG this_DT modified_VBN notation_NN ,_, we_PRP characterize_VBP the_DT optimal_JJ solution_NN of_IN follower_NN l_NN ''_'' s_NNS problem_NN given_VBN the_DT leaders_NNS k-uniform_JJ policy_NN x_NN ,_, with_IN the_DT following_VBG optimality_NN conditions_NNS :_: X_NN jQ_NN ql_NN j_NN =_JJ #_# al_FW X_NN iX_NN 1_CD k_NN Cl_NN ijxi_NN #_# ql_FW j_FW -LRB-_-LRB- al_FW X_NN iX_NN 1_CD k_NN Cl_NN ijxi_NN -RRB-_-RRB- =_JJ #_# ql_FW j_FW #_# Again_RB ,_, considering_VBG only_RB optimal_JJ pure_JJ strategies_NNS for_IN follower_NN l_NN ''_'' s_NNS problem_NN we_PRP can_MD linearize_VB the_DT complementarity_NN constraint_NN above_IN ._.
+We_PRP incorporate_VBP these_DT constraints_NNS on_IN the_DT leader_NN ''_'' s_NNS problem_NN that_WDT selects_VBZ the_DT optimal_JJ k-uniform_NN policy_NN ._.
+Therefore_RB ,_, given_VBN a_DT priori_FW probabilities_FW pl_NN ,_, with_IN l_NN L_NN of_IN facing_VBG each_DT follower_NN ,_, the_DT leader_NN solves_VBZ the_DT following_VBG problem_NN :_: The_DT Sixth_NNP Intl_NNP ._.
+Joint_NNP Conf_NNP ._.
+on_IN Autonomous_NNP Agents_NNPS and_CC Multi-Agent_NNP Systems_NNP -LRB-_-LRB- AAMAS_NNP ##_CD -RRB-_-RRB- ###_CD maxx_NN ,_, q_NN X_NN iX_NN X_NN lL_NN X_NN jQ_NN pl_NN k_NN Rl_NN ijxiql_NN j_NN s_NNS ._.
+t_NN ._.
+P_NN i_FW xi_FW =_JJ kP_NN jQ_NN ql_NN j_NN =_JJ #_# 0_CD -LRB-_-LRB- al_FW P_NN iX_NN 1_CD k_NN Cl_NN ijxi_NN -RRB-_-RRB- -LRB-_-LRB- #_# ql_FW j_FW -RRB-_-RRB- M_NN xi_NN -LCB-_-LRB- #_# ,_, #_# ,_, ..._: ,_, k_NN -RCB-_-RRB- ql_FW j_FW -LCB-_-LRB- #_# ,_, #_# -RCB-_-RRB- ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- Problem_NNP -LRB-_-LRB- #_# -RRB-_-RRB- for_IN a_DT Bayesian_JJ game_NN with_IN multiple_JJ follower_NN types_NNS is_VBZ indeed_RB equivalent_JJ to_TO Problem_NNP -LRB-_-LRB- #_# -RRB-_-RRB- on_IN the_DT payoff_NN matrix_NN obtained_VBN from_IN the_DT Harsanyi_NNP transformation_NN of_IN the_DT game_NN ._.
+In_IN fact_NN ,_, every_DT pure_JJ strategy_NN j_NN in_IN Problem_NNP -LRB-_-LRB- #_# -RRB-_-RRB- corresponds_VBZ to_TO a_DT sequence_NN of_IN pure_JJ strategies_NNS jl_NN ,_, one_CD for_IN each_DT follower_NN l_NN L_NN ._.
+This_DT means_VBZ that_IN qj_NN =_JJ #_# if_IN and_CC only_RB if_IN ql_NN jl_NN =_JJ #_# for_IN all_DT l_NN L_NN ._.
+In_IN addition_NN ,_, given_VBN the_DT a_DT priori_FW probabilities_FW pl_NN of_IN facing_VBG player_NN l_NN ,_, the_DT reward_NN in_IN the_DT Harsanyi_NNP transformation_NN payoff_NN table_NN is_VBZ Rij_NN =_JJ P_NN lL_NN pl_NN Rl_NN ijl_NN ._.
+The_DT same_JJ relation_NN holds_VBZ between_IN C_NN and_CC Cl_NN ._.
+These_DT relations_NNS between_IN a_DT pure_JJ strategy_NN in_IN the_DT equivalent_JJ normal_JJ form_NN game_NN and_CC pure_JJ strategies_NNS in_IN the_DT individual_JJ games_NNS with_IN each_DT followers_NNS are_VBP key_JJ in_IN showing_VBG these_DT problems_NNS are_VBP equivalent_JJ ._.
+5_CD ._.
+#_# Decomposed_VBN MILP_NN We_PRP can_MD linearize_VB the_DT quadratic_JJ programming_NN problem_NN #_# through_IN the_DT change_NN of_IN variables_NNS zl_NN ij_NN =_JJ xiql_NN j_NN ,_, obtaining_VBG the_DT following_VBG problem_NN maxq_NN ,_, z_SYM P_NN iX_NN P_NN lL_NN P_NN jQ_NN pl_NN k_NN Rl_NN ijzl_NN ij_NN s_NNS ._.
+t_NN ._.
+P_NN iX_NN P_NN jQ_NN zl_NN ij_NN =_JJ k_NN P_NN jQ_NN zl_NN ij_NN k_NN kql_NN j_NN P_NN iX_NN zl_NN ij_NN k_NN P_NN jQ_NN ql_NN j_NN =_JJ #_# 0_CD -LRB-_-LRB- al_FW P_NN iX_NN 1_CD k_NN Cl_NN ij_NN -LRB-_-LRB- P_NN hQ_NN zl_NN ih_NN -RRB-_-RRB- -RRB-_-RRB- -LRB-_-LRB- #_# ql_FW j_FW -RRB-_-RRB- M_NN P_NN jQ_NN zl_NN ij_NN =_JJ P_NN jQ_NN z1_NN ij_NN zl_NN ij_NN -LCB-_-LRB- #_# ,_, #_# ,_, ..._: ,_, k_NN -RCB-_-RRB- ql_FW j_FW -LCB-_-LRB- #_# ,_, #_# -RCB-_-RRB- -LRB-_-LRB- #_# -RRB-_-RRB- PROPOSITION_NN #_# ._.
+Problems_NNS -LRB-_-LRB- #_# -RRB-_-RRB- and_CC -LRB-_-LRB- #_# -RRB-_-RRB- are_VBP equivalent_JJ ._.
+Proof_NNP :_: Consider_VB x_NN ,_, ql_NN ,_, al_NNP with_IN l_NN L_NN a_DT feasible_JJ solution_NN of_IN -LRB-_-LRB- #_# -RRB-_-RRB- ._.
+We_PRP will_MD show_VB that_IN ql_NN ,_, al_NNP ,_, zl_NN ij_NN =_JJ xiql_NN j_NN is_VBZ a_DT feasible_JJ solution_NN of_IN -LRB-_-LRB- #_# -RRB-_-RRB- of_IN same_JJ objective_JJ function_NN value_NN ._.
+The_DT equivalence_JJ of_IN the_DT objective_JJ functions_NNS ,_, and_CC constraints_NNS #_# ,_, #_# and_CC #_# of_IN -LRB-_-LRB- #_# -RRB-_-RRB- are_VBP satisfied_VBN by_IN construction_NN ._.
+The_DT fact_NN that_IN P_NN jQ_NN zl_NN ij_NN =_JJ xi_NN as_IN P_NN jQ_NN ql_NN j_NN =_JJ #_# explains_VBZ constraints_NNS #_# ,_, #_# ,_, #_# and_CC #_# of_IN -LRB-_-LRB- #_# -RRB-_-RRB- ._.
+Constraint_NN #_# of_IN -LRB-_-LRB- #_# -RRB-_-RRB- is_VBZ satisfied_JJ because_IN P_NN iX_NN zl_NN ij_NN =_JJ kql_NN j_NN ._.
+Lets_VBZ now_RB consider_VBP ql_NN ,_, zl_NN ,_, al_NNP feasible_JJ for_IN -LRB-_-LRB- #_# -RRB-_-RRB- ._.
+We_PRP will_MD show_VB that_IN ql_NN ,_, al_NNP and_CC xi_NN =_JJ P_NN jQ_NN z1_NN ij_NN are_VBP feasible_JJ for_IN -LRB-_-LRB- #_# -RRB-_-RRB- with_IN the_DT same_JJ objective_JJ value_NN ._.
+In_IN fact_NN all_DT constraints_NNS of_IN -LRB-_-LRB- #_# -RRB-_-RRB- are_VBP readily_RB satisfied_VBN by_IN construction_NN ._.
+To_TO see_VB that_IN the_DT objectives_NNS match_VBP ,_, notice_VBP for_IN each_DT l_NN one_CD ql_NN j_NN must_MD equal_VB #_# and_CC the_DT rest_NN equal_JJ #_# ._.
+Let_VB us_PRP say_VB that_IN ql_NN jl_NN =_JJ #_# ,_, then_RB the_DT third_JJ constraint_NN in_IN -LRB-_-LRB- #_# -RRB-_-RRB- implies_VBZ that_IN P_NN iX_NN zl_NN ijl_NN =_JJ k_NN ,_, which_WDT means_VBZ that_IN zl_NN ij_NN =_JJ #_# for_IN all_DT i_FW X_NN and_CC all_DT j_NN =_JJ jl_NN ._.
+In_IN particular_JJ this_DT implies_VBZ that_IN xi_NN =_JJ X_NN jQ_NN z1_NN ij_NN =_JJ z1_NN ij1_NN =_JJ zl_NN ijl_NN ,_, the_DT last_JJ equality_NN from_IN constraint_NN #_# of_IN -LRB-_-LRB- #_# -RRB-_-RRB- ._.
+Therefore_RB xiql_NN j_NN =_JJ zl_NN ijl_NN ql_NN j_NN =_JJ zl_NN ij_NN ._.
+This_DT last_JJ equality_NN is_VBZ because_IN both_DT are_VBP #_# when_WRB j_NN =_JJ jl_NN ._.
+Effectively_RB ,_, constraint_NN #_# ensures_VBZ that_IN all_PDT the_DT adversaries_NNS are_VBP calculating_VBG their_PRP$ best_JJS responses_NNS against_IN a_DT particular_JJ fixed_JJ policy_NN of_IN the_DT agent_NN ._.
+This_DT shows_VBZ that_IN the_DT transformation_NN preserves_VBZ the_DT objective_JJ function_NN value_NN ,_, completing_VBG the_DT proof_NN ._.
+We_PRP can_MD therefore_RB solve_VB this_DT equivalent_JJ linear_JJ integer_NN program_NN with_IN efficient_JJ integer_NN programming_NN packages_NNS which_WDT can_MD handle_VB problems_NNS with_IN thousands_NNS of_IN integer_NN variables_NNS ._.
+We_PRP implemented_VBD the_DT decomposed_VBN MILP_NN and_CC the_DT results_NNS are_VBP shown_VBN in_IN the_DT following_VBG section_NN ._.
+6_CD ._.
+EXPERIMENTAL_JJ RESULTS_NNS The_DT patrolling_NN domain_NN and_CC the_DT payoffs_NNS for_IN the_DT associated_VBN game_NN are_VBP detailed_VBN in_IN Sections_NNS #_# and_CC #_# ._.
+We_PRP performed_VBD experiments_NNS for_IN this_DT game_NN in_IN worlds_NNS of_IN three_CD and_CC four_CD houses_NNS with_IN patrols_NNS consisting_VBG of_IN two_CD houses_NNS ._.
+The_DT description_NN given_VBN in_IN Section_NN #_# is_VBZ used_VBN to_TO generate_VB a_DT base_NN case_NN for_IN both_CC the_DT security_NN agent_NN and_CC robber_NN payoff_NN functions_NNS ._.
+The_DT payoff_NN tables_NNS for_IN additional_JJ robber_NN types_NNS are_VBP constructed_VBN and_CC added_VBN to_TO the_DT game_NN by_IN adding_VBG a_DT random_JJ distribution_NN of_IN varying_VBG size_NN to_TO the_DT payoffs_NNS in_IN the_DT base_NN case_NN ._.
+All_DT games_NNS are_VBP normalized_VBN so_IN that_IN ,_, for_IN each_DT robber_NN type_NN ,_, the_DT minimum_NN and_CC maximum_NN payoffs_NNS to_TO the_DT security_NN agent_NN and_CC robber_NN are_VBP #_# and_CC #_# ,_, respectively_RB ._.
+Using_VBG the_DT data_NNS generated_VBN ,_, we_PRP performed_VBD the_DT experiments_NNS using_VBG four_CD methods_NNS for_IN generating_VBG the_DT security_NN agent_NN ''_'' s_NNS strategy_NN :_: uniform_JJ randomization_NN ASAP_NN the_DT multiple_JJ linear_JJ programs_NNS method_NN from_IN -LSB-_-LRB- #_# -RSB-_-RRB- -LRB-_-LRB- to_TO find_VB the_DT true_JJ optimal_JJ strategy_NN -RRB-_-RRB- the_DT highest_JJS reward_NN Bayes-Nash_JJ equilibrium_NN ,_, found_VBN using_VBG the_DT MIP-Nash_JJ algorithm_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- The_DT last_JJ three_CD methods_NNS were_VBD applied_VBN using_VBG CPLEX_NNP #_# ._.
+#_# ._.
+Because_IN the_DT last_JJ two_CD methods_NNS are_VBP designed_VBN for_IN normal-form_JJ games_NNS rather_RB than_IN Bayesian_JJ games_NNS ,_, the_DT games_NNS were_VBD first_JJ converted_VBN using_VBG the_DT Harsanyi_NNP transformation_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+The_DT uniform_JJ randomization_NN method_NN is_VBZ simply_RB choosing_VBG a_DT uniform_JJ random_JJ policy_NN over_IN all_DT possible_JJ patrol_NN routes_NNS ._.
+We_PRP use_VBP this_DT method_NN as_IN a_DT simple_JJ baseline_NN to_TO measure_VB the_DT performance_NN of_IN our_PRP$ heuristics_NNS ._.
+We_PRP anticipated_VBD that_IN the_DT uniform_JJ policy_NN would_MD perform_VB reasonably_RB well_RB since_IN maximum-entropy_JJ policies_NNS have_VBP been_VBN shown_VBN to_TO be_VB effective_JJ in_IN multiagent_JJ security_NN domains_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+The_DT highest-reward_JJ Bayes-Nash_JJ equilibria_NNS were_VBD used_VBN in_IN order_NN to_TO demonstrate_VB the_DT higher_JJR reward_NN gained_VBN by_IN looking_VBG for_IN an_DT optimal_JJ policy_NN rather_RB than_IN an_DT equilibria_NN in_IN Stackelberg_NNP games_NNS such_JJ as_IN our_PRP$ security_NN domain_NN ._.
+Based_VBN on_IN our_PRP$ experiments_NNS we_PRP present_VBP three_CD sets_NNS of_IN graphs_NNS to_TO demonstrate_VB -LRB-_-LRB- #_# -RRB-_-RRB- the_DT runtime_NN of_IN ASAP_NN compared_VBN to_TO other_JJ common_JJ methods_NNS for_IN finding_VBG a_DT strategy_NN ,_, -LRB-_-LRB- #_# -RRB-_-RRB- the_DT reward_NN guaranteed_VBN by_IN ASAP_NN compared_VBN to_TO other_JJ methods_NNS ,_, and_CC -LRB-_-LRB- #_# -RRB-_-RRB- the_DT effect_NN of_IN varying_VBG the_DT parameter_NN k_NN ,_, the_DT size_NN of_IN the_DT multiset_NN ,_, on_IN the_DT performance_NN of_IN ASAP_NN ._.
+In_IN the_DT first_JJ two_CD sets_NNS of_IN graphs_NNS ,_, ASAP_NN is_VBZ run_VBN using_VBG a_DT multiset_NN of_IN 80_CD elements_NNS ;_: in_IN the_DT third_JJ set_NN this_DT number_NN is_VBZ varied_VBN ._.
+The_DT first_JJ set_NN of_IN graphs_NNS ,_, shown_VBN in_IN Figure_NNP #_# shows_VBZ the_DT runtime_NN graphs_NNS for_IN three-house_JJ -LRB-_-LRB- left_JJ column_NN -RRB-_-RRB- and_CC four-house_NN -LRB-_-LRB- right_JJ column_NN -RRB-_-RRB- domains_NNS ._.
+Each_DT of_IN the_DT three_CD rows_NNS of_IN graphs_NNS corresponds_VBZ to_TO a_DT different_JJ randomly-generated_JJ scenario_NN ._.
+The_DT x-axis_NN shows_VBZ the_DT number_NN of_IN robber_NN types_NNS the_DT security_NN agent_NN faces_VBZ and_CC the_DT y-axis_NN of_IN the_DT graph_NN shows_VBZ the_DT runtime_NN in_IN seconds_NNS ._.
+All_DT experiments_NNS that_WDT were_VBD not_RB concluded_VBN in_IN ##_CD minutes_NNS -LRB-_-LRB- ####_CD seconds_NNS -RRB-_-RRB- were_VBD cut_VBN off_RP ._.
+The_DT runtime_NN for_IN the_DT uniform_JJ policy_NN is_VBZ always_RB negligible_JJ irrespective_JJ of_IN the_DT number_NN of_IN adversaries_NNS and_CC hence_RB is_VBZ not_RB shown_VBN ._.
+The_DT ASAP_NNP algorithm_NN clearly_RB outperforms_VBZ the_DT optimal_JJ ,_, multipleLP_JJ method_NN as_RB well_RB as_IN the_DT MIP-Nash_JJ algorithm_NN for_IN finding_VBG the_DT highestreward_JJ Bayes-Nash_JJ equilibrium_NN with_IN respect_NN to_TO runtime_NN ._.
+For_IN a_DT 316_CD The_DT Sixth_NNP Intl_NNP ._.
+Joint_NNP Conf_NNP ._.
+on_IN Autonomous_NNP Agents_NNPS and_CC Multi-Agent_NNP Systems_NNP -LRB-_-LRB- AAMAS_NNP ##_CD -RRB-_-RRB- Figure_NNP #_# :_: Runtimes_NNS for_IN various_JJ algorithms_NNS on_IN problems_NNS of_IN #_# and_CC #_# houses_NNS ._.
+domain_NN of_IN three_CD houses_NNS ,_, the_DT optimal_JJ method_NN can_MD not_RB reach_VB a_DT solution_NN for_IN more_JJR than_IN seven_CD robber_NN types_NNS ,_, and_CC for_IN four_CD houses_NNS it_PRP can_MD not_RB solve_VB for_IN more_JJR than_IN six_CD types_NNS within_IN the_DT cutoff_NN time_NN in_IN any_DT of_IN the_DT three_CD scenarios_NNS ._.
+MIP-Nash_JJ solves_VBZ for_IN even_RB fewer_JJR robber_NN types_NNS within_IN the_DT cutoff_NN time_NN ._.
+On_IN the_DT other_JJ hand_NN ,_, ASAP_NNP runs_VBZ much_JJ faster_RBR ,_, and_CC is_VBZ able_JJ to_TO solve_VB for_IN at_IN least_JJS ##_CD adversaries_NNS for_IN the_DT three-house_JJ scenarios_NNS and_CC for_IN at_IN least_JJS ##_CD adversaries_NNS in_IN the_DT four-house_JJ scenarios_NNS within_IN the_DT cutoff_NN time_NN ._.
+The_DT runtime_NN of_IN ASAP_NN does_VBZ not_RB increase_VB strictly_RB with_IN the_DT number_NN of_IN robber_NN types_NNS for_IN each_DT scenario_NN ,_, but_CC in_IN general_JJ ,_, the_DT addition_NN of_IN more_JJR types_NNS increases_VBZ the_DT runtime_NN required_VBN ._.
+The_DT second_JJ set_NN of_IN graphs_NNS ,_, Figure_NNP #_# ,_, shows_VBZ the_DT reward_NN to_TO the_DT patrol_NN agent_NN given_VBN by_IN each_DT method_NN for_IN three_CD scenarios_NNS in_IN the_DT three-house_JJ -LRB-_-LRB- left_JJ column_NN -RRB-_-RRB- and_CC four-house_NN -LRB-_-LRB- right_JJ column_NN -RRB-_-RRB- domains_NNS ._.
+This_DT reward_NN is_VBZ the_DT utility_NN received_VBN by_IN the_DT security_NN agent_NN in_IN the_DT patrolling_NN game_NN ,_, and_CC not_RB as_IN a_DT percentage_NN of_IN the_DT optimal_JJ reward_NN ,_, since_IN it_PRP was_VBD not_RB possible_JJ to_TO obtain_VB the_DT optimal_JJ reward_NN as_IN the_DT number_NN of_IN robber_NN types_NNS increased_VBD ._.
+The_DT uniform_JJ policy_NN consistently_RB provides_VBZ the_DT lowest_JJS reward_NN in_IN both_CC domains_NNS ;_: while_IN the_DT optimal_JJ method_NN of_IN course_NN produces_VBZ the_DT optimal_JJ reward_NN ._.
+The_DT ASAP_NN method_NN remains_VBZ consistently_RB close_JJ to_TO the_DT optimal_JJ ,_, even_RB as_IN the_DT number_NN of_IN robber_NN types_NNS increases_NNS ._.
+The_DT highest-reward_JJ Bayes-Nash_JJ equilibria_NNS ,_, provided_VBN by_IN the_DT MIPNash_NN method_NN ,_, produced_VBD rewards_NNS higher_JJR than_IN the_DT uniform_NN method_NN ,_, but_CC lower_JJR than_IN ASAP_NN ._.
+This_DT difference_NN clearly_RB illustrates_VBZ the_DT gains_NNS in_IN the_DT patrolling_NN domain_NN from_IN committing_VBG to_TO a_DT strategy_NN as_IN the_DT leader_NN in_IN a_DT Stackelberg_NNP game_NN ,_, rather_RB than_IN playing_VBG a_DT standard_JJ Bayes-Nash_JJ strategy_NN ._.
+The_DT third_JJ set_NN of_IN graphs_NNS ,_, shown_VBN in_IN Figure_NNP #_# shows_VBZ the_DT effect_NN of_IN the_DT multiset_JJ size_NN on_IN runtime_NN in_IN seconds_NNS -LRB-_-LRB- left_VBN column_NN -RRB-_-RRB- and_CC reward_NN -LRB-_-LRB- right_JJ column_NN -RRB-_-RRB- ,_, again_RB expressed_VBN as_IN the_DT reward_NN received_VBN by_IN the_DT security_NN agent_NN in_IN the_DT patrolling_NN game_NN ,_, and_CC not_RB a_DT percentage_NN of_IN the_DT optimal_JJ Figure_NN #_# :_: Reward_VB for_IN various_JJ algorithms_NNS on_IN problems_NNS of_IN #_# and_CC 4_CD houses_NNS ._.
+reward_NN ._.
+Results_NNS here_RB are_VBP for_IN the_DT three-house_JJ domain_NN ._.
+The_DT trend_NN is_VBZ that_IN as_IN as_IN the_DT multiset_JJ size_NN is_VBZ increased_VBN ,_, the_DT runtime_NN and_CC reward_NN level_NN both_CC increase_NN ._.
+Not_RB surprisingly_RB ,_, the_DT reward_NN increases_VBZ monotonically_RB as_IN the_DT multiset_JJ size_NN increases_NNS ,_, but_CC what_WP is_VBZ interesting_JJ is_VBZ that_IN there_EX is_VBZ relatively_RB little_JJ benefit_NN to_TO using_VBG a_DT large_JJ multiset_NN in_IN this_DT domain_NN ._.
+In_IN all_DT cases_NNS ,_, the_DT reward_NN given_VBN by_IN a_DT multiset_NN of_IN ##_JJ elements_NNS was_VBD within_IN at_IN least_JJS ##_CD %_NN of_IN the_DT reward_NN given_VBN by_IN an_DT 80-element_JJ multiset_NN ._.
+The_DT runtime_NN does_VBZ not_RB always_RB increase_VB strictly_RB with_IN the_DT multiset_JJ size_NN ;_: indeed_RB in_IN one_CD example_NN -LRB-_-LRB- scenario_NN #_# with_IN ##_NN robber_NN types_NNS -RRB-_-RRB- ,_, using_VBG a_DT multiset_NN of_IN ##_JJ elements_NNS took_VBD ####_CD seconds_NNS ,_, while_IN using_VBG ##_JJ elements_NNS only_RB took_VBD ###_CD seconds_NNS ._.
+In_IN general_JJ ,_, runtime_NN should_MD increase_VB since_IN a_DT larger_JJR multiset_JJ means_VBZ a_DT larger_JJR domain_NN for_IN the_DT variables_NNS in_IN the_DT MILP_NN ,_, and_CC thus_RB a_DT larger_JJR search_NN space_NN ._.
+However_RB ,_, an_DT increase_NN in_IN the_DT number_NN of_IN variables_NNS can_MD sometimes_RB allow_VB for_IN a_DT policy_NN to_TO be_VB constructed_VBN more_RBR quickly_RB due_JJ to_TO more_RBR flexibility_NN in_IN the_DT problem_NN ._.
+7_CD ._.
+SUMMARY_NN AND_CC RELATED_JJ WORK_VBP This_DT paper_NN focuses_VBZ on_IN security_NN for_IN agents_NNS patrolling_NN in_IN hostile_JJ environments_NNS ._.
+In_IN these_DT environments_NNS ,_, intentional_JJ threats_NNS are_VBP caused_VBN by_IN adversaries_NNS about_IN whom_WP the_DT security_NN patrolling_NN agents_NNS have_VBP incomplete_JJ information_NN ._.
+Specifically_RB ,_, we_PRP deal_VBP with_IN situations_NNS where_WRB the_DT adversaries_NNS ''_'' actions_NNS and_CC payoffs_NNS are_VBP known_VBN but_CC the_DT exact_JJ adversary_NN type_NN is_VBZ unknown_JJ to_TO the_DT security_NN agent_NN ._.
+Agents_NNS acting_VBG in_IN the_DT real_JJ world_NN quite_RB frequently_RB have_VBP such_JJ incomplete_JJ information_NN about_IN other_JJ agents_NNS ._.
+Bayesian_JJ games_NNS have_VBP been_VBN a_DT popular_JJ choice_NN to_TO model_VB such_JJ incomplete_JJ information_NN games_NNS -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+The_DT Gala_NNP toolkit_NN is_VBZ one_CD method_NN for_IN defining_VBG such_JJ games_NNS -LSB-_-LRB- #_# -RSB-_-RRB- without_IN requiring_VBG the_DT game_NN to_TO be_VB represented_VBN in_IN normal_JJ form_NN via_IN the_DT Harsanyi_NNP transformation_NN -LSB-_-LRB- #_# -RSB-_-RRB- ;_: Gala_NNP ''_'' s_VBZ guarantees_NNS are_VBP focused_VBN on_IN fully_RB competitive_JJ games_NNS ._.
+Much_JJ work_NN has_VBZ been_VBN done_VBN on_IN finding_VBG optimal_JJ Bayes-Nash_JJ equilbria_NN for_IN The_DT Sixth_NNP Intl_NNP ._.
+Joint_NNP Conf_NNP ._.
+on_IN Autonomous_NNP Agents_NNPS and_CC Multi-Agent_NNP Systems_NNP -LRB-_-LRB- AAMAS_NNP ##_CD -RRB-_-RRB- ###_CD Figure_NNP #_# :_: Reward_VB for_IN ASAP_NN using_VBG multisets_NNS of_IN ##_NN ,_, ##_NN ,_, and_CC ##_NN elements_NNS subclasses_NNS of_IN Bayesian_JJ games_NNS ,_, finding_VBG single_JJ Bayes-Nash_JJ equilibria_NNS for_IN general_JJ Bayesian_JJ games_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- or_CC approximate_JJ Bayes-Nash_JJ equilibria_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Less_RBR attention_NN has_VBZ been_VBN paid_VBN to_TO finding_VBG the_DT optimal_JJ strategy_NN to_TO commit_VB to_TO in_IN a_DT Bayesian_JJ game_NN -LRB-_-LRB- the_DT Stackelberg_NN scenario_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- -RRB-_-RRB- ._.
+However_RB ,_, the_DT complexity_NN of_IN this_DT problem_NN was_VBD shown_VBN to_TO be_VB NP-hard_JJ in_IN the_DT general_JJ case_NN -LSB-_-LRB- #_# -RSB-_-RRB- ,_, which_WDT also_RB provides_VBZ algorithms_NNS for_IN this_DT problem_NN in_IN the_DT non-Bayesian_JJ case_NN ._.
+Therefore_RB ,_, we_PRP present_VBP a_DT heuristic_NN called_VBN ASAP_NNP ,_, with_IN three_CD key_JJ advantages_NNS towards_IN addressing_VBG this_DT problem_NN ._.
+First_RB ,_, ASAP_NN searches_NNS for_IN the_DT highest_JJS reward_NN strategy_NN ,_, rather_RB than_IN a_DT Bayes-Nash_JJ equilibrium_NN ,_, allowing_VBG it_PRP to_TO find_VB feasible_JJ strategies_NNS that_WDT exploit_VBP the_DT natural_JJ first-mover_NN advantage_NN of_IN the_DT game_NN ._.
+Second_RB ,_, it_PRP provides_VBZ strategies_NNS which_WDT are_VBP simple_JJ to_TO understand_VB ,_, represent_VB ,_, and_CC implement_VB ._.
+Third_NNP ,_, it_PRP operates_VBZ directly_RB on_IN the_DT compact_JJ ,_, Bayesian_JJ game_NN representation_NN ,_, without_IN requiring_VBG conversion_NN to_TO normal_JJ form_NN ._.
+We_PRP provide_VBP an_DT efficient_JJ Mixed_JJ Integer_NNP Linear_NNP Program_NNP -LRB-_-LRB- MILP_NNP -RRB-_-RRB- implementation_NN for_IN ASAP_NNP ,_, along_IN with_IN experimental_JJ results_NNS illustrating_VBG significant_JJ speedups_NNS and_CC higher_JJR rewards_NNS over_IN other_JJ approaches_NNS ._.
+Our_PRP$ k-uniform_JJ strategies_NNS are_VBP similar_JJ to_TO the_DT k-uniform_NN strategies_NNS of_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ._.
+While_IN that_DT work_NN provides_VBZ epsilon_NN error-bounds_NNS based_VBN on_IN the_DT k-uniform_NN strategies_NNS ,_, their_PRP$ solution_NN concept_NN is_VBZ still_RB that_DT of_IN a_DT Nash_NNP equilibrium_NN ,_, and_CC they_PRP do_VBP not_RB provide_VB efficient_JJ algorithms_NNS for_IN obtaining_VBG such_JJ k-uniform_JJ strategies_NNS ._.
+This_DT contrasts_VBZ with_IN ASAP_NN ,_, where_WRB our_PRP$ emphasis_NN is_VBZ on_IN a_DT highly_RB efficient_JJ heuristic_NN approach_NN that_WDT is_VBZ not_RB focused_VBN on_IN equilibrium_NN solutions_NNS ._.
+Finally_RB the_DT patrolling_NN problem_NN which_WDT motivated_VBD our_PRP$ work_NN has_VBZ recently_RB received_VBN growing_VBG attention_NN from_IN the_DT multiagent_JJ community_NN due_JJ to_TO its_PRP$ wide_JJ range_NN of_IN applications_NNS -LSB-_-LRB- #_# ,_, ##_NN -RSB-_-RRB- ._.
+However_RB most_JJS of_IN this_DT work_NN is_VBZ focused_VBN on_IN either_CC limiting_VBG energy_NN consumption_NN involved_VBN in_IN patrolling_NN -LSB-_-LRB- #_# -RSB-_-RRB- or_CC optimizing_VBG on_IN criteria_NNS like_IN the_DT length_NN of_IN the_DT path_NN traveled_VBD -LSB-_-LRB- #_# ,_, ##_NN -RSB-_-RRB- ,_, without_IN reasoning_NN about_IN any_DT explicit_JJ model_NN of_IN an_DT adversary_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Acknowledgments_NNS :_: This_DT research_NN is_VBZ supported_VBN by_IN the_DT United_NNP States_NNP Department_NNP of_IN Homeland_NNP Security_NNP through_IN Center_NNP for_IN Risk_NN and_CC Economic_JJ Analysis_NN of_IN Terrorism_NNP Events_NNS -LRB-_-LRB- CREATE_NN -RRB-_-RRB- ._.
+It_PRP is_VBZ also_RB supported_VBN by_IN the_DT Defense_NNP Advanced_NNP Research_NNP Projects_NNP Agency_NNP -LRB-_-LRB- DARPA_NNP -RRB-_-RRB- ,_, through_IN the_DT Department_NNP of_IN the_DT Interior_NNP ,_, NBC_NNP ,_, Acquisition_NNP Services_NNPS Division_NNP ,_, under_IN Contract_NNP No_NNP ._.
+NBCHD030010_NN ._.
+Sarit_NNP Kraus_NNP is_VBZ also_RB affiliated_VBN with_IN UMIACS_NN ._.
+8_CD ._.
+REFERENCES_NNS -LSB-_-LRB- #_# -RSB-_-RRB- R_NN ._.
+W_NN ._.
+Beard_NNP and_CC T_NN ._.
+McLain_NNP ._.
+Multiple_JJ UAV_NN cooperative_JJ search_NN under_IN collision_NN avoidance_NN and_CC limited_JJ range_NN communication_NN constraints_NNS ._.
+In_IN IEEE_NNP CDC_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- D_NN ._.
+Bertsimas_NNPS and_CC J_NNP ._.
+Tsitsiklis_NNP ._.
+Introduction_NN to_TO Linear_NNP Optimization_NNP ._.
+Athena_NNP Scientific_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- J_NN ._.
+Brynielsson_NN and_CC S_NN ._.
+Arnborg_NNP ._.
+Bayesian_JJ games_NNS for_IN threat_NN prediction_NN and_CC situation_NN analysis_NN ._.
+In_IN FUSION_NN ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- Y_NN ._.
+Chevaleyre_NNP ._.
+Theoretical_JJ analysis_NN of_IN multi-agent_JJ patrolling_NN problem_NN ._.
+In_IN AAMAS_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- V_NN ._.
+Conitzer_NNP and_CC T_NN ._.
+Sandholm_NNP ._.
+Choosing_VBG the_DT best_JJS strategy_NN to_TO commit_VB to_TO ._.
+In_IN ACM_NNP Conference_NNP on_IN Electronic_NNP Commerce_NNP ,_, 2006_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- D_NN ._.
+Fudenberg_NNP and_CC J_NNP ._.
+Tirole_NNP ._.
+Game_NNP Theory_NNP ._.
+MIT_NNP Press_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- C_NN ._.
+Gui_NNP and_CC P_NN ._.
+Mohapatra_NNP ._.
+Virtual_JJ patrol_NN :_: A_DT new_JJ power_NN conservation_NN design_NN for_IN surveillance_NN using_VBG sensor_NN networks_NNS ._.
+In_IN IPSN_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- J_NN ._.
+C_NN ._.
+Harsanyi_NNP and_CC R_NN ._.
+Selten_NNP ._.
+A_DT generalized_VBN Nash_NNP solution_NN for_IN two-person_JJ bargaining_NN games_NNS with_IN incomplete_JJ information_NN ._.
+Management_NNP Science_NNP ,_, ##_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 80-106_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- D_NN ._.
+Koller_NNP and_CC A_NNP ._.
+Pfeffer_NNP ._.
+Generating_NNP and_CC solving_VBG imperfect_JJ information_NN games_NNS ._.
+In_IN IJCAI_NNP ,_, pages_NNS 1185-1193_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- D_NN ._.
+Koller_NNP and_CC A_NNP ._.
+Pfeffer_NNP ._.
+Representations_NNS and_CC solutions_NNS for_IN game-theoretic_JJ problems_NNS ._.
+Artificial_JJ Intelligence_NNP ,_, 94_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 167-215_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- C_NN ._.
+Lemke_NNP and_CC J_NNP ._.
+Howson_NNP ._.
+Equilibrium_NN points_NNS of_IN bimatrix_NN games_NNS ._.
+Journal_NNP of_IN the_DT Society_NNP for_IN Industrial_NNP and_CC Applied_NNP Mathematics_NNP ,_, ##_CD :_: 413-423_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- R_NN ._.
+J_NN ._.
+Lipton_NNP ,_, E_NNP ._.
+Markakis_NNP ,_, and_CC A_NN ._.
+Mehta_NNP ._.
+Playing_VBG large_JJ games_NNS using_VBG simple_JJ strategies_NNS ._.
+In_IN ACM_NNP Conference_NNP on_IN Electronic_NNP Commerce_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- A_DT ._.
+Machado_NNP ,_, G_NNP ._.
+Ramalho_NNP ,_, J_NNP ._.
+D_NN ._.
+Zucker_NNP ,_, and_CC A_NN ._.
+Drougoul_NNP ._.
+Multi-agent_JJ patrolling_NN :_: an_DT empirical_JJ analysis_NN on_IN alternative_JJ architectures_NNS ._.
+In_IN MABS_NNS ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- P_NN ._.
+Paruchuri_NNP ,_, M_NN ._.
+Tambe_NNP ,_, F_NN ._.
+Ordonez_NNP ,_, and_CC S_NN ._.
+Kraus_NNP ._.
+Security_NN in_IN multiagent_JJ systems_NNS by_IN policy_NN randomization_NN ._.
+In_IN AAMAS_NNP ,_, 2006_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- T_NN ._.
+Roughgarden_NNP ._.
+Stackelberg_NNP scheduling_NN strategies_NNS ._.
+In_IN ACM_NNP Symposium_NNP on_IN TOC_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- S_NN ._.
+Ruan_NNP ,_, C_NNP ._.
+Meirina_NNP ,_, F_NN ._.
+Yu_NNP ,_, K_NNP ._.
+R_NN ._.
+Pattipati_NNP ,_, and_CC R_NN ._.
+L_NN ._.
+Popp_NNP ._.
+Patrolling_NN in_IN a_DT stochastic_JJ environment_NN ._.
+In_IN 10th_JJ Intl_NNP ._.
+Command_NN and_CC Control_NNP Research_NNP Symp_NNP ._.
+,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- T_NN ._.
+Sandholm_NNP ,_, A_NNP ._.
+Gilpin_NNP ,_, and_CC V_NN ._.
+Conitzer_NNP ._.
+Mixed-integer_JJR programming_NN methods_NNS for_IN finding_VBG nash_JJ equilibria_NNS ._.
+In_IN AAAI_NNP ,_, 2005_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- S_NN ._.
+Singh_NNP ,_, V_NNP ._.
+Soni_NNP ,_, and_CC M_NN ._.
+Wellman_NNP ._.
+Computing_NNP approximate_JJ Bayes-Nash_JJ equilibria_NNS with_IN tree-games_NNS of_IN incomplete_JJ information_NN ._.
+In_IN ACM_NNP Conference_NNP on_IN Electronic_NNP Commerce_NNP ,_, 2004_CD ._.
+318_CD The_DT Sixth_NNP Intl_NNP ._.
+Joint_NNP Conf_NNP ._.
+on_IN Autonomous_NNP Agents_NNPS and_CC Multi-Agent_NNP Systems_NNP -LRB-_-LRB- AAMAS_NNP ##_CD -RRB-_-RRB-

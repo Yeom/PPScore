@@ -1,0 +1,790 @@
+Bullet_NN :_: High_NNP Bandwidth_NNP Data_NNP Dissemination_NNP Using_VBG an_DT Overlay_NNP Mesh_NNP Dejan_NNP Kostic_NNP ,_, Adolfo_NNP Rodriguez_NNP ,_, Jeannie_NNP Albrecht_NNP ,_, and_CC Amin_NNP Vahdat_NNP Department_NNP of_IN Computer_NNP Science_NNP Duke_NNP University_NNP -LCB-_-LRB- dkostic_NNP ,_, razor_NN ,_, albrecht_NN ,_, vahdat_NN -RCB-_-RRB- @_SYM cs_NNS ._.
+duke_NN ._.
+edu_NN ABSTRACT_NN In_IN recent_JJ years_NNS ,_, overlay_NN networks_NNS have_VBP become_VBN an_DT effective_JJ alternative_NN to_TO IP_NNP multicast_NNP for_IN efficient_JJ point_NN to_TO multipoint_JJ communication_NN across_IN the_DT Internet_NN ._.
+Typically_RB ,_, nodes_NNS self-organize_VBP with_IN the_DT goal_NN of_IN forming_VBG an_DT efficient_JJ overlay_NN tree_NN ,_, one_CD that_WDT meets_VBZ performance_NN targets_NNS without_IN placing_VBG undue_JJ burden_NN on_IN the_DT underlying_JJ network_NN ._.
+In_IN this_DT paper_NN ,_, we_PRP target_VBP high-bandwidth_JJ data_NNS distribution_NN from_IN a_DT single_JJ source_NN to_TO a_DT large_JJ number_NN of_IN receivers_NNS ._.
+Applications_NNS include_VBP large-file_JJ transfers_NNS and_CC real-time_JJ multimedia_NNS streaming_NN ._.
+For_IN these_DT applications_NNS ,_, we_PRP argue_VBP that_IN an_DT overlay_NN mesh_NN ,_, rather_RB than_IN a_DT tree_NN ,_, can_MD deliver_VB fundamentally_RB higher_JJR bandwidth_NN and_CC reliability_NN relative_JJ to_TO typical_JJ tree_NN structures_NNS ._.
+This_DT paper_NN presents_VBZ Bullet_NNP ,_, a_DT scalable_JJ and_CC distributed_VBN algorithm_NN that_WDT enables_VBZ nodes_NNS spread_VBN across_IN the_DT Internet_NN to_TO self-organize_VB into_IN a_DT high_JJ bandwidth_NN overlay_NN mesh_NN ._.
+We_PRP construct_VBP Bullet_NNP around_IN the_DT insight_NN that_WDT data_NNS should_MD be_VB distributed_VBN in_IN a_DT disjoint_NN manner_NN to_TO strategic_JJ points_NNS in_IN the_DT network_NN ._.
+Individual_JJ Bullet_NNP receivers_NNS are_VBP then_RB responsible_JJ for_IN locating_VBG and_CC retrieving_VBG the_DT data_NNS from_IN multiple_JJ points_NNS in_IN parallel_NN ._.
+Key_NN contributions_NNS of_IN this_DT work_NN include_VBP :_: i_LS -RRB-_-RRB- an_DT algorithm_NN that_WDT sends_VBZ data_NNS to_TO different_JJ points_NNS in_IN the_DT overlay_NN such_JJ that_IN any_DT data_NNS object_NN is_VBZ equally_RB likely_JJ to_TO appear_VB at_IN any_DT node_NN ,_, ii_LS -RRB-_-RRB- a_DT scalable_JJ and_CC decentralized_JJ algorithm_NN that_WDT allows_VBZ nodes_NNS to_TO locate_VB and_CC recover_VB missing_VBG data_NNS items_NNS ,_, and_CC iii_LS -RRB-_-RRB- a_DT complete_JJ implementation_NN and_CC evaluation_NN of_IN Bullet_NNP running_VBG across_IN the_DT Internet_NN and_CC in_IN a_DT large-scale_JJ emulation_NN environment_NN reveals_VBZ up_RP to_TO a_DT factor_NN two_CD bandwidth_NN improvements_NNS under_IN a_DT variety_NN of_IN circumstances_NNS ._.
+In_IN addition_NN ,_, we_PRP find_VBP that_IN ,_, relative_JJ to_TO tree-based_JJ solutions_NNS ,_, Bullet_NNP reduces_VBZ the_DT need_NN to_TO perform_VB expensive_JJ bandwidth_NN probing_VBG ._.
+In_IN a_DT tree_NN ,_, it_PRP is_VBZ critical_JJ that_IN a_DT node_NN ''_'' s_NNS parent_NN delivers_VBZ a_DT high_JJ rate_NN of_IN application_NN data_NNS to_TO each_DT child_NN ._.
+In_IN Bullet_NNP however_RB ,_, nodes_NNS simultaneously_RB receive_VBP data_NNS from_IN multiple_JJ sources_NNS in_IN parallel_NN ,_, making_VBG it_PRP less_RBR important_JJ to_TO locate_VB any_DT single_JJ source_NN capable_JJ of_IN sustaining_VBG a_DT high_JJ transmission_NN rate_NN ._.
+Categories_NNS and_CC Subject_NNP Descriptors_NNPS C_NNP ._.
+#_# ._.
+#_# -LSB-_-LRB- Computer-Communication_NNP Networks_NNP -RSB-_-RRB- :_: Distributed_VBN Systems_NNPS ;_: H_NN ._.
+#_# ._.
+#_# -LSB-_-LRB- Information_NNP Systems_NNP Applications_NNS -RSB-_-RRB- :_: Communications_NNP Applications_NNS General_NNP Terms_NNS Experimentation_NN ,_, Management_NNP ,_, Performance_NNP 1_CD ._.
+INTRODUCTION_NN In_IN this_DT paper_NN ,_, we_PRP consider_VBP the_DT following_VBG general_JJ problem_NN ._.
+Given_VBN a_DT sender_NN and_CC a_DT large_JJ set_NN of_IN interested_JJ receivers_NNS spread_VBN across_IN the_DT Internet_NN ,_, how_WRB can_MD we_PRP maximize_VB the_DT amount_NN of_IN bandwidth_NN delivered_VBN to_TO receivers_NNS ?_.
+Our_PRP$ problem_NN domain_NN includes_VBZ software_NN or_CC video_NN distribution_NN and_CC real-time_JJ multimedia_NNS streaming_NN ._.
+Traditionally_RB ,_, native_JJ IP_NNP multicast_NN has_VBZ been_VBN the_DT preferred_JJ method_NN for_IN delivering_VBG content_NN to_TO a_DT set_NN of_IN receivers_NNS in_IN a_DT scalable_JJ fashion_NN ._.
+However_RB ,_, a_DT number_NN of_IN considerations_NNS ,_, including_VBG scale_NN ,_, reliability_NN ,_, and_CC congestion_NN control_NN ,_, have_VBP limited_VBN the_DT wide-scale_JJ deployment_NN of_IN IP_NNP multicast_NNP ._.
+Even_RB if_IN all_DT these_DT problems_NNS were_VBD to_TO be_VB addressed_VBN ,_, IP_NNP multicast_NNP does_VBZ not_RB consider_VB bandwidth_NN when_WRB constructing_VBG its_PRP$ distribution_NN tree_NN ._.
+More_RBR recently_RB ,_, overlays_NNS have_VBP emerged_VBN as_IN a_DT promising_JJ alternative_NN to_TO multicast_VB for_IN network-efficient_JJ point_NN to_TO multipoint_JJ data_NNS delivery_NN ._.
+Typical_JJ overlay_NN structures_NNS attempt_VBP to_TO mimic_VB the_DT structure_NN of_IN multicast_JJ routing_VBG trees_NNS ._.
+In_IN network-layer_JJ multicast_JJ however_RB ,_, interior_JJ nodes_NNS consist_VBP of_IN high_JJ speed_NN routers_NNS with_IN limited_JJ processing_NN power_NN and_CC extensibility_NN ._.
+Overlays_NNS ,_, on_IN the_DT other_JJ hand_NN ,_, use_NN programmable_JJ -LRB-_-LRB- and_CC hence_RB extensible_JJ -RRB-_-RRB- end_NN hosts_NNS as_IN interior_JJ nodes_NNS in_IN the_DT overlay_NN tree_NN ,_, with_IN these_DT hosts_NNS acting_VBG as_IN repeaters_NNS to_TO multiple_JJ children_NNS down_IN the_DT tree_NN ._.
+Overlays_NNS have_VBP shown_VBN tremendous_JJ promise_NN for_IN multicast-style_JJ applications_NNS ._.
+However_RB ,_, we_PRP argue_VBP that_IN a_DT tree_NN structure_NN has_VBZ fundamental_JJ limitations_NNS both_CC for_IN high_JJ bandwidth_NN multicast_NN and_CC for_IN high_JJ reliability_NN ._.
+One_CD difficulty_NN with_IN trees_NNS is_VBZ that_IN bandwidth_NN is_VBZ guaranteed_VBN to_TO be_VB monotonically_RB decreasing_VBG moving_VBG down_RP the_DT tree_NN ._.
+Any_DT loss_NN high_JJ up_IN the_DT tree_NN will_MD reduce_VB the_DT bandwidth_NN available_JJ to_TO receivers_NNS lower_JJR down_IN the_DT tree_NN ._.
+A_DT number_NN of_IN techniques_NNS have_VBP been_VBN proposed_VBN to_TO recover_VB from_IN losses_NNS and_CC hence_RB improve_VB the_DT available_JJ bandwidth_NN in_IN an_DT overlay_NN tree_NN -LSB-_-LRB- #_# ,_, 6_CD -RSB-_-RRB- ._.
+However_RB ,_, fundamentally_RB ,_, the_DT bandwidth_NN available_JJ to_TO any_DT host_NN is_VBZ limited_VBN by_IN the_DT bandwidth_NN available_JJ from_IN that_DT node_NN ''_'' s_NNS single_JJ parent_NN in_IN the_DT tree_NN ._.
+Thus_RB ,_, our_PRP$ work_NN operates_VBZ on_IN the_DT premise_NN that_IN the_DT model_NN for_IN high-bandwidth_JJ multicast_JJ data_NNS dissemination_NN should_MD be_VB re-examined_VBN ._.
+Rather_RB than_IN sending_VBG identical_JJ copies_NNS of_IN the_DT same_JJ data_NNS stream_NN to_TO all_DT nodes_NNS in_IN a_DT tree_NN and_CC designing_VBG a_DT scalable_JJ mechanism_NN for_IN recovering_VBG from_IN loss_NN ,_, we_PRP propose_VBP that_IN participants_NNS in_IN a_DT multicast_JJ overlay_NN cooperate_VBP to_TO strategically_RB 282_CD transmit_VBP disjoint_NN data_NNS sets_VBZ to_TO various_JJ points_NNS in_IN the_DT network_NN ._.
+Here_RB ,_, the_DT sender_NN splits_VBZ data_NNS into_IN sequential_JJ blocks_NNS ._.
+Blocks_NNS are_VBP further_JJ subdivided_VBN into_IN individual_JJ objects_NNS which_WDT are_VBP in_IN turn_NN transmitted_VBD to_TO different_JJ points_NNS in_IN the_DT network_NN ._.
+Nodes_NNS still_RB receive_VBP a_DT set_NN of_IN objects_NNS from_IN their_PRP$ parents_NNS ,_, but_CC they_PRP are_VBP then_RB responsible_JJ for_IN locating_VBG peers_NNS that_WDT hold_VBP missing_VBG data_NNS objects_NNS ._.
+We_PRP use_VBP a_DT distributed_VBN algorithm_NN that_WDT aims_VBZ to_TO make_VB the_DT availability_NN of_IN data_NNS items_NNS uniformly_RB spread_VBN across_IN all_DT overlay_NN participants_NNS ._.
+In_IN this_DT way_NN ,_, we_PRP avoid_VBP the_DT problem_NN of_IN locating_VBG the_DT last_JJ object_NN ,_, which_WDT may_MD only_RB be_VB available_JJ at_IN a_DT few_JJ nodes_NNS ._.
+One_CD hypothesis_NN of_IN this_DT work_NN is_VBZ that_IN ,_, relative_JJ to_TO a_DT tree_NN ,_, this_DT model_NN will_MD result_VB in_IN higher_JJR bandwidth-leveraging_VBG the_DT bandwidth_NN from_IN simultaneous_JJ parallel_JJ downloads_NNS from_IN multiple_JJ sources_NNS rather_RB than_IN a_DT single_JJ parent-and_NN higher_JJR reliability-retrieving_JJ data_NNS from_IN multiple_JJ peers_NNS reduces_VBZ the_DT potential_JJ damage_NN from_IN a_DT single_JJ node_NN failure_NN ._.
+To_TO illustrate_VB Bullet_NNP ''_'' s_VBZ behavior_NN ,_, consider_VB a_DT simple_JJ three_CD node_NN overlay_NN with_IN a_DT root_NN R_NN and_CC two_CD children_NNS A_DT and_CC B_NN ._.
+R_NN has_VBZ 1_CD Mbps_NN of_IN available_JJ -LRB-_-LRB- TCP-friendly_JJ -RRB-_-RRB- bandwidth_NN to_TO each_DT of_IN A_DT and_CC B_NN ._.
+However_RB ,_, there_EX is_VBZ also_RB #_# Mbps_NNPS of_IN available_JJ bandwidth_NN between_IN A_DT and_CC B_NN ._.
+In_IN this_DT example_NN ,_, Bullet_NNP would_MD transmit_VB a_DT disjoint_NN set_NN of_IN data_NNS at_IN #_# Mbps_NNPS to_TO each_DT of_IN A_DT and_CC B_NN ._.
+A_DT and_CC B_NN would_MD then_RB each_DT independently_RB discover_VBP the_DT availability_NN of_IN disjoint_NN data_NNS at_IN the_DT remote_JJ peer_VB and_CC begin_VB streaming_NN data_NNS to_TO one_CD another_DT ,_, effectively_RB achieving_VBG a_DT retrieval_NN rate_NN of_IN #_# Mbps_NNPS ._.
+On_IN the_DT other_JJ hand_NN ,_, any_DT overlay_NN tree_NN is_VBZ restricted_JJ to_TO delivering_VBG at_IN most_JJS #_# Mbps_NNPS even_RB with_IN a_DT scalable_JJ technique_NN for_IN recovering_VBG lost_JJ data_NNS ._.
+Any_DT solution_NN for_IN achieving_VBG the_DT above_JJ model_NN must_MD maintain_VB a_DT number_NN of_IN properties_NNS ._.
+First_RB ,_, it_PRP must_MD be_VB TCP_NN friendly_JJ -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+No_DT flow_NN should_MD consume_VB more_JJR than_IN its_PRP$ fair_JJ share_NN of_IN the_DT bottleneck_NN bandwidth_NN and_CC each_DT flow_NN must_MD respond_VB to_TO congestion_NN signals_NNS -LRB-_-LRB- losses_NNS -RRB-_-RRB- by_IN reducing_VBG its_PRP$ transmission_NN rate_NN ._.
+Second_RB ,_, it_PRP must_MD impose_VB low_JJ control_NN overhead_NN ._.
+There_EX are_VBP many_JJ possible_JJ sources_NNS of_IN such_JJ overhead_NN ,_, including_VBG probing_VBG for_IN available_JJ bandwidth_NN between_IN nodes_NNS ,_, locating_VBG appropriate_JJ nodes_NNS to_TO peer_VB with_IN for_IN data_NNS retrieval_NN and_CC redundantly_RB receiving_VBG the_DT same_JJ data_NNS objects_NNS from_IN multiple_JJ sources_NNS ._.
+Third_NNP ,_, the_DT algorithm_NN should_MD be_VB decentralized_VBN and_CC scalable_JJ to_TO thousands_NNS of_IN participants_NNS ._.
+No_DT node_NN should_MD be_VB required_VBN to_TO learn_VB or_CC maintain_VB global_JJ knowledge_NN ,_, for_IN instance_NN global_JJ group_NN membership_NN or_CC the_DT set_NN of_IN data_NNS objects_NNS currently_RB available_JJ at_IN all_DT nodes_NNS ._.
+Finally_RB ,_, the_DT approach_NN must_MD be_VB robust_JJ to_TO individual_JJ failures_NNS ._.
+For_IN example_NN ,_, the_DT failure_NN of_IN a_DT single_JJ node_NN should_MD result_VB only_RB in_IN a_DT temporary_JJ reduction_NN in_IN the_DT bandwidth_NN delivered_VBN to_TO a_DT small_JJ subset_NN of_IN participants_NNS ;_: no_DT single_JJ failure_NN should_MD result_VB in_IN the_DT complete_JJ loss_NN of_IN data_NNS for_IN any_DT significant_JJ fraction_NN of_IN nodes_NNS ,_, as_IN might_MD be_VB the_DT case_NN for_IN a_DT single_JJ node_NN failure_NN high_JJ up_RB in_IN a_DT multicast_JJ overlay_NN tree_NN ._.
+In_IN this_DT context_NN ,_, this_DT paper_NN presents_VBZ the_DT design_NN and_CC evaluation_NN of_IN Bullet_NNP ,_, an_DT algorithm_NN for_IN constructing_VBG an_DT overlay_NN mesh_NN that_WDT attempts_VBZ to_TO maintain_VB the_DT above_JJ properties_NNS ._.
+Bullet_NN nodes_NNS begin_VBP by_IN self-organizing_VBG into_IN an_DT overlay_NN tree_NN ,_, which_WDT can_MD be_VB constructed_VBN by_IN any_DT of_IN a_DT number_NN of_IN existing_VBG techniques_NNS -LSB-_-LRB- #_# ,_, ##_CD ,_, ##_CD ,_, ##_CD ,_, ##_CD -RSB-_-RRB- ._.
+Each_DT Bullet_NNP node_NN ,_, starting_VBG with_IN the_DT root_NN of_IN the_DT underlying_VBG tree_NN ,_, then_RB transmits_VBZ a_DT disjoint_JJ set_NN of_IN data_NNS to_TO each_DT of_IN its_PRP$ children_NNS ,_, with_IN the_DT goal_NN of_IN maintaining_VBG uniform_JJ representativeness_NN of_IN each_DT data_NNS item_NN across_IN all_DT participants_NNS ._.
+The_DT level_NN of_IN disjointness_NN is_VBZ determined_VBN by_IN the_DT bandwidth_NN available_JJ to_TO each_DT of_IN its_PRP$ children_NNS ._.
+Bullet_NN then_RB employs_VBZ a_DT scalable_JJ and_CC efficient_JJ algorithm_NN to_TO enable_VB nodes_NNS to_TO quickly_RB locate_VB multiple_JJ peers_NNS capable_JJ of_IN transmitting_VBG missing_VBG data_NNS items_NNS to_TO the_DT node_NN ._.
+Thus_RB ,_, Bullet_NNP layers_NNS a_DT high-bandwidth_JJ mesh_NN on_IN top_NN of_IN an_DT arbitrary_JJ overlay_NN tree_NN ._.
+Depending_VBG on_IN the_DT type_NN of_IN data_NNS being_VBG transmitted_VBN ,_, Bullet_NNP can_MD optionally_RB employ_VB a_DT variety_NN of_IN encoding_VBG schemes_NNS ,_, for_IN instance_NN Erasure_NN codes_NNS -LSB-_-LRB- #_# ,_, 26_CD ,_, ##_CD -RSB-_-RRB- or_CC Multiple_JJ Description_NN Coding_NN -LRB-_-LRB- MDC_NN -RRB-_-RRB- -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, to_TO efficiently_RB disseminate_VB data_NNS ,_, adapt_VBP to_TO variable_JJ bandwidth_NN ,_, and_CC recover_VB from_IN losses_NNS ._.
+Finally_RB ,_, we_PRP use_VBP TFRC_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- to_TO transfer_VB data_NNS both_CC down_IN the_DT overlay_NN tree_NN and_CC among_IN peers_NNS ._.
+This_DT ensures_VBZ that_IN the_DT entire_JJ overlay_NN behaves_VBZ in_IN a_DT congestion-friendly_JJ manner_NN ,_, adjusting_VBG its_PRP$ transmission_NN rate_NN on_IN a_DT per-connection_JJ basis_NN based_VBN on_IN prevailing_VBG network_NN conditions_NNS ._.
+One_CD important_JJ benefit_NN of_IN our_PRP$ approach_NN is_VBZ that_IN the_DT bandwidth_NN delivered_VBN by_IN the_DT Bullet_NNP mesh_NN is_VBZ somewhat_RB independent_JJ of_IN the_DT bandwidth_NN available_JJ through_IN the_DT underlying_VBG overlay_NN tree_NN ._.
+One_CD significant_JJ limitation_NN to_TO building_VBG high_JJ bandwidth_NN overlay_NN trees_NNS is_VBZ the_DT overhead_NN associated_VBN with_IN the_DT tree_NN construction_NN protocol_NN ._.
+In_IN these_DT trees_NNS ,_, it_PRP is_VBZ critical_JJ that_IN each_DT participant_NN locates_VBZ a_DT parent_NN via_IN probing_VBG with_IN a_DT high_JJ level_NN of_IN available_JJ bandwidth_NN because_IN it_PRP receives_VBZ data_NNS from_IN only_RB a_DT single_JJ source_NN -LRB-_-LRB- its_PRP$ parent_NN -RRB-_-RRB- ._.
+Thus_RB ,_, even_RB once_IN the_DT tree_NN is_VBZ constructed_VBN ,_, nodes_NNS must_MD continue_VB their_PRP$ probing_VBG to_TO adapt_VB to_TO dynamically_RB changing_VBG network_NN conditions_NNS ._.
+While_IN bandwidth_NN probing_VBG is_VBZ an_DT active_JJ area_NN of_IN research_NN -LSB-_-LRB- ##_CD ,_, ##_CD -RSB-_-RRB- ,_, accurate_JJ results_NNS generally_RB require_VBP the_DT transfer_NN of_IN a_DT large_JJ amount_NN of_IN data_NNS to_TO gain_VB confidence_NN in_IN the_DT results_NNS ._.
+Our_PRP$ approach_NN with_IN Bullet_NN allows_VBZ receivers_NNS to_TO obtain_VB high_JJ bandwidth_NN in_IN aggregate_NN using_VBG individual_JJ transfers_NNS from_IN peers_NNS spread_VBN across_IN the_DT system_NN ._.
+Thus_RB ,_, in_IN Bullet_NNP ,_, the_DT bandwidth_NN available_JJ from_IN any_DT individual_JJ peer_VBP is_VBZ much_RB less_RBR important_JJ than_IN in_IN any_DT bandwidthoptimized_JJ tree_NN ._.
+Further_RB ,_, all_PDT the_DT bandwidth_NN that_WDT would_MD normally_RB be_VB consumed_VBN probing_VBG for_IN bandwidth_NN can_MD be_VB reallocated_VBN to_TO streaming_NN data_NNS across_IN the_DT Bullet_NNP mesh_NN ._.
+We_PRP have_VBP completed_VBN a_DT prototype_NN of_IN Bullet_NNP running_VBG on_IN top_NN of_IN a_DT number_NN of_IN overlay_NN trees_NNS ._.
+Our_PRP$ evaluation_NN of_IN a_DT 1000-node_JJ overlay_NN running_VBG across_IN a_DT wide_JJ variety_NN of_IN emulated_VBN ##_NN ,_, ###_CD node_NN network_NN topologies_NNS shows_VBZ that_IN Bullet_NNP can_MD deliver_VB up_RP to_TO twice_RB the_DT bandwidth_NN of_IN a_DT bandwidth-optimized_JJ tree_NN -LRB-_-LRB- using_VBG an_DT oine_NN algorithm_NN and_CC global_JJ network_NN topology_NN information_NN -RRB-_-RRB- ,_, all_DT while_IN remaining_VBG TCP_NNP friendly_JJ ._.
+We_PRP also_RB deployed_VBD our_PRP$ prototype_NN across_IN the_DT PlanetLab_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- wide-area_JJ testbed_VBN ._.
+For_IN these_DT live_JJ Internet_NN runs_NNS ,_, we_PRP find_VBP that_IN Bullet_NNP can_MD deliver_VB comparable_JJ bandwidth_NN performance_NN improvements_NNS ._.
+In_IN both_DT cases_NNS ,_, the_DT overhead_NN of_IN maintaining_VBG the_DT Bullet_NNP mesh_NN and_CC locating_VBG the_DT appropriate_JJ disjoint_NN data_NNS is_VBZ limited_VBN to_TO ##_VB Kbps_NNP per_IN node_NN ,_, acceptable_JJ for_IN our_PRP$ target_NN high-bandwidth_NN ,_, large-scale_JJ scenarios_NNS ._.
+The_DT remainder_NN of_IN this_DT paper_NN is_VBZ organized_VBN as_IN follows_VBZ ._.
+Section_NN #_# presents_VBZ Bullet_NNP ''_'' s_NNS system_NN components_NNS including_VBG RanSub_NNP ,_, informed_VBN content_NN delivery_NN ,_, and_CC TFRC_NNP ._.
+Section_NN #_# then_RB details_NNS Bullet_NNP ,_, an_DT efficient_JJ data_NNS distribution_NN system_NN for_IN bandwidth_NN intensive_JJ applications_NNS ._.
+Section_NN #_# evaluates_VBZ Bullet_NNP ''_'' s_VBZ performance_NN for_IN a_DT variety_NN of_IN network_NN topologies_NNS ,_, and_CC compares_VBZ it_PRP to_TO existing_VBG multicast_JJ techniques_NNS ._.
+Section_NN #_# places_VBZ our_PRP$ work_NN in_IN the_DT context_NN of_IN related_JJ efforts_NNS and_CC Section_NN #_# presents_VBZ our_PRP$ conclusions_NNS ._.
+2_LS ._.
+SYSTEM_NN COMPONENTS_NNS Our_PRP$ approach_NN to_TO high_JJ bandwidth_NN data_NNS dissemination_NN centers_NNS around_IN the_DT techniques_NNS depicted_VBN in_IN Figure_NNP #_# ._.
+First_RB ,_, we_PRP split_VBD the_DT target_NN data_NNS stream_NN into_IN blocks_NNS which_WDT are_VBP further_JJ subdivided_VBN into_IN individual_JJ -LRB-_-LRB- typically_RB packet-sized_JJ -RRB-_-RRB- objects_NNS ._.
+Depending_VBG on_IN the_DT requirements_NNS of_IN the_DT target_NN applications_NNS ,_, objects_NNS may_MD be_VB encoded_VBN -LSB-_-LRB- ##_CD ,_, ##_CD -RSB-_-RRB- to_TO make_VB data_NNS recovery_NN more_RBR efficient_JJ ._.
+Next_RB ,_, we_PRP purposefully_RB disseminate_VBP disjoint_NN objects_NNS 283_CD S_NN A_NN C_NN Original_JJ data_NNS stream_NN :_: 1_CD #_# #_# #_# #_# #_# B_NN 1_CD #_# #_# #_# #_# #_# #_# #_# #_# #_# #_# #_# TFRC_NNP to_TO determine_VB available_JJ BW_NN D_NN E_NN 1_CD #_# #_# #_# #_# #_# Figure_NNP #_# :_: High-level_JJ view_NN of_IN Bullet_NNP ''_'' s_VBZ operation_NN ._.
+to_TO different_JJ clients_NNS at_IN a_DT rate_NN determined_VBN by_IN the_DT available_JJ bandwidth_NN to_TO each_DT client_NN ._.
+We_PRP use_VBP the_DT equation-based_JJ TFRC_NN protocol_NN to_TO communicate_VB among_IN all_DT nodes_NNS in_IN the_DT overlay_NN in_IN a_DT congestion_NN responsive_JJ and_CC TCP_NN friendly_JJ manner_NN ._.
+Given_VBN the_DT above_JJ techniques_NNS ,_, data_NNS is_VBZ spread_VBN across_IN the_DT overlay_NN tree_NN at_IN a_DT rate_NN commensurate_JJ with_IN the_DT available_JJ bandwidth_NN in_IN the_DT overlay_NN tree_NN ._.
+Our_PRP$ overall_JJ goal_NN however_RB is_VBZ to_TO deliver_VB more_JJR bandwidth_NN than_IN would_MD otherwise_RB be_VB available_JJ through_IN any_DT tree_NN ._.
+Thus_RB ,_, at_IN this_DT point_NN ,_, nodes_NNS require_VBP a_DT scalable_JJ technique_NN for_IN locating_VBG and_CC retrieving_VBG disjoint_NN data_NNS from_IN their_PRP$ peers_NNS ._.
+In_IN essence_NN ,_, these_DT perpendicular_JJ links_NNS across_IN the_DT overlay_NN form_VB a_DT mesh_NN to_TO augment_VB the_DT bandwidth_NN available_JJ through_IN the_DT tree_NN ._.
+In_IN Figure_NNP #_# ,_, node_NN D_NN only_RB has_VBZ sufficient_JJ bandwidth_NN to_TO receive_VB #_# objects_NNS per_IN time_NN unit_NN from_IN its_PRP$ parent_NN ._.
+However_RB ,_, it_PRP is_VBZ able_JJ to_TO locate_VB two_CD peers_NNS ,_, C_NN and_CC E_NN ,_, who_WP are_VBP able_JJ to_TO transmit_VB missing_VBG data_NNS objects_NNS ,_, in_IN this_DT example_NN increasing_VBG delivered_VBN bandwidth_NN from_IN #_# objects_NNS per_IN time_NN unit_NN to_TO #_# data_NNS objects_NNS per_IN time_NN unit_NN ._.
+Locating_VBG appropriate_JJ remote_JJ peers_NNS can_MD not_RB require_VB global_JJ state_NN or_CC global_JJ communication_NN ._.
+Thus_RB ,_, we_PRP propose_VBP the_DT periodic_JJ dissemination_NN of_IN changing_VBG ,_, uniformly_RB random_JJ subsets_NNS of_IN global_JJ state_NN to_TO each_DT overlay_NN node_NN once_RB per_IN configurable_JJ time_NN period_NN ._.
+This_DT random_JJ subset_NN contains_VBZ summary_NN tickets_NNS of_IN the_DT objects_NNS available_JJ at_IN a_DT subset_NN of_IN the_DT nodes_NNS in_IN the_DT system_NN ._.
+Each_DT node_NN uses_VBZ this_DT information_NN to_TO request_NN data_NNS objects_NNS from_IN remote_JJ nodes_NNS that_WDT have_VBP significant_JJ divergence_NN in_IN object_NN membership_NN ._.
+It_PRP then_RB attempts_VBZ to_TO establish_VB a_DT number_NN of_IN these_DT peering_VBG relationships_NNS with_IN the_DT goals_NNS of_IN minimizing_VBG overlap_VBP in_IN the_DT objects_NNS received_VBN from_IN each_DT peer_VB and_CC maximizing_VBG the_DT total_JJ useful_JJ bandwidth_NN delivered_VBN to_TO it_PRP ._.
+In_IN the_DT remainder_NN of_IN this_DT section_NN ,_, we_PRP provide_VBP brief_JJ background_NN on_IN each_DT of_IN the_DT techniques_NNS that_IN we_PRP employ_VBP as_IN fundamental_JJ building_NN blocks_NNS for_IN our_PRP$ work_NN ._.
+Section_NN #_# then_RB presents_VBZ the_DT details_NNS of_IN the_DT entire_JJ Bullet_NNP architecture_NN ._.
+2_LS ._.
+#_# Data_NNS Encoding_VBG Depending_VBG on_IN the_DT type_NN of_IN data_NNS being_VBG distributed_VBN through_IN the_DT system_NN ,_, a_DT number_NN of_IN data_NNS encoding_VBG schemes_NNS can_MD improve_VB system_NN efficiency_NN ._.
+For_IN instance_NN ,_, if_IN multimedia_NNS data_NNS is_VBZ being_VBG distributed_VBN to_TO a_DT set_NN of_IN heterogeneous_JJ receivers_NNS with_IN variable_JJ bandwidth_NN ,_, MDC_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- allows_VBZ receivers_NNS obtaining_VBG different_JJ subsets_NNS of_IN the_DT data_NNS to_TO still_RB maintain_VB a_DT usable_JJ multimedia_NNS stream_NN ._.
+For_IN dissemination_NN of_IN a_DT large_JJ file_NN among_IN a_DT set_NN of_IN receivers_NNS ,_, Erasure_NN codes_NNS enable_VBP receivers_NNS not_RB to_TO focus_VB on_IN retrieving_VBG every_DT transmitted_JJ data_NNS packet_NN ._.
+Rather_RB ,_, after_IN obtaining_VBG a_DT threshold_NN minimum_NN number_NN of_IN packets_NNS ,_, receivers_NNS are_VBP able_JJ to_TO decode_VB the_DT original_JJ data_NNS stream_NN ._.
+Of_IN course_NN ,_, Bullet_NNP is_VBZ amenable_JJ to_TO a_DT variety_NN of_IN other_JJ encoding_VBG schemes_NNS or_CC even_RB the_DT null_JJ encoding_VBG scheme_NN ,_, where_WRB the_DT original_JJ data_NNS stream_NN is_VBZ transmitted_VBN best-effort_JJS through_IN the_DT system_NN ._.
+In_IN this_DT paper_NN ,_, we_PRP focus_VBP on_IN the_DT benefits_NNS of_IN a_DT special_JJ class_NN of_IN erasure-correcting_JJ codes_NNS used_VBN to_TO implement_VB the_DT digital_JJ fountain_NN -LSB-_-LRB- #_# -RSB-_-RRB- approach_NN ._.
+Redundant_JJ Tornado_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- codes_NNS are_VBP created_VBN by_IN performing_VBG XOR_NN operations_NNS on_IN a_DT selected_VBN number_NN of_IN original_JJ data_NNS packets_NNS ,_, and_CC then_RB transmitted_VBN along_IN with_IN the_DT original_JJ data_NNS packets_NNS ._.
+Tornado_NNP codes_VBZ require_VB any_DT -LRB-_-LRB- #_# +_CC -RRB-_-RRB- k_NN correctly_RB received_VBD packets_NNS to_TO reconstruct_VB the_DT original_JJ k_NN data_NNS packets_NNS ,_, with_IN the_DT typically_RB low_JJ reception_NN overhead_NN -LRB-_-LRB- -RRB-_-RRB- of_IN #_# ._.
+##_NN #_# ._.
+##_NN ._.
+In_IN return_NN ,_, they_PRP provide_VBP significantly_RB faster_RBR encoding_VBG and_CC decoding_VBG times_NNS ._.
+Additionally_RB ,_, the_DT decoding_VBG algorithm_NN can_MD run_VB in_IN real-time_JJ ,_, and_CC the_DT reconstruction_NN process_NN can_MD start_VB as_RB soon_RB as_IN sufficiently_RB many_JJ packets_NNS have_VBP arrived_VBN ._.
+Tornado_NNP codes_VBZ require_VB a_DT predetermined_JJ stretch_NN factor_NN -LRB-_-LRB- n_NN /_: k_NN ,_, where_WRB n_NN is_VBZ the_DT total_JJ number_NN of_IN encoded_VBN packets_NNS -RRB-_-RRB- ,_, and_CC their_PRP$ encoding_JJ time_NN is_VBZ proportional_JJ to_TO n_NN ._.
+LT_JJ codes_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- remove_VB these_DT two_CD limitations_NNS ,_, while_IN maintaining_VBG a_DT low_JJ reception_NN overhead_NN of_IN #_# ._.
+##_NN ._.
+2_LS ._.
+#_# RanSub_NNP To_TO address_VB the_DT challenge_NN of_IN locating_VBG disjoint_NN content_NN within_IN the_DT system_NN ,_, we_PRP use_VBP RanSub_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, a_DT scalable_JJ approach_NN to_TO distributing_VBG changing_VBG ,_, uniform_JJ random_JJ subsets_NNS of_IN global_JJ state_NN to_TO all_DT nodes_NNS of_IN an_DT overlay_NN tree_NN ._.
+RanSub_NNP assumes_VBZ the_DT presence_NN of_IN some_DT scalable_JJ mechanism_NN for_IN efficiently_RB building_VBG and_CC maintaining_VBG the_DT underlying_VBG tree_NN ._.
+A_DT number_NN of_IN such_JJ techniques_NNS are_VBP described_VBN in_IN -LSB-_-LRB- #_# ,_, ##_CD ,_, ##_CD ,_, ##_CD ,_, ##_CD -RSB-_-RRB- ._.
+RanSub_NNP distributes_VBZ random_JJ subsets_NNS of_IN participating_VBG nodes_NNS throughout_IN the_DT tree_NN using_VBG collect_VB and_CC distribute_VB messages_NNS ._.
+Collect_VB messages_NNS start_VB at_IN the_DT leaves_NNS and_CC propagate_VB up_RP the_DT tree_NN ,_, leaving_VBG state_NN at_IN each_DT node_NN along_IN the_DT path_NN to_TO the_DT root_NN ._.
+Distribute_VB messages_NNS start_VB at_IN the_DT root_NN and_CC travel_VB down_RP the_DT tree_NN ,_, using_VBG the_DT information_NN left_VBD at_IN the_DT nodes_NNS during_IN the_DT previous_JJ collect_VB round_NN to_TO distribute_VB uniformly_RB random_JJ subsets_NNS to_TO all_DT participants_NNS ._.
+Using_VBG the_DT collect_VB and_CC distribute_VB messages_NNS ,_, RanSub_NNP distributes_VBZ a_DT random_JJ subset_NN of_IN participants_NNS to_TO each_DT node_NN once_RB per_IN epoch_NN ._.
+The_DT lower_JJR bound_VBN on_IN the_DT length_NN of_IN an_DT epoch_NN is_VBZ determined_VBN by_IN the_DT time_NN it_PRP takes_VBZ to_TO propagate_VB data_NNS up_IN then_RB back_RB down_IN the_DT tree_NN ,_, or_CC roughly_RB twice_RB the_DT height_NN of_IN the_DT tree_NN ._.
+For_IN appropriately_RB constructed_VBN trees_NNS ,_, the_DT minimum_JJ epoch_NN length_NN will_MD grow_VB with_IN the_DT logarithm_NN of_IN the_DT number_NN of_IN participants_NNS ,_, though_IN this_DT is_VBZ not_RB required_VBN for_IN correctness_NN ._.
+As_IN part_NN of_IN the_DT distribute_VB message_NN ,_, each_DT participant_NN sends_VBZ a_DT uniformly_RB random_JJ subset_NN of_IN remote_JJ nodes_NNS ,_, called_VBD a_DT distribute_VB set_VBN ,_, down_IN to_TO its_PRP$ children_NNS ._.
+The_DT contents_NNS of_IN the_DT distribute_VB set_VBN are_VBP constructed_VBN using_VBG the_DT collect_VB set_VBN gathered_VBN during_IN the_DT previous_JJ collect_VB phase_NN ._.
+During_IN this_DT phase_NN ,_, each_DT participant_NN sends_VBZ a_DT collect_VB set_VBN consisting_VBG of_IN a_DT random_JJ subset_NN of_IN its_PRP$ descendant_NN nodes_NNS up_IN the_DT tree_NN to_TO the_DT root_NN along_IN with_IN an_DT estimate_NN of_IN its_PRP$ total_JJ number_NN of_IN descendants_NNS ._.
+After_IN the_DT root_NN receives_VBZ all_DT collect_VB sets_NNS and_CC the_DT collect_VB phase_NN completes_VBZ ,_, the_DT distribute_VB phase_NN begins_VBZ again_RB in_IN a_DT new_JJ epoch_NN ._.
+One_CD of_IN the_DT key_JJ features_NNS of_IN RanSub_NNP is_VBZ the_DT Compact_NNP operation_NN ._.
+This_DT is_VBZ the_DT process_NN used_VBN to_TO ensure_VB that_IN membership_NN in_IN a_DT collect_VB set_VBN propagated_VBN by_IN a_DT node_NN to_TO its_PRP$ parent_NN is_VBZ both_CC random_JJ and_CC uniformly_RB representative_NN of_IN all_DT members_NNS of_IN the_DT sub-tree_JJ rooted_VBN at_IN that_DT node_NN ._.
+Compact_JJ takes_VBZ multiple_JJ fixedsize_NN subsets_NNS and_CC the_DT total_JJ population_NN represented_VBN by_IN each_DT subset_NN as_IN input_NN ,_, and_CC generates_VBZ a_DT new_JJ fixed-size_JJ subset_NN ._.
+The_DT 284_CD A_DT CSC_NNP =_JJ -LCB-_-LRB- Cs_NNS -RCB-_-RRB- ,_, CSD_NN =_JJ -LCB-_-LRB- Ds_NNS -RCB-_-RRB- CSF_NN =_JJ -LCB-_-LRB- Fs_NNS -RCB-_-RRB- ,_, CSG_NN =_JJ -LCB-_-LRB- Gs_NN -RCB-_-RRB- CSB_NN =_JJ -LCB-_-LRB- Bs_NNS ,_, Cs_NNS ,_, Ds_NNS -RCB-_-RRB- ,_, CSE_NN =_JJ -LCB-_-LRB- Es_NNS ,_, Fs_NNS ,_, Gs_NN -RCB-_-RRB- B_NN C_NN E_NN D_NN GF_NN B_NN C_NN A_NN E_NN D_NN GF_NN DSE_NN =_JJ -LCB-_-LRB- As_IN ,_, Bs_NNS ,_, Cs_NNS ,_, Ds_NNS -RCB-_-RRB- DSB_NN =_JJ -LCB-_-LRB- As_IN ,_, Es_NNS ,_, Fs_NNS ,_, Gs_NN -RCB-_-RRB- DSG_NN =_JJ -LCB-_-LRB- As_IN ,_, Bs_NNS ,_, Cs_NNS ,_, Ds_NNS ,_, Es_NNS ,_, Fs_NNS -RCB-_-RRB- DSD_NN =_JJ -LCB-_-LRB- As_IN ,_, Bs_NNS ,_, Cs_NNS ,_, Es_NNS ,_, Fs_NNS ,_, Gs_NN -RCB-_-RRB- DSF_NN =_JJ -LCB-_-LRB- As_IN ,_, Bs_NNS ,_, Cs_NNS ,_, Ds_NNS ,_, Es_NNS ,_, Gs_NN -RCB-_-RRB- DSC_NN =_JJ -LCB-_-LRB- As_IN ,_, Bs_NNS ,_, Ds_NNS ,_, Es_NNS ,_, Fs_NNS ,_, Gs_NN -RCB-_-RRB- Figure_NNP #_# :_: This_DT example_NN shows_VBZ the_DT two_CD phases_NNS of_IN the_DT RanSub_NNP protocol_NN that_WDT occur_VBP in_IN one_CD epoch_NN ._.
+The_DT collect_VB phase_NN is_VBZ shown_VBN on_IN the_DT left_NN ,_, where_WRB the_DT collect_VB sets_NNS are_VBP traveling_VBG up_RP the_DT overlay_NN to_TO the_DT root_NN ._.
+The_DT distribute_VB phase_NN on_IN the_DT right_NN shows_VBZ the_DT distribute_VB sets_NNS traveling_VBG down_RP the_DT overlay_NN to_TO the_DT leaf_NN nodes_NNS ._.
+members_NNS of_IN the_DT resulting_VBG set_NN are_VBP uniformly_RB random_JJ representatives_NNS of_IN the_DT input_NN subset_NN members_NNS ._.
+RanSub_NNP offers_VBZ several_JJ ways_NNS of_IN constructing_VBG distribute_VB sets_NNS ._.
+For_IN our_PRP$ system_NN ,_, we_PRP choose_VBP the_DT RanSub-nondescendants_NNPS option_NN ._.
+In_IN this_DT case_NN ,_, each_DT node_NN receives_VBZ a_DT random_JJ subset_NN consisting_VBG of_IN all_DT nodes_NNS excluding_VBG its_PRP$ descendants_NNS ._.
+This_DT is_VBZ appropriate_JJ for_IN our_PRP$ download_NN structure_NN where_WRB descendants_NNS are_VBP expected_VBN to_TO have_VB less_JJR content_NN than_IN an_DT ancestor_NN node_NN in_IN most_JJS cases_NNS ._.
+A_DT parent_NN creates_VBZ RanSub-nondescendants_NNP distribute_VB sets_NNS for_IN each_DT child_NN by_IN compacting_VBG collect_VB sets_NNS from_IN that_DT child_NN ''_'' s_NNS siblings_NNS and_CC its_PRP$ own_JJ distribute_VB set_VBN ._.
+The_DT result_NN is_VBZ a_DT distribute_VB set_VBN that_IN contains_VBZ a_DT random_JJ subset_NN representing_VBG all_DT nodes_NNS in_IN the_DT tree_NN except_IN for_IN those_DT rooted_VBN at_IN that_DT particular_JJ child_NN ._.
+We_PRP depict_VBP an_DT example_NN of_IN RanSub_NNP ''_'' s_NNS collect-distribute_JJ process_NN in_IN Figure_NNP #_# ._.
+In_IN the_DT figure_NN ,_, AS_JJ stands_NNS for_IN node_NN A_NN ''_'' s_NNS state_NN ._.
+2_LS ._.
+#_# Informed_VBN Content_NNP Delivery_NN Techniques_NNS Assuming_VBG we_PRP can_MD enable_VB a_DT node_NN to_TO locate_VB a_DT peer_VB with_IN disjoint_NN content_NN using_VBG RanSub_NNP ,_, we_PRP need_VBP a_DT method_NN for_IN reconciling_VBG the_DT differences_NNS in_IN the_DT data_NNS ._.
+Additionally_RB ,_, we_PRP require_VBP a_DT bandwidth-efficient_JJ method_NN with_IN low_JJ computational_JJ overhead_NN ._.
+We_PRP chose_VBD to_TO implement_VB the_DT approximate_JJ reconciliation_NN techniques_NNS proposed_VBN in_IN -LSB-_-LRB- #_# -RSB-_-RRB- for_IN these_DT tasks_NNS in_IN Bullet_NNP ._.
+To_TO describe_VB the_DT content_NN ,_, nodes_NNS maintain_VBP working_VBG sets_NNS ._.
+The_DT working_VBG set_NN contains_VBZ sequence_NN numbers_NNS of_IN packets_NNS that_WDT have_VBP been_VBN successfully_RB received_VBN by_IN each_DT node_NN over_IN some_DT period_NN of_IN time_NN ._.
+We_PRP need_VBP the_DT ability_NN to_TO quickly_RB discern_VB the_DT resemblance_NN between_IN working_VBG sets_NNS from_IN two_CD nodes_NNS and_CC decide_VB whether_IN a_DT fine-grained_JJ reconciliation_NN is_VBZ beneficial_JJ ._.
+Summary_NNP tickets_NNS ,_, or_CC min-wise_JJ sketches_NNS -LSB-_-LRB- #_# -RSB-_-RRB- ,_, serve_VB this_DT purpose_NN ._.
+The_DT main_JJ idea_NN is_VBZ to_TO create_VB a_DT summary_NN ticket_NN that_WDT is_VBZ an_DT unbiased_JJ random_JJ sample_NN of_IN the_DT working_VBG set_NN ._.
+A_DT summary_NN ticket_NN is_VBZ a_DT small_JJ fixed-size_JJ array_NN ._.
+Each_DT entry_NN in_IN this_DT array_NN is_VBZ maintained_VBN by_IN a_DT specific_JJ permutation_NN function_NN ._.
+The_DT goal_NN is_VBZ to_TO have_VB each_DT entry_NN populated_VBN by_IN the_DT element_NN with_IN the_DT smallest_JJS permuted_JJ value_NN ._.
+To_TO insert_VB a_DT new_JJ element_NN into_IN the_DT summary_NN ticket_NN ,_, we_PRP apply_VBP the_DT permutation_NN functions_VBZ in_IN order_NN and_CC update_VB array_NN values_NNS as_IN appropriate_JJ ._.
+The_DT permutation_NN function_NN can_MD be_VB thought_VBN of_IN as_IN a_DT specialized_VBN hash_NN function_NN ._.
+The_DT choice_NN of_IN permutation_NN functions_NNS is_VBZ important_JJ as_IN the_DT quality_NN of_IN the_DT summary_NN ticket_NN depends_VBZ directly_RB on_IN the_DT randomness_NN properties_NNS of_IN the_DT permutation_NN functions_NNS ._.
+Since_IN we_PRP require_VBP them_PRP to_TO have_VB a_DT low_JJ computational_JJ overhead_NN ,_, we_PRP use_VBP simple_JJ permutation_NN functions_NNS ,_, such_JJ as_IN Pj_NN -LRB-_-LRB- x_NN -RRB-_-RRB- =_JJ -LRB-_-LRB- ax_NN +_CC b_NN -RRB-_-RRB- mod_NN |_CD U_NNP |_NNP ,_, where_WRB U_NNP is_VBZ the_DT universe_NN size_NN -LRB-_-LRB- dependant_NN on_IN the_DT data_NNS encoding_VBG scheme_NN -RRB-_-RRB- ._.
+To_TO compute_VB the_DT resemblance_NN between_IN two_CD working_VBG sets_NNS ,_, we_PRP compute_VBP the_DT number_NN of_IN summary_NN ticket_NN entries_NNS that_WDT have_VBP the_DT same_JJ value_NN ,_, and_CC divide_VBP it_PRP by_IN the_DT total_JJ number_NN of_IN entries_NNS in_IN the_DT summary_NN tickets_NNS ._.
+Figure_NNP #_# shows_VBZ the_DT way_NN the_DT permutation_NN functions_NNS are_VBP used_VBN to_TO populate_VB the_DT summary_NN ticket_NN ._.
+12_CD ##_CD #_# 27_CD 7_CD 2_CD 18_CD 19_CD 40_CD 1_CD Workingset_NNP 14_CD 42_CD 17_CD 33_CD 38_CD 15_CD 12_CD P1_NN 33_CD 29_CD 28_CD 44_CD 57_CD 15_CD P2_NN 22_CD 28_CD 45_CD 61_CD 14_CD 51_CD Pn_NNP Summary_NNP ticket_NN minminmin_NN 10_CD 2_CD Figure_NNP #_# :_: Example_NN showing_VBG a_DT sample_NN summary_NN ticket_NN being_VBG constructed_VBN from_IN the_DT working_VBG set_NN ._.
+To_TO perform_VB approximate_JJ fine-grain_JJ reconciliation_NN ,_, a_DT peer_VBP A_DT sends_VBZ its_PRP$ digest_VB to_TO peer_VB B_NN and_CC expects_VBZ to_TO receive_VB packets_NNS not_RB described_VBN in_IN the_DT digest_VB ._.
+For_IN this_DT purpose_NN ,_, we_PRP use_VBP a_DT Bloom_NNP filter_NN -LSB-_-LRB- #_# -RSB-_-RRB- ,_, a_DT bit_NN array_NN of_IN size_NN m_NN with_IN k_NN independent_JJ associated_JJ hash_NN functions_NNS ._.
+An_DT element_NN s_NNS from_IN the_DT set_NN of_IN received_VBN keys_NNS S_NN =_JJ -LCB-_-LRB- so_RB ,_, s2_NN ,_, ..._: ,_, sn1_NN -RCB-_-RRB- is_VBZ inserted_VBN into_IN the_DT filter_NN by_IN computing_VBG the_DT hash_NN values_VBZ h0_NN ,_, h1_NN ,_, ..._: ,_, hk1_NN of_IN s_NNS and_CC setting_VBG the_DT bits_NNS in_IN the_DT array_NN that_WDT correspond_VBP to_TO the_DT hashed_VBN 285_CD values_NNS ._.
+To_TO check_VB whether_IN an_DT element_NN x_NN is_VBZ in_IN the_DT Bloom_NNP filter_NN ,_, we_PRP hash_VBP it_PRP using_VBG the_DT hash_JJ functions_NNS and_CC check_VB whether_IN all_DT positions_NNS in_IN the_DT bit_NN array_NN are_VBP set_VBN ._.
+If_IN at_IN least_JJS one_CD is_VBZ not_RB set_VBN ,_, we_PRP know_VBP that_IN the_DT Bloom_NNP filter_NN does_VBZ not_RB contain_VB x_NN ._.
+When_WRB using_VBG Bloom_NNP filters_NNS ,_, the_DT insertion_NN of_IN different_JJ elements_NNS might_MD cause_VB all_PDT the_DT positions_NNS in_IN the_DT bit_NN array_NN corresponding_VBG to_TO an_DT element_NN that_WDT is_VBZ not_RB in_IN the_DT set_VBN to_TO be_VB nonzero_NN ._.
+In_IN this_DT case_NN ,_, we_PRP have_VBP a_DT false_JJ positive_JJ ._.
+Therefore_RB ,_, it_PRP is_VBZ possible_JJ that_IN peer_VBP B_NN will_MD not_RB send_VB a_DT packet_NN to_TO peer_VB A_DT even_RB though_IN A_DT is_VBZ missing_VBG it_PRP ._.
+On_IN the_DT other_JJ hand_NN ,_, a_DT node_NN will_MD never_RB send_VB a_DT packet_NN that_WDT is_VBZ described_VBN in_IN the_DT Bloom_NNP filter_NN ,_, i_FW ._.
+e_LS ._.
+there_EX are_VBP no_DT false_JJ negatives_NNS ._.
+The_DT probability_NN of_IN getting_VBG a_DT false_JJ positive_JJ pf_NN on_IN the_DT membership_NN query_NN can_MD be_VB expressed_VBN as_IN a_DT function_NN of_IN the_DT ratio_NN m_NN n_NN and_CC the_DT number_NN of_IN hash_JJ functions_NNS k_NN :_: pf_NN =_JJ -LRB-_-LRB- #_# ekn_FW /_: m_NN -RRB-_-RRB- k_NN ._.
+We_PRP can_MD therefore_RB choose_VB the_DT size_NN of_IN the_DT Bloom_NNP filter_NN and_CC the_DT number_NN of_IN hash_JJ functions_NNS that_WDT will_MD yield_VB a_DT desired_VBN false_JJ positive_JJ ratio_NN ._.
+2_LS ._.
+#_# TCP_NNP Friendly_NNP Rate_NNP Control_NNP Although_IN most_JJS traffic_NN in_IN the_DT Internet_NN today_NN is_VBZ best_JJS served_VBN by_IN TCP_NN ,_, applications_NNS that_WDT require_VBP a_DT smooth_JJ sending_VBG rate_NN and_CC that_WDT have_VBP a_DT higher_JJR tolerance_NN for_IN loss_NN often_RB find_VBP TCP_NN ''_'' s_NNS reaction_NN to_TO a_DT single_JJ dropped_VBD packet_NN to_TO be_VB unnecessarily_RB severe_JJ ._.
+TCP_NNP Friendly_NNP Rate_NNP Control_NNP ,_, or_CC TFRC_NNP ,_, targets_VBZ unicast_JJ streaming_NN multimedia_NNS applications_NNS with_IN a_DT need_NN for_IN less_JJR drastic_JJ responses_NNS to_TO single_JJ packet_NN losses_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+TCP_NN halves_VBZ the_DT sending_VBG rate_NN as_RB soon_RB as_IN one_CD packet_NN loss_NN is_VBZ detected_VBN ._.
+Alternatively_RB ,_, TFRC_NN is_VBZ an_DT equation-based_JJ congestion_NN control_NN protocol_NN that_WDT is_VBZ based_VBN on_IN loss_NN events_NNS ,_, which_WDT consist_VBP of_IN multiple_JJ packets_NNS being_VBG dropped_VBN within_IN one_CD round-trip_JJ time_NN ._.
+Unlike_IN TCP_NN ,_, the_DT goal_NN of_IN TFRC_NN is_VBZ not_RB to_TO find_VB and_CC use_VB all_DT available_JJ bandwidth_NN ,_, but_CC instead_RB to_TO maintain_VB a_DT relatively_RB steady_JJ sending_VBG rate_NN while_IN still_RB being_VBG responsive_JJ to_TO congestion_NN ._.
+To_TO guarantee_VB fairness_NN with_IN TCP_NN ,_, TFRC_NN uses_VBZ the_DT response_NN function_NN that_WDT describes_VBZ the_DT steady-state_JJ sending_VBG rate_NN of_IN TCP_NN to_TO determine_VB the_DT transmission_NN rate_NN in_IN TFRC_NNP ._.
+The_DT formula_NN of_IN the_DT TCP_NN response_NN function_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- used_VBN in_IN TFRC_NN to_TO describe_VB the_DT sending_VBG rate_NN is_VBZ :_: T_NN =_JJ s_NNS R_NN 2p_NN 3_CD +_CC tRT_NN O_NN -LRB-_-LRB- #_# 3p_CD 8_CD -RRB-_-RRB- p_NN -LRB-_-LRB- #_# +_CC 32p2_NN -RRB-_-RRB- This_DT is_VBZ the_DT expression_NN for_IN the_DT sending_VBG rate_NN T_NN in_IN bytes_NNS /_: second_JJ ,_, as_IN a_DT function_NN of_IN the_DT round-trip_JJ time_NN R_NN in_IN seconds_NNS ,_, loss_NN event_NN rate_NN p_NN ,_, packet_NN size_NN s_NNS in_IN bytes_NNS ,_, and_CC TCP_NN retransmit_VBP value_NN tRT_NN O_NN in_IN seconds_NNS ._.
+TFRC_NN senders_NNS and_CC receivers_NNS must_MD cooperate_VB to_TO achieve_VB a_DT smooth_JJ transmission_NN rate_NN ._.
+The_DT sender_NN is_VBZ responsible_JJ for_IN computing_VBG the_DT weighted_JJ round-trip_JJ time_NN estimate_NN R_NN between_IN sender_NN and_CC receiver_NN ,_, as_RB well_RB as_IN determining_VBG a_DT reasonable_JJ retransmit_NN timeout_NN value_NN tRT_NN O_NN ._.
+In_IN most_JJS cases_NNS ,_, using_VBG the_DT simple_JJ formula_NN tRT_NN O_NN =_JJ 4R_NN provides_VBZ the_DT necessary_JJ fairness_NN with_IN TCP_NN ._.
+The_DT sender_NN is_VBZ also_RB responsible_JJ for_IN adjusting_VBG the_DT sending_VBG rate_NN T_NN in_IN response_NN to_TO new_JJ values_NNS of_IN the_DT loss_NN event_NN rate_NN p_NN reported_VBN by_IN the_DT receiver_NN ._.
+The_DT sender_NN obtains_VBZ a_DT new_JJ measure_NN for_IN the_DT loss_NN event_NN rate_NN each_DT time_NN a_DT feedback_NN packet_NN is_VBZ received_VBN from_IN the_DT receiver_NN ._.
+Until_IN the_DT first_JJ loss_NN is_VBZ reported_VBN ,_, the_DT sender_NN doubles_VBZ its_PRP$ transmission_NN rate_NN each_DT time_NN it_PRP receives_VBZ feedback_NN just_RB as_IN TCP_NN does_VBZ during_IN slow-start_NN ._.
+The_DT main_JJ role_NN of_IN the_DT receiver_NN is_VBZ to_TO send_VB feedback_NN to_TO the_DT sender_NN once_RB per_IN round-trip_JJ time_NN and_CC to_TO calculate_VB the_DT loss_NN event_NN rate_NN included_VBN in_IN the_DT feedback_NN packets_NNS ._.
+To_TO obtain_VB the_DT loss_NN event_NN rate_NN ,_, the_DT receiver_NN maintains_VBZ a_DT loss_NN interval_NN array_NN that_WDT contains_VBZ values_NNS for_IN the_DT last_JJ eight_CD loss_NN intervals_NNS ._.
+A_DT loss_NN interval_NN is_VBZ defined_VBN as_IN the_DT number_NN of_IN packets_NNS received_VBD correctly_RB between_IN two_CD loss_NN events_NNS ._.
+The_DT array_NN is_VBZ continually_RB updated_VBN as_IN losses_NNS are_VBP detected_VBN ._.
+A_DT weighted_JJ average_NN is_VBZ computed_VBN based_VBN on_IN the_DT sum_NN of_IN the_DT loss_NN interval_NN values_NNS ,_, and_CC the_DT inverse_NN of_IN the_DT sum_NN is_VBZ the_DT reported_JJ loss_NN event_NN rate_NN ,_, p_NN ._.
+When_WRB implementing_VBG Bullet_NNP ,_, we_PRP used_VBD an_DT unreliable_JJ version_NN of_IN TFRC_NN ._.
+We_PRP wanted_VBD a_DT transport_NN protocol_NN that_WDT was_VBD congestion_NN aware_JJ and_CC TCP_NN friendly_JJ ._.
+Lost_VBN packets_NNS were_VBD more_RBR easily_RB recovered_VBN from_IN other_JJ sources_NNS rather_RB than_IN waiting_VBG for_IN a_DT retransmission_NN from_IN the_DT initial_JJ sender_NN ._.
+Hence_RB ,_, we_PRP eliminate_VBP retransmissions_NNS from_IN TFRC_NN ._.
+Further_RB ,_, TFRC_NN does_VBZ not_RB aggressively_RB seek_VB newly_RB available_JJ bandwidth_NN like_IN TCP_NN ,_, a_DT desirable_JJ trait_NN in_IN an_DT overlay_NN tree_NN where_WRB there_EX might_MD be_VB multiple_JJ competing_VBG flows_NNS sharing_VBG the_DT same_JJ links_NNS ._.
+For_IN example_NN ,_, if_IN a_DT leaf_NN node_NN in_IN the_DT tree_NN tried_VBD to_TO aggressively_RB seek_VB out_RP new_JJ bandwidth_NN ,_, it_PRP could_MD create_VB congestion_NN all_PDT the_DT way_NN up_IN to_TO the_DT root_NN of_IN the_DT tree_NN ._.
+By_IN using_VBG TFRC_NN we_PRP were_VBD able_JJ to_TO avoid_VB these_DT scenarios_NNS ._.
+3_LS ._.
+BULLET_NNP Bullet_NNP is_VBZ an_DT efficient_JJ data_NNS distribution_NN system_NN for_IN bandwidth_NN intensive_JJ applications_NNS ._.
+While_IN many_JJ current_JJ overlay_NN network_NN distribution_NN algorithms_NNS use_VBP a_DT distribution_NN tree_NN to_TO deliver_VB data_NNS from_IN the_DT tree_NN ''_'' s_NNS root_VBP to_TO all_DT other_JJ nodes_NNS ,_, Bullet_NNP layers_NNS a_DT mesh_NN on_IN top_NN of_IN an_DT original_JJ overlay_NN tree_NN to_TO increase_VB overall_JJ bandwidth_NN to_TO all_DT nodes_NNS in_IN the_DT tree_NN ._.
+Hence_RB ,_, each_DT node_NN receives_VBZ a_DT parent_NN stream_NN from_IN its_PRP$ parent_NN in_IN the_DT tree_NN and_CC some_DT number_NN of_IN perpendicular_JJ streams_NNS from_IN chosen_VBN peers_NNS in_IN the_DT overlay_NN ._.
+This_DT has_VBZ significant_JJ bandwidth_NN impact_NN when_WRB a_DT single_JJ node_NN in_IN the_DT overlay_NN is_VBZ unable_JJ to_TO deliver_VB adequate_JJ bandwidth_NN to_TO a_DT receiving_VBG node_NN ._.
+Bullet_NN requires_VBZ an_DT underlying_JJ overlay_NN tree_NN for_IN RanSub_NNP to_TO deliver_VB random_JJ subsets_NNS of_IN participants_NNS ''_'' s_VBZ state_NN to_TO nodes_NNS in_IN the_DT overlay_NN ,_, informing_VBG them_PRP of_IN a_DT set_NN of_IN nodes_NNS that_WDT may_MD be_VB good_JJ candidates_NNS for_IN retrieving_VBG data_NNS not_RB available_JJ from_IN any_DT of_IN the_DT node_NN ''_'' s_NNS current_JJ peers_NNS and_CC parent_NN ._.
+While_IN we_PRP also_RB use_VBP the_DT underlying_VBG tree_NN for_IN baseline_NN streaming_NN ,_, this_DT is_VBZ not_RB critical_JJ to_TO Bullet_NNP ''_'' s_VBZ ability_NN to_TO efficiently_RB deliver_VB data_NNS to_TO nodes_NNS in_IN the_DT overlay_NN ._.
+As_IN a_DT result_NN ,_, Bullet_NNP is_VBZ capable_JJ of_IN functioning_VBG on_IN top_NN of_IN essentially_RB any_DT overlay_NN tree_NN ._.
+In_IN our_PRP$ experiments_NNS ,_, we_PRP have_VBP run_VBN Bullet_NNP over_IN random_JJ and_CC bandwidth-optimized_JJ trees_NNS created_VBN oine_NN -LRB-_-LRB- with_IN global_JJ topological_JJ knowledge_NN -RRB-_-RRB- ._.
+Bullet_NN registers_VBZ itself_PRP with_IN the_DT underlying_VBG overlay_NN tree_NN so_IN that_IN it_PRP is_VBZ informed_VBN when_WRB the_DT overlay_NN changes_NNS as_IN nodes_NNS come_VBN and_CC go_VB or_CC make_VB performance_NN transformations_NNS in_IN the_DT overlay_NN ._.
+As_IN with_IN streaming_NN overlays_NNS trees_NNS ,_, Bullet_NNP can_MD use_VB standard_JJ transports_NNS such_JJ as_IN TCP_NN and_CC UDP_NN as_RB well_RB as_IN our_PRP$ implementation_NN of_IN TFRC_NN ._.
+For_IN the_DT remainder_NN of_IN this_DT paper_NN ,_, we_PRP assume_VBP the_DT use_NN of_IN TFRC_NN since_IN we_PRP primarily_RB target_VBP streaming_NN highbandwidth_JJ content_NN and_CC we_PRP do_VBP not_RB require_VB reliable_JJ or_CC in-order_JJ delivery_NN ._.
+For_IN simplicity_NN ,_, we_PRP assume_VBP that_IN packets_NNS originate_VB at_IN the_DT root_NN of_IN the_DT tree_NN and_CC are_VBP tagged_VBN with_IN increasing_VBG sequence_NN numbers_NNS ._.
+Each_DT node_NN receiving_VBG a_DT packet_NN will_MD optionally_RB forward_RB it_PRP to_TO each_DT of_IN its_PRP$ children_NNS ,_, depending_VBG on_IN a_DT number_NN of_IN factors_NNS relating_VBG to_TO the_DT child_NN ''_'' s_NNS bandwidth_NN and_CC its_PRP$ relative_JJ position_NN in_IN the_DT tree_NN ._.
+3_LS ._.
+#_# Finding_VBG Overlay_NNP Peers_NNP RanSub_NNP periodically_RB delivers_VBZ subsets_NNS of_IN uniformly_RB random_JJ selected_VBN nodes_NNS to_TO each_DT participant_NN in_IN the_DT overlay_NN ._.
+Bullet_NN receivers_NNS use_VBP these_DT lists_NNS to_TO locate_VB remote_JJ peers_NNS able_JJ to_TO transmit_VB missing_VBG data_NNS items_NNS with_IN good_JJ bandwidth_NN ._.
+RanSub_NNP messages_NNS contain_VBP a_DT set_NN of_IN summary_NN tickets_NNS that_WDT include_VBP a_DT small_JJ -LRB-_-LRB- ###_CD 286_CD bytes_NNS -RRB-_-RRB- summary_NN of_IN the_DT data_NNS that_WDT each_DT node_NN contains_VBZ ._.
+RanSub_NNP delivers_VBZ subsets_NNS of_IN these_DT summary_NN tickets_NNS to_TO nodes_NNS every_DT configurable_JJ epoch_NN -LRB-_-LRB- #_# seconds_NNS by_IN default_NN -RRB-_-RRB- ._.
+Each_DT node_NN in_IN the_DT tree_NN maintains_VBZ a_DT working_VBG set_NN of_IN the_DT packets_NNS it_PRP has_VBZ received_VBN thus_RB far_RB ,_, indexed_VBN by_IN sequence_NN numbers_NNS ._.
+Nodes_NNS associate_VBP each_DT working_VBG set_VBN with_IN a_DT Bloom_NNP filter_NN that_WDT maintains_VBZ a_DT summary_NN of_IN the_DT packets_NNS received_VBD thus_RB far_RB ._.
+Since_IN the_DT Bloom_NNP filter_NN does_VBZ not_RB exceed_VB a_DT specific_JJ size_NN -LRB-_-LRB- m_NN -RRB-_-RRB- and_CC we_PRP would_MD like_VB to_TO limit_VB the_DT rate_NN of_IN false_JJ positives_NNS ,_, Bullet_NNP periodically_RB cleans_VBZ up_RP the_DT Bloom_NNP filter_NN by_IN removing_VBG lower_JJR sequence_NN numbers_NNS from_IN it_PRP ._.
+This_DT allows_VBZ us_PRP to_TO keep_VB the_DT Bloom_NNP filter_NN population_NN n_NN from_IN growing_VBG at_IN an_DT unbounded_JJ rate_NN ._.
+The_DT net_JJ effect_NN is_VBZ that_IN a_DT node_NN will_MD attempt_VB to_TO recover_VB packets_NNS for_IN a_DT finite_JJ amount_NN of_IN time_NN depending_VBG on_IN the_DT packet_NN arrival_NN rate_NN ._.
+Similarly_RB ,_, Bullet_NNP removes_VBZ older_JJR items_NNS that_WDT are_VBP not_RB needed_VBN for_IN data_NNS reconstruction_NN from_IN its_PRP$ working_VBG set_NN and_CC summary_NN ticket_NN ._.
+We_PRP use_VBP the_DT collect_VB and_CC distribute_VB phases_NNS of_IN RanSub_NNP to_TO carry_VB Bullet_NNP summary_NN tickets_NNS up_RB and_CC down_RB the_DT tree_NN ._.
+In_IN our_PRP$ current_JJ implementation_NN ,_, we_PRP use_VBP a_DT set_NN size_NN of_IN ##_CD summary_NN tickets_NNS ,_, allowing_VBG each_DT collect_VB and_CC distribute_VB to_TO fit_VB well_RB within_IN the_DT size_NN of_IN a_DT non-fragmented_JJ IP_NNP packet_NN ._.
+Though_NNP Bullet_NNP supports_VBZ larger_JJR set_NN sizes_NNS ,_, we_PRP expect_VBP this_DT parameter_NN to_TO be_VB tunable_JJ to_TO specific_JJ applications_NNS ''_'' needs_VBZ ._.
+In_IN practice_NN ,_, our_PRP$ default_NN size_NN of_IN ##_NN yields_NNS favorable_JJ results_NNS for_IN a_DT variety_NN of_IN overlays_NNS and_CC network_NN topologies_NNS ._.
+In_IN essence_NN ,_, during_IN an_DT epoch_NN a_DT node_NN receives_VBZ a_DT summarized_VBN partial_JJ view_NN of_IN the_DT system_NN ''_'' s_NNS state_NN at_IN that_DT time_NN ._.
+Upon_IN receiving_VBG a_DT random_JJ subset_NN each_DT epoch_NN ,_, a_DT Bullet_NNP node_NN may_MD choose_VB to_TO peer_VB with_IN the_DT node_NN having_VBG the_DT lowest_JJS similarity_NN ratio_NN when_WRB compared_VBN to_TO its_PRP$ own_JJ summary_NN ticket_NN ._.
+This_DT is_VBZ done_VBN only_RB when_WRB the_DT node_NN has_VBZ sufficient_JJ space_NN in_IN its_PRP$ sender_NN list_NN to_TO accept_VB another_DT sender_NN -LRB-_-LRB- senders_NNS with_IN lackluster_JJ performance_NN are_VBP removed_VBN from_IN the_DT current_JJ sender_NN list_NN as_IN described_VBN in_IN section_NN #_# ._.
+#_# -RRB-_-RRB- ._.
+Once_RB a_DT node_NN has_VBZ chosen_VBN the_DT best_JJS node_NN it_PRP sends_VBZ it_PRP a_DT peering_VBG request_NN containing_VBG the_DT requesting_VBG node_NN ''_'' s_NNS Bloom_NNP filter_NN ._.
+Such_PDT a_DT request_NN is_VBZ accepted_VBN by_IN the_DT potential_JJ sender_NN if_IN it_PRP has_VBZ sufficient_JJ space_NN in_IN its_PRP$ receiver_NN list_NN for_IN the_DT incoming_JJ receiver_NN ._.
+Otherwise_RB ,_, the_DT send_VB request_NN is_VBZ rejected_VBN -LRB-_-LRB- space_NN is_VBZ periodically_RB created_VBN in_IN the_DT receiver_NN lists_VBZ as_IN further_JJ described_VBN in_IN section_NN #_# ._.
+#_# -RRB-_-RRB- ._.
+3_LS ._.
+#_# Recovering_VBG Data_NNS From_IN Peers_NNP Assuming_VBG it_PRP has_VBZ space_NN for_IN the_DT new_JJ peer_VBP ,_, a_DT recipient_JJ of_IN the_DT peering_VBG request_NN installs_VBZ the_DT received_VBN Bloom_NNP filter_NN and_CC will_MD periodically_RB transmit_VB keys_NNS not_RB present_VB in_IN the_DT Bloom_NNP filter_NN to_TO the_DT requesting_VBG node_NN ._.
+The_DT requesting_VBG node_NN will_MD refresh_VB its_PRP$ installed_VBN Bloom_NNP filters_NNS at_IN each_DT of_IN its_PRP$ sending_VBG peers_NNS periodically_RB ._.
+Along_IN with_IN the_DT fresh_JJ filter_NN ,_, a_DT receiving_VBG node_NN will_MD also_RB assign_VB a_DT portion_NN of_IN the_DT sequence_NN space_NN to_TO each_DT of_IN its_PRP$ senders_NNS ._.
+In_IN this_DT way_NN ,_, a_DT node_NN is_VBZ able_JJ the_DT reduce_VB the_DT likelihood_NN that_WDT two_CD peers_NNS simultaneously_RB transmit_VBP the_DT same_JJ key_NN to_TO it_PRP ,_, wasting_VBG network_NN resources_NNS ._.
+A_DT node_NN divides_VBZ the_DT sequence_NN space_NN in_IN its_PRP$ current_JJ working_NN set_NN among_IN each_DT of_IN its_PRP$ senders_NNS uniformly_RB ._.
+As_IN illustrated_VBN in_IN Figure_NNP #_# ,_, a_DT Bullet_NNP receiver_NN views_VBZ the_DT data_NNS space_NN as_IN a_DT matrix_NN of_IN packet_NN sequences_NNS containing_VBG s_NNS rows_NNS ,_, where_WRB s_NNS is_VBZ its_PRP$ current_JJ number_NN of_IN sending_VBG peers_NNS ._.
+A_DT receiver_NN periodically_RB -LRB-_-LRB- every_DT #_# seconds_NNS by_IN default_NN -RRB-_-RRB- updates_NNS each_DT sender_NN with_IN its_PRP$ current_JJ Bloom_NNP filter_NN and_CC the_DT range_NN of_IN sequences_NNS covered_VBN in_IN its_PRP$ Bloom_NNP filter_NN ._.
+This_DT identifies_VBZ the_DT range_NN of_IN packets_NNS that_IN the_DT receiver_NN is_VBZ currently_RB interested_JJ in_IN recovering_VBG ._.
+Over_IN time_NN ,_, this_DT range_NN shifts_VBZ as_IN depicted_VBN in_IN Figure_NNP 4-b_NN -RRB-_-RRB- ._.
+In_IN addition_NN ,_, the_DT receiving_VBG node_NN assigns_VBZ to_TO each_DT sender_NN a_DT row_NN from_IN the_DT matrix_NN ,_, labeled_VBN mod_NN ._.
+A_DT sender_NN will_MD forward_RB packets_NNS to_TO b_NN -RRB-_-RRB- Mod_NN =_JJ #_# ####################################################################_CD 7_CD 1_CD 2_CD 8_CD a_DT -RRB-_-RRB- Senders_NNS =_JJ 7Mod_NN =_JJ #_# Low_NNP High_NNP Time_NNP 00000000000000000000000000000000001111111111111111111111111111111111_CD Figure_NNP #_# :_: A_DT Bullet_NN receiver_NN views_NNS data_NNS as_IN a_DT matrix_NN of_IN sequenced_VBN packets_NNS with_IN rows_NNS equal_JJ to_TO the_DT number_NN of_IN peer_VB senders_NNS it_PRP currently_RB has_VBZ ._.
+It_PRP requests_NNS data_NNS within_IN the_DT range_NN -LRB-_-LRB- Low_JJ ,_, High_JJ -RRB-_-RRB- of_IN sequence_NN numbers_NNS based_VBN on_IN what_WP it_PRP has_VBZ received_VBN ._.
+a_DT -RRB-_-RRB- The_DT receiver_NN requests_NNS a_DT specific_JJ row_NN in_IN the_DT sequence_NN matrix_NN from_IN each_DT sender_NN ._.
+b_NN -RRB-_-RRB- As_IN it_PRP receives_VBZ more_RBR data_NNS ,_, the_DT range_NN of_IN sequences_NNS advances_NNS and_CC the_DT receiver_NN requests_NNS different_JJ rows_NNS from_IN senders_NNS ._.
+the_DT receiver_NN that_WDT have_VBP a_DT sequence_NN number_NN x_CC such_JJ that_IN x_CC modulo_NN s_NNS equals_VBZ the_DT mod_NN number_NN ._.
+In_IN this_DT fashion_NN ,_, receivers_NNS register_VBP to_TO receive_VB disjoint_NN data_NNS from_IN their_PRP$ sending_VBG peers_NNS ._.
+By_IN specifying_VBG ranges_NNS and_CC matrix_NN rows_NNS ,_, a_DT receiver_NN is_VBZ unlikely_JJ to_TO receive_VB duplicate_VB data_NNS items_NNS ,_, which_WDT would_MD result_VB in_IN wasted_VBN bandwidth_NN ._.
+A_DT duplicate_VBP packet_NN ,_, however_RB ,_, may_MD be_VB received_VBN when_WRB a_DT parent_NN recovers_VBZ a_DT packet_NN from_IN one_CD of_IN its_PRP$ peers_NNS and_CC relays_VBZ the_DT packet_NN to_TO its_PRP$ children_NNS -LRB-_-LRB- and_CC descendants_NNS -RRB-_-RRB- ._.
+In_IN this_DT case_NN ,_, a_DT descendant_NN would_MD receive_VB the_DT packet_NN out_IN of_IN order_NN and_CC may_MD have_VB already_RB recovered_VBN it_PRP from_IN one_CD of_IN its_PRP$ peers_NNS ._.
+In_IN practice_NN ,_, this_DT wasteful_JJ reception_NN of_IN duplicate_VB packets_NNS is_VBZ tolerable_JJ ;_: less_JJR than_IN ##_CD %_NN of_IN all_DT received_VBN packets_NNS are_VBP duplicates_NNS in_IN our_PRP$ experiments_NNS ._.
+3_LS ._.
+#_# Making_VBG Data_NNS Disjoint_NNP We_PRP now_RB provide_VBP details_NNS of_IN Bullet_NNP ''_'' s_VBZ mechanisms_NNS to_TO increase_VB the_DT ease_NN by_IN which_WDT nodes_NNS can_MD find_VB disjoint_JJ data_NNS not_RB provided_VBN by_IN parents_NNS ._.
+We_PRP operate_VBP on_IN the_DT premise_NN that_IN the_DT main_JJ challenge_NN in_IN recovering_VBG lost_JJ data_NNS packets_NNS transmitted_VBN over_IN an_DT overlay_NN distribution_NN tree_NN lies_VBZ in_IN finding_VBG the_DT peer_VBP node_NN housing_NN the_DT data_NNS to_TO recover_VB ._.
+Many_JJ systems_NNS take_VBP a_DT hierarchical_JJ approach_NN to_TO this_DT problem_NN ,_, propagating_VBG repair_NN requests_NNS up_IN the_DT distribution_NN tree_NN until_IN the_DT request_NN can_MD be_VB satisfied_VBN ._.
+This_DT ultimately_RB leads_VBZ to_TO scalability_NN issues_NNS at_IN higher_JJR levels_NNS in_IN the_DT hierarchy_NN particularly_RB when_WRB overlay_NN links_NNS are_VBP bandwidthconstrained_VBN ._.
+On_IN the_DT other_JJ hand_NN ,_, Bullet_NNP attempts_VBZ to_TO recover_VB lost_VBN data_NNS from_IN any_DT non-descendant_JJ node_NN ,_, not_RB just_RB ancestors_NNS ,_, thereby_RB increasing_VBG overall_JJ system_NN scalability_NN ._.
+In_IN traditional_JJ overlay_NN distribution_NN trees_NNS ,_, packets_NNS are_VBP lost_VBN by_IN the_DT transmission_NN transport_NN and_CC /_: or_CC the_DT network_NN ._.
+Nodes_NNS attempt_VBP to_TO stream_NN data_NNS as_IN fast_JJ as_IN possible_JJ to_TO each_DT child_NN and_CC have_VBP essentially_RB no_DT control_NN over_IN which_WDT portions_NNS of_IN the_DT data_NNS stream_NN are_VBP dropped_VBN by_IN the_DT transport_NN or_CC network_NN ._.
+As_IN a_DT result_NN ,_, the_DT streaming_NN subsystem_NN has_VBZ no_DT control_NN over_IN how_WRB many_JJ nodes_NNS in_IN the_DT system_NN will_MD ultimately_RB receive_VB a_DT particular_JJ portion_NN of_IN the_DT data_NNS ._.
+If_IN few_JJ nodes_NNS receive_VBP a_DT particular_JJ range_NN of_IN packets_NNS ,_, recovering_VBG these_DT pieces_NNS of_IN data_NNS becomes_VBZ more_RBR difficult_JJ ,_, requiring_VBG increased_VBN communication_NN costs_NNS ,_, and_CC leading_VBG to_TO scalability_NN problems_NNS ._.
+In_IN contrast_NN ,_, Bullet_NNP nodes_NNS are_VBP aware_JJ of_IN the_DT bandwidth_NN achievable_JJ to_TO each_DT of_IN its_PRP$ children_NNS using_VBG the_DT underlying_VBG transport_NN ._.
+If_IN 287_CD a_DT child_NN is_VBZ unable_JJ to_TO receive_VB the_DT streaming_NN rate_NN that_IN the_DT parent_NN receives_VBZ ,_, the_DT parent_NN consciously_RB decides_VBZ which_WDT portion_NN of_IN the_DT data_NNS stream_NN to_TO forward_RB to_TO the_DT constrained_VBN child_NN ._.
+In_IN addition_NN ,_, because_IN nodes_NNS recover_VBP data_NNS from_IN participants_NNS chosen_VBN uniformly_RB at_IN random_JJ from_IN the_DT set_NN of_IN non-descendants_NNS ,_, it_PRP is_VBZ advantageous_JJ to_TO make_VB each_DT transmitted_VBN packet_NN recoverable_JJ from_IN approximately_RB the_DT same_JJ number_NN of_IN participant_NN nodes_NNS ._.
+That_DT is_VBZ ,_, given_VBN a_DT randomly_RB chosen_VBN subset_NN of_IN peer_VB nodes_NNS ,_, it_PRP is_VBZ with_IN the_DT same_JJ probability_NN that_IN each_DT node_NN has_VBZ a_DT particular_JJ data_NNS packet_NN ._.
+While_IN not_RB explicitly_RB proven_VBN here_RB ,_, we_PRP believe_VBP that_IN this_DT approach_NN maximizes_VBZ the_DT probability_NN that_IN a_DT lost_VBN data_NNS packet_NN can_MD be_VB recovered_VBN ,_, regardless_RB of_IN which_WDT packet_NN is_VBZ lost_VBN ._.
+To_TO this_DT end_NN ,_, Bullet_NNP distributes_VBZ incoming_JJ packets_NNS among_IN one_CD or_CC more_JJR children_NNS in_IN hopes_NNS that_IN the_DT expected_VBN number_NN of_IN nodes_NNS receiving_VBG each_DT packet_NN is_VBZ approximately_RB the_DT same_JJ ._.
+A_DT node_NN p_NN maintains_VBZ for_IN each_DT child_NN ,_, i_FW ,_, a_DT limiting_VBG and_CC sending_VBG factor_NN ,_, lfi_NN and_CC sfi_NN ._.
+These_DT factors_NNS determine_VBP the_DT proportion_NN of_IN p_NN ''_'' s_NNS received_VBD data_NNS rate_NN that_IN it_PRP will_MD forward_RB to_TO each_DT child_NN ._.
+The_DT sending_VBG factor_NN sfi_NN is_VBZ the_DT portion_NN of_IN the_DT parent_NN stream_NN -LRB-_-LRB- rate_NN -RRB-_-RRB- that_WDT each_DT child_NN should_MD own_VB based_VBN on_IN the_DT number_NN of_IN descendants_NNS the_DT child_NN has_VBZ ._.
+The_DT more_JJR descendants_NNS a_DT child_NN has_VBZ ,_, the_DT larger_JJR the_DT portion_NN of_IN received_VBN data_NNS it_PRP should_MD own_VB ._.
+The_DT limiting_VBG factor_NN lfi_NN represents_VBZ the_DT proportion_NN of_IN the_DT parent_NN rate_NN beyond_IN the_DT sending_VBG factor_NN that_WDT each_DT child_NN can_MD handle_VB ._.
+For_IN example_NN ,_, a_DT child_NN with_IN one_CD descendant_NN ,_, but_CC high_JJ bandwidth_NN would_MD have_VB a_DT low_JJ sending_VBG factor_NN ,_, but_CC a_DT very_RB high_JJ limiting_VBG factor_NN ._.
+Though_IN the_DT child_NN is_VBZ responsible_JJ for_IN owning_VBG a_DT small_JJ portion_NN of_IN the_DT received_VBN data_NNS ,_, it_PRP actually_RB can_MD receive_VB a_DT large_JJ portion_NN of_IN it_PRP ._.
+Because_IN RanSub_NNP collects_VBZ descendant_NN counts_NNS di_FW for_IN each_DT child_NN i_FW ,_, Bullet_NNP simply_RB makes_VBZ a_DT call_NN into_IN RanSub_NNP when_WRB sending_VBG data_NNS to_TO determine_VB the_DT current_JJ sending_VBG factors_NNS of_IN its_PRP$ children_NNS ._.
+For_IN each_DT child_NN i_FW out_IN of_IN k_NN total_NN ,_, we_PRP set_VBD the_DT sending_VBG factor_NN to_TO be_VB :_: sfi_NN =_JJ dik_NN j_NN =_JJ #_# dj_NN ._.
+In_IN addition_NN ,_, a_DT node_NN tracks_VBZ the_DT data_NNS successfully_RB transmitted_VBN via_IN the_DT transport_NN ._.
+That_DT is_VBZ ,_, Bullet_NNP data_NNS transport_NN sockets_NNS are_VBP non-blocking_JJ ;_: successful_JJ transmissions_NNS are_VBP send_VB attempts_NNS that_WDT are_VBP accepted_VBN by_IN the_DT non-blocking_JJ transport_NN ._.
+If_IN the_DT transport_NN would_MD block_VB on_IN a_DT send_VBP -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, transmission_NN of_IN the_DT packet_NN would_MD exceed_VB the_DT TCP-friendly_JJ fair_JJ share_NN of_IN network_NN resources_NNS -RRB-_-RRB- ,_, the_DT send_VBP fails_VBZ and_CC is_VBZ counted_VBN as_IN an_DT unsuccessful_JJ send_VB attempt_NN ._.
+When_WRB a_DT data_NN packet_NN is_VBZ received_VBN by_IN a_DT parent_NN ,_, it_PRP calculates_VBZ the_DT proportion_NN of_IN the_DT total_JJ data_NNS stream_NN that_WDT has_VBZ been_VBN sent_VBN to_TO each_DT child_NN ,_, thus_RB far_RB ,_, in_IN this_DT epoch_NN ._.
+It_PRP then_RB assigns_VBZ ownership_NN of_IN the_DT current_JJ packet_NN to_TO the_DT child_NN with_IN sending_VBG proportion_NN farthest_JJS away_RB from_IN its_PRP$ sfi_NN as_IN illustrated_VBN in_IN Figure_NNP #_# ._.
+Having_VBG chosen_VBN the_DT target_NN of_IN a_DT particular_JJ packet_NN ,_, the_DT parent_NN attempts_VBZ to_TO forward_RB the_DT packet_NN to_TO the_DT child_NN ._.
+If_IN the_DT send_VBP is_VBZ not_RB successful_JJ ,_, the_DT node_NN must_MD find_VB an_DT alternate_JJ child_NN to_TO own_VB the_DT packet_NN ._.
+This_DT occurs_VBZ when_WRB a_DT child_NN ''_'' s_NNS bandwidth_NN is_VBZ not_RB adequate_JJ to_TO fulfill_VB its_PRP$ responsibilities_NNS based_VBN on_IN its_PRP$ descendants_NNS -LRB-_-LRB- sfi_NNS -RRB-_-RRB- ._.
+To_TO compensate_VB ,_, the_DT node_NN attempts_VBZ to_TO deterministically_RB find_VB a_DT child_NN that_WDT can_MD own_VB the_DT packet_NN -LRB-_-LRB- as_IN evidenced_VBN by_IN its_PRP$ transport_NN accepting_VBG the_DT packet_NN -RRB-_-RRB- ._.
+The_DT net_JJ result_NN is_VBZ that_DT children_NNS with_IN more_JJR than_IN adequate_JJ bandwidth_NN will_MD own_VB more_JJR of_IN their_PRP$ share_NN of_IN packets_NNS than_IN those_DT with_IN inadequate_JJ bandwidth_NN ._.
+In_IN the_DT event_NN that_IN no_DT child_NN can_MD accept_VB a_DT packet_NN ,_, it_PRP must_MD be_VB dropped_VBN ,_, corresponding_VBG to_TO the_DT case_NN where_WRB the_DT sum_NN of_IN all_DT children_NNS bandwidths_NNS is_VBZ inadequate_JJ to_TO serve_VB the_DT received_VBN foreach_NN child_NN in_IN children_NNS -LCB-_-LRB- if_IN -LRB-_-LRB- -LRB-_-LRB- child_NN -_: >_JJR sent_VBN /_: total_JJ __NN sent_VBN -RRB-_-RRB- sending_VBG __NN factor_NN -RRB-_-RRB- target_NN __CD child_NN =_JJ child_NN ;_: -RCB-_-RRB- if_IN -LRB-_-LRB- !_.
+senddata_NN -LRB-_-LRB- target_NN __CD child_NN -_: >_JJR addr_NN ,_, msg_NN ,_, size_NN ,_, key_NN -RRB-_-RRB- -RRB-_-RRB- -LCB-_-LRB- /_: /_: send_VB succeeded_VBN target_NN __CD child_NN -_: >_JJR sent_VBN +_CC +_CC ;_: target_NN __CD child_NN -_: >_JJR child_NN __CD filter_NN ._.
+insert_NN -LRB-_-LRB- got_VBD __CD key_NN -RRB-_-RRB- ;_: sent_VBN __RB packet_NN =_JJ #_# ;_: -RCB-_-RRB- foreach_NN child_NN in_IN children_NNS -LCB-_-LRB- should_MD __RB send_VB =_JJ #_# ;_: if_IN -LRB-_-LRB- !_.
+sent_VBN __NN packet_NN -RRB-_-RRB- /_: /_: transfer_NN ownership_NN should_MD __RB send_VB =_JJ #_# ;_: else_RB /_: /_: test_NN for_IN available_JJ bandwidth_NN if_IN -LRB-_-LRB- key_JJ %_NN -LRB-_-LRB- #_# ._.
+#_# /_: child_NN -_: >_JJR limiting_VBG __NN factor_NN -RRB-_-RRB- =_JJ =_JJ #_# -RRB-_-RRB- should_MD __RB send_VB =_JJ #_# ;_: if_IN -LRB-_-LRB- should_MD __RB send_VB -RRB-_-RRB- -LCB-_-LRB- if_IN -LRB-_-LRB- !_.
+senddata_NN -LRB-_-LRB- child_NN -_: >_JJR addr_NN ,_, msg_NN ,_, size_NN ,_, key_NN -RRB-_-RRB- -RRB-_-RRB- -LCB-_-LRB- if_IN -LRB-_-LRB- !_.
+sent_VBN __NN packet_NN -RRB-_-RRB- /_: /_: i_FW received_VBN ownership_NN child_NN -_: >_JJR sent_VBN +_CC +_CC ;_: else_JJ increase_NN -LRB-_-LRB- child_NN -_: >_JJR limiting_VBG __NN factor_NN -RRB-_-RRB- ;_: child_NN -_: >_JJR child_NN __CD filter_NN ._.
+insert_NN -LRB-_-LRB- got_VBD __CD key_NN -RRB-_-RRB- ;_: sent_VBN __RB packet_NN =_JJ #_# ;_: -RCB-_-RRB- else_RB /_: /_: send_VB failed_VBN if_IN -LRB-_-LRB- sent_VBN __NN packet_NN -RRB-_-RRB- /_: /_: was_VBD for_IN extra_JJ bw_NN decrease_NN -LRB-_-LRB- child_NN -_: >_JJR limiting_VBG __NN factor_NN -RRB-_-RRB- ;_: -RCB-_-RRB- -RCB-_-RRB- Figure_NNP #_# :_: Pseudo_NNP code_NN for_IN Bullet_NNP ''_'' s_VBZ disjoint_NN data_NNS send_VBP routine_JJ stream_NN ._.
+While_IN making_VBG data_NNS more_RBR difficult_JJ to_TO recover_VB ,_, Bullet_NNP still_RB allows_VBZ for_IN recovery_NN of_IN such_JJ data_NNS to_TO its_PRP$ children_NNS ._.
+The_DT sending_VBG node_NN will_MD cache_NN the_DT data_NNS packet_NN and_CC serve_VB it_PRP to_TO its_PRP$ requesting_VBG peers_NNS ._.
+This_DT process_NN allows_VBZ its_PRP$ children_NNS to_TO potentially_RB recover_VB the_DT packet_NN from_IN one_CD of_IN their_PRP$ own_JJ peers_NNS ,_, to_TO whom_WP additional_JJ bandwidth_NN may_MD be_VB available_JJ ._.
+Once_RB a_DT packet_NN has_VBZ been_VBN successfully_RB sent_VBN to_TO the_DT owning_NN child_NN ,_, the_DT node_NN attempts_VBZ to_TO send_VB the_DT packet_NN to_TO all_DT other_JJ children_NNS depending_VBG on_IN the_DT limiting_VBG factors_NNS lfi_NN ._.
+For_IN each_DT child_NN i_FW ,_, a_DT node_NN attempts_VBZ to_TO forward_RB the_DT packet_NN deterministically_RB if_IN the_DT packet_NN ''_'' s_VBZ sequence_NN modulo_NN #_# /_: lfi_NN is_VBZ zero_CD ._.
+Essentially_RB ,_, this_DT identifies_VBZ which_WDT lfi_NN fraction_NN of_IN packets_NNS of_IN the_DT received_VBN data_NNS stream_NN should_MD be_VB forwarded_VBN to_TO each_DT child_NN to_TO make_VB use_NN of_IN the_DT available_JJ bandwidth_NN to_TO each_DT ._.
+If_IN the_DT packet_NN transmission_NN is_VBZ successful_JJ ,_, lfi_NN is_VBZ increased_VBN such_JJ that_IN one_CD more_JJR packet_NN is_VBZ to_TO be_VB sent_VBN per_IN epoch_NN ._.
+If_IN the_DT transmission_NN fails_VBZ ,_, lfi_NN is_VBZ decreased_VBN by_IN the_DT same_JJ amount_NN ._.
+This_DT allows_VBZ children_NNS limiting_VBG factors_NNS to_TO be_VB continuously_RB adjusted_VBN in_IN response_NN to_TO changing_VBG network_NN conditions_NNS ._.
+It_PRP is_VBZ important_JJ to_TO realize_VB that_DT by_IN maintaining_VBG limiting_VBG factors_NNS ,_, we_PRP are_VBP essentially_RB using_VBG feedback_NN from_IN children_NNS -LRB-_-LRB- by_IN observing_VBG transport_NN behavior_NN -RRB-_-RRB- to_TO determine_VB the_DT best_JJS data_NNS to_TO stop_VB sending_VBG during_IN times_NNS when_WRB a_DT child_NN can_MD not_RB handle_VB the_DT entire_JJ parent_NN stream_NN ._.
+In_IN one_CD extreme_NN ,_, if_IN the_DT sum_NN of_IN children_NNS bandwidths_NNS is_VBZ not_RB enough_JJ to_TO receive_VB the_DT entire_JJ parent_NN stream_NN ,_, each_DT child_NN will_MD receive_VB a_DT completely_RB disjoint_JJ data_NNS stream_NN of_IN packets_NNS it_PRP owns_VBZ ._.
+In_IN the_DT other_JJ extreme_JJ ,_, if_IN each_DT 288_CD child_NN has_VBZ ample_JJ bandwidth_NN ,_, it_PRP will_MD receive_VB the_DT entire_JJ parent_NN stream_NN as_IN each_DT lfi_NN would_MD settle_VB on_IN #_# ._.
+#_# ._.
+In_IN the_DT general_JJ case_NN ,_, our_PRP$ owning_NN strategy_NN attempts_VBZ to_TO make_VB data_NNS disjoint_NN among_IN children_NNS subtrees_NNS with_IN the_DT guiding_VBG premise_NN that_IN ,_, as_RB much_RB as_IN possible_JJ ,_, the_DT expected_VBN number_NN of_IN nodes_NNS receiving_VBG a_DT packet_NN is_VBZ the_DT same_JJ across_IN all_DT packets_NNS ._.
+3_LS ._.
+#_# Improving_NN the_DT Bullet_NNP Mesh_NNP Bullet_NNP allows_VBZ a_DT maximum_JJ number_NN of_IN peering_VBG relationships_NNS ._.
+That_DT is_VBZ ,_, a_DT node_NN can_MD have_VB up_RP to_TO a_DT certain_JJ number_NN of_IN receivers_NNS and_CC a_DT certain_JJ number_NN of_IN senders_NNS -LRB-_-LRB- each_DT defaults_NNS to_TO ##_VB in_IN our_PRP$ implementation_NN -RRB-_-RRB- ._.
+A_DT number_NN of_IN considerations_NNS can_MD make_VB the_DT current_JJ peering_VBG relationships_NNS sub-optimal_JJ at_IN any_DT given_VBN time_NN :_: i_LS -RRB-_-RRB- the_DT probabilistic_JJ nature_NN of_IN RanSub_NNP means_VBZ that_IN a_DT node_NN may_MD not_RB have_VB been_VBN exposed_VBN to_TO a_DT sufficiently_RB appropriate_JJ peer_VBP ,_, ii_LS -RRB-_-RRB- receivers_NNS greedily_RB choose_VB peers_NNS ,_, and_CC iii_LS -RRB-_-RRB- network_NN conditions_NNS are_VBP constantly_RB changing_VBG ._.
+For_IN example_NN ,_, a_DT sender_NN node_NN may_MD wind_VB up_RP being_VBG unable_JJ to_TO provide_VB a_DT node_NN with_IN very_RB much_JJ useful_JJ -LRB-_-LRB- non-duplicate_JJ -RRB-_-RRB- data_NNS ._.
+In_IN such_PDT a_DT case_NN ,_, it_PRP would_MD be_VB advantageous_JJ to_TO remove_VB that_IN sender_NN as_IN a_DT peer_VB and_CC find_VB some_DT other_JJ peer_VBP that_IN offers_VBZ better_JJR utility_NN ._.
+Each_DT node_NN periodically_RB -LRB-_-LRB- every_DT few_JJ RanSub_NNP epochs_NNS -RRB-_-RRB- evaluates_VBZ the_DT bandwidth_NN performance_NN it_PRP is_VBZ receiving_VBG from_IN its_PRP$ sending_VBG peers_NNS ._.
+A_DT node_NN will_MD drop_VB a_DT peer_VB if_IN it_PRP is_VBZ sending_VBG too_RB many_JJ duplicate_VBP packets_NNS when_WRB compared_VBN to_TO the_DT total_JJ number_NN of_IN packets_NNS received_VBN ._.
+This_DT threshold_NN is_VBZ set_VBN to_TO ##_CD %_NN by_IN default_NN ._.
+If_IN no_DT such_JJ wasteful_JJ sender_NN is_VBZ found_VBN ,_, a_DT node_NN will_MD drop_VB the_DT sender_NN that_WDT is_VBZ delivering_VBG the_DT least_JJS amount_NN of_IN useful_JJ data_NNS to_TO it_PRP ._.
+It_PRP will_MD replace_VB this_DT sender_NN with_IN some_DT other_JJ sending_VBG peer_VB candidate_NN ,_, essentially_RB reserving_VBG a_DT trial_NN slot_NN in_IN its_PRP$ sender_NN list_NN ._.
+In_IN this_DT way_NN ,_, we_PRP are_VBP assured_VBN of_IN keeping_VBG the_DT best_JJS senders_NNS seen_VBN so_RB far_RB and_CC will_MD eliminate_VB senders_NNS whose_WP$ performance_NN deteriorates_VBZ with_IN changing_VBG network_NN conditions_NNS ._.
+Likewise_RB ,_, a_DT Bullet_NNP sender_NN will_MD periodically_RB evaluate_VB its_PRP$ receivers_NNS ._.
+Each_DT receiver_NN updates_NNS senders_NNS of_IN the_DT total_JJ received_VBN bandwidth_NN ._.
+The_DT sender_NN ,_, knowing_VBG the_DT amount_NN of_IN data_NNS it_PRP has_VBZ sent_VBN to_TO each_DT receiver_NN ,_, can_MD determine_VB which_WDT receiver_NN is_VBZ benefiting_VBG the_DT least_JJS by_IN peering_VBG with_IN this_DT sender_NN ._.
+This_DT corresponds_VBZ to_TO the_DT one_CD receiver_NN acquiring_VBG the_DT least_JJS portion_NN of_IN its_PRP$ bandwidth_NN through_IN this_DT sender_NN ._.
+The_DT sender_NN drops_VBZ this_DT receiver_NN ,_, creating_VBG an_DT empty_JJ slot_NN for_IN some_DT other_JJ trial_NN receiver_NN ._.
+This_DT is_VBZ similar_JJ to_TO the_DT concept_NN of_IN weans_NNS presented_VBN in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ._.
+4_LS ._.
+EVALUATION_NN We_PRP have_VBP evaluated_VBN Bullet_NNP ''_'' s_VBZ performance_NN in_IN real_JJ Internet_NN environments_NNS as_RB well_RB as_IN the_DT ModelNet_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- IP_NNP emulation_NN framework_NN ._.
+While_IN the_DT bulk_NN of_IN our_PRP$ experiments_NNS use_VBP ModelNet_NNP ,_, we_PRP also_RB report_VBP on_IN our_PRP$ experience_NN with_IN Bullet_NN on_IN the_DT PlanetLab_NNP Internet_NNP testbed_VBD -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+In_IN addition_NN ,_, we_PRP have_VBP implemented_VBN a_DT number_NN of_IN underlying_VBG overlay_NN network_NN trees_NNS upon_IN which_WDT Bullet_NNP can_MD execute_VB ._.
+Because_IN Bullet_NNP performs_VBZ well_RB over_IN a_DT randomly_RB created_VBN overlay_NN tree_NN ,_, we_PRP present_VBP results_NNS with_IN Bullet_NN running_VBG over_IN such_PDT a_DT tree_NN compared_VBN against_IN an_DT oine_NN greedy_JJ bottleneck_NN bandwidth_NN tree_NN algorithm_NN using_VBG global_JJ topological_JJ information_NN described_VBN in_IN Section_NN #_# ._.
+#_# ._.
+All_DT of_IN our_PRP$ implementations_NNS leverage_NN a_DT common_JJ development_NN infrastructure_NN called_VBN MACEDON_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- that_WDT allows_VBZ for_IN the_DT specification_NN of_IN overlay_NN algorithms_NNS in_IN a_DT simple_JJ domainspecific_JJ language_NN ._.
+It_PRP enables_VBZ the_DT reuse_NN of_IN the_DT majority_NN of_IN common_JJ functionality_NN in_IN these_DT distributed_VBN systems_NNS ,_, including_VBG probing_VBG infrastructures_NNS ,_, thread_NN management_NN ,_, message_NN passing_NN ,_, and_CC debugging_VBG environment_NN ._.
+As_IN a_DT result_NN ,_, we_PRP believe_VBP that_IN our_PRP$ comparisons_NNS qualitatively_RB show_VBP algorithmic_JJ differences_NNS rather_RB than_IN implementation_NN intricacies_NNS ._.
+Our_PRP$ implementation_NN of_IN the_DT core_NN Bullet_NN logic_NN is_VBZ under_IN ####_CD lines_NNS of_IN code_NN in_IN this_DT infrastructure_NN ._.
+Our_PRP$ ModelNet_NNP experiments_NNS make_VBP use_NN of_IN ##_CD 2Ghz_NN Pentium4_NN ''_'' s_NNS running_VBG Linux_NNP #_# ._.
+#_# ._.
+##_NN and_CC interconnected_VBN with_IN ###_CD Mbps_NNS and_CC #_# Gbps_NNPS Ethernet_NNP switches_VBZ ._.
+For_IN the_DT majority_NN of_IN these_DT experiments_NNS ,_, we_PRP multiplex_JJ one_CD thousand_CD instances_NNS -LRB-_-LRB- overlay_NN participants_NNS -RRB-_-RRB- of_IN our_PRP$ overlay_NN applications_NNS across_IN the_DT ##_CD Linux_NNP nodes_NNS -LRB-_-LRB- ##_CD per_IN machine_NN -RRB-_-RRB- ._.
+In_IN ModelNet_NNP ,_, packet_NN transmissions_NNS are_VBP routed_VBN through_IN emulators_NNS responsible_JJ for_IN accurately_RB emulating_VBG the_DT hop-by-hop_JJ delay_NN ,_, bandwidth_NN ,_, and_CC congestion_NN of_IN a_DT network_NN topology_NN ._.
+In_IN our_PRP$ evaluations_NNS ,_, we_PRP used_VBD four_CD #_# ._.
+4Ghz_NNP Pentium_NNP III_NNP ''_'' s_VBZ running_VBG FreeBSD-4_NN ._.
+#_# as_IN emulators_NNS ._.
+This_DT platform_NN supports_VBZ approximately_RB 2-3_CD Gbps_NNS of_IN aggregate_JJ simultaneous_JJ communication_NN among_IN end_NN hosts_NNS ._.
+For_IN most_JJS of_IN our_PRP$ ModelNet_NNP experiments_NNS ,_, we_PRP use_VBP ##_RB ,_, 000-node_JJ INET-generated_JJ topologies_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+We_PRP randomly_RB assign_VBP our_PRP$ participant_NN nodes_NNS to_TO act_VB as_IN clients_NNS connected_VBN to_TO one-degree_JJ stub_NN nodes_NNS in_IN the_DT topology_NN ._.
+We_PRP randomly_RB select_VBP one_CD of_IN these_DT participants_NNS to_TO act_VB as_IN the_DT source_NN of_IN the_DT data_NNS stream_NN ._.
+Propagation_NN delays_NNS in_IN the_DT network_NN topology_NN are_VBP calculated_VBN based_VBN on_IN the_DT relative_JJ placement_NN of_IN the_DT network_NN nodes_NNS in_IN the_DT plane_NN by_IN INET_NNP ._.
+Based_VBN on_IN the_DT classification_NN in_IN -LSB-_-LRB- #_# -RSB-_-RRB- ,_, we_PRP classify_VBP network_NN links_NNS as_IN being_VBG Client-Stub_NNP ,_, Stub-Stub_NNP ,_, TransitStub_NNP ,_, and_CC Transit-Transit_NNP depending_VBG on_IN their_PRP$ location_NN in_IN the_DT network_NN ._.
+We_PRP restrict_VBP topological_JJ bandwidth_NN by_IN setting_VBG the_DT bandwidth_NN for_IN each_DT link_NN depending_VBG on_IN its_PRP$ type_NN ._.
+Each_DT type_NN of_IN link_NN has_VBZ an_DT associated_JJ bandwidth_NN range_NN from_IN which_WDT the_DT bandwidth_NN is_VBZ chosen_VBN uniformly_RB at_IN random_JJ ._.
+By_IN changing_VBG these_DT ranges_NNS ,_, we_PRP vary_VBP bandwidth_NN constraints_NNS in_IN our_PRP$ topologies_NNS ._.
+For_IN our_PRP$ experiments_NNS ,_, we_PRP created_VBD three_CD different_JJ ranges_NNS corresponding_VBG to_TO low_JJ ,_, medium_NN ,_, and_CC high_JJ bandwidths_NNS relative_JJ to_TO our_PRP$ typical_JJ streaming_NN rates_NNS of_IN 600-1000_CD Kbps_NNS as_IN specified_VBN in_IN Table_NNP #_# ._.
+While_IN the_DT presented_VBN ModelNet_NNP results_NNS are_VBP restricted_JJ to_TO two_CD topologies_NNS with_IN varying_VBG bandwidth_NN constraints_NNS ,_, the_DT results_NNS of_IN experiments_NNS with_IN additional_JJ topologies_NNS all_DT show_VBP qualitatively_RB similar_JJ behavior_NN ._.
+We_PRP do_VBP not_RB implement_VB any_DT particular_JJ coding_VBG scheme_NN for_IN our_PRP$ experiments_NNS ._.
+Rather_RB ,_, we_PRP assume_VBP that_IN either_CC each_DT sequence_NN number_NN directly_RB specifies_VBZ a_DT particular_JJ data_NNS block_NN and_CC the_DT block_NN offset_VBN for_IN each_DT packet_NN ,_, or_CC we_PRP are_VBP distributing_VBG data_NNS within_IN the_DT same_JJ block_NN for_IN LT_JJ Codes_NNS ,_, e_LS ._.
+g_NN ._.
+,_, when_WRB distributing_VBG a_DT file_NN ._.
+4_LS ._.
+#_# Offline_NNP Bottleneck_NNP Bandwidth_NNP Tree_NNP One_CD of_IN our_PRP$ goals_NNS is_VBZ to_TO determine_VB Bullet_NNP ''_'' s_VBZ performance_NN relative_JJ to_TO the_DT best_JJS possible_JJ bandwidth-optimized_JJ tree_NN for_IN a_DT given_VBN network_NN topology_NN ._.
+This_DT allows_VBZ us_PRP to_TO quantify_VB the_DT possible_JJ improvements_NNS of_IN an_DT overlay_NN mesh_NN constructed_VBN using_VBG Bullet_NNP relative_JJ to_TO the_DT best_JJS possible_JJ tree_NN ._.
+While_IN we_PRP have_VBP not_RB yet_RB proven_VBN this_DT ,_, we_PRP believe_VBP that_IN this_DT problem_NN is_VBZ NP-hard_NN ._.
+Thus_RB ,_, in_IN this_DT section_NN we_PRP present_VBP a_DT simple_JJ greedy_JJ oine_NN algorithm_NN to_TO determine_VB the_DT connectivity_NN of_IN a_DT tree_NN likely_JJ to_TO deliver_VB a_DT high_JJ level_NN of_IN bandwidth_NN ._.
+In_IN practice_NN ,_, we_PRP are_VBP not_RB aware_JJ of_IN any_DT scalable_JJ online_JJ algorithms_NNS that_WDT are_VBP able_JJ to_TO deliver_VB the_DT bandwidth_NN of_IN an_DT oine_NN algorithm_NN ._.
+At_IN the_DT same_JJ time_NN ,_, trees_NNS constructed_VBN by_IN our_PRP$ algorithm_NN tend_VB to_TO be_VB long_JJ and_CC skinny_JJ making_VBG them_PRP less_RBR resilient_JJ to_TO failures_NNS and_CC inappropriate_JJ for_IN delay_NN sensitive_JJ applications_NNS -LRB-_-LRB- such_JJ as_IN multimedia_NNS streaming_NN -RRB-_-RRB- ._.
+In_IN addition_NN to_TO any_DT performance_NN comparisons_NNS ,_, a_DT Bullet_NNP mesh_NN has_VBZ much_RB lower_JJR depth_NN than_IN the_DT bottleneck_NN tree_NN and_CC is_VBZ more_RBR resilient_JJ to_TO failure_NN ,_, as_IN discussed_VBN in_IN Section_NN #_# ._.
+#_# ._.
+289_CD Topology_NNP classification_NN Client-Stub_NNP Stub-Stub_NNP Transit-Stub_NNP Transit-Transit_NNP Low_NNP bandwidth_NN 300-600 500-1000_CD 1000-2000 2000-4000_CD Medium_NN bandwidth_NN 800-2800 1000-4000_CD 1000-4000 5000-10000_CD High_JJ bandwidth_NN 1600-5600 2000-8000_CD 2000-8000 10000_CD -20000_CD Table_NNP #_# :_: Bandwidth_NN ranges_NNS for_IN link_NN types_NNS used_VBN in_IN our_PRP$ topologies_NNS expressed_VBN in_IN Kbps_NNP ._.
+Specifically_RB ,_, we_PRP consider_VBP the_DT following_VBG problem_NN :_: given_VBN complete_JJ knowledge_NN of_IN the_DT topology_NN -LRB-_-LRB- individual_JJ link_NN latencies_NNS ,_, bandwidth_NN ,_, and_CC packet_NN loss_NN rates_NNS -RRB-_-RRB- ,_, what_WP is_VBZ the_DT overlay_NN tree_NN that_WDT will_MD deliver_VB the_DT highest_JJS bandwidth_NN to_TO a_DT set_NN of_IN predetermined_JJ overlay_NN nodes_NNS ?_.
+We_PRP assume_VBP that_IN the_DT throughput_NN of_IN the_DT slowest_JJS overlay_NN link_NN -LRB-_-LRB- the_DT bottleneck_NN link_NN -RRB-_-RRB- determines_VBZ the_DT throughput_NN of_IN the_DT entire_JJ tree_NN ._.
+We_PRP are_VBP ,_, therefore_RB ,_, trying_VBG to_TO find_VB the_DT directed_VBN overlay_NN tree_NN with_IN the_DT maximum_NN bottleneck_NN link_NN ._.
+Accordingly_RB ,_, we_PRP refer_VBP to_TO this_DT problem_NN as_IN the_DT overlay_NN maximum_NN bottleneck_NN tree_NN -LRB-_-LRB- OMBT_NN -RRB-_-RRB- ._.
+In_IN a_DT simplified_VBN case_NN ,_, assuming_VBG that_IN congestion_NN only_RB exists_VBZ on_IN access_NN links_NNS and_CC there_EX are_VBP no_DT lossy_NN links_NNS ,_, there_EX exists_VBZ an_DT optimal_JJ algorithm_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+In_IN the_DT more_RBR general_JJ case_NN of_IN contention_NN on_IN any_DT physical_JJ link_NN ,_, and_CC when_WRB the_DT system_NN is_VBZ allowed_VBN to_TO choose_VB the_DT routing_VBG path_NN between_IN the_DT two_CD endpoints_NNS ,_, this_DT problem_NN is_VBZ known_VBN to_TO be_VB NP-hard_JJ -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, even_RB in_IN the_DT absence_NN of_IN link_NN losses_NNS ._.
+For_IN the_DT purposes_NNS of_IN this_DT paper_NN ,_, our_PRP$ goal_NN is_VBZ to_TO determine_VB a_DT good_JJ overlay_NN streaming_NN tree_NN that_WDT provides_VBZ each_DT overlay_NN participant_NN with_IN substantial_JJ bandwidth_NN ,_, while_IN avoiding_VBG overlay_NN links_NNS with_IN high_JJ end-to-end_JJ loss_NN rates_NNS ._.
+We_PRP make_VBP the_DT following_VBG assumptions_NNS :_: 1_CD ._.
+The_DT routing_VBG path_NN between_IN any_DT two_CD overlay_NN participants_NNS is_VBZ fixed_VBN ._.
+This_DT closely_RB models_NNS the_DT existing_VBG overlay_NN network_NN model_NN with_IN IP_NNP for_IN unicast_JJ routing_VBG ._.
+2_LS ._.
+The_DT overlay_NN tree_NN will_MD use_VB TCP-friendly_JJ unicast_NN connections_NNS to_TO transfer_VB data_NNS point-to-point_NN ._.
+3_LS ._.
+In_IN the_DT absence_NN of_IN other_JJ flows_NNS ,_, we_PRP can_MD estimate_VB the_DT throughput_NN of_IN a_DT TCP-friendly_JJ flow_NN using_VBG a_DT steady-state_JJ formula_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+4_LS ._.
+When_WRB several_JJ -LRB-_-LRB- n_NN -RRB-_-RRB- flows_VBZ share_NN the_DT same_JJ bottleneck_NN link_NN ,_, each_DT flow_NN can_MD achieve_VB throughput_NN of_IN at_IN most_JJS c_NN n_NN ,_, where_WRB c_NN is_VBZ the_DT physical_JJ capacity_NN of_IN the_DT link_NN ._.
+Given_VBN these_DT assumptions_NNS ,_, we_PRP concentrate_VBP on_IN estimating_VBG the_DT throughput_NN available_JJ between_IN two_CD participants_NNS in_IN the_DT overlay_NN ._.
+We_PRP start_VBP by_IN calculating_VBG the_DT throughput_NN using_VBG the_DT steady-state_JJ formula_NN ._.
+We_PRP then_RB route_NN the_DT flow_NN in_IN the_DT network_NN ,_, and_CC consider_VB the_DT physical_JJ links_NNS one_CD at_IN a_DT time_NN ._.
+On_IN each_DT physical_JJ link_NN ,_, we_PRP compute_VBP the_DT fair-share_JJ for_IN each_DT of_IN the_DT competing_VBG flows_NNS ._.
+The_DT throughput_NN of_IN an_DT overlay_NN link_NN is_VBZ then_RB approximated_VBN by_IN the_DT minimum_NN of_IN the_DT fair-shares_NNS along_IN the_DT routing_VBG path_NN ,_, and_CC the_DT formula_NN rate_NN ._.
+If_IN some_DT flow_NN does_VBZ not_RB require_VB the_DT same_JJ share_NN of_IN the_DT bottleneck_NN link_NN as_IN other_JJ competing_VBG flows_NNS -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, its_PRP$ throughput_NN might_MD be_VB limited_VBN by_IN losses_NNS elsewhere_RB in_IN the_DT network_NN -RRB-_-RRB- ,_, then_RB the_DT other_JJ flows_NNS might_MD end_VB up_RP with_IN a_DT greater_JJR share_NN than_IN the_DT one_CD we_PRP compute_VBP ._.
+We_PRP do_VBP not_RB account_VB for_IN this_DT ,_, as_IN the_DT major_JJ goal_NN of_IN this_DT estimate_NN is_VBZ simply_RB to_TO avoid_VB lossy_NN and_CC highly_RB congested_JJ physical_JJ links_NNS ._.
+More_RBR formally_RB ,_, we_PRP define_VBP the_DT problem_NN as_IN follows_VBZ :_: Overlay_NNP Maximum_NNP Bottleneck_NNP Tree_NNP -LRB-_-LRB- OMBT_NNP -RRB-_-RRB- ._.
+Given_VBN a_DT physical_JJ network_NN represented_VBN as_IN a_DT graph_NN G_NN =_JJ -LRB-_-LRB- V_NN ,_, E_NN -RRB-_-RRB- ,_, set_NN of_IN overlay_NN participants_NNS P_NN V_NN ,_, source_NN node_NN -LRB-_-LRB- s_NNS P_NN -RRB-_-RRB- ,_, bandwidth_NN B_NN :_: E_NN R_NN +_CC ,_, loss_NN rate_NN L_NN :_: E_NN -LSB-_-LRB- #_# ,_, #_# -RSB-_-RRB- ,_, propagation_NN delay_NN D_NN :_: E_NN R_NN +_CC of_IN each_DT link_NN ,_, set_NN of_IN possible_JJ overlay_NN links_NNS O_NN =_JJ -LCB-_-LRB- -LRB-_-LRB- v_LS ,_, w_NN -RRB-_-RRB- |_CD v_LS ,_, w_NN P_NN ,_, v_LS =_JJ w_NN -RCB-_-RRB- ,_, routing_VBG table_NN RT_NN :_: O_NN E_NN -LCB-_-LRB- #_# ,_, #_# -RCB-_-RRB- ,_, find_VB the_DT overlay_NN tree_NN T_NN =_JJ -LCB-_-LRB- o_NN |_CD o_NN O_NN -RCB-_-RRB- -LRB-_-LRB- |_CD T_NN |_NN =_JJ |_CD P_NN |_CD #_# ,_, v_LS P_NN there_RB exists_VBZ a_DT path_NN ov_NN =_JJ s_NNS v_LS -RRB-_-RRB- that_WDT maximizes_VBZ min_NN o_NN |_CD oT_NN -LRB-_-LRB- min_NN -LRB-_-LRB- f_FW -LRB-_-LRB- o_NN -RRB-_-RRB- ,_, min_NN e_SYM |_CD eo_NN b_NN -LRB-_-LRB- e_LS -RRB-_-RRB- |_CD -LCB-_-LRB- p_NN |_CD p_NN T_NN ,_, e_SYM p_NN -RCB-_-RRB- |_NN -RRB-_-RRB- -RRB-_-RRB- where_WRB f_FW -LRB-_-LRB- o_NN -RRB-_-RRB- is_VBZ the_DT TCP_NNP steady-state_JJ sending_VBG rate_NN ,_, computed_VBN from_IN round-trip_JJ time_NN d_NN -LRB-_-LRB- o_NN -RRB-_-RRB- =_JJ eo_NN d_NN -LRB-_-LRB- e_LS -RRB-_-RRB- +_CC eo_NN d_NN -LRB-_-LRB- e_LS -RRB-_-RRB- -LRB-_-LRB- given_VBN overlay_NN link_NN o_NN =_JJ -LRB-_-LRB- v_LS ,_, w_NN -RRB-_-RRB- ,_, o_NN =_JJ -LRB-_-LRB- w_NN ,_, v_LS -RRB-_-RRB- -RRB-_-RRB- ,_, and_CC loss_NN rate_NN l_NN -LRB-_-LRB- o_NN -RRB-_-RRB- =_JJ #_# eo_FW -LRB-_-LRB- #_# l_NN -LRB-_-LRB- e_LS -RRB-_-RRB- -RRB-_-RRB- ._.
+We_PRP write_VBP e_SYM o_NN to_TO express_VB that_DT link_NN e_SYM is_VBZ included_VBN in_IN the_DT o_NN ''_'' s_NNS routing_VBG path_NN -LRB-_-LRB- RT_NN -LRB-_-LRB- o_NN ,_, e_LS -RRB-_-RRB- =_JJ #_# -RRB-_-RRB- ._.
+Assuming_VBG that_IN we_PRP can_MD estimate_VB the_DT throughput_NN of_IN a_DT flow_NN ,_, we_PRP proceed_VBP to_TO formulate_VB a_DT greedy_JJ OMBT_NNP algorithm_NN ._.
+This_DT algorithm_NN is_VBZ non-optimal_JJ ,_, but_CC a_DT similar_JJ approach_NN was_VBD found_VBN to_TO perform_VB well_RB -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Our_PRP$ algorithm_NN is_VBZ similar_JJ to_TO the_DT Widest_JJS Path_NN Heuristic_NNP -LRB-_-LRB- WPH_NNP -RRB-_-RRB- -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, and_CC more_RBR generally_RB to_TO Prim_NNP ''_'' s_VBZ MST_NNP algorithm_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+During_IN its_PRP$ execution_NN ,_, we_PRP maintain_VBP the_DT set_NN of_IN nodes_NNS already_RB in_IN the_DT tree_NN ,_, and_CC the_DT set_NN of_IN remaining_VBG nodes_NNS ._.
+To_TO grow_VB the_DT tree_NN ,_, we_PRP consider_VBP all_DT the_DT overlay_NN links_NNS leading_VBG from_IN the_DT nodes_NNS in_IN the_DT tree_NN to_TO the_DT remaining_VBG nodes_NNS ._.
+We_PRP greedily_RB pick_VBP the_DT node_NN with_IN the_DT highest_JJS throughput_NN overlay_NN link_NN ._.
+Using_VBG this_DT overlay_NN link_NN might_MD cause_VB us_PRP to_TO route_NN traffic_NN over_IN physical_JJ links_NNS traversed_VBN by_IN some_DT other_JJ tree_NN flows_NNS ._.
+Since_IN we_PRP do_VBP not_RB re-examine_VB the_DT throughput_NN of_IN nodes_NNS that_WDT are_VBP already_RB in_IN the_DT tree_NN ,_, they_PRP might_MD end_VB up_RP being_VBG connected_VBN to_TO the_DT tree_NN with_IN slower_JJR overlay_NN links_NNS than_IN initially_RB estimated_VBN ._.
+However_RB ,_, by_IN attaching_VBG the_DT node_NN with_IN the_DT highest_JJS residual_JJ bandwidth_NN at_IN every_DT step_NN ,_, we_PRP hope_VBP to_TO lessen_VB the_DT effects_NNS of_IN after-the-fact_JJ physical_JJ link_NN sharing_NN ._.
+With_IN the_DT synthetic_JJ topologies_NNS we_PRP use_VBP for_IN our_PRP$ emulation_NN environment_NN ,_, we_PRP have_VBP not_RB found_VBN this_DT inaccuracy_NN to_TO severely_RB impact_VB the_DT quality_NN of_IN the_DT tree_NN ._.
+4_LS ._.
+#_# Bullet_NNP vs_CC ._.
+Streaming_VBG We_PRP have_VBP implemented_VBN a_DT simple_JJ streaming_NN application_NN that_WDT is_VBZ capable_JJ of_IN streaming_NN data_NNS over_IN any_DT specified_VBN tree_NN ._.
+In_IN our_PRP$ implementation_NN ,_, we_PRP are_VBP able_JJ to_TO stream_NN data_NNS through_IN overlay_NN trees_NNS using_VBG UDP_NNP ,_, TFRC_NNP ,_, or_CC TCP_NN ._.
+Figure_NNP #_# shows_VBZ average_JJ bandwidth_NN that_IN each_DT of_IN ####_CD nodes_NNS receives_VBZ via_IN this_DT streaming_NN as_IN time_NN progresses_VBZ on_IN the_DT x-axis_NN ._.
+In_IN this_DT example_NN ,_, we_PRP use_VBP TFRC_NN to_TO stream_NN ###_CD Kbps_NNS over_IN our_PRP$ oine_NN bottleneck_NN bandwidth_NN tree_NN and_CC a_DT random_JJ tree_NN -LRB-_-LRB- other_JJ random_JJ trees_NNS exhibit_VBP qualitatively_RB similar_JJ behavior_NN -RRB-_-RRB- ._.
+In_IN these_DT experiments_NNS ,_, streaming_NN begins_VBZ ###_RB seconds_NNS into_IN each_DT run_NN ._.
+While_IN the_DT random_JJ tree_NN delivers_VBZ an_DT achieved_VBN bandwidth_NN of_IN under_IN ###_CD Kbps_NNS ,_, our_PRP$ oine_NN algorithm_NN overlay_NN delivers_VBZ approximately_RB 400_CD Kbps_NNS of_IN data_NNS ._.
+For_IN this_DT experiment_NN ,_, bandwidths_NNS were_VBD set_VBN to_TO the_DT medium_NN range_NN from_IN Table_NNP #_# ._.
+We_PRP believe_VBP that_IN any_DT degree-constrained_JJ online_NN bandwidth_NN overlay_NN tree_NN algorithm_NN would_MD exhibit_VB similar_JJ -LRB-_-LRB- or_CC lower_JJR -RRB-_-RRB- behavior_NN to_TO our_PRP$ bandwidth290_NN 0_CD 200_CD 400_CD 600_CD 800_CD 1000_CD 0_CD ##_CD ###_CD ###_CD ###_CD ###_CD ###_CD ###_CD ###_CD Bandwidth_NN -LRB-_-LRB- Kbps_NNS -RRB-_-RRB- Time_NNP -LRB-_-LRB- s_NNS -RRB-_-RRB- Bottleneck_NN bandwidth_NN tree_NN Random_NNP tree_NN Figure_NN #_# :_: Achieved_VBN bandwidth_NN over_IN time_NN for_IN TFRC_NNP streaming_NN over_IN the_DT bottleneck_NN bandwidth_NN tree_NN and_CC a_DT random_JJ tree_NN ._.
+optimized_VBN overlay_NN ._.
+Hence_RB ,_, Bullet_NNP ''_'' s_VBZ goal_NN is_VBZ to_TO overcome_VB this_DT bandwidth_NN limit_NN by_IN allowing_VBG for_IN the_DT perpendicular_JJ reception_NN of_IN data_NNS and_CC by_IN utilizing_VBG disjoint_NN data_NNS flows_VBZ in_IN an_DT attempt_NN to_TO match_VB or_CC exceed_VB the_DT performance_NN of_IN our_PRP$ oine_NN algorithm_NN ._.
+To_TO evaluate_VB Bullet_NNP ''_'' s_VBZ ability_NN to_TO exceed_VB the_DT bandwidth_NN achievable_JJ via_IN tree_NN distribution_NN overlays_NNS ,_, we_PRP compare_VBP Bullet_NNP running_VBG over_IN a_DT random_JJ overlay_NN tree_NN to_TO the_DT streaming_NN behavior_NN shown_VBN in_IN Figure_NNP #_# ._.
+Figure_NNP #_# shows_VBZ the_DT average_JJ bandwidth_NN received_VBN by_IN each_DT node_NN -LRB-_-LRB- labeled_VBN Useful_JJ total_NN -RRB-_-RRB- with_IN standard_JJ deviation_NN ._.
+The_DT graph_NN also_RB plots_NNS the_DT total_JJ amount_NN of_IN data_NNS received_VBN and_CC the_DT amount_NN of_IN data_NNS a_DT node_NN receives_VBZ from_IN its_PRP$ parent_NN ._.
+For_IN this_DT topology_NN and_CC bandwidth_NN setting_NN ,_, Bullet_NNP was_VBD able_JJ to_TO achieve_VB an_DT average_JJ bandwidth_NN of_IN ###_CD Kbps_NNS ,_, fives_NNS times_NNS that_WDT achieved_VBN by_IN the_DT random_JJ tree_NN and_CC more_JJR than_IN 25_CD %_NN higher_JJR than_IN the_DT oine_NN bottleneck_NN bandwidth_NN algorithm_NN ._.
+Further_RB ,_, the_DT total_JJ bandwidth_NN -LRB-_-LRB- including_VBG redundant_JJ data_NNS -RRB-_-RRB- received_VBN by_IN each_DT node_NN is_VBZ only_RB slightly_RB higher_JJR than_IN the_DT useful_JJ content_NN ,_, meaning_VBG that_IN Bullet_NNP is_VBZ able_JJ to_TO achieve_VB high_JJ bandwidth_NN while_IN wasting_VBG little_JJ network_NN resources_NNS ._.
+Bullet_NN ''_'' s_NNS use_NN of_IN TFRC_NNP in_IN this_DT example_NN ensures_VBZ that_IN the_DT overlay_NN is_VBZ TCP_NNP friendly_JJ throughout_IN ._.
+The_DT average_JJ per-node_JJ control_NN overhead_NN is_VBZ approximately_RB ##_RB Kbps_NNPS ._.
+By_IN tracing_VBG certain_JJ packets_NNS as_IN they_PRP move_VBP through_IN the_DT system_NN ,_, we_PRP are_VBP able_JJ to_TO acquire_VB link_NN stress_NN estimates_NNS of_IN our_PRP$ system_NN ._.
+Though_IN the_DT link_NN stress_NN can_MD be_VB different_JJ for_IN each_DT packet_NN since_IN each_DT can_MD take_VB a_DT different_JJ path_NN through_IN the_DT overlay_NN mesh_NN ,_, we_PRP average_VBP link_NN stress_NN due_JJ to_TO each_DT traced_VBN packet_NN ._.
+For_IN this_DT experiment_NN ,_, Bullet_NNP has_VBZ an_DT average_JJ link_NN stress_NN of_IN approximately_RB #_# ._.
+#_# with_IN an_DT absolute_JJ maximum_NN link_NN stress_NN of_IN ##_NN ._.
+The_DT standard_JJ deviation_NN in_IN most_JJS of_IN our_PRP$ runs_NNS is_VBZ fairly_RB high_JJ because_IN of_IN the_DT limited_JJ bandwidth_NN randomly_RB assigned_VBN to_TO some_DT Client-Stub_NNP and_CC Stub-Stub_NNP links_NNS ._.
+We_PRP feel_VBP that_IN this_DT is_VBZ consistent_JJ with_IN real_JJ Internet_NN behavior_NN where_WRB clients_NNS have_VBP widely_RB varying_VBG network_NN connectivity_NN ._.
+A_DT time_NN slice_NN is_VBZ shown_VBN in_IN Figure_NNP #_# that_WDT plots_NNS the_DT CDF_NN of_IN instantaneous_JJ bandwidths_NNS that_WDT each_DT node_NN receives_VBZ ._.
+The_DT graph_NN shows_VBZ that_IN few_JJ client_NN nodes_NNS receive_VBP inadequate_JJ bandwidth_NN even_RB though_IN they_PRP are_VBP bandwidth_NN constrained_VBN ._.
+The_DT distribution_NN rises_VBZ sharply_RB starting_VBG at_IN approximately_RB ###_CD Kbps_NNS ._.
+The_DT vast_JJ majority_NN of_IN nodes_NNS receive_VBP a_DT stream_NN of_IN 500-600_CD Kbps_NNS ._.
+We_PRP have_VBP evaluated_VBN Bullet_NNP under_IN a_DT number_NN of_IN bandwidth_NN constraints_NNS to_TO determine_VB how_WRB Bullet_NNP performs_VBZ relative_JJ to_TO the_DT 0_CD 200_CD 400_CD 600_CD 800_CD 1000_CD 0_CD ##_CD ###_CD ###_CD ###_CD ###_CD ###_CD ###_CD ###_CD ###_CD ###_CD Bandwidth_NN -LRB-_-LRB- Kbps_NNS -RRB-_-RRB- Time_NNP -LRB-_-LRB- s_NNS -RRB-_-RRB- Raw_NN total_JJ Useful_JJ total_JJ From_IN parent_NN Figure_NN #_# :_: Achieved_VBN bandwidth_NN over_IN time_NN for_IN Bullet_NNP over_IN a_DT random_JJ tree_NN ._.
+0_CD 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 1_CD 0_CD ###_CD ###_CD ###_CD ###_CD ###_CD ###_CD ###_CD ###_CD Percentageofnodes_NNP Bandwidth_NNP -LRB-_-LRB- Kbps_NNP -RRB-_-RRB- Figure_NNP #_# :_: CDF_NN of_IN instantaneous_JJ achieved_VBN bandwidth_NN at_IN time_NN ###_CD seconds_NNS ._.
+available_JJ bandwidth_NN of_IN the_DT underlying_VBG topology_NN ._.
+Table_NNP #_# describes_VBZ representative_JJ bandwidth_NN settings_NNS for_IN our_PRP$ streaming_NN rate_NN of_IN ###_CD Kbps_NNS ._.
+The_DT intent_NN of_IN these_DT settings_NNS is_VBZ to_TO show_VB a_DT scenario_NN where_WRB more_JJR than_IN enough_JJ bandwidth_NN is_VBZ available_JJ to_TO achieve_VB a_DT target_NN rate_NN even_RB with_IN traditional_JJ tree_NN streaming_NN ,_, an_DT example_NN of_IN where_WRB it_PRP is_VBZ slightly_RB not_RB sufficient_JJ ,_, and_CC one_CD in_IN which_WDT the_DT available_JJ bandwidth_NN is_VBZ quite_RB restricted_JJ ._.
+Figure_NNP #_# shows_VBZ achieved_VBN bandwidths_NNS for_IN Bullet_NNP and_CC the_DT bottleneck_NN bandwidth_NN tree_NN over_IN time_NN generated_VBN from_IN topologies_NNS with_IN bandwidths_NNS in_IN each_DT range_NN ._.
+In_IN all_DT of_IN our_PRP$ experiments_NNS ,_, Bullet_NNP outperforms_VBZ the_DT bottleneck_NN bandwidth_NN tree_NN by_IN a_DT factor_NN of_IN up_RB to_TO ###_CD %_NN ,_, depending_VBG on_IN how_WRB much_JJ bandwidth_NN is_VBZ constrained_VBN in_IN the_DT underlying_VBG topology_NN ._.
+In_IN one_CD extreme_NN ,_, having_VBG more_JJR than_IN ample_JJ bandwidth_NN ,_, Bullet_NNP and_CC the_DT bottleneck_NN bandwidth_NN tree_NN are_VBP both_DT able_JJ to_TO stream_NN at_IN the_DT requested_VBN rate_NN -LRB-_-LRB- ###_CD Kbps_NNS in_IN our_PRP$ example_NN -RRB-_-RRB- ._.
+In_IN the_DT other_JJ extreme_JJ ,_, heavily_RB constrained_VBN topologies_NNS allow_VBP Bullet_NNP to_TO achieve_VB twice_RB the_DT bandwidth_NN achievable_JJ via_IN the_DT bottleneck_NN bandwidth_NN tree_NN ._.
+For_IN all_DT other_JJ topologies_NNS ,_, Bullet_NNP ''_'' s_VBZ benefits_NNS are_VBP somewhere_RB in_IN between_IN ._.
+In_IN our_PRP$ example_NN ,_, Bullet_NNP running_VBG over_IN our_PRP$ medium-constrained_JJ bandwidth_NN topology_NN is_VBZ able_JJ to_TO outperform_VB the_DT bottleneck_NN bandwidth_NN tree_NN by_IN a_DT factor_NN of_IN ##_CD %_NN ._.
+Further_RB ,_, we_PRP stress_VBP that_IN we_PRP believe_VBP it_PRP would_MD 291_CD 0_CD 200_CD 400_CD 600_CD 800_CD 1000_CD 0_CD ##_CD ###_CD ###_CD ###_CD ###_CD ###_CD ###_CD ###_CD Bandwidth_NN -LRB-_-LRB- Kbps_NNS -RRB-_-RRB- Time_NNP -LRB-_-LRB- s_NNS -RRB-_-RRB- Bullet_NNP -_: High_JJ Bandwidth_NN Bottleneck_NN tree_NN -_: High_JJ Bandwidth_NNP Bullet_NNP -_: Medium_NN Bandwidth_NN Bottleneck_NN tree_NN -_: Medium_NN Bandwidth_NNP Bullet_NNP -_: Low_JJ Bandwidth_NN Bottleneck_NN tree_NN -_: Low_JJ Bandwidth_NNP Figure_NNP #_# :_: Achieved_VBN bandwidth_NN for_IN Bullet_NNP and_CC bottleneck_NN tree_NN over_IN time_NN for_IN high_JJ ,_, medium_NN ,_, and_CC low_JJ bandwidth_NN topologies_NNS ._.
+be_VB extremely_RB difficult_JJ for_IN any_DT online_JJ tree-based_JJ algorithm_NN to_TO exceed_VB the_DT bandwidth_NN achievable_JJ by_IN our_PRP$ oine_NN bottleneck_NN algorithm_NN that_WDT makes_VBZ use_NN of_IN global_JJ topological_JJ information_NN ._.
+For_IN instance_NN ,_, we_PRP built_VBD a_DT simple_JJ bandwidth_NN optimizing_VBG overlay_NN tree_NN construction_NN based_VBN on_IN Overcast_JJ -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+The_DT resulting_VBG dynamically_RB constructed_VBN trees_NNS never_RB achieved_VBD more_JJR than_IN ##_CD %_NN of_IN the_DT bandwidth_NN of_IN our_PRP$ own_JJ oine_NN algorithm_NN ._.
+4_LS ._.
+#_# Creating_VBG Disjoint_NNP Data_NNP Bullet_NNP ''_'' s_VBZ ability_NN to_TO deliver_VB high_JJ bandwidth_NN levels_NNS to_TO nodes_NNS depends_VBZ on_IN its_PRP$ disjoint_NN transmission_NN strategy_NN ._.
+That_DT is_VBZ ,_, when_WRB bandwidth_NN to_TO a_DT child_NN is_VBZ limited_VBN ,_, Bullet_NNP attempts_VBZ to_TO send_VB the_DT correct_JJ portions_NNS of_IN data_NNS so_IN that_IN recovery_NN of_IN the_DT lost_VBN data_NNS is_VBZ facilitated_VBN ._.
+A_DT Bullet_NNP parent_NN sends_VBZ different_JJ data_NNS to_TO its_PRP$ children_NNS in_IN hopes_NNS that_IN each_DT data_NNS item_NN will_MD be_VB readily_RB available_JJ to_TO nodes_NNS spread_VBN throughout_IN its_PRP$ subtree_NN ._.
+It_PRP does_VBZ so_RB by_IN assigning_VBG ownership_NN of_IN data_NNS objects_NNS to_TO children_NNS in_IN a_DT manner_NN that_WDT makes_VBZ the_DT expected_JJ number_NN of_IN nodes_NNS holding_VBG a_DT particular_JJ data_NNS object_VBP equal_JJ for_IN all_DT data_NNS objects_NNS it_PRP transmits_VBZ ._.
+Figure_NNP ##_NN shows_VBZ the_DT resulting_VBG bandwidth_NN over_IN time_NN for_IN the_DT non-disjoint_JJ strategy_NN in_IN which_WDT a_DT node_NN -LRB-_-LRB- and_CC more_RBR importantly_RB ,_, the_DT root_NN of_IN the_DT tree_NN -RRB-_-RRB- attempts_VBZ to_TO send_VB all_DT data_NNS to_TO each_DT of_IN its_PRP$ children_NNS -LRB-_-LRB- subject_NN to_TO independent_JJ losses_NNS at_IN individual_JJ child_NN links_NNS -RRB-_-RRB- ._.
+Because_IN the_DT children_NNS transports_NNS throttle_VBP the_DT sending_VBG rate_NN at_IN each_DT parent_NN ,_, some_DT data_NNS is_VBZ inherently_RB sent_VBN disjointly_RB -LRB-_-LRB- by_IN chance_NN -RRB-_-RRB- ._.
+By_IN not_RB explicitly_RB choosing_VBG which_WDT data_NNS to_TO send_VB its_PRP$ child_NN ,_, this_DT approach_NN deprives_VBZ Bullet_NNP of_IN ##_CD %_NN of_IN its_PRP$ bandwidth_NN capability_NN ,_, when_WRB compared_VBN to_TO the_DT case_NN when_WRB our_PRP$ disjoint_NN strategy_NN is_VBZ enabled_VBN in_IN Figure_NNP #_# ._.
+4_LS ._.
+#_# Epidemic_JJ Approaches_NNS In_IN this_DT section_NN ,_, we_PRP explore_VBP how_WRB Bullet_NNP compares_VBZ to_TO data_NNS dissemination_NN approaches_VBZ that_IN use_VBP some_DT form_NN of_IN epidemic_JJ routing_VBG ._.
+We_PRP implemented_VBD a_DT form_NN of_IN gossiping_VBG ,_, where_WRB a_DT node_NN forwards_RB non-duplicate_JJ packets_NNS to_TO a_DT randomly_RB chosen_VBN number_NN of_IN nodes_NNS in_IN its_PRP$ local_JJ view_NN ._.
+This_DT technique_NN does_VBZ not_RB use_VB a_DT tree_NN for_IN dissemination_NN ,_, and_CC is_VBZ similar_JJ to_TO lpbcast_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- -LRB-_-LRB- recently_RB improved_VBN to_TO incorporate_VB retrieval_NN of_IN data_NNS objects_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- -RRB-_-RRB- ._.
+We_PRP do_VBP not_RB disseminate_VB packets_NNS every_DT T_NN seconds_NNS ;_: instead_RB we_PRP forward_RB them_PRP as_RB soon_RB as_IN they_PRP arrive_VBP ._.
+0_CD 200_CD 400_CD 600_CD 800_CD 1000_CD 0_CD ##_CD ###_CD ###_CD ###_CD ###_CD ###_CD ###_CD ###_CD ###_CD ###_CD Bandwidth_NN -LRB-_-LRB- Kbps_NNS -RRB-_-RRB- Time_NNP -LRB-_-LRB- s_NNS -RRB-_-RRB- Raw_NN total_JJ Useful_JJ total_JJ From_IN parent_NN Figure_NN ##_CD :_: Achieved_VBN bandwidth_NN over_IN time_NN using_VBG nondisjoint_JJ data_NNS transmission_NN ._.
+We_PRP also_RB implemented_VBD a_DT pbcast-like_JJ -LSB-_-LRB- #_# -RSB-_-RRB- approach_NN for_IN retrieving_VBG data_NNS missing_VBG from_IN a_DT data_NN distribution_NN tree_NN ._.
+The_DT idea_NN here_RB is_VBZ that_IN nodes_NNS are_VBP expected_VBN to_TO obtain_VB most_JJS of_IN their_PRP$ data_NNS from_IN their_PRP$ parent_NN ._.
+Nodes_NNS then_RB attempt_VBP to_TO retrieve_VB any_DT missing_VBG data_NNS items_NNS through_IN gossiping_VBG with_IN random_JJ peers_NNS ._.
+Instead_RB of_IN using_VBG gossiping_VBG with_IN a_DT fixed_JJ number_NN of_IN rounds_NNS for_IN each_DT packet_NN ,_, we_PRP use_VBP anti-entropy_JJ with_IN a_DT FIFO_NNP Bloom_NNP filter_NN to_TO attempt_VB to_TO locate_VB peers_NNS that_WDT hold_VBP any_DT locally_RB missing_VBG data_NNS items_NNS ._.
+To_TO make_VB our_PRP$ evaluation_NN conservative_JJ ,_, we_PRP assume_VBP that_IN nodes_NNS employing_VBG gossip_NN and_CC anti-entropy_JJ recovery_NN are_VBP able_JJ to_TO maintain_VB full_JJ group_NN membership_NN ._.
+While_IN this_DT might_MD be_VB difficult_JJ in_IN practice_NN ,_, we_PRP assume_VBP that_IN RanSub_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- could_MD also_RB be_VB applied_VBN to_TO these_DT ideas_NNS ,_, specifically_RB in_IN the_DT case_NN of_IN anti-entropy_JJ recovery_NN that_WDT employs_VBZ an_DT underlying_JJ tree_NN ._.
+Further_RB ,_, we_PRP also_RB allow_VBP both_DT techniques_NNS to_TO reuse_VB other_JJ aspects_NNS of_IN our_PRP$ implementation_NN :_: Bloom_NNP filters_NNS ,_, TFRC_NN transport_NN ,_, etc_FW ._.
+To_TO reduce_VB the_DT number_NN of_IN duplicate_VB packets_NNS ,_, we_PRP use_VBP less_JJR peers_NNS in_IN each_DT round_NN -LRB-_-LRB- #_# -RRB-_-RRB- than_IN Bullet_NN -LRB-_-LRB- ##_NN -RRB-_-RRB- ._.
+For_IN our_PRP$ configuration_NN ,_, we_PRP experimentally_RB found_VBD that_IN #_# peers_NNS results_VBZ in_IN the_DT best_JJS performance_NN with_IN the_DT lowest_JJS overhead_NN ._.
+In_IN our_PRP$ experiments_NNS ,_, increasing_VBG the_DT number_NN of_IN peers_NNS did_VBD not_RB improve_VB the_DT average_JJ bandwidth_NN achieved_VBD throughout_IN the_DT system_NN ._.
+To_TO allow_VB TFRC_NNP enough_JJ time_NN to_TO ramp_NN up_IN to_TO the_DT appropriate_JJ TCP-friendly_JJ sending_VBG rate_NN ,_, we_PRP set_VBD the_DT epoch_NN length_NN for_IN anti-entropy_JJ recovery_NN to_TO ##_CD seconds_NNS ._.
+For_IN these_DT experiments_NNS ,_, we_PRP use_VBP a_DT 5000-node_JJ INET_NNP topology_NN with_IN no_DT explicit_JJ physical_JJ link_NN losses_NNS ._.
+We_PRP set_VBD link_NN bandwidths_NNS according_VBG to_TO the_DT medium_NN range_NN from_IN Table_NNP #_# ,_, and_CC randomly_RB assign_VB ###_CD overlay_NN participants_NNS ._.
+The_DT randomly_RB chosen_VBN root_NN either_CC streams_NNS at_IN ###_CD Kbps_NNS -LRB-_-LRB- over_IN a_DT random_JJ tree_NN for_IN Bullet_NNP and_CC greedy_JJ bottleneck_NN tree_NN for_IN anti-entropy_JJ recovery_NN -RRB-_-RRB- ,_, or_CC sends_VBZ packets_NNS at_IN that_DT rate_NN to_TO randomly_RB chosen_VBN nodes_NNS for_IN gossiping_VBG ._.
+Figure_NNP ##_NN shows_VBZ the_DT resulting_VBG bandwidth_NN over_IN time_NN achieved_VBN by_IN Bullet_NNP and_CC the_DT two_CD epidemic_JJ approaches_NNS ._.
+As_IN expected_VBN ,_, Bullet_NN comes_VBZ close_RB to_TO providing_VBG the_DT target_NN bandwidth_NN to_TO all_DT participants_NNS ,_, achieving_VBG approximately_RB ##_RB percent_NN more_RBR then_RB gossiping_VBG and_CC streaming_NN with_IN anti-entropy_JJ ._.
+The_DT two_CD epidemic_JJ techniques_NNS send_VBP an_DT excessive_JJ number_NN of_IN duplicates_NNS ,_, effectively_RB reducing_VBG the_DT useful_JJ bandwidth_NN provided_VBN to_TO each_DT node_NN ._.
+More_RBR importantly_RB ,_, both_DT approaches_NNS assign_VBP equal_JJ significance_NN to_TO other_JJ peers_NNS ,_, regardless_RB of_IN the_DT available_JJ band292_NN 0_CD 500_CD 1000_CD 1500_CD 2000_CD 0_CD ##_CD ###_CD ###_CD ###_CD ###_CD ###_CD Bandwidth_NN -LRB-_-LRB- Kbps_NNS -RRB-_-RRB- Time_NNP -LRB-_-LRB- s_NNS -RRB-_-RRB- Push_VBP gossiping_VBG raw_JJ Streaming_NN w_NN /_: AE_NNP raw_JJ Bullet_NNP raw_JJ Bullet_NN useful_JJ Push_NN gossiping_VBG useful_JJ Streaming_VBG w_NN /_: AE_NN useful_JJ Figure_NN ##_NN :_: Achieved_VBN bandwidth_NN over_IN time_NN for_IN Bullet_NNP and_CC epidemic_JJ approaches_NNS ._.
+width_NN and_CC the_DT similarity_NN ratio_NN ._.
+Bullet_NN ,_, on_IN the_DT other_JJ hand_NN ,_, establishes_VBZ long-term_JJ connections_NNS with_IN peers_NNS that_WDT provide_VBP good_JJ bandwidth_NN and_CC disjoint_NN content_NN ,_, and_CC avoids_VBZ most_JJS of_IN the_DT duplicates_NNS by_IN requesting_VBG disjoint_NN data_NNS from_IN each_DT node_NN ''_'' s_NNS peers_NNS ._.
+4_LS ._.
+#_# Bullet_NNP on_IN a_DT Lossy_NNP Network_NNP To_TO evaluate_VB Bullet_NNP ''_'' s_VBZ performance_NN under_IN more_RBR lossy_JJ network_NN conditions_NNS ,_, we_PRP have_VBP modified_VBN our_PRP$ ##_CD ,_, 000-node_JJ topologies_NNS used_VBN in_IN our_PRP$ previous_JJ experiments_NNS to_TO include_VB random_JJ packet_NN losses_NNS ._.
+ModelNet_NNP allows_VBZ the_DT specification_NN of_IN a_DT packet_NN loss_NN rate_NN in_IN the_DT description_NN of_IN a_DT network_NN link_NN ._.
+Our_PRP$ goal_NN by_IN modifying_VBG these_DT loss_NN rates_NNS is_VBZ to_TO simulate_VB queuing_VBG behavior_NN when_WRB the_DT network_NN is_VBZ under_IN load_NN due_JJ to_TO background_NN network_NN traffic_NN ._.
+To_TO effect_VB this_DT behavior_NN ,_, we_PRP first_RB modify_VB all_DT non-transit_JJ links_NNS in_IN each_DT topology_NN to_TO have_VB a_DT packet_NN loss_NN rate_NN chosen_VBN uniformly_RB random_JJ from_IN -LSB-_-LRB- #_# ,_, #_# ._.
+###_NN -RSB-_-RRB- resulting_VBG in_IN a_DT maximum_JJ loss_NN rate_NN of_IN 0_CD ._.
+#_# %_NN ._.
+Transit_NNP links_NNS are_VBP likewise_RB modified_VBN ,_, but_CC with_IN a_DT maximum_JJ loss_NN rate_NN of_IN #_# ._.
+#_# %_NN ._.
+Similar_JJ to_TO the_DT approach_NN in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ,_, we_PRP randomly_RB designated_VBN #_# %_NN of_IN the_DT links_NNS in_IN the_DT topologies_NNS as_IN overloaded_JJ and_CC set_VB their_PRP$ loss_NN rates_NNS uniformly_RB random_JJ from_IN -LSB-_-LRB- #_# ._.
+##_NN ,_, #_# ._.
+#_# -RSB-_-RRB- resulting_VBG in_IN a_DT maximum_NN packet_NN loss_NN rate_NN of_IN ##_CD %_NN ._.
+Figure_NNP ##_NN shows_VBZ achieved_VBN bandwidths_NNS for_IN streaming_NN over_IN Bullet_NNP and_CC using_VBG our_PRP$ greedy_JJ oine_NN bottleneck_NN bandwidth_NN tree_NN ._.
+Because_IN losses_NNS adversely_RB affect_VBP the_DT bandwidth_NN achievable_JJ over_IN TCP-friendly_JJ transport_NN and_CC since_IN bandwidths_NNS are_VBP strictly_RB monotonically_RB decreasing_VBG over_IN a_DT streaming_NN tree_NN ,_, treebased_JJ algorithms_NNS perform_VBP considerably_RB worse_JJR than_IN Bullet_NNP when_WRB used_VBN on_IN a_DT lossy_JJ network_NN ._.
+In_IN all_DT cases_NNS ,_, Bullet_NNP delivers_VBZ at_IN least_JJS twice_RB as_RB much_JJ bandwidth_NN than_IN the_DT bottleneck_NN bandwidth_NN tree_NN ._.
+Additionally_RB ,_, losses_NNS in_IN the_DT low_JJ bandwidth_NN topology_NN essentially_RB keep_VB the_DT bottleneck_NN bandwidth_NN tree_NN from_IN delivering_VBG any_DT data_NNS ,_, an_DT artifact_NN that_WDT is_VBZ avoided_VBN by_IN Bullet_NNP ._.
+4_LS ._.
+#_# Performance_NNP Under_IN Failure_NN In_IN this_DT section_NN ,_, we_PRP discuss_VBP Bullet_NNP ''_'' s_VBZ behavior_NN in_IN the_DT face_NN of_IN node_NN failure_NN ._.
+In_IN contrast_NN to_TO streaming_NN distribution_NN trees_NNS that_WDT must_MD quickly_RB detect_VB and_CC make_VB tree_NN transformations_NNS to_TO overcome_VB failure_NN ,_, Bullet_NNP ''_'' s_VBZ failure_NN resilience_NN rests_VBZ on_IN its_PRP$ ability_NN to_TO maintain_VB a_DT higher_JJR level_NN of_IN achieved_VBN bandwidth_NN by_IN virtue_NN of_IN perpendicular_JJ -LRB-_-LRB- peer_VBP -RRB-_-RRB- streaming_NN ._.
+While_IN all_DT nodes_NNS under_IN a_DT failed_VBN node_NN in_IN a_DT distribution_NN tree_NN will_MD experience_VB a_DT temporary_JJ 0_CD 200_CD 400_CD 600_CD 800_CD 1000_CD 0_CD ##_CD ###_CD ###_CD ###_CD ###_CD ###_CD ###_CD ###_CD Bandwidth_NN -LRB-_-LRB- Kbps_NNS -RRB-_-RRB- Time_NNP -LRB-_-LRB- s_NNS -RRB-_-RRB- Bullet_NNP -_: High_JJ Bandwidth_NNP Bullet_NNP -_: Medium_NN Bandwidth_NN Bottleneck_NN tree_NN -_: High_JJ Bandwidth_NN Bottleneck_NN tree_NN -_: Medium_NN Bandwidth_NNP Bullet_NNP -_: Low_JJ Bandwidth_NN Bottleneck_NN tree_NN -_: Low_JJ Bandwidth_NNP Figure_NNP ##_NNP :_: Achieved_VBN bandwidths_NNS for_IN Bullet_NNP and_CC bottleneck_NN bandwidth_NN tree_NN over_IN a_DT lossy_JJ network_NN topology_NN ._.
+disruption_NN in_IN service_NN ,_, Bullet_NNP nodes_NNS are_VBP able_JJ compensate_VB for_IN this_DT by_IN receiving_VBG data_NNS from_IN peers_NNS throughout_IN the_DT outage_NN ._.
+Because_IN Bullet_NNP ,_, and_CC ,_, more_RBR importantly_RB ,_, RanSub_NNP makes_VBZ use_NN of_IN an_DT underlying_VBG tree_NN overlay_NN ,_, part_NN of_IN Bullet_NNP ''_'' s_VBZ failure_NN recovery_NN properties_NNS will_MD depend_VB on_IN the_DT failure_NN recovery_NN behavior_NN of_IN the_DT underlying_VBG tree_NN ._.
+For_IN the_DT purposes_NNS of_IN this_DT discussion_NN ,_, we_PRP simply_RB assume_VB the_DT worst-case_JJ scenario_NN where_WRB an_DT underlying_VBG tree_NN has_VBZ no_DT failure_NN recovery_NN ._.
+In_IN our_PRP$ failure_NN experiments_NNS ,_, we_PRP fail_VBP one_CD of_IN root_NN ''_'' s_NNS children_NNS -LRB-_-LRB- with_IN ###_CD of_IN the_DT total_JJ 1000_CD nodes_NNS as_IN descendants_NNS -RRB-_-RRB- ###_CD seconds_NNS after_IN data_NNS streaming_NN is_VBZ started_VBN ._.
+By_IN failing_VBG one_CD of_IN root_NN ''_'' s_NNS children_NNS ,_, we_PRP are_VBP able_JJ to_TO show_VB Bullet_NNP ''_'' s_VBZ worst-case_JJ performance_NN under_IN a_DT single_JJ node_NN failure_NN ._.
+In_IN our_PRP$ first_JJ scenario_NN ,_, we_PRP disable_VBP failure_NN detection_NN in_IN RanSub_NNP so_IN that_IN after_IN a_DT failure_NN occurs_VBZ ,_, Bullet_NNP nodes_NNS request_VBP data_NNS only_RB from_IN their_PRP$ current_JJ peers_NNS ._.
+That_DT is_VBZ ,_, at_IN this_DT point_NN ,_, RanSub_NN stops_VBZ functioning_VBG and_CC no_DT new_JJ peer_VBP relationships_NNS are_VBP created_VBN for_IN the_DT remainder_NN of_IN the_DT run_NN ._.
+Figure_NNP ##_NN shows_VBZ Bullet_NNP ''_'' s_VBZ achieved_VBN bandwidth_NN over_IN time_NN for_IN this_DT case_NN ._.
+While_IN the_DT average_JJ achieved_VBN rate_NN drops_NNS from_IN ###_CD Kbps_NNS to_TO ###_CD Kbps_NNS ,_, most_JJS nodes_NNS -LRB-_-LRB- including_VBG the_DT descendants_NNS of_IN the_DT failed_VBN root_NN child_NN -RRB-_-RRB- are_VBP able_JJ to_TO recover_VB a_DT large_JJ portion_NN of_IN the_DT data_NNS rate_NN ._.
+Next_RB ,_, we_PRP enable_VBP RanSub_NNP failure_NN detection_NN that_WDT recognizes_VBZ a_DT node_NN ''_'' s_NNS failure_NN when_WRB a_DT RanSub_NNP epoch_NN has_VBZ lasted_VBN longer_JJR than_IN the_DT predetermined_JJ maximum_NN -LRB-_-LRB- #_# seconds_NNS for_IN this_DT test_NN -RRB-_-RRB- ._.
+In_IN this_DT case_NN ,_, the_DT root_NN simply_RB initiates_VBZ the_DT next_JJ distribute_VB phase_NN upon_IN RanSub_NNP timeout_NN ._.
+The_DT net_JJ result_NN is_VBZ that_IN nodes_NNS that_WDT are_VBP not_RB descendants_NNS of_IN the_DT failed_VBN node_NN will_MD continue_VB to_TO receive_VB updated_VBN random_JJ subsets_NNS allowing_VBG them_PRP to_TO peer_VB with_IN appropriate_JJ nodes_NNS reflecting_VBG the_DT new_JJ network_NN conditions_NNS ._.
+As_IN shown_VBN in_IN Figure_NNP ##_NNP ,_, the_DT failure_NN causes_VBZ a_DT negligible_JJ disruption_NN in_IN performance_NN ._.
+With_IN RanSub_NN failure_NN detection_NN enabled_VBD ,_, nodes_NNS quickly_RB learn_VBP of_IN other_JJ nodes_NNS from_IN which_WDT to_TO receive_VB data_NNS ._.
+Once_RB such_JJ recovery_NN completes_VBZ ,_, the_DT descendants_NNS of_IN the_DT failed_VBN node_NN use_VBP their_PRP$ already_RB established_VBN peer_VBP relationships_NNS to_TO compensate_VB for_IN their_PRP$ ancestor_NN ''_'' s_NNS failure_NN ._.
+Hence_RB ,_, because_IN Bullet_NNP is_VBZ an_DT overlay_NN mesh_NN ,_, its_PRP$ reliability_NN characteristics_NNS far_RB exceed_VBP that_DT of_IN typical_JJ overlay_NN distribution_NN trees_NNS ._.
+4_LS ._.
+#_# PlanetLab_NNP This_DT section_NN contains_VBZ results_NNS from_IN the_DT deployment_NN of_IN Bullet_NN over_IN the_DT PlanetLab_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- wide-area_JJ network_NN testbed_VBN ._.
+For_IN 293_CD 0_CD 200_CD 400_CD 600_CD 800_CD 1000_CD 0_CD ##_CD ###_CD ###_CD ###_CD ###_CD ###_CD ###_CD ###_CD Bandwidth_NN -LRB-_-LRB- Kbps_NNS -RRB-_-RRB- Time_NNP -LRB-_-LRB- s_NNS -RRB-_-RRB- Bandwidth_NN received_VBD Useful_JJ total_JJ From_IN parent_NN Figure_NN ##_CD :_: Bandwidth_NN over_IN time_NN with_IN a_DT worst-case_JJ node_NN failure_NN and_CC no_DT RanSub_NN recovery_NN ._.
+0_CD 200_CD 400_CD 600_CD 800_CD 1000_CD 0_CD ##_CD ###_CD ###_CD ###_CD ###_CD ###_CD ###_CD ###_CD Bandwidth_NN -LRB-_-LRB- Kbps_NNS -RRB-_-RRB- Time_NNP -LRB-_-LRB- s_NNS -RRB-_-RRB- Bandwidth_NN received_VBD Useful_JJ total_JJ From_IN parent_NN Figure_NN ##_CD :_: Bandwidth_NN over_IN time_NN with_IN a_DT worst-case_JJ node_NN failure_NN and_CC RanSub_NN recovery_NN enabled_VBD ._.
+our_PRP$ first_JJ experiment_NN ,_, we_PRP chose_VBD ##_CD nodes_NNS for_IN our_PRP$ deployment_NN ,_, with_IN no_DT two_CD machines_NNS being_VBG deployed_VBN at_IN the_DT same_JJ site_NN ._.
+Since_IN there_EX is_VBZ currently_RB ample_JJ bandwidth_NN available_JJ throughout_IN the_DT PlanetLab_NNP overlay_NN -LRB-_-LRB- a_DT characteristic_JJ not_RB necessarily_RB representative_JJ of_IN the_DT Internet_NN at_IN large_JJ -RRB-_-RRB- ,_, we_PRP designed_VBD this_DT experiment_NN to_TO show_VB that_IN Bullet_NNP can_MD achieve_VB higher_JJR bandwidth_NN than_IN an_DT overlay_NN tree_NN when_WRB the_DT source_NN is_VBZ constrained_VBN ,_, for_IN instance_NN in_IN cases_NNS of_IN congestion_NN on_IN its_PRP$ outbound_JJ access_NN link_NN ,_, or_CC of_IN overload_NN by_IN a_DT flash-crowd_NN ._.
+We_PRP did_VBD this_DT by_IN choosing_VBG a_DT root_NN in_IN Europe_NNP connected_VBN to_TO PlanetLab_NNP with_IN fairly_RB low_JJ bandwidth_NN ._.
+The_DT node_NN we_PRP selected_VBD was_VBD in_IN Italy_NNP -LRB-_-LRB- cs_NNS ._.
+unibo_NN ._.
+it_PRP -RRB-_-RRB- and_CC we_PRP had_VBD ##_CD other_JJ overlay_NN nodes_NNS in_IN Europe_NNP ._.
+Without_IN global_JJ knowledge_NN of_IN the_DT topology_NN in_IN PlanetLab_NNP -LRB-_-LRB- and_CC the_DT Internet_NN -RRB-_-RRB- ,_, we_PRP are_VBP ,_, of_IN course_NN ,_, unable_JJ to_TO produce_VB our_PRP$ greedy_JJ bottleneck_NN bandwidth_NN tree_NN for_IN comparison_NN ._.
+We_PRP ran_VBD Bullet_NNP over_IN a_DT random_JJ overlay_NN tree_NN for_IN ###_CD seconds_NNS while_IN attempting_VBG to_TO stream_NN at_IN a_DT rate_NN of_IN #_# ._.
+#_# Mbps_NNPS ._.
+We_PRP waited_VBD ##_NN seconds_NNS before_IN starting_VBG to_TO stream_NN data_NNS to_TO allow_VB nodes_NNS to_TO successfully_RB join_VB the_DT tree_NN ._.
+We_PRP compare_VBP the_DT performance_NN of_IN Bullet_NNP to_TO data_NNS streaming_NN over_IN multiple_JJ handcrafted_JJ trees_NNS ._.
+Figure_NNP ##_NN shows_VBZ our_PRP$ results_NNS for_IN two_CD such_JJ trees_NNS ._.
+The_DT good_JJ tree_NN has_VBZ all_DT nodes_NNS in_IN Europe_NNP located_JJ high_RB in_IN the_DT tree_NN ,_, close_RB to_TO the_DT root_NN ._.
+We_PRP used_VBD pathload_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- to_TO measure_VB the_DT 0_CD 200_CD 400_CD 600_CD 800_CD 1000_CD 1200_CD 0_CD ##_CD ###_CD ###_CD ###_CD ###_CD Bandwidth_NN -LRB-_-LRB- Kbps_NNS -RRB-_-RRB- Time_NNP -LRB-_-LRB- s_NNS -RRB-_-RRB- Bullet_NNP Good_NNP Tree_NNP Worst_JJS Tree_NN Figure_NN ##_CD :_: Achieved_VBN bandwidth_NN over_IN time_NN for_IN Bullet_NNP and_CC TFRC_NNP streaming_NN over_IN different_JJ trees_NNS on_IN PlanetLab_NN with_IN a_DT root_NN in_IN Europe_NNP ._.
+available_JJ bandwidth_NN between_IN the_DT root_NN and_CC all_DT other_JJ nodes_NNS ._.
+Nodes_NNS with_IN high_JJ bandwidth_NN measurements_NNS were_VBD placed_VBN close_RB to_TO the_DT root_NN ._.
+In_IN this_DT case_NN ,_, we_PRP are_VBP able_JJ to_TO achieve_VB a_DT bandwidth_NN of_IN approximately_RB ###_CD Kbps_NNS ._.
+The_DT worst_JJS tree_NN was_VBD created_VBN by_IN setting_VBG the_DT root_NN ''_'' s_NNS children_NNS to_TO be_VB the_DT three_CD nodes_NNS with_IN the_DT worst_JJS bandwidth_NN characteristics_NNS from_IN the_DT root_NN as_IN measured_VBN by_IN pathload_NN ._.
+All_DT subsequent_JJ levels_NNS in_IN the_DT tree_NN were_VBD set_VBN in_IN this_DT fashion_NN ._.
+For_IN comparison_NN ,_, we_PRP replaced_VBD all_DT nodes_NNS in_IN Europe_NNP from_IN our_PRP$ topology_NN with_IN nodes_NNS in_IN the_DT US_NNP ,_, creating_VBG a_DT topology_NN that_WDT only_RB included_VBD US_NNP nodes_NNS with_IN high_JJ bandwidth_NN characteristics_NNS ._.
+As_IN expected_VBN ,_, Bullet_NNP was_VBD able_JJ to_TO achieve_VB the_DT full_JJ #_# ._.
+#_# Mbps_NNPS rate_NN in_IN this_DT case_NN ._.
+A_DT well_RB constructed_VBN tree_NN over_IN this_DT highbandwidth_JJ topology_NN yielded_VBD slightly_RB lower_JJR than_IN #_# ._.
+#_# Mbps_NNPS ,_, verifying_VBG that_IN our_PRP$ approach_NN does_VBZ not_RB sacrifice_VB performance_NN under_IN high_JJ bandwidth_NN conditions_NNS and_CC improves_VBZ performance_NN under_IN constrained_VBN bandwidth_NN scenarios_NNS ._.
+5_CD ._.
+RELATED_JJ WORK_VBP Snoeren_NNP et_FW al_FW ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- use_VBP an_DT overlay_NN mesh_NN to_TO achieve_VB reliable_JJ and_CC timely_JJ delivery_NN of_IN mission-critical_JJ data_NNS ._.
+In_IN this_DT system_NN ,_, every_DT node_NN chooses_VBZ n_NN parents_NNS from_IN which_WDT to_TO receive_VB duplicate_VB packet_NN streams_NNS ._.
+Since_IN its_PRP$ foremost_JJ emphasis_NN is_VBZ reliability_NN ,_, the_DT system_NN does_VBZ not_RB attempt_VB to_TO improve_VB the_DT bandwidth_NN delivered_VBN to_TO the_DT overlay_NN participants_NNS by_IN sending_VBG disjoint_NN data_NNS at_IN each_DT level_NN ._.
+Further_RB ,_, during_IN recovery_NN from_IN parent_NN failure_NN ,_, it_PRP limits_VBZ an_DT overlay_NN router_NN ''_'' s_NNS choice_NN of_IN parents_NNS to_TO nodes_NNS with_IN a_DT level_NN number_NN that_WDT is_VBZ less_JJR than_IN its_PRP$ own_JJ level_NN number_NN ._.
+The_DT power_NN of_IN perpendicular_JJ downloads_NNS is_VBZ perhaps_RB best_RB illustrated_VBN by_IN Kazaa_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, the_DT popular_JJ peer-to-peer_NN file_NN swapping_VBG network_NN ._.
+Kazaa_NNP nodes_NNS are_VBP organized_VBN into_IN a_DT scalable_JJ ,_, hierarchical_JJ structure_NN ._.
+Individual_JJ users_NNS search_VB for_IN desired_VBN content_NN in_IN the_DT structure_NN and_CC proceed_VB to_TO simultaneously_RB download_VB potentially_RB disjoint_JJ pieces_NNS from_IN nodes_NNS that_WDT already_RB have_VBP it_PRP ._.
+Since_IN Kazaa_NNP does_VBZ not_RB address_VB the_DT multicast_JJ communication_NN model_NN ,_, a_DT large_JJ fraction_NN of_IN users_NNS downloading_VBG the_DT same_JJ file_NN would_MD consume_VB more_RBR bandwidth_NN than_IN nodes_NNS organized_VBN into_IN the_DT Bullet_NNP overlay_NN structure_NN ._.
+Kazaa_NNP does_VBZ not_RB use_VB erasure_NN coding_NN ;_: therefore_RB it_PRP may_MD take_VB considerable_JJ time_NN to_TO locate_VB the_DT last_JJ few_JJ bytes_NNS ._.
+294_CD BitTorrent_NNP -LSB-_-LRB- #_# -RSB-_-RRB- is_VBZ another_DT example_NN of_IN a_DT file_NN distribution_NN system_NN currently_RB deployed_VBN on_IN the_DT Internet_NN ._.
+It_PRP utilizes_VBZ trackers_NNS that_WDT direct_VBP downloaders_NNS to_TO random_JJ subsets_NNS of_IN machines_NNS that_WDT already_RB have_VBP portions_NNS of_IN the_DT file_NN ._.
+The_DT tracker_NN poses_VBZ a_DT scalability_NN limit_NN ,_, as_IN it_PRP continuously_RB updates_NNS the_DT systemwide_JJ distribution_NN of_IN the_DT file_NN ._.
+Lowering_VBG the_DT tracker_NN communication_NN rate_NN could_MD hurt_VB the_DT overall_JJ system_NN performance_NN ,_, as_IN information_NN might_MD be_VB out_IN of_IN date_NN ._.
+Further_RB ,_, BitTorrent_NNP does_VBZ not_RB employ_VB any_DT strategy_NN to_TO disseminate_VB data_NNS to_TO different_JJ regions_NNS of_IN the_DT network_NN ,_, potentially_RB making_VBG it_PRP more_RBR difficult_JJ to_TO recover_VB data_NNS depending_VBG on_IN client_NN access_NN patterns_NNS ._.
+Similar_JJ to_TO Bullet_NNP ,_, BitTorrent_NNP incorporates_VBZ the_DT notion_NN of_IN choking_VBG at_IN each_DT node_NN with_IN the_DT goal_NN of_IN identifying_VBG receivers_NNS that_WDT benefit_VBP the_DT most_RBS by_IN downloading_VBG from_IN that_DT particular_JJ source_NN ._.
+FastReplica_NN -LSB-_-LRB- ##_NN -RSB-_-RRB- addresses_VBZ the_DT problem_NN of_IN reliable_JJ and_CC efficient_JJ file_NN distribution_NN in_IN content_JJ distribution_NN networks_NNS -LRB-_-LRB- CDNs_NNS -RRB-_-RRB- ._.
+In_IN the_DT basic_JJ algorithm_NN ,_, nodes_NNS are_VBP organized_VBN into_IN groups_NNS of_IN fixed_VBN size_NN -LRB-_-LRB- n_NN -RRB-_-RRB- ,_, with_IN full_JJ group_NN membership_NN information_NN at_IN each_DT node_NN ._.
+To_TO distribute_VB the_DT file_NN ,_, a_DT node_NN splits_VBZ it_PRP into_IN n_NN equal-sized_JJ portions_NNS ,_, sends_VBZ the_DT portions_NNS to_TO other_JJ group_NN members_NNS ,_, and_CC instructs_VBZ them_PRP to_TO download_VB the_DT missing_VBG pieces_NNS in_IN parallel_NN from_IN other_JJ group_NN members_NNS ._.
+Since_IN only_RB a_DT fixed_VBN portion_NN of_IN the_DT file_NN is_VBZ transmitted_VBN along_IN each_DT of_IN the_DT overlay_NN links_NNS ,_, the_DT impact_NN of_IN congestion_NN is_VBZ smaller_JJR than_IN in_IN the_DT case_NN of_IN tree_NN distribution_NN ._.
+However_RB ,_, since_IN it_PRP treats_VBZ all_DT paths_NNS equally_RB ,_, FastReplica_NN does_VBZ not_RB take_VB full_JJ advantage_NN of_IN highbandwidth_JJ overlay_NN links_NNS in_IN the_DT system_NN ._.
+Since_IN it_PRP requires_VBZ file_NN store-and-forward_JJ logic_NN at_IN each_DT level_NN of_IN the_DT hierarchy_NN necessary_JJ for_IN scaling_VBG the_DT system_NN ,_, it_PRP may_MD not_RB be_VB applicable_JJ to_TO high-bandwidth_JJ streaming_NN ._.
+There_EX are_VBP numerous_JJ protocols_NNS that_WDT aim_VBP to_TO add_VB reliability_NN to_TO IP_NNP multicast_NNP ._.
+In_IN Scalable_JJ Reliable_JJ Multicast_NN -LRB-_-LRB- SRM_NN -RRB-_-RRB- -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, nodes_NNS multicast_JJ retransmission_NN requests_NNS for_IN missed_VBN packets_NNS ._.
+Two_CD techniques_NNS attempt_NN to_TO improve_VB the_DT scalability_NN of_IN this_DT approach_NN :_: probabilistic_JJ choice_NN of_IN retransmission_NN timeouts_NNS ,_, and_CC organization_NN of_IN receivers_NNS into_IN hierarchical_JJ local_JJ recovery_NN groups_NNS ._.
+However_RB ,_, it_PRP is_VBZ difficult_JJ to_TO find_VB appropriate_JJ timer_NN values_NNS and_CC local_JJ scoping_VBG settings_NNS -LRB-_-LRB- via_IN the_DT TTL_NNP field_NN -RRB-_-RRB- for_IN a_DT wide_JJ range_NN of_IN topologies_NNS ,_, number_NN of_IN receivers_NNS ,_, etc_FW ._.
+even_RB when_WRB adaptive_JJ techniques_NNS are_VBP used_VBN ._.
+One_CD recent_JJ study_NN -LSB-_-LRB- #_# -RSB-_-RRB- shows_VBZ that_IN SRM_NNP may_MD have_VB significant_JJ overhead_NN due_JJ to_TO retransmission_NN requests_NNS ._.
+Bullet_NN is_VBZ closely_RB related_JJ to_TO efforts_NNS that_WDT use_VBP epidemic_JJ data_NNS propagation_NN techniques_NNS to_TO recover_VB from_IN losses_NNS in_IN the_DT nonreliable_JJ IP-multicast_NN tree_NN ._.
+In_IN pbcast_NN -LSB-_-LRB- #_# -RSB-_-RRB- ,_, a_DT node_NN has_VBZ global_JJ group_NN membership_NN ,_, and_CC periodically_RB chooses_VBZ a_DT random_JJ subset_NN of_IN peers_NNS to_TO send_VB a_DT digest_VB of_IN its_PRP$ received_VBN packets_NNS ._.
+A_DT node_NN that_WDT receives_VBZ the_DT digest_VB responds_VBZ to_TO the_DT sender_NN with_IN the_DT missing_VBG packets_NNS in_IN a_DT last-in_NN ,_, first-out_JJ fashion_NN ._.
+Lbpcast_JJ -LSB-_-LRB- ##_CD -RSB-_-RRB- addresses_NNS pbcast_VBP ''_'' s_VBZ scalability_NN issues_NNS -LRB-_-LRB- associated_VBN with_IN global_JJ knowledge_NN -RRB-_-RRB- by_IN constructing_VBG ,_, in_IN a_DT decentralized_JJ fashion_NN ,_, a_DT partial_JJ group_NN membership_NN view_NN at_IN each_DT node_NN ._.
+The_DT average_JJ size_NN of_IN the_DT views_NNS is_VBZ engineered_VBN to_TO allow_VB a_DT message_NN to_TO reach_VB all_DT participants_NNS with_IN high_JJ probability_NN ._.
+Since_IN lbpcast_NN does_VBZ not_RB require_VB an_DT underlying_JJ tree_NN for_IN data_NNS distribution_NN and_CC relies_VBZ on_IN the_DT push-gossiping_JJ model_NN ,_, its_PRP$ network_NN overhead_NN can_MD be_VB quite_RB high_JJ ._.
+Compared_VBN to_TO the_DT reliable_JJ multicast_JJ efforts_NNS ,_, Bullet_NNP behaves_VBZ favorably_RB in_IN terms_NNS of_IN the_DT network_NN overhead_NN because_IN nodes_NNS do_VBP not_RB blindly_RB request_NN retransmissions_NNS from_IN their_PRP$ peers_NNS ._.
+Instead_RB ,_, Bullet_NNP uses_VBZ the_DT summary_NN views_VBZ it_PRP obtains_VBZ through_IN RanSub_NNP to_TO guide_VB its_PRP$ actions_NNS toward_IN nodes_NNS with_IN disjoint_NN content_NN ._.
+Further_RB ,_, a_DT Bullet_NNP node_NN splits_VBZ the_DT retransmission_NN load_NN between_IN all_DT of_IN its_PRP$ peers_NNS ._.
+We_PRP note_VBP that_IN pbcast_NN nodes_NNS contain_VBP a_DT mechanism_NN to_TO rate-limit_JJ retransmitted_VBN packets_NNS and_CC to_TO send_VB different_JJ packets_NNS in_IN response_NN to_TO the_DT same_JJ digest_VB ._.
+However_RB ,_, this_DT does_VBZ not_RB guarantee_VB that_IN packets_NNS received_VBN in_IN parallel_NN from_IN multiple_JJ peers_NNS will_MD not_RB be_VB duplicates_NNS ._.
+More_RBR importantly_RB ,_, the_DT multicast_JJ recovery_NN methods_NNS are_VBP limited_VBN by_IN the_DT bandwidth_NN through_IN the_DT tree_NN ,_, while_IN Bullet_NNP strives_VBZ to_TO provide_VB more_JJR bandwidth_NN to_TO all_DT receivers_NNS by_IN making_VBG data_NNS deliberately_RB disjoint_VB throughout_IN the_DT tree_NN ._.
+Narada_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- builds_VBZ a_DT delay-optimized_JJ mesh_NN interconnecting_VBG all_DT participating_VBG nodes_NNS and_CC actively_RB measures_VBZ the_DT available_JJ bandwidth_NN on_IN overlay_NN links_NNS ._.
+It_PRP then_RB runs_VBZ a_DT standard_JJ routing_VBG protocol_NN on_IN top_NN of_IN the_DT overlay_NN mesh_NN to_TO construct_VB forwarding_NN trees_NNS using_VBG each_DT node_NN as_IN a_DT possible_JJ source_NN ._.
+Narada_NNP nodes_NNS maintain_VBP global_JJ knowledge_NN about_IN all_DT group_NN participants_NNS ,_, limiting_VBG system_NN scalability_NN to_TO several_JJ tens_NNS of_IN nodes_NNS ._.
+Further_RB ,_, the_DT bandwidth_NN available_JJ through_IN a_DT Narada_NNP tree_NN is_VBZ still_RB limited_VBN to_TO the_DT bandwidth_NN available_JJ from_IN each_DT parent_NN ._.
+On_IN the_DT other_JJ hand_NN ,_, the_DT fundamental_JJ goal_NN of_IN Bullet_NNP is_VBZ to_TO increase_VB bandwidth_NN through_IN download_NN of_IN disjoint_NN data_NNS from_IN multiple_JJ peers_NNS ._.
+Overcast_JJ -LSB-_-LRB- ##_CD -RSB-_-RRB- is_VBZ an_DT example_NN of_IN a_DT bandwidth-efficient_JJ overlay_NN tree_NN construction_NN algorithm_NN ._.
+In_IN this_DT system_NN ,_, all_DT nodes_NNS join_VB at_IN the_DT root_NN and_CC migrate_VB down_RP to_TO the_DT point_NN in_IN the_DT tree_NN where_WRB they_PRP are_VBP still_RB able_JJ to_TO maintain_VB some_DT minimum_JJ level_NN of_IN bandwidth_NN ._.
+Bullet_NN is_VBZ expected_VBN to_TO be_VB more_RBR resilient_JJ to_TO node_NN departures_NNS than_IN any_DT tree_NN ,_, including_VBG Overcast_NNP ._.
+Instead_RB of_IN a_DT node_NN waiting_VBG to_TO get_VB the_DT data_NNS it_PRP missed_VBD from_IN a_DT new_JJ parent_NN ,_, a_DT node_NN can_MD start_VB getting_VBG data_NNS from_IN its_PRP$ perpendicular_JJ peers_NNS ._.
+This_DT transition_NN is_VBZ seamless_JJ ,_, as_IN the_DT node_NN that_WDT is_VBZ disconnected_VBN from_IN its_PRP$ parent_NN will_MD start_VB demanding_VBG more_JJR missing_JJ packets_NNS from_IN its_PRP$ peers_NNS during_IN the_DT standard_JJ round_NN of_IN refreshing_VBG its_PRP$ filters_NNS ._.
+Overcast_JJ convergence_NN time_NN is_VBZ limited_VBN by_IN probes_NNS to_TO immediate_JJ siblings_NNS and_CC ancestors_NNS ._.
+Bullet_NN is_VBZ able_JJ to_TO provide_VB approximately_RB a_DT target_NN bandwidth_NN without_IN having_VBG a_DT fully_RB converged_VBN tree_NN ._.
+In_IN parallel_NN to_TO our_PRP$ own_JJ work_NN ,_, SplitStream_NN -LSB-_-LRB- #_# -RSB-_-RRB- also_RB has_VBZ the_DT goal_NN of_IN achieving_VBG high_JJ bandwidth_NN data_NNS dissemination_NN ._.
+It_PRP operates_VBZ by_IN splitting_NN the_DT multicast_JJ stream_NN into_IN k_NN stripes_NNS ,_, transmitting_VBG each_DT stripe_NN along_IN a_DT separate_JJ multicast_JJ tree_NN built_VBN using_VBG Scribe_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+The_DT key_JJ design_NN goal_NN of_IN the_DT tree_NN construction_NN mechanism_NN is_VBZ to_TO have_VB each_DT node_NN be_VB an_DT intermediate_JJ node_NN in_IN at_IN most_JJS one_CD tree_NN -LRB-_-LRB- while_IN observing_VBG both_CC inbound_JJ and_CC outbound_JJ node_NN bandwidth_NN constraints_NNS -RRB-_-RRB- ,_, thereby_RB reducing_VBG the_DT impact_NN of_IN a_DT single_JJ node_NN ''_'' s_NNS sudden_JJ departure_NN on_IN the_DT rest_NN of_IN the_DT system_NN ._.
+The_DT join_VB procedure_NN can_MD potentially_RB sacrifice_VB the_DT interior-node-disjointness_NN achieved_VBN by_IN Scribe_NN ._.
+Perhaps_RB more_RBR importantly_RB ,_, SplitStream_NNP assumes_VBZ that_IN there_EX is_VBZ enough_JJ available_JJ bandwidth_NN to_TO carry_VB each_DT stripe_NN on_IN every_DT link_NN of_IN the_DT tree_NN ,_, including_VBG the_DT links_NNS between_IN the_DT data_NNS source_NN and_CC the_DT roots_NNS of_IN individual_JJ stripe_NN trees_NNS independently_RB chosen_VBN by_IN Scribe_NN ._.
+To_TO some_DT extent_NN ,_, Bullet_NNP and_CC SplitStream_NNP are_VBP complementary_JJ ._.
+For_IN instance_NN ,_, Bullet_NNP could_MD run_VB on_IN each_DT of_IN the_DT stripes_NNS to_TO maximize_VB the_DT bandwidth_NN delivered_VBN to_TO each_DT node_NN along_IN each_DT stripe_NN ._.
+CoopNet_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- considers_VBZ live_JJ content_NN streaming_NN in_IN a_DT peerto-peer_JJ environment_NN ,_, subject_JJ to_TO high_JJ node_NN churn_VBP ._.
+Consequently_RB ,_, the_DT system_NN favors_VBZ resilience_NN over_IN network_NN efficiency_NN ._.
+It_PRP uses_VBZ a_DT centralized_JJ approach_NN for_IN constructing_VBG either_CC random_JJ or_CC deterministic_JJ node-disjoint_JJ -LRB-_-LRB- similar_JJ to_TO SplitStream_NNP -RRB-_-RRB- trees_NNS ,_, and_CC it_PRP includes_VBZ an_DT MDC_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- adaptation_NN framework_NN based_VBN on_IN scalable_JJ receiver_NN feedback_NN that_WDT attempts_VBZ to_TO maximize_VB the_DT signal-to-noise_JJ ratio_NN perceived_VBN by_IN receivers_NNS ._.
+In_IN the_DT case_NN of_IN on-demand_JJ streaming_NN ,_, CoopNet_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- addresses_NNS 295_CD the_DT flash-crowd_NN problem_NN at_IN the_DT central_JJ server_NN by_IN redirecting_VBG incoming_JJ clients_NNS to_TO a_DT fixed_JJ number_NN of_IN nodes_NNS that_WDT have_VBP previously_RB retrieved_VBN portions_NNS of_IN the_DT same_JJ content_NN ._.
+Compared_VBN to_TO CoopNet_NNP ,_, Bullet_NNP provides_VBZ nodes_NNS with_IN a_DT uniformly_RB random_JJ subset_NN of_IN the_DT system-wide_JJ distribution_NN of_IN the_DT file_NN ._.
+6_CD ._.
+CONCLUSIONS_NNS Typically_RB ,_, high_JJ bandwidth_NN overlay_NN data_NNS streaming_NN takes_VBZ place_NN over_IN a_DT distribution_NN tree_NN ._.
+In_IN this_DT paper_NN ,_, we_PRP argue_VBP that_IN ,_, in_IN fact_NN ,_, an_DT overlay_NN mesh_NN is_VBZ able_JJ to_TO deliver_VB fundamentally_RB higher_JJR bandwidth_NN ._.
+Of_IN course_NN ,_, a_DT number_NN of_IN difficult_JJ challenges_NNS must_MD be_VB overcome_VBN to_TO ensure_VB that_IN nodes_NNS in_IN the_DT mesh_NN do_VBP not_RB repeatedly_RB receive_VB the_DT same_JJ data_NNS from_IN peers_NNS ._.
+This_DT paper_NN presents_VBZ the_DT design_NN and_CC implementation_NN of_IN Bullet_NNP ,_, a_DT scalable_JJ and_CC efficient_JJ overlay_NN construction_NN algorithm_NN that_WDT overcomes_VBZ this_DT challenge_NN to_TO deliver_VB significant_JJ bandwidth_NN improvements_NNS relative_JJ to_TO traditional_JJ tree_NN structures_NNS ._.
+Specifically_RB ,_, this_DT paper_NN makes_VBZ the_DT following_VBG contributions_NNS :_: We_PRP present_VBP the_DT design_NN and_CC analysis_NN of_IN Bullet_NNP ,_, an_DT overlay_NN construction_NN algorithm_NN that_WDT creates_VBZ a_DT mesh_NN over_IN any_DT distribution_NN tree_NN and_CC allows_VBZ overlay_NN participants_NNS to_TO achieve_VB a_DT higher_JJR bandwidth_NN throughput_NN than_IN traditional_JJ data_NNS streaming_NN ._.
+As_IN a_DT related_JJ benefit_NN ,_, we_PRP eliminate_VBP the_DT overhead_NN required_VBN to_TO probe_VB for_IN available_JJ bandwidth_NN in_IN traditional_JJ distributed_VBN tree_NN construction_NN techniques_NNS ._.
+We_PRP provide_VBP a_DT technique_NN for_IN recovering_VBG missing_JJ data_NNS from_IN peers_NNS in_IN a_DT scalable_JJ and_CC efficient_JJ manner_NN ._.
+RanSub_NNP periodically_RB disseminates_VBZ summaries_NNS of_IN data_NNS sets_NNS received_VBN by_IN a_DT changing_VBG ,_, uniformly_RB random_JJ subset_NN of_IN global_JJ participants_NNS ._.
+We_PRP propose_VBP a_DT mechanism_NN for_IN making_VBG data_NNS disjoint_NN and_CC then_RB distributing_VBG it_PRP in_IN a_DT uniform_JJ way_NN that_WDT makes_VBZ the_DT probability_NN of_IN finding_VBG a_DT peer_VBP containing_VBG missing_VBG data_NNS equal_JJ for_IN all_DT nodes_NNS ._.
+A_DT large-scale_JJ evaluation_NN of_IN ####_CD overlay_NN participants_NNS running_VBG in_IN an_DT emulated_VBN ##_NN ,_, ###_CD node_NN network_NN topology_NN ,_, as_RB well_RB as_IN experimentation_NN on_IN top_NN of_IN the_DT PlanetLab_NNP Internet_NNP testbed_VBD ,_, shows_VBZ that_IN Bullet_NNP running_VBG over_IN a_DT random_JJ tree_NN can_MD achieve_VB twice_RB the_DT throughput_NN of_IN streaming_NN over_IN a_DT traditional_JJ bandwidth_NN tree_NN ._.
+Acknowledgments_NNS We_PRP would_MD like_VB to_TO thank_VB David_NNP Becker_NNP for_IN his_PRP$ invaluable_JJ help_NN with_IN our_PRP$ ModelNet_NNP experiments_NNS and_CC Ken_NNP Yocum_NNP for_IN his_PRP$ help_NN with_IN ModelNet_NNP emulation_NN optimizations_NNS ._.
+In_IN addition_NN ,_, we_PRP thank_VBP our_PRP$ shepherd_NN Barbara_NNP Liskov_NNP and_CC our_PRP$ anonymous_JJ reviewers_NNS who_WP provided_VBD excellent_JJ feedback_NN ._.
+7_CD ._.
+REFERENCES_NNS -LSB-_-LRB- #_# -RSB-_-RRB- Suman_NNP Banerjee_NNP ,_, Bobby_NNP Bhattacharjee_NNP ,_, and_CC Christopher_NNP Kommareddy_NNP ._.
+Scalable_JJ Application_NN Layer_NNP Multicast_NNP ._.
+In_IN Proceedings_NNP of_IN ACM_NNP SIGCOMM_NNP ,_, August_NNP ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- Kenneth_NNP Birman_NNP ,_, Mark_NNP Hayden_NNP ,_, Oznur_NNP Ozkasap_NNP ,_, Zhen_NNP Xiao_NNP ,_, Mihai_NNP Budiu_NNP ,_, and_CC Yaron_NNP Minsky_NNP ._.
+Bimodal_JJ Multicast_NN ._.
+ACM_NNP Transaction_NNP on_IN Computer_NNP Systems_NNPS ,_, ##_NN -LRB-_-LRB- #_# -RRB-_-RRB- ,_, May_NNP ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- Bittorrent_NNP ._.
+http_NN :_: /_: /_: bitconjurer_NN ._.
+org_NN /_: BitTorrent_NNP ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- Burton_NNP Bloom_NNP ._.
+Space_NN /_: Time_NNP Trade-offs_NNPS in_IN Hash_NNP Coding_VBG with_IN Allowable_JJ Errors_NNS ._.
+Communication_NN of_IN ACM_NNP ,_, 13_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 422-426_CD ,_, July_NNP ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- Andrei_NNP Broder_NNP ._.
+On_IN the_DT Resemblance_NNP and_CC Containment_NNP of_IN Documents_NNS ._.
+In_IN Proceedings_NNP of_IN Compression_NNP and_CC Complexity_NNP of_IN Sequences_NNS -LRB-_-LRB- SEQUENCES_NNS ''_'' ##_NN -RRB-_-RRB- ,_, ####_NN ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- John_NNP W_NNP ._.
+Byers_NNP ,_, Jeffrey_NNP Considine_NNP ,_, Michael_NNP Mitzenmacher_NNP ,_, and_CC Stanislav_NNP Rost_NNP ._.
+Informed_JJ Content_NN Delivery_NN Across_IN Adaptive_JJ Overlay_NNP Networks_NNP ._.
+In_IN Proceedings_NNP of_IN ACM_NNP SIGCOMM_NNP ,_, August_NNP ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- John_NNP W_NNP ._.
+Byers_NNP ,_, Michael_NNP Luby_NNP ,_, Michael_NNP Mitzenmacher_NNP ,_, and_CC Ashutosh_JJ Rege_NN ._.
+A_DT Digital_NNP Fountain_NNP Approach_NNP to_TO Reliable_NNP Distribution_NN of_IN Bulk_NNP Data_NNP ._.
+In_IN SIGCOMM_NNP ,_, pages_NNS 56-67_CD ,_, 1998_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- Ken_NNP Calvert_NNP ,_, Matt_NNP Doar_NNP ,_, and_CC Ellen_NNP W_NNP ._.
+Zegura_NNP ._.
+Modeling_VBG Internet_NNP Topology_NNP ._.
+IEEE_NNP Communications_NNP Magazine_NNP ,_, June_NNP 1997_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- Miguel_NNP Castro_NNP ,_, Peter_NNP Druschel_NNP ,_, Anne-Marie_NNP Kermarrec_NNP ,_, Animesh_NNP Nandi_NNP ,_, Antony_NNP Rowstron_NNP ,_, and_CC Atul_NNP Singh_NNP ._.
+Splitstream_NNP :_: High-bandwidth_JJ Content_NNP Distribution_NN in_IN Cooperative_NNP Environments_NNP ._.
+In_IN Proceedings_NNP of_IN the_DT 19th_JJ ACM_NNP Symposium_NNP on_IN Operating_NNP System_NNP Principles_NNS ,_, October_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Hyunseok_NNP Chang_NNP ,_, Ramesh_NNP Govindan_NNP ,_, Sugih_NNP Jamin_NNP ,_, Scott_NNP Shenker_NNP ,_, and_CC Walter_NNP Willinger_NNP ._.
+Towards_IN Capturing_VBG Representative_NNP AS-Level_NNP Internet_NNP Topologies_NNPS ._.
+In_IN Proceedings_NNP of_IN ACM_NNP SIGMETRICS_NNP ,_, June_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Ludmila_NNP Cherkasova_NNP and_CC Jangwon_NNP Lee_NNP ._.
+FastReplica_NNP :_: Efficient_JJ Large_JJ File_NN Distribution_NN within_IN Content_NNP Delivery_NN Networks_NNP ._.
+In_IN 4th_JJ USENIX_NNP Symposium_NNP on_IN Internet_NNP Technologies_NNPS and_CC Systems_NNPS ,_, March_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Reuven_NNP Cohen_NNP and_CC Gideon_NNP Kaempfer_NNP ._.
+A_DT Unicast-based_JJ Approach_NN for_IN Streaming_VBG Multicast_NNP ._.
+In_IN INFOCOM_NNP ,_, pages_NNS 440-448_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Patrick_NNP Eugster_NNP ,_, Sidath_NNP Handurukande_NNP ,_, Rachid_NNP Guerraoui_NNP ,_, Anne-Marie_NNP Kermarrec_NNP ,_, and_CC Petr_NNP Kouznetsov_NNP ._.
+Lightweight_JJ Probabilistic_NNP Broadcast_NNP ._.
+To_TO appear_VB in_IN ACM_NNP Transactions_NNS on_IN Computer_NNP Systems_NNPS ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Patrick_NNP Eugster_NNP ,_, Sidath_NNP Handurukande_NNP ,_, Rachid_NNP Guerraoui_NNP ,_, Anne-Marie_NNP Kermarrec_NNP ,_, and_CC Petr_NNP Kouznetsov_NNP ._.
+Lightweight_JJ Probabilistic_NNP Broadcast_NNP ._.
+In_IN Proceedings_NNP of_IN The_NNP International_NNP Conference_NNP on_IN Dependable_NNP Systems_NNPS and_CC Networks_NNP -LRB-_-LRB- DSN_NNP -RRB-_-RRB- ,_, ####_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Sally_NNP Floyd_NNP ,_, Mark_NNP Handley_NNP ,_, Jitendra_NNP Padhye_NNP ,_, and_CC Jorg_NNP Widmer_NNP ._.
+Equation-based_JJ congestion_NN control_NN for_IN unicast_JJ applications_NNS ._.
+In_IN SIGCOMM_NNP ####_CD ,_, pages_NNS 43-56_CD ,_, Stockholm_NNP ,_, Sweden_NNP ,_, August_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Sally_NNP Floyd_NNP ,_, Van_NNP Jacobson_NNP ,_, Ching-Gung_NNP Liu_NNP ,_, Steven_NNP McCanne_NNP ,_, and_CC Lixia_NNP Zhang_NNP ._.
+A_DT Reliable_JJ Multicast_NNP Framework_NNP for_IN Light-weight_JJ Sessions_NNP and_CC Application_NN Level_NN Framing_NN ._.
+IEEE_NNP /_: ACM_NNP Transactions_NNS on_IN Networking_NN ,_, 5_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 784-803_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Vivek_NNP K_NNP Goyal_NNP ._.
+Multiple_JJ Description_NN Coding_NN :_: Compression_NNP Meets_VBZ the_DT Network_NNP ._.
+IEEE_NNP Signal_NNP Processing_NNP Mag_NN ._.
+,_, pages_NNS 74-93_CD ,_, May_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Yang_NNP hua_NNP Chu_NNP ,_, Sanjay_NNP Rao_NNP ,_, and_CC Hui_NNP Zhang_NNP ._.
+A_DT Case_NN For_IN End_NNP System_NNP Multicast_NNP ._.
+In_IN Proceedings_NNP of_IN the_DT ACM_NNP Sigmetrics_NNPS ####_NNP International_NNP Conference_NNP on_IN Measurement_NNP and_CC Modeling_NNP of_IN Computer_NNP Systems_NNPS ,_, June_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Yang_NNP hua_NNP Chu_NNP ,_, Sanjay_NNP G_NNP ._.
+Rao_NNP ,_, Srinivasan_NNP Seshan_NNP ,_, and_CC Hui_NNP Zhang_NNP ._.
+Enabling_VBG Conferencing_NNP Applications_NNS on_IN the_DT Internet_NN using_VBG an_DT Overlay_NNP Multicast_NNP Architecture_NNP ._.
+In_IN Proceedings_NNP of_IN ACM_NNP SIGCOMM_NNP ,_, August_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Manish_NNP Jain_NNP and_CC Constantinos_NNP Dovrolis_NNP ._.
+End-to-end_JJ Available_NNP Bandwidth_NNP :_: Measurement_NNP Methodology_NNP ,_, Dynamics_NNP ,_, and_CC Relation_NN with_IN TCP_NN Throughput_NN ._.
+In_IN Proceedings_NNP of_IN SIGCOMM_NNP ####_CD ,_, New_NNP York_NNP ,_, August_NNP 19-23_CD 2002_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- John_NNP Jannotti_NNP ,_, David_NNP K_NNP ._.
+Gifford_NNP ,_, Kirk_NNP L_NNP ._.
+Johnson_NNP ,_, M_NN ._.
+Frans_NNP Kaashoek_NNP ,_, and_CC Jr_NNP ._.
+James_NNP W_NNP ._.
+O_NN ''_'' Toole_NNP ._.
+Overcast_NNP :_: Reliable_JJ Multicasting_VBG with_IN an_DT Overlay_NNP Network_NNP ._.
+In_IN Proceedings_NNP of_IN Operating_NNP Systems_NNPS Design_NN and_CC Implementation_NN -LRB-_-LRB- OSDI_NN -RRB-_-RRB- ,_, October_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Kazaa_NNP media_NNS desktop_NN ._.
+http_NN :_: /_: /_: www_NN ._.
+kazaa_NN ._.
+com_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Min_NNP Sik_NNP Kim_NNP ,_, Simon_NNP S_NN ._.
+Lam_NNP ,_, and_CC Dong-Young_NNP Lee_NNP ._.
+296_CD Optimal_JJ Distribution_NN Tree_NN for_IN Internet_NNP Streaming_NNP Media_NNP ._.
+Technical_NNP Report_NNP TR-02-48_NN ,_, Department_NNP of_IN Computer_NNP Sciences_NNPS ,_, University_NNP of_IN Texas_NNP at_IN Austin_NNP ,_, September_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Dejan_NNP Kostic_NNP ,_, Adolfo_NNP Rodriguez_NNP ,_, Jeannie_NNP Albrecht_NNP ,_, Abhijeet_NNP Bhirud_NNP ,_, and_CC Amin_NNP Vahdat_NNP ._.
+Using_VBG Random_JJ Subsets_NNS to_TO Build_VB Scalable_JJ Network_NNP Services_NNPS ._.
+In_IN Proceedings_NNP of_IN the_DT USENIX_NNP Symposium_NNP on_IN Internet_NNP Technologies_NNPS and_CC Systems_NNPS ,_, March_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Michael_NNP Luby_NNP ._.
+LT_JJ Codes_NNS ._.
+In_IN In_IN The_DT 43rd_JJ Annual_JJ IEEE_NNP Symposium_NNP on_IN Foundations_NNPS of_IN Computer_NNP Science_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Michael_NNP G_NNP ._.
+Luby_NNP ,_, Michael_NNP Mitzenmacher_NNP ,_, M_NN ._.
+Amin_NNP Shokrollahi_NNP ,_, Daniel_NNP A_NNP ._.
+Spielman_NNP ,_, and_CC Volker_NNP Stemann_NNP ._.
+Practical_NNP Loss-Resilient_NNP Codes_NNP ._.
+In_IN Proceedings_NNP of_IN the_DT 29th_JJ Annual_JJ ACM_NNP Symposium_NNP on_IN the_DT Theory_NNP of_IN Computing_NNP -LRB-_-LRB- STOC_NNP ''_'' ##_NN -RRB-_-RRB- ,_, pages_NNS 150-159_CD ,_, New_NNP York_NNP ,_, May_NNP ####_CD ._.
+Association_NNP for_IN Computing_NNP Machinery_NNP ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Jitedra_NNP Padhye_NNP ,_, Victor_NNP Firoiu_NNP ,_, Don_NNP Towsley_NNP ,_, and_CC Jim_NNP Krusoe_NNP ._.
+Modeling_VBG TCP_NN Throughput_NN :_: A_DT Simple_JJ Model_NNP and_CC its_PRP$ Empirical_JJ Validation_NN ._.
+In_IN ACM_NNP SIGCOMM_NNP ''_'' ##_CD conference_NN on_IN Applications_NNS ,_, technologies_NNS ,_, architectures_NNS ,_, and_CC protocols_NNS for_IN computer_NN communication_NN ,_, pages_NNS 303-314_CD ,_, Vancouver_NNP ,_, CA_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Venkata_NNP N_NNP ._.
+Padmanabhan_NNP ,_, Lili_NNP Qiu_NNP ,_, and_CC Helen_NNP J_NNP ._.
+Wang_NNP ._.
+Server-based_JJ Inference_NN of_IN Internet_NNP Link_NNP Lossiness_NNP ._.
+In_IN Proceedings_NNP of_IN the_DT IEEE_NNP Infocom_NNP ,_, San_NNP Francisco_NNP ,_, CA_NNP ,_, USA_NNP ,_, 2003_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Venkata_NNP N_NNP ._.
+Padmanabhan_NNP ,_, Helen_NNP J_NNP ._.
+Wang_NNP ,_, and_CC Philip_NNP A_NNP ._.
+Chou_NNP ._.
+Resilient_JJ Peer-to-Peer_NNP Streaming_NNP ._.
+In_IN Proceedings_NNP of_IN the_DT 11th_JJ ICNP_NN ,_, Atlanta_NNP ,_, Georgia_NNP ,_, USA_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Venkata_NNP N_NNP ._.
+Padmanabhan_NNP ,_, Helen_NNP J_NNP ._.
+Wang_NNP ,_, Philip_NNP A_NNP ._.
+Chou_NNP ,_, and_CC Kunwadee_NNP Sripanidkulchai_NNP ._.
+Distributing_VBG Streaming_VBG Media_NNP Content_NNP Using_VBG Cooperative_NNP Networking_NNP ._.
+In_IN ACM_NNP /_: IEEE_NNP NOSSDAV_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Larry_NNP Peterson_NNP ,_, Tom_NNP Anderson_NNP ,_, David_NNP Culler_NNP ,_, and_CC Timothy_NNP Roscoe_NNP ._.
+A_DT Blueprint_NN for_IN Introducing_VBG Disruptive_NNP Technology_NNP into_IN the_DT Internet_NN ._.
+In_IN Proceedings_NNP of_IN ACM_NNP HotNets-I_NNP ,_, October_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- R_NN ._.
+C_NN ._.
+Prim_NNP ._.
+Shortest_JJS Connection_NN Networks_NNP and_CC Some_DT Generalizations_NNS ._.
+In_IN Bell_NNP Systems_NNPS Technical_NNP Journal_NNP ,_, pages_NNS 1389-1401_CD ,_, November_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Adolfo_NNP Rodriguez_NNP ,_, Sooraj_NNP Bhat_NNP ,_, Charles_NNP Killian_NNP ,_, Dejan_NNP Kostic_NNP ,_, and_CC Amin_NNP Vahdat_NNP ._.
+MACEDON_NNP :_: Methodology_NNP for_IN Automatically_RB Creating_VBG ,_, Evaluating_VBG ,_, and_CC Designing_NNP Overlay_NNP Networks_NNP ._.
+Technical_NNP Report_NNP CS-2003-09_NNP ,_, Duke_NNP University_NNP ,_, July_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Antony_NNP Rowstron_NNP ,_, Anne-Marie_NNP Kermarrec_NNP ,_, Miguel_NNP Castro_NNP ,_, and_CC Peter_NNP Druschel_NNP ._.
+SCRIBE_NN :_: The_DT Design_NN of_IN a_DT Large-scale_JJ Event_NNP Notification_NNP Infrastructure_NNP ._.
+In_IN Third_NNP International_NNP Workshop_NNP on_IN Networked_NNP Group_NNP Communication_NNP ,_, November_NNP 2001_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Stefan_NNP Savage_NNP ._.
+Sting_NN :_: A_DT TCP-based_JJ Network_NNP Measurement_NNP Tool_NNP ._.
+In_IN Proceedings_NNP of_IN the_DT 2nd_JJ USENIX_NNP Symposium_NNP on_IN Internet_NNP Technologies_NNPS and_CC Systems_NNPS -LRB-_-LRB- USITS-99_NN -RRB-_-RRB- ,_, pages_NNS 71-80_CD ,_, Berkeley_NNP ,_, CA_NNP ,_, October_NNP 11-14_CD ####_CD ._.
+USENIX_NNP Association_NNP ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Alex_NNP C_NNP ._.
+Snoeren_NNP ,_, Kenneth_NNP Conley_NNP ,_, and_CC David_NNP K_NNP ._.
+Gifford_NNP ._.
+Mesh-Based_JJ Content_NN Routing_VBG Using_VBG XML_NN ._.
+In_IN Proceedings_NNP of_IN the_DT 18th_JJ ACM_NNP Symposium_NNP on_IN Operating_NNP Systems_NNPS Principles_NNS -LRB-_-LRB- SOSP_NN ''_'' ##_NN -RRB-_-RRB- ,_, October_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Amin_NNP Vahdat_NNP ,_, Ken_NNP Yocum_NNP ,_, Kevin_NNP Walsh_NNP ,_, Priya_NNP Mahadevan_NNP ,_, Dejan_NNP Kostic_NNP ,_, Jeff_NNP Chase_NNP ,_, and_CC David_NNP Becker_NNP ._.
+Scalability_NN and_CC Accuracy_NN in_IN a_DT Large-Scale_NNP Network_NNP Emulator_NNP ._.
+In_IN Proceedings_NNP of_IN the_DT 5th_JJ Symposium_NN on_IN Operating_NNP Systems_NNPS Design_NN and_CC Implementation_NN -LRB-_-LRB- OSDI_NN -RRB-_-RRB- ,_, December_NNP ####_CD ._.
+297_CD

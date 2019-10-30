@@ -1,0 +1,503 @@
+Efficient_JJ Bayesian_JJ Hierarchical_JJ User_NN Modeling_NN for_IN Recommendation_NNP Systems_NNPS Yi_NNP Zhang_NNP ,_, Jonathan_NNP Koren_NNP School_NNP of_IN Engineering_NNP University_NNP of_IN California_NNP Santa_NNP Cruz_NNP Santa_NNP Cruz_NNP ,_, CA_NNP ,_, USA_NNP -LCB-_-LRB- yiz_NN ,_, jonathan_NN -RCB-_-RRB- @_SYM soe_FW ._.
+ucsc_NN ._.
+edu_NN ABSTRACT_NN A_NN content-based_JJ personalized_JJ recommendation_NN system_NN learns_VBZ user_NN specific_JJ profiles_NNS from_IN user_NN feedback_NN so_IN that_IN it_PRP can_MD deliver_VB information_NN tailored_VBN to_TO each_DT individual_JJ user_NN ''_'' s_NNS interest_NN ._.
+A_DT system_NN serving_VBG millions_NNS of_IN users_NNS can_MD learn_VB a_DT better_JJR user_NN profile_NN for_IN a_DT new_JJ user_NN ,_, or_CC a_DT user_NN with_IN little_JJ feedback_NN ,_, by_IN borrowing_VBG information_NN from_IN other_JJ users_NNS through_IN the_DT use_NN of_IN a_DT Bayesian_JJ hierarchical_JJ model_NN ._.
+Learning_VBG the_DT model_NN parameters_NNS to_TO optimize_VB the_DT joint_JJ data_NNS likelihood_NN from_IN millions_NNS of_IN users_NNS is_VBZ very_RB computationally_RB expensive_JJ ._.
+The_DT commonly_RB used_VBN EM_NNP algorithm_NN converges_VBZ very_RB slowly_RB due_JJ to_TO the_DT sparseness_NN of_IN the_DT data_NNS in_IN IR_NNP applications_NNS ._.
+This_DT paper_NN proposes_VBZ a_DT new_JJ fast_JJ learning_NN technique_NN to_TO learn_VB a_DT large_JJ number_NN of_IN individual_JJ user_NN profiles_NNS ._.
+The_DT efficacy_NN and_CC efficiency_NN of_IN the_DT proposed_VBN algorithm_NN are_VBP justified_VBN by_IN theory_NN and_CC demonstrated_VBD on_IN actual_JJ user_NN data_NNS from_IN Netflix_NNP and_CC MovieLens_NNP ._.
+Categories_NNS and_CC Subject_NNP Descriptors_NNPS :_: B_NN ._.
+#_# ._.
+#_# -LSB-_-LRB- Information_NNP Search_VB and_CC Retrieval_NN -RSB-_-RRB- :_: Information_NNP filtering_VBG General_NNP Terms_NNS :_: Algorithms_NNS 1_CD ._.
+INTRODUCTION_NN Personalization_NN is_VBZ the_DT future_NN of_IN the_DT Web_NN ,_, and_CC it_PRP has_VBZ achieved_VBN great_JJ success_NN in_IN industrial_JJ applications_NNS ._.
+For_IN example_NN ,_, online_JJ stores_NNS ,_, such_JJ as_IN Amazon_NNP and_CC Netflix_NNP ,_, provide_VBP customized_VBN recommendations_NNS for_IN additional_JJ products_NNS or_CC services_NNS based_VBN on_IN a_DT user_NN ''_'' s_NNS history_NN ._.
+Recent_JJ offerings_NNS such_JJ as_IN My_PRP$ MSN_NNP ,_, My_PRP$ Yahoo_NNP !_.
+,_, My_PRP$ Google_NNP ,_, and_CC Google_NNP News_NNP have_VBP attracted_VBN much_JJ attention_NN due_JJ to_TO their_PRP$ potential_JJ ability_NN to_TO infer_VB a_DT user_NN ''_'' s_NNS interests_NNS from_IN his_PRP$ /_: her_PRP$ history_NN ._.
+One_CD major_JJ personalization_NN topic_NN studied_VBN in_IN the_DT information_NN retrieval_NN community_NN is_VBZ content-based_JJ personal_JJ recommendation_NN systems1_NN ._.
+These_DT systems_NNS learn_VBP user-specific_JJ profiles_NNS from_IN user_NN feedback_NN so_IN that_IN they_PRP can_MD recommend_VB information_NN tailored_VBN to_TO each_DT individual_JJ user_NN ''_'' s_NNS interest_NN without_IN requiring_VBG the_DT user_NN to_TO make_VB an_DT explicit_JJ query_NN ._.
+Learning_VBG the_DT user_NN profiles_NNS is_VBZ the_DT core_NN problem_NN for_IN these_DT systems_NNS ._.
+A_DT user_NN profile_NN is_VBZ usually_RB a_DT classifier_NN that_WDT can_MD identify_VB whether_IN a_DT document_NN is_VBZ relevant_JJ to_TO the_DT user_NN or_CC not_RB ,_, or_CC a_DT regression_NN model_NN that_WDT tells_VBZ how_WRB relevant_JJ a_DT document_NN is_VBZ to_TO the_DT user_NN ._.
+One_CD major_JJ challenge_NN of_IN building_VBG a_DT recommendation_NN or_CC personalization_NN system_NN is_VBZ that_IN the_DT profile_NN learned_VBD for_IN a_DT particular_JJ user_NN is_VBZ usually_RB of_IN low_JJ quality_NN when_WRB the_DT amount_NN of_IN data_NNS from_IN that_DT particular_JJ user_NN is_VBZ small_JJ ._.
+This_DT is_VBZ known_VBN as_IN the_DT cold_JJ start_NN problem_NN ._.
+This_DT means_VBZ that_IN any_DT new_JJ user_NN must_MD endure_VB poor_JJ initial_JJ performance_NN until_IN sufficient_JJ feedback_NN from_IN that_DT user_NN is_VBZ provided_VBN to_TO learn_VB a_DT reliable_JJ user_NN profile_NN ._.
+There_EX has_VBZ been_VBN much_JJ research_NN on_IN improving_VBG classification_NN accuracy_NN when_WRB the_DT amount_NN of_IN labeled_VBN training_NN data_NNS is_VBZ small_JJ ._.
+The_DT semi-supervised_JJ learning_NN approach_NN combines_VBZ unlabeled_JJ and_CC labeled_JJ data_NNS together_RB to_TO achieve_VB this_DT goal_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Another_DT approach_NN is_VBZ using_VBG domain_NN knowledge_NN ._.
+Researchers_NNS have_VBP modified_VBN different_JJ learning_NN algorithms_NNS ,_, such_JJ as_IN NaveBayes_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, logistic_JJ regression_NN -LSB-_-LRB- #_# -RSB-_-RRB- ,_, and_CC SVMs_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, to_TO integrate_VB domain_NN knowledge_NN into_IN a_DT text_NN classifier_NN ._.
+The_DT third_JJ approach_NN is_VBZ borrowing_VBG training_NN data_NNS from_IN other_JJ resources_NNS -LSB-_-LRB- #_# -RSB-_-RRB- -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+The_DT effectiveness_NN of_IN these_DT different_JJ approaches_NNS is_VBZ mixed_JJ ,_, due_JJ to_TO how_WRB well_RB the_DT underlying_VBG model_NN assumption_NN fits_VBZ the_DT data_NNS ._.
+One_CD well-received_JJ approach_NN to_TO improve_VB recommendation_NN system_NN performance_NN for_IN a_DT particular_JJ user_NN is_VBZ borrowing_VBG information_NN from_IN other_JJ users_NNS through_IN a_DT Bayesian_JJ hierarchical_JJ modeling_NN approach_NN ._.
+Several_JJ researchers_NNS have_VBP demonstrated_VBN that_IN this_DT approach_NN effectively_RB trades_VBZ off_RP between_IN shared_JJ and_CC user-specific_JJ information_NN ,_, thus_RB alleviating_VBG poor_JJ initial_JJ performance_NN for_IN each_DT user_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+In_IN order_NN to_TO learn_VB a_DT Bayesian_JJ hierarchical_JJ model_NN ,_, the_DT system_NN usually_RB tries_VBZ to_TO find_VB the_DT most_RBS likely_JJ model_NN parameters_NNS for_IN the_DT given_VBN data_NNS ._.
+A_DT mature_JJ recommendation_NN system_NN usually_RB works_VBZ for_IN millions_NNS of_IN users_NNS ._.
+It_PRP is_VBZ well_RB known_VBN that_IN learning_VBG the_DT optimal_JJ parameters_NNS of_IN a_DT Bayesian_JJ hierarchical_JJ model_NN is_VBZ computationally_RB expensive_JJ when_WRB there_EX are_VBP thousands_NNS or_CC millions_NNS of_IN users_NNS ._.
+The_DT EM_NNP algorithm_NN is_VBZ a_DT commonly_RB used_VBN technique_NN for_IN parameter_NN learning_NN due_JJ to_TO its_PRP$ simplicity_NN and_CC convergence_NN guarantee_NN ._.
+However_RB ,_, a_DT content_NN based_VBN recommendation_NN system_NN often_RB handles_VBZ documents_NNS in_IN a_DT very_RB high_JJ dimensional_JJ space_NN ,_, in_IN which_WDT each_DT document_NN is_VBZ represented_VBN by_IN a_DT very_RB sparse_JJ vector_NN ._.
+With_IN careful_JJ analysis_NN of_IN the_DT EM_NNP algorithm_NN in_IN this_DT scenario_NN -LRB-_-LRB- Section_NN #_# -RRB-_-RRB- ,_, we_PRP find_VBP that_IN the_DT EM_NN tering_NN ,_, or_CC item-based_JJ collaborative_JJ filtering_VBG ._.
+In_IN this_DT paper_NN ,_, the_DT words_NNS filtering_VBG and_CC recommendation_NN are_VBP used_VBN interchangeably_RB ._.
+algorithm_NN converges_VBZ very_RB slowly_RB due_JJ to_TO the_DT sparseness_NN of_IN the_DT input_NN variables_NNS ._.
+We_PRP also_RB find_VBP that_IN updating_VBG the_DT model_NN parameter_NN at_IN each_DT EM_NNP iteration_NN is_VBZ also_RB expensive_JJ with_IN computational_JJ complexity_NN of_IN O_NN -LRB-_-LRB- MK_NN -RRB-_-RRB- ,_, where_WRB M_NN is_VBZ the_DT number_NN of_IN users_NNS and_CC K_NN is_VBZ the_DT number_NN of_IN dimensions_NNS ._.
+This_DT paper_NN modifies_VBZ the_DT standard_JJ EM_NNP algorithm_NN to_TO create_VB an_DT improved_JJ learning_NN algorithm_NN ,_, which_WDT we_PRP call_VBP the_DT Modified_VBN EM_NN algorithm_NN ._.
+The_DT basic_JJ idea_NN is_VBZ that_IN instead_RB of_IN calculating_VBG the_DT numerical_JJ solution_NN for_IN all_PDT the_DT user_NN profile_NN parameters_NNS ,_, we_PRP derive_VBP the_DT analytical_JJ solution_NN of_IN the_DT parameters_NNS for_IN some_DT feature_NN dimensions_NNS ,_, and_CC at_IN the_DT M_NN step_NN use_VBP the_DT analytical_JJ solution_NN instead_RB of_IN the_DT numerical_JJ solution_NN estimated_VBN at_IN E_NN step_NN for_IN those_DT parameters_NNS ._.
+This_DT greatly_RB reduces_VBZ the_DT computation_NN at_IN a_DT single_JJ EM_NN iteration_NN ,_, and_CC also_RB has_VBZ the_DT benefit_NN of_IN increasing_VBG the_DT convergence_NN speed_NN of_IN the_DT learning_NN algorithm_NN ._.
+The_DT proposed_VBN technique_NN is_VBZ not_RB only_RB well_RB supported_VBN by_IN theory_NN ,_, but_CC also_RB by_IN experimental_JJ results_NNS ._.
+The_DT organization_NN of_IN the_DT remaining_VBG parts_NNS of_IN this_DT paper_NN is_VBZ as_IN follows_VBZ :_: Section_NN #_# describes_VBZ the_DT Bayesian_JJ hierarchical_JJ linear_JJ regression_NN modeling_NN framework_NN used_VBN for_IN content-based_JJ recommendations_NNS ._.
+Section_NN #_# describes_VBZ how_WRB to_TO learn_VB the_DT model_NN parameters_NNS using_VBG the_DT standard_JJ EM_NNP algorithm_NN ,_, along_IN with_IN using_VBG the_DT new_JJ technique_NN proposed_VBN in_IN this_DT paper_NN ._.
+The_DT experimental_JJ setting_NN and_CC results_NNS used_VBN to_TO validate_VB the_DT proposed_VBN learning_VBG technique_NN are_VBP reported_VBN in_IN Sections_NNS #_# and_CC #_# ._.
+Section_NN #_# summarizes_VBZ and_CC offers_VBZ concluding_VBG remarks_NNS ._.
+2_LS ._.
+RELATED_JJ WORK_VBP Providing_VBG personalized_JJ recommendations_NNS to_TO users_NNS has_VBZ been_VBN identified_VBN as_IN a_DT very_RB important_JJ problem_NN in_IN the_DT IR_NNP community_NN since_IN the_DT ####_CD ''_'' s_NNS ._.
+The_DT approaches_NNS that_WDT have_VBP been_VBN used_VBN to_TO solve_VB this_DT problem_NN can_MD be_VB roughly_RB classified_VBN into_IN two_CD major_JJ categories_NNS :_: content_NN based_VBN filtering_VBG versus_CC collaborative_JJ filtering_VBG ._.
+Content-based_JJ filtering_VBG studies_NNS the_DT scenario_NN where_WRB a_DT recommendation_NN system_NN monitors_VBZ a_DT document_NN stream_NN and_CC pushes_VBZ documents_NNS that_IN match_VBP a_DT user_NN profile_NN to_TO the_DT corresponding_JJ user_NN ._.
+The_DT user_NN may_MD read_VB the_DT delivered_VBN documents_NNS and_CC provide_VBP explicit_JJ relevance_NN feedback_NN ,_, which_WDT the_DT filtering_VBG system_NN then_RB uses_VBZ to_TO update_VB the_DT user_NN ''_'' s_NNS profile_NN using_VBG relevance_NN feedback_NN retrieval_NN models_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+Boolean_JJ models_NNS ,_, vector_NN space_NN models_NNS ,_, traditional_JJ probabilistic_JJ models_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, inference_NN networks_NNS -LSB-_-LRB- #_# -RSB-_-RRB- and_CC language_NN models_NNS -LSB-_-LRB- #_# -RSB-_-RRB- -RRB-_-RRB- or_CC machine_NN learning_NN algorithms_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+Support_NN Vector_NNP Machines_NNP -LRB-_-LRB- SVM_NNP -RRB-_-RRB- ,_, K_NNP nearest_JJS neighbors_NNS -LRB-_-LRB- K-NN_NN -RRB-_-RRB- clustering_NN ,_, neural_JJ networks_NNS ,_, logistic_JJ regression_NN ,_, or_CC Winnow_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- -LSB-_-LRB- #_# -RSB-_-RRB- -LSB-_-LRB- ##_CD -RSB-_-RRB- -RRB-_-RRB- ._.
+Collaborative_JJ filtering_VBG goes_VBZ beyond_IN merely_RB using_VBG document_NN content_NN to_TO recommend_VB items_NNS to_TO a_DT user_NN by_IN leveraging_VBG information_NN from_IN other_JJ users_NNS with_IN similar_JJ tastes_NNS and_CC preferences_NNS in_IN the_DT past_NN ._.
+Memorybased_JJ heuristics_NNS and_CC model_NN based_VBN approaches_NNS have_VBP been_VBN used_VBN in_IN collaborative_JJ filtering_VBG task_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- -LSB-_-LRB- #_# -RSB-_-RRB- -LSB-_-LRB- #_# -RSB-_-RRB- -LSB-_-LRB- ##_CD -RSB-_-RRB- -LSB-_-LRB- ##_CD -RSB-_-RRB- -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+This_DT paper_NN contributes_VBZ to_TO the_DT content-based_JJ recommendation_NN research_NN by_IN improving_VBG the_DT efficiency_NN and_CC effectiveness_NN of_IN Bayesian_JJ hierarchical_JJ linear_JJ models_NNS ,_, which_WDT have_VBP a_DT strong_JJ theoretical_JJ basis_NN and_CC good_JJ empirical_JJ performance_NN on_IN recommendation_NN tasks_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+This_DT paper_NN does_VBZ not_RB intend_VB to_TO compare_VB content-based_JJ filtering_VBG with_IN collaborative_JJ filtering_VBG or_CC claim_NN which_WDT one_CD is_VBZ a_DT better_RBR ._.
+We_PRP think_VBP each_DT complements_VBZ the_DT other_JJ ,_, and_CC that_IN content-based_JJ filtering_VBG is_VBZ extremely_RB useful_JJ for_IN handling_VBG new_JJ documents_NNS /_: items_NNS with_IN little_JJ or_CC no_DT user_NN feedback_NN ._.
+Similar_JJ to_TO some_DT other_JJ researchers_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- -LSB-_-LRB- #_# -RSB-_-RRB- -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, we_PRP found_VBD that_IN a_DT recommendation_NN system_NN will_MD be_VB more_RBR effective_JJ when_WRB both_DT techniques_NNS are_VBP combined_VBN ._.
+However_RB ,_, this_DT is_VBZ beyond_IN the_DT scope_NN of_IN this_DT paper_NN and_CC thus_RB not_RB discussed_VBN here_RB ._.
+3_LS ._.
+BAYESIAN_NNP HIERARCHICAL_NNP LINEAR_NNP REGRESSION_NNP Assume_VB there_EX are_VBP M_NN users_NNS in_IN the_DT system_NN ._.
+The_DT task_NN of_IN the_DT system_NN is_VBZ to_TO recommend_VB documents_NNS that_WDT are_VBP relevant_JJ to_TO each_DT user_NN ._.
+For_IN each_DT user_NN ,_, the_DT system_NN learns_VBZ a_DT user_NN model_NN from_IN the_DT user_NN ''_'' s_NNS history_NN ._.
+In_IN the_DT rest_NN of_IN this_DT paper_NN ,_, we_PRP will_MD use_VB the_DT following_VBG notations_NNS to_TO represent_VB the_DT variables_NNS in_IN the_DT system_NN ._.
+m_NN =_JJ #_# ,_, #_# ,_, ..._: ,_, M_NN :_: The_DT index_NN for_IN each_DT individual_JJ user_NN ._.
+M_NN is_VBZ the_DT total_JJ number_NN of_IN users_NNS ._.
+wm_NN :_: The_DT user_NN model_NN parameter_NN associated_VBN with_IN user_NN m_NN ._.
+wm_NN is_VBZ a_DT K_NN dimensional_JJ vector_NN ._.
+j_NN =_JJ #_# ,_, #_# ,_, ..._: ,_, Jm_NN :_: The_DT index_NN for_IN a_DT set_NN of_IN data_NNS for_IN user_NN m_NN ._.
+Jm_NN is_VBZ the_DT number_NN of_IN training_NN data_NNS for_IN user_NN m_NN ._.
+Dm_NN =_SYM -LCB-_-LRB- -LRB-_-LRB- xm_NN ,_, j_NN ,_, ym_NN ,_, j_NN -RRB-_-RRB- -RCB-_-RRB- :_: A_DT set_NN of_IN data_NNS associated_VBN with_IN user_NN m_NN ._.
+xm_NN ,_, j_NN is_VBZ a_DT K_NN dimensional_JJ vector_NN that_WDT represents_VBZ the_DT mth_NN user_NN ''_'' s_NNS jth_VBP training_NN document_NN ._.
+#_# ym_NN ,_, j_NN is_VBZ a_DT scalar_NN that_WDT represents_VBZ the_DT label_NN of_IN document_NN xm_NN ,_, j_NN ._.
+k_NN =_JJ #_# ,_, #_# ,_, ..._: ,_, K_NN :_: The_DT dimensional_JJ index_NN of_IN input_NN variable_JJ x_NN ._.
+The_DT Bayesian_JJ hierarchical_JJ modeling_NN approach_NN has_VBZ been_VBN widely_RB used_VBN in_IN real-world_JJ information_NN retrieval_NN applications_NNS ._.
+Generalized_NNP Bayesian_NNP hierarchical_JJ linear_JJ models_NNS ,_, one_CD of_IN the_DT simplest_JJS Bayesian_JJ hierarchical_JJ models_NNS ,_, are_VBP commonly_RB used_VBN and_CC have_VBP achieved_VBN good_JJ performance_NN on_IN collaborative_JJ filtering_VBG -LSB-_-LRB- ##_CD -RSB-_-RRB- and_CC content-based_JJ adaptive_JJ filtering_VBG -LSB-_-LRB- ##_CD -RSB-_-RRB- tasks_NNS ._.
+Figure_NNP #_# shows_VBZ the_DT graphical_JJ representation_NN of_IN a_DT Bayesian_JJ hierarchical_JJ model_NN ._.
+In_IN this_DT graph_NN ,_, each_DT user_NN model_NN is_VBZ represented_VBN by_IN a_DT random_JJ vector_NN wm_NN ._.
+We_PRP assume_VBP a_DT user_NN model_NN is_VBZ sampled_VBN randomly_RB from_IN a_DT prior_JJ distribution_NN P_NN -LRB-_-LRB- w_NN |_NN -RRB-_-RRB- ._.
+The_DT system_NN can_MD predict_VB the_DT user_NN label_NN y_NN of_IN a_DT document_NN x_NN given_VBN an_DT estimation_NN of_IN wm_NN -LRB-_-LRB- or_CC wm_NN ''_'' s_NNS distribution_NN -RRB-_-RRB- using_VBG a_DT function_NN y_NN =_JJ f_FW -LRB-_-LRB- x_NN ,_, w_NN -RRB-_-RRB- ._.
+The_DT model_NN is_VBZ called_VBN generalized_VBN Bayesian_JJ hierarchical_JJ linear_JJ model_NN when_WRB y_NN =_JJ f_FW -LRB-_-LRB- wT_NN x_NN -RRB-_-RRB- is_VBZ any_DT generalized_VBN linear_JJ model_NN such_JJ as_IN logistic_JJ regression_NN ,_, SVM_NNP ,_, and_CC linear_JJ regression_NN ._.
+To_TO reliably_RB estimate_VB the_DT user_NN model_NN wm_NN ,_, the_DT system_NN can_MD borrow_VB information_NN from_IN other_JJ users_NNS through_IN the_DT prior_JJ =_JJ -LRB-_-LRB- ,_, -RRB-_-RRB- ._.
+Now_RB we_PRP look_VBP at_IN one_CD commonly_RB used_VBN model_NN where_WRB y_NN =_JJ wT_NN x_NN +_CC ,_, where_WRB N_NN -LRB-_-LRB- #_# ,_, #_# -RRB-_-RRB- is_VBZ a_DT random_JJ noise_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Assume_VB that_IN each_DT user_NN model_NN wm_NN is_VBZ an_DT independent_JJ draw_NN from_IN a_DT population_NN distribution_NN P_NN -LRB-_-LRB- w_NN |_NN -RRB-_-RRB- ,_, which_WDT is_VBZ governed_VBN by_IN some_DT unknown_JJ hyperparameter_NN ._.
+Let_VB the_DT prior_JJ distribution_NN of_IN user_NN model_NN w_NN be_VB a_DT Gaussian_JJ distribution_NN with_IN parameter_NN =_JJ -LRB-_-LRB- ,_, -RRB-_-RRB- ,_, which_WDT is_VBZ the_DT commonly_RB used_VBN prior_JJ for_IN linear_JJ models_NNS ._.
+=_JJ -LRB-_-LRB- #_# ,_, #_# ,_, ..._: ,_, K_NNP -RRB-_-RRB- is_VBZ a_DT K_NN dimensional_JJ vector_NN that_WDT represents_VBZ the_DT mean_NN of_IN the_DT Gaussian_JJ distribution_NN ,_, and_CC is_VBZ the_DT covariance_NN matrix_NN of_IN the_DT Gaussian_NNP ._.
+Usually_RB ,_, a_DT Normal_JJ distribution_NN N_NN -LRB-_-LRB- #_# ,_, aI_NN -RRB-_-RRB- and_CC an_DT Inverse_NNP Wishart_NNP distribution_NN P_NN -LRB-_-LRB- -RRB-_-RRB- |_CD |_CD #_# 2_CD b_NN exp_NN -LRB-_-LRB- #_# 2_CD ctr_NN -LRB-_-LRB- #_# -RRB-_-RRB- -RRB-_-RRB- are_VBP used_VBN as_IN hyperprior_NN to_TO model_VB the_DT prior_JJ distribution_NN of_IN and_CC respectively_RB ._.
+I_PRP is_VBZ the_DT K_NNP dimensional_JJ identity_NN matrix_NN ,_, and_CC a_DT ,_, b_NN ,_, and_CC c_NN are_VBP real_JJ numbers_NNS ._.
+With_IN these_DT settings_NNS ,_, we_PRP have_VBP the_DT following_VBG model_NN for_IN the_DT system_NN :_: 1_CD ._.
+and_CC are_VBP sampled_VBN from_IN N_NN -LRB-_-LRB- #_# ,_, aI_NN -RRB-_-RRB- and_CC IW_NN -LRB-_-LRB- aI_NN -RRB-_-RRB- ,_, respectively_RB ._.
+2_CD The_DT first_JJ dimension_NN of_IN x_NN is_VBZ a_DT dummy_NN variable_NN that_WDT always_RB equals_VBZ to_TO #_# ._.
+Figure_NNP #_# :_: Illustration_NN of_IN dependencies_NNS of_IN variables_NNS in_IN the_DT hierarchical_JJ model_NN ._.
+The_DT rating_NN ,_, y_NN ,_, for_IN a_DT document_NN ,_, x_NN ,_, is_VBZ conditioned_VBN on_IN the_DT document_NN and_CC the_DT user_NN model_NN ,_, wm_NN ,_, associated_VBN with_IN the_DT user_NN m_NN ._.
+Users_NNS share_VBP information_NN about_IN their_PRP$ models_NNS through_IN the_DT prior_JJ ,_, =_JJ -LRB-_-LRB- ,_, -RRB-_-RRB- ._.
+2_LS ._.
+For_IN each_DT user_NN m_NN ,_, wm_NN is_VBZ sampled_VBN randomly_RB from_IN a_DT Normal_JJ distribution_NN :_: wm_NN N_NN -LRB-_-LRB- ,_, #_# -RRB-_-RRB- 3_CD ._.
+For_IN each_DT item_NN xm_NN ,_, j_NN ,_, ym_NN ,_, j_NN is_VBZ sampled_VBN randomly_RB from_IN a_DT Normal_JJ distribution_NN :_: ym_NN ,_, j_NN N_NN -LRB-_-LRB- wT_NN mxm_NN ,_, j_NN ,_, #_# -RRB-_-RRB- ._.
+Let_VB =_JJ -LRB-_-LRB- ,_, w1_NN ,_, w2_NN ,_, ..._: ,_, wM_NN -RRB-_-RRB- represent_VBP the_DT parameters_NNS of_IN this_DT system_NN that_WDT needs_VBZ to_TO be_VB estimated_VBN ._.
+The_DT joint_JJ likelihood_NN for_IN all_PDT the_DT variables_NNS in_IN the_DT probabilistic_JJ model_NN ,_, which_WDT includes_VBZ the_DT data_NNS and_CC the_DT parameters_NNS ,_, is_VBZ :_: P_NN -LRB-_-LRB- D_NN ,_, -RRB-_-RRB- =_JJ P_NN -LRB-_-LRB- -RRB-_-RRB- m_NN P_NN -LRB-_-LRB- wm_NN |_NN -RRB-_-RRB- j_NN P_NN -LRB-_-LRB- ym_NN ,_, j_NN |_CD xm_NN ,_, j_NN ,_, wm_NN -RRB-_-RRB- -LRB-_-LRB- #_# -RRB-_-RRB- For_IN simplicity_NN ,_, we_PRP assume_VBP a_DT ,_, b_NN ,_, c_NN ,_, and_CC are_VBP provided_VBN to_TO the_DT system_NN ._.
+4_LS ._.
+MODEL_NN PARAMETER_NN LEARNING_VBG If_IN the_DT prior_JJ is_VBZ known_VBN ,_, finding_VBG the_DT optimal_JJ wm_NN is_VBZ straightforward_JJ :_: it_PRP is_VBZ a_DT simple_JJ linear_JJ regression_NN ._.
+Therefore_RB ,_, we_PRP will_MD focus_VB on_IN estimating_NN ._.
+The_DT maximum_NN a_DT priori_FW solution_NN of_IN is_VBZ given_VBN by_IN MAP_NN =_JJ arg_NN max_NN P_NN -LRB-_-LRB- |_NN D_NN -RRB-_-RRB- -LRB-_-LRB- #_# -RRB-_-RRB- =_JJ arg_NN max_NN P_NN -LRB-_-LRB- ,_, D_NN -RRB-_-RRB- P_NN -LRB-_-LRB- D_NN -RRB-_-RRB- -LRB-_-LRB- #_# -RRB-_-RRB- =_JJ arg_NN max_NN P_NN -LRB-_-LRB- D_NN |_VBN -RRB-_-RRB- P_NN -LRB-_-LRB- -RRB-_-RRB- -LRB-_-LRB- #_# -RRB-_-RRB- =_JJ arg_NN max_NN w_NN P_NN -LRB-_-LRB- D_NN |_CD w_NN ,_, -RRB-_-RRB- P_NN -LRB-_-LRB- w_NN |_NN -RRB-_-RRB- P_NN -LRB-_-LRB- -RRB-_-RRB- dw_NN -LRB-_-LRB- #_# -RRB-_-RRB- Finding_VBG the_DT optimal_JJ solution_NN for_IN the_DT above_JJ problem_NN is_VBZ challenging_JJ ,_, since_IN we_PRP need_VBP to_TO integrate_VB over_IN all_DT w_NN =_JJ -LRB-_-LRB- w1_NN ,_, w2_NN ,_, ..._: ,_, wM_NN -RRB-_-RRB- ,_, which_WDT are_VBP unobserved_JJ hidden_JJ variables_NNS ._.
+4_LS ._.
+#_# EM_NNP Algorithm_NNP for_IN Bayesian_NNP Hierarchical_NNP Linear_NNP Models_NNS In_IN Equation_NN #_# ,_, is_VBZ the_DT parameter_NN needs_VBZ to_TO be_VB estimated_VBN ,_, and_CC the_DT result_NN depends_VBZ on_IN unobserved_JJ latent_JJ variables_NNS w_NN ._.
+This_DT kind_NN of_IN optimization_NN problem_NN is_VBZ usually_RB solved_VBN by_IN the_DT EM_NNP algorithm_NN ._.
+Applying_VBG EM_NN to_TO the_DT above_JJ problem_NN ,_, the_DT set_NN of_IN user_NN models_NNS w_NN are_VBP the_DT unobservable_JJ hidden_JJ variables_NNS and_CC we_PRP have_VBP :_: Q_NNP =_JJ w_NN P_NN -LRB-_-LRB- w_NN |_CD ,_, #_# ,_, Dm_NN -RRB-_-RRB- log_NN P_NN -LRB-_-LRB- ,_, #_# ,_, w_NN ,_, D_NN -RRB-_-RRB- dw_NN Based_VBN on_IN the_DT derivation_NN of_IN the_DT EM_NNP formulas_NNS presented_VBN in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ,_, we_PRP have_VBP the_DT following_VBG Expectation-Maximization_NN steps_NNS for_IN finding_VBG the_DT optimal_JJ hyperparameters_NNS ._.
+For_IN space_NN considerations_NNS ,_, we_PRP omit_VBP the_DT derivation_NN in_IN this_DT paper_NN since_IN it_PRP is_VBZ not_RB the_DT focus_NN of_IN our_PRP$ work_NN ._.
+E_NN step_NN :_: For_IN each_DT user_NN m_NN ,_, estimate_VBP the_DT user_NN model_NN distribution_NN P_NN -LRB-_-LRB- wm_NN |_CD Dm_NN ,_, -RRB-_-RRB- =_JJ N_NN -LRB-_-LRB- wm_NN ;_: wm_NN ,_, #_# m_NN -RRB-_-RRB- based_VBN on_IN the_DT current_JJ estimation_NN of_IN the_DT prior_JJ =_JJ -LRB-_-LRB- ,_, #_# -RRB-_-RRB- ._.
+wm_NN =_JJ -LRB-_-LRB- -LRB-_-LRB- #_# -RRB-_-RRB- #_# +_CC Sxx_NN ,_, m_NN 2_CD -RRB-_-RRB- #_# -LRB-_-LRB- Sxy_NNP ,_, m_NN 2_CD +_CC -LRB-_-LRB- #_# -RRB-_-RRB- #_# -RRB-_-RRB- -LRB-_-LRB- #_# -RRB-_-RRB- 2_CD m_NN =_JJ -LRB-_-LRB- -LRB-_-LRB- #_# -RRB-_-RRB- #_# +_CC Sxx_NN ,_, m_NN 2_CD -RRB-_-RRB- #_# -LRB-_-LRB- #_# -RRB-_-RRB- where_WRB Sxx_NNP ,_, m_NN =_JJ j_NN xm_NN ,_, jxT_NN m_NN ,_, j_NN Sxy_NN ,_, m_NN =_JJ j_NN xm_NN ,_, jym_NN ,_, j_NN M_NN step_NN :_: Optimize_VB the_DT prior_JJ =_JJ -LRB-_-LRB- ,_, #_# -RRB-_-RRB- based_VBN on_IN the_DT estimation_NN from_IN the_DT last_JJ E_NN step_NN ._.
+=_JJ 1_CD M_NN m_NN wm_NN -LRB-_-LRB- #_# -RRB-_-RRB- 2_CD =_JJ 1_CD M_NN m_NN 2_CD m_NN +_CC -LRB-_-LRB- wm_NN -RRB-_-RRB- -LRB-_-LRB- wm_NN -RRB-_-RRB- T_NN -LRB-_-LRB- #_# -RRB-_-RRB- Many_JJ machine_NN learning_VBG driven_VBN IR_NNP systems_NNS use_VBP a_DT point_NN estimate_NN of_IN the_DT parameters_NNS at_IN different_JJ stages_NNS in_IN the_DT system_NN ._.
+However_RB ,_, we_PRP are_VBP estimating_VBG the_DT posterior_JJ distribution_NN of_IN the_DT variables_NNS at_IN the_DT E_NN step_NN ._.
+This_DT avoids_VBZ overfitting_NN wm_NN to_TO a_DT particular_JJ user_NN ''_'' s_NNS data_NNS ,_, which_WDT may_MD be_VB small_JJ and_CC noisy_JJ ._.
+A_DT detailed_JJ discussion_NN about_IN this_DT subject_NN appears_VBZ in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ._.
+4_LS ._.
+#_# New_NNP Algorithm_NNP :_: Modified_VBN EM_NNP Although_IN the_DT EM_NNP algorithm_NN is_VBZ widely_RB studied_VBN and_CC used_VBN in_IN machine_NN learning_NN applications_NNS ,_, using_VBG the_DT above_JJ EM_NN process_NN to_TO solve_VB Bayesian_JJ hierarchical_JJ linear_JJ models_NNS in_IN large-scale_JJ information_NN retrieval_NN systems_NNS is_VBZ still_RB too_RB computationally_RB expensive_JJ ._.
+In_IN this_DT section_NN ,_, we_PRP describe_VBP why_WRB the_DT learning_NN rate_NN of_IN the_DT EM_NNP algorithm_NN is_VBZ slow_JJ in_IN our_PRP$ application_NN and_CC introduce_VB a_DT new_JJ technique_NN to_TO make_VB the_DT learning_NN of_IN the_DT Bayesian_JJ hierarchical_JJ linear_JJ model_NN scalable_JJ ._.
+The_DT derivation_NN of_IN the_DT new_JJ learning_NN algorithm_NN will_MD be_VB based_VBN on_IN the_DT EM_NNP algorithm_NN described_VBN in_IN the_DT previous_JJ section_NN ._.
+First_RB ,_, the_DT covariance_NN matrices_NNS #_# ,_, #_# m_NN are_VBP usually_RB too_RB large_JJ to_TO be_VB computationally_RB feasible_JJ ._.
+For_IN simplicity_NN ,_, and_CC as_IN a_DT common_JJ practice_NN in_IN IR_NNP ,_, we_PRP do_VBP not_RB model_VB the_DT correlation_NN between_IN features_NNS ._.
+Thus_RB we_PRP approximate_JJ these_DT matrices_NNS with_IN K_NNP dimensional_JJ diagonal_JJ matrices_NNS ._.
+In_IN the_DT rest_NN of_IN the_DT paper_NN ,_, we_PRP use_VBP these_DT symbols_NNS to_TO represent_VB their_PRP$ diagonal_JJ approximations_NNS :_: 2_CD =_JJ 2_CD 1_CD #_# ._. ._.
+#_# 0_CD #_# 2_CD ._. ._.
+#_# ..._: 0_CD #_# ._. ._.
+#_# K_NN 2_CD m_NN =_JJ 2_CD m_NN ,_, #_# #_# ._. ._.
+#_# 0_CD #_# m_NN ,_, #_# ._. ._.
+#_# ..._: 0_CD #_# ._. ._.
+#_# m_NN ,_, K_NNP Secondly_RB ,_, and_CC most_RBS importantly_RB ,_, the_DT input_NN space_NN is_VBZ very_RB sparse_JJ and_CC there_EX are_VBP many_JJ dimensions_NNS that_WDT are_VBP not_RB related_VBN to_TO a_DT particular_JJ user_NN in_IN a_DT real_JJ IR_NNP application_NN ._.
+For_IN example_NN ,_, let_VB us_PRP consider_VB a_DT movie_NN recommendation_NN system_NN ,_, with_IN the_DT input_NN variable_JJ x_NN representing_VBG a_DT particular_JJ movie_NN ._.
+For_IN the_DT jth_NN movie_NN that_IN the_DT user_NN m_NN has_VBZ seen_VBN ,_, let_VB xm_NN ,_, j_NN ,_, k_NN =_JJ #_# if_IN the_DT director_NN of_IN the_DT movie_NN is_VBZ Jean-Pierre_NNP Jeunet_NNP -LRB-_-LRB- indexed_VBN by_IN k_NN -RRB-_-RRB- ._.
+Here_RB we_PRP assume_VBP that_IN whether_IN or_CC not_RB that_IN this_DT director_NN directed_VBD a_DT specific_JJ movie_NN is_VBZ represented_VBN by_IN the_DT kth_NN dimension_NN ._.
+If_IN the_DT user_NN m_NN has_VBZ never_RB seen_VBN a_DT movie_NN directed_VBN by_IN Jean-Pierre_NNP Jeunet_NNP ,_, then_RB the_DT corresponding_JJ dimension_NN is_VBZ always_RB zero_CD -LRB-_-LRB- xm_NN ,_, j_NN ,_, k_NN =_JJ #_# for_IN all_DT j_NN -RRB-_-RRB- ._.
+One_CD major_JJ drawback_NN of_IN the_DT EM_NNP algorithm_NN is_VBZ that_IN the_DT importance_NN of_IN a_DT feature_NN ,_, k_NN ,_, may_MD be_VB greatly_RB dominated_VBN by_IN users_NNS who_WP have_VBP never_RB encountered_VBN this_DT feature_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+j_NN xm_NN ,_, j_NN ,_, k_NN =_JJ #_# -RRB-_-RRB- at_IN the_DT M_NN step_NN -LRB-_-LRB- Equation_NN #_# -RRB-_-RRB- ._.
+Assume_VB that_IN ###_CD out_IN of_IN #_# million_CD users_NNS have_VBP viewed_VBN the_DT movie_NN directed_VBN by_IN Jean-Pierre_NNP Jeunet_NNP ,_, and_CC that_IN the_DT viewers_NNS have_VBP rated_VBN all_DT of_IN his_PRP$ movies_NNS as_IN excellent_JJ ._.
+Intuitively_RB ,_, he_PRP is_VBZ a_DT good_JJ director_NN and_CC the_DT weight_NN for_IN him_PRP -LRB-_-LRB- k_NN -RRB-_-RRB- should_MD be_VB high_JJ ._.
+Before_IN the_DT EM_NNP iteration_NN ,_, the_DT initial_JJ value_NN of_IN is_VBZ usually_RB set_VBN to_TO #_# ._.
+Since_IN the_DT other_JJ ###_CD ,_, ###_CD users_NNS have_VBP not_RB seen_VBN this_DT movie_NN ,_, their_PRP$ corresponding_JJ weights_NNS -LRB-_-LRB- w1_NN ,_, k_NN ,_, w2_NN ,_, k_NN ,_, ..._: ,_, wm_NN ,_, k_NN ..._: ,_, w999900_NN ,_, k_NN -RRB-_-RRB- for_IN that_DT director_NN would_MD be_VB very_RB small_JJ initially_RB ._.
+Thus_RB the_DT corresponding_JJ weight_NN of_IN the_DT director_NN in_IN the_DT prior_JJ k_NN at_IN the_DT first_JJ M_NN step_NN would_MD be_VB very_RB low_JJ ,_, and_CC the_DT variance_NN m_NN ,_, k_NN will_MD be_VB large_JJ -LRB-_-LRB- Equations_NNS #_# and_CC 7_CD -RRB-_-RRB- ._.
+It_PRP is_VBZ undesirable_JJ that_IN users_NNS who_WP have_VBP never_RB seen_VBN any_DT movie_NN produced_VBN by_IN the_DT director_NN influence_VBP the_DT importance_NN of_IN the_DT director_NN so_RB much_RB ._.
+This_DT makes_VBZ the_DT convergence_NN of_IN the_DT standard_JJ EM_NNP algorithm_NN very_RB slow_JJ ._.
+Now_RB let_VB ''_'' s_VBZ look_NN at_IN whether_IN we_PRP can_MD improve_VB the_DT learning_VBG speed_NN of_IN the_DT algorithm_NN ._.
+Without_IN a_DT loss_NN of_IN generality_NN ,_, let_VB us_PRP assume_VB that_IN the_DT kth_NN dimension_NN of_IN the_DT input_NN variable_JJ x_NN is_VBZ not_RB related_VBN to_TO a_DT particular_JJ user_NN m_NN ._.
+By_IN which_WDT we_PRP mean_VBP ,_, xm_VBP ,_, j_VBP ,_, k_NN =_JJ #_# for_IN all_DT j_NN =_JJ #_# ,_, ..._: ,_, Jm_NN ._.
+It_PRP is_VBZ straightforward_JJ to_TO prove_VB that_IN the_DT kth_NN row_NN and_CC kth_NN column_NN of_IN Sxx_NN ,_, m_NN are_VBP completely_RB filled_VBN with_IN zeros_NNS ,_, and_CC that_IN the_DT kth_NN dimension_NN of_IN Sxy_NN ,_, m_NN is_VBZ zeroed_VBN as_RB well_RB ._.
+Thus_RB the_DT corresponding_JJ kth_NN dimension_NN of_IN the_DT user_NN model_NN ''_'' s_NNS mean_VBP ,_, wm_VBP ,_, should_MD be_VB equal_JJ to_TO that_DT of_IN the_DT prior_JJ :_: wm_NN ,_, k_NN =_JJ k_NN ,_, with_IN the_DT corresponding_JJ covariance_NN of_IN m_NN ,_, k_NN =_JJ k_NN ._.
+At_IN the_DT M_NN step_NN ,_, the_DT standard_JJ EM_NNP algorithm_NN uses_VBZ the_DT numerical_JJ solution_NN of_IN the_DT distribution_NN P_NN -LRB-_-LRB- wm_NN |_CD Dm_NN ,_, -RRB-_-RRB- estimated_VBN at_IN E_NN step_NN -LRB-_-LRB- Equation_NN #_# and_CC Equation_NN #_# -RRB-_-RRB- ._.
+However_RB ,_, the_DT numerical_JJ solutions_NNS are_VBP very_RB unreliable_JJ for_IN wm_NN ,_, k_NN and_CC m_NN ,_, k_NN when_WRB the_DT kth_NN dimension_NN is_VBZ not_RB related_VBN to_TO the_DT mth_NN user_NN ._.
+A_DT better_JJR approach_NN is_VBZ using_VBG the_DT analytical_JJ solutions_NNS wm_NN ,_, k_NN =_JJ k_NN ,_, and_CC m_NN ,_, k_NN =_JJ k_NN for_IN the_DT unrelated_JJ -LRB-_-LRB- m_NN ,_, k_NN -RRB-_-RRB- pairs_NNS ,_, along_IN with_IN the_DT numerical_JJ solution_NN estimated_VBN at_IN E_NN step_NN for_IN the_DT other_JJ -LRB-_-LRB- m_NN ,_, k_NN -RRB-_-RRB- pairs_NNS ._.
+Thus_RB we_PRP get_VBP the_DT following_VBG new_JJ EM-like_JJ algorithm_NN :_: Modified_VBN E_NN step_NN :_: For_IN each_DT user_NN m_NN ,_, estimate_VBP the_DT user_NN model_NN distribution_NN P_NN -LRB-_-LRB- wm_NN |_CD Dm_NN ,_, -RRB-_-RRB- =_JJ N_NN -LRB-_-LRB- wm_NN ;_: wm_NN ,_, #_# m_NN -RRB-_-RRB- based_VBN on_IN the_DT current_JJ estimation_NN of_IN ,_, ,_, #_# ._.
+wm_NN =_JJ -LRB-_-LRB- -LRB-_-LRB- #_# -RRB-_-RRB- #_# +_CC Sxx_NN ,_, m_NN 2_CD -RRB-_-RRB- #_# -LRB-_-LRB- Sxy_NNP ,_, m_NN 2_CD +_CC -LRB-_-LRB- #_# -RRB-_-RRB- #_# -RRB-_-RRB- -LRB-_-LRB- ##_CD -RRB-_-RRB- 2_CD m_NN ,_, k_NN =_JJ -LRB-_-LRB- -LRB-_-LRB- #_# k_NN -RRB-_-RRB- #_# +_CC sxx_NN ,_, m_NN ,_, k_NN 2_CD -RRB-_-RRB- #_# -LRB-_-LRB- ##_CD -RRB-_-RRB- where_WRB sxx_NN ,_, m_NN ,_, k_NN =_JJ j_NN x2_NN m_NN ,_, j_NN ,_, k_NN and_CC sxy_NN ,_, m_NN ,_, k_NN =_JJ j_NN xm_NN ,_, j_NN ,_, kym_NN ,_, j_NN Modified_VBD M_NN Step_NN Optimize_VB the_DT prior_JJ =_JJ -LRB-_-LRB- ,_, #_# -RRB-_-RRB- based_VBN on_IN the_DT estimation_NN from_IN the_DT last_JJ E_NN step_NN for_IN related_JJ userfeature_JJ pairs_NNS ._.
+The_DT M_NN step_NN implicitly_RB uses_VBZ the_DT analytical_JJ solution_NN for_IN unrelated_JJ user-feature_JJ pairs_NNS ._.
+k_NN =_JJ 1_CD Mk_NN m_NN :_: related_JJ wm_NN ,_, k_NN -LRB-_-LRB- ##_NN -RRB-_-RRB- 2_CD k_NN =_JJ 1_CD Mk_NN m_NN :_: related_JJ 2_CD m_NN ,_, k_NN +_CC -LRB-_-LRB- wm_NN ,_, k_NN k_NN -RRB-_-RRB- -LRB-_-LRB- wm_NN ,_, k_NN k_NN -RRB-_-RRB- T_NN -LRB-_-LRB- ##_NN -RRB-_-RRB- where_WRB Mk_NN is_VBZ the_DT number_NN of_IN users_NNS that_WDT are_VBP related_VBN to_TO feature_VB k_NN We_PRP only_RB estimate_VBP the_DT diagonal_NN of_IN #_# m_NN and_CC since_IN we_PRP are_VBP using_VBG the_DT diagonal_JJ approximation_NN of_IN the_DT covariance_NN matrices_NNS ._.
+To_TO estimate_VB wm_NN ,_, we_PRP only_RB need_VBP to_TO calculate_VB the_DT numerical_JJ solutions_NNS for_IN dimensions_NNS that_WDT are_VBP related_JJ to_TO user_NN m_NN ._.
+To_TO estimate_VB #_# k_NN and_CC k_NN ,_, we_PRP only_RB sum_VBP over_IN users_NNS that_WDT are_VBP related_JJ to_TO the_DT kth_NN feature_NN ._.
+There_EX are_VBP two_CD major_JJ benefits_NNS of_IN the_DT new_JJ algorithm_NN ._.
+First_RB ,_, because_IN only_RB the_DT related_JJ -LRB-_-LRB- m_NN ,_, k_NN -RRB-_-RRB- pairs_NNS are_VBP needed_VBN at_IN the_DT modified_VBN M_NN step_NN ,_, the_DT computational_JJ complexity_NN in_IN a_DT single_JJ EM_NN iteration_NN is_VBZ much_RB smaller_JJR when_WRB the_DT data_NNS is_VBZ sparse_JJ ,_, and_CC many_JJ of_IN -LRB-_-LRB- m_NN ,_, k_NN -RRB-_-RRB- pairs_NNS are_VBP unrelated_JJ ._.
+Second_RB ,_, the_DT parameters_NNS estimated_VBN at_IN the_DT modified_VBN M_NN step_NN -LRB-_-LRB- Equations_NNS ##_SYM -_: ##_NN -RRB-_-RRB- are_VBP more_RBR accurate_JJ than_IN the_DT standard_JJ M_NN step_NN described_VBN in_IN Section_NN #_# ._.
+#_# because_IN the_DT exact_JJ analytical_JJ solutions_NNS wm_NN ,_, k_NN =_JJ k_NN and_CC m_NN ,_, k_NN =_JJ k_NN for_IN the_DT unrelated_JJ -LRB-_-LRB- m_NN ,_, k_NN -RRB-_-RRB- pairs_NNS were_VBD used_VBN in_IN the_DT new_JJ algorithm_NN instead_RB of_IN an_DT approximate_JJ solution_NN as_IN in_IN the_DT standard_JJ algorithm_NN ._.
+5_CD ._.
+EXPERIMENTAL_JJ METHODOLOGY_NN 5_CD ._.
+#_# Evaluation_NN Data_NNS Set_VB To_TO evaluate_VB the_DT proposed_VBN technique_NN ,_, we_PRP used_VBD the_DT following_VBG three_CD major_JJ data_NNS sets_NNS -LRB-_-LRB- Table_NNP #_# -RRB-_-RRB- :_: MovieLens_NNP Data_NNPS :_: This_DT data_NN set_NN was_VBD created_VBN by_IN combining_VBG the_DT relevance_NN judgments_NNS from_IN the_DT MovieLens_NNP -LSB-_-LRB- #_# -RSB-_-RRB- data_NNS set_VBN with_IN documents_NNS from_IN the_DT Internet_NN Movie_NN Database_NN -LRB-_-LRB- IMDB_NN -RRB-_-RRB- ._.
+MovieLens_NNP allows_VBZ users_NNS to_TO rank_VB how_WRB much_JJ he_PRP /_: she_PRP enjoyed_VBD a_DT specific_JJ movie_NN on_IN a_DT scale_NN from_IN #_# to_TO 5_CD ._.
+This_DT likeability_NN rating_NN was_VBD used_VBN as_IN a_DT measurement_NN of_IN how_WRB relevant_JJ the_DT document_NN representing_VBG the_DT corresponding_JJ movie_NN is_VBZ to_TO the_DT user_NN ._.
+We_PRP considered_VBD documents_NNS with_IN likeability_NN scores_NNS of_IN #_# or_CC #_# as_IN relevant_JJ ,_, and_CC documents_NNS with_IN a_DT score_NN of_IN #_# to_TO #_# as_IN irrelevant_JJ to_TO the_DT user_NN ._.
+MovieLens_NNS provided_VBD relevance_NN judgments_NNS on_IN #_# ,_, ###_CD documents_NNS from_IN #_# ,_, ###_CD separate_JJ users_NNS ._.
+On_IN average_NN ,_, each_DT user_NN rated_VBN ###_JJ movies_NNS ,_, of_IN these_DT ##_NNS were_VBD judged_VBN to_TO be_VB relevant_JJ ._.
+The_DT average_JJ score_NN for_IN a_DT document_NN was_VBD #_# ._.
+##_NN ._.
+Documents_NNS representing_VBG each_DT movie_NN were_VBD constructed_VBN from_IN the_DT portion_NN of_IN the_DT IMDB_NN database_NN that_WDT is_VBZ available_JJ for_IN public_JJ download_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Based_VBN on_IN this_DT database_NN ,_, we_PRP created_VBD one_CD document_NN per_IN movie_NN that_WDT contained_VBD the_DT relevant_JJ information_NN about_IN it_PRP -LRB-_-LRB- e_LS ._.
+g_NN ._.
+directors_NNS ,_, actors_NNS ,_, etc_FW ._. -RRB-_-RRB- ._.
+Table_NNP #_# :_: Data_NNS Set_VB Statistics_NNPS ._.
+On_IN Reuters_NNP ,_, the_DT number_NN of_IN rating_NN for_IN a_DT simulated_JJ user_NN is_VBZ the_DT number_NN of_IN documents_NNS relevant_JJ to_TO the_DT corresponding_JJ topic_NN ._.
+Data_NNS Users_NNS Docs_NNP Ratings_NNS per_IN User_NN MovieLens_NNS #_# ,_, ###_CD #_# ,_, ###_CD ###_CD Netflix-all_JJ ###_CD ,_, ###_CD ##_NN ,_, ###_CD ###_CD Netflix-1000_NN ####_CD ##_NN ,_, ###_CD ###_CD Reuters-C_NN ##_CD ###_CD ,_, ###_CD ####_CD Reuters-E_NN ##_CD ###_CD ,_, ###_CD ####_CD Reuters-G_NN ##_CD ###_CD ,_, ###_CD ####_CD Reuters-M_NNP ##_CD ###_CD ,_, ###_CD ####_CD Netflix_NNP Data_NNS :_: This_DT data_NN set_NN was_VBD constructed_VBN by_IN combining_VBG documents_NNS about_IN movies_NNS crawled_VBN from_IN the_DT web_NN with_IN a_DT set_NN of_IN actual_JJ movie_NN rental_JJ customer_NN relevance_NN judgments_NNS from_IN Netflix_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Netflix_NNP publicly_RB provides_VBZ the_DT relevance_NN judgments_NNS of_IN ###_CD ,_, ###_CD anonymous_JJ customers_NNS ._.
+There_EX are_VBP around_IN ###_CD million_CD rating_NN on_IN a_DT scale_NN of_IN #_# to_TO #_# for_IN ##_CD ,_, ###_CD documents_NNS ._.
+Similar_JJ to_TO MovieLens_NNP ,_, we_PRP considered_VBD documents_NNS with_IN likeability_NN scores_NNS of_IN #_# or_CC #_# as_IN relevant_JJ ._.
+This_DT number_NN was_VBD reduced_VBN to_TO ####_CD customers_NNS through_IN random_JJ sampling_NN ._.
+The_DT average_JJ customer_NN on_IN the_DT reduced_VBN data_NN set_NN provided_VBD ###_CD judgments_NNS ,_, with_IN ##_NN being_VBG deemed_VBN relevant_JJ ._.
+The_DT average_JJ score_NN for_IN documents_NNS is_VBZ 3_CD ._.
+##_NN ._.
+Reuters_NNP Data_NNPS :_: This_DT is_VBZ the_DT Reuters_NNP Corpus_NNP ,_, Volume_NN #_# ._.
+It_PRP covers_VBZ ###_NN ,_, ###_CD Reuters_NNP English_NNP language_NN news_NN stories_NNS from_IN August_NNP ##_CD ,_, ####_CD to_TO August_NNP ##_CD ,_, ####_CD ._.
+Only_RB the_DT first_JJ ###_NN ,_, ###_CD news_NN were_VBD used_VBN in_IN our_PRP$ experiments_NNS ._.
+The_DT Reuters_NNP corpus_NN comes_VBZ with_IN a_DT topic_NN hierarchy_NN ._.
+Each_DT document_NN is_VBZ assigned_VBN to_TO one_CD of_IN several_JJ locations_NNS on_IN the_DT hierarchical_JJ tree_NN ._.
+The_DT first_JJ level_NN of_IN the_DT tree_NN contains_VBZ four_CD topics_NNS ,_, denoted_VBN as_IN C_NN ,_, E_NN ,_, M_NN ,_, and_CC G_NN ._.
+For_IN the_DT experiments_NNS in_IN this_DT paper_NN ,_, the_DT tree_NN was_VBD cut_VBN at_IN level_NN #_# to_TO create_VB four_CD smaller_JJR trees_NNS ,_, each_DT of_IN which_WDT corresponds_VBZ to_TO one_CD smaller_JJR data_NNS set_NN :_: Reuters-E_NN Reuters-C_NN ,_, ReutersM_NN and_CC Reuters-G_NN ._.
+For_IN each_DT small_JJ data_NNS set_VBN ,_, we_PRP created_VBD several_JJ profiles_NNS ,_, one_CD profile_NN for_IN each_DT node_NN in_IN a_DT sub-tree_JJ ,_, to_TO simulate_VB multiple_JJ users_NNS ,_, each_DT with_IN a_DT related_JJ ,_, yet_RB separate_JJ definition_NN of_IN relevance_NN ._.
+All_PDT the_DT user_NN profiles_NNS on_IN a_DT sub-tree_NN are_VBP supposed_VBN to_TO share_VB the_DT same_JJ prior_JJ model_NN distribution_NN ._.
+Since_IN this_DT corpus_NN explicitly_RB indicates_VBZ only_RB the_DT relevant_JJ documents_NNS for_IN a_DT topic_NN -LRB-_-LRB- user_NN -RRB-_-RRB- ,_, all_DT other_JJ documents_NNS are_VBP considered_VBN irrelevant_JJ ._.
+5_CD ._.
+#_# Evaluation_NN We_PRP designed_VBD the_DT experiments_NNS to_TO answer_VB the_DT following_VBG three_CD questions_NNS :_: 1_CD ._.
+Do_VB we_PRP need_VBP to_TO take_VB the_DT effort_NN to_TO use_VB a_DT Bayesian_JJ approach_NN and_CC learn_VB a_DT prior_RB from_IN other_JJ users_NNS ?_.
+2_LS ._.
+Does_VBZ the_DT new_JJ algorithm_NN work_NN better_JJR than_IN the_DT standard_JJ EM_NNP algorithm_NN for_IN learning_VBG the_DT Bayesian_JJ hierarchical_JJ linear_JJ model_NN ?_.
+3_LS ._.
+Can_MD the_DT new_JJ algorithm_NN quickly_RB learn_VBP many_JJ user_NN models_NNS ?_.
+To_TO answer_VB the_DT first_JJ question_NN ,_, we_PRP compared_VBD the_DT Bayesian_JJ hierarchical_JJ models_NNS with_IN commonly_RB used_VBN Norm-2_NN regularized_VBN linear_JJ regression_NN models_NNS ._.
+In_IN fact_NN ,_, the_DT commonly_RB used_VBN approach_NN is_VBZ equivalent_JJ to_TO the_DT model_NN learned_VBD at_IN the_DT end_NN of_IN the_DT first_JJ EM_NNP iteration_NN ._.
+To_TO answer_VB the_DT second_JJ question_NN ,_, we_PRP compared_VBD the_DT proposed_VBN new_JJ algorithm_NN with_IN the_DT standard_JJ EM_NNP algorithm_NN to_TO see_VB whether_IN the_DT new_JJ learning_NN algorithm_NN is_VBZ better_RBR ._.
+To_TO answer_VB the_DT third_JJ question_NN ,_, we_PRP tested_VBD the_DT efficiency_NN of_IN the_DT new_JJ algorithm_NN on_IN the_DT entire_JJ Netflix_NNP data_NNS set_VBD where_WRB about_IN half_PDT a_DT million_CD user_NN models_NNS need_VBP to_TO be_VB learned_VBN together_RB ._.
+For_IN the_DT MovieLens_NNPS and_CC Netflix_NNP data_NNS sets_NNS ,_, algorithm_NN effectiveness_NN was_VBD measured_VBN by_IN mean_NN square_JJ error_NN ,_, while_IN on_IN the_DT Reuters_NNP data_NNS set_VBD classification_NN error_NN was_VBD used_VBN because_IN it_PRP was_VBD more_RBR informative_JJ ._.
+We_PRP first_RB evaluated_VBD the_DT performance_NN on_IN each_DT individual_JJ user_NN ,_, and_CC then_RB estimated_VBD the_DT macro_NN average_NN over_IN all_DT users_NNS ._.
+Statistical_JJ tests_NNS -LRB-_-LRB- t-tests_NNS -RRB-_-RRB- were_VBD carried_VBN out_RP to_TO see_VB whether_IN the_DT results_NNS are_VBP significant_JJ ._.
+For_IN the_DT experiments_NNS on_IN the_DT MovieLens_NNPS and_CC Netflix_NNP data_NNS sets_NNS ,_, we_PRP used_VBD a_DT random_JJ sample_NN of_IN ##_CD %_NN of_IN each_DT user_NN for_IN training_NN ,_, and_CC the_DT rest_NN for_IN testing_NN ._.
+On_IN Reuters_NNP ''_'' data_NNS set_VBN ,_, because_IN there_EX are_VBP too_RB many_JJ relevant_JJ documents_NNS for_IN each_DT topic_NN in_IN the_DT corpus_NN ,_, we_PRP used_VBD a_DT random_JJ sample_NN of_IN ##_CD %_NN of_IN each_DT topic_NN for_IN training_NN ,_, and_CC ##_CD %_NN of_IN the_DT remaining_VBG documents_NNS for_IN testing_NN ._.
+For_IN all_DT runs_NNS ,_, we_PRP set_VBD -LRB-_-LRB- a_DT ,_, b_NN ,_, c_NN ,_, -RRB-_-RRB- =_JJ -LRB-_-LRB- #_# ._.
+#_# ,_, ##_NN ,_, #_# ._.
+#_# ,_, #_# -RRB-_-RRB- manually_RB ._.
+6_CD ._.
+EXPERIMENTAL_JJ RESULTS_NNS Figure_NN #_# ,_, Figure_NNP #_# ,_, and_CC Figure_NNP #_# show_VBP that_IN on_IN all_DT data_NNS sets_NNS ,_, the_DT Bayesian_JJ hierarchical_JJ modeling_NN approach_NN has_VBZ a_DT statistical_JJ significant_JJ improvement_NN over_IN the_DT regularized_VBN linear_JJ regression_NN model_NN ,_, which_WDT is_VBZ equivalent_JJ to_TO the_DT Bayesian_JJ hierarchical_JJ models_NNS learned_VBD at_IN the_DT first_JJ iteration_NN ._.
+Further_JJ analysis_NN shows_VBZ a_DT negative_JJ correlation_NN between_IN the_DT number_NN of_IN training_NN data_NNS for_IN a_DT user_NN and_CC the_DT improvement_NN the_DT system_NN gets_VBZ ._.
+This_DT suggests_VBZ that_IN the_DT borrowing_NN information_NN from_IN other_JJ users_NNS has_VBZ more_JJR significant_JJ improvements_NNS for_IN users_NNS with_IN less_JJR training_NN data_NNS ,_, which_WDT is_VBZ as_IN expected_VBN ._.
+However_RB ,_, the_DT strength_NN of_IN the_DT correlation_NN differs_VBZ over_IN data_NNS sets_NNS ,_, and_CC the_DT amount_NN of_IN training_NN data_NNS is_VBZ not_RB the_DT only_JJ characteristics_NNS that_WDT will_MD influence_VB the_DT final_JJ performance_NN ._.
+Figure_NNP #_# and_CC Figure_NNP #_# show_VBP that_IN the_DT proposed_VBN new_JJ algorithm_NN works_VBZ better_JJR than_IN the_DT standard_JJ EM_NNP algorithm_NN on_IN the_DT Netflix_NNP and_CC MovieLens_NNP data_NNS sets_NNS ._.
+This_DT is_VBZ not_RB surprising_JJ since_IN the_DT number_NN of_IN related_JJ feature-users_NNS pairs_NNS is_VBZ much_RB smaller_JJR than_IN the_DT number_NN of_IN unrelated_JJ feature-user_NN pairs_NNS on_IN these_DT two_CD data_NNS sets_NNS ,_, and_CC thus_RB the_DT proposed_VBN new_JJ algorithm_NN is_VBZ expected_VBN to_TO work_VB better_RB ._.
+Figure_NNP #_# shows_VBZ that_IN the_DT two_CD algorithms_NNS work_VBP similarly_RB on_IN the_DT Reuters-E_NN data_NN set_NN ._.
+The_DT accuracy_NN of_IN the_DT new_JJ algorithm_NN is_VBZ similar_JJ to_TO that_DT of_IN the_DT standard_JJ EM_NNP algorithm_NN at_IN each_DT iteration_NN ._.
+The_DT general_JJ patterns_NNS are_VBP very_RB similar_JJ on_IN other_JJ Reuters_NNP ''_'' subsets_NNS ._.
+Further_JJ analysis_NN shows_VBZ that_IN only_RB 58_CD %_NN of_IN the_DT user-feature_JJ pairs_NNS are_VBP unrelated_JJ on_IN this_DT data_NN set_NN ._.
+Since_IN the_DT number_NN of_IN unrelated_JJ user-feature_JJ pairs_NNS is_VBZ not_RB extremely_RB large_JJ ,_, the_DT sparseness_NN is_VBZ not_RB a_DT serious_JJ problem_NN on_IN the_DT Reuters_NNP data_NN set_NN ._.
+Thus_RB the_DT two_CD learning_VBG algorithms_NNS perform_VB similarly_RB ._.
+The_DT results_NNS suggest_VBP that_IN only_RB on_IN a_DT corpus_NN where_WRB the_DT number_NN of_IN unrelated_JJ user-feature_JJ pairs_NNS is_VBZ much_RB larger_JJR than_IN the_DT number_NN of_IN related_JJ pairs_NNS ,_, such_JJ as_IN on_IN the_DT Netflix_NNP data_NN set_NN ,_, the_DT proposed_VBN technique_NN will_MD get_VB a_DT significant_JJ improvement_NN over_IN standard_JJ EM_NN ._.
+However_RB ,_, the_DT experiments_NNS also_RB show_VBP that_IN when_WRB the_DT assumption_NN does_VBZ not_RB hold_VB ,_, the_DT new_JJ algorithm_NN does_VBZ not_RB hurt_VB performance_NN ._.
+Although_IN the_DT proposed_VBN technique_NN is_VBZ faster_RBR than_IN standard_JJ Figure_NN #_# :_: Performance_NNP on_IN a_DT Netflix_NNP subset_NN with_IN #_# ,_, ###_CD users_NNS ._.
+The_DT new_JJ algorithm_NN is_VBZ statistical_JJ significantly_RB better_JJR than_IN EM_NNP algorithm_NN at_IN iterations_NNS #_# -_: ##_NN ._.
+Norm-2_NN regularized_VBD linear_JJ models_NNS are_VBP equivalent_JJ to_TO the_DT Bayesian_JJ hierarchical_JJ models_NNS learned_VBD at_IN the_DT first_JJ iteration_NN ,_, and_CC are_VBP statistical_JJ significantly_RB worse_JJR than_IN the_DT Bayesian_JJ hierarchical_JJ models_NNS ._.
+0_CD #_# #_# #_# #_# ##_CD 1_CD 1_CD ._.
+##_NN 1_CD ._.
+#_# 1_CD ._.
+##_NN 1_CD ._.
+#_# 1_CD ._.
+##_NN 1_CD ._.
+#_# 1_CD ._.
+##_NN 1_CD ._.
+#_# Iterations_NNPS MeanSquareError_NNP New_NNP Algorithm_NNP Traditional_JJ EM_NN 1_CD #_# #_# #_# #_# #_# #_# #_# #_# ##_CD 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN Iterations_NNS ClassificationError_NNP New_NNP Algorithm_NNP Traditional_JJ EM_NNP Figure_NNP #_# :_: Performance_NNP on_IN a_DT MovieLens_NNP subset_NN with_IN #_# ,_, ###_CD users_NNS ._.
+The_DT new_JJ algorithm_NN is_VBZ statistical_JJ significantly_RB better_JJR than_IN EM_NNP algorithm_NN at_IN iteration_NN #_# to_TO ##_CD -LRB-_-LRB- evaluated_VBN with_IN mean_JJ square_JJ error_NN -RRB-_-RRB- ._.
+1_CD #_# ##_CD ##_CD ##_NN 0_CD ._.
+#_# 1_CD 1_CD ._.
+#_# 2_CD 2_CD ._.
+#_# 3_CD 3_CD ._.
+#_# Iterations_NNPS MeanSquareError_NNP New_NNP Algorithm_NNP Traditional_JJ EM_NN 1_CD #_# ##_CD ##_CD ##_NN 0_CD ._.
+##_NN 0_CD ._.
+#_# 0_CD ._.
+##_NN 0_CD ._.
+#_# 0_CD ._.
+##_NN 0_CD ._.
+#_# 0_CD ._.
+##_NN Iterations_NNS ClassificationError_NNP New_NNP Algorithm_NNP Traditional_JJ EM_NNP Figure_NNP #_# :_: Performance_NNP on_IN a_DT Reuters-E_NN subset_NN with_IN ##_NN profiles_NNS ._.
+Performances_NNPS on_IN Reuters-C_NN ,_, Reuters-M_NN ,_, Reuters-G_NN are_VBP similar_JJ ._.
+1_CD #_# #_# #_# #_# 0_CD ._.
+###_NN 0_CD ._.
+####_NN 0_CD ._.
+###_NN 0_CD ._.
+####_NN 0_CD ._.
+###_NN 0_CD ._.
+####_NN 0_CD ._.
+###_CD Iterations_NNS MeanSquareError_NNP New_NNP Algorithm_NNP Traditional_JJ EM_NN 1_CD #_# #_# #_# #_# 0_CD ._.
+####_NN 0_CD ._.
+####_NN 0_CD ._.
+####_NN 0_CD ._.
+####_NN 0_CD ._.
+###_NN 0_CD ._.
+####_NN 0_CD ._.
+####_CD Iterations_NNS ClassificationError_NNP New_NNP Algorithm_NNP Traditional_JJ EM_NNP EM_NNP ,_, can_MD it_PRP really_RB learn_VBP millions_NNS of_IN user_NN models_NNS quickly_RB ?_.
+Our_PRP$ results_NNS show_VBP that_IN the_DT modified_VBN EM_NN algorithm_NN converges_VBZ quickly_RB ,_, and_CC #_# -_: #_# modified_VBN EM_NN iterations_NNS would_MD result_VB in_IN a_DT reliable_JJ estimation_NN ._.
+We_PRP evaluated_VBD the_DT algorithm_NN on_IN the_DT whole_JJ Netflix_NNP data_NNS set_NN -LRB-_-LRB- ###_CD ,_, ###_CD users_NNS ,_, ###_CD ,_, ###_CD features_NNS ,_, and_CC 100_CD million_CD ratings_NNS -RRB-_-RRB- running_VBG on_IN a_DT single_JJ CPU_NNP PC_NN -LRB-_-LRB- 2GB_NN memory_NN ,_, P4_NN 3GHz_NN -RRB-_-RRB- ._.
+The_DT system_NN finished_VBD one_CD modified_VBN EM_NNP iteration_NN in_IN about_IN #_# hours_NNS ._.
+This_DT demonstrates_VBZ that_IN the_DT proposed_VBN technique_NN can_MD efficiently_RB handle_VB large-scale_JJ system_NN like_IN Netflix_NNP ._.
+7_CD ._.
+CONCLUSION_NN Content-based_JJ user_NN profile_NN learning_NN is_VBZ an_DT important_JJ problem_NN and_CC is_VBZ the_DT key_JJ to_TO providing_VBG personal_JJ recommendations_NNS to_TO a_DT user_NN ,_, especially_RB for_IN recommending_VBG new_JJ items_NNS with_IN a_DT small_JJ number_NN of_IN ratings_NNS ._.
+The_DT Bayesian_JJ hierarchical_JJ modeling_NN approach_NN is_VBZ becoming_VBG an_DT important_JJ user_NN profile_NN learning_VBG approach_NN due_JJ to_TO its_PRP$ theoretically_RB justified_JJ ability_NN to_TO help_VB one_CD user_NN through_IN information_NN transfer_NN from_IN the_DT other_JJ users_NNS by_IN way_NN of_IN hyperpriors_NNS ._.
+This_DT paper_NN examined_VBD the_DT weakness_NN of_IN the_DT popular_JJ EM_NN based_VBN learning_VBG approach_NN for_IN Bayesian_JJ hierarchical_JJ linear_JJ models_NNS and_CC proposed_VBD a_DT better_JJR learning_NN technique_NN called_VBN Modified_NNP EM_NNP ._.
+We_PRP showed_VBD that_IN the_DT new_JJ technique_NN is_VBZ theoretically_RB more_RBR computationally_RB efficient_JJ than_IN the_DT standard_JJ EM_NNP algorithm_NN ._.
+Evaluation_NN on_IN the_DT MovieLens_NNPS and_CC Netflix_NNP data_NNS sets_NNS demonstrated_VBD the_DT effectiveness_NN of_IN the_DT new_JJ technique_NN when_WRB the_DT data_NNS is_VBZ sparse_JJ ,_, by_IN which_WDT we_PRP mean_VBP the_DT ratio_NN of_IN related_JJ user-feature_JJ pairs_NNS to_TO unrelated_JJ pairs_NNS is_VBZ small_JJ ._.
+Evaluation_NN on_IN the_DT Reuters_NNP data_NN set_NN showed_VBD that_IN the_DT new_JJ technique_NN performed_VBD similar_JJ to_TO the_DT standard_JJ EM_NNP algorithm_NN when_WRB the_DT sparseness_NN condition_NN does_VBZ not_RB hold_VB ._.
+In_IN general_JJ ,_, it_PRP is_VBZ better_JJR to_TO use_VB the_DT new_JJ algorithm_NN since_IN it_PRP is_VBZ as_IN simple_JJ as_IN standard_JJ EM_NNP ,_, the_DT performance_NN is_VBZ either_RB better_JJR or_CC similar_JJ to_TO EM_NNP ,_, and_CC the_DT computation_NN complexity_NN is_VBZ lower_JJR at_IN each_DT iteration_NN ._.
+It_PRP is_VBZ worth_JJ mentioning_VBG that_IN even_RB if_IN the_DT original_JJ problem_NN space_NN is_VBZ not_RB sparse_JJ ,_, sparseness_NN can_MD be_VB created_VBN artificially_RB when_WRB a_DT recommendation_NN system_NN uses_VBZ user-specific_JJ feature_NN selection_NN techniques_NNS to_TO reduce_VB the_DT noise_NN and_CC user_NN model_NN complexity_NN ._.
+The_DT proposed_VBN technique_NN can_MD also_RB be_VB adapted_VBN to_TO improve_VB the_DT learning_NN in_IN such_JJ a_DT scenario_NN ._.
+We_PRP also_RB demonstrated_VBD that_IN the_DT proposed_VBN technique_NN can_MD learn_VB half_PDT a_DT million_CD user_NN profiles_NNS from_IN ###_CD million_CD ratings_NNS in_IN a_DT few_JJ hours_NNS with_IN a_DT single_JJ CPU_NNP ._.
+The_DT research_NN is_VBZ important_JJ because_IN scalability_NN is_VBZ a_DT major_JJ concern_NN for_IN researchers_NNS when_WRB using_VBG the_DT Bayesian_JJ hierarchical_JJ linear_JJ modeling_NN approach_NN to_TO build_VB a_DT practical_JJ large_JJ scale_NN system_NN ,_, even_RB though_IN the_DT literature_NN have_VBP demonstrated_VBN the_DT effectiveness_NN of_IN the_DT models_NNS in_IN many_JJ applications_NNS ._.
+Our_PRP$ work_NN is_VBZ one_CD major_JJ step_NN on_IN the_DT road_NN to_TO make_VB Bayesian_JJ hierarchical_JJ linear_JJ models_NNS more_RBR practical_JJ ._.
+The_DT proposed_VBN new_JJ technique_NN can_MD be_VB easily_RB adapted_VBN to_TO run_VB on_IN a_DT cluster_NN of_IN machines_NNS ,_, and_CC thus_RB further_JJ speed_NN up_RP the_DT learning_NN process_NN to_TO handle_VB a_DT larger_JJR scale_NN system_NN with_IN hundreds_NNS of_IN millions_NNS of_IN users_NNS ._.
+The_DT research_NN has_VBZ much_JJ potential_NN to_TO benefit_VB people_NNS using_VBG EM_NNP algorithm_NN on_IN many_JJ other_JJ IR_NN problems_NNS as_RB well_RB as_IN machine_NN learning_NN problems_NNS ._.
+EM_NNP algorithm_NN is_VBZ a_DT commonly_RB used_VBN machine_NN learning_VBG technique_NN ._.
+It_PRP is_VBZ used_VBN to_TO find_VB model_NN parameters_NNS in_IN many_JJ IR_NN problems_NNS where_WRB the_DT training_NN data_NNS is_VBZ very_RB sparse_JJ ._.
+Although_IN we_PRP are_VBP focusing_VBG on_IN the_DT Bayesian_JJ hierarchical_JJ linear_JJ models_NNS for_IN recommendation_NN and_CC filtering_VBG ,_, the_DT new_JJ idea_NN of_IN using_VBG analytical_JJ solution_NN instead_RB of_IN numerical_JJ solution_NN for_IN unrelated_JJ user-feature_JJ pairs_NNS at_IN the_DT M_NN step_NN could_MD be_VB adapted_VBN to_TO many_JJ other_JJ problems_NNS ._.
+8_CD ._.
+ACKNOWLEDGMENTS_NNS We_PRP thank_VBP Wei_NNP Xu_NNP ,_, David_NNP Lewis_NNP and_CC anonymous_JJ reviewers_NNS for_IN valuable_JJ feedback_NN on_IN the_DT work_NN described_VBN in_IN this_DT paper_NN ._.
+Part_NN of_IN the_DT work_NN was_VBD supported_VBN by_IN Yahoo_NNP ,_, Google_NNP ,_, the_DT Petascale_NNP Data_NNP Storage_NNP Institute_NNP and_CC the_DT Institute_NNP for_IN Scalable_NNP Scientific_NNP Data_NNP Management_NNP ._.
+Any_DT opinions_NNS ,_, findings_NNS ,_, conclusions_NNS ,_, or_CC recommendations_NNS expressed_VBN in_IN this_DT material_NN are_VBP those_DT of_IN the_DT authors_NNS ,_, and_CC do_VBP not_RB necessarily_RB reflect_VB those_DT of_IN the_DT sponsors_NNS ._.
+9_CD ._.
+REFERENCES_NNS -LSB-_-LRB- #_# -RSB-_-RRB- C_NN ._.
+Basu_NNP ,_, H_NN ._.
+Hirsh_NNP ,_, and_CC W_NN ._.
+Cohen_NNP ._.
+Recommendation_NN as_IN classification_NN :_: Using_VBG social_JJ and_CC content-based_JJ information_NN in_IN recommendation_NN ._.
+In_IN Proceedings_NNP of_IN the_DT Fifteenth_NNP National_NNP Conference_NNP on_IN Artificial_NNP Intelligence_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- J_NN ._.
+S_NN ._.
+Breese_NNP ,_, D_NNP ._.
+Heckerman_NNP ,_, and_CC C_NN ._.
+Kadie_NNP ._.
+Empirical_JJ analysis_NN of_IN predictive_JJ algorithms_NNS for_IN collaborative_JJ filtering_VBG ._.
+Technical_NNP report_NN ,_, Microsoft_NNP Research_NNP ,_, One_CD Microsoft_NNP Way_NNP ,_, Redmond_NNP ,_, WA_NNP #####_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- J_NN ._.
+Callan_NNP ._.
+Document_NNP filtering_VBG with_IN inference_NN networks_NNS ._.
+In_IN Proceedings_NNP of_IN the_DT Nineteenth_NNP Annual_JJ International_NNP ACM_NNP SIGIR_NNP Conference_NNP on_IN Research_NNP and_CC Development_NNP in_IN Information_NNP Retrieval_NNP ,_, pages_NNS 262-269_CD ,_, 1996_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- N_NN ._.
+Cancedda_NNP ,_, N_NNP ._.
+Cesa-Bianchi_NNP ,_, A_NNP ._.
+Conconi_NNP ,_, C_NNP ._.
+Gentile_NNP ,_, C_NNP ._.
+Goutte_NNP ,_, T_NN ._.
+Graepel_NN ,_, Y_NN ._.
+Li_NNP ,_, J_NNP ._.
+M_NN ._.
+Renders_VBZ ,_, J_NN ._.
+S_NN ._.
+Taylor_NNP ,_, and_CC A_NN ._.
+Vinokourov_NNP ._.
+Kernel_NNP method_NN for_IN document_NN filtering_VBG ._.
+In_IN The_DT Eleventh_NNP Text_VB REtrieval_NNP Conference_NNP -LRB-_-LRB- TREC11_NN -RRB-_-RRB- ._.
+National_NNP Institute_NNP of_IN Standards_NNPS and_CC Technology_NNP ,_, special_JJ publication_NN 500-249_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- C_NN ._.
+Chelba_NNP and_CC A_NNP ._.
+Acero_NNP ._.
+Adaptation_NN of_IN maximum_NN entropy_NN capitalizer_NN :_: Little_JJ data_NNS can_MD help_VB a_DT lot_NN ._.
+In_IN D_NN ._.
+Lin_NNP and_CC D_NNP ._.
+Wu_NNP ,_, editors_NNS ,_, Proceedings_NNP of_IN EMNLP_NNP 2004_CD ,_, pages_NNS 285-292_CD ,_, Barcelona_NNP ,_, Spain_NNP ,_, July_NNP ####_CD ._.
+Association_NNP for_IN Computational_NNP Linguistics_NNP ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- B_NN ._.
+Croft_NNP and_CC J_NNP ._.
+Lafferty_NNP ,_, editors_NNS ._.
+Language_NN Modeling_NN for_IN Information_NNP Retrieval_NNP ._.
+Kluwer_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- A_DT ._.
+Dayanik_NNP ,_, D_NNP ._.
+D_NN ._.
+Lewis_NNP ,_, D_NNP ._.
+Madigan_NNP ,_, V_NNP ._.
+Menkov_NNP ,_, and_CC A_NN ._.
+Genkin_NNP ._.
+Constructing_VBG informative_JJ prior_JJ distributions_NNS from_IN domain_NN knowledge_NN in_IN text_NN classification_NN ._.
+In_IN SIGIR_NN ''_'' ##_NN :_: Proceedings_NNP of_IN the_DT 29th_JJ annual_JJ international_JJ ACM_NNP SIGIR_NNP conference_NN on_IN Research_NNP and_CC development_NN in_IN information_NN retrieval_NN ,_, pages_NNS 493-500_CD ,_, New_NNP York_NNP ,_, NY_NNP ,_, USA_NNP ,_, ####_CD ._.
+ACM_NNP Press_NNP ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- J_NN ._.
+Delgado_NNP and_CC N_NNP ._.
+Ishii_NNP ._.
+Memory-based_JJ weightedmajority_NN prediction_NN for_IN recommender_NN systems_NNS ._.
+In_IN ACM_NNP SIGIR_NNP ''_'' ##_NNP Workshop_NNP on_IN Recommender_NNP Systems_NNPS ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- GroupLens_NNPS ._.
+Movielens_NNS ._.
+http_NN :_: /_: /_: www_NN ._.
+grouplens_NNS ._.
+org_NN /_: taxonomy_NN /_: term_NN /_: ##_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- D_NN ._.
+Heckerman_NNP ._.
+A_DT tutorial_NN on_IN learning_VBG with_IN bayesian_JJ networks_NNS ._.
+In_IN M_NN ._.
+Jordan_NNP ,_, editor_NN ,_, Learning_NNP in_IN Graphical_NNP Models_NNS ._.
+Kluwer_NNP Academic_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+L_NN ._.
+Herlocker_NNP ,_, J_NNP ._.
+A_DT ._.
+Konstan_NNP ,_, A_NNP ._.
+Borchers_NNP ,_, and_CC J_NN ._.
+Riedl_NNP ._.
+An_DT algorithmic_JJ framework_NN for_IN performing_VBG collaborative_JJ filtering_VBG ._.
+In_IN SIGIR_NN ''_'' ##_NN :_: Proceedings_NNP of_IN the_DT 22nd_JJ annual_JJ international_JJ ACM_NNP SIGIR_NNP conference_NN on_IN Research_NNP and_CC development_NN in_IN information_NN retrieval_NN ,_, pages_NNS 230-237_CD ,_, New_NNP York_NNP ,_, NY_NNP ,_, USA_NNP ,_, ####_CD ._.
+ACM_NNP Press_NNP ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- T_NN ._.
+Hofmann_NNP and_CC J_NNP ._.
+Puzicha_NN ._.
+Latent_JJ class_NN models_NNS for_IN collaborative_JJ filtering_VBG ._.
+In_IN IJCAI_NNP ''_'' ##_CD :_: Proceedings_NNP of_IN the_DT Sixteenth_NNP International_NNP Joint_NNP Conference_NNP on_IN Artificial_NNP Intelligence_NNP ,_, pages_NNS 688-693_CD ,_, San_NNP Francisco_NNP ,_, CA_NNP ,_, USA_NNP ,_, ####_CD ._.
+Morgan_NNP Kaufmann_NNP Publishers_NNPS Inc_NNP ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- I_PRP ._.
+M_NN ._.
+D_NN ._.
+-LRB-_-LRB- IMDB_NN -RRB-_-RRB- ._.
+Internet_NNP movie_NN database_NN ._.
+http_NN :_: /_: /_: www_NN ._.
+imdb_NN ._.
+com_NN /_: interfaces_NNS /_: ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- R_NN ._.
+Jin_NNP ,_, J_NNP ._.
+Y_NN ._.
+Chai_NNP ,_, and_CC L_NN ._.
+Si_NNP ._.
+An_DT automatic_JJ weighting_NN scheme_NN for_IN collaborative_JJ filtering_VBG ._.
+In_IN SIGIR_NN ''_'' ##_NN :_: Proceedings_NNP of_IN the_DT 27th_JJ annual_JJ international_JJ ACM_NNP SIGIR_NNP conference_NN on_IN Research_NNP and_CC development_NN in_IN information_NN retrieval_NN ,_, pages_NNS 337-344_CD ,_, New_NNP York_NNP ,_, NY_NNP ,_, USA_NNP ,_, ####_CD ._.
+ACM_NNP Press_NNP ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+A_DT ._.
+Konstan_NNP ,_, B_NN ._.
+N_NN ._.
+Miller_NNP ,_, D_NNP ._.
+Maltz_NNP ,_, J_NNP ._.
+L_NN ._.
+Herlocker_NNP ,_, L_NNP ._.
+R_NN ._.
+Gordon_NNP ,_, and_CC J_NN ._.
+Riedl_NNP ._.
+GroupLens_NNP :_: Applying_VBG collaborative_JJ filtering_VBG to_TO Usenet_NNP news_NN ._.
+Communications_NNPS of_IN the_DT ACM_NNP ,_, ##_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 77-87_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- D_NN ._.
+Lewis_NNP ._.
+Applying_VBG support_NN vector_NN machines_NNS to_TO the_DT TREC-2001_NN batch_NN filtering_VBG and_CC routing_VBG tasks_NNS ._.
+In_IN Proceedings_NNP of_IN the_DT Eleventh_NNP Text_VB REtrieval_NNP Conference_NNP -LRB-_-LRB- TREC-11_NN -RRB-_-RRB- ,_, ####_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- B_NN ._.
+Liu_NNP ,_, X_NN ._.
+Li_NNP ,_, W_NNP ._.
+S_NN ._.
+Lee_NNP ,_, ,_, and_CC P_NN ._.
+Yu_NNP ._.
+Text_VB classification_NN by_IN labeling_VBG words_NNS ._.
+In_IN Proceedings_NNP of_IN The_DT Nineteenth_NNP National_NNP Conference_NNP on_IN Artificial_NNP Intelligence_NNP -LRB-_-LRB- AAAI-2004_NN -RRB-_-RRB- ,_, July_NNP 25-29_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- P_NN ._.
+Melville_NNP ,_, R_NN ._.
+J_NN ._.
+Mooney_NNP ,_, and_CC R_NN ._.
+Nagarajan_NNP ._.
+Content-boosted_JJ collaborative_JJ filtering_VBG for_IN improved_JJ recommendations_NNS ._.
+In_IN Proceedings_NNP of_IN the_DT Eighteenth_NNP National_NNP Conference_NNP on_IN Artificial_NNP Intelligence_NNP -LRB-_-LRB- AAAI-2002_NN -RRB-_-RRB- ,_, Edmonton_NNP ,_, Canada_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Netflix_NNP ._.
+Netflix_NNP prize_NN ._.
+http_NN :_: /_: /_: www_NN ._.
+netflixprize_NN ._.
+com_NN -LRB-_-LRB- visited_VBN on_IN Nov_NNP ._.
+##_NN ,_, ####_CD -RRB-_-RRB- ,_, ####_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- S_NN ._.
+Robertson_NNP and_CC K_NNP ._.
+Sparck-Jones_NNS ._.
+Relevance_NN weighting_NN of_IN search_NN terms_NNS ._.
+In_IN Journal_NNP of_IN the_DT American_NNP Society_NNP for_IN Information_NNP Science_NNP ,_, volume_NN ##_NN ,_, pages_NNS 129-146_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+Wang_NNP ,_, A_NNP ._.
+P_NN ._.
+de_IN Vries_NNP ,_, and_CC M_NN ._.
+J_NN ._.
+T_NN ._.
+Reinders_NNP ._.
+Unifying_JJ user-based_JJ and_CC item-based_JJ collaborative_JJ filtering_VBG approaches_NNS by_IN similarity_NN fusion_NN ._.
+In_IN SIGIR_NN ''_'' ##_NN :_: Proceedings_NNP of_IN the_DT 29th_JJ annual_JJ international_JJ ACM_NNP SIGIR_NNP conference_NN on_IN Research_NNP and_CC development_NN in_IN information_NN retrieval_NN ,_, pages_NNS 501-508_CD ,_, New_NNP York_NNP ,_, NY_NNP ,_, USA_NNP ,_, ####_CD ._.
+ACM_NNP Press_NNP ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- X_NN ._.
+Wu_NNP and_CC R_NN ._.
+K_NN ._.
+Srihari_NNP ._.
+Incorporating_VBG prior_RB knowledge_NN with_IN weighted_JJ margin_NN support_NN vector_NN machines_NNS ._.
+In_IN Proc_NNP ._.
+ACM_NNP Knowledge_NNP Discovery_NNP Data_NNP Mining_NNP Conf_NNP ._.
+-LRB-_-LRB- ACM_JJ SIGKDD_NN ####_CD -RRB-_-RRB- ,_, Aug_NN ._.
+####_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Y_NN ._.
+Yang_NNP ,_, S_NN ._.
+Yoo_NNP ,_, J_NNP ._.
+Zhang_NNP ,_, and_CC B_NN ._.
+Kisiel_NNP ._.
+Robustness_NNP of_IN adaptive_JJ filtering_VBG methods_NNS in_IN a_DT cross-benchmark_JJ evaluation_NN ._.
+In_IN Proceedings_NNP of_IN the_DT 28th_JJ Annual_JJ International_NNP ACM_NNP SIGIR_NNP Conference_NNP on_IN Research_NNP and_CC Development_NNP in_IN Information_NNP Retrieval_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- K_NN ._.
+Yu_NNP ,_, V_NNP ._.
+Tresp_NNP ,_, and_CC A_NN ._.
+Schwaighofer_NN ._.
+Learning_NNP gaussian_JJ processes_NNS from_IN multiple_JJ tasks_NNS ._.
+In_IN ICML_NN ''_'' ##_NN :_: Proceedings_NNP of_IN the_DT 22nd_JJ international_JJ conference_NN on_IN Machine_NN learning_NN ,_, pages_NNS 1012-1019_CD ,_, New_NNP York_NNP ,_, NY_NNP ,_, USA_NNP ,_, ####_CD ._.
+ACM_NNP Press_NNP ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- K_NN ._.
+Yu_NNP ,_, V_NNP ._.
+Tresp_NNP ,_, and_CC S_NN ._.
+Yu_NNP ._.
+A_DT nonparametric_JJ hierarchical_JJ bayesian_JJ framework_NN for_IN information_NN filtering_VBG ._.
+In_IN SIGIR_NN ''_'' ##_NN :_: Proceedings_NNP of_IN the_DT 27th_JJ annual_JJ international_JJ ACM_NNP SIGIR_NNP conference_NN on_IN Research_NNP and_CC development_NN in_IN information_NN retrieval_NN ,_, pages_NNS 353-360_CD ._.
+ACM_NNP Press_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- X_NN ._.
+Zhu_NNP ._.
+Semi-supervised_JJ learning_NN literature_NN survey_NN ._.
+Technical_NNP report_NN ,_, University_NNP of_IN Wisconsin_NNP -_: Madison_NNP ,_, December_NNP #_# ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- P_NN ._.
+Zigoris_NNP and_CC Y_NN ._.
+Zhang_NNP ._.
+Bayesian_JJ adaptive_JJ user_NN profiling_VBG with_IN explicit_JJ &_CC implicit_JJ feedback_NN ._.
+In_IN Conference_NN on_IN Information_NN and_CC Knowledge_NN Mangement_NN ####_CD ,_, ####_CD ._.

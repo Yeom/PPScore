@@ -1,0 +1,540 @@
+Fast_JJ Generation_NN of_IN Result_NN Snippets_NNS in_IN Web_NN Search_VB Andrew_NNP Turpin_NNP &_CC Yohannes_NNP Tsegay_NNP RMIT_NNP University_NNP Melbourne_NNP ,_, Australia_NNP aht_NN @_IN cs_NNS ._.
+rmit_NN ._.
+edu_NN ._.
+au_NN ytsegay_NN @_IN cs_NNS ._.
+rmit_NN ._.
+edu_NN ._.
+au_NN David_NNP Hawking_NNP CSIRO_NNP ICT_NNP Centre_NNP Canberra_NNP ,_, Australia_NNP david_NNP ._.
+hawking_VBG @_IN acm_NN ._.
+org_NN Hugh_NNP E_NNP ._.
+Williams_NNP Microsoft_NNP Corporation_NNP One_CD Microsoft_NNP Way_NNP Redmond_NNP ,_, WA_NNP ._.
+hughw_JJ @_IN microsoft_NN ._.
+com_NN ABSTRACT_NN The_DT presentation_NN of_IN query_NN biased_VBN document_NN snippets_NNS as_IN part_NN of_IN results_NNS pages_NNS presented_VBN by_IN search_NN engines_NNS has_VBZ become_VBN an_DT expectation_NN of_IN search_NN engine_NN users_NNS ._.
+In_IN this_DT paper_NN we_PRP explore_VBP the_DT algorithms_NNS and_CC data_NNS structures_NNS required_VBN as_IN part_NN of_IN a_DT search_NN engine_NN to_TO allow_VB efficient_JJ generation_NN of_IN query_NN biased_VBD snippets_NNS ._.
+We_PRP begin_VBP by_IN proposing_VBG and_CC analysing_VBG a_DT document_NN compression_NN method_NN that_WDT reduces_VBZ snippet_NN generation_NN time_NN by_IN ##_CD %_NN over_IN a_DT baseline_NN using_VBG the_DT zlib_NN compression_NN library_NN ._.
+These_DT experiments_NNS reveal_VBP that_IN finding_VBG documents_NNS on_IN secondary_JJ storage_NN dominates_VBZ the_DT total_JJ cost_NN of_IN generating_VBG snippets_NNS ,_, and_CC so_RB caching_JJ documents_NNS in_IN RAM_NNP is_VBZ essential_JJ for_IN a_DT fast_JJ snippet_NN generation_NN process_NN ._.
+Using_VBG simulation_NN ,_, we_PRP examine_VBP snippet_NN generation_NN performance_NN for_IN different_JJ size_NN RAM_NNP caches_NNS ._.
+Finally_RB we_PRP propose_VBP and_CC analyse_VBP document_NN reordering_NN and_CC compaction_NN ,_, revealing_VBG a_DT scheme_NN that_WDT increases_VBZ the_DT number_NN of_IN document_NN cache_NN hits_VBZ with_IN only_RB a_DT marginal_JJ affect_NN on_IN snippet_NN quality_NN ._.
+This_DT scheme_NN effectively_RB doubles_VBZ the_DT number_NN of_IN documents_NNS that_WDT can_MD fit_VB in_IN a_DT fixed_VBN size_NN cache_NN ._.
+Categories_NNS and_CC Subject_NNP Descriptors_NNPS H_NN ._.
+#_# ._.
+#_# -LSB-_-LRB- Information_NNP Storage_NNP and_CC Retrieval_NNP -RSB-_-RRB- :_: Information_NNP Search_VB and_CC Retrieval_NNP ;_: H_NN ._.
+#_# ._.
+#_# -LSB-_-LRB- Information_NNP Storage_NNP and_CC Retrieval_NNP -RSB-_-RRB- :_: Systems_NNP and_CC Software-performance_JJ evaluation_NN -LRB-_-LRB- efficiency_NN and_CC effectiveness_NN -RRB-_-RRB- ;_: General_NNP Terms_NNS Algorithms_NNS ,_, Experimentation_NN ,_, Measurement_NNP ,_, Performance_NNP 1_CD ._.
+INTRODUCTION_NNP Each_DT result_NN in_IN search_NN results_VBZ list_NN delivered_VBN by_IN current_JJ WWW_NNP search_NN engines_NNS such_JJ as_IN search_NN ._.
+yahoo_NN ._.
+com_NN ,_, google_NN ._.
+com_NN and_CC search_NN ._.
+msn_NN ._.
+com_NN typically_RB contains_VBZ the_DT title_NN and_CC URL_NN of_IN the_DT actual_JJ document_NN ,_, links_NNS to_TO live_VB and_CC cached_VBN versions_NNS of_IN the_DT document_NN and_CC sometimes_RB an_DT indication_NN of_IN file_NN size_NN and_CC type_NN ._.
+In_IN addition_NN ,_, one_CD or_CC more_JJR snippets_NNS are_VBP usually_RB presented_VBN ,_, giving_VBG the_DT searcher_NN a_DT sneak_NN preview_NN of_IN the_DT document_NN contents_NNS ._.
+Snippets_NNS are_VBP short_JJ fragments_NNS of_IN text_NN extracted_VBN from_IN the_DT document_NN content_NN -LRB-_-LRB- or_CC its_PRP$ metadata_NN -RRB-_-RRB- ._.
+They_PRP may_MD be_VB static_JJ -LRB-_-LRB- for_IN example_NN ,_, always_RB show_VBP the_DT first_JJ ##_NN words_NNS of_IN the_DT document_NN ,_, or_CC the_DT content_NN of_IN its_PRP$ description_NN metadata_NN ,_, or_CC a_DT description_NN taken_VBN from_IN a_DT directory_NN site_NN such_JJ as_IN dmoz_NN ._.
+org_NN -RRB-_-RRB- or_CC query-biased_JJ -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+A_DT query-biased_JJ snippet_NN is_VBZ one_CD selectively_RB extracted_VBN on_IN the_DT basis_NN of_IN its_PRP$ relation_NN to_TO the_DT searcher_NN ''_'' s_NNS query_NN ._.
+The_DT addition_NN of_IN informative_JJ snippets_NNS to_TO search_VB results_NNS may_MD substantially_RB increase_VB their_PRP$ value_NN to_TO searchers_NNS ._.
+Accurate_JJ snippets_NNS allow_VBP the_DT searcher_NN to_TO make_VB good_JJ decisions_NNS about_IN which_WDT results_NNS are_VBP worth_JJ accessing_VBG and_CC which_WDT can_MD be_VB ignored_VBN ._.
+In_IN the_DT best_JJS case_NN ,_, snippets_NNS may_MD obviate_VB the_DT need_NN to_TO open_VB any_DT documents_NNS by_IN directly_RB providing_VBG the_DT answer_NN to_TO the_DT searcher_NN ''_'' s_NNS real_JJ information_NN need_NN ,_, such_JJ as_IN the_DT contact_NN details_NNS of_IN a_DT person_NN or_CC an_DT organization_NN ._.
+Generation_NN of_IN query-biased_JJ snippets_NNS by_IN Web_NN search_NN engines_NNS indexing_NN of_IN the_DT order_NN of_IN ten_CD billion_CD web_NN pages_NNS and_CC handling_VBG hundreds_NNS of_IN millions_NNS of_IN search_NN queries_NNS per_IN day_NN imposes_VBZ a_DT very_RB significant_JJ computational_JJ load_NN -LRB-_-LRB- remembering_VBG that_IN each_DT search_NN typically_RB generates_VBZ ten_CD snippets_NNS -RRB-_-RRB- ._.
+The_DT simpleminded_JJ approach_NN of_IN keeping_VBG a_DT copy_NN of_IN each_DT document_NN in_IN a_DT file_NN and_CC generating_VBG snippets_NNS by_IN opening_NN and_CC scanning_NN files_NNS ,_, works_VBZ when_WRB query_NN rates_NNS are_VBP low_JJ and_CC collections_NNS are_VBP small_JJ ,_, but_CC does_VBZ not_RB scale_NN to_TO the_DT degree_NN required_VBN ._.
+The_DT overhead_NN of_IN opening_NN and_CC reading_NN ten_CD files_NNS per_IN query_NN on_IN top_NN of_IN accessing_VBG the_DT index_NN structure_NN to_TO locate_VB them_PRP ,_, would_MD be_VB manifestly_RB excessive_JJ under_IN heavy_JJ query_NN load_NN ._.
+Even_RB storing_VBG ten_CD billion_CD files_NNS and_CC the_DT corresponding_JJ hundreds_NNS of_IN terabytes_NNS of_IN data_NNS is_VBZ beyond_IN the_DT reach_NN of_IN traditional_JJ filesystems_NNS ._.
+Special-purpose_JJ filesystems_NNS have_VBP been_VBN built_VBN to_TO address_VB these_DT problems_NNS -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+Note_VB that_IN the_DT utility_NN of_IN snippets_NNS is_VBZ by_IN no_DT means_NNS restricted_JJ to_TO whole-of-Web_JJ search_NN applications_NNS ._.
+Efficient_JJ generation_NN of_IN snippets_NNS is_VBZ also_RB important_JJ at_IN the_DT scale_NN of_IN whole-of-government_JJ search_NN services_NNS such_JJ as_IN www_NN ._.
+firstgov_NN ._.
+gov_NN -LRB-_-LRB- c_NN ._.
+##_CD million_CD pages_NNS -RRB-_-RRB- and_CC govsearch_NN ._.
+australia_NN ._.
+gov_NN ._.
+au_NN -LRB-_-LRB- c_NN ._.
+#_# million_CD pages_NNS -RRB-_-RRB- and_CC within_IN large_JJ enterprises_NNS such_JJ as_IN IBM_NNP -LSB-_-LRB- #_# -RSB-_-RRB- -LRB-_-LRB- c_NN ._.
+##_CD million_CD pages_NNS -RRB-_-RRB- ._.
+Snippets_NNS may_MD be_VB even_RB more_RBR useful_JJ in_IN database_NN or_CC filesystem_NN search_NN applications_NNS in_IN which_WDT no_DT useful_JJ URL_NN or_CC title_NN information_NN is_VBZ present_JJ ._.
+We_PRP present_VBP a_DT new_JJ algorithm_NN and_CC compact_JJ single-file_JJ structure_NN designed_VBN for_IN rapid_JJ generation_NN of_IN high_JJ quality_NN snippets_NNS and_CC compare_VB its_PRP$ space_NN /_: time_NN performance_NN against_IN an_DT obvious_JJ baseline_NN based_VBN on_IN the_DT zlib_NN compressor_NN on_IN various_JJ data_NNS sets_NNS ._.
+We_PRP report_VBP the_DT proportion_NN of_IN time_NN spent_VBD for_IN disk_NN seeks_VBZ ,_, disk_NN reads_VBZ and_CC cpu_NN processing_NN ;_: demonstrating_VBG that_IN the_DT time_NN for_IN locating_VBG each_DT document_NN dominates_VBZ ,_, as_IN expected_VBN ._.
+As_IN the_DT time_NN to_TO process_VB a_DT document_NN in_IN RAM_NNP is_VBZ small_JJ in_IN comparison_NN to_TO locating_VBG and_CC reading_VBG the_DT document_NN into_IN memory_NN ,_, it_PRP may_MD seem_VB that_IN compression_NN is_VBZ not_RB required_VBN ._.
+However_RB ,_, this_DT is_VBZ only_RB true_JJ if_IN there_EX is_VBZ no_DT caching_NN of_IN documents_NNS in_IN RAM_NNP ._.
+Controlling_VBG the_DT RAM_NNP of_IN physical_JJ systems_NNS for_IN experimentation_NN is_VBZ difficult_JJ ,_, hence_RB we_PRP use_VBP simulation_NN to_TO show_VB that_IN caching_VBG documents_NNS dramatically_RB improves_VBZ the_DT performance_NN of_IN snippet_NN generation_NN ._.
+In_IN turn_NN ,_, the_DT more_RBR documents_NNS can_MD be_VB compressed_VBN ,_, the_DT more_RBR can_MD fit_VB in_IN cache_NN ,_, and_CC hence_RB the_DT more_JJR disk_NN seeks_VBZ can_MD be_VB avoided_VBN :_: the_DT classic_JJ data_NNS compression_NN tradeoff_NN that_WDT is_VBZ exploited_VBN in_IN inverted_JJ file_NN structures_NNS and_CC computing_VBG ranked_VBD document_NN lists_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+As_IN hitting_VBG the_DT document_NN cache_NN is_VBZ important_JJ ,_, we_PRP examine_VBP document_NN compaction_NN ,_, as_IN opposed_VBN to_TO compression_NN ,_, schemes_NNS by_IN imposing_VBG an_DT a_DT priori_FW ordering_VBG of_IN sentences_NNS within_IN a_DT document_NN ,_, and_CC then_RB only_RB allowing_VBG leading_VBG sentences_NNS into_IN cache_NN for_IN each_DT document_NN ._.
+This_DT leads_VBZ to_TO further_JJ time_NN savings_NNS ,_, with_IN only_RB marginal_JJ impact_NN on_IN the_DT quality_NN of_IN the_DT snippets_NNS returned_VBD ._.
+2_LS ._.
+RELATED_JJ WORK_VBP Snippet_NN generation_NN is_VBZ a_DT special_JJ type_NN of_IN extractive_JJ document_NN summarization_NN ,_, in_IN which_WDT sentences_NNS ,_, or_CC sentence_NN fragments_NNS ,_, are_VBP selected_VBN for_IN inclusion_NN in_IN the_DT summary_NN on_IN the_DT basis_NN of_IN the_DT degree_NN to_TO which_WDT they_PRP match_VBP the_DT search_NN query_NN ._.
+This_DT process_NN was_VBD given_VBN the_DT name_NN of_IN query-biased_JJ summarization_NN by_IN Tombros_NNP and_CC Sanderson_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- The_DT reader_NN is_VBZ referred_VBN to_TO Mani_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- and_CC to_TO Radev_NNP et_FW al_FW ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- for_IN overviews_NNS of_IN the_DT very_RB many_JJ different_JJ applications_NNS of_IN summarization_NN and_CC for_IN the_DT equally_RB diverse_JJ methods_NNS for_IN producing_VBG summaries_NNS ._.
+Early_RB Web_NN search_NN engines_NNS presented_VBD query-independent_JJ snippets_NNS consisting_VBG of_IN the_DT first_JJ k_NN bytes_NNS of_IN the_DT result_NN document_NN ._.
+Generating_NNP these_DT is_VBZ clearly_RB much_JJ simpler_JJR and_CC much_RB less_JJR computationally_RB expensive_JJ than_IN processing_VBG documents_NNS to_TO extract_VB query_NN biased_VBN summaries_NNS ,_, as_IN there_EX is_VBZ no_DT need_NN to_TO search_VB the_DT document_NN for_IN text_NN fragments_NNS containing_VBG query_NN terms_NNS ._.
+To_TO our_PRP$ knowledge_NN ,_, Google_NNP was_VBD the_DT first_JJ whole-ofWeb_JJ search_NN engine_NN to_TO provide_VB query_NN biased_VBN summaries_NNS ,_, but_CC summarization_NN is_VBZ listed_VBN by_IN Brin_NNP and_CC Page_NNP -LSB-_-LRB- #_# -RSB-_-RRB- only_RB under_IN the_DT heading_VBG of_IN future_JJ work_NN ._.
+Most_JJS of_IN the_DT experimental_JJ work_NN using_VBG query-biased_JJ summarization_NN has_VBZ focused_VBN on_IN comparing_VBG their_PRP$ value_NN to_TO searchers_NNS relative_JJ to_TO other_JJ types_NNS of_IN summary_NN -LSB-_-LRB- ##_CD ,_, ##_CD -RSB-_-RRB- ,_, rather_RB than_IN efficient_JJ generation_NN of_IN summaries_NNS ._.
+Despite_IN the_DT importance_NN of_IN efficient_JJ summary_NN generation_NN in_IN Web_NN search_NN ,_, few_JJ algorithms_NNS appear_VBP in_IN the_DT literature_NN ._.
+Silber_NNP and_CC McKoy_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- describe_VBP a_DT linear-time_JJ lexical_JJ chaining_VBG algorithm_NN for_IN use_NN in_IN generic_JJ summaries_NNS ,_, but_CC offer_VBP no_DT empirical_JJ data_NNS for_IN the_DT performance_NN of_IN their_PRP$ algorithm_NN ._.
+White_NNP et_FW al_FW -LSB-_-LRB- ##_CD -RSB-_-RRB- report_VB some_DT experimental_JJ timings_NNS of_IN their_PRP$ WebDocSum_NNP system_NN ,_, but_CC the_DT snippet_NN generation_NN algorithms_NNS themselves_PRP are_VBP not_RB isolated_VBN ,_, so_IN it_PRP is_VBZ difficult_JJ to_TO infer_VB snippet_NN generation_NN time_NN comparable_JJ to_TO the_DT times_NNS we_PRP report_VBP in_IN this_DT paper_NN ._.
+3_LS ._.
+SEARCH_NN ENGINE_NN ARCHITECTURES_NN A_NN search_NN engine_NN must_MD perform_VB a_DT variety_NN of_IN activities_NNS ,_, and_CC is_VBZ comprised_VBN of_IN many_JJ sub-systems_NNS ,_, as_IN depicted_VBN by_IN the_DT boxes_NNS in_IN Figure_NNP #_# ._.
+Note_VB that_IN there_EX may_MD be_VB several_JJ other_JJ sub-systems_NNS such_JJ as_IN the_DT Advertising_NN Engine_NNP or_CC the_DT Parsing_NNP Engine_NNP that_WDT could_MD easily_RB be_VB added_VBN to_TO the_DT diagram_NN ,_, but_CC we_PRP have_VBP concentrated_VBN on_IN the_DT sub-systems_NNS that_WDT are_VBP relevant_JJ to_TO snippet_VB generation_NN ._.
+Depending_VBG on_IN the_DT number_NN of_IN documents_NNS that_IN the_DT search_NN engine_NN indexes_NNS ,_, the_DT data_NNS and_CC processes_NNS for_IN each_DT Ranking_NNP Engine_NNP Crawling_NNP Engine_NNP Indexing_NN Engine_NNP Engine_NNP Lexicon_NNP Meta_NNP Data_NNP Engine_NNP Engine_NNP Snippet_NNP Term_NNP &_CC Doc_NNP #_# s_NNS Snippetperdoc_NNP WEB_NNP Query_NNP Engine_NNP Query_NNP Results_NNS Page_NNP Term_NNP #_# s_NNS Doc_NNP #_# s_PRP Invertedlists_NNPS Docs_NNP perdoc_NNP Title_NNP ,_, URL_NN ,_, etc_FW Doc_FW #_# s_NNS Document_NNP meta_NN data_NNS Terms_NNS Querystring_VBG Term_NN #_# s_VBZ Figure_NNP #_# :_: An_DT abstraction_NN of_IN some_DT of_IN the_DT sub-systems_NNS in_IN a_DT search_NN engine_NN ._.
+Depending_VBG on_IN the_DT number_NN of_IN documents_NNS indexed_VBN ,_, each_DT sub-system_NN could_MD reside_VB on_IN a_DT single_JJ machine_NN ,_, be_VB distributed_VBN across_IN thousands_NNS of_IN machines_NNS ,_, or_CC a_DT combination_NN of_IN both_DT ._.
+sub-system_NN could_MD be_VB distributed_VBN over_IN many_JJ machines_NNS ,_, or_CC all_DT occupy_VBP a_DT single_JJ server_NN and_CC filesystem_NN ,_, competing_VBG with_IN each_DT other_JJ for_IN resources_NNS ._.
+Similarly_RB ,_, it_PRP may_MD be_VB more_RBR efficient_JJ to_TO combine_VB some_DT sub-systems_NNS in_IN an_DT implementation_NN of_IN the_DT diagram_NN ._.
+For_IN example_NN ,_, the_DT meta-data_JJ such_JJ as_IN document_NN title_NN and_CC URL_NN requires_VBZ minimal_JJ computation_NN apart_RB from_IN highlighting_VBG query_NN words_NNS ,_, but_CC we_PRP note_VBP that_IN disk_NN seeking_VBG is_VBZ likely_JJ to_TO be_VB minimized_VBN if_IN title_NN ,_, URL_NN and_CC fixed_VBN summary_NN information_NN is_VBZ stored_VBN contiguously_RB with_IN the_DT text_NN from_IN which_WDT query_NN biased_VBD summaries_NNS are_VBP extracted_VBN ._.
+Here_RB we_PRP ignore_VBP the_DT fixed_VBN text_NN and_CC consider_VB only_RB the_DT generation_NN of_IN query_NN biased_VBN summaries_NNS :_: we_PRP concentrate_VBP on_IN the_DT Snippet_NNP Engine_NNP ._.
+In_IN addition_NN to_TO data_NNS and_CC programs_NNS operating_VBG on_IN that_DT data_NNS ,_, each_DT sub-system_NN also_RB has_VBZ its_PRP$ own_JJ memory_NN management_NN scheme_NN ._.
+The_DT memory_NN management_NN system_NN may_MD simply_RB be_VB the_DT memory_NN hierarchy_NN provided_VBN by_IN the_DT operating_NN system_NN used_VBN on_IN machines_NNS in_IN the_DT sub-system_NN ,_, or_CC it_PRP may_MD be_VB explicitly_RB coded_VBN to_TO optimise_VB the_DT processes_NNS in_IN the_DT sub-system_NN ._.
+There_EX are_VBP many_JJ papers_NNS on_IN caching_NN in_IN search_NN engines_NNS -LRB-_-LRB- see_VB -LSB-_-LRB- #_# -RSB-_-RRB- and_CC references_NNS therein_RB for_IN a_DT current_JJ summary_NN -RRB-_-RRB- ,_, but_CC it_PRP seems_VBZ reasonable_JJ that_IN there_EX is_VBZ a_DT query_NN cache_NN in_IN the_DT Query_NNP Engine_NNP that_WDT stores_NNS precomputed_JJ final_JJ result_NN pages_NNS for_IN very_RB popular_JJ queries_NNS ._.
+When_WRB one_CD of_IN the_DT popular_JJ queries_NNS is_VBZ issued_VBN ,_, the_DT result_NN page_NN is_VBZ fetched_VBN straight_RB from_IN the_DT query_NN cache_NN ._.
+If_IN the_DT issued_VBN query_NN is_VBZ not_RB in_IN the_DT query_NN cache_NN ,_, then_RB the_DT Query_NNP Engine_NNP uses_VBZ the_DT four_CD sub-systems_NNS in_IN turn_NN to_TO assemble_VB a_DT results_NNS page_NN ._.
+1_LS ._.
+The_DT Lexicon_NNP Engine_NNP maps_VBZ query_NN terms_NNS to_TO integers_NNS ._.
+2_LS ._.
+The_DT Ranking_NNP Engine_NNP retrieves_VBZ inverted_JJ lists_NNS for_IN each_DT term_NN ,_, using_VBG them_PRP to_TO get_VB a_DT ranked_VBN list_NN of_IN documents_NNS ._.
+3_LS ._.
+The_DT Snippet_NNP Engine_NNP uses_VBZ those_DT document_NN numbers_NNS and_CC query_NN term_NN numbers_NNS to_TO generate_VB snippets_NNS ._.
+4_LS ._.
+The_DT Meta_NNP Data_NNP Engine_NNP fetches_VBZ other_JJ information_NN about_IN each_DT document_NN to_TO construct_VB the_DT results_NNS page_NN ._.
+IN_IN A_DT document_NN broken_VBN into_IN one_CD sentence_NN per_IN line_NN ,_, and_CC a_DT sequence_NN of_IN query_NN terms_NNS ._.
+1_CD For_IN each_DT line_NN of_IN the_DT text_NN ,_, L_NN =_JJ -LSB-_-LRB- w1_NN ,_, w2_NN ,_, ..._: ,_, wm_NN -RSB-_-RRB- 2_CD Let_VB h_NN be_VB #_# if_IN L_NN is_VBZ a_DT heading_VBG ,_, #_# otherwise_RB ._.
+3_LS Let_VB be_VB #_# if_IN L_NN is_VBZ the_DT first_JJ line_NN of_IN a_DT document_NN ,_, 1_CD if_IN it_PRP is_VBZ the_DT second_JJ line_NN ,_, #_# otherwise_RB ._.
+4_LS Let_VB c_NN be_VB the_DT number_NN of_IN wi_NN that_WDT are_VBP query_JJ terms_NNS ,_, counting_VBG repetitions_NNS ._.
+5_CD Let_VB d_NN be_VB the_DT number_NN of_IN distinct_JJ query_NN terms_NNS that_WDT match_VBP some_DT wi_NN ._.
+6_CD Identify_VB the_DT longest_JJS contiguous_JJ run_NN of_IN query_NN terms_NNS in_IN L_NN ,_, say_VBP wj_NN ..._: wj_NN +_CC k_NN ._.
+7_CD Use_NN a_DT weighted_JJ combination_NN of_IN c_NN ,_, d_NN ,_, k_NN ,_, h_NN and_CC to_TO derive_VB a_DT score_NN s_NNS ._.
+8_CD Insert_NN L_NN into_IN a_DT max-heap_NN using_VBG s_NNS as_IN the_DT key_NN ._.
+OUT_NNP Remove_VB the_DT number_NN of_IN sentences_NNS required_VBN from_IN the_DT heap_NN to_TO form_VB the_DT summary_NN ._.
+Figure_NNP #_# :_: Simple_JJ sentence_NN ranker_NN that_WDT operates_VBZ on_IN raw_JJ text_NN with_IN one_CD sentence_NN per_IN line_NN ._.
+4_LS ._.
+THE_DT SNIPPET_NNP ENGINE_NN For_IN each_DT document_NN identifier_NN passed_VBD to_TO the_DT Snippet_NNP Engine_NNP ,_, the_DT engine_NN must_MD generate_VB text_NN ,_, preferably_RB containing_VBG query_NN terms_NNS ,_, that_IN attempts_NNS to_TO summarize_VB that_IN document_NN ._.
+Previous_JJ work_NN on_IN summarization_NN identifies_VBZ the_DT sentence_NN as_IN the_DT minimal_JJ unit_NN for_IN extraction_NN and_CC presentation_NN to_TO the_DT user_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Accordingly_RB ,_, we_PRP also_RB assume_VBP a_DT web_NN snippet_NN extraction_NN process_NN will_MD extract_VB sentences_NNS from_IN documents_NNS ._.
+In_IN order_NN to_TO construct_VB a_DT snippet_NN ,_, all_DT sentences_NNS in_IN a_DT document_NN should_MD be_VB ranked_VBN against_IN the_DT query_NN ,_, and_CC the_DT top_JJ two_CD or_CC three_CD returned_VBN as_IN the_DT snippet_NN ._.
+The_DT scoring_VBG of_IN sentences_NNS against_IN queries_NNS has_VBZ been_VBN explored_VBN in_IN several_JJ papers_NNS -LSB-_-LRB- #_# ,_, ##_CD ,_, ##_CD ,_, ##_CD ,_, ##_CD -RSB-_-RRB- ,_, with_IN different_JJ features_NNS of_IN sentences_NNS deemed_VBD important_JJ ._.
+Based_VBN on_IN these_DT observations_NNS ,_, Figure_NNP #_# ,_, shows_VBZ the_DT general_JJ algorithm_NN for_IN scoring_VBG sentences_NNS in_IN relevant_JJ documents_NNS ,_, with_IN the_DT highest_JJS scoring_VBG sentences_NNS making_VBG the_DT snippet_NN for_IN each_DT document_NN ._.
+The_DT final_JJ score_NN of_IN a_DT sentence_NN ,_, assigned_VBN in_IN Step_NN #_# ,_, can_MD be_VB derived_VBN in_IN many_JJ different_JJ ways_NNS ._.
+In_IN order_NN to_TO avoid_VB bias_NN towards_IN any_DT particular_JJ scoring_VBG mechanism_NN ,_, we_PRP compare_VBP sentence_NN quality_NN later_RB in_IN the_DT paper_NN using_VBG the_DT individual_JJ components_NNS of_IN the_DT score_NN ,_, rather_RB than_IN an_DT arbitrary_JJ combination_NN of_IN the_DT components_NNS ._.
+4_LS ._.
+#_# Parsing_VBG Web_NN Documents_NNS Unlike_IN well_RB edited_JJ text_NN collections_NNS that_WDT are_VBP often_RB the_DT target_NN for_IN summarization_NN systems_NNS ,_, Web_NN data_NNS is_VBZ often_RB poorly_RB structured_VBN ,_, poorly_RB punctuated_VBN ,_, and_CC contains_VBZ a_DT lot_NN of_IN data_NNS that_WDT do_VBP not_RB form_VB part_NN of_IN valid_JJ sentences_NNS that_WDT would_MD be_VB candidates_NNS for_IN parts_NNS of_IN snippets_NNS ._.
+We_PRP assume_VBP that_IN the_DT documents_NNS passed_VBN to_TO the_DT Snippet_NNP Engine_NNP by_IN the_DT Indexing_NN Engine_NNP have_VBP all_DT HTML_NNP tags_NNS and_CC JavaScript_NN removed_VBD ,_, and_CC that_IN each_DT document_NN is_VBZ reduced_VBN to_TO a_DT series_NN of_IN word_NN tokens_NNS separated_VBN by_IN non-word_JJ tokens_NNS ._.
+We_PRP define_VBP a_DT word_NN token_JJ as_IN a_DT sequence_NN of_IN alphanumeric_JJ characters_NNS ,_, while_IN a_DT non-word_JJ is_VBZ a_DT sequence_NN of_IN non-alphanumeric_JJ characters_NNS such_JJ as_IN whitespace_NN and_CC the_DT other_JJ punctuation_NN symbols_NNS ._.
+Both_DT are_VBP limited_JJ to_TO a_DT maximum_NN of_IN ##_CD characters_NNS ._.
+Adjacent_JJ ,_, repeating_VBG characters_NNS are_VBP removed_VBN from_IN the_DT punctuation_NN ._.
+Included_VBN in_IN the_DT punctuation_NN set_NN is_VBZ a_DT special_JJ end_NN of_IN sentence_NN marker_NN which_WDT replaces_VBZ the_DT usual_JJ three_CD sentence_NN terminators_NNS ?_. !_. ._. ._.
+Often_RB these_DT explicit_JJ punctuation_NN characters_NNS are_VBP missing_VBG ,_, and_CC so_RB HTML_NNP tags_NNS such_JJ as_IN and_CC are_VBP assumed_VBN to_TO terminate_VB sentences_NNS ._.
+In_IN addition_NN ,_, a_DT sentence_NN must_MD contain_VB at_IN least_JJS five_CD words_NNS and_CC no_DT more_JJR than_IN twenty_CD words_NNS ,_, with_IN longer_JJR or_CC shorter_JJR sentences_NNS being_VBG broken_VBN and_CC joined_VBN as_IN required_VBN to_TO meet_VB these_DT criteria_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Unterminated_VBN HTML_NNP tags-that_NN is_VBZ ,_, tags_NNS with_IN an_DT open_JJ brace_VB ,_, but_CC no_DT close_JJ brace-cause_NN all_DT text_NN from_IN the_DT open_JJ brace_VB to_TO the_DT next_JJ open_JJ brace_VB to_TO be_VB discarded_VBN ._.
+A_DT major_JJ problem_NN in_IN summarizing_VBG web_NN pages_NNS is_VBZ the_DT presence_NN of_IN large_JJ amounts_NNS of_IN promotional_JJ and_CC navigational_JJ material_NN -LRB-_-LRB- navbars_NNS -RRB-_-RRB- visually_RB above_IN and_CC to_TO the_DT left_NN of_IN the_DT actual_JJ page_NN content_NN ._.
+For_IN example_NN ,_, The_DT most_RBS wonderful_JJ company_NN on_IN earth_NN ._.
+Products_NNPS ._.
+Service_NNP ._.
+About_IN us_PRP ._.
+Contact_NN us_PRP ._.
+Try_VB before_IN you_PRP buy_VBP ._.
+Similar_JJ ,_, but_CC often_RB not_RB identical_JJ ,_, navigational_JJ material_NN is_VBZ typically_RB presented_VBN on_IN every_DT page_NN within_IN a_DT site_NN ._.
+This_DT material_NN tends_VBZ to_TO lower_VB the_DT quality_NN of_IN summaries_NNS and_CC slow_VB down_RP summary_NN generation_NN ._.
+In_IN our_PRP$ experiments_NNS we_PRP did_VBD not_RB use_VB any_DT particular_JJ heuristics_NNS for_IN removing_VBG navigational_JJ information_NN as_IN the_DT test_NN collection_NN in_IN use_NN -LRB-_-LRB- wt100g_NN -RRB-_-RRB- pre-dates_VBZ the_DT widespread_JJ take_VB up_RP of_IN the_DT current_JJ style_NN of_IN web_NN publishing_NN ._.
+In_IN wt100g_NN ,_, the_DT average_JJ web_NN page_NN size_NN is_VBZ more_JJR than_IN half_PDT the_DT current_JJ Web_NN average_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Anecdotally_RB ,_, the_DT increase_NN is_VBZ due_JJ to_TO inclusion_NN of_IN sophisticated_JJ navigational_JJ and_CC interface_NN elements_NNS and_CC the_DT JavaScript_NNP functions_VBZ to_TO support_VB them_PRP ._.
+Having_VBG defined_VBN the_DT format_NN of_IN documents_NNS that_WDT are_VBP presented_VBN to_TO the_DT Snippet_NNP Engine_NNP ,_, we_PRP now_RB define_VBP our_PRP$ Compressed_VBN Token_NNP System_NNP -LRB-_-LRB- CTS_NNP -RRB-_-RRB- document_NN storage_NN scheme_NN ,_, and_CC the_DT baseline_NN system_NN used_VBN for_IN comparison_NN ._.
+4_LS ._.
+#_# Baseline_NNP Snippet_NNP Engine_NNP An_DT obvious_JJ document_NN representation_NN scheme_NN is_VBZ to_TO simply_RB compress_VB each_DT document_NN with_IN a_DT well_RB known_VBN adaptive_JJ compressor_NN ,_, and_CC then_RB decompress_VBP the_DT document_NN as_IN required_VBN -LSB-_-LRB- #_# -RSB-_-RRB- ,_, using_VBG a_DT string_NN matching_VBG algorithm_NN to_TO effect_VB the_DT algorithm_NN in_IN Figure_NNP #_# ._.
+Accordingly_RB ,_, we_PRP implemented_VBD such_PDT a_DT system_NN ,_, using_VBG zlib_NN -LSB-_-LRB- #_# -RSB-_-RRB- with_IN default_NN parameters_NNS to_TO compress_VB every_DT document_NN after_IN it_PRP has_VBZ been_VBN parsed_VBN as_IN in_IN Section_NN #_# ._.
+#_# ._.
+Each_DT document_NN is_VBZ stored_VBN in_IN a_DT single_JJ file_NN ._.
+While_IN manageable_JJ for_IN our_PRP$ small_JJ test_NN collections_NNS or_CC small_JJ enterprises_NNS with_IN millions_NNS of_IN documents_NNS ,_, a_DT full_JJ Web_NN search_NN engine_NN may_MD require_VB multiple_JJ documents_NNS to_TO inhabit_VB single_JJ files_NNS ,_, or_CC a_DT special_JJ purpose_NN filesystem_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+For_IN snippet_NN generation_NN ,_, the_DT required_VBN documents_NNS are_VBP decompressed_VBN one_CD at_IN a_DT time_NN ,_, and_CC a_DT linear_JJ search_NN for_IN provided_VBN query_NN terms_NNS is_VBZ employed_VBN ._.
+The_DT search_NN is_VBZ optimized_VBN for_IN our_PRP$ specific_JJ task_NN ,_, which_WDT is_VBZ restricted_JJ to_TO matching_VBG whole_JJ words_NNS and_CC the_DT sentence_NN terminating_VBG token_JJ ,_, rather_RB than_IN general_JJ pattern_NN matching_NN ._.
+4_LS ._.
+#_# The_DT CTS_NNP Snippet_NNP Engine_NNP Several_JJ optimizations_NNS over_IN the_DT baseline_NN are_VBP possible_JJ ._.
+The_DT first_JJ is_VBZ to_TO employ_VB a_DT semi-static_JJ compression_NN method_NN over_IN the_DT entire_JJ document_NN collection_NN ,_, which_WDT will_MD allow_VB faster_JJR decompression_NN with_IN minimal_JJ compression_NN loss_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Using_VBG a_DT semistatic_JJ approach_NN involves_VBZ mapping_VBG words_NNS and_CC non-words_NNS produced_VBN by_IN the_DT parser_NN to_TO single_JJ integer_NN tokens_NNS ,_, with_IN frequent_JJ symbols_NNS receiving_VBG small_JJ integers_NNS ,_, and_CC then_RB choosing_VBG a_DT coding_VBG scheme_NN that_WDT assigns_VBZ small_JJ numbers_NNS a_DT small_JJ number_NN of_IN bits_NNS ._.
+Words_NNS and_CC non-words_NNS strictly_RB alternate_JJ in_IN the_DT compressed_VBN file_NN ,_, which_WDT always_RB begins_VBZ with_IN a_DT word_NN ._.
+In_IN this_DT instance_NN we_PRP simply_RB assign_VB each_DT symbol_NN its_PRP$ ordinal_JJ number_NN in_IN a_DT list_NN of_IN symbols_NNS sorted_VBN by_IN frequency_NN ._.
+We_PRP use_VBP the_DT vbyte_NN coding_VBG scheme_NN to_TO code_VB the_DT word_NN tokens_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+The_DT set_NN of_IN non-words_NNS is_VBZ limited_VBN to_TO the_DT ##_CD most_RBS common_JJ punctuation_NN sequences_NNS in_IN the_DT collection_NN itself_PRP ,_, and_CC are_VBP encoded_VBN with_IN a_DT flat_JJ 6-bit_JJ binary_JJ code_NN ._.
+The_DT remaining_VBG #_# bits_NNS of_IN each_DT punctuation_NN symbol_NN are_VBP used_VBN to_TO store_VB capitalization_NN information_NN ._.
+The_DT process_NN of_IN computing_VBG the_DT semi-static_JJ model_NN is_VBZ complicated_VBN by_IN the_DT fact_NN that_IN the_DT number_NN of_IN words_NNS and_CC non-words_NNS appearing_VBG in_IN large_JJ web_NN collections_NNS is_VBZ high_JJ ._.
+If_IN we_PRP stored_VBD all_DT words_NNS and_CC non-words_NNS appearing_VBG in_IN the_DT collection_NN ,_, and_CC their_PRP$ associated_VBN frequency_NN ,_, many_JJ gigabytes_NNS of_IN RAM_NNP or_CC a_DT B-tree_NN or_CC similar_JJ on-disk_JJ structure_NN would_MD be_VB required_VBN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Moffat_NNP et_FW al_FW ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- have_VBP examined_VBN schemes_NNS for_IN pruning_NN models_NNS during_IN compression_NN using_VBG large_JJ alphabets_NNS ,_, and_CC conclude_VBP that_IN rarely_RB occurring_VBG terms_NNS need_MD not_RB reside_VB in_IN the_DT model_NN ._.
+Rather_RB ,_, rare_JJ terms_NNS are_VBP spelt_VBN out_RP in_IN the_DT final_JJ compressed_VBN file_NN ,_, using_VBG a_DT special_JJ word_NN token_JJ -LRB-_-LRB- escape_NN symbol_NN -RRB-_-RRB- ,_, to_TO signal_VB their_PRP$ occurrence_NN ._.
+During_IN the_DT first_JJ pass_NN of_IN encoding_VBG ,_, two_CD move-to-front_JJ queues_NNS are_VBP kept_VBN ;_: one_CD for_IN words_NNS and_CC one_CD for_IN non-words_NNS ._.
+Whenever_NNP the_DT available_JJ memory_NN is_VBZ consumed_VBN and_CC a_DT new_JJ symbol_NN is_VBZ discovered_VBN in_IN the_DT collection_NN ,_, an_DT existing_VBG symbol_NN is_VBZ discarded_VBN from_IN the_DT end_NN of_IN the_DT queue_NN ._.
+In_IN our_PRP$ implementation_NN ,_, we_PRP enforce_VBP the_DT stricter_JJR condition_NN on_IN eviction_NN that_IN ,_, where_WRB possible_JJ ,_, the_DT evicted_VBN symbol_NN should_MD have_VB a_DT frequency_NN of_IN one_CD ._.
+If_IN there_EX is_VBZ no_DT symbol_NN with_IN frequency_NN one_CD in_IN the_DT last_JJ half_NN of_IN the_DT queue_NN ,_, then_RB we_PRP evict_VBP symbols_NNS of_IN frequency_NN two_CD ,_, and_CC so_RB on_IN until_IN enough_JJ space_NN is_VBZ available_JJ in_IN the_DT model_NN for_IN the_DT new_JJ symbol_NN ._.
+The_DT second_JJ pass_NN of_IN encoding_VBG replaces_VBZ each_DT word_NN with_IN its_PRP$ vbyte_NN encoded_VBD number_NN ,_, or_CC the_DT escape_NN symbol_NN and_CC an_DT ASCII_NNP representation_NN of_IN the_DT word_NN if_IN it_PRP is_VBZ not_RB in_IN the_DT model_NN ._.
+Similarly_RB each_DT non-word_JJ sequence_NN is_VBZ replaced_VBN with_IN its_PRP$ codeword_NN ,_, or_CC the_DT codeword_NN for_IN a_DT single_JJ space_NN character_NN if_IN it_PRP is_VBZ not_RB in_IN the_DT model_NN ._.
+We_PRP note_VBP that_IN this_DT lossless_JJ compression_NN of_IN non-words_NNS is_VBZ acceptable_JJ when_WRB the_DT documents_NNS are_VBP used_VBN for_IN snippet_NN generation_NN ,_, but_CC may_MD not_RB be_VB acceptable_JJ for_IN a_DT document_NN database_NN ._.
+We_PRP assume_VBP that_IN a_DT separate_JJ sub-system_NN would_MD hold_VB cached_JJ documents_NNS for_IN other_JJ purposes_NNS where_WRB exact_JJ punctuation_NN is_VBZ important_JJ ._.
+While_IN this_DT semi-static_JJ scheme_NN should_MD allow_VB faster_RBR decompression_NN than_IN the_DT baseline_NN ,_, it_PRP also_RB readily_RB allows_VBZ direct_JJ matching_NN of_IN query_NN terms_NNS as_IN compressed_VBN integers_NNS in_IN the_DT compressed_VBN file_NN ._.
+That_DT is_VBZ ,_, sentences_NNS can_MD be_VB scored_VBN without_IN having_VBG to_TO decompress_VB a_DT document_NN ,_, and_CC only_RB the_DT sentences_NNS returned_VBD as_IN part_NN of_IN a_DT snippet_NN need_NN to_TO be_VB decoded_VBN ._.
+The_DT CTS_NN system_NN stores_NNS all_DT documents_NNS contiguously_RB in_IN one_CD file_NN ,_, and_CC an_DT auxiliary_JJ table_NN of_IN ##_CD bit_NN integers_NNS indicating_VBG the_DT start_NN offset_VBN of_IN each_DT document_NN in_IN the_DT file_NN ._.
+Further_RB ,_, it_PRP must_MD have_VB access_NN to_TO the_DT reverse_JJ mapping_NN of_IN term_NN numbers_NNS ,_, allowing_VBG those_DT words_NNS not_RB spelt_VBN out_RP in_IN the_DT document_NN to_TO be_VB recovered_VBN and_CC returned_VBN to_TO the_DT Query_NNP Engine_NNP as_IN strings_NNS ._.
+The_DT first_JJ of_IN these_DT data_NNS structures_NNS can_MD be_VB readily_RB partitioned_VBN and_CC distributed_VBN if_IN the_DT Snippet_NNP Engine_NNP occupies_VBZ multiple_JJ machines_NNS ;_: the_DT second_JJ ,_, however_RB ,_, is_VBZ not_RB so_RB easily_RB partitioned_VBN ,_, as_IN any_DT document_NN on_IN a_DT remote_JJ machine_NN might_MD require_VB access_NN to_TO the_DT whole_JJ integer-to-string_JJ mapping_NN ._.
+This_DT is_VBZ the_DT second_JJ reason_NN for_IN employing_VBG the_DT model_NN pruning_NN step_NN during_IN construction_NN of_IN the_DT semi-static_JJ code_NN :_: it_PRP limits_VBZ the_DT size_NN of_IN the_DT reverse_JJ mapping_NN table_NN that_WDT should_MD be_VB present_JJ on_IN every_DT machine_NN implementing_VBG the_DT Snippet_NNP Engine_NNP ._.
+4_LS ._.
+#_# Experimental_JJ assessment_NN of_IN CTS_NNP All_DT experiments_NNS reported_VBN in_IN this_DT paper_NN were_VBD run_VBN on_IN a_DT Sun_NNP Fire_NNP V210_NNP Server_NN running_VBG Solaris_NNP ##_NN ._.
+The_DT machine_NN consists_VBZ of_IN dual_JJ #_# ._.
+##_NN GHz_NNP UltraSPARC_NNP IIIi_NNP processors_NNS and_CC 4GB_NN of_IN wt10g_NN wt50g_NN wt100g_NN No_UH ._.
+Docs_NNS ._.
+-LRB-_-LRB- ###_CD -RRB-_-RRB- #_# ._.
+#_# ##_CD ._.
+#_# ##_CD ._.
+#_# Raw_NN Text_VB ##_RB ,_, ###_CD ##_NN ,_, ###_CD ###_CD ,_, ###_CD Baseline_NN -LRB-_-LRB- zlib_NN -RRB-_-RRB- #_# ,_, ###_CD -LRB-_-LRB- ##_CD %_NN -RRB-_-RRB- ##_CD ,_, ###_CD -LRB-_-LRB- ##_CD %_NN -RRB-_-RRB- ##_CD ,_, ###_CD -LRB-_-LRB- ##_CD %_NN -RRB-_-RRB- CTS_NN #_# ,_, ###_CD -LRB-_-LRB- ##_CD %_NN -RRB-_-RRB- ##_CD ,_, ###_CD -LRB-_-LRB- ##_CD %_NN -RRB-_-RRB- ##_CD ,_, ###_CD -LRB-_-LRB- ##_CD %_NN -RRB-_-RRB- Table_NNP #_# :_: Total_JJ storage_NN space_NN -LRB-_-LRB- Mb_NN -RRB-_-RRB- for_IN documents_NNS for_IN the_DT three_CD test_NN collections_NNS both_CC compressed_VBN ,_, and_CC uncompressed_JJ ._.
+0_CD ##_CD ##_CD ##_NN 0_CD ._.
+##_NN ._.
+##_NN ._.
+##_NN ._.
+##_NN ._.
+#_# Queries_NNPS grouped_VBD in_IN ###_CD ''_'' s_VBZ Time_NNP -LRB-_-LRB- seconds_NNS -RRB-_-RRB- #_# ##_CD ##_CD ##_NN 0_CD ._.
+##_NN ._.
+##_NN ._.
+##_NN ._.
+##_NN ._.
+#_# Queries_NNPS grouped_VBD in_IN ###_CD ''_'' s_VBZ Time_NNP -LRB-_-LRB- seconds_NNS -RRB-_-RRB- #_# ##_CD ##_CD ##_NN 0_CD ._.
+##_NN ._.
+##_NN ._.
+##_NN ._.
+##_NN ._.
+#_# Queries_NNPS grouped_VBD in_IN ###_CD ''_'' s_VBZ Time_NNP -LRB-_-LRB- seconds_NNS -RRB-_-RRB- Baseline_NNP CTS_NNS with_IN caching_NN CTS_NN without_IN caching_VBG Figure_NNP #_# :_: Time_NNP to_TO generate_VB snippets_NNS for_IN ##_CD documents_NNS per_IN query_NN ,_, averaged_VBD over_IN buckets_NNS of_IN ###_CD queries_NNS ,_, for_IN the_DT first_JJ ####_CD Excite_JJ queries_NNS on_IN wt10g_NN ._.
+RAM_NNP ._.
+All_DT source_NN code_NN was_VBD compiled_VBN using_VBG gcc4_NN ._.
+#_# ._.
+#_# with_IN -_: O9_NN optimisation_NN ._.
+Timings_NNS were_VBD run_VBN on_IN an_DT otherwise_RB unoccupied_JJ machine_NN and_CC were_VBD averaged_VBN over_IN ##_CD runs_NNS ,_, with_IN memory_NN flushed_VBD between_IN runs_NNS to_TO eliminate_VB any_DT caching_NN of_IN data_NNS files_NNS ._.
+In_IN the_DT absence_NN of_IN evidence_NN to_TO the_DT contrary_NN ,_, we_PRP assume_VBP that_IN it_PRP is_VBZ important_JJ to_TO model_NN realistic_JJ query_NN arrival_NN sequences_NNS and_CC the_DT distribution_NN of_IN query_NN repetitions_NNS for_IN our_PRP$ experiments_NNS ._.
+Consequently_RB ,_, test_NN collections_NNS which_WDT lack_VBP real_JJ query_NN logs_NNS ,_, such_JJ as_IN TREC_NN ad-hoc_JJ and_CC ._.
+GOV2_NN were_VBD not_RB considered_VBN suitable_JJ ._.
+Obtaining_VBG extensive_JJ query_NN logs_NNS and_CC associated_VBN result_NN doc-ids_NNS for_IN a_DT corresponding_JJ large_JJ collection_NN is_VBZ not_RB easy_JJ ._.
+We_PRP have_VBP used_VBN two_CD collections_NNS -LRB-_-LRB- wt10g_NN and_CC wt100g_NN -RRB-_-RRB- from_IN the_DT TREC_NN Web_NN Track_NNP -LSB-_-LRB- #_# -RSB-_-RRB- coupled_VBN with_IN queries_NNS from_IN Excite_NNP logs_NNS from_IN the_DT same_JJ -LRB-_-LRB- c_NN ._.
+####_NN -RRB-_-RRB- period_NN ._.
+Further_RB ,_, we_PRP also_RB made_VBD use_NN of_IN a_DT medium_NN sized_VBN collection_NN wt50g_NN ,_, obtained_VBN by_IN randomly_RB sampling_NN half_NN of_IN the_DT documents_NNS from_IN wt100g_NN ._.
+The_DT first_JJ two_CD rows_NNS of_IN Table_NNP #_# give_VB the_DT number_NN of_IN documents_NNS and_CC the_DT size_NN in_IN Mb_NN of_IN these_DT collections_NNS ._.
+The_DT final_JJ two_CD rows_NNS of_IN Table_NNP #_# show_VBP the_DT size_NN of_IN the_DT resulting_VBG document_NN sets_NNS after_IN compression_NN with_IN the_DT baseline_NN and_CC CTS_NN schemes_NNS ._.
+As_IN expected_VBN ,_, CTS_NNP admits_VBZ a_DT small_JJ compression_NN loss_NN over_IN zlib_NN ,_, but_CC both_DT substantially_RB reduce_VB the_DT size_NN of_IN the_DT text_NN to_TO about_IN ##_CD %_NN of_IN the_DT original_JJ ,_, uncompressed_JJ size_NN ._.
+Note_VB that_IN the_DT figures_NNS for_IN CTS_NNS do_VBP not_RB include_VB the_DT reverse_JJ mapping_NN from_IN integer_NN token_JJ to_TO string_VB that_DT is_VBZ required_VBN to_TO produce_VB the_DT final_JJ snippets_NNS as_IN that_DT occupies_VBZ RAM_NNP ._.
+It_PRP is_VBZ ####_CD Mb_NN in_IN these_DT experiments_NNS ._.
+The_DT Zettair_NNP search_NN engine_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- was_VBD used_VBN to_TO produce_VB a_DT list_NN of_IN documents_NNS to_TO summarize_VB for_IN each_DT query_NN ._.
+For_IN the_DT majority_NN of_IN the_DT experiments_NNS the_DT Okapi_NNP BM25_NN scoring_VBG scheme_NN was_VBD used_VBN to_TO determine_VB document_NN rankings_NNS ._.
+For_IN the_DT static_JJ caching_NN experiments_NNS reported_VBN in_IN Section_NN #_# ,_, the_DT score_NN of_IN each_DT document_NN wt10g_NN wt50g_NN wt100g_NN Baseline_NN ##_CD ###_CD ###_CD CTS_NNP ##_CD ##_CD ##_CD Reduction_NN in_IN time_NN ##_CD %_NN ##_CD %_NN ##_CD %_NN Table_NNP #_# :_: Average_JJ time_NN -LRB-_-LRB- msec_NN -RRB-_-RRB- for_IN the_DT final_JJ ####_CD queries_NNS in_IN the_DT Excite_NNP logs_NNS using_VBG the_DT baseline_NN and_CC CTS_NN systems_NNS on_IN the_DT #_# test_NN collections_NNS ._.
+is_VBZ a_DT ##_NN :_: ##_CD weighted_JJ average_NN of_IN the_DT BM25_NN score_NN -LRB-_-LRB- normalized_VBN by_IN the_DT top_JJ scoring_VBG document_NN for_IN each_DT query_NN -RRB-_-RRB- and_CC a_DT score_NN for_IN each_DT document_NN independent_JJ of_IN any_DT query_NN ._.
+This_DT is_VBZ to_TO simulate_VB effects_NNS of_IN ranking_JJ algorithms_NNS like_IN PageRank_NN -LSB-_-LRB- #_# -RSB-_-RRB- on_IN the_DT distribution_NN of_IN document_NN requests_NNS to_TO the_DT Snippet_NNP Engine_NNP ._.
+In_IN our_PRP$ case_NN we_PRP used_VBD the_DT normalized_VBN Access_NN Count_NN -LSB-_-LRB- #_# -RSB-_-RRB- computed_VBN from_IN the_DT top_JJ ##_CD documents_NNS returned_VBD to_TO the_DT first_JJ #_# million_CD queries_NNS from_IN the_DT Excite_NNP log_NN to_TO determine_VB the_DT query_NN independent_JJ score_NN component_NN ._.
+Points_NNS on_IN Figure_NNP #_# indicate_VBP the_DT mean_NN running_VBG time_NN to_TO generate_VB ##_NN snippets_NNS for_IN each_DT query_NN ,_, averaged_VBD in_IN groups_NNS of_IN 100_CD queries_NNS ,_, for_IN the_DT first_JJ ####_CD queries_NNS in_IN the_DT Excite_NNP query_NN log_NN ._.
+Only_RB the_DT data_NNS for_IN wt10g_NN is_VBZ shown_VBN ,_, but_CC the_DT other_JJ collections_NNS showed_VBD similar_JJ patterns_NNS ._.
+The_DT x-axis_NN indicates_VBZ the_DT group_NN of_IN ###_CD queries_NNS ;_: for_IN example_NN ,_, ##_NN indicates_VBZ the_DT queries_NNS 2001_CD to_TO ####_CD ._.
+Clearly_RB there_EX is_VBZ a_DT caching_NN effect_NN ,_, with_IN times_NNS dropping_VBG substantially_RB after_IN the_DT first_JJ ####_CD or_CC so_RB queries_NNS are_VBP processed_VBN ._.
+All_DT of_IN this_DT is_VBZ due_JJ to_TO the_DT operating_NN system_NN caching_VBG disk_NN blocks_NNS and_CC perhaps_RB pre-fetching_JJ data_NNS ahead_RB of_IN specific_JJ read_NN requests_NNS ._.
+This_DT is_VBZ evident_JJ because_IN the_DT baseline_NN system_NN has_VBZ no_DT large_JJ internal_JJ data_NNS structures_NNS to_TO take_VB advantage_NN of_IN non-disk_JJ based_VBN caching_NN ,_, it_PRP simply_RB opens_VBZ and_CC processes_VBZ files_NNS ,_, and_CC the_DT speed_NN up_RP is_VBZ evident_JJ for_IN the_DT baseline_NN system_NN ._.
+Part_NN of_IN this_DT gain_NN is_VBZ due_JJ to_TO the_DT spatial_JJ locality_NN of_IN disk_NN references_NNS generated_VBN by_IN the_DT query_NN stream_NN :_: repeated_VBN queries_NNS will_MD already_RB have_VB their_PRP$ document_NN files_NNS cached_VBN in_IN memory_NN ;_: and_CC similarly_RB different_JJ queries_NNS that_WDT return_VBP the_DT same_JJ documents_NNS will_MD benefit_VB from_IN document_NN caching_NN ._.
+But_CC when_WRB the_DT log_NN is_VBZ processed_VBN after_IN removing_VBG all_DT but_CC the_DT first_JJ request_NN for_IN each_DT document_NN ,_, the_DT pronounced_JJ speed-up_NN is_VBZ still_RB evident_JJ as_IN more_JJR queries_NNS are_VBP processed_VBN -LRB-_-LRB- not_RB shown_VBN in_IN figure_NN -RRB-_-RRB- ._.
+This_DT suggests_VBZ that_IN the_DT operating_NN system_NN -LRB-_-LRB- or_CC the_DT disk_NN itself_PRP -RRB-_-RRB- is_VBZ reading_VBG and_CC buffering_VBG a_DT larger_JJR amount_NN of_IN data_NNS than_IN the_DT amount_NN requested_VBN and_CC that_IN this_DT brings_VBZ benefit_NN often_RB enough_JJ to_TO make_VB an_DT appreciable_JJ difference_NN in_IN snippet_NN generation_NN times_NNS ._.
+This_DT is_VBZ confirmed_VBN by_IN the_DT curve_NN labeled_VBN CTS_NNS without_IN caching_NN ,_, which_WDT was_VBD generated_VBN after_IN mounting_VBG the_DT filesystem_NN with_IN a_DT no-caching_JJ option_NN -LRB-_-LRB- directio_NN in_IN Solaris_NNP -RRB-_-RRB- ._.
+With_IN disk_NN caching_NN turned_VBD off_RP ,_, the_DT average_JJ time_NN to_TO generate_VB snippets_NNS varies_VBZ little_RB ._.
+The_DT time_NN to_TO generate_VB ten_CD snippets_NNS for_IN a_DT query_NN ,_, averaged_VBD over_IN the_DT final_JJ ####_CD queries_NNS in_IN the_DT Excite_NNP log_NN as_IN caching_NN effects_NNS have_VBP dissipated_VBN ,_, are_VBP shown_VBN in_IN Table_NNP #_# ._.
+Once_RB the_DT system_NN has_VBZ stabilized_VBN ,_, CTS_NNP is_VBZ over_IN ##_CD %_NN faster_JJR than_IN the_DT Baseline_NN system_NN ._.
+This_DT is_VBZ primarily_RB due_JJ to_TO CTS_NNP matching_VBG single_JJ integers_NNS for_IN most_JJS query_JJ words_NNS ,_, rather_RB than_IN comparing_VBG strings_NNS in_IN the_DT baseline_NN system_NN ._.
+Table_NNP #_# shows_VBZ a_DT break_NN down_IN of_IN the_DT average_JJ time_NN to_TO generate_VB ten_CD snippets_NNS over_IN the_DT final_JJ ####_CD queries_NNS of_IN the_DT Excite_NNP log_NN on_IN the_DT wt50g_NN collection_NN when_WRB entire_JJ documents_NNS are_VBP processed_VBN ,_, and_CC when_WRB only_RB the_DT first_JJ half_NN of_IN each_DT document_NN is_VBZ processed_VBN ._.
+As_IN can_MD be_VB seen_VBN ,_, the_DT majority_NN of_IN time_NN spent_VBD generating_VBG a_DT snippet_NN is_VBZ in_IN locating_VBG the_DT document_NN on_IN disk_NN -LRB-_-LRB- Seek_VB -RRB-_-RRB- :_: ##_CD %_NN for_IN whole_JJ documents_NNS ,_, and_CC ##_CD %_NN for_IN half_NN documents_NNS ._.
+Even_RB if_IN the_DT amount_NN of_IN processing_VBG a_DT document_NN must_MD %_NN of_IN doc_NN processed_VBN Seek_VBP Read_NNP Score_NN &_CC Decode_NNP 100_CD %_NN ##_CD #_# ##_CD 50_CD %_NN ##_CD #_# ##_CD Table_NNP #_# :_: Time_NNP to_TO generate_VB ##_NN snippets_NNS for_IN a_DT single_JJ query_NN -LRB-_-LRB- msec_NN -RRB-_-RRB- for_IN the_DT wt50g_NN collection_NN averaged_VBD over_IN the_DT final_JJ ####_CD Excite_JJ queries_NNS when_WRB either_CC all_DT of_IN each_DT document_NN is_VBZ processed_VBN -LRB-_-LRB- ###_CD %_NN -RRB-_-RRB- or_CC just_RB the_DT first_JJ half_NN of_IN each_DT document_NN -LRB-_-LRB- ##_CD %_NN -RRB-_-RRB- ._.
+undergo_VBP is_VBZ halved_VBN ,_, as_IN in_IN the_DT second_JJ row_NN of_IN the_DT Table_NNP ,_, there_EX is_VBZ only_RB a_DT ##_CD %_NN reduction_NN in_IN the_DT total_JJ time_NN required_VBN to_TO generate_VB a_DT snippet_NN ._.
+As_IN locating_VBG documents_NNS in_IN secondary_JJ storage_NN occupies_VBZ such_PDT a_DT large_JJ proportion_NN of_IN snippet_NN generation_NN time_NN ,_, it_PRP seems_VBZ logical_JJ to_TO try_VB and_CC reduce_VB its_PRP$ impact_NN through_IN caching_NN ._.
+5_CD ._.
+DOCUMENT_NNP CACHING_NNP In_IN Section_NNP #_# we_PRP observed_VBD that_IN the_DT Snippet_NNP Engine_NNP would_MD have_VB its_PRP$ own_JJ RAM_NNP in_IN proportion_NN to_TO the_DT size_NN of_IN the_DT document_NN collection_NN ._.
+For_IN example_NN ,_, on_IN a_DT whole-of-Web_JJ search_NN engine_NN ,_, the_DT Snippet_NNP Engine_NNP would_MD be_VB distributed_VBN over_IN many_JJ workstations_NNS ,_, each_DT with_IN at_IN least_JJS #_# Gb_NN of_IN RAM_NNP ._.
+In_IN a_DT small_JJ enterprise_NN ,_, the_DT Snippet_NNP Engine_NNP may_MD be_VB sharing_VBG RAM_NNP with_IN all_DT other_JJ sub-systems_NNS on_IN a_DT single_JJ workstation_NN ,_, hence_RB only_RB have_VBP ###_CD Mb_NN available_JJ ._.
+In_IN this_DT section_NN we_PRP use_VBP simulation_NN to_TO measure_VB the_DT number_NN of_IN cache_NN hits_NNS in_IN the_DT Snippet_NNP Engine_NNP as_IN memory_NN size_NN varies_VBZ ._.
+We_PRP compare_VBP two_CD caching_JJ policies_NNS :_: a_DT static_JJ cache_NN ,_, where_WRB the_DT cache_NN is_VBZ loaded_VBN with_IN as_RB many_JJ documents_NNS as_IN it_PRP can_MD hold_VB before_IN the_DT system_NN begins_VBZ answering_VBG queries_NNS ,_, and_CC then_RB never_RB changes_NNS ;_: and_CC a_DT least-recently-used_JJ cache_NN ,_, which_WDT starts_VBZ out_RP as_IN for_IN the_DT static_JJ cache_NN ,_, but_CC whenever_WRB a_DT document_NN is_VBZ accessed_VBN it_PRP moves_VBZ to_TO the_DT front_NN of_IN a_DT queue_NN ,_, and_CC if_IN a_DT document_NN is_VBZ fetched_VBN from_IN disk_NN ,_, the_DT last_JJ item_NN in_IN the_DT queue_NN is_VBZ evicted_VBN ._.
+Note_VB that_DT documents_NNS are_VBP first_JJ loaded_VBN into_IN the_DT caches_NNS in_IN order_NN of_IN decreasing_VBG query_NN independent_JJ score_NN ,_, which_WDT is_VBZ computed_VBN as_IN described_VBN in_IN Section_NN #_# ._.
+#_# ._.
+The_DT simulations_NNS also_RB assume_VBP a_DT query_NN cache_NN exists_VBZ for_IN the_DT top_JJ Q_NNP most_RBS frequent_JJ queries_NNS ,_, and_CC that_IN these_DT queries_NNS are_VBP never_RB processed_VBN by_IN the_DT Snippet_NNP Engine_NNP ._.
+All_DT queries_NNS passed_VBD into_IN the_DT simulations_NNS are_VBP from_IN the_DT second_JJ half_NN of_IN the_DT Excite_NNP query_NN log_NN -LRB-_-LRB- the_DT first_JJ half_NN being_VBG used_VBN to_TO compute_VB query_NN independent_JJ scores_NNS -RRB-_-RRB- ,_, and_CC are_VBP stemmed_VBN ,_, stopped_VBD ,_, and_CC have_VBP their_PRP$ terms_NNS sorted_VBD alphabetically_RB ._.
+This_DT final_JJ alteration_NN simply_RB allows_VBZ queries_NNS such_JJ as_IN red_JJ dog_NN and_CC dog_NN red_JJ to_TO return_VB the_DT same_JJ documents_NNS ,_, as_RB would_MD be_VB the_DT case_NN in_IN a_DT search_NN engine_NN where_WRB explicit_JJ phrase_NN operators_NNS would_MD be_VB required_VBN in_IN the_DT query_NN to_TO enforce_VB term_NN order_NN and_CC proximity_NN ._.
+Figure_NNP #_# shows_VBZ the_DT percentage_NN of_IN document_NN access_NN that_WDT hit_VBD cache_NN using_VBG the_DT two_CD caching_VBG schemes_NNS ,_, with_IN Q_NNP either_CC #_# or_CC ##_CD ,_, ###_CD ,_, on_IN ###_CD ,_, ###_CD Excite_JJ queries_NNS on_IN wt100g_NN ._.
+The_DT xaxis_NN shows_VBZ the_DT percentage_NN of_IN documents_NNS that_WDT are_VBP held_VBN in_IN the_DT cache_NN ,_, so_RB #_# ._.
+#_# %_NN corresponds_VBZ to_TO about_IN ###_NN ,_, ###_CD documents_NNS ._.
+From_IN this_DT figure_NN it_PRP is_VBZ clear_JJ that_IN caching_VBG even_RB a_DT small_JJ percentage_NN of_IN the_DT documents_NNS has_VBZ a_DT large_JJ impact_NN on_IN reducing_VBG seek_VB time_NN for_IN snippet_NN generation_NN ._.
+With_IN #_# %_NN of_IN documents_NNS cached_VBN ,_, about_IN ###_CD Mb_NN for_IN the_DT wt100g_NN collection_NN ,_, around_IN 80_CD %_NN of_IN disk_NN seeks_VBZ are_VBP avoided_VBN ._.
+The_DT static_JJ cache_NN performs_VBZ surprisingly_RB well_RB -LRB-_-LRB- squares_NNS in_IN Figure_NNP #_# -RRB-_-RRB- ,_, but_CC is_VBZ outperformed_VBN by_IN the_DT LRU_NNP cache_NN -LRB-_-LRB- circles_NNS -RRB-_-RRB- ._.
+In_IN an_DT actual_JJ implementation_NN of_IN LRU_NNP ,_, however_RB ,_, there_EX may_MD be_VB fragmentation_NN of_IN the_DT cache_NN as_IN documents_NNS are_VBP swapped_VBN in_IN and_CC out_IN ._.
+The_DT reason_NN for_IN the_DT large_JJ impact_NN of_IN the_DT document_NN cache_NN is_VBZ 0_CD ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# 020406080100_CD Cache_NNP size_NN -LRB-_-LRB- %_NN of_IN collection_NN -RRB-_-RRB- %_NN ofaccessesascachehits_NNS LRU_NNP Q_NNP =_JJ #_# LRU_NNP Q_NNP =_JJ ##_NN ,_, ###_CD Static_JJ Q_NNP =_JJ #_# Static_JJ Q_NNP =_JJ ##_NN ,_, ###_CD Figure_NN #_# :_: Percentage_NN of_IN the_DT time_NN that_IN the_DT Snippet_NNP Engine_NNP does_VBZ not_RB have_VB to_TO go_VB to_TO disk_NN in_IN order_NN to_TO generate_VB a_DT snippet_NN plotted_VBN against_IN the_DT size_NN of_IN the_DT document_NN cache_NN as_IN a_DT percentage_NN of_IN all_DT documents_NNS in_IN the_DT collection_NN ._.
+Results_NNS are_VBP from_IN a_DT simulation_NN on_IN wt100g_NN with_IN ###_CD ,_, ###_CD Excite_JJ queries_NNS ._.
+that_IN ,_, for_IN a_DT particular_JJ collection_NN ,_, some_DT documents_NNS are_VBP much_RB more_RBR likely_JJ to_TO appear_VB in_IN results_NNS lists_NNS than_IN others_NNS ._.
+This_DT effect_NN occurs_VBZ partly_RB because_IN of_IN the_DT approximately_RB Zipfian_JJ query_NN frequency_NN distribution_NN ,_, and_CC partly_RB because_IN most_JJS Web_NN search_NN engines_NNS employ_VBP ranking_JJ methods_NNS which_WDT combine_VBP query_NN based_VBN scores_NNS with_IN static_JJ -LRB-_-LRB- a_DT priori_FW -RRB-_-RRB- scores_NNS determined_VBN from_IN factors_NNS such_JJ as_IN link_NN graph_NN measures_NNS ,_, URL_NN features_NNS ,_, spam_NN scores_NNS and_CC so_RB on_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ._.
+Documents_NNS with_IN high_JJ static_JJ scores_NNS are_VBP much_RB more_RBR likely_JJ to_TO be_VB retrieved_VBN than_IN others_NNS ._.
+In_IN addition_NN to_TO the_DT document_NN cache_NN ,_, the_DT RAM_NNP of_IN the_DT Snippet_NNP Engine_NNP must_MD also_RB hold_VB the_DT CTS_NN decoding_VBG table_NN that_WDT maps_VBZ integers_NNS to_TO strings_NNS ,_, which_WDT is_VBZ capped_VBN by_IN a_DT parameter_NN at_IN compression_NN time_NN -LRB-_-LRB- #_# Gb_NNP in_IN our_PRP$ experiments_NNS here_RB -RRB-_-RRB- ._.
+This_DT is_VBZ more_JJR than_IN compensated_VBN for_IN by_IN the_DT reduced_VBN size_NN of_IN each_DT document_NN ,_, allowing_VBG more_JJR documents_NNS into_IN the_DT document_NN cache_NN ._.
+For_IN example_NN ,_, using_VBG CTS_NNP reduces_VBZ the_DT average_JJ document_NN size_NN from_IN #_# ._.
+#_# Kb_NN to_TO #_# ._.
+#_# Kb_NN -LRB-_-LRB- as_IN shown_VBN in_IN Table_NNP #_# -RRB-_-RRB- ,_, so_RB a_DT #_# Gb_NNP RAM_NNP could_MD hold_VB ###_CD ,_, ###_CD uncompressed_JJ documents_NNS -LRB-_-LRB- #_# %_NN of_IN the_DT collection_NN -RRB-_-RRB- ,_, or_CC ###_CD ,_, ###_CD documents_NNS plus_IN a_DT #_# Gb_NN decompression_NN table_NN -LRB-_-LRB- #_# %_NN of_IN the_DT collection_NN -RRB-_-RRB- ._.
+In_IN fact_NN ,_, further_JJ experimentation_NN with_IN the_DT model_NN size_NN reveals_VBZ that_IN the_DT model_NN can_MD in_IN fact_NN be_VB very_RB small_JJ and_CC still_RB CTS_NN gives_VBZ good_JJ compression_NN and_CC fast_JJ scoring_VBG times_NNS ._.
+This_DT is_VBZ evidenced_VBN in_IN Figure_NNP #_# ,_, where_WRB the_DT compressed_VBN size_NN of_IN wt50g_NN is_VBZ shown_VBN in_IN the_DT solid_JJ symbols_NNS ._.
+Note_VB that_DT when_WRB no_DT compression_NN is_VBZ used_VBN -LRB-_-LRB- Model_NNP Size_NN is_VBZ 0Mb_NN -RRB-_-RRB- ,_, the_DT collection_NN is_VBZ only_RB ##_CD Gb_NN as_IN HTML_NNP markup_NN ,_, JavaScript_NNP ,_, and_CC repeated_VBN punctuation_NN has_VBZ been_VBN discarded_VBN as_IN described_VBN in_IN Section_NN #_# ._.
+#_# ._.
+With_IN a_DT #_# Mb_NNP model_NN ,_, the_DT collection_NN size_NN drops_NNS by_IN more_JJR than_IN half_NN to_TO ##_VB Gb_NNP ,_, and_CC increasing_VBG the_DT model_NN size_NN to_TO ###_CD Mb_NN only_RB elicits_VBZ a_DT #_# Gb_NNP drop_NN in_IN the_DT collection_NN size_NN ._.
+Figure_NNP #_# also_RB shows_VBZ the_DT average_JJ time_NN to_TO score_NN and_CC decode_VB a_DT a_DT snippet_NN -LRB-_-LRB- excluding_VBG seek_VB time_NN -RRB-_-RRB- with_IN the_DT different_JJ model_NN sizes_NNS -LRB-_-LRB- open_JJ symbols_NNS -RRB-_-RRB- ._.
+Again_RB ,_, there_EX is_VBZ a_DT large_JJ speed_NN up_RP when_WRB a_DT #_# Mb_NNP model_NN is_VBZ used_VBN ,_, but_CC little_JJ 0_CD ###_CD ###_CD ###_CD 15202530_CD Model_NNP Size_NN -LRB-_-LRB- Mb_NN -RRB-_-RRB- CollectionSize_NN -LRB-_-LRB- Gb_NN -RRB-_-RRB- orTime_NN -LRB-_-LRB- msec_NN -RRB-_-RRB- Size_NN -LRB-_-LRB- Gb_NN -RRB-_-RRB- Time_NN -LRB-_-LRB- msec_NN -RRB-_-RRB- Figure_NN #_# :_: Collection_NNP size_NN of_IN the_DT wt50g_NN collection_NN when_WRB compressed_VBN with_IN CTS_NN using_VBG different_JJ memory_NN limits_NNS on_IN the_DT model_NN ,_, and_CC the_DT average_JJ time_NN to_TO generate_VB single_JJ snippet_NN excluding_VBG seek_VB time_NN on_IN #####_CD Excite_NN queries_NNS using_VBG those_DT models_NNS ._.
+improvement_NN with_IN larger_JJR models_NNS ._.
+Similar_JJ results_NNS hold_VBP for_IN the_DT wt100g_NN collection_NN ,_, where_WRB a_DT model_NN of_IN about_IN ##_CD Mb_NN offers_VBZ substantial_JJ space_NN and_CC time_NN savings_NNS over_IN no_DT model_NN at_IN all_DT ,_, but_CC returns_NNS diminish_VBP as_IN the_DT model_NN size_NN increases_NNS ._.
+Apart_RB from_IN compression_NN ,_, there_EX is_VBZ another_DT approach_NN to_TO reducing_VBG the_DT size_NN of_IN each_DT document_NN in_IN the_DT cache_NN :_: do_VB not_RB store_VB the_DT full_JJ document_NN in_IN cache_NN ._.
+Rather_RB store_NN sentences_NNS that_WDT are_VBP likely_JJ to_TO be_VB used_VBN in_IN snippets_NNS in_IN the_DT cache_NN ,_, and_CC if_IN during_IN snippet_NN generation_NN on_IN a_DT cached_VBN document_NN the_DT sentence_NN scores_NNS do_VBP not_RB reach_VB a_DT certain_JJ threshold_NN ,_, then_RB retrieve_VB the_DT whole_JJ document_NN from_IN disk_NN ._.
+This_DT raises_VBZ questions_NNS on_IN how_WRB to_TO choose_VB sentences_NNS from_IN documents_NNS to_TO put_VB in_RP cache_NN ,_, and_CC which_WDT to_TO leave_VB on_IN disk_NN ,_, which_WDT we_PRP address_VBP in_IN the_DT next_JJ section_NN ._.
+6_CD ._.
+SENTENCE_NN REORDERING_NN Sentences_NNS within_IN each_DT document_NN can_MD be_VB re-ordered_VBN so_RB that_IN sentences_NNS that_WDT are_VBP very_RB likely_JJ to_TO appear_VB in_IN snippets_NNS are_VBP at_IN the_DT front_NN of_IN the_DT document_NN ,_, hence_RB processed_VBN first_RB at_IN query_NN time_NN ,_, while_IN less_RBR likely_JJ sentences_NNS are_VBP relegated_VBN to_TO the_DT rear_NN of_IN the_DT document_NN ._.
+Then_RB ,_, during_IN query_NN time_NN ,_, if_IN k_NN sentences_NNS with_IN a_DT score_NN exceeding_VBG some_DT threshold_NN are_VBP found_VBN before_IN the_DT entire_JJ document_NN is_VBZ processed_VBN ,_, the_DT remainder_NN of_IN the_DT document_NN is_VBZ ignored_VBN ._.
+Further_RB ,_, to_TO improve_VB caching_NN ,_, only_RB the_DT head_NN of_IN each_DT document_NN can_MD be_VB stored_VBN in_IN the_DT cache_NN ,_, with_IN the_DT tail_NN residing_VBG on_IN disk_NN ._.
+Note_VB that_IN we_PRP assume_VBP that_IN the_DT search_NN engine_NN is_VBZ to_TO provide_VB cached_JJ copies_NNS of_IN a_DT document-that_NN is_VBZ ,_, the_DT exact_JJ text_NN of_IN the_DT document_NN as_IN it_PRP was_VBD indexed-then_JJ this_DT would_MD be_VB serviced_VBN by_IN another_DT sub-system_NN in_IN Figure_NNP #_# ,_, and_CC not_RB from_IN the_DT altered_JJ copy_NN we_PRP store_VBP in_IN the_DT Snippet_NNP Engine_NNP ._.
+We_PRP now_RB introduce_VBP four_CD sentence_NN reordering_NN approaches_NNS ._.
+1_LS ._.
+Natural_JJ order_NN The_DT first_JJ few_JJ sentences_NNS of_IN a_DT well_RB authored_VBN document_NN usually_RB best_JJS describe_VBP the_DT document_NN content_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Thus_RB simply_RB processing_VBG a_DT document_NN in_IN order_NN should_MD yield_VB a_DT quality_NN snippet_NN ._.
+Unfortunately_RB ,_, however_RB ,_, web_NN documents_NNS are_VBP often_RB not_RB well_RB authored_VBD ,_, with_IN little_JJ editorial_NN or_CC professional_JJ writing_NN skills_NNS brought_VBD to_TO bear_VB on_IN the_DT creation_NN of_IN a_DT work_NN of_IN literary_JJ merit_NN ._.
+More_RBR importantly_RB ,_, perhaps_RB ,_, is_VBZ that_IN we_PRP are_VBP producing_VBG query-biased_JJ snippets_NNS ,_, and_CC there_EX is_VBZ no_DT guarantee_NN that_IN query_NN terms_NNS will_MD appear_VB in_IN sentences_NNS towards_IN the_DT front_NN of_IN a_DT document_NN ._.
+2_LS ._.
+Significant_JJ terms_NNS -LRB-_-LRB- ST_JJ -RRB-_-RRB- Luhn_NNP introduced_VBD the_DT concept_NN of_IN a_DT significant_JJ sentence_NN as_IN containing_VBG a_DT cluster_NN of_IN significant_JJ terms_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, a_DT concept_NN found_VBN to_TO work_VB well_RB by_IN Tombros_NNP and_CC Sanderson_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Let_VB fd_NN ,_, t_NN be_VB the_DT frequency_NN of_IN term_NN t_NN in_IN document_NN d_NN ,_, then_RB term_NN t_NN is_VBZ determined_VBN to_TO be_VB significant_JJ if_IN fd_NN ,_, t_NN 8_CD <_JJR :_: 7_CD #_# ._.
+#_# -LRB-_-LRB- ##_CD sd_NN -RRB-_-RRB- ,_, if_IN sd_NN <_JJR ##_CD 7_CD ,_, if_IN ##_CD sd_NN ##_NN 7_CD +_CC #_# ._.
+#_# -LRB-_-LRB- sd_NN ##_NN -RRB-_-RRB- ,_, otherwise_RB ,_, where_WRB sd_NN is_VBZ the_DT number_NN of_IN sentences_NNS in_IN document_NN d_NN ._.
+A_DT bracketed_VBN section_NN is_VBZ defined_VBN as_IN a_DT group_NN of_IN terms_NNS where_WRB the_DT leftmost_JJS and_CC rightmost_JJ terms_NNS are_VBP significant_JJ terms_NNS ,_, and_CC no_DT significant_JJ terms_NNS in_IN the_DT bracketed_VBN section_NN are_VBP divided_VBN by_IN more_JJR than_IN four_CD non-significant_JJ terms_NNS ._.
+The_DT score_NN of_IN a_DT bracketed_VBN section_NN is_VBZ the_DT square_NN of_IN the_DT number_NN of_IN significant_JJ words_NNS falling_VBG in_IN the_DT section_NN ,_, divided_VBN by_IN the_DT total_JJ number_NN of_IN words_NNS in_IN the_DT entire_JJ sentence_NN ._.
+The_DT a_DT priori_FW score_NN for_IN a_DT sentence_NN is_VBZ computed_VBN as_IN the_DT maximum_NN of_IN all_DT scores_NNS for_IN the_DT bracketed_VBN sections_NNS of_IN the_DT sentence_NN ._.
+We_PRP then_RB sort_VBP the_DT sentences_NNS by_IN this_DT score_NN ._.
+3_LS ._.
+Query_NNP log_NN based_VBN -LRB-_-LRB- QLt_NN -RRB-_-RRB- Many_JJ Web_NN queries_NNS repeat_NN ,_, and_CC a_DT small_JJ number_NN of_IN queries_NNS make_VBP up_RP a_DT large_JJ volume_NN of_IN total_JJ searches_NNS -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+In_IN order_NN to_TO take_VB advantage_NN of_IN this_DT bias_NN ,_, sentences_NNS that_WDT contain_VBP many_JJ past_JJ query_NN terms_NNS should_MD be_VB promoted_VBN to_TO the_DT front_NN of_IN a_DT document_NN ,_, while_IN sentences_NNS that_WDT contain_VBP few_JJ query_NN terms_NNS should_MD be_VB demoted_VBN ._.
+In_IN this_DT scheme_NN ,_, the_DT sentences_NNS are_VBP sorted_VBN by_IN the_DT number_NN of_IN sentence_NN terms_NNS that_WDT occur_VBP in_IN the_DT query_NN log_NN ._.
+To_TO ensure_VB that_DT long_JJ sentences_NNS do_VBP not_RB dominate_VB over_IN shorter_JJR qualitative_JJ sentences_NNS the_DT score_NN assigned_VBN to_TO each_DT sentence_NN is_VBZ divided_VBN by_IN the_DT number_NN of_IN terms_NNS in_IN that_DT sentence_NN giving_VBG each_DT sentence_NN a_DT score_NN between_IN #_# and_CC #_# ._.
+4_LS ._.
+Query_NNP log_NN based_VBN -LRB-_-LRB- QLu_NN -RRB-_-RRB- This_DT scheme_NN is_VBZ as_IN for_IN QLt_NNP ,_, but_CC repeated_VBD terms_NNS in_IN the_DT sentence_NN are_VBP only_RB counted_VBN once_RB ._.
+By_IN re-ordering_VBG sentences_NNS using_VBG schemes_NNS ST_JJ ,_, QLt_NNP or_CC QLu_NNP ,_, we_PRP aim_VBP to_TO terminate_VB snippet_NN generation_NN earlier_JJR than_IN if_IN Natural_JJ Order_NN is_VBZ used_VBN ,_, but_CC still_RB produce_VBP sentences_NNS with_IN the_DT same_JJ number_NN of_IN unique_JJ query_NN terms_NNS -LRB-_-LRB- d_NN in_IN Figure_NNP #_# -RRB-_-RRB- ,_, total_JJ number_NN of_IN query_NN terms_NNS -LRB-_-LRB- c_NN -RRB-_-RRB- ,_, the_DT same_JJ positional_JJ score_NN -LRB-_-LRB- h_NN +_CC -RRB-_-RRB- and_CC the_DT same_JJ maximum_NN span_NN -LRB-_-LRB- k_NN -RRB-_-RRB- ._.
+Accordingly_RB ,_, we_PRP conducted_VBD experiments_NNS comparing_VBG the_DT methods_NNS ,_, the_DT first_JJ ##_CD %_NN of_IN the_DT Excite_NNP query_NN log_NN was_VBD used_VBN to_TO reorder_VB sentences_NNS when_WRB required_VBN ,_, and_CC the_DT final_JJ ##_CD %_NN for_IN testing_NN ._.
+Figure_NNP #_# shows_VBZ the_DT differences_NNS in_IN snippet_NN scoring_VBG components_NNS using_VBG each_DT of_IN the_DT three_CD methods_NNS over_IN the_DT Natural_JJ Order_NN method_NN ._.
+It_PRP is_VBZ clear_JJ that_IN sorting_VBG sentences_NNS using_VBG the_DT Significant_JJ Terms_NNS -LRB-_-LRB- ST_JJ -RRB-_-RRB- method_NN leads_VBZ to_TO the_DT smallest_JJS change_NN in_IN the_DT sentence_NN scoring_VBG components_NNS ._.
+The_DT greatest_JJS change_NN over_IN all_DT methods_NNS is_VBZ in_IN the_DT sentence_NN position_NN -LRB-_-LRB- h_NN +_CC -RRB-_-RRB- component_NN of_IN the_DT score_NN ,_, which_WDT is_VBZ to_TO be_VB expected_VBN as_IN their_PRP$ is_VBZ no_DT guarantee_NN that_WDT leading_VBG and_CC heading_VBG sentences_NNS are_VBP processed_VBN at_IN all_DT after_IN sentences_NNS are_VBP re-ordered_VBN ._.
+The_DT second_JJ most_RBS affected_VBN component_NN is_VBZ the_DT number_NN of_IN distinct_JJ query_NN terms_NNS in_IN a_DT returned_VBN sentence_NN ,_, but_CC if_IN only_RB the_DT first_JJ ##_CD %_NN of_IN the_DT document_NN is_VBZ processed_VBN with_IN the_DT ST_JJ method_NN ,_, there_EX is_VBZ a_DT drop_NN of_IN only_RB #_# %_NN in_IN the_DT number_NN of_IN distinct_JJ query_NN terms_NNS found_VBN in_IN snippets_NNS ._.
+Depending_VBG how_WRB these_DT various_JJ components_NNS are_VBP weighted_VBN to_TO compute_VB an_DT overall_JJ snippet_NN score_NN ,_, one_PRP can_MD argue_VB that_IN there_EX is_VBZ little_JJ overall_JJ affect_VB on_IN scores_NNS when_WRB processing_VBG only_RB half_PDT the_DT document_NN using_VBG the_DT ST_JJ method_NN ._.
+Span_NN -LRB-_-LRB- k_NN -RRB-_-RRB- Term_NN Count_NN -LRB-_-LRB- c_NN -RRB-_-RRB- Sentence_NN Position_NN -LRB-_-LRB- h_NN +_CC l_NN -RRB-_-RRB- Distinct_JJ Terms_NNS -LRB-_-LRB- d_NN -RRB-_-RRB- 40_CD %_NN 50_CD %_NN 60_CD %_NN 70_CD %_NN ST_JJ QLt_NNP QLu_NNP ST_JJ QLt_NNP QLu_NNP ST_JJ QLt_NNP QLu_NNP ST_JJ QLt_NNP QLu_NNP ST_JJ QLt_NNP QLu_NNP RelativedifferencetoNaturalOrder_NNP Documents_NNS size_NN used_VBN 90_CD %_NN ##_CD %_NN ##_CD %_NN ##_CD %_NN ##_CD %_NN 0_CD %_NN 10_CD %_NN 20_CD %_NN 30_CD %_NN Figure_NN #_# :_: Relative_JJ difference_NN in_IN the_DT snippet_NN score_NN components_NNS compared_VBN to_TO Natural_JJ Ordered_VBN documents_NNS when_WRB the_DT amount_NN of_IN documents_NNS processed_VBN is_VBZ reduced_VBN ,_, and_CC the_DT sentences_NNS in_IN the_DT document_NN are_VBP reordered_VBN using_VBG Query_NNP Logs_NNP -LRB-_-LRB- QLt_NNP ,_, QLu_NNP -RRB-_-RRB- or_CC Significant_JJ Terms_NNS -LRB-_-LRB- ST_JJ -RRB-_-RRB- ._.
+7_CD ._.
+DISCUSSION_NN In_IN this_DT paper_NN we_PRP have_VBP described_VBN the_DT algorithms_NNS and_CC compression_NN scheme_NN that_WDT would_MD make_VB a_DT good_JJ Snippet_NNP Engine_NNP sub-system_NN for_IN generating_VBG text_NN snippets_NNS of_IN the_DT type_NN shown_VBN on_IN the_DT results_NNS pages_NNS of_IN well_RB known_VBN Web_NN search_NN engines_NNS ._.
+Our_PRP$ experiments_NNS not_RB only_RB show_VBP that_IN our_PRP$ scheme_NN is_VBZ over_IN ##_CD %_NN faster_JJR than_IN the_DT obvious_JJ baseline_NN ,_, but_CC also_RB reveal_VBP some_DT very_RB important_JJ aspects_NNS of_IN the_DT snippet_NN generation_NN problem_NN ._.
+Primarily_RB ,_, caching_VBG documents_NNS avoids_VBZ seek_VB costs_NNS to_TO secondary_JJ memory_NN for_IN each_DT document_NN that_WDT is_VBZ to_TO be_VB summarized_VBN ,_, and_CC is_VBZ vital_JJ for_IN fast_JJ snippet_NN generation_NN ._.
+Our_PRP$ caching_NN simulations_NNS show_VBP that_IN if_IN as_RB little_JJ as_IN #_# %_NN of_IN the_DT documents_NNS can_MD be_VB cached_VBN in_IN RAM_NNP as_IN part_NN of_IN the_DT Snippet_NNP Engine_NNP ,_, possibly_RB distributed_VBN over_IN many_JJ machines_NNS ,_, then_RB around_IN ##_CD %_NN of_IN seeks_VBZ can_MD be_VB avoided_VBN ._.
+Our_PRP$ second_JJ major_JJ result_NN is_VBZ that_IN keeping_VBG only_RB half_NN of_IN each_DT document_NN in_IN RAM_NNP ,_, effectively_RB doubling_VBG the_DT cache_NN size_NN ,_, has_VBZ little_JJ affect_NN on_IN the_DT quality_NN of_IN the_DT final_JJ snippets_NNS generated_VBN from_IN those_DT half-documents_NNS ,_, provided_VBD that_IN the_DT sentences_NNS that_WDT are_VBP kept_VBN in_IN memory_NN are_VBP chosen_VBN using_VBG the_DT Significant_JJ Term_NN algorithm_NN of_IN Luhn_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Both_CC our_PRP$ document_NN compression_NN and_CC compaction_NN schemes_NNS dramatically_RB reduce_VB the_DT time_NN taken_VBN to_TO generate_VB snippets_NNS ._.
+Note_VB that_IN these_DT results_NNS are_VBP generated_VBN using_VBG a_DT 100Gb_NN subset_NN of_IN the_DT Web_NN ,_, and_CC the_DT Excite_NNP query_NN log_NN gathered_VBN from_IN the_DT same_JJ period_NN as_IN that_DT subset_NN was_VBD created_VBN ._.
+We_PRP are_VBP assuming_VBG ,_, as_IN there_EX is_VBZ no_DT evidence_NN to_TO the_DT contrary_NN ,_, that_IN this_DT collection_NN and_CC log_NN is_VBZ representative_NN of_IN search_NN engine_NN input_NN in_IN other_JJ domains_NNS ._.
+In_IN particular_JJ ,_, we_PRP can_MD scale_VB our_PRP$ results_NNS to_TO examine_VB what_WP resources_NNS would_MD be_VB required_VBN ,_, using_VBG our_PRP$ scheme_NN ,_, to_TO provide_VB a_DT Snippet_NNP Engine_NNP for_IN the_DT entire_JJ World_NN Wide_NN Web_NN ._.
+We_PRP will_MD assume_VB that_IN the_DT Snippet_NNP Engine_NNP is_VBZ distributed_VBN across_IN M_NN machines_NNS ,_, and_CC that_IN there_EX are_VBP N_NN web_NN pages_NNS in_IN the_DT collection_NN to_TO be_VB indexed_VBN and_CC served_VBN by_IN the_DT search_NN engine_NN ._.
+We_PRP also_RB assume_VBP a_DT balanced_JJ load_NN for_IN each_DT machine_NN ,_, so_IN each_DT machine_NN serves_VBZ about_IN N_NN /_: M_NN documents_NNS ,_, which_WDT is_VBZ easily_RB achieved_VBN in_IN practice_NN ._.
+Each_DT machine_NN ,_, therefore_RB ,_, requires_VBZ RAM_NNP to_TO hold_VB the_DT following_VBG ._.
+The_DT CTS_NNP model_NN ,_, which_WDT should_MD be_VB #_# /_: ####_CD of_IN the_DT size_NN of_IN the_DT uncompressed_JJ collection_NN -LRB-_-LRB- using_VBG results_NNS in_IN Figure_NNP #_# and_CC Williams_NNP et_FW al_FW ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- -RRB-_-RRB- ._.
+Assuming_VBG an_DT average_JJ uncompressed_JJ document_NN size_NN of_IN #_# Kb_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, this_DT would_MD require_VB N_NN /_: M_NN #_# ._.
+###_CD bytes_NNS of_IN memory_NN ._.
+A_DT cache_NN of_IN #_# %_NN of_IN all_DT N_NN /_: M_NN documents_NNS ._.
+Each_DT document_NN requires_VBZ #_# Kb_NN when_WRB compressed_VBN with_IN CTS_NN -LRB-_-LRB- Table_NNP #_# -RRB-_-RRB- ,_, and_CC only_RB half_NN of_IN each_DT document_NN is_VBZ required_VBN using_VBG ST_JJ sentence_NN reordering_NN ,_, requiring_VBG a_DT total_NN of_IN N_NN /_: M_NN #_# ._.
+##_SYM 1024_CD bytes_NNS ._.
+The_DT offset_VBN array_NN that_WDT gives_VBZ the_DT start_NN position_NN of_IN each_DT document_NN in_IN the_DT single_JJ ,_, compressed_VBN file_NN :_: #_# bytes_NNS per_IN N_NN /_: M_NN documents_NNS ._.
+The_DT total_JJ amount_NN of_IN RAM_NNP required_VBN by_IN a_DT single_JJ machine_NN ,_, therefore_RB ,_, would_MD be_VB N_NN /_: M_NN -LRB-_-LRB- #_# ._.
+###_NN +_CC ##_NN ._.
+##_NN +_CC #_# -RRB-_-RRB- bytes_NNS ._.
+Assuming_VBG that_IN each_DT machine_NN has_VBZ #_# Gb_NN of_IN RAM_NNP ,_, and_CC that_IN there_EX are_VBP 20_CD billion_CD pages_NNS to_TO index_NN on_IN the_DT Web_NN ,_, a_DT total_NN of_IN M_NN =_JJ ##_CD machines_NNS would_MD be_VB required_VBN for_IN the_DT Snippet_NNP Engine_NNP ._.
+Of_IN course_NN in_IN practice_NN ,_, more_JJR machines_NNS may_MD be_VB required_VBN to_TO manage_VB the_DT distributed_VBN system_NN ,_, to_TO provide_VB backup_JJ services_NNS for_IN failed_JJ machines_NNS ,_, and_CC other_JJ networking_NN services_NNS ._.
+These_DT machines_NNS would_MD also_RB need_VB access_NN to_TO ##_VB Tb_NN of_IN disk_NN to_TO store_VB the_DT compressed_VBN document_NN representations_NNS that_WDT were_VBD not_RB in_IN cache_NN ._.
+In_IN this_DT work_NN we_PRP have_VBP deliberately_RB avoided_VBN committing_VBG to_TO one_CD particular_JJ scoring_VBG method_NN for_IN sentences_NNS in_IN documents_NNS ._.
+Rather_RB ,_, we_PRP have_VBP reported_VBN accuracy_NN results_NNS in_IN terms_NNS of_IN the_DT four_CD components_NNS that_WDT have_VBP been_VBN previously_RB shown_VBN to_TO be_VB important_JJ in_IN determining_VBG useful_JJ snippets_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+The_DT CTS_NN method_NN can_MD incorporate_VB any_DT new_JJ metrics_NNS that_WDT may_MD arise_VB in_IN the_DT future_NN that_WDT are_VBP calculated_VBN on_IN whole_JJ words_NNS ._.
+The_DT document_NN compaction_NN techniques_NNS using_VBG sentence_NN re-ordering_NN ,_, however_RB ,_, remove_VB the_DT spatial_JJ relationship_NN between_IN sentences_NNS ,_, and_CC so_RB if_IN a_DT scoring_VBG technique_NN relies_VBZ on_IN the_DT position_NN of_IN a_DT sentence_NN within_IN a_DT document_NN ,_, the_DT aggressive_JJ compaction_NN techniques_NNS reported_VBN here_RB can_MD not_RB be_VB used_VBN ._.
+A_DT variation_NN on_IN the_DT semi-static_JJ compression_NN approach_NN we_PRP have_VBP adopted_VBN in_IN this_DT work_NN has_VBZ been_VBN used_VBN successfully_RB in_IN previous_JJ search_NN engine_NN design_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, but_CC there_EX are_VBP alternate_JJ compression_NN schemes_NNS that_WDT allow_VBP direct_JJ matching_NN in_IN compressed_VBN text_NN As_IN seek_VB time_NN dominates_VBZ the_DT snippet_NN generation_NN process_NN ,_, we_PRP have_VBP not_RB focused_VBN on_IN this_DT portion_NN of_IN the_DT snippet_NN generation_NN in_IN detail_NN in_IN this_DT paper_NN ._.
+We_PRP will_MD explore_VB alternate_JJ compression_NN schemes_NNS in_IN future_JJ work_NN ._.
+Acknowledgments_NNS This_DT work_NN was_VBD supported_VBN in_IN part_NN by_IN ARC_NNP Discovery_NNP Project_NNP DP0558916_NN -LRB-_-LRB- AT_IN -RRB-_-RRB- ._.
+Thanks_NNS to_TO Nick_NNP Lester_NNP and_CC Justin_NNP Zobel_NNP for_IN valuable_JJ discussions_NNS ._.
+8_CD ._.
+REFERENCES_NNS -LSB-_-LRB- #_# -RSB-_-RRB- S_NN ._.
+Brin_NNP and_CC L_NNP ._.
+Page_NNP ._.
+The_DT anatomy_NN of_IN a_DT large-scale_JJ hypertextual_JJ Web_NN search_NN engine_NN ._.
+In_IN WWW7_NN ,_, pages_NNS 107-117_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- R_NN ._.
+Fagin_NNP ,_, Ravi_NNP K_NNP ._.
+,_, K_NNP ._.
+S_NN ._.
+McCurley_NNP ,_, J_NNP ._.
+Novak_NNP ,_, D_NNP ._.
+Sivakumar_NNP ,_, J_NNP ._.
+A_DT ._.
+Tomlin_NNP ,_, and_CC D_NN ._.
+P_NN ._.
+Williamson_NNP ._.
+Searching_NN the_DT workplace_NN web_NN ._.
+In_IN WWW2003_NN ,_, Budapest_NNP ,_, Hungary_NNP ,_, May_NNP ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- T_NN ._.
+Fagni_NNP ,_, R_NN ._.
+Perego_NNP ,_, F_NN ._.
+Silvestri_NNP ,_, and_CC S_NN ._.
+Orlando_NNP ._.
+Boosting_VBG the_DT performance_NN of_IN web_NN search_NN engines_NNS :_: Caching_NN and_CC prefetching_VBG query_NN results_NNS by_IN exploiting_VBG historical_JJ usage_NN data_NNS ._.
+ACM_NNP Trans_NNP ._.
+Inf_NNP ._.
+Syst_NNP ._.
+,_, 24_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 51-78_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- J-L_NN Gailly_NNP and_CC M_NN ._.
+Adler_NNP ._.
+Zlib_NNP Compression_NNP Library_NNP ._.
+www_NN ._.
+zlib_NN ._.
+net_NN ._.
+Accessed_VBN January_NNP ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- S_NN ._.
+Garcia_NNP ,_, H_NN ._.
+E_NN ._.
+Williams_NNP ,_, and_CC A_NN ._.
+Cannane_NN ._.
+Access-ordered_JJ indexes_NNS ._.
+In_IN V_NN ._.
+Estivill-Castro_NNP ,_, editor_NN ,_, Proc_NNP ._.
+Australasian_JJ Computer_NN Science_NN Conference_NN ,_, pages_NNS 7-14_CD ,_, Dunedin_NNP ,_, New_NNP Zealand_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- S_NN ._.
+Ghemawat_NNP ,_, H_NN ._.
+Gobioff_NNP ,_, and_CC S_NN ._.
+Leung_NNP ._.
+The_DT google_NN file_NN system_NN ._.
+In_IN SOSP_NN ''_'' ##_NN :_: Proc_NNP ._.
+of_IN the_DT 19th_JJ ACM_NNP Symposium_NNP on_IN Operating_NNP Systems_NNPS Principles_NNS ,_, pages_NNS 29-43_CD ,_, New_NNP York_NNP ,_, NY_NNP ,_, USA_NNP ,_, ####_CD ._.
+ACM_NNP Press_NNP ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- J_NN ._.
+Goldstein_NNP ,_, M_NN ._.
+Kantrowitz_NNP ,_, V_NNP ._.
+Mittal_NNP ,_, and_CC J_NN ._.
+Carbonell_NNP ._.
+Summarizing_VBG text_NN documents_NNS :_: sentence_NN selection_NN and_CC evaluation_NN metrics_NNS ._.
+In_IN SIGIR99_NN ,_, pages_NNS 121-128_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- D_NN ._.
+Hawking_VBG ,_, Nick_NNP C_NNP ._.
+,_, and_CC Paul_NNP Thistlewaite_NNP ._.
+Overview_NN of_IN TREC-7_NN Very_RB Large_JJ Collection_NNP Track_NNP ._.
+In_IN Proc_NNP ._.
+of_IN TREC-7_NN ,_, pages_NNS 91-104_CD ,_, November_NNP ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- B_NN ._.
+J_NN ._.
+Jansen_NNP ,_, A_NNP ._.
+Spink_NNP ,_, and_CC J_NN ._.
+Pedersen_NNP ._.
+A_DT temporal_JJ comparison_NN of_IN altavista_NN web_NN searching_VBG ._.
+J_NN ._.
+Am_VBP ._.
+Soc_NN ._.
+Inf_NNP ._.
+Sci_NNP ._.
+Tech_NNP ._.
+-LRB-_-LRB- JASIST_NN -RRB-_-RRB- ,_, ##_NN -LRB-_-LRB- #_# -RRB-_-RRB- :_: 559-570_CD ,_, April_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+Kupiec_NNP ,_, J_NNP ._.
+Pedersen_NNP ,_, and_CC F_NN ._.
+Chen_NNP ._.
+A_DT trainable_JJ document_NN summarizer_NN ._.
+In_IN SIGIR95_NN ,_, pages_NNS 68-73_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- S_NN ._.
+Lawrence_NNP and_CC C_NNP ._.
+L_NN ._.
+Giles_NNP ._.
+Accessibility_NN of_IN information_NN on_IN the_DT web_NN ._.
+Nature_NNP ,_, ###_CD :_: 107-109_CD ,_, July_NNP 1999_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- H_NN ._.
+P_NN ._.
+Luhn_NNP ._.
+The_DT automatic_JJ creation_NN of_IN literature_NN abstracts_NNS ._.
+IBM_NNP Journal_NNP ,_, pages_NNS 159-165_CD ,_, April_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- I_PRP ._.
+Mani_NNP ._.
+Automatic_NNP Summarization_NNP ,_, volume_NN #_# of_IN Natural_JJ Language_NN Processing_NN ._.
+John_NNP Benjamins_NNP Publishing_NNP Company_NNP ,_, Amsterdam_NNP /_: Philadelphia_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- A_DT ._.
+Moffat_NNP ,_, J_NNP ._.
+Zobel_NNP ,_, and_CC N_NN ._.
+Sharman_NNP ._.
+Text_VB compression_NN for_IN dynamic_JJ document_NN databases_NNS ._.
+Knowledge_NN and_CC Data_NNP Engineering_NNP ,_, #_# -LRB-_-LRB- #_# -RRB-_-RRB- :_: 302-313_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- G_NN ._.
+Navarro_NNP and_CC V_NNP ._.
+Makinen_NN ._.
+Compressed_VBN full_JJ text_NN indexes_NNS ._.
+ACM_NNP Computing_NNP Surveys_NNS ,_, ####_CD ._.
+To_TO appear_VB ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- D_NN ._.
+R_NN ._.
+Radev_NNP ,_, E_NNP ._.
+Hovy_NNP ,_, and_CC K_NN ._.
+McKeown_NNP ._.
+Introduction_NN to_TO the_DT special_JJ issue_NN on_IN summarization_NN ._.
+Comput_NNP ._.
+Linguist_NNP ._.
+,_, ##_NN -LRB-_-LRB- #_# -RRB-_-RRB- :_: 399-408_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- M_NN ._.
+Richardson_NNP ,_, A_NNP ._.
+Prakash_NNP ,_, and_CC E_NN ._.
+Brill_NNP ._.
+Beyond_IN pagerank_NN :_: machine_NN learning_NN for_IN static_JJ ranking_NN ._.
+In_IN WWW06_NN ,_, pages_NNS 707-715_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- T_NN ._.
+Sakai_NNP and_CC K_NNP ._.
+Sparck-Jones_NNS ._.
+Generic_JJ summaries_NNS for_IN indexing_NN in_IN information_NN retrieval_NN ._.
+In_IN SIGIR01_NN ,_, pages_NNS 190-198_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- H_NN ._.
+G_NN ._.
+Silber_NNP and_CC K_NNP ._.
+F_NN ._.
+McCoy_NNP ._.
+Efficiently_RB computed_VBN lexical_JJ chains_NNS as_IN an_DT intermediate_JJ representation_NN for_IN automatic_JJ text_NN summarization_NN ._.
+Comput_NNP ._.
+Linguist_NNP ._.
+,_, 28_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 487-496_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- A_DT ._.
+Tombros_NNP and_CC M_NN ._.
+Sanderson_NNP ._.
+Advantages_NNS of_IN query_NN biased_VBN summaries_NNS in_IN information_NN retrieval_NN ._.
+In_IN SIGIR98_NN ,_, pages_NNS 2-10_CD ,_, Melbourne_NNP ,_, Aust_NNP ._.
+,_, August_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- R_NN ._.
+W_NN ._.
+White_NNP ,_, I_PRP ._.
+Ruthven_NNP ,_, and_CC J_NN ._.
+M_NN ._.
+Jose_NNP ._.
+Finding_VBG relevant_JJ documents_NNS using_VBG top_JJ ranking_JJ sentences_NNS :_: an_DT evaluation_NN of_IN two_CD alternative_JJ schemes_NNS ._.
+In_IN SIGIR02_NN ,_, pages_NNS 57-64_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- H_NN ._.
+E_NN ._.
+Williams_NNP and_CC J_NNP ._.
+Zobel_NNP ._.
+Compressing_VBG integers_NNS for_IN fast_JJ file_NN access_NN ._.
+Comp_NNP ._.
+J_NN ._.
+,_, ##_NN -LRB-_-LRB- #_# -RRB-_-RRB- :_: 193-201_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- H_NN ._.
+E_NN ._.
+Williams_NNP and_CC J_NNP ._.
+Zobel_NNP ._.
+Searchable_JJ words_NNS on_IN the_DT Web_NN ._.
+International_NNP Journal_NNP on_IN Digital_NNP Libraries_NNPS ,_, 5_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 99-105_CD ,_, April_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- I_PRP ._.
+H_NN ._.
+Witten_NNP ,_, A_NNP ._.
+Moffat_NNP ,_, and_CC T_NN ._.
+C_NN ._.
+Bell_NNP ._.
+Managing_VBG Gigabytes_NNP :_: Compressing_NNP and_CC Indexing_NN Documents_NNS and_CC Images_NNS ._.
+Morgan_NNP Kaufmann_NNP Publishing_NNP ,_, San_NNP Francisco_NNP ,_, second_JJ edition_NN ,_, May_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- The_DT Zettair_NNP Search_VB Engine_NNP ._.
+www_NN ._.
+seg_NN ._.
+rmit_NN ._.
+edu_NN ._.
+au_NN /_: zettair_NN ._.
+Accessed_VBN January_NNP ####_CD ._.

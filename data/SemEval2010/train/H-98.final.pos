@@ -1,0 +1,668 @@
+Using_VBG Asymmetric_JJ Distributions_NNS to_TO Improve_VB Text_VB Classifier_NNP Probability_NNP Estimates_NNS Paul_NNP N_NNP ._.
+Bennett_NNP Computer_NNP Science_NNP Dept_NNP ._.
+Carnegie_NNP Mellon_NNP University_NNP Pittsburgh_NNP ,_, PA_NN #####_CD pbennett_NN +_CC @_SYM cs_NNS ._.
+cmu_NN ._.
+edu_NN ABSTRACT_NN Text_VB classifiers_NNS that_WDT give_VBP probability_NN estimates_NNS are_VBP more_RBR readily_RB applicable_JJ in_IN a_DT variety_NN of_IN scenarios_NNS ._.
+For_IN example_NN ,_, rather_RB than_IN choosing_VBG one_CD set_NN decision_NN threshold_NN ,_, they_PRP can_MD be_VB used_VBN in_IN a_DT Bayesian_JJ risk_NN model_NN to_TO issue_VB a_DT run-time_JJ decision_NN which_WDT minimizes_VBZ a_DT userspecified_JJ cost_NN function_NN dynamically_RB chosen_VBN at_IN prediction_NN time_NN ._.
+However_RB ,_, the_DT quality_NN of_IN the_DT probability_NN estimates_VBZ is_VBZ crucial_JJ ._.
+We_PRP review_VBP a_DT variety_NN of_IN standard_JJ approaches_NNS to_TO converting_VBG scores_NNS -LRB-_-LRB- and_CC poor_JJ probability_NN estimates_NNS -RRB-_-RRB- from_IN text_NN classifiers_NNS to_TO high_JJ quality_NN estimates_NNS and_CC introduce_VB new_JJ models_NNS motivated_VBN by_IN the_DT intuition_NN that_IN the_DT empirical_JJ score_NN distribution_NN for_IN the_DT extremely_RB irrelevant_JJ ,_, hard_JJ to_TO discriminate_VB ,_, and_CC obviously_RB relevant_JJ items_NNS are_VBP often_RB significantly_RB different_JJ ._.
+Finally_RB ,_, we_PRP analyze_VBP the_DT experimental_JJ performance_NN of_IN these_DT models_NNS over_IN the_DT outputs_NNS of_IN two_CD text_NN classifiers_NNS ._.
+The_DT analysis_NN demonstrates_VBZ that_IN one_CD of_IN these_DT models_NNS is_VBZ theoretically_RB attractive_JJ -LRB-_-LRB- introducing_VBG few_JJ new_JJ parameters_NNS while_IN increasing_VBG flexibility_NN -RRB-_-RRB- ,_, computationally_RB efficient_JJ ,_, and_CC empirically_RB preferable_JJ ._.
+Categories_NNS and_CC Subject_NNP Descriptors_NNPS H_NN ._.
+#_# ._.
+#_# -LSB-_-LRB- Information_NNP Storage_NNP and_CC Retrieval_NNP -RSB-_-RRB- :_: Information_NNP Search_VB and_CC Retrieval_NNP ;_: I_PRP ._.
+#_# ._.
+#_# -LSB-_-LRB- Artificial_NNP Intelligence_NNP -RSB-_-RRB- :_: Learning_NNP ;_: I_PRP ._.
+#_# ._.
+#_# -LSB-_-LRB- Pattern_NNP Recognition_NN -RSB-_-RRB- :_: Design_NN Methodology_NNP General_NNP Terms_NNS Algorithms_NNS ,_, Experimentation_NN ,_, Reliability_NN ._.
+1_LS ._.
+INTRODUCTION_NN Text_VB classifiers_NNS that_WDT give_VBP probability_NN estimates_NNS are_VBP more_RBR flexible_JJ in_IN practice_NN than_IN those_DT that_WDT give_VBP only_RB a_DT simple_JJ classification_NN or_CC even_RB a_DT ranking_NN ._.
+For_IN example_NN ,_, rather_RB than_IN choosing_VBG one_CD set_NN decision_NN threshold_NN ,_, they_PRP can_MD be_VB used_VBN in_IN a_DT Bayesian_JJ risk_NN model_NN -LSB-_-LRB- #_# -RSB-_-RRB- to_TO issue_VB a_DT runtime_NN decision_NN which_WDT minimizes_VBZ the_DT expected_VBN cost_NN of_IN a_DT user-specified_JJ cost_NN function_NN dynamically_RB chosen_VBN at_IN prediction_NN time_NN ._.
+This_DT can_MD be_VB used_VBN to_TO minimize_VB a_DT linear_JJ utility_NN cost_NN function_NN for_IN filtering_VBG tasks_NNS where_WRB pre-specified_JJ costs_NNS of_IN relevant_JJ /_: irrelevant_JJ are_VBP not_RB available_JJ during_IN training_NN but_CC are_VBP specified_VBN at_IN prediction_NN time_NN ._.
+Furthermore_RB ,_, the_DT costs_NNS can_MD be_VB changed_VBN without_IN retraining_VBG the_DT model_NN ._.
+Additionally_RB ,_, probability_NN estimates_NNS are_VBP often_RB used_VBN as_IN the_DT basis_NN of_IN deciding_VBG which_WDT document_VBP ''_'' s_VBZ label_NN to_TO request_VB next_JJ during_IN active_JJ learning_NN -LSB-_-LRB- ##_CD ,_, 23_CD -RSB-_-RRB- ._.
+Effective_JJ active_JJ learning_NN can_MD be_VB key_JJ in_IN many_JJ information_NN retrieval_NN tasks_NNS where_WRB obtaining_VBG labeled_VBN data_NNS can_MD be_VB costly_JJ -_: severely_RB reducing_VBG the_DT amount_NN of_IN labeled_VBN data_NNS needed_VBD to_TO reach_VB the_DT same_JJ performance_NN as_IN when_WRB new_JJ labels_NNS are_VBP requested_VBN randomly_RB -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Finally_RB ,_, they_PRP are_VBP also_RB amenable_JJ to_TO making_VBG other_JJ types_NNS of_IN cost-sensitive_JJ decisions_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- and_CC for_IN combining_VBG decisions_NNS -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+However_RB ,_, in_IN all_DT of_IN these_DT tasks_NNS ,_, the_DT quality_NN of_IN the_DT probability_NN estimates_VBZ is_VBZ crucial_JJ ._.
+Parametric_NNP models_NNS generally_RB use_VBP assumptions_NNS that_IN the_DT data_NNS conform_VBP to_TO the_DT model_NN to_TO trade-off_NN flexibility_NN with_IN the_DT ability_NN to_TO estimate_VB the_DT model_NN parameters_NNS accurately_RB with_IN little_JJ training_NN data_NNS ._.
+Since_IN many_JJ text_NN classification_NN tasks_NNS often_RB have_VBP very_RB little_JJ training_NN data_NNS ,_, we_PRP focus_VBP on_IN parametric_JJ methods_NNS ._.
+However_RB ,_, most_JJS of_IN the_DT existing_VBG parametric_JJ methods_NNS that_WDT have_VBP been_VBN applied_VBN to_TO this_DT task_NN have_VBP an_DT assumption_NN we_PRP find_VBP undesirable_JJ ._.
+While_IN some_DT of_IN these_DT methods_NNS allow_VBP the_DT distributions_NNS of_IN the_DT documents_NNS relevant_JJ and_CC irrelevant_JJ to_TO the_DT topic_NN to_TO have_VB different_JJ variances_NNS ,_, they_PRP typically_RB enforce_VBP the_DT unnecessary_JJ constraint_NN that_IN the_DT documents_NNS are_VBP symmetrically_RB distributed_VBN around_IN their_PRP$ respective_JJ modes_NNS ._.
+We_PRP introduce_VBP several_JJ asymmetric_JJ parametric_JJ models_NNS that_WDT allow_VBP us_PRP to_TO relax_VB this_DT assumption_NN without_IN significantly_RB increasing_VBG the_DT number_NN of_IN parameters_NNS and_CC demonstrate_VB how_WRB we_PRP can_MD efficiently_RB fit_VB the_DT models_NNS ._.
+Additionally_RB ,_, these_DT models_NNS can_MD be_VB interpreted_VBN as_IN assuming_VBG the_DT scores_NNS produced_VBN by_IN the_DT text_NN classifier_NN have_VBP three_CD basic_JJ types_NNS of_IN empirical_JJ behavior_NN -_: one_CD corresponding_VBG to_TO each_DT of_IN the_DT extremely_RB irrelevant_JJ ,_, hard_JJ to_TO discriminate_VB ,_, and_CC obviously_RB relevant_JJ items_NNS ._.
+We_PRP first_RB review_VB related_JJ work_NN on_IN improving_VBG probability_NN estimates_NNS and_CC score_VBP modeling_NN in_IN information_NN retrieval_NN ._.
+Then_RB ,_, we_PRP discuss_VBP in_IN further_JJ detail_NN the_DT need_NN for_IN asymmetric_JJ models_NNS ._.
+After_IN this_DT ,_, we_PRP describe_VBP two_CD specific_JJ asymmetric_JJ models_NNS and_CC ,_, using_VBG two_CD standard_JJ text_NN classifiers_NNS ,_, nave_NN Bayes_NNS and_CC SVMs_NNS ,_, demonstrate_VBP how_WRB they_PRP can_MD be_VB efficiently_RB used_VBN to_TO recalibrate_VB poor_JJ probability_NN estimates_NNS or_CC produce_VBP high_JJ quality_NN probability_NN estimates_VBZ from_IN raw_JJ scores_NNS ._.
+We_PRP then_RB review_VBP experiments_NNS using_VBG previously_RB proposed_VBN methods_NNS and_CC the_DT asymmetric_JJ methods_NNS over_IN several_JJ text_NN classification_NN corpora_NN to_TO demonstrate_VB the_DT strengths_NNS and_CC weaknesses_NNS of_IN the_DT various_JJ methods_NNS ._.
+Finally_RB ,_, we_PRP summarize_VBP our_PRP$ contributions_NNS and_CC discuss_VBP future_JJ directions_NNS ._.
+2_LS ._.
+RELATED_JJ WORK_VBP Parametric_NNP models_NNS have_VBP been_VBN employed_VBN to_TO obtain_VB probability_NN estimates_NNS in_IN several_JJ areas_NNS of_IN information_NN retrieval_NN ._.
+Lewis_NNP &_CC Gale_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- use_NN logistic_JJ regression_NN to_TO recalibrate_VB nave_NN Bayes_NNS though_IN the_DT quality_NN of_IN the_DT probability_NN estimates_NNS are_VBP not_RB directly_RB evaluated_VBN ;_: it_PRP is_VBZ simply_RB performed_VBN as_IN an_DT intermediate_JJ step_NN in_IN active_JJ learning_NN ._.
+Manmatha_NNP et_NNP ._.
+al_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- introduced_VBN models_NNS appropriate_JJ to_TO produce_VB probability_NN estimates_NNS from_IN relevance_NN scores_NNS returned_VBN from_IN search_NN engines_NNS and_CC demonstrated_VBD how_WRB the_DT resulting_VBG probability_NN estimates_NNS could_MD be_VB subsequently_RB employed_VBN to_TO combine_VB the_DT outputs_NNS of_IN several_JJ search_NN engines_NNS ._.
+They_PRP use_VBP a_DT different_JJ parametric_JJ distribution_NN for_IN the_DT relevant_JJ and_CC irrelevant_JJ classes_NNS ,_, but_CC do_VBP not_RB pursue_VB two-sided_JJ asymmetric_JJ distributions_NNS for_IN a_DT single_JJ class_NN as_IN described_VBN here_RB ._.
+They_PRP also_RB survey_VBP the_DT long_JJ history_NN of_IN modeling_NN the_DT relevance_NN scores_NNS of_IN search_NN engines_NNS ._.
+Our_PRP$ work_NN is_VBZ similar_JJ in_IN flavor_NN to_TO these_DT previous_JJ attempts_NNS to_TO model_NN search_NN engine_NN scores_NNS ,_, but_CC we_PRP target_VBP text_NN classifier_NN outputs_NNS which_WDT we_PRP have_VBP found_VBN demonstrate_VBP a_DT different_JJ type_NN of_IN score_NN distribution_NN behavior_NN because_IN of_IN the_DT role_NN of_IN training_NN data_NNS ._.
+Focus_NN on_IN improving_VBG probability_NN estimates_NNS has_VBZ been_VBN growing_VBG lately_RB ._.
+Zadrozny_NNP &_CC Elkan_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- provide_VBP a_DT corrective_JJ measure_NN for_IN decision_NN trees_NNS -LRB-_-LRB- termed_VBN curtailment_NN -RRB-_-RRB- and_CC a_DT non-parametric_JJ method_NN for_IN recalibrating_VBG nave_NN Bayes_NNS ._.
+In_IN more_JJR recent_JJ work_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, they_PRP investigate_VBP using_VBG a_DT semi-parametric_JJ method_NN that_WDT uses_VBZ a_DT monotonic_JJ piecewiseconstant_NN fit_NN to_TO the_DT data_NNS and_CC apply_VB the_DT method_NN to_TO nave_VB Bayes_NNP and_CC a_DT linear_JJ SVM_NN ._.
+While_IN they_PRP compared_VBD their_PRP$ methods_NNS to_TO other_JJ parametric_JJ methods_NNS based_VBN on_IN symmetry_NN ,_, they_PRP fail_VBP to_TO provide_VB significance_NN test_NN results_NNS ._.
+Our_PRP$ work_NN provides_VBZ asymmetric_JJ parametric_JJ methods_NNS which_WDT complement_VBP the_DT non-parametric_JJ and_CC semi-parametric_JJ methods_NNS they_PRP propose_VBP when_WRB data_NNS scarcity_NN is_VBZ an_DT issue_NN ._.
+In_IN addition_NN ,_, their_PRP$ methods_NNS reduce_VB the_DT resolution_NN of_IN the_DT scores_NNS output_NN by_IN the_DT classifier_NN -LRB-_-LRB- the_DT number_NN of_IN distinct_JJ values_NNS output_NN -RRB-_-RRB- ,_, but_CC the_DT methods_NNS here_RB do_VBP not_RB have_VB such_JJ a_DT weakness_NN since_IN they_PRP are_VBP continuous_JJ functions_NNS ._.
+There_EX is_VBZ a_DT variety_NN of_IN other_JJ work_NN that_IN this_DT paper_NN extends_VBZ ._.
+Platt_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- uses_VBZ a_DT logistic_JJ regression_NN framework_NN that_WDT models_NNS noisy_JJ class_NN labels_NNS to_TO produce_VB probabilities_NNS from_IN the_DT raw_JJ output_NN of_IN an_DT SVM_NN ._.
+His_PRP$ work_NN showed_VBD that_IN this_DT post-processing_JJ method_NN not_RB only_RB can_MD produce_VB probability_NN estimates_NNS of_IN similar_JJ quality_NN to_TO SVMs_NNS directly_RB trained_VBN to_TO produce_VB probabilities_NNS -LRB-_-LRB- regularized_VBN likelihood_NN kernel_NN methods_NNS -RRB-_-RRB- ,_, but_CC it_PRP also_RB tends_VBZ to_TO produce_VB sparser_JJR kernels_NNS -LRB-_-LRB- which_WDT generalize_VBP better_JJR -RRB-_-RRB- ._.
+Finally_RB ,_, Bennett_NNP -LSB-_-LRB- #_# -RSB-_-RRB- obtained_VBN moderate_JJ gains_NNS by_IN applying_VBG Platt_NNP ''_'' s_VBZ method_NN to_TO the_DT recalibration_NN of_IN nave_NN Bayes_NNS but_CC found_VBD there_EX were_VBD more_JJR problematic_JJ areas_NNS than_IN when_WRB it_PRP was_VBD applied_VBN to_TO SVMs_NNS ._.
+Recalibrating_VBG poorly_RB calibrated_VBN classifiers_NNS is_VBZ not_RB a_DT new_JJ problem_NN ._.
+Lindley_NNP et_NNP ._.
+al_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- first_RB proposed_VBD the_DT idea_NN of_IN recalibrating_VBG classifiers_NNS ,_, and_CC DeGroot_NNP &_CC Fienberg_NNP -LSB-_-LRB- #_# ,_, #_# -RSB-_-RRB- gave_VBD the_DT now_RB accepted_VBN standard_JJ formalization_NN for_IN the_DT problem_NN of_IN assessing_VBG calibration_NN initiated_VBN by_IN others_NNS -LSB-_-LRB- #_# ,_, ##_NN -RSB-_-RRB- ._.
+3_LS ._.
+PROBLEM_NN DEFINITION_NNP &_CC APPROACH_NNP Our_PRP$ work_NN differs_VBZ from_IN earlier_JJR approaches_NNS primarily_RB in_IN three_CD points_NNS :_: -LRB-_-LRB- #_# -RRB-_-RRB- We_PRP provide_VBP asymmetric_JJ parametric_JJ models_NNS suitable_JJ for_IN use_NN when_WRB little_JJ training_NN data_NNS is_VBZ available_JJ ;_: -LRB-_-LRB- #_# -RRB-_-RRB- We_PRP explicitly_RB analyze_VBP the_DT quality_NN of_IN probability_NN estimates_VBZ these_DT and_CC competing_VBG methods_NNS produce_VBP and_CC provide_VBP significance_NN tests_NNS for_IN these_DT results_NNS ;_: -LRB-_-LRB- #_# -RRB-_-RRB- We_PRP target_VBP text_NN classifier_NN outputs_NNS where_WRB a_DT majority_NN of_IN the_DT previous_JJ literature_NN targeted_VBD the_DT output_NN of_IN search_NN engines_NNS ._.
+3_LS ._.
+#_# Problem_NNP Definition_NNP The_NNP general_JJ problem_NN we_PRP are_VBP concerned_VBN with_IN is_VBZ highlighted_VBN in_IN Figure_NNP #_# ._.
+A_DT text_NN classifier_NN produces_VBZ a_DT prediction_NN about_IN a_DT document_NN and_CC gives_VBZ a_DT score_NN s_NNS -LRB-_-LRB- d_NN -RRB-_-RRB- indicating_VBG the_DT strength_NN of_IN its_PRP$ decision_NN that_IN the_DT document_NN belongs_VBZ to_TO the_DT positive_JJ class_NN -LRB-_-LRB- relevant_JJ to_TO the_DT topic_NN -RRB-_-RRB- ._.
+We_PRP assume_VBP throughout_IN there_EX are_VBP only_RB two_CD classes_NNS :_: the_DT positive_JJ and_CC the_DT negative_JJ -LRB-_-LRB- or_CC irrelevant_JJ -RRB-_-RRB- class_NN -LRB-_-LRB- ''_'' +_CC ''_'' and_CC ''_'' -_: ''_'' respectively_RB -RRB-_-RRB- ._.
+There_EX are_VBP two_CD general_JJ types_NNS of_IN parametric_JJ approaches_NNS ._.
+The_DT first_JJ of_IN these_DT tries_NNS to_TO fit_VB the_DT posterior_JJ function_NN directly_RB ,_, i_FW ._.
+e_LS ._.
+there_EX is_VBZ one_CD p_NN -LRB-_-LRB- s_NNS |_VBP +_CC -RRB-_-RRB- p_NN -LRB-_-LRB- s_NNS |_VBP -RRB-_-RRB- Bayes_NNPS ''_'' RuleP_NN -LRB-_-LRB- +_CC -RRB-_-RRB- P_NN -LRB-_-LRB- -RRB-_-RRB- Classifier_NN P_NN -LRB-_-LRB- +_CC |_CD s_NNS -LRB-_-LRB- d_NN -RRB-_-RRB- -RRB-_-RRB- Predict_NNP class_NN ,_, c_NN -LRB-_-LRB- d_NN -RRB-_-RRB- =_JJ -LCB-_-LRB- +_CC ,_, -RCB-_-RRB- confidence_NN s_NNS -LRB-_-LRB- d_NN -RRB-_-RRB- that_WDT c_NN -LRB-_-LRB- d_NN -RRB-_-RRB- =_JJ +_CC Document_NNP ,_, d_NN and_CC give_VB unnormalized_JJ Figure_NN #_# :_: We_PRP are_VBP concerned_VBN with_IN how_WRB to_TO perform_VB the_DT box_NN highlighted_VBN in_IN grey_JJ ._.
+The_DT internals_NNS are_VBP for_IN one_CD type_NN of_IN approach_NN ._.
+function_NN estimator_NN that_WDT performs_VBZ a_DT direct_JJ mapping_NN of_IN the_DT score_NN s_VBZ to_TO the_DT probability_NN P_NN -LRB-_-LRB- +_CC |_CD s_NNS -LRB-_-LRB- d_NN -RRB-_-RRB- -RRB-_-RRB- ._.
+The_DT second_JJ type_NN of_IN approach_NN breaks_VBZ the_DT problem_NN down_RP as_IN shown_VBN in_IN the_DT grey_JJ box_NN of_IN Figure_NNP #_# ._.
+An_DT estimator_NN for_IN each_DT of_IN the_DT class-conditional_JJ densities_NNS -LRB-_-LRB- i_FW ._.
+e_LS ._.
+p_NN -LRB-_-LRB- s_NNS |_VBP +_CC -RRB-_-RRB- and_CC p_NN -LRB-_-LRB- s_NNS |_VBP -RRB-_-RRB- -RRB-_-RRB- is_VBZ produced_VBN ,_, then_RB Bayes_NNPS ''_'' rule_NN and_CC the_DT class_NN priors_NNS are_VBP used_VBN to_TO obtain_VB the_DT estimate_NN for_IN P_NN -LRB-_-LRB- +_CC |_CD s_NNS -LRB-_-LRB- d_NN -RRB-_-RRB- -RRB-_-RRB- ._.
+3_LS ._.
+#_# Motivation_NN for_IN Asymmetric_NNP Distributions_NNPS Most_JJS of_IN the_DT previous_JJ parametric_JJ approaches_NNS to_TO this_DT problem_NN either_CC directly_RB or_CC indirectly_RB -LRB-_-LRB- when_WRB fitting_JJ only_RB the_DT posterior_NN -RRB-_-RRB- correspond_VBP to_TO fitting_JJ Gaussians_NNS to_TO the_DT class-conditional_JJ densities_NNS ;_: they_PRP differ_VBP only_RB in_IN the_DT criterion_NN used_VBN to_TO estimate_VB the_DT parameters_NNS ._.
+We_PRP can_MD visualize_VB this_DT as_IN depicted_VBN in_IN Figure_NNP #_# ._.
+Since_IN increasing_VBG s_NNS usually_RB indicates_VBZ increased_VBN likelihood_NN of_IN belonging_VBG to_TO the_DT positive_JJ class_NN ,_, then_RB the_DT rightmost_JJ distribution_NN usually_RB corresponds_VBZ to_TO p_NN -LRB-_-LRB- s_NNS |_VBP +_CC -RRB-_-RRB- ._.
+A_DT B_NN C_NN 0_CD 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 1_CD 10_CD #_# #_# #_# ##_CD p_NN -LRB-_-LRB- s_NNS |_VBP Class_NN =_JJ -LCB-_-LRB- +_CC ,_, -RCB-_-RRB- -RRB-_-RRB- Unnormalized_JJ Confidence_NN Score_NN s_VBZ p_NN -LRB-_-LRB- s_NNS |_VBP Class_NN =_JJ +_CC -RRB-_-RRB- p_NN -LRB-_-LRB- s_NNS |_VBP Class_NN =_JJ -RRB-_-RRB- Figure_NN #_# :_: Typical_JJ View_NNP of_IN Discrimination_NNP based_VBN on_IN Gaussians_NNP However_RB ,_, using_VBG standard_JJ Gaussians_NNP fails_VBZ to_TO capitalize_VB on_IN a_DT basic_JJ characteristic_JJ commonly_RB seen_VBN ._.
+Namely_RB ,_, if_IN we_PRP have_VBP a_DT raw_JJ output_NN score_NN that_WDT can_MD be_VB used_VBN for_IN discrimination_NN ,_, then_RB the_DT empirical_JJ behavior_NN between_IN the_DT modes_NNS -LRB-_-LRB- label_NN B_NN in_IN Figure_NNP #_# -RRB-_-RRB- is_VBZ often_RB very_RB different_JJ than_IN that_DT outside_NN of_IN the_DT modes_NNS -LRB-_-LRB- labels_NNS A_DT and_CC C_NN in_IN Figure_NNP #_# -RRB-_-RRB- ._.
+Intuitively_RB ,_, the_DT area_NN between_IN the_DT modes_NNS corresponds_VBZ to_TO the_DT hard_JJ examples_NNS ,_, which_WDT are_VBP difficult_JJ for_IN this_DT classifier_NN to_TO distinguish_VB ,_, while_IN the_DT areas_NNS outside_IN the_DT modes_NNS are_VBP the_DT extreme_JJ examples_NNS that_WDT are_VBP usually_RB easily_RB distinguished_VBN ._.
+This_DT suggests_VBZ that_IN we_PRP may_MD want_VB to_TO uncouple_VB the_DT scale_NN of_IN the_DT outside_JJ and_CC inside_JJ segments_NNS of_IN the_DT distribution_NN -LRB-_-LRB- as_IN depicted_VBN by_IN the_DT curve_NN denoted_VBN as_IN A-Gaussian_JJ in_IN Figure_NNP #_# -RRB-_-RRB- ._.
+As_IN a_DT result_NN ,_, an_DT asymmetric_JJ distribution_NN may_MD be_VB a_DT more_RBR appropriate_JJ choice_NN for_IN application_NN to_TO the_DT raw_JJ output_NN score_NN of_IN a_DT classifier_NN ._.
+Ideally_RB -LRB-_-LRB- i_FW ._.
+e_LS ._.
+perfect_JJ classification_NN -RRB-_-RRB- there_EX will_MD exist_VB scores_NNS and_CC +_CC such_JJ that_IN all_DT examples_NNS with_IN score_NN greater_JJR than_IN +_CC are_VBP relevant_JJ and_CC all_DT examples_NNS with_IN scores_NNS less_JJR than_IN are_VBP irrelevant_JJ ._.
+Furthermore_RB ,_, no_DT examples_NNS fall_VBP between_IN and_CC +_CC ._.
+The_DT distance_NN |_NN +_CC |_CD corresponds_VBZ to_TO the_DT margin_NN in_IN some_DT classifiers_NNS ,_, and_CC an_DT attempt_NN is_VBZ often_RB made_VBN to_TO maximize_VB this_DT quantity_NN ._.
+Because_IN text_NN classifiers_NNS have_VBP training_NN data_NNS to_TO use_VB to_TO separate_VB the_DT classes_NNS ,_, the_DT final_JJ behavior_NN of_IN the_DT score_NN distributions_NNS is_VBZ primarily_RB a_DT factor_NN of_IN the_DT amount_NN of_IN training_NN data_NNS and_CC the_DT consequent_JJ separation_NN in_IN the_DT classes_NNS achieved_VBN ._.
+This_DT is_VBZ in_IN contrast_NN to_TO search_VB engine_NN retrieval_NN where_WRB the_DT distribution_NN of_IN scores_NNS is_VBZ more_RBR a_DT factor_NN of_IN language_NN distribution_NN across_IN documents_NNS ,_, the_DT similarity_NN function_NN ,_, and_CC the_DT length_NN and_CC type_NN of_IN query_NN ._.
+Perfect_NNP classification_NN corresponds_VBZ to_TO using_VBG two_CD very_RB asymmetric_JJ distributions_NNS ,_, but_CC in_IN this_DT case_NN ,_, the_DT probabilities_NNS are_VBP actually_RB one_CD and_CC zero_CD and_CC many_JJ methods_NNS will_MD work_VB for_IN typical_JJ purposes_NNS ._.
+Practically_RB ,_, some_DT examples_NNS will_MD fall_VB between_IN and_CC +_CC ,_, and_CC it_PRP is_VBZ often_RB important_JJ to_TO estimate_VB the_DT probabilities_NNS of_IN these_DT examples_NNS well_RB -LRB-_-LRB- since_IN they_PRP correspond_VBP to_TO the_DT hard_JJ examples_NNS -RRB-_-RRB- ._.
+Justifications_NNPS can_MD be_VB given_VBN for_IN both_DT why_WRB you_PRP may_MD find_VB more_JJR and_CC less_JJR examples_NNS between_IN and_CC +_CC than_IN outside_NN of_IN them_PRP ,_, but_CC there_EX are_VBP few_JJ empirical_JJ reasons_NNS to_TO believe_VB that_IN the_DT distributions_NNS should_MD be_VB symmetric_JJ ._.
+A_DT natural_JJ first_JJ candidate_NN for_IN an_DT asymmetric_JJ distribution_NN is_VBZ to_TO generalize_VB a_DT common_JJ symmetric_JJ distribution_NN ,_, e_LS ._.
+g_NN ._.
+the_DT Laplace_NNP or_CC the_DT Gaussian_NNP ._.
+An_DT asymmetric_JJ Laplace_NNP distribution_NN can_MD be_VB achieved_VBN by_IN placing_VBG two_CD exponentials_NNS around_IN the_DT mode_NN in_IN the_DT following_VBG manner_NN :_: p_NN -LRB-_-LRB- x_NN |_CD ,_, ,_, -RRB-_-RRB- =_JJ +_CC exp_NN -LSB-_-LRB- -LRB-_-LRB- x_NN -RRB-_-RRB- -RSB-_-RRB- x_CC -LRB-_-LRB- ,_, >_JJR #_# -RRB-_-RRB- +_CC exp_NN -LSB-_-LRB- -LRB-_-LRB- x_NN -RRB-_-RRB- -RSB-_-RRB- x_CC >_JJR -LRB-_-LRB- #_# -RRB-_-RRB- where_WRB ,_, ,_, and_CC are_VBP the_DT model_NN parameters_NNS ._.
+is_VBZ the_DT mode_NN of_IN the_DT distribution_NN ,_, is_VBZ the_DT inverse_JJ scale_NN of_IN the_DT exponential_JJ to_TO the_DT left_NN of_IN the_DT mode_NN ,_, and_CC is_VBZ the_DT inverse_JJ scale_NN of_IN the_DT exponential_JJ to_TO the_DT right_NN ._.
+We_PRP will_MD use_VB the_DT notation_NN -LRB-_-LRB- X_NN |_CD ,_, ,_, -RRB-_-RRB- to_TO refer_VB to_TO this_DT distribution_NN ._.
+0_CD 0_CD ._.
+###_NN 0_CD ._.
+###_NN 0_CD ._.
+###_NN 0_CD ._.
+###_NN 0_CD ._.
+##_NN -300_CD -_: ###_CD -100_CD #_# ###_CD ###_CD p_NN -LRB-_-LRB- s_NNS |_VBP Class_NN =_JJ -LCB-_-LRB- +_CC ,_, -_: -RCB-_-RRB- -RRB-_-RRB- Unnormalized_JJ Confidence_NN Score_NN s_NNS Gaussian_JJ A-Gaussian_JJ Figure_NN #_# :_: Gaussians_NNP vs_CC ._.
+Asymmetric_JJ Gaussians_NNS ._.
+A_DT Shortcoming_NN of_IN Symmetric_JJ Distributions_NNS -_: The_DT vertical_JJ lines_NNS show_VBP the_DT modes_NNS as_IN estimated_VBN nonparametrically_RB ._.
+We_PRP can_MD create_VB an_DT asymmetric_JJ Gaussian_NNP in_IN the_DT same_JJ manner_NN :_: p_NN -LRB-_-LRB- x_NN |_CD ,_, l_NN ,_, r_NN -RRB-_-RRB- =_JJ 2_CD 2_CD -LRB-_-LRB- l_NN +_CC r_NN -RRB-_-RRB- exp_NN -LRB-_-LRB- x_NN -RRB-_-RRB- #_# 22_CD l_NN x_NN -LRB-_-LRB- l_NN ,_, r_NN >_JJR #_# -RRB-_-RRB- 2_CD 2_CD -LRB-_-LRB- l_NN +_CC r_NN -RRB-_-RRB- exp_NN -LRB-_-LRB- x_NN -RRB-_-RRB- #_# 22_CD r_NN x_CC >_JJR -LRB-_-LRB- #_# -RRB-_-RRB- where_WRB ,_, l_NN ,_, and_CC r_NN are_VBP the_DT model_NN parameters_NNS ._.
+To_TO refer_VB to_TO this_DT asymmetric_JJ Gaussian_NNP ,_, we_PRP use_VBP the_DT notation_NN -LRB-_-LRB- X_NN |_CD ,_, l_NN ,_, r_NN -RRB-_-RRB- ._.
+While_IN these_DT distributions_NNS are_VBP composed_VBN of_IN halves_NNS ,_, the_DT resulting_VBG function_NN is_VBZ a_DT single_JJ continuous_JJ distribution_NN ._.
+These_DT distributions_NNS allow_VBP us_PRP to_TO fit_VB our_PRP$ data_NNS with_IN much_JJ greater_JJR flexibility_NN at_IN the_DT cost_NN of_IN only_RB fitting_JJ six_CD parameters_NNS ._.
+We_PRP could_MD instead_RB try_VB mixture_NN models_NNS for_IN each_DT component_NN or_CC other_JJ extensions_NNS ,_, but_CC most_JJS other_JJ extensions_NNS require_VBP at_IN least_JJS as_RB many_JJ parameters_NNS -LRB-_-LRB- and_CC can_MD often_RB be_VB more_RBR computationally_RB expensive_JJ -RRB-_-RRB- ._.
+In_IN addition_NN ,_, the_DT motivation_NN above_IN should_MD provide_VB significant_JJ cause_NN to_TO believe_VB the_DT underlying_VBG distributions_NNS actually_RB behave_VBP in_IN this_DT way_NN ._.
+Furthermore_RB ,_, this_DT family_NN of_IN distributions_NNS can_MD still_RB fit_VB a_DT symmetric_JJ distribution_NN ,_, and_CC finally_RB ,_, in_IN the_DT empirical_JJ evaluation_NN ,_, evidence_NN is_VBZ presented_VBN that_IN demonstrates_VBZ this_DT asymmetric_JJ behavior_NN ._.
+To_TO our_PRP$ knowledge_NN ,_, neither_CC family_NN of_IN distributions_NNS has_VBZ been_VBN previously_RB used_VBN in_IN machine_NN learning_NN or_CC information_NN retrieval_NN ._.
+Both_DT are_VBP termed_VBN generalizations_NNS of_IN an_DT Asymmetric_JJ Laplace_NNP in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ,_, but_CC we_PRP refer_VBP to_TO them_PRP as_IN described_VBN above_IN to_TO reflect_VB the_DT nature_NN of_IN how_WRB we_PRP derived_VBD them_PRP for_IN this_DT task_NN ._.
+3_LS ._.
+#_# Estimating_VBG the_DT Parameters_NNS of_IN the_DT Asymmetric_NNP Distributions_NNPS This_DT section_NN develops_VBZ the_DT method_NN for_IN finding_VBG maximum_JJ likelihood_NN estimates_NNS -LRB-_-LRB- MLE_NN -RRB-_-RRB- of_IN the_DT parameters_NNS for_IN the_DT above_JJ asymmetric_JJ distributions_NNS ._.
+In_IN order_NN to_TO find_VB the_DT MLEs_NNS ,_, we_PRP have_VBP two_CD choices_NNS :_: -LRB-_-LRB- #_# -RRB-_-RRB- use_VBP numerical_JJ estimation_NN to_TO estimate_VB all_DT three_CD parameters_NNS at_IN once_RB -LRB-_-LRB- #_# -RRB-_-RRB- fix_VBP the_DT value_NN of_IN ,_, and_CC estimate_VB the_DT other_JJ two_CD -LRB-_-LRB- and_CC or_CC l_NN and_CC r_NN -RRB-_-RRB- given_VBN our_PRP$ choice_NN of_IN ,_, then_RB consider_VB alternate_JJ values_NNS of_IN ._.
+Because_IN of_IN the_DT simplicity_NN of_IN analysis_NN in_IN the_DT latter_JJ alternative_NN ,_, we_PRP choose_VBP this_DT method_NN ._.
+3_LS ._.
+#_# ._.
+#_# Asymmetric_NNP Laplace_NNP MLEs_NNP For_IN D_NN =_JJ -LCB-_-LRB- x1_NN ,_, x2_NN ,_, ..._: ,_, xN_NN -RCB-_-RRB- where_WRB the_DT xi_NN are_VBP i_LS ._.
+i_LS ._.
+d_NN ._.
+and_CC X_NN -LRB-_-LRB- X_NN |_CD ,_, ,_, -RRB-_-RRB- ,_, the_DT likelihood_NN is_VBZ N_NN i_FW -LRB-_-LRB- X_NN |_CD ,_, ,_, -RRB-_-RRB- ._.
+Now_RB ,_, we_PRP fix_VBP and_CC compute_VBP the_DT maximum_NN likelihood_NN for_IN that_DT choice_NN of_IN ._.
+Then_RB ,_, we_PRP can_MD simply_RB consider_VB all_DT choices_NNS of_IN and_CC choose_VB the_DT one_CD with_IN the_DT maximum_NN likelihood_NN over_IN all_DT choices_NNS of_IN ._.
+The_DT complete_JJ derivation_NN is_VBZ omitted_VBN because_IN of_IN space_NN but_CC is_VBZ available_JJ in_IN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+We_PRP define_VBP the_DT following_VBG values_NNS :_: Nl_NN =_JJ |_CD -LCB-_-LRB- x_NN D_NN |_CD x_NN -RCB-_-RRB- |_CD Nr_NN =_JJ |_CD -LCB-_-LRB- x_NN D_NN |_CD x_CC >_JJR -RCB-_-RRB- |_RB Sl_NN =_JJ xD_NN |_CD x_CC x_CC Sr_NNP =_JJ xD_NN |_CD x_CC >_JJR x_CC Dl_NN =_JJ Nl_NN Sl_NN Dr_NN =_JJ Sr_NNP Nr_NNP ._.
+Note_VB that_DT Dl_NN and_CC Dr_NN are_VBP the_DT sum_NN of_IN the_DT absolute_JJ differences_NNS between_IN the_DT x_NN belonging_VBG to_TO the_DT left_JJ and_CC right_JJ halves_NNS of_IN the_DT distribution_NN -LRB-_-LRB- respectively_RB -RRB-_-RRB- and_CC ._.
+Finally_RB the_DT MLEs_NNS for_IN and_CC for_IN a_DT fixed_VBN are_VBP :_: MLE_NN =_JJ N_NN Dl_NN +_CC DrDl_NN MLE_NN =_JJ N_NN Dr_NN +_CC DrDl_NN ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- These_DT estimates_NNS are_VBP not_RB wholly_RB unexpected_JJ since_IN we_PRP would_MD obtain_VB Nl_NNP Dl_NNP if_IN we_PRP were_VBD to_TO estimate_VB independently_RB of_IN ._.
+The_DT elegance_NN of_IN the_DT formulae_NN is_VBZ that_IN the_DT estimates_NNS will_MD tend_VB to_TO be_VB symmetric_JJ only_RB insofar_RB as_IN the_DT data_NNS dictate_VBP it_PRP -LRB-_-LRB- i_FW ._.
+e_LS ._.
+the_DT closer_RBR Dl_NN and_CC Dr_NN are_VBP to_TO being_VBG equal_JJ ,_, the_DT closer_JJR the_DT resulting_VBG inverse_JJ scales_NNS -RRB-_-RRB- ._.
+By_IN continuity_NN arguments_NNS ,_, when_WRB N_NN =_JJ #_# ,_, we_PRP assign_VBP =_JJ =_JJ #_# where_WRB #_# is_VBZ a_DT small_JJ constant_JJ that_IN acts_VBZ to_TO disperse_VB the_DT distribution_NN to_TO a_DT uniform_NN ._.
+Similarly_RB ,_, when_WRB N_NN =_JJ #_# and_CC Dl_NN =_JJ #_# ,_, we_PRP assign_VBP =_JJ inf_NN where_WRB inf_NN is_VBZ a_DT very_RB large_JJ constant_JJ that_IN corresponds_VBZ to_TO an_DT extremely_RB sharp_JJ distribution_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+almost_RB all_DT mass_NN at_IN for_IN that_DT half_NN -RRB-_-RRB- ._.
+Dr_NN =_JJ #_# is_VBZ handled_VBN similarly_RB ._.
+Assuming_VBG that_DT falls_VBZ in_IN some_DT range_NN -LSB-_-LRB- ,_, -RSB-_-RRB- dependent_JJ upon_IN only_RB the_DT observed_VBN documents_NNS ,_, then_RB this_DT alternative_NN is_VBZ also_RB easily_RB computable_JJ ._.
+Given_VBN Nl_NN ,_, Sl_NNP ,_, Nr_NNP ,_, Sr_NNP ,_, we_PRP can_MD compute_VB the_DT posterior_NN and_CC the_DT MLEs_NNS in_IN constant_JJ time_NN ._.
+In_IN addition_NN ,_, if_IN the_DT scores_NNS are_VBP sorted_VBN ,_, then_RB we_PRP can_MD perform_VB the_DT whole_JJ process_NN quite_RB efficiently_RB ._.
+Starting_VBG with_IN the_DT minimum_NN =_JJ we_PRP would_MD like_VB to_TO try_VB ,_, we_PRP loop_NN through_IN the_DT scores_NNS once_RB and_CC set_VBN Nl_NN ,_, Sl_NNP ,_, Nr_NNP ,_, Sr_NNP appropriately_RB ._.
+Then_RB we_PRP increase_VBP and_CC just_RB step_VB past_IN the_DT scores_NNS that_WDT have_VBP shifted_VBN from_IN the_DT right_JJ side_NN of_IN the_DT distribution_NN to_TO the_DT left_NN ._.
+Assuming_VBG the_DT number_NN of_IN candidate_NN s_NNS are_VBP O_NN -LRB-_-LRB- n_NN -RRB-_-RRB- ,_, this_DT process_NN is_VBZ O_NN -LRB-_-LRB- n_NN -RRB-_-RRB- ,_, and_CC the_DT overall_JJ process_NN is_VBZ dominated_VBN by_IN sorting_VBG the_DT scores_NNS ,_, O_NN -LRB-_-LRB- n_NN log_NN n_NN -RRB-_-RRB- -LRB-_-LRB- or_CC expected_VBN linear_JJ time_NN -RRB-_-RRB- ._.
+3_LS ._.
+#_# ._.
+#_# Asymmetric_NNP Gaussian_NNP MLEs_NNP For_IN D_NN =_JJ -LCB-_-LRB- x1_NN ,_, x2_NN ,_, ..._: ,_, xN_NN -RCB-_-RRB- where_WRB the_DT xi_NN are_VBP i_LS ._.
+i_LS ._.
+d_NN ._.
+and_CC X_NN -LRB-_-LRB- X_NN |_CD ,_, l_NN ,_, r_NN -RRB-_-RRB- ,_, the_DT likelihood_NN is_VBZ N_NN i_FW -LRB-_-LRB- X_NN |_CD ,_, ,_, -RRB-_-RRB- ._.
+The_DT MLEs_NNS can_MD be_VB worked_VBN out_RP similar_JJ to_TO the_DT above_JJ ._.
+We_PRP assume_VBP the_DT same_JJ definitions_NNS as_IN above_JJ -LRB-_-LRB- the_DT complete_JJ derivation_NN omitted_VBN for_IN space_NN is_VBZ available_JJ in_IN -LSB-_-LRB- #_# -RSB-_-RRB- -RRB-_-RRB- ,_, and_CC in_IN addition_NN ,_, let_VB :_: Sl2_NN =_JJ xD_NN |_CD x_CC x2_CD Sr2_NN =_JJ xD_NN |_CD x_CC >_JJR x2_NN Dl2_NN =_JJ Sl2_NN Sl_NN +_CC #_# Nl_NN Dr2_NN =_JJ Sr2_NN Sr_NNP +_CC #_# Nr_NNP ._.
+The_DT analytical_JJ solution_NN for_IN the_DT MLEs_NNS for_IN a_DT fixed_VBN is_VBZ :_: l_NN ,_, MLE_NN =_JJ Dl2_NN +_CC D_NN 2_CD /_: #_# l2_NN D_NN 1_CD /_: #_# r2_CD N_NN -LRB-_-LRB- #_# -RRB-_-RRB- r_NN ,_, MLE_NN =_JJ Dr2_NN +_CC D_NN 2_CD /_: #_# r2_NN D_NN 1_CD /_: #_# l2_CD N_NN ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- By_IN continuity_NN arguments_NNS ,_, when_WRB N_NN =_JJ #_# ,_, we_PRP assign_VBP r_NN =_JJ l_NN =_JJ inf_NN ,_, and_CC when_WRB N_NN =_JJ #_# and_CC Dl2_NN =_JJ #_# -LRB-_-LRB- resp_NN ._.
+Dr2_NN =_JJ #_# -RRB-_-RRB- ,_, we_PRP assign_VBP l_NN =_JJ #_# -LRB-_-LRB- resp_NN ._.
+r_NN =_JJ #_# -RRB-_-RRB- ._.
+Again_RB ,_, the_DT same_JJ computational_JJ complexity_NN analysis_NN applies_VBZ to_TO estimating_VBG these_DT parameters_NNS ._.
+4_LS ._.
+EXPERIMENTAL_JJ ANALYSIS_NN 4_CD ._.
+#_# Methods_NNS For_IN each_DT of_IN the_DT methods_NNS that_WDT use_VBP a_DT class_NN prior_RB ,_, we_PRP use_VBP a_DT smoothed_VBN add-one_JJ estimate_NN ,_, i_FW ._.
+e_LS ._.
+P_NN -LRB-_-LRB- c_NN -RRB-_-RRB- =_JJ |_CD c_NN |_NN +_CC #_# N_NN +_CC #_# where_WRB N_NN is_VBZ the_DT number_NN of_IN documents_NNS ._.
+For_IN methods_NNS that_WDT fit_VBP the_DT class-conditional_JJ densities_NNS ,_, p_NN -LRB-_-LRB- s_NNS |_VBP +_CC -RRB-_-RRB- and_CC p_NN -LRB-_-LRB- s_NNS |_VBP -RRB-_-RRB- ,_, the_DT resulting_VBG densities_NNS are_VBP inverted_VBN using_VBG Bayes_NNP ''_'' rule_NN as_IN described_VBN above_IN ._.
+All_DT of_IN the_DT methods_NNS below_IN are_VBP fit_VBN using_VBG maximum_NN likelihood_NN estimates_NNS ._.
+For_IN recalibrating_VBG a_DT classifier_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+correcting_VBG poor_JJ probability_NN estimates_VBZ output_NN by_IN the_DT classifier_NN -RRB-_-RRB- ,_, it_PRP is_VBZ usual_JJ to_TO use_VB the_DT log-odds_NNS of_IN the_DT classifier_NN ''_'' s_NNS estimate_VBP as_IN s_NNS -LRB-_-LRB- d_NN -RRB-_-RRB- ._.
+The_DT log-odds_NNS are_VBP defined_VBN to_TO be_VB log_NN P_NN -LRB-_-LRB- +_CC |_CD d_NN -RRB-_-RRB- P_NN -LRB-_-LRB- |_CD d_NN -RRB-_-RRB- ._.
+The_DT normal_JJ decision_NN threshold_NN -LRB-_-LRB- minimizing_VBG error_NN -RRB-_-RRB- in_IN terms_NNS of_IN log-odds_NNS is_VBZ at_IN zero_CD -LRB-_-LRB- i_FW ._.
+e_LS ._.
+P_NN -LRB-_-LRB- +_CC |_CD d_NN -RRB-_-RRB- =_JJ P_NN -LRB-_-LRB- |_CD d_NN -RRB-_-RRB- =_JJ #_# ._.
+#_# -RRB-_-RRB- ._.
+Since_IN it_PRP scales_NNS the_DT outputs_NNS to_TO a_DT space_NN -LSB-_-LRB- ,_, -RSB-_-RRB- ,_, the_DT log-odds_NNS make_VBP normal_JJ -LRB-_-LRB- and_CC similar_JJ distributions_NNS -RRB-_-RRB- applicable_JJ -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Lewis_NNP &_CC Gale_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- give_VB a_DT more_RBR motivating_VBG viewpoint_NN that_WDT fitting_JJ the_DT log-odds_NNS is_VBZ a_DT dampening_JJ effect_NN for_IN the_DT inaccurate_JJ independence_NN assumption_NN and_CC a_DT bias_NN correction_NN for_IN inaccurate_JJ estimates_NNS of_IN the_DT priors_NNS ._.
+In_IN general_JJ ,_, fitting_JJ the_DT log-odds_NNS can_MD serve_VB to_TO boost_VB or_CC dampen_VB the_DT signal_NN from_IN the_DT original_JJ classifier_NN as_IN the_DT data_NNS dictate_VBP ._.
+Gaussians_NNP A_NNP Gaussian_NNP is_VBZ fit_VBN to_TO each_DT of_IN the_DT class-conditional_JJ densities_NNS ,_, using_VBG the_DT usual_JJ maximum_NN likelihood_NN estimates_NNS ._.
+This_DT method_NN is_VBZ denoted_VBN in_IN the_DT tables_NNS below_IN as_IN Gauss_NNP ._.
+Asymmetric_JJ Gaussians_NNS An_DT asymmetric_JJ Gaussian_NNP is_VBZ fit_VBN to_TO each_DT of_IN the_DT class-conditional_JJ densities_NNS using_VBG the_DT maximum_NN likelihood_NN estimation_NN procedure_NN described_VBN above_IN ._.
+Intervals_NNS between_IN adjacent_JJ scores_NNS are_VBP divided_VBN by_IN ##_NN in_IN testing_NN candidate_NN s_NNS ,_, i_FW ._.
+e_LS ._.
+#_# points_NNS between_IN actual_JJ scores_NNS occurring_VBG in_IN the_DT data_NN set_NN are_VBP tested_VBN ._.
+This_DT method_NN is_VBZ denoted_VBN as_IN A_DT ._.
+Gauss_NNP ._.
+Laplace_NNP Distributions_NNPS Even_RB though_IN Laplace_NNP distributions_NNS are_VBP not_RB typically_RB applied_VBN to_TO this_DT task_NN ,_, we_PRP also_RB tried_VBD this_DT method_NN to_TO isolate_VB why_WRB benefit_NN is_VBZ gained_VBN from_IN the_DT asymmetric_JJ form_NN ._.
+The_DT usual_JJ MLEs_NNS were_VBD used_VBN for_IN estimating_VBG the_DT location_NN and_CC scale_NN of_IN a_DT classical_JJ symmetric_JJ Laplace_NNP distribution_NN as_IN described_VBN in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ._.
+We_PRP denote_VBP this_DT method_NN as_IN Laplace_NNP below_IN ._.
+Asymmetric_JJ Laplace_NNP Distributions_NNPS An_DT asymmetric_JJ Laplace_NNP is_VBZ fit_VBN to_TO each_DT of_IN the_DT class-conditional_JJ densities_NNS using_VBG the_DT maximum_NN likelihood_NN estimation_NN procedure_NN described_VBN above_IN ._.
+As_IN with_IN the_DT asymmetric_JJ Gaussian_NNP ,_, intervals_NNS between_IN adjacent_JJ scores_NNS are_VBP divided_VBN by_IN ##_NN in_IN testing_NN candidate_NN s_NNS ._.
+This_DT method_NN is_VBZ denoted_VBN as_IN A_DT ._.
+Laplace_NNP below_IN ._.
+Logistic_NNP Regression_NN This_DT method_NN is_VBZ the_DT first_JJ of_IN two_CD methods_NNS we_PRP evaluated_VBD that_IN directly_RB fit_VBP the_DT posterior_NN ,_, P_NN -LRB-_-LRB- +_CC |_CD s_NNS -LRB-_-LRB- d_NN -RRB-_-RRB- -RRB-_-RRB- ._.
+Both_DT methods_NNS restrict_VBP the_DT set_NN of_IN families_NNS to_TO a_DT two-parameter_JJ sigmoid_NN family_NN ;_: they_PRP differ_VBP primarily_RB in_IN their_PRP$ model_NN of_IN class_NN labels_NNS ._.
+As_IN opposed_VBN to_TO the_DT above_JJ methods_NNS ,_, one_PRP can_MD argue_VB that_IN an_DT additional_JJ boon_NN of_IN these_DT methods_NNS is_VBZ they_PRP completely_RB preserve_VBP the_DT ranking_JJ given_VBN by_IN the_DT classifier_NN ._.
+When_WRB this_DT is_VBZ desired_VBN ,_, these_DT methods_NNS may_MD be_VB more_RBR appropriate_JJ ._.
+The_DT previous_JJ methods_NNS will_MD mostly_RB preserve_VB the_DT rankings_NNS ,_, but_CC they_PRP can_MD deviate_VB if_IN the_DT data_NNS dictate_VBP it_PRP ._.
+Thus_RB ,_, they_PRP may_MD model_VB the_DT data_NNS behavior_NN better_RB at_IN the_DT cost_NN of_IN departing_VBG from_IN a_DT monotonicity_NN constraint_NN in_IN the_DT output_NN of_IN the_DT classifier_NN ._.
+Lewis_NNP &_CC Gale_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- use_NN logistic_JJ regression_NN to_TO recalibrate_VB nave_NN Bayes_NNS for_IN subsequent_JJ use_NN in_IN active_JJ learning_NN ._.
+The_DT model_NN they_PRP use_VBP is_VBZ :_: P_NN -LRB-_-LRB- +_CC |_CD s_NNS -LRB-_-LRB- d_NN -RRB-_-RRB- -RRB-_-RRB- =_JJ exp_NN -LRB-_-LRB- a_DT +_CC b_NN s_NNS -LRB-_-LRB- d_NN -RRB-_-RRB- -RRB-_-RRB- 1_CD +_CC exp_NN -LRB-_-LRB- a_DT +_CC b_NN s_NNS -LRB-_-LRB- d_NN -RRB-_-RRB- -RRB-_-RRB- ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- Instead_RB of_IN using_VBG the_DT probabilities_NNS directly_RB output_NN by_IN the_DT classifier_NN ,_, they_PRP use_VBP the_DT loglikelihood_NN ratio_NN of_IN the_DT probabilities_NNS ,_, log_NN P_NN -LRB-_-LRB- d_NN |_NN +_CC -RRB-_-RRB- P_NN -LRB-_-LRB- d_NN |_NN -RRB-_-RRB- ,_, as_IN the_DT score_NN s_NNS -LRB-_-LRB- d_NN -RRB-_-RRB- ._.
+Instead_RB of_IN using_VBG this_DT below_IN ,_, we_PRP will_MD use_VB the_DT logodds_NNS ratio_NN ._.
+This_DT does_VBZ not_RB affect_VB the_DT model_NN as_IN it_PRP simply_RB shifts_VBZ all_DT of_IN the_DT scores_NNS by_IN a_DT constant_JJ determined_VBN by_IN the_DT priors_NNS ._.
+We_PRP refer_VBP to_TO this_DT method_NN as_IN LogReg_NNP below_IN ._.
+Logistic_NNP Regression_NN with_IN Noisy_NNP Class_NNP Labels_NNP Platt_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- proposes_VBZ a_DT framework_NN that_WDT extends_VBZ the_DT logistic_JJ regression_NN model_NN above_IN to_TO incorporate_VB noisy_JJ class_NN labels_NNS and_CC uses_VBZ it_PRP to_TO produce_VB probability_NN estimates_NNS from_IN the_DT raw_JJ output_NN of_IN an_DT SVM_NN ._.
+This_DT model_NN differs_VBZ from_IN the_DT LogReg_NNP model_NN only_RB in_IN how_WRB the_DT parameters_NNS are_VBP estimated_VBN ._.
+The_DT parameters_NNS are_VBP still_RB fit_VBN using_VBG maximum_NN likelihood_NN estimation_NN ,_, but_CC a_DT model_NN of_IN noisy_JJ class_NN labels_NNS is_VBZ used_VBN in_IN addition_NN to_TO allow_VB for_IN the_DT possibility_NN that_IN the_DT class_NN was_VBD mislabeled_VBN ._.
+The_DT noise_NN is_VBZ modeled_VBN by_IN assuming_VBG there_EX is_VBZ a_DT finite_JJ probability_NN of_IN mislabeling_VBG a_DT positive_JJ example_NN and_CC of_IN mislabeling_VBG a_DT negative_JJ example_NN ;_: these_DT two_CD noise_NN estimates_NNS are_VBP determined_VBN by_IN the_DT number_NN of_IN positive_JJ examples_NNS and_CC the_DT number_NN of_IN negative_JJ examples_NNS -LRB-_-LRB- using_VBG Bayes_NNP ''_'' rule_NN to_TO infer_VB the_DT probability_NN of_IN incorrect_JJ label_NN -RRB-_-RRB- ._.
+Even_RB though_IN the_DT performance_NN of_IN this_DT model_NN would_MD not_RB be_VB expected_VBN to_TO deviate_VB much_RB from_IN LogReg_NNP ,_, we_PRP evaluate_VBP it_PRP for_IN completeness_NN ._.
+We_PRP refer_VBP to_TO this_DT method_NN below_IN as_IN LR_NN +_CC Noise_NN ._.
+4_LS ._.
+#_# Data_NNS We_PRP examined_VBD several_JJ corpora_NN ,_, including_VBG the_DT MSN_NNP Web_NN Directory_NNP ,_, Reuters_NNP ,_, and_CC TREC-AP_NN ._.
+MSN_NNP Web_NN Directory_NNP The_DT MSN_NNP Web_NN Directory_NNP is_VBZ a_DT large_JJ collection_NN of_IN heterogeneous_JJ web_NN pages_NNS -LRB-_-LRB- from_IN a_DT May_NNP ####_CD web_NN snapshot_NN -RRB-_-RRB- that_WDT have_VBP been_VBN hierarchically_RB classified_VBN ._.
+We_PRP used_VBD the_DT same_JJ train_NN /_: test_NN split_NN of_IN #####_CD /_: #####_CD documents_NNS as_IN that_DT reported_VBN in_IN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+The_DT MSN_NNP Web_NN hierarchy_NN is_VBZ a_DT seven-level_JJ hierarchy_NN ;_: we_PRP used_VBD all_DT ##_NN of_IN the_DT top-level_JJ categories_NNS ._.
+The_DT class_NN proportions_NNS in_IN the_DT training_NN set_VBN vary_VBP from_IN #_# ._.
+##_CD %_NN to_TO ##_CD ._.
+##_CD %_NN ._.
+In_IN the_DT testing_NN set_NN ,_, they_PRP range_VBP from_IN #_# ._.
+##_CD %_NN to_TO ##_CD ._.
+##_CD %_NN ._.
+The_DT classes_NNS are_VBP general_JJ subjects_NNS such_JJ as_IN Health_NNP &_CC Fitness_NNP and_CC Travel_NNP &_CC Vacation_NN ._.
+Human_JJ indexers_NNS assigned_VBN the_DT documents_NNS to_TO zero_CD or_CC more_JJR categories_NNS ._.
+For_IN the_DT experiments_NNS below_IN ,_, we_PRP used_VBD only_RB the_DT top_JJ ####_CD words_NNS with_IN highest_JJS mutual_JJ information_NN for_IN each_DT class_NN ;_: approximately_RB 195K_NN words_NNS appear_VBP in_IN at_IN least_JJS three_CD training_NN documents_NNS ._.
+Reuters_NNP The_DT Reuters_NNP #####_CD corpus_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- contains_VBZ Reuters_NNP news_NN articles_NNS from_IN ####_CD ._.
+For_IN this_DT data_NN set_NN ,_, we_PRP used_VBD the_DT ModApte_NNP standard_JJ train_NN /_: test_NN split_NN of_IN ####_CD /_: ####_CD documents_NNS -LRB-_-LRB- ####_CD unused_JJ documents_NNS -RRB-_-RRB- ._.
+The_DT classes_NNS are_VBP economic_JJ subjects_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, acq_NN for_IN acquisitions_NNS ,_, earn_VBP for_IN earnings_NNS ,_, etc_FW ._. -RRB-_-RRB-
+that_IN human_JJ taggers_NNS applied_VBD to_TO the_DT document_NN ;_: a_DT document_NN may_MD have_VB multiple_JJ subjects_NNS ._.
+There_EX are_VBP actually_RB ###_CD classes_NNS in_IN this_DT domain_NN -LRB-_-LRB- only_RB ##_CD of_IN which_WDT occur_VBP in_IN the_DT training_NN and_CC testing_NN set_NN -RRB-_-RRB- ;_: however_RB ,_, we_PRP only_RB examined_VBD the_DT ten_CD most_RBS frequent_JJ classes_NNS since_IN small_JJ numbers_NNS of_IN testing_NN examples_NNS make_VBP interpreting_VBG some_DT performance_NN measures_VBZ difficult_JJ due_JJ to_TO high_JJ variance_NN ._.
+#_# Limiting_VBG to_TO the_DT ten_CD largest_JJS classes_NNS allows_VBZ us_PRP to_TO compare_VB our_PRP$ results_NNS to_TO previously_RB published_VBN results_NNS -LSB-_-LRB- ##_CD ,_, ##_CD ,_, ##_CD ,_, ##_CD -RSB-_-RRB- ._.
+The_DT class_NN proportions_NNS in_IN the_DT training_NN set_VBN vary_VBP from_IN #_# ._.
+##_CD %_NN to_TO ##_CD ._.
+##_CD %_NN ._.
+In_IN the_DT testing_NN set_NN ,_, they_PRP range_VBP from_IN #_# ._.
+#_# %_NN to_TO ##_CD ._.
+##_CD %_NN ._.
+For_IN the_DT experiments_NNS below_IN we_PRP used_VBD only_RB the_DT top_JJ ###_CD words_NNS with_IN highest_JJS mutual_JJ information_NN for_IN each_DT class_NN ;_: approximately_RB 15K_NN words_NNS appear_VBP in_IN at_IN least_JJS three_CD training_NN documents_NNS ._.
+TREC-AP_NN The_DT TREC-AP_NN corpus_NN is_VBZ a_DT collection_NN of_IN AP_NN news_NN stories_NNS from_IN 1988_CD to_TO ####_CD ._.
+We_PRP used_VBD the_DT same_JJ train_NN /_: test_NN split_NN of_IN ######_CD /_: #####_CD documents_NNS that_WDT was_VBD used_VBN in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ._.
+As_IN described_VBN in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- -LRB-_-LRB- see_VB also_RB -LSB-_-LRB- ##_CD -RSB-_-RRB- -RRB-_-RRB- ,_, the_DT categories_NNS are_VBP defined_VBN by_IN keywords_NNS in_IN a_DT keyword_JJ field_NN ._.
+The_DT title_NN and_CC body_NN fields_NNS are_VBP used_VBN in_IN the_DT experiments_NNS below_IN ._.
+There_EX are_VBP twenty_CD categories_NNS in_IN total_NN ._.
+The_DT class_NN proportions_NNS in_IN the_DT training_NN set_VBN vary_VBP from_IN #_# ._.
+##_CD %_NN to_TO #_# ._.
+##_CD %_NN ._.
+In_IN the_DT testing_NN set_NN ,_, they_PRP range_VBP from_IN 0_CD ._.
+##_CD %_NN to_TO #_# ._.
+##_CD %_NN ._.
+For_IN the_DT experiments_NNS described_VBN below_IN ,_, we_PRP use_VBP only_RB the_DT top_JJ ####_CD words_NNS with_IN the_DT highest_JJS mutual_JJ information_NN for_IN each_DT class_NN ;_: approximately_RB 123K_NN words_NNS appear_VBP in_IN at_IN least_JJS #_# training_VBG documents_NNS ._.
+4_LS ._.
+#_# Classifiers_NNPS We_PRP selected_VBD two_CD classifiers_NNS for_IN evaluation_NN ._.
+A_DT linear_JJ SVM_NN classifier_NN which_WDT is_VBZ a_DT discriminative_JJ classifier_NN that_WDT does_VBZ not_RB normally_RB output_NN probability_NN values_NNS ,_, and_CC a_DT nave_NN Bayes_NNP classifier_NN whose_WP$ probability_NN outputs_NNS are_VBP often_RB poor_JJ -LSB-_-LRB- #_# ,_, #_# -RSB-_-RRB- but_CC can_MD be_VB improved_VBN -LSB-_-LRB- #_# ,_, ##_NN ,_, ##_NN -RSB-_-RRB- ._.
+1_CD A_DT separate_JJ comparison_NN of_IN only_RB LogReg_NNP ,_, LR_NNP +_CC Noise_NNP ,_, and_CC A_NN ._.
+Laplace_NNP over_IN all_DT ##_CD categories_NNS of_IN Reuters_NNP was_VBD also_RB conducted_VBN ._.
+After_IN accounting_VBG for_IN the_DT variance_NN ,_, that_WDT evaluation_NN also_RB supported_VBD the_DT claims_NNS made_VBN here_RB ._.
+SVM_NN For_IN linear_JJ SVMs_NNS ,_, we_PRP use_VBP the_DT Smox_NNP toolkit_NN which_WDT is_VBZ based_VBN on_IN Platt_NNP ''_'' s_VBZ Sequential_NNP Minimal_JJ Optimization_NN algorithm_NN ._.
+The_DT features_NNS were_VBD represented_VBN as_IN continuous_JJ values_NNS ._.
+We_PRP used_VBD the_DT raw_JJ output_NN score_NN of_IN the_DT SVM_NNP as_IN s_NNS -LRB-_-LRB- d_NN -RRB-_-RRB- since_IN it_PRP has_VBZ been_VBN shown_VBN to_TO be_VB appropriate_JJ before_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ._.
+The_DT normal_JJ decision_NN threshold_NN -LRB-_-LRB- assuming_VBG we_PRP are_VBP seeking_VBG to_TO minimize_VB errors_NNS -RRB-_-RRB- for_IN this_DT classifier_NN is_VBZ at_IN zero_CD ._.
+Nave_NNP Bayes_NNP The_NNP nave_NNP Bayes_NNP classifier_NN model_NN is_VBZ a_DT multinomial_JJ model_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+We_PRP smoothed_VBD word_NN and_CC class_NN probabilities_NNS using_VBG a_DT Bayesian_JJ estimate_NN -LRB-_-LRB- with_IN the_DT word_NN prior_RB -RRB-_-RRB- and_CC a_DT Laplace_NNP m-estimate_NN ,_, respectively_RB ._.
+We_PRP use_VBP the_DT log-odds_NNS estimated_VBN by_IN the_DT classifier_NN as_IN s_NNS -LRB-_-LRB- d_NN -RRB-_-RRB- ._.
+The_DT normal_JJ decision_NN threshold_NN is_VBZ at_IN zero_CD ._.
+4_LS ._.
+#_# Performance_NNP Measures_NNS We_PRP use_VBP log-loss_JJ -LSB-_-LRB- ##_CD -RSB-_-RRB- and_CC squared_VBD error_NN -LSB-_-LRB- #_# ,_, #_# -RSB-_-RRB- to_TO evaluate_VB the_DT quality_NN of_IN the_DT probability_NN estimates_NNS ._.
+For_IN a_DT document_NN d_NN with_IN class_NN c_NN -LRB-_-LRB- d_NN -RRB-_-RRB- -LCB-_-LRB- +_CC ,_, -RCB-_-RRB- -LRB-_-LRB- i_FW ._.
+e_LS ._.
+the_DT data_NNS have_VBP known_VBN labels_NNS and_CC not_RB probabilities_NNS -RRB-_-RRB- ,_, logloss_NN is_VBZ defined_VBN as_IN -LRB-_-LRB- c_NN -LRB-_-LRB- d_NN -RRB-_-RRB- ,_, +_CC -RRB-_-RRB- log_NN P_NN -LRB-_-LRB- +_CC |_CD d_NN -RRB-_-RRB- +_CC -LRB-_-LRB- c_NN -LRB-_-LRB- d_NN -RRB-_-RRB- ,_, -RRB-_-RRB- log_NN P_NN -LRB-_-LRB- |_CD d_NN -RRB-_-RRB- where_WRB -LRB-_-LRB- a_DT ,_, b_NN -RRB-_-RRB- ._.
+=_JJ #_# if_IN a_DT =_JJ b_NN and_CC #_# otherwise_RB ._.
+The_DT squared_VBN error_NN is_VBZ -LRB-_-LRB- c_NN -LRB-_-LRB- d_NN -RRB-_-RRB- ,_, +_CC -RRB-_-RRB- -LRB-_-LRB- #_# P_NN -LRB-_-LRB- +_CC |_CD d_NN -RRB-_-RRB- -RRB-_-RRB- #_# +_CC -LRB-_-LRB- c_NN -LRB-_-LRB- d_NN -RRB-_-RRB- ,_, -RRB-_-RRB- -LRB-_-LRB- #_# P_NN -LRB-_-LRB- |_CD d_NN -RRB-_-RRB- -RRB-_-RRB- #_# ._.
+When_WRB the_DT class_NN of_IN a_DT document_NN is_VBZ correctly_RB predicted_VBN with_IN a_DT probability_NN of_IN one_CD ,_, log-loss_NN is_VBZ zero_CD and_CC squared_VBD error_NN is_VBZ zero_CD ._.
+When_WRB the_DT class_NN of_IN a_DT document_NN is_VBZ incorrectly_RB predicted_VBN with_IN a_DT probability_NN of_IN one_CD ,_, log-loss_NN is_VBZ and_CC squared_VBD error_NN is_VBZ one_CD ._.
+Thus_RB ,_, both_DT measures_NNS assess_VB how_WRB close_JJ an_DT estimate_NN comes_VBZ to_TO correctly_RB predicting_VBG the_DT item_NN ''_'' s_NNS class_NN but_CC vary_VBP in_IN how_WRB harshly_RB incorrect_JJ predictions_NNS are_VBP penalized_VBN ._.
+We_PRP report_VBP only_RB the_DT sum_NN of_IN these_DT measures_NNS and_CC omit_VB the_DT averages_NNS for_IN space_NN ._.
+Their_PRP$ averages_NNS ,_, average_JJ log-loss_NN and_CC mean_VB squared_VBN error_NN -LRB-_-LRB- MSE_NN -RRB-_-RRB- ,_, can_MD be_VB computed_VBN from_IN these_DT totals_NNS by_IN dividing_VBG by_IN the_DT number_NN of_IN binary_JJ decisions_NNS in_IN a_DT corpus_NN ._.
+In_IN addition_NN ,_, we_PRP also_RB compare_VBP the_DT error_NN of_IN the_DT classifiers_NNS at_IN their_PRP$ default_NN thresholds_NNS and_CC with_IN the_DT probabilities_NNS ._.
+This_DT evaluates_VBZ how_WRB the_DT probability_NN estimates_NNS have_VBP improved_VBN with_IN respect_NN to_TO the_DT decision_NN threshold_NN P_NN -LRB-_-LRB- +_CC |_CD d_NN -RRB-_-RRB- =_JJ #_# ._.
+#_# ._.
+Thus_RB ,_, error_NN only_RB indicates_VBZ how_WRB the_DT methods_NNS would_MD perform_VB if_IN a_DT false_JJ positive_JJ was_VBD penalized_VBN the_DT same_JJ as_IN a_DT false_JJ negative_JJ and_CC not_RB the_DT general_JJ quality_NN of_IN the_DT probability_NN estimates_NNS ._.
+It_PRP is_VBZ presented_VBN simply_RB to_TO provide_VB the_DT reader_NN with_IN a_DT more_RBR complete_JJ understanding_NN of_IN the_DT empirical_JJ tendencies_NNS of_IN the_DT methods_NNS ._.
+We_PRP use_VBP a_DT a_DT standard_JJ paired_JJ micro_JJ sign_NN test_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- to_TO determine_VB statistical_JJ significance_NN in_IN the_DT difference_NN of_IN all_DT measures_NNS ._.
+Only_RB pairs_NNS that_IN the_DT methods_NNS disagree_VBP on_RP are_VBP used_VBN in_IN the_DT sign_NN test_NN ._.
+This_DT test_NN compares_VBZ pairs_NNS of_IN scores_NNS from_IN two_CD systems_NNS with_IN the_DT null_JJ hypothesis_NN that_IN the_DT number_NN of_IN items_NNS they_PRP disagree_VBP on_RP are_VBP binomially_RB distributed_VBN ._.
+We_PRP use_VBP a_DT significance_NN level_NN of_IN p_NN =_JJ #_# ._.
+##_NN ._.
+4_LS ._.
+#_# Experimental_JJ Methodology_NN As_IN the_DT categories_NNS under_IN consideration_NN in_IN the_DT experiments_NNS are_VBP not_RB mutually_RB exclusive_JJ ,_, the_DT classification_NN was_VBD done_VBN by_IN training_NN n_NN binary_JJ classifiers_NNS ,_, where_WRB n_NN is_VBZ the_DT number_NN of_IN classes_NNS ._.
+In_IN order_NN to_TO generate_VB the_DT scores_NNS that_WDT each_DT method_NN uses_VBZ to_TO fit_VB its_PRP$ probability_NN estimates_NNS ,_, we_PRP use_VBP five-fold_JJ cross-validation_NN on_IN the_DT training_NN data_NNS ._.
+We_PRP note_VBP that_IN even_RB though_IN it_PRP is_VBZ computationally_RB efficient_JJ to_TO perform_VB leave-one-out_JJ cross-validation_NN for_IN the_DT nave_NN Bayes_NNP classifier_NN ,_, this_DT may_MD not_RB be_VB desirable_JJ since_IN the_DT distribution_NN of_IN scores_NNS can_MD be_VB skewed_JJ as_IN a_DT result_NN ._.
+Of_IN course_NN ,_, as_IN with_IN any_DT application_NN of_IN n-fold_JJ cross-validation_NN ,_, it_PRP is_VBZ also_RB possible_JJ to_TO bias_NN the_DT results_NNS by_IN holding_VBG n_NN too_RB low_JJ and_CC underestimating_VBG the_DT performance_NN of_IN the_DT final_JJ classifier_NN ._.
+4_LS ._.
+#_# Results_NNS &_CC Discussion_NNP The_DT results_NNS for_IN recalibrating_VBG nave_NN Bayes_NNS are_VBP given_VBN in_IN Table_NNP 1a_NN ._.
+Table_NNP 1b_NN gives_VBZ results_NNS for_IN producing_VBG probabilistic_JJ outputs_NNS for_IN SVMs_NNS ._.
+Log-loss_JJ Error2_NN Errors_NNS MSN_NNP Web_NN Gauss_NNP -_: #####_CD ._.
+##_NN #####_CD ._.
+##_NN #####_CD A_NN ._.
+Gauss_NNP -_: #####_CD ._.
+##_NN ####_CD ._.
+##_NN ####_CD Laplace_NNP -_: #####_CD ._.
+##_NN ####_CD ._.
+##_NN #####_CD A_NN ._.
+Laplace_NNP -_: #####_CD ._.
+##_NN ####_CD ._.
+##_SYM 8350_CD LogReg_NNP -_: #####_CD ._.
+##_NN ####_CD ._.
+##_NN ####_CD LR_NN +_CC Noise_NN -_: #####_CD ._.
+##_NN ####_CD ._.
+##_NN ####_CD nave_NN Bayes_NNP -_: #######_CD ._.
+##_NN #####_CD ._.
+##_NN #####_CD Reuters_NNP Gauss_NNP -_: ####_CD ._.
+##_NN ####_CD ._.
+##_NN ####_CD A_NN ._.
+Gauss_NNP -_: ####_CD ._.
+##_CD ###_CD ._.
+##_CD ###_CD Laplace_NNP -_: ####_CD ._.
+##_NN ####_CD ._.
+##_NN ####_CD A_NN ._.
+Laplace_NNP -_: ####_CD ._.
+##_NN 554_CD ._.
+##_NN 726_CD LogReg_NNP -_: ####_CD ._.
+##_CD ###_CD ._.
+##_CD ###_CD LR_NN +_CC Noise_NN -_: ####_CD ._.
+##_CD ###_CD ._.
+##_CD ###_CD nave_NN Bayes_NNP -_: #####_CD ._.
+##_NN ####_CD ._.
+##_NN ####_CD TREC-AP_NN Gauss_NNP -_: #####_CD ._.
+##_NN ####_CD ._.
+##_NN ####_CD A_NN ._.
+Gauss_NNP -_: #####_CD ._.
+##_NN ####_CD ._.
+##_NN ####_CD Laplace_NNP -_: #####_CD ._.
+##_NN ####_CD ._.
+##_NN #####_CD A_NN ._.
+Laplace_NNP -_: #####_CD ._.
+##_NN ####_CD ._.
+##_SYM 8642_CD LogReg_NNP -_: #####_CD ._.
+##_NN ####_CD ._.
+##_NN ####_CD LR_NN +_CC Noise_NN -_: #####_CD ._.
+##_NN ####_CD ._.
+##_NN ####_CD nave_NN Bayes_NNP -_: #######_CD ._.
+##_NN #####_CD ._.
+##_NN #####_CD Log-loss_JJ Error2_NN Errors_NNS MSN_NNP Web_NN Gauss_NNP -_: #####_CD ._.
+##_NN ####_CD ._.
+##_NN #####_CD A_NN ._.
+Gauss_NNP -_: #####_CD ._.
+##_NN ####_CD ._.
+##_NN ####_CD Laplace_NNP -_: #####_CD ._.
+##_NN ####_CD ._.
+##_NN #####_CD A_NN ._.
+Laplace_NNP -_: #####_CD ._.
+##_NN ####_CD ._.
+##_NN ####_CD LogReg_NNP -_: #####_CD ._.
+##_NN ####_CD ._.
+##_NN ####_CD LR_NN +_CC Noise_NN -_: #####_CD ._.
+##_NN ####_CD ._.
+##_RB ####_CD Linear_JJ SVM_NN N_NN /_: A_DT N_NN /_: A_DT ####_CD Reuters_NNP Gauss_NNP -_: ####_CD ._.
+##_CD ###_CD ._.
+##_CD ###_CD A_DT ._.
+Gauss_NNP -_: ####_CD ._.
+##_CD ###_CD ._.
+##_CD ###_CD Laplace_NNP -_: ####_CD ._.
+##_CD ###_CD ._.
+##_CD ###_CD A_DT ._.
+Laplace_NNP -_: ####_CD ._.
+##_CD ###_CD ._.
+##_CD ###_CD LogReg_NNP -_: ####_CD ._.
+##_CD ###_CD ._.
+##_CD ###_CD LR_NN +_CC Noise_NN -_: ####_CD ._.
+##_CD ###_CD ._.
+##_CD ###_CD Linear_JJ SVM_NN N_NN /_: A_DT N_NN /_: A_DT ###_CD TREC-AP_NN Gauss_NNP -_: #####_CD ._.
+##_NN ####_CD ._.
+##_NN ####_CD A_NN ._.
+Gauss_NNP -_: #####_CD ._.
+##_NN ####_CD ._.
+##_NN ####_CD Laplace_NNP -_: #####_CD ._.
+##_NN ####_CD ._.
+##_NN ####_CD A_NN ._.
+Laplace_NNP -_: #####_CD ._.
+##_NN ####_CD ._.
+##_SYM 6572_CD LogReg_NNP -_: #####_CD ._.
+##_NN ####_CD ._.
+##_NN ####_CD LR_NN +_CC Noise_NN -_: #####_CD ._.
+##_NN ####_CD ._.
+##_RB ####_CD Linear_JJ SVM_NN N_NN /_: A_DT N_NN /_: A_DT ####_CD Table_NNP #_# :_: -LRB-_-LRB- a_LS -RRB-_-RRB- Results_NNS for_IN nave_NN Bayes_NNS -LRB-_-LRB- left_NN -RRB-_-RRB- and_CC -LRB-_-LRB- b_LS -RRB-_-RRB- SVM_NN -LRB-_-LRB- right_NN -RRB-_-RRB- ._.
+The_DT best_JJS entry_NN for_IN a_DT corpus_NN is_VBZ in_IN bold_JJ ._.
+Entries_NNS that_WDT are_VBP statistically_RB significantly_RB better_JJR than_IN all_DT other_JJ entries_NNS are_VBP underlined_VBN ._.
+A_DT denotes_VBZ the_DT method_NN is_VBZ significantly_RB better_JJR than_IN all_DT other_JJ methods_NNS except_IN for_IN nave_NN Bayes_NNS ._.
+A_DT denotes_VBZ the_DT entry_NN is_VBZ significantly_RB better_JJR than_IN all_DT other_JJ methods_NNS except_IN for_IN A_DT ._.
+Gauss_NNP -LRB-_-LRB- and_CC nave_NN Bayes_NNS for_IN the_DT table_NN on_IN the_DT left_NN -RRB-_-RRB- ._.
+The_DT reason_NN for_IN this_DT distinction_NN in_IN significance_NN tests_NNS is_VBZ described_VBN in_IN the_DT text_NN ._.
+We_PRP start_VBP with_IN general_JJ observations_NNS that_WDT result_VBP from_IN examining_VBG the_DT performance_NN of_IN these_DT methods_NNS over_IN the_DT various_JJ corpora_NN ._.
+The_DT first_JJ is_VBZ that_IN A_NN ._.
+Laplace_NNP ,_, LR_NNP +_CC Noise_NNP ,_, and_CC LogReg_NNP ,_, quite_RB clearly_RB outperform_VB the_DT other_JJ methods_NNS ._.
+There_EX is_VBZ usually_RB little_JJ difference_NN between_IN the_DT performance_NN of_IN LR_NNP +_CC Noise_NNP and_CC LogReg_NNP -LRB-_-LRB- both_CC as_IN shown_VBN here_RB and_CC on_IN a_DT decision_NN by_IN decision_NN basis_NN -RRB-_-RRB- ,_, but_CC this_DT is_VBZ unsurprising_JJ since_IN LR_NN +_CC Noise_NN just_RB adds_VBZ noisy_JJ class_NN labels_NNS to_TO the_DT LogReg_NNP model_NN ._.
+With_IN respect_NN to_TO the_DT three_CD different_JJ measures_NNS ,_, LR_NN +_CC Noise_NN and_CC LogReg_NNP tend_VBP to_TO perform_VB slightly_RB better_JJR -LRB-_-LRB- but_CC never_RB significantly_RB -RRB-_-RRB- than_IN A_DT ._.
+Laplace_NNP at_IN some_DT tasks_NNS with_IN respect_NN to_TO log-loss_NN and_CC squared_VBD error_NN ._.
+However_RB ,_, A_DT ._.
+Laplace_NNP always_RB produces_VBZ the_DT least_JJS number_NN of_IN errors_NNS for_IN all_DT of_IN the_DT tasks_NNS ,_, though_RB at_IN times_NNS the_DT degree_NN of_IN improvement_NN is_VBZ not_RB significant_JJ ._.
+In_IN order_NN to_TO give_VB the_DT reader_NN a_DT better_JJR sense_NN of_IN the_DT behavior_NN of_IN these_DT methods_NNS ,_, Figures_NNS 4-5_CD show_VBP the_DT fits_NNS produced_VBN by_IN the_DT most_RBS competitive_JJ of_IN these_DT methods_NNS versus_CC the_DT actual_JJ data_NNS behavior_NN -LRB-_-LRB- as_IN estimated_VBN nonparametrically_RB by_IN binning_VBG -RRB-_-RRB- for_IN class_NN Earn_NN in_IN Reuters_NNP ._.
+Figure_NNP #_# shows_VBZ the_DT class-conditional_JJ densities_NNS ,_, and_CC thus_RB only_RB A_DT ._.
+Laplace_NNP is_VBZ shown_VBN since_IN LogReg_NNP fits_VBZ the_DT posterior_NN directly_RB ._.
+Figure_NNP #_# shows_VBZ the_DT estimations_NNS of_IN the_DT log-odds_NNS ,_, -LRB-_-LRB- i_LS ._.
+e_LS ._.
+log_NN P_NN -LRB-_-LRB- Earn_VB |_CD s_NNS -LRB-_-LRB- d_NN -RRB-_-RRB- -RRB-_-RRB- P_NN -LRB-_-LRB- Earn_VB |_CD s_NNS -LRB-_-LRB- d_NN -RRB-_-RRB- -RRB-_-RRB- -RRB-_-RRB- ._.
+Viewing_VBG the_DT log-odds_NNS -LRB-_-LRB- rather_RB than_IN the_DT posterior_NN -RRB-_-RRB- usually_RB enables_VBZ errors_NNS in_IN estimation_NN to_TO be_VB detected_VBN by_IN the_DT eye_NN more_RBR easily_RB ._.
+We_PRP can_MD break_VB things_NNS down_RP as_IN the_DT sign_NN test_NN does_VBZ and_CC just_RB look_VB at_IN wins_NNS and_CC losses_NNS on_IN the_DT items_NNS that_IN the_DT methods_NNS disagree_VBP on_IN ._.
+Looked_VBN at_IN in_IN this_DT way_NN only_RB two_CD methods_NNS -LRB-_-LRB- nave_NN Bayes_NNS and_CC A_NN ._.
+Gauss_NNP -RRB-_-RRB- ever_RB have_VBP more_RBR pairwise_JJ wins_NNS than_IN A_DT ._.
+Laplace_NNP ;_: those_DT two_CD sometimes_RB have_VBP more_RBR pairwise_JJ wins_NNS on_IN log-loss_NN and_CC squared_VBD error_NN even_RB though_IN the_DT total_JJ never_RB wins_NNS -LRB-_-LRB- i_FW ._.
+e_LS ._.
+they_PRP are_VBP dragged_VBN down_RP by_IN heavy_JJ penalties_NNS -RRB-_-RRB- ._.
+In_IN addition_NN ,_, this_DT comparison_NN of_IN pairwise_JJ wins_NNS means_VBZ that_IN for_IN those_DT cases_NNS where_WRB LogReg_NNP and_CC LR_NNP +_CC Noise_NNP have_VBP better_JJR scores_NNS than_IN A_DT ._.
+Laplace_NNP ,_, it_PRP would_MD not_RB be_VB deemed_VBN significant_JJ by_IN the_DT sign_NN test_NN at_IN any_DT level_NN since_IN they_PRP do_VBP not_RB have_VB more_JJR wins_NNS ._.
+For_IN example_NN ,_, of_IN the_DT 130K_CD binary_JJ decisions_NNS over_IN the_DT MSN_NNP Web_NN dataset_NN ,_, A_DT ._.
+Laplace_NNP had_VBD approximately_RB 101K_JJ pairwise_JJ wins_NNS versus_CC LogReg_NNP and_CC LR_NNP +_CC Noise_NNP ._.
+No_DT method_NN ever_RB has_VBZ more_JJR pairwise_JJ wins_NNS than_IN A_DT ._.
+Laplace_NNP for_IN the_DT error_NN comparison_NN nor_CC does_VBZ any_DT method_NN every_DT achieve_VB a_DT better_JJR total_NN ._.
+The_DT basic_JJ observation_NN made_VBN about_IN nave_NN Bayes_NNS in_IN previous_JJ work_NN is_VBZ that_IN it_PRP tends_VBZ to_TO produce_VB estimates_NNS very_RB close_RB to_TO zero_CD and_CC one_CD -LSB-_-LRB- #_# ,_, 17_CD -RSB-_-RRB- ._.
+This_DT means_VBZ if_IN it_PRP tends_VBZ to_TO be_VB right_RB enough_RB of_IN the_DT time_NN ,_, it_PRP will_MD produce_VB results_NNS that_WDT do_VBP not_RB appear_VB significant_JJ in_IN a_DT sign_NN test_NN that_WDT ignores_VBZ size_NN of_IN difference_NN -LRB-_-LRB- as_IN the_DT one_CD here_RB -RRB-_-RRB- ._.
+The_DT totals_NNS of_IN the_DT squared_VBN error_NN and_CC log-loss_JJ bear_NN out_IN the_DT previous_JJ observation_NN that_IN when_WRB it_PRP ''_'' s_VBZ wrong_JJ it_PRP ''_'' s_VBZ really_RB wrong_JJ ._.
+There_EX are_VBP several_JJ interesting_JJ points_NNS about_IN the_DT performance_NN of_IN the_DT asymmetric_JJ distributions_NNS as_RB well_RB ._.
+First_RB ,_, A_DT ._.
+Gauss_NNP performs_VBZ poorly_RB because_IN -LRB-_-LRB- similar_JJ to_TO nave_VB Bayes_NNS -RRB-_-RRB- there_EX are_VBP some_DT examples_NNS where_WRB it_PRP is_VBZ penalized_VBN a_DT large_JJ amount_NN ._.
+This_DT behavior_NN results_VBZ from_IN a_DT general_JJ tendency_NN to_TO perform_VB like_IN the_DT picture_NN shown_VBN in_IN Figure_NNP #_# -LRB-_-LRB- note_VB the_DT crossover_NN at_IN the_DT tails_NNS -RRB-_-RRB- ._.
+While_IN the_DT asymmetric_JJ Gaussian_JJ tends_VBZ to_TO place_VB the_DT mode_NN much_RB more_RBR accurately_RB than_IN a_DT symmetric_JJ Gaussian_NNP ,_, its_PRP$ asymmetric_JJ flexibility_NN combined_VBN with_IN its_PRP$ distance_NN function_NN causes_VBZ it_PRP to_TO distribute_VB too_RB much_JJ mass_NN to_TO the_DT outside_JJ tails_NNS while_IN failing_VBG to_TO fit_VB around_RP the_DT mode_NN accurately_RB enough_RB to_TO compensate_VB ._.
+Figure_NNP 3_CD is_VBZ actually_RB a_DT result_NN of_IN fitting_JJ the_DT two_CD distributions_NNS to_TO real_JJ data_NNS ._.
+As_IN a_DT result_NN ,_, at_IN the_DT tails_NNS there_RB can_MD be_VB a_DT large_JJ discrepancy_NN between_IN the_DT likelihood_NN of_IN belonging_VBG to_TO each_DT class_NN ._.
+Thus_RB when_WRB there_EX are_VBP no_DT outliers_NNS A_DT ._.
+Gauss_NNP can_MD perform_VB quite_RB competitively_RB ,_, but_CC when_WRB there_EX is_VBZ an_DT 0_CD 0_CD ._.
+###_NN 0_CD ._.
+###_NN 0_CD ._.
+###_NN 0_CD ._.
+###_NN 0_CD ._.
+##_NN 0_CD ._.
+###_CD -600_CD -_: ###_CD -200_CD #_# ###_CD ###_CD p_NN -LRB-_-LRB- s_NNS -LRB-_-LRB- d_NN -RRB-_-RRB- |_CD Class_NN =_JJ -LCB-_-LRB- +_CC ,_, -_: -RCB-_-RRB- -RRB-_-RRB- s_NNS -LRB-_-LRB- d_NN -RRB-_-RRB- =_JJ naive_JJ Bayes_NNP log-odds_NNS Train_NNP Test_NNP A_NNP ._.
+Laplace_NNP 0_CD 0_CD ._.
+##_NN 0_CD ._.
+#_# 0_CD ._.
+##_NN 0_CD ._.
+#_# 0_CD ._.
+##_NN 0_CD ._.
+#_# 0_CD ._.
+##_NN 0_CD ._.
+#_# 0_CD ._.
+##_NN -15_CD -_: ##_CD -5_CD #_# #_# ##_CD ##_CD p_NN -LRB-_-LRB- s_NNS -LRB-_-LRB- d_NN -RRB-_-RRB- |_CD Class_NN =_JJ -LCB-_-LRB- +_CC ,_, -_: -RCB-_-RRB- -RRB-_-RRB- s_NNS -LRB-_-LRB- d_NN -RRB-_-RRB- =_JJ linear_JJ SVM_NN raw_JJ score_NN Train_NN Test_NN A_NN ._.
+Laplace_NNP Figure_NNP #_# :_: The_DT empirical_JJ distribution_NN of_IN classifier_NN scores_NNS for_IN documents_NNS in_IN the_DT training_NN and_CC the_DT test_NN set_VBN for_IN class_NN Earn_NN in_IN Reuters_NNP ._.
+Also_RB shown_VBN is_VBZ the_DT fit_NN of_IN the_DT asymmetric_JJ Laplace_NNP distribution_NN to_TO the_DT training_NN score_NN distribution_NN ._.
+The_DT positive_JJ class_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+Earn_VB -RRB-_-RRB- is_VBZ the_DT distribution_NN on_IN the_DT right_NN in_IN each_DT graph_NN ,_, and_CC the_DT negative_JJ class_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+Earn_VB -RRB-_-RRB- is_VBZ that_DT on_IN the_DT left_VBN in_IN each_DT graph_NN ._.
+-6_CD -4_CD -2_CD 0_CD 2_CD 4_CD 6_CD 8_CD -250_CD -_: ###_CD -150_CD -100_CD -50_CD #_# ##_CD ###_CD ###_CD LogOdds_NN =_JJ logP_NN -LRB-_-LRB- +_CC |_CD s_NNS -LRB-_-LRB- d_NN -RRB-_-RRB- -RRB-_-RRB- -_: logP_NN -LRB-_-LRB- -_: |_NN s_NNS -LRB-_-LRB- d_NN -RRB-_-RRB- -RRB-_-RRB- s_NNS -LRB-_-LRB- d_NN -RRB-_-RRB- =_JJ naive_JJ Bayes_NNP log-odds_NNS Train_NNP Test_NNP A_NNP ._.
+Laplace_NNP LogReg_NNP -5_CD 0_CD 5_CD 10_CD 15_CD -4_CD -_: #_# #_# #_# #_# #_# LogOdds_NNPS =_JJ logP_NN -LRB-_-LRB- +_CC |_CD s_NNS -LRB-_-LRB- d_NN -RRB-_-RRB- -RRB-_-RRB- -_: logP_NN -LRB-_-LRB- -_: |_NN s_NNS -LRB-_-LRB- d_NN -RRB-_-RRB- -RRB-_-RRB- s_NNS -LRB-_-LRB- d_NN -RRB-_-RRB- =_JJ linear_JJ SVM_NN raw_JJ score_NN Train_NN Test_NN A_NN ._.
+Laplace_NNP LogReg_NNP Figure_NNP #_# :_: The_DT fit_NN produced_VBN by_IN various_JJ methods_NNS compared_VBN to_TO the_DT empirical_JJ log-odds_NNS of_IN the_DT training_NN data_NNS for_IN class_NN Earn_NN in_IN Reuters_NNP ._.
+outlier_NN A_NN ._.
+Gauss_NNP is_VBZ penalized_VBN quite_RB heavily_RB ._.
+There_EX are_VBP enough_RB such_JJ cases_NNS overall_JJ that_IN it_PRP seems_VBZ clearly_RB inferior_JJ to_TO the_DT top_JJ three_CD methods_NNS ._.
+However_RB ,_, the_DT asymmetric_JJ Laplace_NNP places_NNS much_RB more_JJR emphasis_NN around_IN the_DT mode_NN -LRB-_-LRB- Figure_NN #_# -RRB-_-RRB- because_IN of_IN the_DT different_JJ distance_NN function_NN -LRB-_-LRB- think_NN of_IN the_DT sharp_JJ peak_NN of_IN an_DT exponential_JJ -RRB-_-RRB- ._.
+As_IN a_DT result_NN most_JJS of_IN the_DT mass_NN stays_VBZ centered_VBN around_IN the_DT mode_NN ,_, while_IN the_DT asymmetric_JJ parameters_NNS still_RB allow_VBP more_RBR flexibility_NN than_IN the_DT standard_JJ Laplace_NNP ._.
+Since_IN the_DT standard_JJ Laplace_NNP also_RB corresponds_VBZ to_TO a_DT piecewise_JJ fit_NN in_IN the_DT log-odds_JJ space_NN ,_, this_DT highlights_VBZ that_IN part_NN of_IN the_DT power_NN of_IN the_DT asymmetric_JJ methods_NNS is_VBZ their_PRP$ sensitivity_NN in_IN placing_VBG the_DT knots_NNS at_IN the_DT actual_JJ modes_NNS -_: rather_RB than_IN the_DT symmetric_JJ assumption_NN that_IN the_DT means_NNS correspond_VBP to_TO the_DT modes_NNS ._.
+Additionally_RB ,_, the_DT asymmetric_JJ methods_NNS have_VBP greater_JJR flexibility_NN in_IN fitting_JJ the_DT slopes_NNS of_IN the_DT line_NN segments_NNS as_RB well_RB ._.
+Even_RB in_IN cases_NNS where_WRB the_DT test_NN distribution_NN differs_VBZ from_IN the_DT training_NN distribution_NN -LRB-_-LRB- Figure_NN #_# -RRB-_-RRB- ,_, A_NN ._.
+Laplace_NNP still_RB yields_VBZ a_DT solution_NN that_WDT gives_VBZ a_DT better_JJR fit_NN than_IN LogReg_NNP -LRB-_-LRB- Figure_NNP #_# -RRB-_-RRB- ,_, the_DT next_JJ best_JJS competitor_NN ._.
+Finally_RB ,_, we_PRP can_MD make_VB a_DT few_JJ observations_NNS about_IN the_DT usefulness_NN of_IN the_DT various_JJ performance_NN metrics_NNS ._.
+First_RB ,_, log-loss_NN only_RB awards_VBZ a_DT finite_JJ amount_NN of_IN credit_NN as_IN the_DT degree_NN to_TO which_WDT something_NN is_VBZ correct_JJ improves_VBZ -LRB-_-LRB- i_FW ._.
+e_LS ._.
+there_EX are_VBP diminishing_VBG returns_NNS as_IN it_PRP approaches_VBZ zero_CD -RRB-_-RRB- ,_, but_CC it_PRP can_MD infinitely_RB penalize_VB for_IN a_DT wrong_JJ estimate_NN ._.
+Thus_RB ,_, it_PRP is_VBZ possible_JJ for_IN one_CD outlier_NN to_TO skew_VB the_DT totals_NNS ,_, but_CC misclassifying_VBG this_DT example_NN may_MD not_RB matter_VB for_IN any_DT but_CC a_DT handful_NN of_IN actual_JJ utility_NN functions_NNS used_VBN in_IN practice_NN ._.
+Secondly_RB ,_, squared_VBD error_NN has_VBZ a_DT weakness_NN in_IN the_DT other_JJ direction_NN ._.
+That_DT is_VBZ ,_, its_PRP$ penalty_NN and_CC reward_NN are_VBP bounded_VBN in_IN -LSB-_-LRB- #_# ,_, #_# -RSB-_-RRB- ,_, but_CC if_IN the_DT number_NN of_IN errors_NNS is_VBZ small_JJ enough_RB ,_, it_PRP is_VBZ possible_JJ for_IN a_DT method_NN to_TO appear_VB better_JJR when_WRB it_PRP is_VBZ producing_VBG what_WP we_PRP generally_RB consider_VBP unhelpful_JJ probability_NN estimates_NNS ._.
+For_IN example_NN ,_, consider_VB a_DT method_NN that_WDT only_RB estimates_VBZ probabilities_NNS as_IN zero_CD or_CC one_CD -LRB-_-LRB- which_WDT nave_VBP Bayes_NNS tends_VBZ to_TO but_CC doesn_NN ''_'' t_NN quite_RB reach_VBP if_IN you_PRP use_VBP smoothing_VBG -RRB-_-RRB- ._.
+This_DT method_NN could_MD win_VB according_VBG to_TO squared_VBN error_NN ,_, but_CC with_IN just_RB one_CD error_NN it_PRP would_MD never_RB perform_VB better_JJR on_IN log-loss_NN than_IN any_DT method_NN that_WDT assigns_VBZ some_DT non-zero_JJ probability_NN to_TO each_DT outcome_NN ._.
+For_IN these_DT reasons_NNS ,_, we_PRP recommend_VBP that_IN neither_DT of_IN these_DT are_VBP used_VBN in_IN isolation_NN as_IN they_PRP each_DT give_VBP slightly_RB different_JJ insights_NNS to_TO the_DT quality_NN of_IN the_DT estimates_NNS produced_VBD ._.
+These_DT observations_NNS are_VBP straightforward_JJ from_IN the_DT definitions_NNS but_CC are_VBP underscored_VBN by_IN the_DT evaluation_NN ._.
+5_CD ._.
+FUTURE_JJ WORK_VBP A_DT promising_JJ extension_NN to_TO the_DT work_NN presented_VBN here_RB is_VBZ a_DT hybrid_JJ distribution_NN of_IN a_DT Gaussian_JJ -LRB-_-LRB- on_IN the_DT outside_JJ slopes_NNS -RRB-_-RRB- and_CC exponentials_NNS -LRB-_-LRB- on_IN the_DT inner_JJ slopes_NNS -RRB-_-RRB- ._.
+From_IN the_DT empirical_JJ evidence_NN presented_VBN in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ,_, the_DT expectation_NN is_VBZ that_IN such_PDT a_DT distribution_NN might_MD allow_VB more_JJR emphasis_NN of_IN the_DT probability_NN mass_NN around_IN the_DT modes_NNS -LRB-_-LRB- as_IN with_IN the_DT exponential_JJ -RRB-_-RRB- while_IN still_RB providing_VBG more_JJR accurate_JJ estimates_NNS toward_IN the_DT tails_NNS ._.
+Just_RB as_IN logistic_JJ regression_NN allows_VBZ the_DT log-odds_NNS of_IN the_DT posterior_JJ distribution_NN to_TO be_VB fit_VBN directly_RB with_IN a_DT line_NN ,_, we_PRP could_MD directly_RB fit_VB the_DT log-odds_NNS of_IN the_DT posterior_NN with_IN a_DT three-piece_JJ line_NN -LRB-_-LRB- a_DT spline_NN -RRB-_-RRB- instead_RB of_IN indirectly_RB doing_VBG the_DT same_JJ thing_NN by_IN fitting_JJ the_DT asymmetric_JJ Laplace_NNP ._.
+This_DT approach_NN may_MD provide_VB more_JJR power_NN since_IN it_PRP retains_VBZ the_DT asymmetry_NN assumption_NN but_CC not_RB the_DT assumption_NN that_IN the_DT class-conditional_JJ densities_NNS are_VBP from_IN an_DT asymmetric_JJ Laplace_NNP ._.
+Finally_RB ,_, extending_VBG these_DT methods_NNS to_TO the_DT outputs_NNS of_IN other_JJ discriminative_JJ classifiers_NNS is_VBZ an_DT open_JJ area_NN ._.
+We_PRP are_VBP currently_RB evaluating_VBG the_DT appropriateness_NN of_IN these_DT methods_NNS for_IN the_DT output_NN of_IN a_DT voted_VBN perceptron_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+By_IN analogy_NN to_TO the_DT log-odds_NNS ,_, the_DT operative_JJ score_NN that_WDT appears_VBZ promising_JJ is_VBZ log_NN weight_NN perceptrons_NNS voting_VBG +_CC weight_NN perceptrons_NNS voting_VBG ._.
+6_CD ._.
+SUMMARY_NN AND_CC CONCLUSIONS_NNS We_PRP have_VBP reviewed_VBN a_DT wide_JJ variety_NN of_IN parametric_JJ methods_NNS for_IN producing_VBG probability_NN estimates_NNS from_IN the_DT raw_JJ scores_NNS of_IN a_DT discriminative_JJ classifier_NN and_CC for_IN recalibrating_VBG an_DT uncalibrated_JJ probabilistic_JJ classifier_NN ._.
+In_IN addition_NN ,_, we_PRP have_VBP introduced_VBN two_CD new_JJ families_NNS that_WDT attempt_VBP to_TO capitalize_VB on_IN the_DT asymmetric_JJ behavior_NN that_WDT tends_VBZ to_TO arise_VB from_IN learning_VBG a_DT discrimination_NN function_NN ._.
+We_PRP have_VBP given_VBN an_DT efficient_JJ way_NN to_TO estimate_VB the_DT parameters_NNS of_IN these_DT distributions_NNS ._.
+While_IN these_DT distributions_NNS attempt_VBP to_TO strike_VB a_DT balance_NN between_IN the_DT generalization_NN power_NN of_IN parametric_JJ distributions_NNS and_CC the_DT flexibility_NN that_IN the_DT added_VBN asymmetric_JJ parameters_NNS give_VBP ,_, the_DT asymmetric_JJ Gaussian_JJ appears_VBZ to_TO have_VB too_RB great_JJ of_IN an_DT emphasis_NN away_RB from_IN the_DT modes_NNS ._.
+In_IN striking_JJ contrast_NN ,_, the_DT asymmetric_JJ Laplace_NNP distribution_NN appears_VBZ to_TO be_VB preferable_JJ over_IN several_JJ large_JJ text_NN domains_NNS and_CC a_DT variety_NN of_IN performance_NN measures_NNS to_TO the_DT primary_JJ competing_VBG parametric_JJ methods_NNS ,_, though_IN comparable_JJ performance_NN is_VBZ sometimes_RB achieved_VBN with_IN one_CD of_IN two_CD varieties_NNS of_IN logistic_JJ regression_NN ._.
+Given_VBN the_DT ease_NN of_IN estimating_VBG the_DT parameters_NNS of_IN this_DT distribution_NN ,_, it_PRP is_VBZ a_DT good_JJ first_JJ choice_NN for_IN producing_VBG quality_NN probability_NN estimates_NNS ._.
+Acknowledgments_NNS We_PRP are_VBP grateful_JJ to_TO Francisco_NNP Pereira_NNP for_IN the_DT sign_NN test_NN code_NN ,_, Anton_NNP Likhodedov_NNP for_IN logistic_JJ regression_NN code_NN ,_, and_CC John_NNP Platt_NNP for_IN the_DT code_NN support_NN for_IN the_DT linear_JJ SVM_NN classifier_NN toolkit_NN Smox_NN ._.
+Also_RB ,_, we_PRP sincerely_RB thank_VB Chris_NNP Meek_NNP and_CC John_NNP Platt_NNP for_IN the_DT very_RB useful_JJ advice_NN provided_VBN in_IN the_DT early_JJ stages_NNS of_IN this_DT work_NN ._.
+Thanks_NNS also_RB to_TO Jaime_NNP Carbonell_NNP and_CC John_NNP Lafferty_NNP for_IN their_PRP$ useful_JJ feedback_NN on_IN the_DT final_JJ versions_NNS of_IN this_DT paper_NN ._.
+7_CD ._.
+REFERENCES_NNS -LSB-_-LRB- #_# -RSB-_-RRB- P_NN ._.
+N_NN ._.
+Bennett_NNP ._.
+Assessing_VBG the_DT calibration_NN of_IN naive_JJ bayes_NNS ''_'' posterior_JJ estimates_NNS ._.
+Technical_NNP Report_NNP CMU-CS-00-155_NNP ,_, Carnegie_NNP Mellon_NNP ,_, School_NNP of_IN Computer_NNP Science_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- P_NN ._.
+N_NN ._.
+Bennett_NNP ._.
+Using_VBG asymmetric_JJ distributions_NNS to_TO improve_VB classifier_NN probabilities_NNS :_: A_DT comparison_NN of_IN new_JJ and_CC standard_JJ parametric_JJ methods_NNS ._.
+Technical_NNP Report_NNP CMU-CS-02-126_NNP ,_, Carnegie_NNP Mellon_NNP ,_, School_NNP of_IN Computer_NNP Science_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- H_NN ._.
+Bourlard_JJ and_CC N_NN ._.
+Morgan_NNP ._.
+A_DT continuous_JJ speech_NN recognition_NN system_NN embedding_VBG mlp_NN into_IN hmm_NN ._.
+In_IN NIPS_NNS ''_'' ##_NN ,_, 1989_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- G_NN ._.
+Brier_NNP ._.
+Verification_NN of_IN forecasts_NNS expressed_VBN in_IN terms_NNS of_IN probability_NN ._.
+Monthly_JJ Weather_NNP Review_NNP ,_, ##_CD :_: 1-3_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- M_NN ._.
+H_NN ._.
+DeGroot_NNP and_CC S_NN ._.
+E_NN ._.
+Fienberg_NNP ._.
+The_DT comparison_NN and_CC evaluation_NN of_IN forecasters_NNS ._.
+Statistician_NN ,_, ##_CD :_: 12-22_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- M_NN ._.
+H_NN ._.
+DeGroot_NNP and_CC S_NN ._.
+E_NN ._.
+Fienberg_NNP ._.
+Comparing_VBG probability_NN forecasters_NNS :_: Basic_JJ binary_JJ concepts_NNS and_CC multivariate_JJ extensions_NNS ._.
+In_IN P_NN ._.
+Goel_NNP and_CC A_NNP ._.
+Zellner_NNP ,_, editors_NNS ,_, Bayesian_JJ Inference_NN and_CC Decision_NN Techniques_NNS ._.
+Elsevier_NNP Science_NNP Publishers_NNPS B_NN ._.
+V_NN ._.
+,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- P_NN ._.
+Domingos_NNP and_CC M_NN ._.
+Pazzani_NNP ._.
+Beyond_IN independence_NN :_: Conditions_NNS for_IN the_DT optimality_NN of_IN the_DT simple_JJ bayesian_JJ classifier_NN ._.
+In_IN ICML_NN ''_'' ##_NN ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- R_NN ._.
+Duda_NNP ,_, P_NN ._.
+Hart_NNP ,_, and_CC D_NN ._.
+Stork_NNP ._.
+Pattern_NN Classification_NN ._.
+John_NNP Wiley_NNP &_CC Sons_NNP ,_, Inc_NNP ._.
+,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- S_NN ._.
+T_NN ._.
+Dumais_NNP and_CC H_NNP ._.
+Chen_NNP ._.
+Hierarchical_JJ classification_NN of_IN web_NN content_NN ._.
+In_IN SIGIR_NN ''_'' ##_NN ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- S_NN ._.
+T_NN ._.
+Dumais_NNP ,_, J_NNP ._.
+Platt_NNP ,_, D_NNP ._.
+Heckerman_NNP ,_, and_CC M_NN ._.
+Sahami_NNP ._.
+Inductive_JJ learning_NN algorithms_NNS and_CC representations_NNS for_IN text_NN categorization_NN ._.
+In_IN CIKM_NN ''_'' ##_NN ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Y_NN ._.
+Freund_NN and_CC R_NN ._.
+Schapire_NNP ._.
+Large_JJ margin_NN classification_NN using_VBG the_DT perceptron_NN algorithm_NN ._.
+Machine_NN Learning_NNP ,_, ##_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 277-296_CD ,_, 1999_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- I_PRP ._.
+Good_JJ ._.
+Rational_JJ decisions_NNS ._.
+Journal_NNP of_IN the_DT Royal_NNP Statistical_NNP Society_NNP ,_, Series_NNP B_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- T_NN ._.
+Joachims_NNP ._.
+Text_VB categorization_NN with_IN support_NN vector_NN machines_NNS :_: Learning_NNP with_IN many_JJ relevant_JJ features_NNS ._.
+In_IN ECML_NN ''_'' ##_NN ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- S_NN ._.
+Kotz_NNP ,_, T_NN ._.
+J_NN ._.
+Kozubowski_NNP ,_, and_CC K_NN ._.
+Podgorski_NNP ._.
+The_DT Laplace_NNP Distribution_NN and_CC Generalizations_NNS :_: A_DT Revisit_NN with_IN Applications_NNS to_TO Communications_NNPS ,_, Economics_NNP ,_, Engineering_NNP ,_, and_CC Finance_NNP ._.
+Birkhauser_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- D_NN ._.
+D_NN ._.
+Lewis_NNP ._.
+A_DT sequential_JJ algorithm_NN for_IN training_NN text_NN classifiers_NNS :_: Corrigendum_NNP and_CC additional_JJ data_NNS ._.
+SIGIR_NNP Forum_NNP ,_, 29_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 13-19_CD ,_, Fall_NN ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- D_NN ._.
+D_NN ._.
+Lewis_NNP ._.
+Reuters-21578_NN ,_, distribution_NN #_# ._.
+#_# ._.
+http_NN :_: /_: /_: www_NN ._.
+daviddlewis_NN ._.
+com_NN /_: resources_NNS /_: testcollections_NNS /_: reuters21578_NN ,_, January_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- D_NN ._.
+D_NN ._.
+Lewis_NNP and_CC W_NNP ._.
+A_DT ._.
+Gale_NNP ._.
+A_DT sequential_JJ algorithm_NN for_IN training_NN text_NN classifiers_NNS ._.
+In_IN SIGIR_NN ''_'' ##_NN ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- D_NN ._.
+D_NN ._.
+Lewis_NNP ,_, R_NN ._.
+E_NN ._.
+Schapire_NNP ,_, J_NNP ._.
+P_NN ._.
+Callan_NNP ,_, and_CC R_NN ._.
+Papka_FW ._.
+Training_VBG algorithms_NNS for_IN linear_JJ text_NN classifiers_NNS ._.
+In_IN SIGIR_NN ''_'' ##_NN ,_, 1996_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- D_NN ._.
+Lindley_NNP ,_, A_NNP ._.
+Tversky_NNP ,_, and_CC R_NN ._.
+Brown_NNP ._.
+On_IN the_DT reconciliation_NN of_IN probability_NN assessments_NNS ._.
+Journal_NNP of_IN the_DT Royal_NNP Statistical_NNP Society_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- R_NN ._.
+Manmatha_NNP ,_, T_NN ._.
+Rath_NNP ,_, and_CC F_NN ._.
+Feng_NNP ._.
+Modeling_NN score_NN distributions_NNS for_IN combining_VBG the_DT outputs_NNS of_IN search_NN engines_NNS ._.
+In_IN SIGIR_NN ''_'' ##_NN ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- A_DT ._.
+McCallum_NNP and_CC K_NNP ._.
+Nigam_NNP ._.
+A_DT comparison_NN of_IN event_NN models_NNS for_IN naive_JJ bayes_NNS text_NN classification_NN ._.
+In_IN AAAI_NN ''_'' ##_NN ,_, Workshop_NNP on_IN Learning_NNP for_IN Text_VB Categorization_NN ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+C_NN ._.
+Platt_NNP ._.
+Probabilistic_NNP outputs_NNS for_IN support_NN vector_NN machines_NNS and_CC comparisons_NNS to_TO regularized_VBN likelihood_NN methods_NNS ._.
+In_IN A_DT ._.
+J_NN ._.
+Smola_NNP ,_, P_NN ._.
+Bartlett_NNP ,_, B_NN ._.
+Scholkopf_NNP ,_, and_CC D_NN ._.
+Schuurmans_NNP ,_, editors_NNS ,_, Advances_NNS in_IN Large_JJ Margin_NN Classifiers_NNS ._.
+MIT_NNP Press_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- M_NN ._.
+Saar-Tsechansky_NNP and_CC F_NN ._.
+Provost_NNP ._.
+Active_JJ learning_NN for_IN class_NN probability_NN estimation_NN and_CC ranking_NN ._.
+In_IN IJCAI_NNP ''_'' ##_NN ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- R_NN ._.
+L_NN ._.
+Winkler_NNP ._.
+Scoring_NNP rules_NNS and_CC the_DT evaluation_NN of_IN probability_NN assessors_NNS ._.
+Journal_NNP of_IN the_DT American_JJ Statistical_NNP Association_NNP ,_, 1969_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Y_NN ._.
+Yang_NNP and_CC X_NNP ._.
+Liu_NNP ._.
+A_DT re-examination_NN of_IN text_NN categorization_NN methods_NNS ._.
+In_IN SIGIR_NN ''_'' ##_NN ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- B_NN ._.
+Zadrozny_NNP and_CC C_NNP ._.
+Elkan_NNP ._.
+Obtaining_VBG calibrated_VBN probability_NN estimates_NNS from_IN decision_NN trees_NNS and_CC naive_JJ bayesian_JJ classifiers_NNS ._.
+In_IN ICML_NN ''_'' ##_NN ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- B_NN ._.
+Zadrozny_NNP and_CC C_NNP ._.
+Elkan_NNP ._.
+Reducing_VBG multiclass_JJ to_TO binary_JJ by_IN coupling_NN probability_NN estimates_NNS ._.
+In_IN KDD_NNP ''_'' ##_NN ,_, ####_CD ._.

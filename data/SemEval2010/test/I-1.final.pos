@@ -1,0 +1,652 @@
+Aborting_VBG Tasks_NNS in_IN BDI_NNP Agents_NNPS John_NNP Thangarajah_NNP ,_, James_NNP Harland_NNP RMIT_NNP University_NNP Melbourne_NNP ,_, Australia_NNP -LCB-_-LRB- johthan_NN ,_, jah_NN -RCB-_-RRB- @_SYM cs_NNS ._.
+rmit_NN ._.
+edu_NN ._.
+au_NN David_NNP Morley_NNP ,_, Neil_NNP Yorke-Smith_NNP Artificial_NNP Intelligence_NNP Center_NNP ,_, SRI_NN International_NNP Menlo_NNP Park_NNP ,_, CA_NNP #####_CD U_NNP ._.
+S_NN ._.
+A_DT ._.
+-LCB-_-LRB- morley_NN ,_, nysmith_NN -RCB-_-RRB- @_SYM ai_VBP ._.
+sri_NN ._.
+com_NN ABSTRACT_NN Intelligent_JJ agents_NNS that_WDT are_VBP intended_VBN to_TO work_VB in_IN dynamic_JJ environments_NNS must_MD be_VB able_JJ to_TO gracefully_RB handle_VB unsuccessful_JJ tasks_NNS and_CC plans_NNS ._.
+In_IN addition_NN ,_, such_JJ agents_NNS should_MD be_VB able_JJ to_TO make_VB rational_JJ decisions_NNS about_IN an_DT appropriate_JJ course_NN of_IN action_NN ,_, which_WDT may_MD include_VB aborting_VBG a_DT task_NN or_CC plan_NN ,_, either_CC as_IN a_DT result_NN of_IN the_DT agent_NN ''_'' s_NNS own_JJ deliberations_NNS ,_, or_CC potentially_RB at_IN the_DT request_NN of_IN another_DT agent_NN ._.
+In_IN this_DT paper_NN we_PRP investigate_VBP the_DT incorporation_NN of_IN aborts_NNS into_IN a_DT BDI-style_JJ architecture_NN ._.
+We_PRP discuss_VBP some_DT conditions_NNS under_IN which_WDT aborting_VBG a_DT task_NN or_CC plan_NN is_VBZ appropriate_JJ ,_, and_CC how_WRB to_TO determine_VB the_DT consequences_NNS of_IN such_PDT a_DT decision_NN ._.
+We_PRP augment_VBP each_DT plan_NN with_IN an_DT optional_JJ abort-method_NN ,_, analogous_JJ to_TO the_DT failure_NN method_NN found_VBN in_IN some_DT agent_NN programming_NN languages_NNS ._.
+We_PRP provide_VBP an_DT operational_JJ semantics_NNS for_IN the_DT execution_NN cycle_NN in_IN the_DT presence_NN of_IN aborts_NNS in_IN the_DT abstract_JJ agent_NN language_NN CAN_NNP ,_, which_WDT enables_VBZ us_PRP to_TO specify_VB a_DT BDI-based_JJ execution_NN model_NN without_IN limiting_VBG our_PRP$ attention_NN to_TO a_DT particular_JJ agent_NN system_NN -LRB-_-LRB- such_JJ as_IN JACK_NNP ,_, Jadex_NNP ,_, Jason_NNP ,_, or_CC SPARK_NN -RRB-_-RRB- ._.
+A_DT key_JJ technical_JJ challenge_NN we_PRP address_VBP is_VBZ the_DT presence_NN of_IN parallel_JJ execution_NN threads_NNS and_CC of_IN sub-tasks_NNS ,_, which_WDT require_VBP the_DT agent_NN to_TO ensure_VB that_IN the_DT abort_NN methods_NNS for_IN each_DT plan_NN are_VBP carried_VBN out_RP in_IN an_DT appropriate_JJ sequence_NN ._.
+Categories_NNS and_CC Subject_NNP Descriptors_NNS I_PRP ._.
+#_# ._.
+##_NN -LSB-_-LRB- ARTIFICIAL_JJ INTELLIGENCE_NN -RSB-_-RRB- :_: Distributed_VBN Artificial_JJ Intelligence-Intelligent_JJ agents_NNS General_JJ Terms_NNS Design_NN ,_, Reliability_NN ,_, Theory_NNP 1_CD ._.
+INTRODUCTION_NN Intelligent_JJ agents_NNS generally_RB work_VBP in_IN complex_NN ,_, dynamic_JJ environments_NNS ,_, such_JJ as_IN air_NN traffic_NN control_NN or_CC robot_NN navigation_NN ,_, in_IN which_WDT the_DT success_NN of_IN any_DT particular_JJ action_NN or_CC plan_NN can_MD not_RB be_VB guaranteed_VBN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Accordingly_RB ,_, dealing_VBG with_IN failure_NN is_VBZ fundamental_JJ to_TO agent_NN programming_NN ,_, and_CC is_VBZ an_DT important_JJ element_NN of_IN agent_NN characteristics_NNS such_JJ as_IN robustness_NN ,_, flexibility_NN ,_, and_CC persistence_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+In_IN agent_NN architectures_NNS inspired_VBN by_IN the_DT Belief-Desire-Intention_NNP -LRB-_-LRB- BDI_NNP -RRB-_-RRB- model_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, these_DT properties_NNS are_VBP often_RB characterized_VBN by_IN the_DT interactions_NNS between_IN beliefs_NNS ,_, goals_NNS ,_, and_CC plans_VBZ -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+#_# In_IN general_JJ ,_, an_DT agent_NN that_WDT wishes_VBZ to_TO achieve_VB a_DT particular_JJ set_NN of_IN tasks_NNS will_MD pursue_VB a_DT number_NN of_IN plans_NNS concurrently_RB ._.
+When_WRB failures_NNS occur_VBP ,_, the_DT choice_NN of_IN plans_NNS will_MD be_VB reviewed_VBN ._.
+This_DT may_MD involve_VB seeking_VBG alternative_NN plans_NNS for_IN a_DT particular_JJ task_NN ,_, re-scheduling_JJ tasks_NNS to_TO better_RBR comply_VB with_IN resource_NN constraints_NNS ,_, dropping_VBG some_DT tasks_NNS ,_, or_CC some_DT other_JJ decision_NN that_WDT will_MD increase_VB the_DT likelihood_NN of_IN success_NN -LSB-_-LRB- ##_CD ,_, ##_CD -RSB-_-RRB- ._.
+Failures_NNS can_MD occur_VB for_IN a_DT number_NN of_IN reasons_NNS ,_, and_CC it_PRP is_VBZ often_RB not_RB possible_JJ to_TO predict_VB these_DT in_IN advance_NN ,_, either_CC because_IN of_IN the_DT complexity_NN of_IN the_DT system_NN or_CC because_IN changes_NNS in_IN the_DT environment_NN invalidate_VB some_DT earlier_JJR decisions_NNS ._.
+Given_VBN this_DT need_NN for_IN deliberation_NN about_IN failed_VBD tasks_NNS or_CC plans_NNS ,_, failure_NN deliberation_NN is_VBZ commonly_RB built_VBN into_IN the_DT agent_NN ''_'' s_NNS execution_NN cycle_NN ._.
+Besides_IN dealing_VBG with_IN failure_NN ,_, an_DT important_JJ capability_NN of_IN an_DT intelligent_JJ agent_NN is_VBZ to_TO be_VB able_JJ to_TO abort_VB a_DT particular_JJ task_NN or_CC plan_NN ._.
+This_DT decision_NN may_MD be_VB due_JJ to_TO an_DT internal_JJ deliberation_NN -LRB-_-LRB- such_JJ as_IN the_DT agent_NN believing_VBG the_DT task_NN can_MD no_RB longer_RB be_VB achieved_VBN ,_, or_CC that_IN some_DT conflicting_JJ task_NN now_RB has_VBZ a_DT higher_JJR priority_NN -RRB-_-RRB- or_CC due_JJ to_TO an_DT external_JJ factor_NN -LRB-_-LRB- such_JJ as_IN another_DT agent_NN altering_VBG a_DT commitment_NN ,_, or_CC a_DT change_NN in_IN the_DT environment_NN -RRB-_-RRB- ._.
+Aborting_VBG a_DT task_NN or_CC plan_NN is_VBZ distinct_JJ from_IN its_PRP$ failure_NN ._.
+Failure_NN reflects_VBZ an_DT inability_NN to_TO perform_VB and_CC does_VBZ not_RB negate_VB the_DT need_NN to_TO perform_VB -_: for_IN example_NN ,_, a_DT reasonable_JJ response_NN to_TO failure_NN may_MD be_VB to_TO try_VB again_RB ._.
+In_IN contrast_NN ,_, aborting_VBG says_VBZ nothing_NN about_IN the_DT ability_NN to_TO perform_VB ;_: it_PRP merely_RB eliminates_VBZ the_DT need_NN ._.
+Failure_NN propagates_VBZ from_IN the_DT bottom_NN up_RB ,_, whereas_IN aborting_VBG propagates_VBZ from_IN the_DT top_NN down_RB ._.
+The_DT potential_NN for_IN concurrently_RB executing_VBG sub-plans_NNS introduces_VBZ different_JJ complexities_NNS for_IN aborting_VBG and_CC failure_NN ._.
+For_IN aborting_VBG ,_, it_PRP means_VBZ that_IN multiple_JJ concurrent_JJ sub-plans_NNS may_MD need_VB to_TO be_VB aborted_VBN as_IN the_DT abort_NN is_VBZ propagated_VBN down_RP ._.
+For_IN failure_NN ,_, it_PRP means_VBZ that_IN parallel-sibling_JJ plans_NNS may_MD need_VB to_TO be_VB aborted_VBN as_IN the_DT failure_NN is_VBZ propagated_VBN up_RP ._.
+There_EX has_VBZ been_VBN a_DT considerable_JJ amount_NN of_IN work_NN on_IN plan_NN failures_NNS -LRB-_-LRB- such_JJ as_IN detecting_VBG and_CC resolving_VBG resource_NN conflicts_NNS -LSB-_-LRB- ##_NNS ,_, ##_NN -RSB-_-RRB- -RRB-_-RRB- and_CC most_JJS agent_NN systems_NNS incorporate_VB some_DT notion_NN of_IN failure_NN handling_NN ._.
+However_RB ,_, there_EX has_VBZ been_VBN relatively_RB little_JJ work_NN on_IN the_DT development_NN of_IN abort_NN techniques_NNS beyond_IN simple_JJ dropping_VBG of_IN currently_RB intended_VBN plans_NNS and_CC tasks_NNS ,_, which_WDT does_VBZ not_RB deal_VB with_IN the_DT clean-up_JJ required_VBN ._.
+As_IN one_CD consequence_NN ,_, most_JJS agent_NN systems_NNS are_VBP quite_RB limited_VBN in_IN their_PRP$ treatment_NN of_IN the_DT situation_NN where_WRB one_CD branch_NN of_IN a_DT parallel_JJ construct_NN 1_CD One_CD can_MD consider_VB both_DT tasks_NNS to_TO be_VB performed_VBN and_CC goals_NNS to_TO achieve_VB a_DT certain_JJ state_NN of_IN the_DT world_NN ._.
+A_DT task_NN can_MD be_VB considered_VBN a_DT goal_NN of_IN achieving_VBG the_DT state_NN of_IN the_DT task_NN having_VBG been_VBN performed_VBN ,_, and_CC a_DT goal_NN can_MD be_VB considered_VBN a_DT task_NN of_IN bringing_VBG about_IN that_DT state_NN of_IN the_DT world_NN ._.
+We_PRP adopt_VBP the_DT latter_JJ view_NN and_CC use_NN task_NN to_TO also_RB refer_VB to_TO goals_NNS ._.
+8_CD 978-81-904262-7-5_CD -LRB-_-LRB- RPS_NN -RRB-_-RRB- c_NN ####_CD IFAAMAS_NNP fails_VBZ -LRB-_-LRB- common_JJ approaches_NNS include_VBP either_CC letting_VBG the_DT other_JJ branch_NN run_NN to_TO completion_NN unhindered_JJ or_CC dropping_VBG it_PRP completely_RB -RRB-_-RRB- ._.
+In_IN this_DT paper_NN we_PRP discuss_VBP in_IN detail_NN the_DT incorporation_NN of_IN abort_NN cleanup_NN methods_NNS into_IN the_DT agent_NN execution_NN cycle_NN ,_, providing_VBG a_DT unified_JJ approach_NN to_TO failure_NN and_CC abort_VB ._.
+A_DT key_JJ feature_NN of_IN our_PRP$ procedure-based_JJ approach_NN is_VBZ that_IN we_PRP allow_VBP each_DT plan_NN to_TO execute_VB some_DT particular_JJ code_NN on_IN a_DT failure_NN and_CC on_IN an_DT abort_NN ._.
+This_DT allows_VBZ a_DT plan_NN to_TO attempt_VB to_TO ensure_VB a_DT stable_JJ ,_, known_JJ state_NN ,_, and_CC possibly_RB to_TO recover_VB some_DT resources_NNS and_CC otherwise_RB clean_JJ up_RP before_IN exiting_VBG ._.
+Accordingly_RB ,_, a_DT central_JJ technical_JJ challenge_NN is_VBZ to_TO manage_VB the_DT orderly_JJ execution_NN of_IN the_DT appropriate_JJ clean-up_JJ code_NN ._.
+We_PRP show_VBP how_WRB aborts_VBZ can_MD be_VB smoothly_RB introduced_VBN into_IN a_DT BDI-style_JJ architecture_NN ,_, and_CC for_IN the_DT first_JJ time_NN we_PRP give_VBP an_DT operational_JJ semantics_NNS for_IN aborting_VBG in_IN the_DT abstract_JJ agent_NN language_NN CAN_NN -LSB-_-LRB- ##_CD ,_, ##_CD -RSB-_-RRB- ._.
+This_DT allows_VBZ us_PRP to_TO specify_VB an_DT appropriate_JJ level_NN of_IN detail_NN for_IN the_DT execution_NN model_NN ,_, without_IN focusing_VBG on_IN the_DT specific_JJ constructs_NNS of_IN any_DT one_CD agent_NN system_NN such_JJ as_IN JACK_NN -LSB-_-LRB- #_# -RSB-_-RRB- ,_, Jadex_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, Jason_NNP -LSB-_-LRB- #_# -RSB-_-RRB- ,_, or_CC SPARK_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+Our_PRP$ focus_NN is_VBZ on_IN a_DT single_JJ agent_NN ,_, complementary_JJ to_TO related_JJ work_NN that_WDT considers_VBZ exception_NN handling_NN for_IN single_JJ -_: and_CC multiagent_JJ systems_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, -LSB-_-LRB- ##_CD ,_, #_# ,_, #_# -RSB-_-RRB- -RRB-_-RRB- ._.
+This_DT paper_NN is_VBZ organized_VBN as_IN follows_VBZ ._.
+In_IN Section_NN #_# we_PRP give_VBP an_DT example_NN of_IN the_DT consequences_NNS of_IN aborting_VBG a_DT task_NN ,_, and_CC in_IN Section_NN #_# we_PRP discuss_VBP some_DT circumstances_NNS under_IN which_WDT aborts_VBZ should_MD occur_VB ,_, and_CC the_DT appropriate_JJ representation_NN and_CC invocation_NN procedures_NNS ._.
+In_IN Section_NN #_# we_PRP show_VBP how_WRB we_PRP can_MD use_VB CAN_NNP to_TO formally_RB specify_VB the_DT behaviour_NN of_IN an_DT aborted_JJ plan_NN ._.
+Section_NN #_# discusses_VBZ related_JJ work_NN ,_, and_CC in_IN Section_NN #_# we_PRP present_VBP our_PRP$ conclusions_NNS and_CC future_JJ work_NN ._.
+2_LS ._.
+MOTIVATING_VBG EXAMPLE_NNP Alice_NNP is_VBZ a_DT knowledge_NN worker_NN assisted_VBN by_IN a_DT learning_NN ,_, personal_JJ assistive_JJ agent_NN such_JJ as_IN CALO_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Alice_NNP plans_VBZ to_TO attend_VB the_DT IJCAI_NNP conference_NN later_RB in_IN the_DT year_NN ,_, and_CC her_PRP$ CALO_NN agent_NN adopts_VBZ the_DT task_NN of_IN Support_NN Meeting_VBG Submission_NN -LRB-_-LRB- SMS_NN -RRB-_-RRB- to_TO assist_VB her_PRP ._.
+CALO_NNP ''_'' s_VBZ plan_NN for_IN an_DT SMS_NN task_NN in_IN the_DT case_NN of_IN a_DT conference_NN submission_NN consists_VBZ of_IN the_DT following_VBG sub-tasks_NNS :_: 1_CD ._.
+Allocate_VB a_DT Paper_NN Number_NN -LRB-_-LRB- APN_NN -RRB-_-RRB- to_TO be_VB used_VBN for_IN administrative_JJ purposes_NNS in_IN the_DT company_NN ._.
+2_LS ._.
+Track_NNP Writing_VBG Abstract_JJ -LRB-_-LRB- TWA_NNP -RRB-_-RRB- :_: keep_VB track_NN of_IN Alice_NNP ''_'' s_VBZ progress_NN in_IN preparing_VBG an_DT abstract_JJ ._.
+3_LS ._.
+Apply_NN For_IN Clearance_NN -LRB-_-LRB- AFC_NN -RRB-_-RRB- for_IN publication_NN from_IN Alice_NNP ''_'' s_VBZ manager_NN based_VBN on_IN the_DT abstract_JJ and_CC conference_NN details_NNS ._.
+4_LS ._.
+Track_NNP Writing_VBG Paper_NN -LRB-_-LRB- TWP_NN -RRB-_-RRB- :_: keep_VB track_NN of_IN Alice_NNP ''_'' s_VBZ progress_NN in_IN writing_VBG the_DT paper_NN ._.
+5_CD ._.
+Handle_VB Paper_NNP Submission_NNP -LRB-_-LRB- HPS_NNP -RRB-_-RRB- :_: follow_VB company_NN internal_JJ procedures_NNS for_IN submitting_VBG a_DT paper_NN to_TO a_DT conference_NN ._.
+These_DT steps_NNS must_MD be_VB performed_VBN in_IN order_NN ,_, with_IN the_DT exception_NN of_IN steps_NNS 3_CD -LRB-_-LRB- AFC_NN -RRB-_-RRB- and_CC #_# -LRB-_-LRB- TWP_NN -RRB-_-RRB- ,_, which_WDT may_MD be_VB performed_VBN in_IN parallel_NN ._.
+Similarly_RB ,_, CALO_NNP can_MD perform_VB the_DT task_NN Apply_NN For_IN Clearance_NN -LRB-_-LRB- AFC_NN -RRB-_-RRB- by_IN a_DT plan_NN consisting_VBG of_IN :_: 1_LS ._.
+Send_VB Clearance_NNP Request_NNP -LRB-_-LRB- SCR_NNP -RRB-_-RRB- to_TO Alice_NNP ''_'' s_VBZ manager_NN ._.
+2_LS ._.
+Wait_VB For_IN Response_NN -LRB-_-LRB- WFR_NN -RRB-_-RRB- from_IN the_DT manager_NN ._.
+3_LS ._.
+Confirm_VB that_IN the_DT response_NN was_VBD positive_JJ ,_, and_CC fail_VBP otherwise_RB ._.
+Now_RB suppose_VB that_IN a_DT change_NN in_IN circumstances_NNS causes_VBZ Alice_NNP to_TO reconsider_VB her_PRP$ travel_NN plans_NNS while_IN she_PRP is_VBZ writing_VBG the_DT paper_NN ._.
+Alice_NNP will_MD no_RB longer_RB be_VB able_JJ to_TO attend_VB IJCAI_NNP ._.
+She_PRP therefore_RB instructs_VBZ her_PRP CALO_JJ agent_NN to_TO abort_VB the_DT SMS_NNP task_NN ._.
+Aborting_VBG the_DT task_NN implies_VBZ aborting_VBG both_CC the_DT SMS_NNP plan_NN and_CC the_DT AFC_NN subplan_NN ._.
+Aborting_VBG the_DT first_JJ plan_NN requires_VBZ CALO_NNP to_TO notify_VB the_DT paper_NN number_NN registry_NN that_IN the_DT allocated_VBN paper_NN number_NN is_VBZ obsolete_JJ ,_, which_WDT it_PRP can_MD achieve_VB by_IN the_DT Cancel_VB Paper_NNP Number_NNP -LRB-_-LRB- CPN_NNP -RRB-_-RRB- task_NN ._.
+#_# Aborting_VBG the_DT second_JJ plan_NN requires_VBZ CALO_NNP to_TO notify_VB Alice_NNP ''_'' s_VBZ manager_NN that_IN Alice_NNP no_RB longer_RB requires_VBZ clearance_NN for_IN publication_NN ,_, which_WDT CALO_NNP can_MD achieve_VB by_IN invoking_VBG the_DT Cancel_VB Clearance_NNP Request_NNP -LRB-_-LRB- CCR_NNP -RRB-_-RRB- task_NN ._.
+We_PRP note_VBP a_DT number_NN of_IN important_JJ observations_NNS from_IN the_DT example_NN ._.
+First_RB ,_, the_DT decision_NN to_TO abort_VB a_DT particular_JJ course_NN of_IN action_NN can_MD come_VB from_IN the_DT internal_JJ deliberations_NNS of_IN the_DT agent_NN -LRB-_-LRB- such_JJ as_IN reasoning_NN about_IN priorities_NNS in_IN a_DT conflict_NN over_IN resources_NNS -RRB-_-RRB- ,_, or_CC from_IN external_JJ sources_NNS -LRB-_-LRB- such_JJ as_IN another_DT agent_NN cancelling_VBG a_DT commitment_NN -RRB-_-RRB- ,_, as_IN in_IN this_DT example_NN ._.
+In_IN this_DT paper_NN we_PRP only_RB touch_VBP on_IN the_DT problem_NN of_IN determining_VBG whether_IN a_DT task_NN or_CC plan_NN should_MD be_VB aborted_VBN ,_, instead_RB concentrating_VBG on_IN determining_VBG the_DT appropriate_JJ actions_NNS once_RB this_DT decision_NN is_VBZ made_VBN ._.
+Hence_RB ,_, our_PRP$ objective_NN is_VBZ to_TO determine_VB how_WRB to_TO incorporate_VB aborting_VBG mechanisms_NNS into_IN the_DT standard_JJ execution_NN cycle_NN rather_RB than_IN determine_VB what_WP should_MD be_VB aborted_JJ and_CC when_WRB ._.
+Second_RB ,_, once_IN the_DT decision_NN is_VBZ made_VBN to_TO abort_VB the_DT attempt_NN to_TO submit_VB a_DT paper_NN ,_, there_EX are_VBP some_DT actions_NNS the_DT agent_NN should_MD take_VB ,_, such_JJ as_IN cancelling_VBG the_DT clearance_NN request_NN ._.
+In_IN other_JJ words_NNS ,_, aborting_VBG a_DT task_NN is_VBZ not_RB simply_RB a_DT matter_NN of_IN dropping_VBG the_DT task_NN and_CC associated_VBN active_JJ plans_NNS :_: there_EX are_VBP some_DT clean_JJ up_IN actions_NNS that_WDT may_MD need_VB to_TO be_VB done_VBN ._.
+This_DT is_VBZ similar_JJ to_TO the_DT case_NN for_IN failure_NN ,_, in_IN that_DT there_EX may_MD also_RB be_VB actions_NNS to_TO take_VB when_WRB a_DT task_NN or_CC plan_NN fails_VBZ ._.
+In_IN both_DT cases_NNS ,_, note_VBP that_IN it_PRP is_VBZ not_RB simply_RB a_DT matter_NN of_IN the_DT agent_NN undo-ing_JJ its_PRP$ actions_NNS to_TO date_NN ;_: indeed_RB ,_, this_DT may_MD be_VB neither_CC possible_JJ -LRB-_-LRB- since_IN the_DT agent_NN acts_VBZ in_IN a_DT situated_JJ world_NN and_CC its_PRP$ actions_NNS change_VBP world_NN state_NN -RRB-_-RRB- nor_CC desirable_JJ -LRB-_-LRB- depending_VBG on_IN the_DT semantics_NNS of_IN the_DT task_NN -RRB-_-RRB- ._.
+Rather_RB ,_, cleaning_VBG up_RP involves_VBZ compensation_NN via_IN forward_RB recovery_NN actions_NNS -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+Third_NNP ,_, there_EX is_VBZ a_DT distinction_NN between_IN aborting_VBG a_DT task_NN and_CC aborting_VBG a_DT plan_NN ._.
+In_IN the_DT former_JJ case_NN ,_, it_PRP is_VBZ clear_JJ that_IN all_DT plans_NNS being_VBG executed_VBN to_TO perform_VB the_DT task_NN should_MD be_VB aborted_VBN ;_: in_IN the_DT latter_JJ case_NN ,_, it_PRP may_MD be_VB that_IN there_EX are_VBP better_JJR alternatives_NNS to_TO the_DT current_JJ plan_NN and_CC one_CD of_IN these_DT should_MD be_VB attempted_VBN ._.
+Hence_RB ,_, plan_NN aborting_VBG or_CC failure_NN does_VBZ not_RB necessarily_RB lead_VB to_TO task_NN aborting_VBG or_CC failure_NN ._.
+Fourth_JJ ,_, given_VBN that_IN tasks_NNS may_MD contain_VB sub-tasks_NNS ,_, which_WDT may_MD contain_VB further_JJ sub-tasks_NNS ,_, it_PRP is_VBZ necessary_JJ for_IN a_DT parent_NN task_NN to_TO wait_VB until_IN its_PRP$ children_NNS have_VBP finished_VBN their_PRP$ abort_NN methods_NNS ._.
+This_DT is_VBZ the_DT source_NN of_IN one_CD of_IN the_DT technical_JJ challenges_NNS that_IN we_PRP address_VBP :_: determining_VBG the_DT precise_JJ sequence_NN of_IN actions_NNS once_RB a_DT parent_NN task_NN or_CC plan_NN is_VBZ aborted_VBN ._.
+3_LS ._.
+ABORTING_VBG TASKS_NNS AND_CC PLANS_VBZ As_IN we_PRP have_VBP alluded_VBD to_TO ,_, failure_NN and_CC aborting_VBG are_VBP related_JJ concepts_NNS ._.
+They_PRP both_DT cause_VBP the_DT execution_NN of_IN existing_VBG plans_NNS to_TO cease_VB and_CC ,_, consequentially_RB ,_, the_DT agent_NN to_TO reflect_VB over_IN its_PRP$ current_JJ tasks_NNS and_CC intentions_NNS ._.
+Failure_NN and_CC aborting_VBG ,_, however_RB ,_, differ_VBP in_IN the_DT way_NN they_PRP arise_VBP ._.
+In_IN the_DT case_NN of_IN failure_NN ,_, the_DT trigger_NN to_TO cease_VB execution_NN of_IN a_DT task_NN or_CC plan_NN comes_VBZ from_IN below_RB ,_, that_DT is_VBZ ,_, the_DT failure_NN of_IN sub-tasks_NNS or_CC lower-level_JJ plans_NNS ._.
+In_IN the_DT case_NN of_IN aborting_VBG ,_, the_DT trigger_NN comes_VBZ from_IN above_RB ,_, that_DT is_VBZ ,_, the_DT tasks_NNS and_CC the_DT parent_NN plans_VBZ that_IN initiated_VBN a_DT plan_NN ._.
+In_IN BDI-style_JJ systems_NNS such_JJ as_IN JACK_NNP and_CC SPARK_NNP ,_, an_DT agent_NN ''_'' s_NNS domain_NN knowledge_NN includes_VBZ a_DT pre-defined_JJ plan_NN library_NN of_IN plan_NN clauses_NNS ._.
+Each_DT plan_NN clause_NN has_VBZ a_DT plan_NN body_NN ,_, which_WDT is_VBZ a_DT program_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, combination_NN of_IN primitive_JJ actions_NNS ,_, sub-tasks_NNS ,_, etc_FW ._. -RRB-_-RRB-
+that_WDT can_MD be_VB executed_VBN in_IN response_NN to_TO a_DT task_NN or_CC other_JJ event_NN should_MD the_DT plan_NN clause_NN ''_'' s_NNS context_NN condition_NN be_VB satisfied_VBN ._.
+The_DT agent_NN selects_VBZ and_CC executes_VBZ instances_NNS of_IN plan_NN clauses_NNS to_TO perform_VB its_PRP$ tasks_NNS ._.
+There_EX can_MD be_VB more_JJR than_IN one_CD applicable_JJ plan_NN clause_NN and_CC ,_, in_IN the_DT event_NN that_IN one_CD fails_VBZ ,_, another_DT applicable_JJ one_CD may_MD be_VB attempted_VBN ._.
+Plans_NNS may_MD have_VB sub-tasks_NNS that_WDT must_MD succeed_VB 2_CD CALO_NNP needs_VBZ only_RB drop_VB the_DT TWA_NNP and_CC TWP_NNP tasks_NNS to_TO abort_VB them_PRP :_: for_IN the_DT sake_NN of_IN simplicity_NN we_PRP suppose_VBP no_DT explicit_JJ clean_JJ up_IN of_IN its_PRP$ internal_JJ state_NN is_VBZ necessary_JJ ._.
+The_DT Sixth_NNP Intl_NNP ._.
+Joint_NNP Conf_NNP ._.
+on_IN Autonomous_NNP Agents_NNPS and_CC Multi-Agent_NNP Systems_NNP -LRB-_-LRB- AAMAS_NNP ##_CD -RRB-_-RRB- #_# for_IN the_DT plan_NN to_TO succeed_VB ._.
+In_IN such_JJ systems_NNS ,_, a_DT plan_NN failure_NN occurs_VBZ if_IN one_CD of_IN the_DT actions_NNS or_CC sub-tasks_NNS within_IN the_DT plan_NN fails_VBZ ._.
+The_DT agent_NN ''_'' s_NNS action_NN upon_IN plan_NN failure_NN depends_VBZ on_IN its_PRP$ nature_NN :_: for_IN example_NN ,_, the_DT agent_NN may_MD declare_VB the_DT task_NN to_TO have_VB failed_VBN if_IN one_CD plan_NN has_VBZ been_VBN tried_VBN and_CC resulted_VBD in_IN failure_NN ,_, or_CC it_PRP may_MD retry_VB alternate_JJ plans_NNS and_CC declare_VB -LRB-_-LRB- indeed_RB ,_, must_MD declare_VB -RRB-_-RRB- task_NN failure_NN only_RB if_IN all_DT possible_JJ alternate_JJ plans_NNS to_TO perform_VB the_DT task_NN have_VBP been_VBN tried_VBN and_CC resulted_VBD in_IN failure_NN ._.
+Observe_VB that_IN ,_, while_IN task_NN failure_NN can_MD follow_VB from_IN plan_NN failure_NN or_CC a_DT sequence_NN of_IN plan_NN failures_NNS ,_, plan_NN failure_NN need_MD not_RB lead_VB to_TO task_NN failure_NN provided_VBD the_DT agent_NN can_MD successfully_RB complete_VB an_DT alternate_JJ plan_NN ._.
+Moreover_RB ,_, task_NN failure_NN can_MD also_RB arise_VB separately_RB from_IN plan_NN failure_NN ,_, if_IN the_DT agent_NN decides_VBZ to_TO abort_VB the_DT task_NN ._.
+Our_PRP$ approach_NN associates_VBZ an_DT abort-method_NN with_IN each_DT plan_NN ._.
+This_DT enables_VBZ the_DT programmer_NN to_TO specify_VB dedicated_JJ compensation_NN actions_NNS according_VBG to_TO how_WRB the_DT agent_NN is_VBZ attempting_VBG to_TO perform_VB the_DT task_NN ._.
+Note_VB that_IN our_PRP$ abort-methods_NNS can_MD be_VB arbitrary_JJ programs_NNS and_CC so_RB can_MD invoke_VB tasks_NNS that_WDT may_MD be_VB performed_VBN dynamically_RB in_IN the_DT usual_JJ BDI_NNP fashion_NN ,_, i_FW ._.
+e_LS ._.
+,_, the_DT clean-up_JJ is_VBZ not_RB limited_VBN to_TO executing_VBG a_DT predetermined_JJ set_NN of_IN actions_NNS ._.
+The_DT question_NN remains_VBZ which_WDT abort-method_NN should_MD be_VB invoked_VBN ,_, and_CC in_IN what_WP manner_NN ._.
+Given_VBN the_DT complexity_NN of_IN agent_NN action_NN spaces_NNS ,_, it_PRP is_VBZ not_RB possible_JJ nor_CC desirable_JJ to_TO enumerate_VB a_DT static_JJ set_NN of_IN rules_NNS ._.
+Rather_RB ,_, the_DT agent_NN will_MD invoke_VB its_PRP$ abort-methods_NNS dynamically_RB according_VBG to_TO the_DT state_NN of_IN execution_NN and_CC its_PRP$ own_JJ internal_JJ events_NNS ._.
+An_DT alternative_NN to_TO attaching_VBG an_DT abort-method_NN to_TO each_DT plan_NN is_VBZ to_TO attach_VB such_JJ methods_NNS to_TO each_DT atomic_JJ action_NN ._.
+We_PRP choose_VBP the_DT former_JJ because_IN :_: -LRB-_-LRB- #_# -RRB-_-RRB- action-level_JJ abort-methods_NNS would_MD incur_VB a_DT greater_JJR overhead_NN ,_, -LRB-_-LRB- #_# -RRB-_-RRB- plans_NNS are_VBP meant_VBN to_TO be_VB designed_VBN as_IN single_JJ cohesive_JJ units_NNS and_CC are_VBP the_DT unit_NN of_IN deliberation_NN in_IN BDI_NNP systems_NNS ,_, and_CC -LRB-_-LRB- #_# -RRB-_-RRB- the_DT cleanup_NN methods_NNS for_IN failure_NN in_IN current_JJ systems_NNS are_VBP attached_VBN to_TO plans_NNS ._.
+In_IN order_NN to_TO understand_VB how_WRB the_DT agent_NN ''_'' s_NNS abort_VBP processing_NN should_MD function_VB ,_, we_PRP consider_VBP three_CD situations_NNS where_WRB it_PRP is_VBZ sensible_JJ for_IN an_DT agent_NN to_TO consider_VB aborting_VBG some_DT of_IN its_PRP$ tasks_NNS and_CC plans_NNS :_: 1_CD ._.
+When_WRB a_DT task_NN succeeds_VBZ or_CC fails_VBZ because_IN of_IN an_DT external_JJ factor_NN other_JJ than_IN the_DT agent_NN itself_PRP ,_, the_DT plan_NN currently_RB executed_VBN to_TO perform_VB the_DT task_NN should_MD be_VB aborted_VBN ._.
+For_IN example_NN ,_, suppose_VBP company_NN policy_NN changes_NNS so_IN that_IN employees_NNS of_IN Alice_NNP ''_'' s_VBZ seniority_NN automatically_RB have_VBP clearance_NN for_IN publishing_VBG papers_NNS ._.
+Since_IN Alice_NNP now_RB has_VBZ clearance_NN for_IN publishing_VBG her_PRP$ paper_NN ,_, CALO_NNP can_MD abort_VB the_DT plan_NN for_IN Apply_NNP For_IN Clearance_NNP ._.
+In_IN doing_VBG so_RB it_PRP must_MD invoke_VB the_DT abort-method_NN ,_, in_IN this_DT case_NN thus_RB performing_VBG Cancel_VB Clearance_NNP Request_NNP ._.
+#_# 2_CD ._.
+When_WRB two_CD or_CC more_JJR sub-programs_NNS are_VBP executed_VBN in_IN parallel_NN ,_, if_IN one_CD fails_VBZ then_RB the_DT others_NNS should_MD be_VB aborted_VBN ,_, given_VBN that_IN the_DT failure_NN of_IN one_CD branch_NN leads_VBZ to_TO the_DT failure_NN of_IN the_DT overall_JJ task_NN ._.
+For_IN example_NN ,_, suppose_VBP that_IN part-way_NN through_IN writing_VBG the_DT paper_NN ,_, Alice_NNP realizes_VBZ that_IN there_EX is_VBZ a_DT fatal_JJ flaw_NN in_IN her_PRP$ results_NNS ,_, and_CC so_RB notifies_VBZ CALO_NNP that_IN she_PRP will_MD not_RB be_VB able_JJ to_TO complete_VB the_DT paper_NN by_IN the_DT deadline_NN ._.
+The_DT failure_NN of_IN the_DT Track_NNP Writing_VBG Paper_NNP task_NN should_MD cause_VB the_DT Apply_NNP For_IN Clearance_NNP task_NN being_VBG executed_VBN in_IN parallel_NN to_TO be_VB aborted_VBN ._.
+3_LS ._.
+When_WRB an_DT execution_NN event_NN alters_VBZ the_DT importance_NN of_IN an_DT existing_VBG task_NN or_CC intention_NN ,_, the_DT agent_NN should_MD deliberate_VB over_IN whether_IN the_DT existing_VBG plan_NN -LRB-_-LRB- s_NNS -RRB-_-RRB- should_MD continue_VB ._.
+For_IN example_NN ,_, suppose_VBP that_IN Alice_NNP tasks_NNS CALO_NNP with_IN a_DT new_JJ ,_, high-priority_JJ task_NN to_TO purchase_VB a_DT replacement_NN laptop_NN ,_, but_CC that_IN Alice_NNP lacks_VBZ enough_JJ funds_NNS to_TO both_DT purchase_NN the_DT laptop_NN and_CC to_TO attend_VB IJCAI_NNP ._.
+Reasoning_NN over_IN resource_NN requirements_NNS -LSB-_-LRB- ##_NNS ,_, ##_NN -RSB-_-RRB- will_MD cause_VB the_DT agent_NN to_TO realize_VB 3_CD If_IN there_EX is_VBZ any_DT difference_NN between_IN how_WRB to_TO abort_VB a_DT task_NN that_WDT is_VBZ externally_RB performed_VBN versus_CC how_WRB to_TO abort_VB one_CD that_WDT is_VBZ now_RB known_VBN to_TO be_VB impossible_JJ ,_, the_DT abort-method_NN can_MD detect_VB the_DT circumstances_NNS and_CC handle_VB the_DT situation_NN as_IN appropriate_JJ ._.
+that_IN it_PRP can_MD not_RB successfully_RB complete_JJ both_CC tasks_NNS ._.
+Given_VBN that_IN the_DT new_JJ task_NN has_VBZ greater_JJR importance_NN ,_, a_DT rational_JJ agent_NN will_MD evaluate_VB its_PRP$ best_JJS course_NN of_IN action_NN and_CC may_MD decide_VB to_TO abortor_NN at_IN least_JJS suspend_VB -_: the_DT existing_VBG task_NN of_IN submitting_VBG a_DT paper_NN and_CC intentions_NNS derived_VBN from_IN it_PRP -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+The_DT operational_JJ semantics_NNS we_PRP provide_VBP in_IN Section_NN #_# for_IN aborting_VBG tasks_NNS and_CC plans_NNS captures_VBZ the_DT first_JJ two_CD situations_NNS above_IN ._.
+The_DT third_JJ situation_NN involves_VBZ deliberating_VBG over_IN the_DT importance_NN of_IN a_DT task_NN ,_, which_WDT depends_VBZ on_IN various_JJ factors_NNS such_JJ as_IN task_NN priority_NN ._.
+Although_IN this_DT deliberation_NN is_VBZ beyond_IN the_DT scope_NN of_IN this_DT paper_NN ,_, it_PRP is_VBZ a_DT complementary_JJ topic_NN of_IN our_PRP$ future_JJ work_NN ._.
+Note_VB that_IN the_DT above_JJ situations_NNS apply_VBP to_TO achievement_NN goals_NNS ,_, for_IN which_WDT the_DT task_NN is_VBZ completed_VBN when_WRB a_DT particular_JJ state_NN of_IN the_DT world_NN is_VBZ brought_VBN about_RB -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, ensure_VB we_PRP have_VBP clearance_NN -RRB-_-RRB- ._.
+Different_JJ forms_NNS of_IN reasoning_NN apply_VB to_TO other_JJ goal_NN types_NNS -LSB-_-LRB- #_# -RSB-_-RRB- such_JJ as_IN maintenance_NN goals_NNS -LSB-_-LRB- #_# -RSB-_-RRB- ,_, where_WRB the_DT goal_NN is_VBZ satisfied_VBN by_IN maintaining_VBG a_DT state_NN of_IN the_DT world_NN for_IN some_DT period_NN of_IN time_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, maintain_VB $_$ ###_CD in_IN cash_NN -RRB-_-RRB- ._.
+Abort_NNP Method_NNP Representation_NNP The_NNP intent_NN of_IN aborting_VBG a_DT task_NN or_CC plan_NN is_VBZ that_IN the_DT task_NN or_CC plan_NN and_CC all_DT its_PRP$ children_NNS cease_VBP to_TO execute_VB ,_, and_CC that_IN appropriate_JJ clean-up_JJ methods_NNS are_VBP performed_VBN as_IN required_VBN ._.
+In_IN contrast_NN to_TO offline_JJ planning_NN systems_NNS ,_, BDI_NNP agents_NNS are_VBP situated_VBN :_: they_PRP perform_VBP online_JJ deliberation_NN and_CC their_PRP$ actions_NNS change_VBP the_DT state_NN of_IN the_DT world_NN ._.
+As_IN a_DT result_NN ,_, the_DT effects_NNS of_IN many_JJ actions_NNS can_MD not_RB be_VB simply_RB undone_VBN ._.
+Moreover_RB ,_, the_DT undo_VBP process_NN may_MD cause_VB adverse_JJ effects_NNS ._.
+Therefore_RB ,_, the_DT clean-up_JJ methods_NNS that_IN we_PRP specify_VBP are_VBP forward_RB recovery_NN procedures_NNS that_WDT attempt_VBP to_TO ensure_VB a_DT stable_JJ state_NN and_CC that_IN also_RB may_MD ,_, if_IN possible_JJ ,_, recover_VB resources_NNS ._.
+The_DT common_JJ plan_NN representation_NN in_IN BDI-style_JJ systems_NNS such_JJ as_IN JACK_NN and_CC SPARK_NN includes_VBZ a_DT failure-method_NN ,_, which_WDT is_VBZ the_DT designated_VBN clean-up_JJ method_NN invoked_VBN when_WRB the_DT plan_NN fails_VBZ ._.
+To_TO this_DT ,_, we_PRP add_VBP the_DT abort-method_NN ,_, which_WDT is_VBZ invoked_VBN if_IN the_DT plan_NN is_VBZ to_TO be_VB aborted_VBN ._.
+In_IN our_PRP$ example_NN ,_, the_DT abort-method_NN for_IN the_DT plan_NN for_IN Support_NN Meeting_VBG Submission_NN consists_VBZ of_IN invoking_VBG the_DT sub-task_JJ Cancel_VB Paper_NNP Number_NNP ._.
+The_DT abort-method_JJ need_NN not_RB explicitly_RB abort_VB Apply_NNP For_IN Clearance_NNP ,_, because_IN the_DT agent_NN will_MD invoke_VB the_DT abort-method_NN for_IN the_DT subtask_NN appropriately_RB ,_, as_IN we_PRP outline_VBP below_IN ._.
+The_DT assumption_NN here_RB is_VBZ that_IN ,_, like_IN the_DT failure-method_NN ,_, the_DT programmer_NN of_IN the_DT agent_NN system_NN has_VBZ the_DT opportunity_NN to_TO specify_VB a_DT sensible_JJ abort-method_NN that_WDT takes_VBZ into_IN consideration_NN the_DT point_NN in_IN the_DT plan_NN at_IN which_WDT the_DT abort_NN is_VBZ to_TO be_VB executed_VBN ._.
+For_IN any_DT plan_NN ,_, the_DT abort-method_NN is_VBZ optional_JJ :_: if_IN no_DT abort-method_NN is_VBZ specified_VBN ,_, the_DT agent_NN takes_VBZ no_DT specific_JJ action_NN for_IN this_DT plan_NN ._.
+However_RB ,_, the_DT agent_NN ''_'' s_NNS default_NN behavioural_JJ rules_NNS still_RB apply_VB ,_, for_IN example_NN ,_, whether_IN to_TO retry_VB an_DT alternate_JJ plan_NN for_IN the_DT parent_NN task_NN ._.
+Note_VB that_IN an_DT explicit_JJ representation_NN of_IN the_DT clean-up_JJ methods_NNS for_IN tasks_NNS is_VBZ not_RB required_VBN ,_, since_IN tasks_NNS are_VBP performed_VBN by_IN executing_VBG some_DT plan_NN or_CC plans_NNS ._.
+Hence_RB ,_, aborting_VBG a_DT task_NN means_VBZ aborting_VBG the_DT current_JJ plan_NN that_WDT is_VBZ executed_VBN to_TO perform_VB that_IN task_NN ,_, as_IN we_PRP next_JJ describe_VBP ._.
+Abort_NNP Method_NNP Invocation_NNP We_PRP now_RB informally_RB lay_VBD out_RP the_DT agent_NN ''_'' s_NNS action_NN upon_IN aborting_VBG plans_NNS and_CC tasks_NNS ._.
+When_WRB a_DT plan_NN P_NN is_VBZ aborted_VBN :_: 1_CD ._.
+Abort_VB each_DT sub-task_NN that_WDT is_VBZ an_DT active_JJ child_NN of_IN P_NN ._.
+An_DT active_JJ child_NN is_VBZ one_CD that_WDT was_VBD triggered_VBN by_IN P_NN and_CC is_VBZ currently_RB in_IN execution_NN ._.
+2_LS ._.
+When_WRB there_EX are_VBP no_RB more_RBR active_JJ children_NNS ,_, invoke_VB the_DT abort_NN method_NN of_IN plan_NN P_NN ._.
+3_LS ._.
+Indicate_VB a_DT plan_NN failure_NN to_TO TP_NN ,_, the_DT parent_NN task_NN of_IN P_NN ._.
+We_PRP note_VBP here_RB that_IN if_IN the_DT parent_NN task_NN TP_NN is_VBZ not_RB to_TO be_VB aborted_JJ then_RB the_DT agent_NN may_MD choose_VB another_DT applicable_JJ plan_NN to_TO satisfy_VB TP_NN ._.
+10_CD The_DT Sixth_NNP Intl_NNP ._.
+Joint_NNP Conf_NNP ._.
+on_IN Autonomous_NNP Agents_NNPS and_CC Multi-Agent_NNP Systems_NNP -LRB-_-LRB- AAMAS_NNP ##_CD -RRB-_-RRB- When_WRB a_DT task_NN -LRB-_-LRB- or_CC sub-task_JJ -RRB-_-RRB- T_NN is_VBZ aborted_VBN :_: 1_CD ._.
+Abort_VB the_DT current_JJ active_JJ plan_NN to_TO satisfy_VB T_NN -LRB-_-LRB- if_IN any_DT -RRB-_-RRB- ._.
+2_LS ._.
+When_WRB there_EX are_VBP no_RB more_RBR active_JJ child_NN processes_NNS ,_, drop_VB the_DT task_NN ._.
+The_DT agent_NN thus_RB no_RB longer_RBR pursues_VBZ T_NN ._.
+3_LS ._.
+Note_VB here_RB that_IN when_WRB the_DT current_JJ active_JJ plan_NN for_IN performing_VBG T_NN is_VBZ aborted_JJ ,_, no_DT other_JJ applicable_JJ plans_NNS to_TO perform_VB T_NN should_MD be_VB tried_VBN as_IN it_PRP is_VBZ the_DT task_NN that_WDT is_VBZ to_TO be_VB aborted_VBN ._.
+In_IN order_NN to_TO prevent_VB infinitely_RB cascading_VBG clean-up_JJ efforts_NNS ,_, we_PRP assume_VBP that_IN abort-methods_NNS will_MD never_RB be_VB aborted_VBN nor_CC fail_VBP ._.
+In_IN reality_NN ,_, however_RB ,_, an_DT abort-method_NN may_MD fail_VB ._.
+In_IN this_DT case_NN ,_, lacking_VBG a_DT more_RBR sophisticated_JJ handling_VBG mechanism_NN ,_, the_DT agent_NN simply_RB stops_VBZ executing_VBG the_DT failed_VBN abort-method_NN with_IN no_DT further_JJ deliberation_NN ._.
+The_DT assumption_NN we_PRP make_VBP is_VBZ thus_RB not_RB a_DT reflection_NN of_IN the_DT full_JJ complexity_NN of_IN reality_NN ,_, but_CC one_CD that_WDT is_VBZ pragmatic_JJ in_IN terms_NNS of_IN the_DT agent_NN execution_NN cycle_NN ;_: the_DT approach_NN to_TO failure-handling_NN of_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- makes_VBZ the_DT same_JJ assumption_NN ._.
+In_IN systems_NNS such_JJ as_IN SPARK_NN ,_, the_DT programmer_NN can_MD specify_VB an_DT alternative_JJ behaviour_NN for_IN a_DT failed_JJ failure_NN -_: or_CC abort-method_JJ by_IN means_NNS of_IN meta-level_JJ procedures_NNS ._.
+We_PRP also_RB assume_VBP that_IN failure_NN -_: and_CC abort-methods_NNS terminate_VBP in_IN finite_JJ time_NN ._.
+4_LS ._.
+OPERATIONAL_JJ SEMANTICS_NNS We_PRP provide_VBP the_DT semantics_NNS for_IN the_DT task_NN and_CC plan_NN failure_NN and_CC aborting_VBG processes_NNS outlined_VBN above_IN ._.
+We_PRP use_VBP the_DT CAN_NNP language_NN initially_RB defined_VBN in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- and_CC later_RB extended_VBD as_IN CANPLAN_NNP in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- to_TO include_VB a_DT planning_NN component_NN and_CC then_RB as_IN CANPLAN2_NN in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- to_TO improve_VB the_DT goal_NN adoption_NN and_CC dropping_VBG mechanisms_NNS ._.
+The_DT extensions_NNS also_RB simplified_VBD the_DT semantics_NNS in_IN the_DT earlier_JJR work_NN ._.
+We_PRP use_VBP some_DT of_IN these_DT simplifications_NNS for_IN providing_VBG a_DT brief_JJ summary_NN of_IN the_DT CAN_NNP language_NN in_IN Section_NN #_# ._.
+#_# ._.
+Following_VBG a_DT presentation_NN of_IN the_DT operational_JJ semantics_NNS of_IN our_PRP$ approach_NN in_IN Section_NN #_# ._.
+#_# ,_, in_IN Section_NN #_# ._.
+#_# we_PRP provide_VBP a_DT worked_VBN example_NN to_TO clarify_VB the_DT semantics_NNS that_IN we_PRP present_VBP ._.
+4_LS ._.
+#_# CAN_NNP Language_NNP CAN_NNP is_VBZ a_DT high-level_JJ agent_NN language_NN ,_, in_IN a_DT spirit_NN similar_JJ to_TO that_DT of_IN AgentSpeak_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- and_CC Kinny_NN ''_'' s_NNS -LSB-_-LRB- #_# -RSB-_-RRB- ,_, both_DT of_IN which_WDT attempt_NN to_TO extract_VB the_DT essence_NN of_IN a_DT class_NN of_IN implemented_VBN BDI_NN agent_NN systems_NNS ._.
+CAN_NNP provides_VBZ an_DT explicit_JJ goal_NN construct_NN that_WDT captures_VBZ both_CC the_DT declarative_JJ and_CC procedural_JJ aspects_NNS of_IN a_DT goal_NN ._.
+Goals_NNS are_VBP persistent_JJ in_IN CAN_NNP in_IN that_DT ,_, when_WRB a_DT plan_NN fails_VBZ ,_, another_DT applicable_JJ plan_NN is_VBZ attempted_VBN ._.
+This_DT equates_VBZ to_TO the_DT default_NN failure_NN handling_VBG mechanism_NN typically_RB found_VBN in_IN implemented_VBN BDI_NNP systems_NNS such_JJ as_IN JACK_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+In_IN practical_JJ systems_NNS ,_, tasks_NNS are_VBP typically_RB translated_VBN into_IN events_NNS that_WDT trigger_VBP the_DT execution_NN of_IN some_DT plans_NNS ._.
+This_DT is_VBZ also_RB true_JJ in_IN the_DT CAN_NNP language_NN ,_, but_CC ,_, in_IN order_NN to_TO maintain_VB the_DT persistence_NN of_IN goals_NNS ,_, a_DT goal_NN construct_NN is_VBZ introduced_VBN ._.
+This_DT is_VBZ denoted_VBN by_IN Goal_NNP `_`` s_NNS ,_, P_NN ,_, f_FW ,_, where_WRB s_NNS is_VBZ the_DT success_NN condition_NN that_WDT determines_VBZ when_WRB the_DT goal_NN is_VBZ considered_VBN achieved_VBN ,_, f_FW is_VBZ a_DT fail_VBP condition_NN under_IN which_WDT it_PRP is_VBZ considered_VBN the_DT goal_NN is_VBZ no_RB longer_RB achievable_JJ or_CC relevant_JJ ,_, and_CC P_NN is_VBZ a_DT program_NN for_IN achieving_VBG the_DT goal_NN ,_, which_WDT will_MD be_VB aborted_JJ once_RB s_NNS or_CC f_FW become_VBN true_JJ ._.
+An_DT agent_NN ''_'' s_NNS behavior_NN is_VBZ specified_VBN by_IN a_DT plan_NN library_NN ,_, denoted_VBN by_IN ,_, that_IN consists_VBZ of_IN a_DT collection_NN of_IN plan_NN clauses_NNS of_IN the_DT form_NN e_SYM :_: c_NN P_NN ,_, where_WRB e_SYM is_VBZ an_DT event_NN ,_, c_NN is_VBZ a_DT context_NN condition_NN -LRB-_-LRB- a_DT logical_JJ formula_NN over_IN the_DT agent_NN ''_'' s_NNS beliefs_NNS that_WDT must_MD be_VB true_JJ in_IN order_NN for_IN the_DT plan_NN to_TO be_VB applicable_JJ -RRB-_-RRB- #_# and_CC P_NN is_VBZ the_DT plan_NN body_NN ._.
+The_DT plan_NN body_NN is_VBZ a_DT program_NN that_WDT is_VBZ defined_VBN recursively_RB as_IN follows_VBZ :_: P_NN :_: :_: =_JJ act_NN |_NN +_CC b_NN |_NN b_NN |_CD ?_.
+|_NN !_.
+e_LS |_SYM P1_NN ;_: P2_NN |_CD P1_NN P2_NN |_CD Goal_NNP `_`` s_NNS ,_, P1_NN ,_, f_FW |_FW P1_NN P2_NN |_CD -LCB-_-LRB- #_# :_: P1_NN ,_, ..._: ,_, n_NN :_: Pn_NN -RCB-_-RRB- |_CD nil_NN 4_CD An_DT omitted_VBN c_NN is_VBZ equivalent_JJ to_TO true_JJ ._.
+=_JJ -LCB-_-LRB- i_FW :_: Pi_NN |_NN e_SYM :_: i_LS Pi_NN =_JJ mgu_NN -LRB-_-LRB- e_SYM ,_, e_LS -RRB-_-RRB- -RCB-_-RRB- B_NN ,_, !_.
+e_LS B_NN ,_, Event_NN i_FW :_: Pi_NN B_NN |_NN =_JJ i_FW B_NN ,_, B_NN ,_, Pi_NNP \_CD -LCB-_-LRB- i_FW :_: Pi_NN -RCB-_-RRB- Select_NNP B_NNP ,_, P1_NN B_NN ,_, -LRB-_-LRB- P1_NN P2_NN -RRB-_-RRB- B_NN ,_, P2_NN fail_VBP B_NN ,_, P1_NN B_NN ,_, P1_NN B_NN ,_, -LRB-_-LRB- P1_NN ;_: P2_NN -RRB-_-RRB- B_NN ,_, -LRB-_-LRB- P_NN ;_: P2_NN -RRB-_-RRB- Sequence_NN B_NN ,_, P1_NN B_NN ,_, P_NN B_NN ,_, -LRB-_-LRB- P1_NN P2_NN -RRB-_-RRB- B_NN ,_, -LRB-_-LRB- P_NN P2_NN -RRB-_-RRB- Parallel1_NN B_NN ,_, P2_NN B_NN ,_, P_NN B_NN ,_, -LRB-_-LRB- P1_NN P2_NN -RRB-_-RRB- B_NN ,_, -LRB-_-LRB- P_NN P1_NN -RRB-_-RRB- Parallel2_NN Figure_NN #_# :_: Operational_JJ rules_NNS of_IN CAN_NNP ._.
+where_WRB P1_NN ,_, ..._: ,_, Pn_NN are_VBP themselves_PRP programs_NNS ,_, act_NN is_VBZ a_DT primitive_JJ action_NN that_WDT is_VBZ not_RB further_JJ specified_VBN ,_, and_CC +_CC b_NN and_CC b_NN are_VBP operations_NNS to_TO add_VB and_CC delete_VB beliefs_NNS ._.
+The_DT belief_NN base_NN contains_VBZ ground_NN belief_NN atoms_NNS in_IN the_DT form_NN of_IN first-order_JJ relations_NNS but_CC could_MD be_VB orthogonally_RB extended_VBN to_TO other_JJ logics_NNS ._.
+It_PRP is_VBZ assumed_VBN that_IN well-defined_JJ operations_NNS are_VBP provided_VBN to_TO check_VB whether_IN a_DT condition_NN follows_VBZ from_IN a_DT belief_NN set_NN -LRB-_-LRB- B_NN |_NN =_JJ c_NN -RRB-_-RRB- ,_, to_TO add_VB a_DT belief_NN to_TO a_DT belief_NN set_NN -LRB-_-LRB- B_NN -LCB-_-LRB- b_NN -RCB-_-RRB- -RRB-_-RRB- ,_, and_CC to_TO delete_VB a_DT belief_NN from_IN a_DT belief_NN set_NN -LRB-_-LRB- B_NN \_CD -LCB-_-LRB- b_NN -RCB-_-RRB- -RRB-_-RRB- ._. ?_.
+is_VBZ a_DT test_NN for_IN condition_NN ,_, and_CC !_.
+e5_NN is_VBZ an_DT event6_NN that_WDT is_VBZ posted_VBN from_IN within_IN the_DT program_NN ._.
+The_DT compound_NN constructs_NNS are_VBP sequencing_NN -LRB-_-LRB- P1_NN ;_: P2_NN -RRB-_-RRB- ,_, parallel_JJ execution_NN -LRB-_-LRB- P1_NN P2_NN -RRB-_-RRB- ,_, and_CC goals_NNS -LRB-_-LRB- Goal_NNP `_`` s_NNS ,_, P_NN ,_, f_LS -RRB-_-RRB- ._.
+The_DT above_JJ defines_VBZ the_DT user_NN language_NN ._.
+In_IN addition_NN ,_, a_DT set_NN of_IN auxiliary_JJ compound_NN forms_NNS are_VBP used_VBN internally_RB when_WRB assigning_VBG semantics_NNS to_TO constructs_NNS ._.
+nil_NN is_VBZ the_DT basic_JJ -LRB-_-LRB- terminating_VBG -RRB-_-RRB- program_NN ._.
+When_WRB an_DT event_NN matches_VBZ a_DT set_NN of_IN plan_NN clauses_NNS these_DT are_VBP collected_VBN into_IN a_DT set_NN of_IN guarded_VBN alternatives_NNS -LRB-_-LRB- c1_NN :_: P1_NN ,_, ..._: ,_, cn_NN :_: Pn_NN -RRB-_-RRB- ._.
+The_DT other_JJ auxiliary_JJ compound_NN form_NN ,_, ,_, is_VBZ a_DT choice_NN operator_NN dual_JJ to_TO sequencing_NN :_: P1_NN P2_NN executes_VBZ P1_NN and_CC then_RB executes_VBZ P2_NN only_RB if_IN P1_NN failed_VBD ._.
+A_DT summary_NN of_IN the_DT operational_JJ semantics_NNS for_IN CAN_NNP in_IN line_NN with_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- and_CC following_VBG some_DT of_IN the_DT simplifications_NNS of_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- is_VBZ as_IN follows_VBZ ._.
+A_DT basic_JJ configuration_NN S_NN =_JJ B_NN ,_, G_NN ,_, consists_VBZ of_IN the_DT current_JJ belief_NN base_NN B_NN of_IN the_DT agent_NN ,_, the_DT current_JJ set_NN of_IN goals_NNS G_NN being_VBG pursued_VBN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, set_NN of_IN formulae_NNS -RRB-_-RRB- ,_, and_CC the_DT current_JJ program_NN P_NN being_VBG executed_VBN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, the_DT current_JJ intention_NN -RRB-_-RRB- ._.
+A_DT transition_NN S0_NN S1_NN specifies_VBZ that_IN executing_VBG S0_NN for_IN a_DT single_JJ step_NN yields_NNS configuration_NN S1_NN ._.
+S0_NN Sn_NN is_VBZ the_DT usual_JJ reflexive_JJ transitive_JJ closure_NN of_IN :_: Sn_NN is_VBZ the_DT result_NN of_IN one_CD or_CC more_JJR singlestep_NN transitions_NNS ._.
+A_DT derivation_NN rule_NN S_NN Sr_NNP S_NNP Sr_NNP consists_VBZ of_IN a_DT -LRB-_-LRB- possibly_RB empty_JJ -RRB-_-RRB- set_NN of_IN premises_NNS ,_, which_WDT are_VBP transitions_NNS together_RB with_IN some_DT auxiliary_JJ conditions_NNS -LRB-_-LRB- numerator_NN -RRB-_-RRB- ,_, and_CC a_DT single_JJ transition_NN conclusion_NN derivable_NN from_IN these_DT premises_NNS -LRB-_-LRB- denominator_NN -RRB-_-RRB- ._.
+Figure_NNP #_# gives_VBZ some_DT of_IN the_DT operational_JJ rules_NNS ._.
+The_DT Event_NN rule_NN handles_VBZ task_NN events_NNS by_IN collecting_VBG all_DT relevant_JJ plan_NN clauses_NNS for_IN the_DT event_NN in_IN question_NN :_: for_IN each_DT plan_NN clause_NN e_SYM :_: i_FW Pi_FW ,_, if_IN there_EX is_VBZ a_DT most_RBS general_JJ unifier_NN ,_, =_JJ mgu_NN -LRB-_-LRB- e_SYM ,_, e_LS -RRB-_-RRB- of_IN e_SYM and_CC the_DT event_NN in_IN 5_CD Where_WRB it_PRP is_VBZ obvious_JJ that_IN e_LS is_VBZ an_DT event_NN we_PRP will_MD sometimes_RB exclude_VB the_DT exclamation_JJ mark_NN for_IN readability_NN ._.
+6_CD Typically_RB an_DT achievement_NN goal_NN ._.
+The_DT Sixth_NNP Intl_NNP ._.
+Joint_NNP Conf_NNP ._.
+on_IN Autonomous_NNP Agents_NNPS and_CC Multi-Agent_NNP Systems_NNP -LRB-_-LRB- AAMAS_NNP ##_CD -RRB-_-RRB- ##_NN B_NN |_NN =_JJ s_NNS B_NN ,_, Goal_NNP `_`` s_NNS ,_, P_NN ,_, f_FW B_NN ,_, true_JJ Gs_NN B_NN |_NN =_JJ f_FW B_NN ,_, Goal_NNP `_`` s_NNS ,_, P_NN ,_, f_FW B_NN ,_, fail_VBP Gf_NN P_NN =_JJ Goal_NNP `_`` s_NNS ,_, P_NN ,_, f_FW P_NN =_JJ P1_NN P2_NN B_NN |_NN =_JJ s_NNS f_LS B_NN ,_, P_NN B_NN ,_, Goal_NNP `_`` s_NNS ,_, P_NN P_NN ,_, f_FW GI_FW P_NN =_JJ P1_NN P2_NN B_NN |_NN =_JJ s_NNS f_LS B_NN ,_, P1_NN B_NN ,_, P_NN B_NN ,_, Goal_NNP `_`` s_NNS ,_, P_NN ,_, f_FW B_NN ,_, Goal_NNP `_`` s_NNS ,_, P_NN P2_NN ,_, f_FW GS_NN P_NN =_JJ P1_NN P2_NN B_NN |_NN =_JJ s_NNS f_LS P1_NN -LCB-_-LRB- true_JJ ,_, fail_VBP -RCB-_-RRB- B_NN ,_, Goal_NNP `_`` s_NNS ,_, P_NN ,_, f_FW B_NN ,_, Goal_NNP `_`` s_NNS ,_, P2_NN P2_NN ,_, f_FW GR_NN Figure_NN #_# :_: Rules_NNS for_IN goals_NNS in_IN CAN_NNP ._.
+question_NN ,_, then_RB the_DT rule_NN constructs_NNS a_DT guarded_VBN alternative_NN i_FW :_: Pi_NN ._.
+The_DT Select_NNP rule_NN then_RB selects_VBZ one_CD applicable_JJ plan_NN body_NN from_IN a_DT set_NN of_IN -LRB-_-LRB- remaining_VBG -RRB-_-RRB- relevant_JJ alternatives_NNS :_: program_NN P_NN states_VBZ that_IN program_NN P_NN should_MD be_VB tried_VBN first_RB ,_, falling_VBG back_RB to_TO the_DT remaining_VBG alternatives_NNS ,_, \_CD P_NN ,_, if_IN necessary_JJ ._.
+This_DT rule_NN and_CC the_DT fail_VBP rule_NN together_RB are_VBP used_VBN for_IN failure_NN handling_NN :_: if_IN the_DT current_JJ program_NN Pi_NN from_IN a_DT plan_NN clause_NN for_IN a_DT task_NN fails_VBZ ,_, rule_NN fail_VBP is_VBZ applied_VBN first_RB ,_, and_CC then_RB if_IN possible_JJ ,_, rule_NN Select_NNP will_MD choose_VB another_DT applicable_JJ alternative_NN for_IN the_DT task_NN if_IN one_CD exists_VBZ ._.
+Rule_NN Sequence_NN handles_VBZ sequencing_NN of_IN programs_NNS in_IN the_DT usual_JJ way_NN ._.
+Rules_NNS Parallel1_NN and_CC Parallel2_NN define_VBP the_DT possible_JJ interleaving_NN when_WRB executing_VBG two_CD programs_NNS in_IN parallel_NN ._.
+Figure_NNP #_# gives_VBZ simplified_VBN rules_NNS for_IN dealing_VBG with_IN goals_NNS ,_, in_IN line_NN with_IN those_DT presented_VBN in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ._.
+The_DT first_JJ rule_NN states_NNS that_IN a_DT goal_NN succeeds_VBZ when_WRB s_NNS become_VBP true_JJ ;_: the_DT second_JJ rule_NN states_NNS that_IN a_DT goal_NN fails_VBZ when_WRB f_SYM become_VB true_JJ ._.
+The_DT third_JJ rule_NN GI_NN initializes_VBZ the_DT execution_NN of_IN a_DT goal-program_NN by_IN updating_VBG the_DT goal_NN base_NN and_CC setting_VBG the_DT program_NN in_IN the_DT goal_NN to_TO P_NN P_NN ;_: the_DT first_JJ P_NN is_VBZ to_TO be_VB executed_VBN and_CC the_DT second_JJ P_NN is_VBZ used_VBN to_TO keep_VB track_NN of_IN the_DT original_JJ program_NN for_IN the_DT goal_NN ._.
+The_DT fourth_JJ rule_NN GS_NN executes_VBZ a_DT single_JJ step_NN of_IN the_DT goal-program_NN ._.
+The_DT final_JJ rule_NN GR_NN restarts_VBZ the_DT original_JJ program_NN -LRB-_-LRB- encoded_VBN as_IN P2_NN of_IN pair_NN P1_NN P2_NN -RRB-_-RRB- whenever_WRB the_DT current_JJ program_NN is_VBZ finished_VBN but_CC the_DT desired_VBN and_CC still_RB possible_JJ goal_NN has_VBZ not_RB yet_RB been_VBN achieved_VBN ._.
+4_LS ._.
+#_# Aborting_VBG Intentions_NNS and_CC Handling_VBG Failure_NN We_PRP next_IN introduce_VB the_DT ability_NN to_TO specify_VB handler_NN programs_NNS ,_, in_IN the_DT form_NN of_IN failure_NN -_: and_CC abort-methods_NNS ,_, that_DT deal_NN with_IN the_DT clean-up_JJ required_VBN when_WRB a_DT given_VBN program_NN respectively_RB fails_VBZ or_CC is_VBZ aborted_VBN ._.
+We_PRP do_VBP not_RB associate_JJ failure_NN -_: and_CC abort_VB -_: methods_NNS with_IN plan_NN clauses_NNS or_CC with_IN tasks_NNS -LRB-_-LRB- events_NNS -RRB-_-RRB- ,_, but_CC rather_RB we_PRP introduce_VB a_DT new_JJ program_NN construct_NN that_WDT specifies_VBZ failure_NN -_: and_CC abort_VB -_: methods_NNS for_IN an_DT arbitrary_JJ program_NN ._.
+The_DT FAb_NN -LRB-_-LRB- P_NN ,_, PF_NN ,_, PA_NN -RRB-_-RRB- construct_NN executes_VBZ the_DT program_NN P_NN ._.
+Should_MD P_NN fail_VB ,_, it_PRP executes_VBZ the_DT failure_NN handling_VBG program_NN PF_NN ;_: should_MD P_NN need_VB to_TO be_VB aborted_VBN ,_, it_PRP executes_VBZ the_DT abort_NN handling_VBG program_NN PA_NN ._.
+Thus_RB to_TO add_VB failure_NN -_: and_CC abort_VB -_: methods_NNS PF_NN and_CC PA_NN to_TO a_DT plan_NN clause_NN e_SYM :_: c_NN P_NN ,_, we_PRP write_VBP e_SYM :_: c_NN FAb_NN -LRB-_-LRB- P_NN ,_, PF_NN ,_, PA_NN -RRB-_-RRB- ._.
+With_IN the_DT introduction_NN of_IN the_DT ability_NN to_TO abort_VB programs_NNS ,_, we_PRP modify_VBP the_DT parallel_JJ construct_NN to_TO allow_VB the_DT failure_NN of_IN one_CD branch_NN to_TO abort_VB the_DT other_JJ ._.
+We_PRP must_MD take_VB into_IN consideration_NN the_DT possible_JJ existence_NN of_IN abort-methods_NNS in_IN the_DT aborted_JJ branch_NN ._.
+Similarly_RB ,_, with_IN the_DT Goal_NNP construct_NN we_PRP can_MD no_RB longer_RB completely_RB abandon_VB the_DT program_NN the_DT goal_NN contains_VBZ as_RB soon_RB as_IN the_DT success_NN or_CC failure_NN condition_NN holds_VBZ ;_: we_PRP must_MD now_RB take_VB into_IN consideration_NN the_DT existence_NN of_IN any_DT abort-methods_NNS applicable_JJ to_TO the_DT program_NN ._.
+We_PRP provide_VBP the_DT semantics_NNS of_IN an_DT augmented_JJ agent_NN language_NN containing_VBG the_DT FAb_NNP construct_NN by_IN defining_VBG a_DT source_NN transformation_NN ,_, similar_JJ to_TO macro-expansion_NN ,_, that_WDT maps_VBZ a_DT plan_NN library_NN containing_VBG the_DT FAb_NN -LRB-_-LRB- P_NN ,_, PF_NN ,_, PA_NN -RRB-_-RRB- construct_NN into_IN -LRB-_-LRB- almost_RB -RRB-_-RRB- standard_JJ CAN_NNP ._.
+The_DT one_CD non-standard_JJ extension_NN to_TO CAN_NNP is_VBZ a_DT wait-until-condition_JJ construct_NN ._.
+We_PRP explain_VBP this_DT simple_JJ modification_NN of_IN the_DT parallel_JJ construct_NN below_IN when_WRB we_PRP come_VBP to_TO translation_NN of_IN the_DT Goal_NNP construct_NN ._.
+First_RB we_PRP describe_VBP the_DT general_JJ nature_NN of_IN the_DT source_NN transformation_NN ,_, which_WDT proves_VBZ to_TO be_VB quite_RB simple_JJ for_IN most_JJS of_IN the_DT language_NN constructs_NNS ,_, and_CC then_RB we_PRP concentrate_VBP on_IN the_DT three_CD more_JJR complex_JJ cases_NNS :_: the_DT FAb_NNP ,_, parallel_NN ,_, and_CC Goal_NNP constructs_NNS ._.
+A_DT key_JJ issue_NN is_VBZ that_IN the_DT FAb_NN constructs_NNS may_MD be_VB nested_JJ ,_, either_CC directly_RB or_CC indirectly_RB ._.
+Let_VB us_PRP call_VB each_DT instantiation_NN of_IN the_DT construct_NN at_IN execution_NN time_NN a_DT possible_JJ abort_NN point_NN -LRB-_-LRB- pap_NN -RRB-_-RRB- ._.
+Where_WRB these_DT constructs_NNS are_VBP nested_JJ ,_, it_PRP is_VBZ important_JJ that_IN before_IN the_DT failure_NN -_: or_CC abort-method_NN of_IN a_DT parent_NN pap_NN is_VBZ executed_VBN ,_, the_DT failure_NN -_: or_CC abort-methods_JJ programs_NNS of_IN the_DT children_NNS paps_NNS are_VBP executed_VBN first_RB ,_, as_IN described_VBN earlier_RBR in_IN Section_NNP #_# ._.
+The_DT need_NN to_TO coordinate_VB the_DT execution_NN of_IN the_DT abort-methods_NNS of_IN nested_JJ paps_NNS requires_VBZ that_IN there_EX be_VB some_DT way_NN to_TO identify_VB the_DT parents_NNS and_CC children_NNS of_IN a_DT particular_JJ pap_NN ._.
+We_PRP achieve_VBP this_DT as_IN part_NN of_IN the_DT source_NN transformation_NN by_IN explicitly_RB keeping_VBG track_NN of_IN the_DT context_NN of_IN execution_NN as_IN an_DT extra_JJ parameter_NN on_IN the_DT events_NNS and_CC an_DT extra_JJ variable_NN within_IN each_DT plan_NN body_NN ._.
+#_# The_DT source_NN transformation_NN replaces_VBZ each_DT plan_NN clause_NN of_IN the_DT form_NN e_SYM :_: c_NN P_NN with_IN a_DT plan_NN clause_NN e_SYM -LRB-_-LRB- v_LS -RRB-_-RRB- :_: c_NN v_LS -LRB-_-LRB- P_NN -RRB-_-RRB- where_WRB v_LS is_VBZ a_DT free_JJ variable_NN ,_, not_RB previously_RB present_JJ in_IN the_DT plan_NN clause_NN ._.
+This_DT variable_NN is_VBZ used_VBN to_TO keep_VB track_NN of_IN the_DT context_NN of_IN execution_NN ._.
+The_DT value_NN of_IN the_DT context_NN variable_NN is_VBZ a_DT list_NN of_IN identifiers_NNS ,_, where_WRB each_DT new_JJ pap_NN is_VBZ represented_VBN by_IN prepending_VBG a_DT new_JJ identifier_NN to_TO the_DT context_NN ._.
+For_IN example_NN ,_, if_IN the_DT identifiers_NNS are_VBP integers_NNS ,_, the_DT context_NN of_IN one_CD pap_NN may_MD be_VB represented_VBN by_IN a_DT list_NN -LSB-_-LRB- ##_CD ,_, #_# -RSB-_-RRB- and_CC the_DT context_NN introduced_VBN by_IN a_DT new_JJ pap_NN may_MD be_VB represented_VBN by_IN -LSB-_-LRB- ##_CD ,_, ##_CD ,_, #_# -RSB-_-RRB- ._.
+We_PRP will_MD refer_VB to_TO paps_NNS by_IN the_DT context_NN rather_RB than_IN by_IN the_DT new_JJ identifier_NN added_VBD ,_, e_LS ._.
+g_NN ._.
+,_, by_IN -LSB-_-LRB- ##_CD ,_, ##_CD ,_, #_# -RSB-_-RRB- not_RB ##_CD ._.
+This_DT enables_VBZ us_PRP to_TO equate_VB the_DT ancestor_NN relationship_NN between_IN paps_NNS with_IN the_DT list_NN suffix_NN relationship_NN on_IN the_DT relevant_JJ contexts_NNS ,_, i_FW ._.
+e_LS ._.
+,_, v_LS is_VBZ an_DT ancestor_NN of_IN v_LS if_IN and_CC only_RB if_IN v_LS is_VBZ a_DT suffix_NN of_IN v_LS ._.
+For_IN most_JJS CAN_NNS constructs_NNS ,_, the_DT context_NN variable_NN is_VBZ unused_JJ or_CC passed_VBN unchanged_JJ :_: v_LS -LRB-_-LRB- act_NN -RRB-_-RRB- =_JJ act_NN v_LS -LRB-_-LRB- +_CC b_NN -RRB-_-RRB- =_JJ +_CC b_NN v_LS -LRB-_-LRB- b_NN -RRB-_-RRB- =_JJ b_NN v_LS -LRB-_-LRB- nil_NN -RRB-_-RRB- =_JJ nil_NN v_LS -LRB-_-LRB- !_.
+e_LS -RRB-_-RRB- =_JJ !_.
+e_LS -LRB-_-LRB- v_LS -RRB-_-RRB- v_LS -LRB-_-LRB- P1_NN ;_: P2_NN -RRB-_-RRB- =_JJ v_LS -LRB-_-LRB- P1_NN -RRB-_-RRB- ;_: v_LS -LRB-_-LRB- P2_NN -RRB-_-RRB- v_LS -LRB-_-LRB- P1_NN P2_NN -RRB-_-RRB- =_JJ v_LS -LRB-_-LRB- P1_NN -RRB-_-RRB- v_LS -LRB-_-LRB- P2_NN -RRB-_-RRB- v_LS -LRB-_-LRB- #_# :_: P1_NN ,_, ..._: ,_, n_NN :_: Pn_NN -RRB-_-RRB- =_JJ #_# :_: v_LS -LRB-_-LRB- P1_NN -RRB-_-RRB- ,_, ..._: ,_, n_NN :_: v_LS -LRB-_-LRB- Pn_NN -RRB-_-RRB- It_PRP remains_VBZ to_TO specify_VB the_DT transformation_NN v_LS -LRB-_-LRB- -RRB-_-RRB- in_IN three_CD cases_NNS :_: the_DT FAb_NNP ,_, parallel_NN ,_, and_CC Goal_NNP constructs_NNS ._.
+These_DT are_VBP more_RBR complex_JJ in_IN that_IN the_DT transformed_VBN source_NN needs_VBZ to_TO create_VB a_DT new_JJ pap_NN identifier_NN dynamically_RB ,_, for_IN use_NN as_IN a_DT new_JJ context_NN within_IN the_DT construct_NN ,_, and_CC to_TO keep_VB track_NN of_IN when_WRB the_DT pap_NN is_VBZ active_JJ -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, currently_RB in_IN execution_NN -RRB-_-RRB- by_IN adding_VBG and_CC removing_VBG beliefs_NNS about_IN the_DT context_NN ._.
+Let_VB us_PRP introduce_VB the_DT primitive_JJ action_NN prependID_NN -LRB-_-LRB- v_LS ,_, v_LS -RRB-_-RRB- that_WDT creates_VBZ a_DT new_JJ pap_NN identifier_NN and_CC prepends_VBZ it_PRP to_TO list_VB v_LS giving_VBG list_NN v_LS ._.
+We_PRP also_RB introduce_VB the_DT following_VBG predicates_NNS :_: a_DT -LRB-_-LRB- v_LS -RRB-_-RRB- -_: the_DT pap_NN v_LS is_VBZ currently_RB active_JJ ._.
+abort_NN -LRB-_-LRB- v_LS -RRB-_-RRB- -_: the_DT pap_NN v_LS should_MD be_VB aborted_JJ -LRB-_-LRB- after_IN aborting_VBG all_DT of_IN its_PRP$ descendants_NNS -RRB-_-RRB- ._.
+7_CD An_DT alternative_NN would_MD be_VB to_TO use_VB meta-level_JJ predicates_NNS that_WDT reflect_VBP the_DT current_JJ state_NN of_IN the_DT intention_NN structure_NN ._.
+12_CD The_DT Sixth_NNP Intl_NNP ._.
+Joint_NNP Conf_NNP ._.
+on_IN Autonomous_NNP Agents_NNPS and_CC Multi-Agent_NNP Systems_NNP -LRB-_-LRB- AAMAS_NNP ##_CD -RRB-_-RRB- f_FW -LRB-_-LRB- v_LS -RRB-_-RRB- -_: the_DT program_NN of_IN pap_NN v_LS has_VBZ failed_VBN ._.
+ancestorof_NN -LRB-_-LRB- v_LS ,_, v_LS -RRB-_-RRB- v_LS =_JJ v_LS ancestorof_NN -LRB-_-LRB- v_LS ,_, tail_NN -LRB-_-LRB- v_LS -RRB-_-RRB- -RRB-_-RRB- the_DT pap_NN v_LS is_VBZ an_DT ancestor_NN of_IN pap_NN v_LS ._.
+nac_NN -LRB-_-LRB- v_LS -RRB-_-RRB- v_LS ._.
+-LRB-_-LRB- a_DT -LRB-_-LRB- v_LS -RRB-_-RRB- ancestorof_NN -LRB-_-LRB- v_LS ,_, v_LS -RRB-_-RRB- v_LS =_JJ v_LS -RRB-_-RRB- -_: v_LS has_VBZ no_DT active_JJ children_NNS ._.
+sa_NN -LRB-_-LRB- v_LS -RRB-_-RRB- v_LS ._.
+abort_NN -LRB-_-LRB- v_LS -RRB-_-RRB- ancestorof_NN -LRB-_-LRB- v_LS ,_, v_LS -RRB-_-RRB- -_: we_PRP should_MD abort_VB v_LS ,_, i_FW ._.
+e_LS ._.
+,_, abort_VB is_VBZ true_JJ of_IN v_LS or_CC some_DT ancestor_NN ;_: however_RB ,_, we_PRP need_VBP to_TO wait_VB until_IN no_DT children_NNS of_IN v_LS are_VBP active_JJ ._.
+san_NN -LRB-_-LRB- v_LS -RRB-_-RRB- sa_NN -LRB-_-LRB- v_LS -RRB-_-RRB- nac_NN -LRB-_-LRB- v_LS -RRB-_-RRB- -_: we_PRP should_MD abort_VB v_LS now_RB if_IN we_PRP should_MD abort_VB v_LS and_CC v_LS has_VBZ no_DT active_JJ children_NNS ._.
+First_JJ let_VB us_PRP consider_VB the_DT case_NN of_IN the_DT FAb_NNP construct_NN ._.
+The_DT idea_NN is_VBZ that_IN ,_, whenever_WRB a_DT new_JJ pap_NN occurs_VBZ ,_, the_DT prependID_NN -LRB-_-LRB- v_LS ,_, v_LS -RRB-_-RRB- action_NN is_VBZ used_VBN to_TO create_VB a_DT new_JJ pap_NN identifier_NN list_NN v_LS from_IN the_DT existing_VBG list_NN v_LS ._.
+We_PRP then_RB add_VBP the_DT belief_NN that_WDT v_LS is_VBZ the_DT active_JJ context_NN ,_, i_FW ._.
+e_LS ._.
+,_, +_CC a_DT -LRB-_-LRB- v_LS -RRB-_-RRB- ,_, and_CC start_VB processing_VBG the_DT program_NN within_IN the_DT pap_NN using_VBG v_LS instead_RB of_IN v_LS as_IN the_DT context_NN ._.
+We_PRP need_VBP to_TO make_VB sure_JJ that_IN we_PRP retract_VBP the_DT belief_NN that_WDT v_LS is_VBZ active_JJ at_IN the_DT end_NN ,_, i_FW ._.
+e_LS ._.
+,_, a_DT -LRB-_-LRB- v_LS -RRB-_-RRB- ._.
+We_PRP use_VBP the_DT Goal_NNP construct_NN to_TO allow_VB us_PRP to_TO drop_VB the_DT execution_NN of_IN a_DT program_NN within_IN a_DT pap_NN v_LS when_WRB it_PRP is_VBZ necessary_JJ to_TO abort_VB ._.
+While_IN executing_VBG the_DT program_NN P_NN ,_, we_PRP know_VBP that_IN we_PRP need_VBP to_TO drop_VB P_NN and_CC invoke_VB its_PRP$ abort-method_NN if_IN some_DT ancestor_NN of_IN P_NN has_VBZ been_VBN told_VBN to_TO abort_VB ._.
+This_DT is_VBZ represented_VBN by_IN the_DT predicate_NN sa_NN -LRB-_-LRB- v_LS -RRB-_-RRB- being_VBG true_JJ ._.
+However_RB ,_, we_PRP need_VBP to_TO make_VB sure_JJ that_IN we_PRP do_VBP this_DT only_RB after_IN every_DT child_NN pap_NN has_VBZ had_VBN the_DT chance_NN to_TO invoke_VB its_PRP$ abort-method_NN and_CC all_PDT these_DT abort-methods_NNS have_VBP completed_VBN :_: if_IN we_PRP drop_VBP the_DT program_NN too_RB soon_RB ,_, then_RB execution_NN of_IN the_DT abort-methods_NNS of_IN the_DT children_NNS will_MD also_RB be_VB dropped_VBN ._.
+Therefore_RB ,_, the_DT condition_NN we_PRP actually_RB use_VBP in_IN the_DT Goal_NNP construct_NN to_TO test_VB when_WRB to_TO drop_VB the_DT program_NN is_VBZ san_NN -LRB-_-LRB- v_LS -RRB-_-RRB- ._.
+This_DT condition_NN relies_VBZ on_IN the_DT fact_NN that_IN as_IN the_DT children_NNS paps_NNS complete_JJ ,_, they_PRP remove_VBP the_DT relevant_JJ a_DT facts_NNS ._.
+Our_PRP$ use_NN of_IN the_DT Goal_NNP construct_NN is_VBZ for_IN its_PRP$ ability_NN to_TO drop_VB the_DT execution_NN of_IN a_DT program_NN when_WRB conditions_NNS are_VBP met_VBN ._.
+To_TO leave_VB aside_RB the_DT repeat_NN execution_NN until_IN a_DT condition_NN is_VBZ met_VBN aspect_NN ,_, we_PRP must_MD ensure_VB that_IN the_DT success_NN or_CC failure_NN condition_NN of_IN the_DT construct_NN is_VBZ satisfied_JJ once_IN the_DT execution_NN of_IN the_DT program_NN succeeds_VBZ or_CC fails_VBZ ._.
+We_PRP make_VBP sure_JJ of_IN this_DT by_IN retracting_VBG the_DT fact_NN a_DT -LRB-_-LRB- v_LS -RRB-_-RRB- on_IN success_NN and_CC asserting_VBG the_DT fact_NN f_FW -LRB-_-LRB- v_LS -RRB-_-RRB- on_IN failure_NN ,_, and_CC by_IN having_VBG the_DT appropriate_JJ success_NN and_CC failure_NN conditions_NNS on_IN the_DT Goal_NNP ._.
+Hence_RB ,_, if_IN the_DT Goal_NNP construct_NN fails_VBZ ,_, then_RB the_DT program_NN either_CC was_VBD aborted_JJ or_CC it_PRP failed_VBD ._.
+We_PRP invoke_VBP the_DT relevant_JJ failure_NN -_: or_CC abort_VB -_: method_NN ,_, retract_VB the_DT a_DT -LRB-_-LRB- v_LS -RRB-_-RRB- fact_NN ,_, and_CC then_RB fail_VBP ._.
+Putting_VBG all_PDT this_DT together_RB ,_, we_PRP formally_RB define_VBP v_LS -LRB-_-LRB- FAb_NN -LRB-_-LRB- P_NN ,_, PA_NN ,_, PF_NN -RRB-_-RRB- -RRB-_-RRB- to_TO be_VB the_DT following_VBG ,_, where_WRB v_LS is_VBZ a_DT new_JJ variable_JJ distinct_JJ from_IN any_DT other_JJ in_IN the_DT agent_NN ''_'' s_NNS plan_VBP library_NN :_: prependID_NN -LRB-_-LRB- v_LS ,_, v_LS -RRB-_-RRB- ;_: +_CC a_DT -LRB-_-LRB- v_LS -RRB-_-RRB- ;_: Goal_NNP -LRB-_-LRB- a_DT -LRB-_-LRB- v_LS -RRB-_-RRB- ,_, -LRB-_-LRB- v_LS -LRB-_-LRB- P_NN -RRB-_-RRB- ;_: a_DT -LRB-_-LRB- v_LS -RRB-_-RRB- +_CC f_FW -LRB-_-LRB- v_LS -RRB-_-RRB- -RRB-_-RRB- ,_, san_NN -LRB-_-LRB- v_LS -RRB-_-RRB- f_FW -LRB-_-LRB- v_LS -RRB-_-RRB- -RRB-_-RRB- -LRB-_-LRB- -LRB-_-LRB- -LRB-_-LRB- ?_.
+sa_NN -LRB-_-LRB- v_LS -RRB-_-RRB- ;_: v_LS -LRB-_-LRB- PA_NN -RRB-_-RRB- -RRB-_-RRB- v_LS -LRB-_-LRB- PF_NN -RRB-_-RRB- -RRB-_-RRB- ;_: a_DT -LRB-_-LRB- v_LS -RRB-_-RRB- ;_: ?_.
+false_JJ -RRB-_-RRB- Second_JJ ,_, we_PRP must_MD transform_VB the_DT parallel_NN operator_NN to_TO ensure_VB that_IN the_DT failure_NN of_IN one_CD branch_NN safely_RB aborts_VBZ the_DT other_JJ ._.
+Here_RB we_PRP construct_VBP two_CD new_JJ contexts_NNS ,_, v_LS and_CC v_LS ,_, from_IN the_DT existing_VBG context_NN v_LS ._.
+If_IN one_CD branch_NN fails_VBZ ,_, it_PRP must_MD abort_VB the_DT other_JJ branch_NN ._.
+At_IN the_DT end_NN ,_, if_IN either_DT branch_NN was_VBD aborted_JJ ,_, then_RB we_PRP must_MD fail_VB ._.
+Let_VB v_LS and_CC v_LS be_VB new_JJ variables_NNS distinct_JJ from_IN any_DT other_JJ in_IN the_DT agent_NN ''_'' s_NNS plan_VBP library_NN ._.
+We_PRP define_VBP v_LS -LRB-_-LRB- P1_NN P2_NN -RRB-_-RRB- to_TO be_VB :_: prependID_NN -LRB-_-LRB- v_LS ,_, v_LS -RRB-_-RRB- ;_: prependID_NN -LRB-_-LRB- v_LS ,_, v_LS -RRB-_-RRB- ;_: +_CC a_DT -LRB-_-LRB- v_LS -RRB-_-RRB- ;_: +_CC a_DT -LRB-_-LRB- v_LS -RRB-_-RRB- ;_: -LRB-_-LRB- Goal_NN -LRB-_-LRB- a_DT -LRB-_-LRB- v_LS -RRB-_-RRB- ,_, -LRB-_-LRB- v_LS -LRB-_-LRB- P1_NN -RRB-_-RRB- ;_: a_DT -LRB-_-LRB- v_LS -RRB-_-RRB- +_CC f_FW -LRB-_-LRB- v_LS -RRB-_-RRB- -RRB-_-RRB- ,_, san_NN -LRB-_-LRB- v_LS -RRB-_-RRB- f_FW -LRB-_-LRB- v_LS -RRB-_-RRB- -RRB-_-RRB- -LRB-_-LRB- +_CC abort_VB -LRB-_-LRB- v_LS -RRB-_-RRB- ;_: a_DT -LRB-_-LRB- v_LS -RRB-_-RRB- -RRB-_-RRB- Goal_NN -LRB-_-LRB- a_DT -LRB-_-LRB- v_LS -RRB-_-RRB- ,_, -LRB-_-LRB- v_LS -LRB-_-LRB- P2_NN -RRB-_-RRB- ;_: a_DT -LRB-_-LRB- v_LS -RRB-_-RRB- +_CC f_FW -LRB-_-LRB- v_LS -RRB-_-RRB- -RRB-_-RRB- ,_, san_NN -LRB-_-LRB- v_LS -RRB-_-RRB- f_FW -LRB-_-LRB- v_LS -RRB-_-RRB- -RRB-_-RRB- -LRB-_-LRB- +_CC abort_VB -LRB-_-LRB- v_LS -RRB-_-RRB- ;_: a_DT -LRB-_-LRB- v_LS -RRB-_-RRB- -RRB-_-RRB- -RRB-_-RRB- ;_: ?_.
+abort_NN -LRB-_-LRB- v_LS -RRB-_-RRB- abort_VB -LRB-_-LRB- v_LS -RRB-_-RRB- Finally_RB ,_, we_PRP need_VBP to_TO modify_VB occurrences_NNS of_IN the_DT Goal_NNP construct_NN in_IN two_CD ways_NNS :_: first_RB ,_, to_TO make_VB sure_JJ that_IN the_DT abort_NN handling_VBG methods_NNS are_VBP not_RB bypassed_VBN when_WRB the_DT success_NN or_CC failure_NN conditions_NNS are_VBP satisfied_JJ ,_, and_CC second_JJ ,_, to_TO trigger_VB the_DT aborting_VBG of_IN the_DT contained_VBN program_NN when_WRB either_CC the_DT success_NN or_CC failure_NN conditions_NNS are_VBP satisfied_JJ ._.
+To_TO transform_VB the_DT Goal_NNP construct_NN we_PRP need_VBP to_TO extend_VB standard_JJ CAN_NN with_IN a_DT wait-until-condition_JJ construct_NN ._.
+The_DT construct_NN :_: P_NN does_VBZ not_RB execute_VB P_NN until_IN becomes_VBZ true_JJ ._.
+We_PRP augment_VBP the_DT CAN_NNP language_NN with_IN the_DT following_VBG rules_NNS for_IN the_DT guard_NN operator_NN :_: ''_'' :_: B_NN |_NN =_JJ B_NN ,_, G_NN ,_, -LRB-_-LRB- :_: P_NN B_NN ,_, G_NN ,_, P_NN :_: true_JJ B_NN |_NN =_JJ B_NN ,_, G_NN ,_, -LRB-_-LRB- :_: P_NN -RRB-_-RRB- B_NN ,_, G_NN ,_, -LRB-_-LRB- :_: P_NN -RRB-_-RRB- :_: false_JJ In_IN order_NN to_TO specify_VB v_LS -LRB-_-LRB- Goal_NNP `_`` s_NNS ,_, P_NN ,_, f_LS -RRB-_-RRB- ,_, we_PRP generate_VBP a_DT new_JJ pap_NN and_CC execute_VB the_DT program_NN within_IN the_DT Goal_NNP construct_NN in_IN this_DT new_JJ context_NN ._.
+We_PRP must_MD ensure_VB that_IN belief_NN a_DT -LRB-_-LRB- v_LS -RRB-_-RRB- is_VBZ removed_VBN whether_IN the_DT Goal_NNP succeeds_VBZ or_CC fails_VBZ ._.
+We_PRP shift_VBP the_DT success_NN and_CC failure_NN condition_NN of_IN the_DT Goal_NNP construct_NN into_IN a_DT parallel_JJ branch_NN using_VBG the_DT wait-until-condition_JJ construct_NN ,_, and_CC modify_VB the_DT Goal_NNP to_TO use_VB the_DT should_MD abort_VB now_RB condition_NN san_NN -LRB-_-LRB- v_LS -RRB-_-RRB- as_IN the_DT success_NN condition_NN ._.
+The_DT waiting_VBG branch_NN will_MD trigger_VB the_DT abort_NN of_IN the_DT program_NN should_MD either_RB the_DT success_NN or_CC failure_NN condition_NN be_VB met_VBN ._.
+To_TO avoid_VB any_DT problems_NNS with_IN terminating_VBG the_DT wait_NN condition_NN ,_, we_PRP also_RB end_VBP the_DT wait_NN if_IN the_DT pap_NN is_VBZ no_RB longer_RBR active_JJ ._.
+Let_VB v_LS be_VB a_DT new_JJ variable_JJ distinct_JJ from_IN any_DT other_JJ in_IN the_DT agent_NN ''_'' s_NNS plan_VBP library_NN ._.
+We_PRP define_VBP v_LS -LRB-_-LRB- Goal_NNP `_`` s_NNS ,_, P_NN ,_, f_LS -RRB-_-RRB- to_TO be_VB :_: prependID_NN -LRB-_-LRB- v_LS ,_, v_LS -RRB-_-RRB- ;_: +_CC a_DT -LRB-_-LRB- v_LS -RRB-_-RRB- ;_: -LRB-_-LRB- Goal_NN -LRB-_-LRB- san_NN -LRB-_-LRB- v_LS -RRB-_-RRB- ,_, v_LS -LRB-_-LRB- P_NN -RRB-_-RRB- ,_, false_JJ -RRB-_-RRB- ;_: a_DT -LRB-_-LRB- v_LS -RRB-_-RRB- ;_: ?_.
+s_NNS -RRB-_-RRB- s_VBZ f_SYM a_DT -LRB-_-LRB- v_LS -RRB-_-RRB- :_: +_CC abort_VB -LRB-_-LRB- v_LS -RRB-_-RRB- -RRB-_-RRB- The_DT program_NN P_NN will_MD be_VB repeatedly_RB executed_VBN until_IN san_NN -LRB-_-LRB- v_LS -RRB-_-RRB- becomes_VBZ true_JJ ._.
+There_EX are_VBP two_CD ways_NNS this_DT can_MD occur_VB ._.
+First_RB ,_, if_IN either_CC the_DT success_NN condition_NN s_NNS or_CC the_DT failure_NN condition_NN f_FW becomes_VBZ true_JJ ,_, then_RB the_DT second_JJ branch_NN of_IN the_DT parallel_JJ construct_NN executes_VBZ ._.
+This_DT causes_VBZ abort_NN -LRB-_-LRB- v_LS -RRB-_-RRB- to_TO become_VB true_JJ ,_, and_CC ,_, after_IN the_DT descendant_NN paps_NNS ''_'' abortmethods_NNS are_VBP executed_VBN ,_, san_NN -LRB-_-LRB- v_LS -RRB-_-RRB- becomes_VBZ true_JJ ._.
+In_IN this_DT case_NN ,_, P_NN is_VBZ now_RB dropped_VBN ,_, the_DT a_DT -LRB-_-LRB- v_LS -RRB-_-RRB- is_VBZ removed_VBN ,_, and_CC the_DT entire_JJ construct_NN succeeds_VBZ or_CC fails_VBZ based_VBN on_IN s_NNS ._.
+The_DT second_JJ way_NN for_IN san_NN -LRB-_-LRB- v_LS -RRB-_-RRB- to_TO become_VB true_JJ is_VBZ if_IN v_LS or_CC one_CD of_IN its_PRP$ ancestors_NNS is_VBZ aborted_VBN ._.
+In_IN this_DT case_NN ,_, once_RB the_DT descendant_NN paps_NNS ''_'' abort-methods_NNS are_VBP executed_VBN ,_, san_NN -LRB-_-LRB- v_LS -RRB-_-RRB- becomes_VBZ true_JJ ,_, P_NN is_VBZ dropped_VBN ,_, the_DT a_DT -LRB-_-LRB- v_LS -RRB-_-RRB- belief_NN is_VBZ removed_VBN -LRB-_-LRB- allowing_VBG the_DT second_JJ parallel_JJ branch_NN to_TO execute_VB ,_, vacuously_RB instructing_VBG v_LS to_TO abort_VB -RRB-_-RRB- ,_, and_CC the_DT first_JJ parallel_JJ branch_NN fails_VBZ -LRB-_-LRB- assuming_VBG s_NNS is_VBZ false_JJ -RRB-_-RRB- ._.
+4_LS ._.
+#_# Worked_VBD Example_NNP Let_VB us_PRP look_VB at_IN translation_NN of_IN the_DT IJCAI_NNP submission_NN example_NN of_IN Section_NN #_# ._.
+We_PRP will_MD express_VB tasks_NNS by_IN events_NNS ,_, for_IN example_NN ,_, the_DT task_NN Allocate_VB a_DT Paper_NN Number_NN we_PRP express_VBP as_IN the_DT event_NN APN_NNP ._.
+Let_VB the_DT output_NN of_IN the_DT Apply_NNP For_IN Clearance_NNP task_NN be_VB Y_NN or_CC N_NN ,_, indicating_VBG the_DT approval_NN or_CC not_RB of_IN Alice_NNP ''_'' s_VBZ manager_NN ,_, respectively_RB ._.
+Then_RB we_PRP have_VBP -LRB-_-LRB- at_IN least_JJS -RRB-_-RRB- the_DT following_VBG two_CD plan_NN clauses_NNS in_IN CAN_NNP ,_, for_IN the_DT Support_NN Meeting_VBG Submission_NN and_CC Apply_NN For_IN Clearance_NN tasks_NNS ,_, respectively_RB :_: SMS_NN -LRB-_-LRB- m_NN -RRB-_-RRB- :_: isconf_NN -LRB-_-LRB- m_NN -RRB-_-RRB- FAb_NN -LRB-_-LRB- !_.
+APN_NNP ;_: !_.
+TWA_NNP ;_: -LRB-_-LRB- !_.
+AFC_NN !_.
+TWP_NN -RRB-_-RRB- ;_: !_.
+HPS_NN ,_, !_.
+CPN_NNP ,_, !_.
+CPN_NNP -RRB-_-RRB- AFC_NNP :_: true_JJ FAb_NN -LRB-_-LRB- !_.
+SCR_NN ;_: !_.
+WFR_NN -LRB-_-LRB- r_NN -RRB-_-RRB- ;_: ?_.
+r_NN =_JJ Y_NN ,_, nil_NN ,_, !_.
+CCR_NN -RRB-_-RRB- Note_VBP that_IN Support_NN Meeting_VBG Submission_NN has_VBZ a_DT parameter_NN m_NN ,_, the_DT meeting_NN of_IN interest_NN -LRB-_-LRB- IJCAI_NNP ,_, in_IN our_PRP$ example_NN -RRB-_-RRB- ,_, while_IN Apply_NN For_IN Clearance_NNP has_VBZ no_DT parameters_NNS ._.
+The_DT Sixth_NNP Intl_NNP ._.
+Joint_NNP Conf_NNP ._.
+on_IN Autonomous_NNP Agents_NNPS and_CC Multi-Agent_NNP Systems_NNP -LRB-_-LRB- AAMAS_NNP ##_CD -RRB-_-RRB- ##_CD Let_VB us_PRP look_VB first_RB at_IN the_DT translation_NN of_IN the_DT second_JJ plan_NN clause_NN ,_, for_IN AFC_NNP ,_, since_IN it_PRP is_VBZ the_DT simpler_JJR of_IN the_DT two_CD ._.
+Let_VB v_LS and_CC v_LS denote_VB new_JJ variables_NNS ._.
+Then_RB we_PRP have_VBP as_IN the_DT translated_VBN plan_NN clause_NN :_: AFC_NN -LRB-_-LRB- v_LS -RRB-_-RRB- :_: true_JJ prependID_NN -LRB-_-LRB- v_LS ,_, v_LS -RRB-_-RRB- ;_: +_CC a_DT -LRB-_-LRB- v_LS -RRB-_-RRB- ;_: Goal_NNP -LRB-_-LRB- a_DT -LRB-_-LRB- v_LS -RRB-_-RRB- ,_, -LRB-_-LRB- !_.
+SCR_NN -LRB-_-LRB- v_LS -RRB-_-RRB- ;_: !_.
+WFR_NN -LRB-_-LRB- r_NN ,_, v_LS -RRB-_-RRB- ;_: ?_.
+r_NN =_JJ Y_NN ;_: a_DT -LRB-_-LRB- v_LS -RRB-_-RRB- +_CC f_FW -LRB-_-LRB- v_LS -RRB-_-RRB- -RRB-_-RRB- ,_, san_NN -LRB-_-LRB- v_LS -RRB-_-RRB- f_FW -LRB-_-LRB- v_LS -RRB-_-RRB- -RRB-_-RRB- -LRB-_-LRB- -LRB-_-LRB- -LRB-_-LRB- ?_.
+sa_NN -LRB-_-LRB- v_LS -RRB-_-RRB- ;_: !_.
+CCR_NN -LRB-_-LRB- v_LS -RRB-_-RRB- -RRB-_-RRB- nil_NN -RRB-_-RRB- ;_: a_DT -LRB-_-LRB- v_LS -RRB-_-RRB- ;_: ?_.
+false_JJ -RRB-_-RRB- We_PRP can_MD see_VB that_IN an_DT extra_JJ context_NN parameter_NN has_VBZ been_VBN added_VBN to_TO each_DT task_NN and_CC that_IN the_DT old_JJ plan_NN body_NN now_RB appears_VBZ inside_IN a_DT Goal_NNP construct_NN ._.
+Should_MD the_DT old_JJ plan_NN body_NN succeed_VB ,_, belief_NN a_DT -LRB-_-LRB- v_LS -RRB-_-RRB- is_VBZ retracted_VBN ,_, causing_VBG the_DT Goal_NNP to_TO succeed_VB ._.
+If_IN the_DT old_JJ plan_NN body_NN fails_VBZ ,_, or_CC if_IN the_DT task_NN is_VBZ to_TO be_VB aborted_VBN ,_, the_DT Goal_NNP construct_NN fails_VBZ ._.
+This_DT is_VBZ followed_VBN by_IN the_DT execution_NN of_IN CCR_NN -LRB-_-LRB- in_IN the_DT case_NN of_IN an_DT abort_NN -RRB-_-RRB- ,_, the_DT retraction_NN of_IN a_DT -LRB-_-LRB- v_LS -RRB-_-RRB- ,_, and_CC failure_NN ._.
+The_DT translation_NN of_IN the_DT first_JJ plan_NN clause_NN ,_, for_IN SMS_NNP ,_, is_VBZ more_RBR complex_JJ ,_, because_IN of_IN the_DT parallel_JJ construct_NN that_WDT introduces_VBZ nested_JJ paps_NNS :_: SMS_NN -LRB-_-LRB- m_NN ,_, v_LS -RRB-_-RRB- :_: isconf_NN -LRB-_-LRB- m_NN -RRB-_-RRB- prependID_NN -LRB-_-LRB- v_LS ,_, v_LS -RRB-_-RRB- ;_: +_CC a_DT -LRB-_-LRB- v_LS -RRB-_-RRB- ;_: Goal_NNP -LRB-_-LRB- a_DT -LRB-_-LRB- v_LS -RRB-_-RRB- ,_, -LRB-_-LRB- -LRB-_-LRB- !_.
+APN_NNP -LRB-_-LRB- v_LS -RRB-_-RRB- ;_: !_.
+TWA_NNP -LRB-_-LRB- v_LS -RRB-_-RRB- ;_: prependID_NN -LRB-_-LRB- v_LS ,_, v_LS -RRB-_-RRB- ;_: prependID_NN -LRB-_-LRB- v_LS ,_, v_LS -RRB-_-RRB- ;_: +_CC a_DT -LRB-_-LRB- v_LS -RRB-_-RRB- ;_: +_CC a_DT -LRB-_-LRB- v_LS -RRB-_-RRB- ;_: -LRB-_-LRB- Goal_NN -LRB-_-LRB- a_DT -LRB-_-LRB- v_LS -RRB-_-RRB- ,_, -LRB-_-LRB- !_.
+AFC_NN -LRB-_-LRB- v_LS -RRB-_-RRB- ;_: a_DT -LRB-_-LRB- v_LS -RRB-_-RRB- +_CC f_FW -LRB-_-LRB- v_LS -RRB-_-RRB- -RRB-_-RRB- ,_, san_NN -LRB-_-LRB- v_LS -RRB-_-RRB- f_FW -LRB-_-LRB- v_LS -RRB-_-RRB- -RRB-_-RRB- -LRB-_-LRB- +_CC abort_VB -LRB-_-LRB- v_LS -RRB-_-RRB- ;_: a_DT -LRB-_-LRB- v_LS -RRB-_-RRB- -RRB-_-RRB- Goal_NN -LRB-_-LRB- a_DT -LRB-_-LRB- v_LS -RRB-_-RRB- ,_, -LRB-_-LRB- !_.
+TWP_NN -LRB-_-LRB- v_LS -RRB-_-RRB- ;_: a_DT -LRB-_-LRB- v_LS -RRB-_-RRB- +_CC f_FW -LRB-_-LRB- v_LS -RRB-_-RRB- -RRB-_-RRB- ,_, san_NN -LRB-_-LRB- v_LS -RRB-_-RRB- f_FW -LRB-_-LRB- v_LS -RRB-_-RRB- -RRB-_-RRB- -LRB-_-LRB- +_CC abort_VB -LRB-_-LRB- v_LS -RRB-_-RRB- ;_: a_DT -LRB-_-LRB- v_LS -RRB-_-RRB- -RRB-_-RRB- -RRB-_-RRB- ;_: ?_.
+abort_NN -LRB-_-LRB- v_LS -RRB-_-RRB- abort_VB -LRB-_-LRB- v_LS -RRB-_-RRB- ;_: !_.
+HPS_NN -LRB-_-LRB- v_LS -RRB-_-RRB- ;_: a_DT -LRB-_-LRB- v_LS -RRB-_-RRB- -RRB-_-RRB- +_CC f_FW -LRB-_-LRB- v_LS -RRB-_-RRB- -RRB-_-RRB- ,_, san_NN -LRB-_-LRB- v_LS -RRB-_-RRB- f_FW -LRB-_-LRB- v_LS -RRB-_-RRB- -RRB-_-RRB- -LRB-_-LRB- -LRB-_-LRB- -LRB-_-LRB- ?_.
+sa_NN -LRB-_-LRB- v_LS -RRB-_-RRB- ;_: !_.
+CPN_NNP -LRB-_-LRB- v_LS -RRB-_-RRB- -RRB-_-RRB- !_.
+CPN_NNP -LRB-_-LRB- v_LS -RRB-_-RRB- -RRB-_-RRB- ;_: a_DT -LRB-_-LRB- v_LS -RRB-_-RRB- ;_: ?_.
+false_JJ -RRB-_-RRB- Here_RB we_PRP can_MD see_VB that_IN if_IN the_DT task_NN !_.
+TWP_NN -LRB-_-LRB- v_LS -RRB-_-RRB- fails_VBZ then_RB f_FW -LRB-_-LRB- v_LS -RRB-_-RRB- will_MD be_VB asserted_VBN ,_, failing_VBG the_DT Goal_NNP construct_NN that_WDT contains_VBZ it_PRP ,_, and_CC leading_VBG to_TO abort_VB -LRB-_-LRB- v_LS -RRB-_-RRB- being_VBG asserted_VBD ._.
+If_IN the_DT !_.
+WFR_NN -LRB-_-LRB- r_NN ,_, v_LS -RRB-_-RRB- task_NN in_IN the_DT expansion_NN of_IN !_.
+AFC_NN -LRB-_-LRB- v_LS -RRB-_-RRB- is_VBZ still_RB executing_VBG and_CC has_VBZ no_DT active_JJ child_NN paps_NNS ,_, then_RB sa_NN -LRB-_-LRB- v_LS -RRB-_-RRB- and_CC sa_NN -LRB-_-LRB- v_LS -RRB-_-RRB- will_MD be_VB true_JJ ;_: however_RB ,_, only_RB san_NN -LRB-_-LRB- v_LS -RRB-_-RRB- and_CC not_RB san_NN -LRB-_-LRB- v_LS -RRB-_-RRB- will_MD be_VB true_JJ ._.
+This_DT set_NN of_IN conditions_NNS will_MD cause_VB the_DT Goal_NNP construct_NN in_IN the_DT first_JJ plan_NN clause_NN to_TO fail_VB ,_, dropping_VBG execution_NN of_IN !_.
+WFR_NN -LRB-_-LRB- r_NN ,_, v_LS -RRB-_-RRB- ._.
+The_DT task_NN !_.
+CCR_NN -LRB-_-LRB- v_LS -RRB-_-RRB- will_MD be_VB executed_VBN ._.
+Once_RB this_DT task_NN completes_VBZ ,_, belief_NN a_DT -LRB-_-LRB- v_LS -RRB-_-RRB- is_VBZ retracted_VBN ,_, causing_VBG san_NN -LRB-_-LRB- v_LS -RRB-_-RRB- to_TO become_VB true_JJ ,_, leading_VBG to_TO the_DT first_JJ Goal_NNP construct_NN of_IN the_DT second_JJ plan_NN clause_NN to_TO fail_VB ._.
+While_IN the_DT translated_VBN plan_NN clauses_NNS appear_VBP complicated_VBN ,_, observe_VBP that_IN the_DT translation_NN from_IN the_DT initial_JJ plan_NN clauses_NNS is_VBZ entirely_RB automated_VBN ,_, according_VBG to_TO the_DT rules_NNS set_VBP out_RP in_IN Section_NN #_# ._.
+#_# ._.
+The_DT translated_VBN plan_NN clauses_NNS ,_, with_IN the_DT semantics_NNS of_IN CAN_NNP augmented_VBD by_IN our_PRP$ waituntil-condition_JJ construct_NN ,_, thus_RB specify_VB the_DT operation_NN of_IN the_DT agent_NN to_TO handle_VB both_DT failure_NN and_CC aborting_VBG for_IN the_DT example_NN ._.
+5_CD ._.
+RELATED_JJ WORK_VBP Plan_NN failure_NN is_VBZ handled_VBN in_IN the_DT extended_VBN version_NN of_IN AgentSpeak_NNP found_VBD in_IN the_DT Jason_NNP system_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+Failure_NN clean-up_JJ plans_NNS are_VBP triggered_VBN from_IN goal_NN deletion_NN events_NNS !_.
+g_NN ._.
+Such_JJ plans_NNS ,_, similar_JJ to_TO our_PRP$ failure_NN methods_NNS ,_, are_VBP designed_VBN for_IN the_DT agent_NN to_TO effect_NN state_NN changes_NNS -LRB-_-LRB- act_NN to_TO undo_VB its_PRP$ earlier_JJR actions_NNS -RRB-_-RRB- prior_RB to_TO possibly_RB attempting_VBG another_DT plan_NN to_TO achieve_VB the_DT failed_JJ goal_NN g_NN ._.
+Given_VBN Jason_NNP ''_'' s_VBZ constructs_NNS for_IN dropping_VBG a_DT goal_NN with_IN an_DT indication_NN of_IN whether_IN or_CC not_RB to_TO try_VB an_DT alternate_JJ plan_NN for_IN it_PRP ,_, Hubner_NNP et_FW al_FW ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- provide_VBP an_DT informal_JJ description_NN of_IN how_WRB a_DT Jason_NNP agent_NN modifies_VBZ its_PRP$ intention_NN structure_NN when_WRB a_DT goal_NN failure_NN event_NN occurs_VBZ ._.
+In_IN a_DT goal_NN deletion_NN plan_NN ,_, the_DT programmer_NN can_MD specify_VB any_DT undo_VB actions_NNS and_CC whether_IN to_TO attempt_VB the_DT goal_NN again_RB ._.
+If_IN no_DT goal_NN deletion_NN plan_NN is_VBZ provided_VBN ,_, Jason_NNP ''_'' s_VBZ default_NN behaviour_NN is_VBZ to_TO not_RB reattempt_VB the_DT goal_NN ._.
+Failure_NN handling_NN is_VBZ applied_VBN only_RB to_TO plans_NNS triggered_VBN by_IN addition_NN of_IN an_DT achievement_NN or_CC test_NN goal_NN ;_: in_IN particular_JJ ,_, goal_NN deletion_NN events_NNS are_VBP not_RB posted_VBN for_IN failure_NN of_IN a_DT goal_NN deletion_NN plan_NN ._.
+Further_RB ,_, the_DT informal_JJ semantics_NNS of_IN -LSB-_-LRB- #_# -RSB-_-RRB- do_VBP not_RB consider_VB parallel_JJ sub-goals_NNS -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, the_DT CAN_NNP construct_NN -RRB-_-RRB- ,_, since_IN such_JJ execution_NN is_VBZ not_RB part_NN of_IN Jason_NNP ''_'' s_VBZ language_NN ._.
+The_DT implementation_NN of_IN Hubner_NNP et_FW al_FW ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- requires_VBZ Jason_NNP ''_'' s_VBZ internal_JJ actions_NNS ._.
+A_DT requirement_NN for_IN implementing_VBG our_PRP$ approach_NN is_VBZ a_DT reflective_JJ capability_NN in_IN the_DT BDI_NNP agent_NN implementation_NN ._.
+Suitable_JJ implementations_NNS of_IN the_DT BDI_NNP formalism_NN are_VBP JACK_NNP -LSB-_-LRB- #_# -RSB-_-RRB- ,_, Jadex_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, and_CC SPARK_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+All_DT three_CD allow_VBP meta_NN level_NN methods_NNS that_WDT are_VBP cued_VBN by_IN meta_NN events_NNS such_JJ as_IN goal_NN adoption_NN or_CC plan_NN failure_NN ,_, and_CC offer_NN introspective_JJ capabilities_NNS over_IN goal_NN and_CC intention_NN states_NNS ._.
+Such_JJ meta_NN level_NN facilities_NNS are_VBP also_RB required_VBN by_IN the_DT approach_NN of_IN Unruh_NNP et_FW al_FW ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- ,_, who_WP define_VBP goal-based_JJ semantic_JJ compensation_NN for_IN an_DT agent_NN ._.
+Failure-handling_JJ goals_NNS are_VBP invoked_VBN according_VBG to_TO failurehandling_VBG strategy_NN rules_NNS ,_, by_IN a_DT dedicated_JJ agent_NN Failure_NN Handling_VBG Component_NN -LRB-_-LRB- FHC_NN -RRB-_-RRB- that_WDT tracks_VBZ task_NN execution_NN ._.
+These_DT goals_NNS are_VBP specified_VBN by_IN the_DT agent_NN programmer_NN and_CC attached_VBN to_TO tasks_NNS ,_, much_RB like_IN our_PRP$ FAb_NN -LRB-_-LRB- P_NN ,_, PF_NN ,_, PA_NN -RRB-_-RRB- construct_NN associates_VBZ failure_NN and_CC abort_VB methods_NNS with_IN a_DT plan_NN P_NN ._.
+Note_VB ,_, however_RB ,_, that_IN in_IN contrast_NN to_TO both_DT -LSB-_-LRB- #_# -RSB-_-RRB- and_CC our_PRP$ semantics_NNS ,_, -LSB-_-LRB- ##_NN -RSB-_-RRB- attach_VBP the_DT failure-handling_JJ knowledge_NN at_IN the_DT goal_NN ,_, not_RB plan_NN ,_, level_NN ._.
+Their_PRP$ failure-handling_JJ goals_NNS may_MD consist_VB of_IN stabilization_NN goals_NNS that_WDT perform_VBP localized_JJ ,_, immediate_JJ clean-up_JJ to_TO restore_VB the_DT agent_NN ''_'' s_NNS state_NN to_TO a_DT known_VBN ,_, stable_JJ state_NN ,_, and_CC compensation_NN goals_NNS that_WDT perform_VBP undo_VBP actions_NNS ._.
+Compensation_NNP goals_NNS are_VBP triggered_VBN on_IN aborting_VBG a_DT goal_NN ,_, and_CC so_RB not_RB necessarily_RB on_IN goal_NN failure_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, if_IN the_DT FHC_NNP directs_VBZ the_DT agent_NN to_TO retry_VB the_DT failed_JJ goal_NN and_CC the_DT retry_VB is_VBZ successful_JJ -RRB-_-RRB- ._.
+The_DT FHC_NNP approach_NN is_VBZ defined_VBN at_IN the_DT goal_NN level_NN in_IN order_NN to_TO facilitate_VB abstract_JJ specification_NN of_IN failure-handling_JJ knowledge_NN ;_: the_DT FHC_NNP decides_VBZ when_WRB to_TO address_VB a_DT failure_NN and_CC what_WP to_TO do_VB -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, what_WDT failurehandling_NN goals_NNS to_TO invoke_VB -RRB-_-RRB- ,_, separating_VBG this_DT knowledge_NN from_IN the_DT how_WRB of_IN implementing_VBG corrective_JJ actions_NNS -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, what_WDT plan_NN to_TO execute_VB to_TO meet_VB the_DT adopted_VBN failure-handling_JJ goal_NN -RRB-_-RRB- ._.
+This_DT contrasts_VBZ with_IN simplistic_JJ plan-level_JJ failure_NN handling_NN in_IN which_WDT the_DT what_WDT and_CC how_WRB are_VBP intermingled_VBN in_IN domain_NN task_NN knowledge_NN ._.
+While_IN our_PRP$ approach_NN is_VBZ defined_VBN at_IN the_DT plan_NN level_NN ,_, our_PRP$ extended_VBN BDI_NNP semantics_NNS provides_VBZ for_IN the_DT separation_NN of_IN execution_NN and_CC failure_NN handling_NN ._.
+Further_RB ,_, the_DT FHC_NNP explicitly_RB maintains_VBZ data_NNS structures_NNS to_TO track_VB agent_NN execution_NN ._.
+We_PRP leverage_NN the_DT existing_VBG execution_NN structures_NNS and_CC self-reflective_JJ ability_NN of_IN a_DT BDI_NN agent_NN to_TO accomplish_VB both_CC aborting_VBG and_CC failure_NN handling_NN without_IN additional_JJ overhead_NN ._.
+FHC_NN ''_'' s_NNS failure-handling_JJ strategy_NN rules_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, whether_IN to_TO retry_VB a_DT failed_JJ goal_NN -RRB-_-RRB- are_VBP replaced_VBN by_IN instructions_NNS in_IN our_PRP$ PF_NN and_CC PA_NN plans_NNS ,_, together_RB with_IN meta-level_JJ default_NN failure_NN handlers_NNS according_VBG to_TO the_DT agent_NN ''_'' s_NNS nature_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, blindly_RB committed_VBN -RRB-_-RRB- ._.
+The_DT FHC_NNP approach_NN is_VBZ independent_JJ of_IN the_DT architecture_NN of_IN the_DT agent_NN itself_PRP ,_, in_IN contrast_NN to_TO our_PRP$ work_NN that_WDT is_VBZ dedicated_VBN to_TO the_DT BDI_NNP formalism_NN -LRB-_-LRB- although_IN not_RB tied_VBN to_TO any_DT one_CD agent_NN system_NN -RRB-_-RRB- ._.
+Thus_RB no_DT formal_JJ semantics_NNS are_VBP developed_VBN in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ;_: the_DT FHC_NNP ''_'' s_VBZ operation_NN is_VBZ given_VBN as_IN 14_CD The_DT Sixth_NNP Intl_NNP ._.
+Joint_NNP Conf_NNP ._.
+on_IN Autonomous_NNP Agents_NNPS and_CC Multi-Agent_NNP Systems_NNP -LRB-_-LRB- AAMAS_NNP ##_CD -RRB-_-RRB- a_DT state-based_JJ protocol_NN ._.
+This_DT approach_NN ,_, together_RB with_IN state_NN checkpointing_NN ,_, is_VBZ used_VBN for_IN multi-agent_JJ systems_NNS in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ._.
+The_DT resulting_VBG architecture_NN embeds_VBZ their_PRP$ failure_NN handling_VBG approach_NN within_IN a_DT pair_NN processing_NN architecture_NN for_IN agent_NN crash_NN recovery_NN ._.
+Other_JJ work_NN on_IN multi-agent_JJ exception_NN handling_NN includes_VBZ AOEX_NNP ''_'' s_VBZ distributed_VBN exception_NN handling_VBG agents_NNS -LSB-_-LRB- #_# -RSB-_-RRB- ,_, and_CC the_DT similar_JJ sentinels_NNS of_IN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+In_IN both_DT cases_NNS ,_, failure-handling_JJ logic_NN and_CC knowledge_NN are_VBP decoupled_VBN from_IN the_DT agents_NNS ;_: by_IN contrast_NN ,_, while_IN separating_VBG exception_NN handling_NN from_IN domain-specific_JJ knowledge_NN ,_, Unruh_NNP et_FW al_FW ._. ''_''
+s_NNS FHC_NNP and_CC our_PRP$ approach_NN both_CC retain_VBP failure-handling_JJ logic_NN within_IN an_DT agent_NN ._.
+6_CD ._.
+CONCLUSION_NN AND_CC FUTURE_NN WORK_VBP The_DT tasks_NNS and_CC plans_NNS of_IN an_DT agent_NN may_MD not_RB successfully_RB reach_VB completion_NN ,_, either_CC by_IN the_DT choice_NN of_IN the_DT agent_NN to_TO abort_VB them_PRP -LRB-_-LRB- perhaps_RB at_IN the_DT request_NN of_IN another_DT agent_NN to_TO do_VB so_RB -RRB-_-RRB- ,_, or_CC by_IN unbidden_JJ factors_NNS that_WDT lead_VBP to_TO failure_NN ._.
+In_IN this_DT paper_NN we_PRP have_VBP presented_VBN a_DT procedure-based_JJ approach_NN that_WDT incorporates_VBZ aborting_VBG tasks_NNS and_CC plans_NNS into_IN the_DT deliberation_NN cycle_NN of_IN a_DT BDI-style_JJ agent_NN ,_, thus_RB providing_VBG a_DT unified_JJ approach_NN to_TO failure_NN and_CC abort_VB ._.
+Our_PRP$ primary_JJ contribution_NN is_VBZ an_DT analysis_NN of_IN the_DT requirements_NNS on_IN the_DT operation_NN of_IN the_DT agent_NN for_IN aborting_VBG tasks_NNS and_CC plans_NNS ,_, and_CC a_DT corresponding_JJ operational_JJ semantics_NNS for_IN aborting_VBG in_IN the_DT abstract_JJ agent_NN language_NN CAN_NNP ._.
+We_PRP are_VBP planning_VBG to_TO implement_VB an_DT instance_NN of_IN our_PRP$ approach_NN in_IN the_DT SPARK_NN agent_NN system_NN -LSB-_-LRB- #_# -RSB-_-RRB- ;_: in_IN particular_JJ ,_, the_DT work_NN of_IN this_DT paper_NN will_MD be_VB the_DT basis_NN for_IN SPARK_NN ''_'' s_NNS abort_VBP handling_VBG mechanism_NN ._.
+We_PRP are_VBP also_RB developing_VBG an_DT analysis_NN tool_NN for_IN our_PRP$ extended_VBN version_NN of_IN CAN_NNP as_IN a_DT basis_NN for_IN experimentation_NN ._.
+An_DT intelligent_JJ agent_NN will_MD not_RB only_RB gracefully_RB handle_VB unsuccessful_JJ tasks_NNS and_CC plans_NNS ,_, but_CC also_RB will_MD deliberate_VB over_IN its_PRP$ cognitive_JJ attitudes_NNS to_TO decide_VB its_PRP$ next_JJ course_NN of_IN action_NN ._.
+We_PRP have_VBP assumed_VBN the_DT default_NN behaviour_NN of_IN a_DT BDI-style_JJ agent_NN ,_, according_VBG to_TO its_PRP$ nature_NN :_: for_IN instance_NN ,_, to_TO retry_VB alternatives_NNS to_TO a_DT failed_VBN plan_NN until_IN one_CD succeeds_VBZ or_CC until_IN no_DT alternative_JJ plans_NNS remain_VBP -LRB-_-LRB- in_IN which_WDT case_NN to_TO fail_VB the_DT task_NN -RRB-_-RRB- ._.
+Future_JJ work_NN is_VBZ to_TO place_VB our_PRP$ approach_NN in_IN service_NN of_IN more_JJR dynamic_JJ agent_NN reasoning_NN ,_, such_JJ as_IN the_DT introspection_NN that_IN an_DT agent_NN capable_JJ of_IN reasoning_NN over_IN task_NN interaction_NN effects_NNS and_CC resource_NN requirements_NNS can_MD accomplish_VB -LSB-_-LRB- ##_CD ,_, ##_CD -RSB-_-RRB- ._.
+Related_VBN to_TO this_DT is_VBZ determining_VBG the_DT cost_NN of_IN aborting_VBG a_DT task_NN or_CC plan_NN ,_, and_CC using_VBG this_DT as_IN an_DT input_NN to_TO the_DT deliberation_NN process_NN ._.
+This_DT would_MD in_IN particular_JJ influence_NN the_DT commitment_NN the_DT agent_NN has_VBZ towards_IN a_DT particular_JJ task_NN :_: the_DT higher_JJR the_DT cost_NN ,_, the_DT greater_JJR the_DT commitment_NN ._.
+Our_PRP$ assumption_NN that_IN abort-methods_NNS do_VBP not_RB fail_VB ,_, as_IN discussed_VBN above_IN ,_, is_VBZ a_DT pragmatic_JJ one_CD ._.
+However_RB ,_, this_DT is_VBZ an_DT issue_NN worthy_JJ of_IN further_JJ exploration_NN ,_, either_CC to_TO develop_VB weaker_JJR assumptions_NNS that_WDT are_VBP also_RB practical_JJ ,_, or_CC to_TO analyze_VB conditions_NNS under_IN which_WDT our_PRP$ assumption_NN is_VBZ realistic_JJ ._.
+A_DT further_JJ item_NN of_IN interest_NN is_VBZ extending_VBG our_PRP$ approach_NN to_TO failure_NN and_CC abort_VB to_TO maintenance_NN goals_NNS -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+For_IN such_JJ goals_NNS a_DT different_JJ operational_JJ semantics_NNS for_IN abort_NN is_VBZ necessary_JJ than_IN for_IN achievement_NN goals_NNS ,_, to_TO match_VB the_DT difference_NN in_IN semantics_NNS of_IN the_DT goals_NNS themselves_PRP ._.
+Acknowledgements_NNS We_PRP thank_VBP Lin_NNP Padgham_NNP and_CC the_DT anonymous_JJ reviewers_NNS for_IN their_PRP$ comments_NNS ._.
+The_DT first_JJ author_NN acknowledges_VBZ the_DT support_NN of_IN the_DT Australian_NNP Research_NNP Council_NNP and_CC Agent_NNP Oriented_NNP Software_NNP under_IN grant_NN LP0453486_NN ._.
+The_DT work_NN of_IN the_DT two_CD authors_NNS at_IN SRI_NN International_NN was_VBD supported_VBN by_IN the_DT Defense_NNP Advanced_NNP Research_NNP Projects_NNP Agency_NNP -LRB-_-LRB- DARPA_NNP -RRB-_-RRB- under_IN Contract_NNP No_NNP ._.
+NBCHD030010_NN ._.
+Any_DT opinions_NNS ,_, findings_NNS ,_, and_CC conclusions_NNS or_CC recommendations_NNS expressed_VBN in_IN this_DT material_NN are_VBP those_DT of_IN the_DT authors_NNS and_CC do_VBP not_RB necessarily_RB reflect_VB the_DT view_NN of_IN DARPA_NNP or_CC the_DT Department_NNP of_IN Interior-National_NNP Business_NNP Center_NNP ._.
+7_CD ._.
+REFERENCES_NNS -LSB-_-LRB- #_# -RSB-_-RRB- L_NN ._.
+Braubach_NNP ,_, A_NNP ._.
+Pokahr_NNP ,_, D_NNP ._.
+Moldt_NNP ,_, and_CC W_NN ._.
+Lamersdorf_NN ._.
+Goal_NN representation_NN for_IN BDI_NNP Agent_NNP systems_NNS ._.
+In_IN Proc_NNP ._.
+of_IN Second_JJ Intl_NNP ._.
+Workshop_NNP on_IN Programming_NNP Multi-Agent_NNP Systems_NNP -LRB-_-LRB- ProMAS_NNP ''_'' ##_NN -RRB-_-RRB- ,_, ####_NN ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- P_NN ._.
+Busetta_NNP ,_, R_NN ._.
+Ronnquist_NNP ,_, A_NNP ._.
+Hodgson_NNP ,_, and_CC A_NN ._.
+Lucas_NNP ._.
+JACK_NN intelligent_JJ agents_NNS -_: components_NNS for_IN intelligent_JJ agents_NNS in_IN Java_NNP ._.
+AgentLink_NNP News_NNP ,_, Issue_NNP #_# ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- M_NN ._.
+G_NN ._.
+Chessell_NNP ,_, C_NNP ._.
+Vines_NNS ,_, D_NN ._.
+Butler_NNP ,_, C_NNP ._.
+M_NN ._.
+Ferreira_NNP ,_, and_CC P_NN ._.
+Henderson_NNP ._.
+Extending_VBG the_DT concept_NN of_IN transaction_NN compensation_NN ._.
+IBM_NNP Systems_NNP Journal_NNP ,_, ##_CD -LRB-_-LRB- #_# -RRB-_-RRB- ,_, ####_NN ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- M_NN ._.
+Dastani_NNP ,_, M_NN ._.
+B_NN ._.
+van_NN Riemsdijk_NNP ,_, and_CC J_NN ._.
+-_: J_NN ._.
+C_NN ._.
+Meyer_NNP ._.
+Goal_NN types_NNS in_IN agent_NN programming_NN ._.
+In_IN Proc_NNP ._.
+of_IN AAMAS_NNP ''_'' ##_NN ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- S_NN ._.
+Entwisle_NNP ,_, S_NN ._.
+Loke_NNP ,_, S_NN ._.
+Krishnaswamy_NNP ,_, and_CC E_NN ._.
+Kendall_NNP ._.
+Aoex_NNP :_: An_DT agent-based_JJ exception_NN handling_VBG framework_NN for_IN building_VBG reliable_JJ ,_, distributed_VBN ,_, open_JJ software_NN systems_NNS ._.
+In_IN Proc_NNP ._.
+of_IN Seventh_NNP Joint_NNP Conf_NNP ._.
+on_IN Knowledge-Based_NNP Software_NNP Engineering_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- J_NN ._.
+F_NN ._.
+Hubner_NNP ,_, R_NN ._.
+H_NN ._.
+Bordini_NNP ,_, and_CC M_NN ._.
+Wooldridge_NNP ._.
+Programming_VBG declarative_JJ goals_NNS using_VBG plan_NN patterns_NNS ._.
+In_IN Proc_NNP ._.
+of_IN 4th_JJ Intl_NNP ._.
+Workshop_NNP on_IN Declarative_JJ Agent_NNP Languages_NNPS and_CC Technologies_NNPS ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- D_NN ._.
+Kinny_NNP ._.
+The_DT Psi_NN calculus_NN :_: an_DT algebraic_JJ agent_NN language_NN ._.
+In_IN Proc_NNP ._.
+of_IN ATAL_NN ''_'' ##_NN ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- M_NN ._.
+Klein_NNP ,_, J_NNP ._.
+A_DT ._.
+Rodrguez-Aguilar_NNP ,_, and_CC C_NN ._.
+Dellarocas_NNP ._.
+Using_VBG domain-independent_JJ exception_NN handling_VBG services_NNS to_TO enable_VB robust_JJ open_JJ multi-agent_JJ systems_NNS :_: The_DT case_NN of_IN agent_NN death_NN ._.
+Autonomous_JJ Agents_NNS and_CC Multi-Agent_NNP Systems_NNPS ,_, #_# -LRB-_-LRB- 1-2_CD -RRB-_-RRB- :_: 179-189_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- D_NN ._.
+Morley_NNP and_CC K_NNP ._.
+Myers_NNP ._.
+The_DT SPARK_NN agent_NN framework_NN ._.
+In_IN Proc_NNP ._.
+of_IN AAMAS_NNP ''_'' ##_NN ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- D_NN ._.
+Morley_NNP ,_, K_NNP ._.
+L_NN ._.
+Myers_NNP ,_, and_CC N_NN ._.
+Yorke-Smith_NNP ._.
+Continuous_JJ refinement_NN of_IN agent_NN resource_NN estimates_NNS ._.
+In_IN Proc_NNP ._.
+of_IN AAMAS_NNP ''_'' ##_NN ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- K_NN ._.
+Myers_NNP ,_, P_NN ._.
+Berry_NNP ,_, J_NNP ._.
+Blythe_NNP ,_, K_NNP ._.
+Conley_NNP ,_, M_NN ._.
+Gervasio_NNP ,_, D_NNP ._.
+McGuinness_NNP ,_, D_NNP ._.
+Morley_NNP ,_, A_NNP ._.
+Pfeffer_NNP ,_, M_NN ._.
+Pollack_NNP ,_, and_CC M_NN ._.
+Tambe_NN ._.
+An_DT intelligent_JJ personal_JJ assistant_NN for_IN task_NN and_CC time_NN management_NN ._.
+AI_NNP Magazine_NNP ,_, ##_CD ,_, ####_CD ._.
+To_TO appear_VB ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- K_NN ._.
+L_NN ._.
+Myers_NNP and_CC N_NNP ._.
+Yorke-Smith_NNP ._.
+A_DT cognitive_JJ framework_NN for_IN delegation_NN to_TO an_DT assistive_JJ user_NN agent_NN ._.
+In_IN Proc_NNP ._.
+of_IN AAAI_NNP ####_CD Fall_NN Symposium_NN on_IN Mixed-Initiative_JJ Problem-Solving_NNP Assistants_NNPS ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- L_NN ._.
+Padgham_NNP and_CC M_NN ._.
+Winikoff_NNP ._.
+Developing_VBG Intelligent_JJ Agent_NNP Systems_NNPS :_: A_DT Practical_NNP Guide_NNP ._.
+John_NNP Wiley_NNP and_CC Sons_NNPS ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- A_DT ._.
+Pokahr_NNP ,_, L_NNP ._.
+Braubach_NNP ,_, and_CC W_NN ._.
+Lamersdorf_NN ._.
+Jadex_NNP :_: A_NNP BDI_NNP reasoning_NN engine_NN ._.
+In_IN R_NN ._.
+Bordini_NNP ,_, M_NN ._.
+Dastani_NNP ,_, J_NNP ._.
+Dix_NNP ,_, and_CC A_NN ._.
+E_NN ._.
+F_NN ._.
+Seghrouchni_NNP ,_, editors_NNS ,_, Multi-Agent_JJ Programming_NN ._.
+Springer_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- A_DT ._.
+S_NN ._.
+Rao_NNP ._.
+AgentSpeak_NN -LRB-_-LRB- L_NN -RRB-_-RRB- :_: BDI_NN agents_NNS speak_VBP out_IN in_IN a_DT logical_JJ computable_JJ language_NN ._.
+In_IN Proc_NNP ._.
+of_IN Seventh_NNP European_NNP Workshop_NNP on_IN Modelling_NNP Autonomous_NNP Agents_NNPS in_IN a_DT Multi-Agent_JJ World_NN ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- A_DT ._.
+S_NN ._.
+Rao_NNP and_CC M_NN ._.
+P_NN ._.
+Georgeff_NNP ._.
+An_DT abstract_JJ architecture_NN for_IN rational_JJ agents_NNS ._.
+In_IN Proc_NNP ._.
+of_IN KR_NN ''_'' ##_NN ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- S_NN ._.
+Sardina_NNP ,_, L_NNP ._.
+de_IN Silva_NNP ,_, and_CC L_NN ._.
+Padgham_NNP ._.
+Hierarchical_JJ planning_NN in_IN BDI_NNP agent_NN programming_NN languages_NNS :_: a_DT formal_JJ approach_NN ._.
+In_IN Proc_NNP ._.
+of_IN AAMAS_NNP ''_'' ##_NN ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- S_NN ._.
+Sardina_NNP and_CC L_NNP ._.
+Padgham_NNP ._.
+Goals_NNS in_IN the_DT context_NN of_IN bdi_NN plan_NN failure_NN and_CC planning_NN ._.
+In_IN Proc_NNP ._.
+of_IN AAMAS_NNP ''_'' ##_NN ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+Thangarajah_NNP ,_, L_NNP ._.
+Padgham_NNP ,_, and_CC M_NN ._.
+Winikoff_NNP ._.
+Detecting_VBG and_CC exploiting_VBG positive_JJ goal_NN interaction_NN in_IN intelligent_JJ agents_NNS ._.
+In_IN Proc_NNP ._.
+of_IN AAMAS_NNP ''_'' ##_NN ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+Thangarajah_NNP ,_, M_NN ._.
+Winikoff_NNP ,_, L_NNP ._.
+Padgham_NNP ,_, and_CC K_NN ._.
+Fischer_NNP ._.
+Avoiding_VBG resource_NN conflicts_NNS in_IN intelligent_JJ agents_NNS ._.
+In_IN Proc_NNP ._.
+of_IN ECAI-02_NN ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- A_DT ._.
+Unruh_NNP ,_, J_NNP ._.
+Bailey_NNP ,_, and_CC K_NN ._.
+Ramamohanarao_NNP ._.
+A_DT framework_NN for_IN goal-based_JJ semantic_JJ compensation_NN in_IN agent_NN systems_NNS ._.
+In_IN Proc_NNP ._.
+of_IN First_NNP Intl_NNP ._.
+Workshop_NNP on_IN Safety_NNP and_CC Security_NNP in_IN Multi-Agent_NNP Systems_NNPS ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- A_DT ._.
+Unruh_NNP ,_, H_NN ._.
+Harjadi_NNP ,_, J_NNP ._.
+Bailey_NNP ,_, and_CC K_NN ._.
+Ramamohanarao_NNP ._.
+Semantic-compensation-based_JJ recovery_NN management_NN in_IN multi-agent_JJ systems_NNS ._.
+In_IN Proc_NNP ._.
+of_IN Second_JJ IEEE_NNP Symposium_NNP on_IN Multi-Agent_NNP Security_NNP and_CC Survivability_NNP -LRB-_-LRB- IEEE_NNP MAS_NNP &_CC S_NNP ''_'' ##_NN -RRB-_-RRB- ,_, ####_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- M_NN ._.
+Winikoff_NNP ,_, L_NNP ._.
+Padgham_NNP ,_, J_NNP ._.
+Harland_NNP ,_, and_CC J_NN ._.
+Thangarajah_NNP ._.
+Declarative_JJ and_CC procedural_JJ goals_NNS in_IN intelligent_JJ agent_NN systems_NNS ._.
+In_IN Proc_NNP ._.
+of_IN KR_NN ''_'' ##_NN ,_, ####_CD ._.
+The_DT Sixth_NNP Intl_NNP ._.
+Joint_NNP Conf_NNP ._.
+on_IN Autonomous_NNP Agents_NNPS and_CC Multi-Agent_NNP Systems_NNP -LRB-_-LRB- AAMAS_NNP ##_CD -RRB-_-RRB- ##_SYM

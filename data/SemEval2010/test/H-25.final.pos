@@ -1,0 +1,656 @@
+Term_NN Feedback_NN for_IN Information_NNP Retrieval_NNP with_IN Language_NNP Models_NNS Bin_NNP Tan_NNP ,_, Atulya_NNP Velivelli_NNP ,_, Hui_NNP Fang_NNP ,_, ChengXiang_NNP Zhai_NNP Dept_NNP ._.
+of_IN Computer_NNP Science_NNP ,_, Dept_NNP ._.
+of_IN Electrical_JJ and_CC Computer_NNP Engineering_NNP University_NNP of_IN Illinois_NNP at_IN Urbana-Champaign_NNP bintan_NNP @_IN cs_NNS ._.
+uiuc_NN ._.
+edu_NN ,_, velivell_NN @_IN ifp_NN ._.
+uiuc_NN ._.
+edu_NN ,_, hfang_NN @_IN cs_NNS ._.
+uiuc_NN ._.
+edu_NN ,_, czhai_NN @_IN cs_NNS ._.
+uiuc_NN ._.
+edu_NN ABSTRACT_NN In_IN this_DT paper_NN we_PRP study_VBP term-based_JJ feedback_NN for_IN information_NN retrieval_NN in_IN the_DT language_NN modeling_NN approach_NN ._.
+With_IN term_NN feedback_NN a_DT user_NN directly_RB judges_NNS the_DT relevance_NN of_IN individual_JJ terms_NNS without_IN interaction_NN with_IN feedback_NN documents_NNS ,_, taking_VBG full_JJ control_NN of_IN the_DT query_NN expansion_NN process_NN ._.
+We_PRP propose_VBP a_DT cluster-based_JJ method_NN for_IN selecting_VBG terms_NNS to_TO present_VB to_TO the_DT user_NN for_IN judgment_NN ,_, as_RB well_RB as_IN effective_JJ algorithms_NNS for_IN constructing_VBG refined_JJ query_NN language_NN models_NNS from_IN user_NN term_NN feedback_NN ._.
+Our_PRP$ algorithms_NNS are_VBP shown_VBN to_TO bring_VB significant_JJ improvement_NN in_IN retrieval_NN accuracy_NN over_IN a_DT non-feedback_JJ baseline_NN ,_, and_CC achieve_VB comparable_JJ performance_NN to_TO relevance_NN feedback_NN ._.
+They_PRP are_VBP helpful_JJ even_RB when_WRB there_EX are_VBP no_DT relevant_JJ documents_NNS in_IN the_DT top_NN ._.
+Categories_NNS and_CC Subject_NNP Descriptors_NNPS H_NN ._.
+#_# ._.
+#_# -LSB-_-LRB- Information_NNP Search_VB and_CC Retrieval_NN -RSB-_-RRB- :_: Retrieval_NNP models_NNS General_NNP Terms_NNS Algorithms_NNS 1_CD ._.
+INTRODUCTION_NN In_IN the_DT language_NN modeling_NN approach_NN to_TO information_NN retrieval_NN ,_, feedback_NN is_VBZ often_RB modeled_VBN as_IN estimating_VBG an_DT improved_VBN query_NN model_NN or_CC relevance_NN model_NN based_VBN on_IN a_DT set_NN of_IN feedback_NN documents_NNS -LSB-_-LRB- ##_NNS ,_, ##_NN -RSB-_-RRB- ._.
+This_DT is_VBZ in_IN line_NN with_IN the_DT traditional_JJ way_NN of_IN doing_VBG relevance_NN feedback_NN -_: presenting_VBG a_DT user_NN with_IN documents_NNS /_: passages_NNS for_IN relevance_NN judgment_NN and_CC then_RB extracting_VBG terms_NNS from_IN the_DT judged_VBN documents_NNS or_CC passages_NNS to_TO expand_VB the_DT initial_JJ query_NN ._.
+It_PRP is_VBZ an_DT indirect_JJ way_NN of_IN seeking_VBG user_NN ''_'' s_NNS assistance_NN for_IN query_NN model_NN construction_NN ,_, in_IN the_DT sense_NN that_IN the_DT refined_VBN query_NN model_NN -LRB-_-LRB- based_VBN on_IN terms_NNS -RRB-_-RRB- is_VBZ learned_VBN through_IN feedback_NN documents_NNS /_: passages_NNS ,_, which_WDT are_VBP high-level_JJ structures_NNS of_IN terms_NNS ._.
+It_PRP has_VBZ the_DT disadvantage_NN that_WDT irrelevant_JJ terms_NNS ,_, which_WDT occur_VBP along_IN with_IN relevant_JJ ones_NNS in_IN the_DT judged_VBN content_NN ,_, may_MD be_VB erroneously_RB used_VBN for_IN query_NN expansion_NN ,_, causing_VBG undesired_JJ effects_NNS ._.
+For_IN example_NN ,_, for_IN the_DT TREC_NN query_NN Hubble_NNP telescope_NN achievements_NNS ,_, when_WRB a_DT relevant_JJ document_NN talks_NNS more_RBR about_IN the_DT telescope_NN ''_'' s_NNS repair_NN than_IN its_PRP$ discoveries_NNS ,_, irrelevant_JJ terms_NNS such_JJ as_IN spacewalk_NN can_MD be_VB added_VBN into_IN the_DT modified_VBN query_NN ._.
+We_PRP can_MD consider_VB a_DT more_RBR direct_JJ way_NN to_TO involve_VB a_DT user_NN in_IN query_NN model_NN improvement_NN ,_, without_IN an_DT intermediary_JJ step_NN of_IN document_NN feedback_NN that_WDT can_MD introduce_VB noise_NN ._.
+The_DT idea_NN is_VBZ to_TO present_VB a_DT -LRB-_-LRB- reasonable_JJ -RRB-_-RRB- number_NN of_IN individual_JJ terms_NNS to_TO the_DT user_NN and_CC ask_VB him_PRP /_: her_PRP$ to_TO judge_VB the_DT relevance_NN of_IN each_DT term_NN or_CC directly_RB specify_VB their_PRP$ probabilities_NNS in_IN the_DT query_NN model_NN ._.
+This_DT strategy_NN has_VBZ been_VBN discussed_VBN in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ,_, but_CC to_TO our_PRP$ knowledge_NN ,_, it_PRP has_VBZ not_RB been_VBN seriously_RB studied_VBN in_IN existing_VBG language_NN modeling_NN literature_NN ._.
+Compared_VBN to_TO traditional_JJ relevance_NN feedback_NN ,_, this_DT term-based_JJ approach_NN to_TO interactive_JJ query_NN model_NN refinement_NN has_VBZ several_JJ advantages_NNS ._.
+First_RB ,_, the_DT user_NN has_VBZ better_JJR control_NN of_IN the_DT final_JJ query_NN model_NN through_IN direct_JJ manipulation_NN of_IN terms_NNS :_: he_PRP /_: she_PRP can_MD dictate_VB which_WDT terms_NNS are_VBP relevant_JJ ,_, irrelevant_JJ ,_, and_CC possibly_RB ,_, to_TO what_WP degree_NN ._.
+This_DT avoids_VBZ the_DT risk_NN of_IN bringing_VBG unwanted_JJ terms_NNS into_IN the_DT query_NN model_NN ,_, although_IN sometimes_RB the_DT user_NN introduces_VBZ low-quality_JJ terms_NNS ._.
+Second_RB ,_, because_IN a_DT term_NN takes_VBZ less_JJR time_NN to_TO judge_NN than_IN a_DT document_NN ''_'' s_NNS full_JJ text_NN or_CC summary_NN ,_, and_CC as_IN few_JJ as_IN around_IN ##_CD presented_VBN terms_NNS can_MD bring_VB significant_JJ improvement_NN in_IN retrieval_NN performance_NN -LRB-_-LRB- as_IN we_PRP will_MD show_VB later_RB -RRB-_-RRB- ,_, term_NN feedback_NN makes_VBZ it_PRP faster_RBR to_TO gather_VB user_NN feedback_NN ._.
+This_DT is_VBZ especially_RB helpful_JJ for_IN interactive_JJ adhoc_NN search_NN ._.
+Third_NNP ,_, sometimes_RB there_EX are_VBP no_DT relevant_JJ documents_NNS in_IN the_DT top_JJ N_NN of_IN the_DT initially_RB retrieved_VBN results_NNS if_IN the_DT topic_NN is_VBZ hard_RB ._.
+This_DT is_VBZ often_RB true_JJ when_WRB N_NN is_VBZ constrained_VBN to_TO be_VB small_JJ ,_, which_WDT arises_VBZ from_IN the_DT fact_NN that_IN the_DT user_NN is_VBZ unwilling_JJ to_TO judge_VB too_RB many_JJ documents_NNS ._.
+In_IN this_DT case_NN ,_, relevance_NN feedback_NN is_VBZ useless_JJ ,_, as_IN no_DT relevant_JJ document_NN can_MD be_VB leveraged_VBN on_IN ,_, but_CC term_NN feedback_NN is_VBZ still_RB often_RB helpful_JJ ,_, by_IN allowing_VBG relevant_JJ terms_NNS to_TO be_VB picked_VBN from_IN irrelevant_JJ documents_NNS ._.
+During_IN our_PRP$ participation_NN in_IN the_DT TREC_NN ####_CD HARD_JJ Track_NNP and_CC continued_VBD study_NN afterward_RB ,_, we_PRP explored_VBD how_WRB to_TO exploit_VB term_NN feedback_NN from_IN the_DT user_NN to_TO construct_VB improved_JJ query_NN models_NNS for_IN information_NN retrieval_NN in_IN the_DT language_NN modeling_NN approach_NN ._.
+We_PRP identified_VBD two_CD key_JJ subtasks_NNS of_IN term-based_JJ feedback_NN ,_, i_FW ._.
+e_LS ._.
+,_, pre-feedback_JJ presentation_NN term_NN selection_NN and_CC post-feedback_JJ query_NN model_NN construction_NN ,_, with_IN effective_JJ algorithms_NNS developed_VBD for_IN both_DT ._.
+We_PRP imposed_VBD a_DT secondary_JJ cluster_NN structure_NN on_IN terms_NNS and_CC found_VBD that_IN a_DT cluster_NN view_NN sheds_VBZ additional_JJ insight_NN into_IN the_DT user_NN ''_'' s_NNS information_NN need_NN ,_, and_CC provides_VBZ a_DT good_JJ way_NN of_IN utilizing_VBG term_NN feedback_NN ._.
+Through_IN experiments_NNS we_PRP found_VBD that_IN term_NN feedback_NN improves_VBZ significantly_RB over_IN the_DT nonfeedback_JJ baseline_NN ,_, even_RB though_IN the_DT user_NN often_RB makes_VBZ mistakes_NNS in_IN relevance_NN judgment_NN ._.
+Among_IN our_PRP$ algorithms_NNS ,_, the_DT one_CD with_IN best_JJS retrieval_NN performance_NN is_VBZ TCFB_NNP ,_, the_DT combination_NN of_IN TFB_NN ,_, the_DT direct_JJ term_NN feedback_NN algorithm_NN ,_, and_CC CFB_NNP ,_, the_DT cluster-based_JJ feedback_NN algorithm_NN ._.
+We_PRP also_RB varied_VBD the_DT number_NN of_IN feedback_NN terms_NNS and_CC observed_VBN reasonable_JJ improvement_NN even_RB at_IN low_JJ numbers_NNS ._.
+Finally_RB ,_, by_IN comparing_VBG term_NN feedback_NN with_IN document-level_JJ feedback_NN ,_, we_PRP found_VBD it_PRP to_TO be_VB a_DT viable_JJ alternative_NN to_TO the_DT latter_JJ with_IN competitive_JJ retrieval_NN performance_NN ._.
+The_DT rest_NN of_IN the_DT paper_NN is_VBZ organized_VBN as_IN follows_VBZ ._.
+Section_NN #_# discusses_VBZ some_DT related_JJ work_NN ._.
+Section_NN #_# outlines_VBZ our_PRP$ general_JJ approach_NN to_TO term_VB feedback_NN ._.
+We_PRP present_VBP our_PRP$ method_NN for_IN presentation_NN term_NN selection_NN in_IN Section_NN #_# and_CC algorithms_NNS for_IN query_NN model_NN construction_NN in_IN Section_NN #_# ._.
+The_DT experiment_NN results_NNS are_VBP given_VBN in_IN Section_NN #_# ._.
+Section_NN #_# concludes_VBZ this_DT paper_NN ._.
+2_LS ._.
+RELATED_JJ WORK_VBP Relevance_NN feedback_NN -LSB-_-LRB- ##_CD ,_, ##_CD -RSB-_-RRB- has_VBZ long_RB been_VBN recognized_VBN as_IN an_DT effective_JJ method_NN for_IN improving_VBG retrieval_NN performance_NN ._.
+Normally_RB ,_, the_DT top_JJ N_NN documents_NNS retrieved_VBN using_VBG the_DT original_JJ query_NN are_VBP presented_VBN to_TO the_DT user_NN for_IN judgment_NN ,_, after_IN which_WDT terms_NNS are_VBP extracted_VBN from_IN the_DT judged_VBN relevant_JJ documents_NNS ,_, weighted_VBN by_IN their_PRP$ potential_NN of_IN attracting_VBG more_RBR relevant_JJ documents_NNS ,_, and_CC added_VBD into_IN the_DT query_NN model_NN ._.
+The_DT expanded_VBN query_NN usually_RB represents_VBZ the_DT user_NN ''_'' s_NNS information_NN need_VB better_JJR than_IN the_DT original_JJ one_CD ,_, which_WDT is_VBZ often_RB just_RB a_DT short_JJ keyword_NN query_NN ._.
+A_DT second_JJ iteration_NN of_IN retrieval_NN using_VBG this_DT modified_VBN query_NN usually_RB produces_VBZ significant_JJ increase_NN in_IN retrieval_NN accuracy_NN ._.
+In_IN cases_NNS where_WRB true_JJ relevance_NN judgment_NN is_VBZ unavailable_JJ and_CC all_DT top_JJ N_NN documents_NNS are_VBP assumed_VBN to_TO be_VB relevant_JJ ,_, it_PRP is_VBZ called_VBN blind_JJ or_CC pseudo_JJ feedback_NN -LSB-_-LRB- #_# ,_, ##_NN -RSB-_-RRB- and_CC usually_RB still_RB brings_VBZ performance_NN improvement_NN ._.
+Because_IN document_NN is_VBZ a_DT large_JJ text_NN unit_NN ,_, when_WRB it_PRP is_VBZ used_VBN for_IN relevance_NN feedback_NN many_JJ irrelevant_JJ terms_NNS can_MD be_VB introduced_VBN into_IN the_DT feedback_NN process_NN ._.
+To_TO overcome_VB this_DT ,_, passage_NN feedback_NN is_VBZ proposed_VBN and_CC shown_VBN to_TO improve_VB feedback_NN performance_NN -LSB-_-LRB- #_# ,_, ##_NN -RSB-_-RRB- ._.
+A_DT more_JJR direct_JJ solution_NN is_VBZ to_TO ask_VB the_DT user_NN for_IN their_PRP$ relevance_NN judgment_NN of_IN feedback_NN terms_NNS ._.
+For_IN example_NN ,_, in_IN some_DT relevance_NN feedback_NN systems_NNS such_JJ as_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ,_, there_EX is_VBZ an_DT interaction_NN step_NN that_WDT allows_VBZ the_DT user_NN to_TO add_VB or_CC remove_VB expansion_NN terms_NNS after_IN they_PRP are_VBP automatically_RB extracted_VBN from_IN relevant_JJ documents_NNS ._.
+This_DT is_VBZ categorized_VBN as_IN interactive_JJ query_NN expansion_NN ,_, where_WRB the_DT original_JJ query_NN is_VBZ augmented_JJ with_IN user-provided_JJ terms_NNS ,_, which_WDT can_MD come_VB from_IN direct_JJ user_NN input_NN -LRB-_-LRB- free-form_JJ text_NN or_CC keywords_NNS -RRB-_-RRB- -LSB-_-LRB- ##_CD ,_, #_# ,_, ##_NN -RSB-_-RRB- or_CC user_NN selection_NN of_IN system-suggested_JJ terms_NNS -LRB-_-LRB- using_VBG thesauri_NN -LSB-_-LRB- #_# ,_, ##_NN -RSB-_-RRB- or_CC extracted_VBN from_IN feedback_NN documents_NNS -LSB-_-LRB- #_# ,_, ##_NN ,_, 12_CD ,_, #_# ,_, #_# -RSB-_-RRB- -RRB-_-RRB- ._.
+In_IN many_JJ cases_NNS term_NN relevance_NN feedback_NN has_VBZ been_VBN found_VBN to_TO effectively_RB improve_VB retrieval_NN performance_NN -LSB-_-LRB- #_# ,_, ##_NN ,_, ##_NN ,_, #_# ,_, ##_NN -RSB-_-RRB- ._.
+For_IN example_NN ,_, the_DT study_NN in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- shows_VBZ that_IN the_DT user_NN prefers_VBZ to_TO have_VB explicit_JJ knowledge_NN and_CC direct_JJ control_NN of_IN which_WDT terms_NNS are_VBP used_VBN for_IN query_NN expansion_NN ,_, and_CC the_DT penetrable_JJ interface_NN that_WDT provides_VBZ this_DT freedom_NN is_VBZ shown_VBN to_TO perform_VB better_JJR than_IN other_JJ interfaces_NNS ._.
+However_RB ,_, in_IN some_DT other_JJ cases_NNS there_EX is_VBZ no_DT significant_JJ benefit_NN -LSB-_-LRB- #_# ,_, ##_NN -RSB-_-RRB- ,_, even_RB if_IN the_DT user_NN likes_VBZ interacting_VBG with_IN expansion_NN terms_NNS ._.
+In_IN a_DT simulated_JJ study_NN carried_VBD out_RP in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ,_, the_DT author_NN compares_VBZ the_DT retrieval_NN performance_NN of_IN interactive_JJ query_NN expansion_NN and_CC automatic_JJ query_NN expansion_NN with_IN a_DT simulated_JJ study_NN ,_, and_CC suggests_VBZ that_IN the_DT potential_JJ benefits_NNS of_IN the_DT former_JJ can_MD be_VB hard_JJ to_TO achieve_VB ._.
+The_DT user_NN is_VBZ found_VBN to_TO be_VB not_RB good_JJ at_IN identifying_VBG useful_JJ terms_NNS for_IN query_NN expansion_NN ,_, when_WRB a_DT simple_JJ term_NN presentation_NN interface_NN is_VBZ unable_JJ to_TO provide_VB sufficient_JJ semantic_JJ context_NN of_IN the_DT feedback_NN terms_NNS ._.
+Our_PRP$ work_NN differs_VBZ from_IN the_DT previous_JJ ones_NNS in_IN two_CD important_JJ aspects_NNS ._.
+First_RB ,_, when_WRB we_PRP choose_VBP terms_NNS to_TO present_VB to_TO the_DT user_NN for_IN relevance_NN judgment_NN ,_, we_PRP not_RB only_RB consider_VB single-term_JJ value_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, the_DT relative_JJ frequency_NN of_IN a_DT term_NN in_IN the_DT top_JJ documents_NNS ,_, which_WDT can_MD be_VB measured_VBN by_IN metrics_NNS such_JJ as_IN Robertson_NNP Selection_NN Value_NN and_CC Simplified_VBN Kullback-Leibler_NNP Distance_NNP as_IN listed_VBN in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- -RRB-_-RRB- ,_, but_CC also_RB examine_VBP the_DT cluster_NN structure_NN of_IN the_DT terms_NNS ,_, so_RB as_IN to_TO produce_VB a_DT balanced_JJ coverage_NN of_IN the_DT different_JJ topic_NN aspects_NNS ._.
+Second_RB ,_, with_IN the_DT language_NN modelling_NN framework_NN ,_, we_PRP allow_VBP an_DT elaborate_JJ construction_NN of_IN the_DT updated_VBN query_NN model_NN ,_, by_IN setting_VBG different_JJ probabilities_NNS for_IN different_JJ terms_NNS based_VBN on_IN whether_IN it_PRP is_VBZ a_DT query_JJ term_NN ,_, its_PRP$ significance_NN in_IN the_DT top_JJ documents_NNS ,_, and_CC its_PRP$ cluster_NN membership_NN ._.
+Although_IN techniques_NNS for_IN adjusting_VBG query_JJ term_NN weights_NNS exist_VBP for_IN vector_NN space_NN models_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- and_CC probablistic_JJ relevance_NN models_NNS -LSB-_-LRB- #_# -RSB-_-RRB- ,_, most_JJS of_IN the_DT aforementioned_JJ works_NNS do_VBP not_RB use_VB them_PRP ,_, choosing_VBG to_TO just_RB append_VB feedback_NN terms_NNS to_TO the_DT original_JJ query_NN -LRB-_-LRB- thus_RB using_VBG equal_JJ weights_NNS for_IN them_PRP -RRB-_-RRB- ,_, which_WDT can_MD lead_VB to_TO poorer_JJR retrieval_NN performance_NN ._.
+The_DT combination_NN of_IN the_DT two_CD aspects_NNS allows_VBZ our_PRP$ method_NN to_TO perform_VB much_RB better_JJR than_IN the_DT baseline_NN ._.
+The_DT usual_JJ way_NN for_IN feedback_NN term_NN presentation_NN is_VBZ just_RB to_TO display_VB the_DT terms_NNS in_IN a_DT list_NN ._.
+There_EX have_VBP been_VBN some_DT works_NNS on_IN alternative_JJ user_NN interfaces_NNS ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- arranges_VBZ terms_NNS in_IN a_DT hierarchy_NN ,_, and_CC -LSB-_-LRB- ##_CD -RSB-_-RRB- compares_VBZ three_CD different_JJ interfaces_NNS ,_, including_VBG terms_NNS +_CC checkboxes_NNS ,_, terms_NNS +_CC context_NN -LRB-_-LRB- sentences_NNS -RRB-_-RRB- +_CC checkboxes_NNS ,_, sentences_NNS +_CC input_NN text_NN box_NN ._.
+In_IN both_DT studies_NNS ,_, however_RB ,_, there_EX is_VBZ no_DT significant_JJ performance_NN difference_NN ._.
+In_IN our_PRP$ work_NN we_PRP adopt_VBP the_DT simplest_JJS approach_NN of_IN terms_NNS +_CC checkboxes_NNS ._.
+We_PRP focus_VBP on_IN term_NN presentation_NN and_CC query_NN model_NN construction_NN from_IN feedback_NN terms_NNS ,_, and_CC believe_VB using_VBG contexts_NNS to_TO improve_VB feedback_NN term_NN quality_NN should_MD be_VB orthogonal_JJ to_TO our_PRP$ method_NN ._.
+3_LS ._.
+GENERAL_JJ APPROACH_NN We_PRP follow_VBP the_DT language_NN modeling_NN approach_NN ,_, and_CC base_NN our_PRP$ method_NN on_IN the_DT KL-divergence_NN retrieval_NN model_NN proposed_VBN in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ._.
+With_IN this_DT model_NN ,_, the_DT retrieval_NN task_NN involves_VBZ estimating_VBG a_DT query_NN language_NN model_NN q_RB from_IN a_DT given_VBN query_NN ,_, a_DT document_NN language_NN model_NN d_NN from_IN each_DT document_NN ,_, and_CC calculating_VBG their_PRP$ KL-divergence_NN D_NN -LRB-_-LRB- q_NN |_CD |_CD d_NN -RRB-_-RRB- ,_, which_WDT is_VBZ then_RB used_VBN to_TO score_VB the_DT documents_NNS ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- treats_VBZ relevance_NN feedback_NN as_IN a_DT query_NN model_NN re-estimation_NN problem_NN ,_, i_FW ._.
+e_LS ._.
+,_, computing_VBG an_DT updated_VBN query_NN model_NN q_VB given_VBN the_DT original_JJ query_NN text_NN and_CC the_DT extra_JJ evidence_NN carried_VBN by_IN the_DT judged_VBN relevant_JJ documents_NNS ._.
+We_PRP adopt_VBP this_DT view_NN ,_, and_CC cast_VBD our_PRP$ task_NN as_IN updating_VBG the_DT query_NN model_NN from_IN user_NN term_NN feedback_NN ._.
+There_EX are_VBP two_CD key_JJ subtasks_NNS here_RB :_: First_NNP ,_, how_WRB to_TO choose_VB the_DT best_JJS terms_NNS to_TO present_VB to_TO the_DT user_NN for_IN judgment_NN ,_, in_IN order_NN to_TO gather_VB maximal_JJ evidence_NN about_IN the_DT user_NN ''_'' s_NNS information_NN need_NN ._.
+Second_RB ,_, how_WRB to_TO compute_VB an_DT updated_VBN query_NN model_NN based_VBN on_IN this_DT term_NN feedback_NN evidence_NN ,_, so_RB that_IN it_PRP captures_VBZ the_DT user_NN ''_'' s_NNS information_NN need_NN and_CC translates_VBZ into_IN good_JJ retrieval_NN performance_NN ._.
+4_LS ._.
+PRESENTATION_NN TERM_NN SELECTION_NN Proper_JJ selection_NN of_IN terms_NNS to_TO be_VB presented_VBN to_TO the_DT user_NN for_IN judgment_NN is_VBZ crucial_JJ to_TO the_DT success_NN of_IN term_NN feedback_NN ._.
+If_IN the_DT terms_NNS are_VBP poorly_RB chosen_VBN and_CC there_EX are_VBP few_JJ relevant_JJ ones_NNS ,_, the_DT user_NN will_MD have_VB a_DT hard_JJ time_NN looking_VBG for_IN useful_JJ terms_NNS to_TO help_VB clarify_VB his_PRP$ /_: her_PRP$ information_NN need_NN ._.
+If_IN the_DT relevant_JJ terms_NNS are_VBP plentiful_JJ ,_, but_CC all_DT concentrate_NN on_IN a_DT single_JJ aspect_NN of_IN the_DT query_NN topic_NN ,_, then_RB we_PRP will_MD only_RB be_VB able_JJ to_TO get_VB feedback_NN on_IN that_DT aspect_NN and_CC missing_VBG others_NNS ,_, resulting_VBG in_IN a_DT breadth_NN loss_NN in_IN retrieved_VBN results_NNS ._.
+Therefore_RB ,_, it_PRP is_VBZ important_JJ to_TO carefully_RB select_JJ presentation_NN terms_NNS to_TO maximize_VB expected_VBN gain_NN from_IN user_NN feedback_NN ,_, i_FW ._.
+e_LS ._.
+,_, those_DT that_WDT can_MD potentially_RB reveal_VB most_RBS evidence_NN of_IN the_DT user_NN ''_'' s_NNS information_NN need_NN ._.
+This_DT is_VBZ similar_JJ to_TO active_JJ feedback_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, which_WDT suggests_VBZ that_IN a_DT retrieval_NN system_NN should_MD actively_RB probe_VB the_DT user_NN ''_'' s_NNS information_NN need_NN ,_, and_CC in_IN the_DT case_NN of_IN relevance_NN feedback_NN ,_, the_DT feedback_NN documents_NNS should_MD be_VB chosen_VBN to_TO maximize_VB learning_VBG benefits_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+diversely_RB so_RB as_IN to_TO increase_VB coverage_NN -RRB-_-RRB- ._.
+In_IN our_PRP$ approach_NN ,_, the_DT top_JJ N_NN documents_NNS from_IN an_DT initial_JJ retrieval_NN using_VBG the_DT original_JJ query_NN form_VBP the_DT source_NN of_IN feedback_NN terms_NNS :_: all_DT terms_NNS that_WDT appear_VBP in_IN them_PRP are_VBP considered_VBN candidates_NNS to_TO present_VB to_TO the_DT user_NN ._.
+These_DT documents_NNS serve_VBP as_IN pseudo-feedback_NN ,_, since_IN they_PRP provide_VBP a_DT much_JJ richer_JJR context_NN than_IN the_DT original_JJ query_NN -LRB-_-LRB- usually_RB very_RB short_JJ -RRB-_-RRB- ,_, while_IN the_DT user_NN is_VBZ not_RB asked_VBN to_TO judge_VB their_PRP$ relevance_NN ._.
+Due_JJ to_TO the_DT latter_JJ reason_NN ,_, it_PRP is_VBZ possible_JJ to_TO make_VB N_NN quite_RB large_JJ -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, in_IN our_PRP$ experiments_NNS we_PRP set_VBD N_NN =_JJ ##_NN -RRB-_-RRB- to_TO increase_VB its_PRP$ coverage_NN of_IN different_JJ aspects_NNS in_IN the_DT topic_NN ._.
+The_DT simplest_JJS way_NN of_IN selecting_VBG feedback_NN terms_NNS is_VBZ to_TO choose_VB the_DT most_RBS frequent_JJ M_NN terms_NNS from_IN the_DT N_NN documents_NNS ._.
+This_DT method_NN ,_, however_RB ,_, has_VBZ two_CD drawbacks_NNS ._.
+First_RB ,_, a_DT lot_NN of_IN common_JJ noisy_JJ terms_NNS will_MD be_VB selected_VBN due_JJ to_TO their_PRP$ high_JJ frequencies_NNS in_IN the_DT document_NN collection_NN ,_, unless_IN a_DT stop-word_JJ list_NN is_VBZ used_VBN for_IN filtering_VBG ._.
+Second_RB ,_, the_DT presentation_NN list_NN will_MD tend_VB to_TO be_VB filled_VBN by_IN terms_NNS from_IN major_JJ aspects_NNS of_IN the_DT topic_NN ;_: those_DT from_IN a_DT minor_JJ aspect_NN are_VBP likely_JJ to_TO be_VB missed_VBN due_JJ to_TO their_PRP$ relatively_RB low_JJ frequencies_NNS ._.
+We_PRP solve_VBP the_DT above_JJ problems_NNS by_IN two_CD corresponding_JJ measures_NNS ._.
+First_RB ,_, we_PRP introduce_VBP a_DT background_NN model_NN B_NN that_WDT is_VBZ estimated_VBN from_IN collection_NN statistics_NNS and_CC explains_VBZ the_DT common_JJ terms_NNS ,_, so_RB that_IN they_PRP are_VBP much_RB less_RBR likely_JJ to_TO appear_VB in_IN the_DT presentation_NN list_NN ._.
+Second_RB ,_, the_DT terms_NNS are_VBP selected_VBN from_IN multiple_JJ clusters_NNS in_IN the_DT pseudo-feedback_JJ documents_NNS ,_, to_TO ensure_VB sufficient_JJ representation_NN of_IN different_JJ aspects_NNS of_IN the_DT topic_NN ._.
+We_PRP rely_VBP on_IN the_DT mixture_NN multinomial_JJ model_NN ,_, which_WDT is_VBZ used_VBN for_IN theme_NN discovery_NN in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ._.
+Specifically_RB ,_, we_PRP assume_VBP the_DT N_NN documents_NNS contain_VBP K_NN clusters_NNS -LCB-_-LRB- Ci_NN |_CD i_FW =_JJ #_# ,_, #_# ,_, K_NNP -RCB-_-RRB- ,_, each_DT characterized_VBN by_IN a_DT multinomial_JJ word_NN distribution_NN -LRB-_-LRB- also_RB known_VBN as_IN unigram_JJ language_NN model_NN -RRB-_-RRB- i_FW and_CC corresponding_VBG to_TO an_DT aspect_NN of_IN the_DT topic_NN ._.
+The_DT documents_NNS are_VBP regarded_VBN as_IN sampled_VBN from_IN a_DT mixture_NN of_IN K_NN +_CC #_# components_NNS ,_, including_VBG the_DT K_NN clusters_NNS and_CC the_DT background_NN model_NN :_: p_NN -LRB-_-LRB- w_NN |_CD d_NN -RRB-_-RRB- =_JJ Bp_NN -LRB-_-LRB- w_NN |_NN B_NN -RRB-_-RRB- +_CC -LRB-_-LRB- #_# B_NN -RRB-_-RRB- K_NN i_FW =_JJ #_# d_NN ,_, ip_NN -LRB-_-LRB- w_NN |_CD i_LS -RRB-_-RRB- where_WRB w_NN is_VBZ a_DT word_NN ,_, B_NN is_VBZ the_DT mixture_NN weight_NN for_IN the_DT background_NN model_NN B_NN ,_, and_CC d_NN ,_, i_FW is_VBZ the_DT document-specific_JJ mixture_NN weight_NN for_IN the_DT i-th_JJ cluster_NN model_NN i_FW ._.
+We_PRP then_RB estimate_VBP the_DT cluster_NN models_NNS by_IN maximizing_VBG the_DT probability_NN of_IN the_DT pseudo-feedback_JJ documents_NNS being_VBG generated_VBN from_IN the_DT multinomial_JJ mixture_NN model_NN :_: log_NN p_NN -LRB-_-LRB- D_NN |_VBN -RRB-_-RRB- =_JJ dD_NN wV_NN c_NN -LRB-_-LRB- w_NN ;_: d_LS -RRB-_-RRB- log_NN p_NN -LRB-_-LRB- w_NN |_CD d_NN -RRB-_-RRB- where_WRB D_NN =_JJ -LCB-_-LRB- di_FW |_FW i_FW =_JJ #_# ,_, #_# ,_, N_NN -RCB-_-RRB- is_VBZ the_DT set_NN of_IN the_DT N_NN documents_NNS ,_, V_NN is_VBZ the_DT vocabulary_NN ,_, c_NN -LRB-_-LRB- w_NN ;_: d_LS -RRB-_-RRB- is_VBZ w_NN ''_'' s_NNS frequency_NN in_IN d_NN and_CC =_JJ -LCB-_-LRB- i_FW |_FW i_FW =_JJ 1_CD ,_, #_# ,_, K_NNP -RCB-_-RRB- -LCB-_-LRB- dij_NN |_CD i_FW =_JJ #_# ,_, #_# ,_, N_NN ,_, j_NN =_JJ #_# ,_, #_# ,_, K_NNP -RCB-_-RRB- is_VBZ the_DT set_NN of_IN model_NN parameters_NNS to_TO estimate_VB ._.
+The_DT cluster_NN models_NNS can_MD be_VB efficiently_RB estimated_VBN using_VBG the_DT Expectation-Maximization_NN -LRB-_-LRB- EM_NN -RRB-_-RRB- algorithm_NN ._.
+For_IN its_PRP$ details_NNS ,_, we_PRP refer_VBP the_DT reader_NN to_TO -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Table_NNP #_# shows_VBZ the_DT cluster_NN models_NNS for_IN TREC_NN query_NN Transportation_NN tunnel_NN disasters_NNS -LRB-_-LRB- K_NN =_JJ #_# -RRB-_-RRB- ._.
+Note_VB that_IN only_RB the_DT middle_JJ cluster_NN is_VBZ relevant_JJ ._.
+Table_NNP #_# :_: Cluster_NN models_NNS for_IN topic_NN ###_CD Transportation_NN tunnel_NN disasters_NNS Cluster_NNP #_# Cluster_NNP #_# Cluster_NNP #_# tunnel_NN #_# ._.
+####_RB tunnel_NN #_# ._.
+####_RB tunnel_NN #_# ._.
+####_NN transport_NN #_# ._.
+####_CD fire_NN #_# ._.
+####_NN transport_NN #_# ._.
+####_NN traffic_NN #_# ._.
+####_NN truck_NN #_# ._.
+####_NN toll_NN #_# ._.
+####_NN railwai_NNS #_# ._.
+####_JJ french_JJ #_# ._.
+####_NN amtrak_NN #_# ._.
+####_NN harbor_NN #_# ._.
+####_NN smoke_NN #_# ._.
+####_NN train_NN #_# ._.
+####_RB rail_NN #_# ._.
+####_NN car_NN #_# ._.
+####_NN airport_NN #_# ._.
+####_NN bridg_NN #_# ._.
+####_JJ italian_JJ #_# ._.
+####_NN turnpik_NN #_# ._.
+####_NN kilomet_NN #_# ._.
+####_NN firefight_NN #_# ._.
+####_NN lui_NN #_# ._.
+####_NN truck_NN #_# ._.
+####_RB blaze_NN #_# ._.
+####_NN jersei_NN #_# ._.
+####_CD construct_NN #_# ._.
+####_NN blanc_NN #_# ._.
+####_CD pass_NN #_# ._.
+####_CD From_IN each_DT of_IN the_DT K_NNP estimated_VBD clusters_NNS ,_, we_PRP choose_VBP the_DT L_NN =_JJ M_NN /_: K_NNP terms_NNS with_IN highest_JJS probabilities_NNS to_TO form_VB a_DT total_NN of_IN M_NN presentation_NN terms_NNS ._.
+If_IN a_DT term_NN happens_VBZ to_TO be_VB in_IN top_JJ L_NN in_IN multiple_JJ clusters_NNS ,_, we_PRP assign_VBP it_PRP to_TO the_DT cluster_NN where_WRB it_PRP has_VBZ highest_JJS probability_NN and_CC let_VB the_DT other_JJ clusters_NNS take_VBP one_CD more_JJR term_NN as_IN compensation_NN ._.
+We_PRP also_RB filter_NN out_RP terms_NNS in_IN the_DT original_JJ query_NN text_NN because_IN they_PRP tend_VBP to_TO always_RB be_VB relevant_JJ when_WRB the_DT query_NN is_VBZ short_JJ ._.
+The_DT selected_VBN terms_NNS are_VBP then_RB presented_VBN to_TO the_DT user_NN for_IN judgment_NN ._.
+A_DT sample_NN -LRB-_-LRB- completed_VBN -RRB-_-RRB- feedback_NN form_NN is_VBZ shown_VBN in_IN Figure_NNP #_# ._.
+In_IN this_DT study_NN we_PRP only_RB deal_VBP with_IN binary_JJ judgment_NN :_: a_DT presented_VBN term_NN is_VBZ by_IN default_NN unchecked_JJ ,_, and_CC a_DT user_NN may_MD check_VB it_PRP to_TO indicate_VB relevance_NN ._.
+We_PRP also_RB do_VBP not_RB explicitly_RB exploit_VB negative_JJ feedback_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, penalizing_VBG irrelevant_JJ terms_NNS -RRB-_-RRB- ,_, because_IN with_IN binary_JJ feedback_NN an_DT unchecked_JJ term_NN is_VBZ not_RB necessarily_RB irrelevant_JJ -LRB-_-LRB- maybe_RB the_DT user_NN is_VBZ unsure_JJ about_IN its_PRP$ relevance_NN -RRB-_-RRB- ._.
+We_PRP could_MD ask_VB the_DT user_NN for_IN finer_JJ judgment_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, choosing_VBG from_IN highly_RB relevant_JJ ,_, somewhat_RB relevant_JJ ,_, do_VBP not_RB know_VB ,_, somewhat_RB irrelevant_JJ and_CC highly_RB irrelevant_JJ -RRB-_-RRB- ,_, but_CC binary_JJ feedback_NN is_VBZ more_RBR compact_JJ ,_, taking_VBG less_RBR space_NN to_TO display_VB and_CC less_JJR user_NN effort_NN to_TO make_VB judgment_NN ._.
+5_CD ._.
+ESTIMATING_VBG QUERY_NNP MODELS_NNP FROM_NNP TERM_NNP FEEDBACK_NNP In_IN this_DT section_NN ,_, we_PRP present_VBP several_JJ algorithms_NNS for_IN exploiting_VBG term_NN feedback_NN ._.
+The_DT algorithms_NNS take_VBP as_RB input_NN the_DT original_JJ query_NN q_NN ,_, the_DT clusters_NNS -LCB-_-LRB- i_FW -RCB-_-RRB- as_IN generated_VBN by_IN the_DT theme_NN discovery_NN algorithm_NN ,_, the_DT set_NN of_IN feedback_NN terms_NNS T_NN and_CC their_PRP$ relevance_NN judgment_NN R_NN ,_, and_CC outputs_VBZ an_DT updated_VBN query_NN language_NN model_NN q_VBP that_IN makes_VBZ best_JJS use_NN of_IN the_DT feedback_NN evidence_NN to_TO capture_VB the_DT user_NN ''_'' s_NNS information_NN need_NN ._.
+First_RB we_PRP describe_VBP our_PRP$ notations_NNS :_: q_VB :_: The_DT original_JJ query_NN model_NN ,_, derived_VBN from_IN query_NN terms_NNS only_RB :_: p_NN -LRB-_-LRB- w_NN |_CD q_NN -RRB-_-RRB- =_JJ c_NN -LRB-_-LRB- w_NN ;_: q_NN -RRB-_-RRB- |_CD q_JJ |_NNS where_WRB c_NN -LRB-_-LRB- w_NN ;_: q_NN -RRB-_-RRB- is_VBZ the_DT count_NN of_IN w_NN in_IN q_NN ,_, and_CC |_NN q_VBP |_NN =_JJ wq_NN c_NN -LRB-_-LRB- w_NN ;_: q_NN -RRB-_-RRB- is_VBZ the_DT query_NN length_NN ._.
+q_NN :_: The_DT updated_VBN query_NN model_NN which_WDT we_PRP need_VBP to_TO estimate_VB from_IN term_NN feedback_NN ._.
+i_FW -LRB-_-LRB- i_FW =_JJ #_# ,_, #_# ,_, ..._: K_NN -RRB-_-RRB- :_: The_DT unigram_JJ language_NN model_NN of_IN cluster_NN Ci_NN ,_, as_IN estimated_VBN using_VBG the_DT theme_NN discovery_NN algorithm_NN ._.
+T_NN =_JJ -LCB-_-LRB- ti_NN ,_, j_NN -RCB-_-RRB- -LRB-_-LRB- i_FW =_JJ #_# ..._: K_NNP ,_, j_NN =_JJ #_# ..._: L_NN -RRB-_-RRB- :_: The_DT set_NN of_IN terms_NNS presented_VBN to_TO the_DT user_NN for_IN judgment_NN ._.
+ti_NN ,_, j_NN is_VBZ the_DT j-th_JJ term_NN chosen_VBN from_IN cluster_NN Ci_NN ._.
+R_NN =_SYM -LCB-_-LRB- w_NN |_CD w_NN T_NN -RCB-_-RRB- :_: w_NN is_VBZ an_DT indicator_NN variable_NN that_WDT is_VBZ #_# if_IN w_NN is_VBZ judged_VBN relevant_JJ or_CC #_# otherwise_RB ._.
+5_CD ._.
+#_# TFB_NN -LRB-_-LRB- Direct_JJ Term_NN Feedback_NN -RRB-_-RRB- This_DT is_VBZ a_DT straight-forward_JJ form_NN of_IN term_NN feedback_NN that_WDT does_VBZ not_RB involve_VB any_DT secondary_JJ structure_NN ._.
+We_PRP give_VBP a_DT weight_NN of_IN #_# to_TO terms_NNS judged_VBN relevant_JJ by_IN the_DT user_NN ,_, a_DT weight_NN of_IN to_TO query_VB terms_NNS ,_, zero_CD weight_NN to_TO other_JJ terms_NNS ,_, and_CC then_RB apply_VB normalization_NN :_: p_NN -LRB-_-LRB- w_NN |_CD q_NN -RRB-_-RRB- =_JJ w_NN +_CC c_NN -LRB-_-LRB- w_NN ;_: q_NN -RRB-_-RRB- w_NN T_NN w_NN +_CC |_CD q_JJ |_NN where_WRB w_NN T_NN w_NN is_VBZ the_DT total_JJ number_NN of_IN terms_NNS that_WDT are_VBP judged_VBN relevant_JJ ._.
+We_PRP call_VBP this_DT method_NN TFB_NN -LRB-_-LRB- direct_JJ Term_NN FeedBack_NN -RRB-_-RRB- ._.
+If_IN we_PRP let_VBP =_JJ #_# ,_, this_DT approach_NN is_VBZ equivalent_JJ to_TO appending_VBG the_DT relevant_JJ terms_NNS after_IN the_DT original_JJ query_NN ,_, which_WDT is_VBZ what_WP standard_JJ query_NN expansion_NN -LRB-_-LRB- without_IN term_NN reweighting_NN -RRB-_-RRB- does_VBZ ._.
+If_IN we_PRP set_VBD >_JJR #_# ,_, we_PRP are_VBP putting_VBG more_JJR emphasis_NN on_IN the_DT query_NN terms_NNS than_IN the_DT checked_VBN ones_NNS ._.
+Note_VB that_IN the_DT result_NN model_NN will_MD be_VB more_RBR biased_VBN toward_IN q_NN if_IN the_DT original_JJ query_NN is_VBZ long_JJ or_CC the_DT user_NN feedback_NN is_VBZ weak_JJ ,_, which_WDT makes_VBZ sense_NN ,_, as_IN we_PRP can_MD trust_VB more_RBR on_IN the_DT original_JJ query_NN in_IN either_CC case_NN ._.
+Figure_NNP #_# :_: Filled_VBN clarification_NN form_NN for_IN Topic_NNP ###_CD 363_CD transportation_NN tunnel_NN disasters_NNS Please_VB select_VB all_DT terms_NNS that_WDT are_VBP relevant_JJ to_TO the_DT topic_NN ._.
+traffic_NN railway_NN harbor_VBP rail_NN bridge_NN kilometer_NN construct_NN swiss_JJ cross_NN link_NN kong_NN hong_NN river_NN project_NN meter_NN shanghai_NN fire_NN truck_NN french_JJ smoke_NN car_NN italian_JJ firefights_NNS blaze_VBP blanc_JJ mont_NN victim_NN franc_NN rescue_NN driver_NN chamonix_NN emerge_VBP toll_NN amtrak_NN train_NN airport_NN turnpike_NN lui_NN jersey_NN pass_NN rome_NN z_SYM center_NN electron_NN road_NN boston_NN speed_NN bu_NN submit_VBP 5_CD ._.
+#_# CFB_NNP -LRB-_-LRB- Cluster_NNP Feedback_NNP -RRB-_-RRB- Here_RB we_PRP exploit_VBP the_DT cluster_NN structure_NN that_WDT played_VBD an_DT important_JJ role_NN when_WRB we_PRP selected_VBD the_DT presentation_NN terms_NNS ._.
+The_DT clusters_NNS represent_VBP different_JJ aspects_NNS of_IN the_DT query_NN topic_NN ,_, each_DT of_IN which_WDT may_MD or_CC may_MD not_RB be_VB relevant_JJ ._.
+If_IN we_PRP are_VBP able_JJ to_TO identify_VB the_DT relevant_JJ clusters_NNS ,_, we_PRP can_MD combine_VB them_PRP to_TO generate_VB a_DT query_NN model_NN that_WDT is_VBZ good_JJ at_IN discovering_VBG documents_NNS belonging_VBG to_TO these_DT clusters_NNS -LRB-_-LRB- instead_RB of_IN the_DT irrelevant_JJ ones_NNS -RRB-_-RRB- ._.
+We_PRP could_MD ask_VB the_DT user_NN to_TO directly_RB judge_VB the_DT relevance_NN of_IN a_DT cluster_NN after_IN viewing_VBG representative_JJ terms_NNS in_IN that_DT cluster_NN ,_, but_CC this_DT would_MD sometimes_RB be_VB a_DT difficult_JJ task_NN for_IN the_DT user_NN ,_, who_WP has_VBZ to_TO guess_VB the_DT semantics_NNS of_IN a_DT cluster_NN via_IN its_PRP$ set_NN of_IN terms_NNS ,_, which_WDT may_MD not_RB be_VB well_RB connected_VBN to_TO one_CD another_DT due_JJ to_TO a_DT lack_NN of_IN context_NN ._.
+Therefore_RB ,_, we_PRP propose_VBP to_TO learn_VB cluster_NN feedback_NN indirectly_RB ,_, inferring_VBG the_DT relevance_NN of_IN a_DT cluster_NN through_IN the_DT relevance_NN of_IN its_PRP$ feedback_NN terms_NNS ._.
+Because_IN each_DT cluster_NN has_VBZ an_DT equal_JJ number_NN of_IN terms_NNS presented_VBN to_TO the_DT user_NN ,_, the_DT simplest_JJS measure_NN of_IN a_DT cluster_NN ''_'' s_NNS relevance_NN is_VBZ the_DT number_NN of_IN terms_NNS that_WDT are_VBP judged_VBN relevant_JJ in_IN it_PRP ._.
+Intuitively_RB ,_, the_DT more_RBR terms_NNS are_VBP marked_JJ relevant_JJ in_IN a_DT cluster_NN ,_, the_DT closer_JJR the_DT cluster_NN is_VBZ to_TO the_DT query_NN topic_NN ,_, and_CC the_DT more_JJR the_DT cluster_NN should_MD participate_VB in_IN query_NN modification_NN ._.
+If_IN we_PRP combine_VBP the_DT cluster_NN models_NNS using_VBG weights_NNS determined_VBD this_DT way_NN and_CC then_RB interpolate_VBP with_IN the_DT original_JJ query_NN model_NN ,_, we_PRP get_VBP the_DT following_VBG formula_NN for_IN query_NN updating_VBG ,_, which_WDT we_PRP call_VBP CFB_NNP -LRB-_-LRB- Cluster_NNP FeedBack_NNP -RRB-_-RRB- :_: p_NN -LRB-_-LRB- w_NN |_CD q_NN -RRB-_-RRB- =_JJ p_NN -LRB-_-LRB- w_NN |_CD q_NN -RRB-_-RRB- +_CC -LRB-_-LRB- #_# -RRB-_-RRB- K_NN i_FW =_JJ #_# L_NN j_NN =_JJ #_# ti_NNS ,_, j_NN K_NN k_NN =_JJ #_# L_NN j_NN =_JJ #_# tk_NN ,_, j_NN p_NN -LRB-_-LRB- w_NN |_CD i_LS -RRB-_-RRB- where_WRB L_NN j_NN =_JJ #_# ti_NNS ,_, j_NN is_VBZ the_DT number_NN of_IN relevant_JJ terms_NNS in_IN cluster_NN Ci_NN ,_, and_CC K_NNP k_NN =_JJ #_# L_NN j_NN =_JJ #_# tk_NN ,_, j_NN is_VBZ the_DT total_JJ number_NN of_IN relevant_JJ terms_NNS ._.
+We_PRP note_VBP that_IN when_WRB there_EX is_VBZ only_RB one_CD cluster_NN -LRB-_-LRB- K_NN =_JJ #_# -RRB-_-RRB- ,_, the_DT above_JJ formula_NN degenerates_VBZ to_TO p_NN -LRB-_-LRB- w_NN |_CD q_NN -RRB-_-RRB- =_JJ p_NN -LRB-_-LRB- w_NN |_CD q_NN -RRB-_-RRB- +_CC -LRB-_-LRB- #_# -RRB-_-RRB- p_NN -LRB-_-LRB- w_NN |_CD #_# -RRB-_-RRB- which_WDT is_VBZ merely_RB pseudo-feedback_NN of_IN the_DT form_NN proposed_VBN in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ._.
+5_CD ._.
+#_# TCFB_NN -LRB-_-LRB- Term-cluster_NN Feedback_NN -RRB-_-RRB- TFB_NN and_CC CFB_NNP both_DT have_VBP their_PRP$ drawbacks_NNS ._.
+TFB_NN assigns_VBZ non-zero_JJ probabilities_NNS to_TO the_DT presented_VBN terms_NNS that_WDT are_VBP marked_JJ relevant_JJ ,_, but_CC completely_RB ignores_VBZ -LRB-_-LRB- a_DT lot_NN more_RBR -RRB-_-RRB- others_NNS ,_, which_WDT may_MD be_VB left_VBN unchecked_JJ due_JJ to_TO the_DT user_NN ''_'' s_NNS ignorance_NN ,_, or_CC simply_RB not_RB included_VBN in_IN the_DT presentation_NN list_NN ,_, but_CC we_PRP should_MD be_VB able_JJ to_TO infer_VB their_PRP$ relevance_NN from_IN the_DT checked_VBN ones_NNS ._.
+For_IN example_NN ,_, in_IN Figure_NNP #_# ,_, since_IN as_RB many_JJ as_IN #_# terms_NNS in_IN the_DT middle_JJ cluster_NN -LRB-_-LRB- the_DT third_JJ and_CC fourth_JJ columns_NNS -RRB-_-RRB- are_VBP checked_VBN ,_, we_PRP should_MD have_VB high_JJ confidence_NN in_IN the_DT relevance_NN of_IN other_JJ terms_NNS in_IN that_DT cluster_NN ._.
+CFB_NNP remedies_NNS TFB_NN ''_'' s_NNS problem_NN by_IN treating_VBG the_DT terms_NNS in_IN a_DT cluster_NN collectively_RB ,_, so_IN that_IN unchecked_JJ /_: unpresented_JJ terms_NNS receive_VBP weights_NNS when_WRB presented_VBN terms_NNS in_IN their_PRP$ clusters_NNS are_VBP judged_VBN as_IN relevant_JJ ,_, but_CC it_PRP does_VBZ not_RB distinguish_VB which_WDT terms_NNS in_IN a_DT cluster_NN are_VBP presented_VBN or_CC judged_VBN ._.
+Intuitively_RB ,_, the_DT judged_VBN relevant_JJ terms_NNS should_MD receive_VB larger_JJR weights_NNS because_IN they_PRP are_VBP explicitly_RB indicated_VBN as_IN relevant_JJ by_IN the_DT user_NN ._.
+Therefore_RB ,_, we_PRP try_VBP to_TO combine_VB the_DT two_CD methods_NNS ,_, hoping_VBG to_TO get_VB the_DT best_JJS out_IN of_IN both_DT ._.
+We_PRP do_VBP this_DT by_IN interpolating_VBG the_DT TFB_NN model_NN with_IN the_DT CFB_NNP model_NN ,_, and_CC call_VB it_PRP TCFB_NN :_: p_NN -LRB-_-LRB- w_NN |_CD q_NN -RRB-_-RRB- =_JJ p_NN -LRB-_-LRB- w_NN |_CD qT_NN F_NN B_NN -RRB-_-RRB- +_CC -LRB-_-LRB- #_# -RRB-_-RRB- p_NN -LRB-_-LRB- w_NN |_CD qCF_NN B_NN -RRB-_-RRB- 6_CD ._.
+EXPERIMENTS_NNS In_IN this_DT section_NN ,_, we_PRP describe_VBP our_PRP$ experiment_NN results_NNS ._.
+We_PRP first_RB describe_VBP our_PRP$ experiment_NN setup_NN and_CC present_VB an_DT overview_NN of_IN various_JJ methods_NNS ''_'' performance_NN ._.
+Then_RB we_PRP discuss_VBP the_DT effects_NNS of_IN varying_VBG the_DT parameter_NN setting_NN in_IN the_DT algorithms_NNS ,_, as_RB well_RB as_IN the_DT number_NN of_IN presentation_NN terms_NNS ._.
+Next_IN we_PRP analyze_VBP user_NN term_NN feedback_NN behavior_NN and_CC its_PRP$ relation_NN to_TO retrieval_NN performance_NN ._.
+Finally_RB we_PRP compare_VBP term_NN feedback_NN to_TO relevance_NN feedback_NN and_CC show_VBP that_IN it_PRP has_VBZ its_PRP$ particular_JJ advantage_NN ._.
+6_CD ._.
+#_# Experiment_NNP Setup_NNP and_CC Basic_NNP Results_NNS We_PRP took_VBD the_DT opportunity_NN of_IN TREC_NN ####_CD HARD_JJ Track_NNP -LSB-_-LRB- #_# -RSB-_-RRB- for_IN the_DT evaluation_NN of_IN our_PRP$ algorithms_NNS ._.
+The_DT tracks_NNS used_VBD the_DT AQUAINT_NNP collection_NN ,_, a_DT 3GB_NN corpus_NN of_IN English_NNP newswire_NN text_NN ._.
+The_DT topics_NNS included_VBD ##_CD ones_NNS previously_RB known_VBN to_TO be_VB hard_RB ,_, i_FW ._.
+e_LS ._.
+with_IN low_JJ retrieval_NN performance_NN ._.
+It_PRP is_VBZ for_IN these_DT hard_JJ topics_NNS that_WDT user_NN feedback_NN is_VBZ most_RBS helpful_JJ ,_, as_IN it_PRP can_MD provide_VB information_NN to_TO disambiguate_VB the_DT queries_NNS ;_: with_IN easy_JJ topics_NNS the_DT user_NN may_MD be_VB unwilling_JJ to_TO spend_VB efforts_NNS for_IN feedback_NN if_IN the_DT automatic_JJ retrieval_NN results_NNS are_VBP good_JJ enough_RB ._.
+Participants_NNS of_IN the_DT track_NN were_VBD able_JJ to_TO submit_VB custom-designed_JJ clarification_NN forms_NNS -LRB-_-LRB- CF_NN -RRB-_-RRB- to_TO solicit_VB feedback_NN from_IN human_JJ assessors_NNS provided_VBN by_IN Table_NNP #_# :_: Retrieval_NNP performance_NN for_IN different_JJ methods_NNS and_CC CF_NN types_NNS ._.
+The_DT last_JJ row_NN is_VBZ the_DT percentage_NN of_IN MAP_NN improvement_NN over_IN the_DT baseline_NN ._.
+The_DT parameter_NN settings_NNS =_JJ #_# ,_, =_JJ #_# ._.
+#_# ,_, =_JJ #_# ._.
+#_# are_VBP near_IN optimal_JJ ._.
+Baseline_NN TFB1C_NN TFB3C_NN TFB6C_NN CFB1C_NN CFB3C_NN CFB6C_NN TCFB1C_NN TCFB3C_NN TCFB6C_NN MAP_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_CD Pr_NN @_IN ##_CD #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_CD RR_NN ####_CD ####_CD ####_CD ####_CD ####_CD ####_CD ####_CD ####_CD ####_CD ####_CD %_NN #_# %_NN ##_CD ._.
+#_# %_NN ##_CD ._.
+#_# %_NN ##_CD ._.
+#_# %_NN ##_CD ._.
+#_# %_NN ##_CD ._.
+#_# %_NN ##_CD ._.
+#_# %_NN ##_CD ._.
+#_# %_NN ##_CD ._.
+#_# %_NN ##_CD ._.
+#_# %_NN Table_NNP #_# :_: MAP_NN variation_NN with_IN the_DT number_NN of_IN presented_VBN terms_NNS ._.
+#_# terms_NNS TFB1C_NN TFB3C_NN TFB6C_NN CFB3C_NN CFB6C_NN TCFB3C_NN TCFB6C_NN 6_CD #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN 12_CD #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN 18_CD #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN 24_CD #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_RB 30_CD #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN 36_CD #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN 42_CD #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN 48_CD #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_CD NIST_NNP ._.
+We_PRP designed_VBD three_CD sets_NNS of_IN clarification_NN forms_NNS for_IN term_NN feedback_NN ,_, differing_VBG in_IN the_DT choice_NN of_IN K_NN ,_, the_DT number_NN of_IN clusters_NNS ,_, and_CC L_NN ,_, the_DT number_NN of_IN presented_VBN terms_NNS from_IN each_DT cluster_NN ._.
+They_PRP are_VBP :_: #_# ##_CD ,_, a_DT big_JJ cluster_NN with_IN ##_NN terms_NNS ,_, #_# ##_CD ,_, #_# clusters_NNS with_IN ##_NN terms_NNS each_DT ,_, and_CC #_# #_# ,_, #_# clusters_NNS with_IN #_# terms_NNS each_DT ._.
+The_DT total_JJ number_NN of_IN presented_VBN terms_NNS -LRB-_-LRB- M_NN -RRB-_-RRB- is_VBZ fixed_VBN at_IN ##_CD ,_, so_RB by_IN comparing_VBG the_DT performance_NN of_IN different_JJ types_NNS of_IN clarification_NN forms_NNS we_PRP can_MD know_VB the_DT effects_NNS of_IN different_JJ degree_NN of_IN clustering_NN ._.
+For_IN each_DT topic_NN ,_, an_DT assessor_NN would_MD complete_VB the_DT forms_NNS ordered_VBN by_IN #_# #_# ,_, #_# ##_CD and_CC #_# ##_CD ,_, spending_VBG up_RP to_TO three_CD minutes_NNS on_IN each_DT form_NN ._.
+The_DT sample_NN clarification_NN form_NN shown_VBN in_IN Figure_NNP #_# is_VBZ of_IN type_NN #_# ##_CD ._.
+It_PRP is_VBZ a_DT simple_JJ and_CC compact_JJ interface_NN in_IN which_WDT the_DT user_NN can_MD check_VB relevant_JJ terms_NNS ._.
+The_DT form_NN is_VBZ self-explanatory_JJ ;_: there_EX is_VBZ no_DT need_NN for_IN extra_JJ user_NN training_NN on_IN how_WRB to_TO use_VB it_PRP ._.
+Our_PRP$ initinal_JJ queries_NNS are_VBP constructed_VBN only_RB using_VBG the_DT topic_NN title_NN descriptions_NNS ,_, which_WDT are_VBP on_IN average_JJ #_# ._.
+#_# words_NNS in_IN length_NN ._.
+As_IN our_PRP$ baseline_NN we_PRP use_VBP the_DT KL_NN divergence_NN retrieval_NN method_NN implemented_VBN in_IN the_DT Lemur_NNP Toolkit1_NN with_IN #_# pseudo-feedback_JJ documents_NNS ._.
+We_PRP stem_VBP the_DT terms_NNS ,_, choose_VB Dirichlet_NNP smoothing_VBG with_IN a_DT prior_JJ of_IN ####_CD ,_, and_CC truncate_VB query_JJ language_NN models_NNS to_TO ##_VB terms_NNS -LRB-_-LRB- these_DT settings_NNS are_VBP used_VBN throughout_IN the_DT experiments_NNS -RRB-_-RRB- ._.
+For_IN all_DT other_JJ parameters_NNS we_PRP use_VBP Lemur_NNP ''_'' s_VBZ default_NN settings_NNS ._.
+The_DT baseline_NN turns_VBZ out_RP to_TO perform_VB above_JJ average_NN among_IN the_DT track_NN participants_NNS ._.
+After_IN an_DT initial_JJ run_NN using_VBG this_DT baseline_NN retrieval_NN method_NN ,_, we_PRP take_VBP the_DT top_JJ ##_CD documents_NNS for_IN each_DT topic_NN and_CC apply_VB the_DT theme_NN discovery_NN algorithm_NN to_TO output_NN the_DT clusters_NNS -LRB-_-LRB- #_# ,_, #_# ,_, or_CC #_# of_IN them_PRP -RRB-_-RRB- ,_, based_VBN on_IN which_WDT we_PRP generate_VBP clarification_NN forms_NNS ._.
+After_IN user_NN feedback_NN is_VBZ received_VBN ,_, we_PRP run_VBP the_DT term_NN feedback_NN algorithms_NNS -LRB-_-LRB- TFB_NN ,_, CFB_NNP or_CC TCFB_NNP -RRB-_-RRB- to_TO estimate_VB updated_VBN query_NN models_NNS ,_, which_WDT are_VBP then_RB used_VBN for_IN a_DT second_JJ iteration_NN of_IN retrieval_NN ._.
+We_PRP evaluate_VBP the_DT different_JJ retrieval_NN methods_NNS ''_'' performance_NN on_IN their_PRP$ rankings_NNS of_IN the_DT top_JJ ####_CD documents_NNS ._.
+The_DT evaluation_NN metrics_NNS we_PRP adopt_VBP include_VBP mean_JJ average_NN -LRB-_-LRB- non-interpolated_JJ -RRB-_-RRB- precision_NN -LRB-_-LRB- MAP_NN -RRB-_-RRB- ,_, precision_NN at_IN top_JJ ##_NN -LRB-_-LRB- Pr_NN @_IN ##_NN -RRB-_-RRB- and_CC total_JJ relevant_JJ retrieved_VBN -LRB-_-LRB- RR_NN -RRB-_-RRB- ._.
+Table_NNP 2_CD shows_VBZ the_DT performance_NN of_IN various_JJ methods_NNS and_CC configurations_NNS of_IN K_NN L_NN ._.
+The_DT suffixes_NNS -LRB-_-LRB- 1C_NN ,_, 3C_NN ,_, 6C_NN -RRB-_-RRB- after_IN TFB_NN ,_, CFB_NNP ,_, TCFB_NNP stand_VB for_IN the_DT number_NN of_IN clusters_NNS -LRB-_-LRB- K_NN -RRB-_-RRB- ._.
+For_IN example_NN ,_, TCFB3C_NN means_VBZ the_DT TCFB_NN method_NN on_IN the_DT #_# ##_CD clarification_NN forms_NNS ._.
+From_IN Table_NNP #_# we_PRP can_MD make_VB the_DT following_VBG observations_NNS :_: 1_CD http_NN :_: /_: /_: www_NN ._.
+lemurproject_NN ._.
+com_NN 1_CD ._.
+All_DT methods_NNS perform_VBP considerably_RB better_JJR than_IN the_DT pseudofeedback_NN baseline_NN ,_, with_IN TCFB3C_NN achieving_VBG a_DT highest_JJS ##_CD ._.
+#_# %_NN improvement_NN in_IN MAP_NN ,_, indicating_VBG significant_JJ contribution_NN of_IN term_NN feedback_NN for_IN clarification_NN of_IN the_DT user_NN ''_'' s_NNS information_NN need_NN ._.
+In_IN other_JJ words_NNS ,_, term_NN feedback_NN is_VBZ truly_RB helpful_JJ for_IN improving_VBG retrieval_NN accuracy_NN ._.
+2_LS ._.
+For_IN TFB_NN ,_, the_DT performance_NN is_VBZ almost_RB equal_JJ on_IN the_DT #_# ##_CD and_CC 3_CD ##_NN clarification_NN forms_NNS in_IN terms_NNS of_IN MAP_NN -LRB-_-LRB- although_IN the_DT latter_JJ is_VBZ slightly_RB better_RBR in_IN Pr_NNP @_IN ##_CD and_CC RR_NN -RRB-_-RRB- ,_, and_CC a_DT little_JJ worse_JJR on_IN the_DT #_# #_# ones_NNS ._.
+3_LS ._.
+Both_DT CFB3C_NN and_CC CFB6C_NN perform_VB better_JJR than_IN their_PRP$ TFB_NN counterparts_NNS in_IN all_DT three_CD metrics_NNS ,_, suggesting_VBG that_IN feedback_NN on_IN a_DT secondary_JJ cluster_NN structure_NN is_VBZ indeed_RB beneficial_JJ ._.
+CFB1C_NN is_VBZ actually_RB worse_JJR because_IN it_PRP can_MD not_RB adjust_VB the_DT weight_NN of_IN its_PRP$ -LRB-_-LRB- single_JJ -RRB-_-RRB- cluster_NN from_IN term_NN feedback_NN and_CC it_PRP is_VBZ merely_RB pseudofeedback_NN ._.
+4_LS ._.
+Although_IN TCFB_NN is_VBZ just_RB a_DT simple_JJ mixture_NN of_IN TFB_NN and_CC CFB_NN by_IN interpolation_NN ,_, it_PRP is_VBZ able_JJ to_TO outperform_VB both_DT ._.
+This_DT supports_VBZ our_PRP$ speculation_NN that_IN TCFB_NN overcomes_VBZ the_DT drawbacks_NNS of_IN TFB_NN -LRB-_-LRB- paying_VBG attention_NN only_RB to_TO checked_VBN terms_NNS -RRB-_-RRB- and_CC CFB_NNP -LRB-_-LRB- not_RB distinguishing_VBG checked_VBN and_CC unchecked_JJ terms_NNS in_IN a_DT cluster_NN -RRB-_-RRB- ._.
+Except_IN for_IN TCFB6C_NN v_LS ._.
+s_NNS ._.
+CFB6C_NNP ,_, the_DT performance_NN advantage_NN of_IN TCFB_NN over_IN TFB_NN /_: CFB_NNP is_VBZ significant_JJ at_IN p_NN <_JJR #_# ._.
+##_NN using_VBG the_DT Wilcoxon_NNP signed_VBD rank_JJ test_NN ._.
+This_DT is_VBZ not_RB true_JJ in_IN the_DT case_NN of_IN TFB_NN v_LS ._.
+s_NNS ._.
+CFB_NNP ,_, each_DT of_IN which_WDT is_VBZ better_JJR than_IN the_DT other_JJ in_IN nearly_RB half_NN of_IN the_DT topics_NNS ._.
+6_CD ._.
+#_# Reduction_NN of_IN Presentation_NN Terms_NNS In_IN some_DT situations_NNS we_PRP may_MD have_VB to_TO reduce_VB the_DT number_NN of_IN presentation_NN terms_NNS due_JJ to_TO limits_NNS in_IN display_NN space_NN or_CC user_NN feedback_NN efforts_NNS ._.
+It_PRP is_VBZ interesting_JJ to_TO know_VB whether_IN our_PRP$ algorithms_NNS ''_'' performance_NN deteriorates_VBZ when_WRB the_DT user_NN is_VBZ presented_VBN with_IN fewer_JJR terms_NNS ._.
+Because_IN the_DT presentation_NN terms_NNS within_IN each_DT cluster_NN are_VBP generated_VBN in_IN decreasing_VBG order_NN of_IN their_PRP$ frequencies_NNS ,_, the_DT presentation_NN list_NN forms_VBZ a_DT subset_NN of_IN the_DT original_JJ one_CD if_IN its_PRP$ size_NN is_VBZ reduced2_NN ._.
+Therefore_RB ,_, we_PRP can_MD easily_RB simulate_VB what_WP happens_VBZ when_WRB the_DT number_NN of_IN presentation_NN terms_NNS decreases_VBZ 2_CD There_EX are_VBP complexities_NNS arising_VBG from_IN terms_NNS appearing_VBG in_IN top_JJ L_NN of_IN multiple_JJ clusters_NNS ,_, but_CC these_DT are_VBP exceptions_NNS from_IN M_NN to_TO M_NN :_: we_PRP will_MD keep_VB all_DT judgments_NNS of_IN the_DT top_JJ L_NN =_JJ M_NN /_: K_NNP terms_NNS in_IN each_DT cluster_NN and_CC discard_VB those_DT of_IN others_NNS ._.
+Table_NNP #_# shows_VBZ the_DT performance_NN of_IN various_JJ algorithms_NNS as_IN the_DT number_NN of_IN presentation_NN terms_NNS ranges_VBZ from_IN #_# to_TO ##_CD ._.
+We_PRP find_VBP that_IN the_DT performance_NN of_IN TFB_NN is_VBZ more_RBR susceptible_JJ to_TO presentation_NN term_NN reduction_NN than_IN that_DT of_IN CFB_NNP or_CC TCFB_NNP ._.
+For_IN example_NN ,_, at_IN ##_CD terms_NNS the_DT MAP_NN of_IN TFB3C_NN is_VBZ ##_CD ._.
+#_# %_NN of_IN that_DT at_IN ##_CD terms_NNS ,_, while_IN the_DT numbers_NNS for_IN CFB3C_NN and_CC TCFB3C_NN are_VBP ##_CD ._.
+#_# %_NN and_CC ##_NN ._.
+#_# %_NN respectively_RB ._.
+We_PRP conjecture_NN the_DT reason_NN to_TO be_VB that_IN while_IN TFB_NN ''_'' s_NNS performance_NN heavily_RB depends_VBZ on_IN how_WRB many_JJ good_JJ terms_NNS are_VBP chosen_VBN for_IN query_NN expansion_NN ,_, CFB_NNP only_RB needs_VBZ a_DT rough_JJ estimate_NN of_IN cluster_NN weights_NNS to_TO work_VB ._.
+Also_RB ,_, the_DT #_# ##_CD clarification_NN forms_NNS seem_VBP to_TO be_VB more_RBR robust_JJ than_IN the_DT #_# #_# ones_NNS :_: at_IN ##_CD terms_NNS the_DT MAP_NN of_IN TFB6C_NN is_VBZ 87_CD ._.
+#_# %_NN of_IN that_DT at_IN ##_CD terms_NNS ,_, lower_JJR than_IN ##_CD ._.
+#_# %_NN for_IN TFB3C_NN ._.
+Similarly_RB ,_, for_IN CFB_NNP it_PRP is_VBZ ##_CD ._.
+#_# %_NN against_IN ##_CD ._.
+#_# %_NN ._.
+This_DT is_VBZ natual_JJ ,_, as_IN for_IN a_DT large_JJ cluster_NN number_NN of_IN #_# ,_, it_PRP is_VBZ easier_JJR to_TO get_VB into_IN the_DT situation_NN where_WRB each_DT cluster_NN gets_VBZ too_RB few_JJ presentation_NN terms_NNS to_TO make_VB topic_NN diversification_NN useful_JJ ._.
+Overall_RB ,_, we_PRP are_VBP surprised_VBN to_TO see_VB that_IN the_DT algorithms_NNS are_VBP still_RB able_JJ to_TO perform_VB reasonably_RB well_RB when_WRB the_DT number_NN of_IN presentation_NN terms_NNS is_VBZ small_JJ ._.
+For_IN example_NN ,_, at_IN only_RB ##_CD terms_NNS CFB3C_NN -LRB-_-LRB- the_DT clarification_NN form_NN is_VBZ of_IN size_NN #_# #_# -RRB-_-RRB- can_MD still_RB improve_VB ##_NN ._.
+#_# %_NN over_IN the_DT baseline_NN ,_, dropping_VBG slightly_RB from_IN ##_CD ._.
+#_# %_NN at_IN ##_CD terms_NNS ._.
+6_CD ._.
+#_# User_NN Feedback_NN Analysis_NN In_IN this_DT part_NN we_PRP study_VBD several_JJ aspects_NNS of_IN user_NN ''_'' s_NNS term_NN feedback_NN behavior_NN ,_, and_CC whether_IN they_PRP are_VBP connected_VBN to_TO retrieval_NN performance_NN ._.
+Figure_NNP #_# :_: Clarification_NN form_NN completion_NN time_NN distributions_NNS 030_CD ####_CD ####_CD #####_CD ######_CD ######_NN 0_CD 5_CD 10_CD 15_CD 20_CD 25_CD 30_CD 35_CD completion_NN time_NN -LRB-_-LRB- seconds_NNS -RRB-_-RRB- #_# topics_NNS 148_CD 316_CD 68_CD Figure_NNP #_# shows_VBZ the_DT distribution_NN of_IN time_NN needed_VBN to_TO complete_VB a_DT clarification_NN form3_NN ._.
+We_PRP see_VBP that_IN the_DT user_NN is_VBZ usually_RB able_JJ to_TO finish_VB term_NN feedback_NN within_IN a_DT reasonably_RB short_JJ amount_NN of_IN time_NN :_: for_IN more_JJR than_IN half_NN of_IN the_DT topics_NNS the_DT clarification_NN form_NN is_VBZ completed_VBN in_IN just_RB 1_CD minute_NN ,_, and_CC only_RB a_DT small_JJ fraction_NN of_IN topics_NNS -LRB-_-LRB- less_JJR than_IN ##_CD %_NN for_IN 1_CD ##_NN and_CC #_# ##_CD -RRB-_-RRB- take_VBP more_JJR than_IN #_# minutes_NNS ._.
+This_DT suggests_VBZ that_IN term_NN feedback_NN is_VBZ suitable_JJ for_IN interactive_JJ ad-hoc_JJ retrieval_NN ,_, where_WRB a_DT user_NN usually_RB does_VBZ not_RB want_VB to_TO spend_VB too_RB much_JJ time_NN on_IN providing_VBG feedback_NN ._.
+We_PRP find_VBP that_IN a_DT user_NN often_RB makes_VBZ mistakes_NNS when_WRB judging_VBG term_NN relevance_NN ._.
+Sometimes_RB a_DT relevant_JJ term_NN may_MD be_VB left_VBN out_RP because_IN its_PRP$ connection_NN to_TO the_DT query_NN topic_NN is_VBZ not_RB obvious_JJ to_TO the_DT user_NN ._.
+Other_JJ times_NNS a_DT dubious_JJ term_NN may_MD be_VB included_VBN but_CC turns_VBZ out_RP to_TO be_VB irrelevant_JJ ._.
+Take_VB the_DT topic_NN in_IN Figure_NNP #_# for_IN example_NN ._.
+There_EX was_VBD a_DT fire_NN disaster_NN in_IN Mont_NNP 3_CD The_DT maximal_JJ time_NN is_VBZ ###_CD seconds_NNS ,_, as_IN the_DT NIST_NNP assessor_NN would_MD be_VB forced_VBN to_TO submit_VB the_DT form_NN at_IN that_DT moment_NN ._.
+Table_NNP #_# :_: Term_NN selection_NN statistics_NNS -LRB-_-LRB- topic_NN average_NN -RRB-_-RRB- CF_NN Type_NN #_# ##_CD #_# ##_CD #_# #_# #_# checked_VBD terms_NNS ##_CD ._.
+#_# ##_CD ._.
+#_# ##_CD ._.
+#_# #_# rel_NN ._.
+terms_NNS ##_CD ._.
+#_# ##_CD ._.
+#_# ##_CD ._.
+#_# #_# rel_NN ._.
+checked_VBN terms_NNS #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# precision_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN recall_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_CD Blanc_NNP Tunnel_NN between_IN France_NNP and_CC Italy_NNP in_IN ####_NNP ,_, but_CC the_DT user_NN failed_VBD to_TO select_VB such_JJ keywords_NNS as_IN mont_NN ,_, blanc_NN ,_, french_JJ and_CC italian_JJ due_JJ to_TO his_PRP$ /_: her_PRP$ ignorance_NN of_IN the_DT event_NN ._.
+Indeed_RB ,_, without_IN proper_JJ context_NN it_PRP would_MD be_VB hard_JJ to_TO make_VB perfect_JJ judgment_NN ._.
+What_WP is_VBZ then_RB ,_, the_DT extent_NN to_TO which_WDT the_DT user_NN is_VBZ good_JJ at_IN term_NN feedback_NN ?_.
+Does_VBZ it_PRP have_VB serious_JJ impact_NN on_IN retrieval_NN performance_NN ?_.
+To_TO answer_VB these_DT questions_NNS ,_, we_PRP need_VBP a_DT measure_NN of_IN individual_JJ terms_NNS ''_'' true_JJ relevance_NN ._.
+We_PRP adopt_VBP the_DT Simplified_NNP KL_NNP Divergence_NNP metric_JJ used_VBN in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- to_TO decide_VB query_NN expansion_NN terms_NNS as_IN our_PRP$ term_NN relevance_NN measure_NN :_: KLD_NN -LRB-_-LRB- w_NN -RRB-_-RRB- =_JJ p_NN -LRB-_-LRB- w_NN |_CD R_NN -RRB-_-RRB- log_NN p_NN -LRB-_-LRB- w_NN |_CD R_NN -RRB-_-RRB- p_NN -LRB-_-LRB- w_NN |_CD R_NN -RRB-_-RRB- where_WRB p_NN -LRB-_-LRB- w_NN |_CD R_NN -RRB-_-RRB- is_VBZ the_DT probability_NN that_IN a_DT relevant_JJ document_NN contains_VBZ term_NN w_NN ,_, and_CC p_NN -LRB-_-LRB- w_NN |_CD R_NN -RRB-_-RRB- is_VBZ the_DT probability_NN that_IN an_DT irrelevant_JJ document_NN contains_VBZ w_NN ,_, both_DT of_IN which_WDT can_MD be_VB easily_RB computed_VBN via_IN maximum_NN likelihood_NN estimate_NN given_VBN document-level_JJ relevance_NN judgment_NN ._.
+If_IN KLD_NNP -LRB-_-LRB- w_NN -RRB-_-RRB- >_JJR #_# ,_, w_NN is_VBZ more_RBR likely_JJ to_TO appear_VB in_IN relevant_JJ documents_NNS than_IN irrelevant_JJ ones_NNS ._.
+We_PRP consider_VBP a_DT term_NN relevant_JJ if_IN its_PRP$ Simplified_NNP KL_NNP Divergence_NNP value_NN is_VBZ greater_JJR than_IN a_DT certain_JJ threshold_NN #_# ._.
+We_PRP can_MD then_RB define_VB precision_NN and_CC recall_NN of_IN user_NN term_NN judgment_NN accordingly_RB :_: precision_NN is_VBZ the_DT fraction_NN of_IN terms_NNS checked_VBN by_IN the_DT user_NN that_WDT are_VBP relevant_JJ ;_: recall_NN is_VBZ the_DT fraction_NN of_IN presented_VBN relevant_JJ terms_NNS that_WDT are_VBP checked_VBN by_IN the_DT user_NN ._.
+Table_NNP #_# shows_VBZ the_DT number_NN of_IN checked_VBN terms_NNS ,_, relevant_JJ terms_NNS and_CC relevant_JJ checked_VBN terms_NNS when_WRB #_# is_VBZ set_VBN to_TO #_# ._.
+#_# ,_, as_RB well_RB as_IN the_DT precision_NN /_: recall_NN of_IN user_NN term_NN judgment_NN ._.
+Note_VB that_DT when_WRB the_DT clarification_NN forms_NNS contain_VBP more_JJR clusters_NNS ,_, fewer_JJR terms_NNS are_VBP checked_VBN :_: ##_CD ._.
+#_# for_IN #_# ##_CD ,_, ##_CD ._.
+#_# for_IN #_# ##_CD and_CC 11_CD ._.
+#_# for_IN ##_CD ._.
+Similar_JJ pattern_NN holds_VBZ for_IN relevant_JJ terms_NNS and_CC relevant_JJ checked_VBN terms_NNS ._.
+There_EX seems_VBZ to_TO be_VB a_DT trade-off_NN between_IN increasing_VBG topic_NN diversity_NN by_IN clustering_NN and_CC losing_VBG extra_JJ relevant_JJ terms_NNS :_: when_WRB there_EX are_VBP more_RBR clusters_NNS ,_, each_DT of_IN them_PRP gets_VBZ fewer_JJR terms_NNS to_TO present_JJ ,_, which_WDT can_MD hurt_VB a_DT major_JJ relevant_JJ cluster_NN that_WDT contains_VBZ many_JJ relevant_JJ terms_NNS ._.
+Therefore_RB ,_, it_PRP is_VBZ not_RB always_RB helpful_JJ to_TO have_VB more_JJR clusters_NNS ,_, e_LS ._.
+g_NN ._.
+,_, TFB6C_NN is_VBZ actually_RB worse_JJR than_IN TFB1C_NN ._.
+The_DT major_JJ finding_NN we_PRP can_MD make_VB from_IN Table_NNP #_# is_VBZ that_IN the_DT user_NN is_VBZ not_RB particularly_RB good_JJ at_IN identifying_VBG relevant_JJ terms_NNS ,_, which_WDT echoes_NNS the_DT discovery_NN in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ._.
+In_IN the_DT case_NN of_IN #_# ##_CD clarification_NN forms_NNS ,_, the_DT average_JJ number_NN of_IN terms_NNS checked_VBD as_IN relevant_JJ by_IN the_DT user_NN is_VBZ ##_CD ._.
+#_# per_IN topic_NN ,_, and_CC the_DT average_JJ number_NN of_IN relevant_JJ terms_NNS whose_WP$ KLD_NNP value_NN exceed_VBP #_# ._.
+#_# is_VBZ ##_CD ._.
+#_# ._.
+The_DT user_NN is_VBZ able_JJ to_TO recognize_VB only_RB #_# ._.
+#_# of_IN these_DT terms_NNS on_IN average_NN ._.
+Indeed_RB ,_, the_DT precision_NN and_CC recall_NN of_IN user_NN feedback_NN terms_NNS -LRB-_-LRB- as_IN defined_VBN previously_RB -RRB-_-RRB- are_VBP far_RB from_IN perfect_JJ ._.
+On_IN the_DT other_JJ hand_NN ,_, If_IN the_DT user_NN had_VBD correctly_RB checked_VBN all_DT such_JJ relevant_JJ terms_NNS ,_, the_DT performance_NN of_IN our_PRP$ algorithms_NNS would_MD have_VB increased_VBN a_DT lot_NN ,_, as_IN shown_VBN in_IN Table_NNP #_# ._.
+We_PRP see_VBP that_IN TFB_NN gets_VBZ big_JJ improvement_NN when_WRB there_EX is_VBZ an_DT oracle_NN who_WP checks_VBZ all_DT relevant_JJ terms_NNS ,_, while_IN CFB_NNP meets_VBZ a_DT bottleneck_NN around_IN MAP_NN of_IN #_# ._.
+###_NN ,_, since_IN all_DT it_PRP does_VBZ is_VBZ adjust_VBP cluster_NN weights_NNS ,_, and_CC when_WRB the_DT learned_VBN weights_NNS are_VBP close_JJ to_TO being_VBG accurate_JJ ,_, it_PRP can_MD not_RB benefit_VB more_RBR from_IN term_NN feedback_NN ._.
+Also_RB note_VBP that_IN TCFB_NN fails_VBZ to_TO outperform_VB TFB_NN ,_, probably_RB because_IN TFB_NN is_VBZ sufficiently_RB accurate_JJ ._.
+Table_NNP #_# :_: Change_NNP of_IN MAP_NN when_WRB using_VBG all_DT -LRB-_-LRB- and_CC only_RB -RRB-_-RRB- relevant_JJ terms_NNS -LRB-_-LRB- KLD_NNP >_JJR #_# ._.
+#_# -RRB-_-RRB- for_IN feedback_NN ._.
+original_JJ term_NN feedback_NN relevant_JJ term_NN feedback_NN TF1_NN #_# ._.
+###_NN #_# ._.
+###_CD TF3_NN #_# ._.
+###_NN #_# ._.
+###_CD TF6_NN #_# ._.
+###_NN #_# ._.
+###_NN CF3_NN #_# ._.
+###_NN #_# ._.
+###_NN CF6_NN #_# ._.
+###_NN #_# ._.
+###_CD TCF3_NN #_# ._.
+###_NN #_# ._.
+###_CD TCF6_NN #_# ._.
+###_NN #_# ._.
+###_NN 6_CD ._.
+#_# Comparison_NN with_IN Relevance_NN Feedback_NN Now_RB we_PRP compare_VBP term_NN feedback_NN with_IN document-level_JJ relevance_NN feedback_NN ,_, in_IN which_WDT the_DT user_NN is_VBZ presented_VBN with_IN the_DT top_JJ N_NN documents_NNS from_IN an_DT initial_JJ retrieval_NN and_CC asked_VBD to_TO judge_VB their_PRP$ relevance_NN ._.
+The_DT feedback_NN process_NN is_VBZ simulated_JJ using_VBG document_NN relevance_NN judgment_NN from_IN NIST_NNP ._.
+We_PRP use_VBP the_DT mixture_NN model_NN based_VBN feedback_NN method_NN proposed_VBN in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ,_, with_IN mixture_NN noise_NN set_VBN to_TO #_# ._.
+##_NN and_CC feedback_NN coefficient_NN set_VBN to_TO #_# ._.
+#_# ._.
+Comparative_JJ evaluation_NN of_IN relevance_NN feedback_NN against_IN other_JJ methods_NNS is_VBZ complicated_VBN by_IN the_DT fact_NN that_IN some_DT documents_NNS have_VBP already_RB been_VBN viewed_VBN during_IN feedback_NN ,_, so_IN it_PRP makes_VBZ no_DT sense_NN to_TO include_VB them_PRP in_IN the_DT retrieval_NN results_NNS of_IN the_DT second_JJ run_NN ._.
+However_RB ,_, this_DT does_VBZ not_RB hold_VB for_IN term_NN feedback_NN ._.
+Thus_RB ,_, to_TO make_VB it_PRP fair_JJ w_NN ._.
+r_NN ._.
+t_NN ._.
+user_NN ''_'' s_NNS information_NN gain_NN ,_, if_IN the_DT feedback_NN documents_NNS are_VBP relevant_JJ ,_, they_PRP should_MD be_VB kept_VBN in_IN the_DT top_NN of_IN the_DT ranking_NN ;_: if_IN they_PRP are_VBP irrelevant_JJ ,_, they_PRP should_MD be_VB left_VBN out_RP ._.
+Therefore_RB ,_, we_PRP use_VBP relevance_NN feedback_NN to_TO produce_VB a_DT ranking_NN of_IN top_JJ ####_CD retrieved_VBN documents_NNS but_CC with_IN every_DT feedback_NN document_NN excluded_VBN ,_, and_CC then_RB prepend_VBD the_DT relevant_JJ feedback_NN documents_NNS at_IN the_DT front_NN ._.
+Table_NNP #_# shows_VBZ the_DT performance_NN of_IN relevance_NN feedback_NN for_IN different_JJ values_NNS of_IN N_NN and_CC compares_VBZ it_PRP with_IN TCFB3C_NN ._.
+Table_NNP #_# :_: Performance_NNP of_IN relevance_NN feedback_NN for_IN different_JJ number_NN of_IN feedback_NN documents_NNS -LRB-_-LRB- N_NN -RRB-_-RRB- ._.
+N_NN MAP_NN Pr_NN @_IN ##_CD RR_NN 5_CD #_# ._.
+###_NN #_# ._.
+###_CD ####_CD 10_CD #_# ._.
+###_NN #_# ._.
+###_CD ####_CD 20_CD #_# ._.
+###_NN #_# ._.
+###_CD ####_CD TCFB3C_NN #_# ._.
+###_NN #_# ._.
+###_CD ####_CD We_PRP see_VBP that_IN the_DT performance_NN of_IN TCFB3C_NN is_VBZ comparable_JJ to_TO that_DT of_IN relevance_NN feedback_NN using_VBG #_# documents_NNS ._.
+Although_IN it_PRP is_VBZ poorer_JJR than_IN when_WRB there_EX are_VBP ##_CD feedback_NN documents_NNS in_IN terms_NNS of_IN MAP_NN and_CC Pr_NN @_IN ##_CD ,_, it_PRP does_VBZ retrieve_VB more_JJR documents_NNS -LRB-_-LRB- ####_CD -RRB-_-RRB- when_WRB going_VBG down_RP the_DT ranked_VBN list_NN ._.
+We_PRP try_VBP to_TO compare_VB the_DT quality_NN of_IN automatically_RB inserted_VBN terms_NNS in_IN relevance_NN feedback_NN with_IN that_DT of_IN manually_RB selected_VBN terms_NNS in_IN term_NN feedback_NN ._.
+This_DT is_VBZ done_VBN by_IN truncating_JJ the_DT relevance_NN feedback_NN modified_VBN query_NN model_NN to_TO a_DT size_NN equal_JJ to_TO the_DT number_NN of_IN checked_VBN terms_NNS for_IN the_DT same_JJ topic_NN ._.
+We_PRP can_MD then_RB compare_VB the_DT terms_NNS in_IN the_DT truncated_VBN model_NN with_IN the_DT checked_VBN terms_NNS ._.
+Figure_NNP #_# shows_VBZ the_DT distribution_NN of_IN the_DT terms_NNS ''_'' KLD_NNP scores_NNS ._.
+We_PRP find_VBP that_IN term_NN feedback_NN tends_VBZ to_TO produce_VB expansion_NN terms_NNS of_IN higher_JJR quality_NN -LRB-_-LRB- those_DT with_IN KLD_NNP >_JJR #_# -RRB-_-RRB- compared_VBN to_TO relevance_NN feedback_NN -LRB-_-LRB- with_IN ##_NN feedback_NN documents_NNS -RRB-_-RRB- ._.
+This_DT does_VBZ not_RB contradict_VB the_DT fact_NN that_IN the_DT latter_JJ yields_NNS higher_JJR retrieval_NN performance_NN ._.
+Actually_RB ,_, when_WRB we_PRP use_VBP the_DT truncated_VBN query_NN model_NN instead_RB of_IN the_DT intact_JJ one_CD refined_VBN from_IN relevance_NN feedback_NN ,_, the_DT MAP_NN is_VBZ only_RB #_# ._.
+###_NN ._.
+The_DT truth_NN Figure_NN #_# :_: Comparison_NN of_IN expansion_NN term_NN quality_NN between_IN relevance_NN feedback_NN -LRB-_-LRB- with_IN ##_NN feedback_NN documents_NNS -RRB-_-RRB- and_CC term_NN feedback_NN -LRB-_-LRB- with_IN #_# ##_CD CFs_NNS -RRB-_-RRB- 10_CD ##_CD ##_CD ##_CD ##_CD ##_CD ##_NN 0_CD 50_CD 100_CD 150_CD 200_CD 250_CD 300_CD 350_CD KLD_NNP #_# terms_NNS relevance_NN feedback_NN term_NN feedback_NN is_VBZ ,_, although_IN there_EX are_VBP many_JJ unwanted_JJ terms_NNS in_IN the_DT expanded_VBN query_NN model_NN from_IN feedback_NN documents_NNS ,_, there_EX are_VBP also_RB more_RBR relevant_JJ terms_NNS than_IN what_WP the_DT user_NN can_MD possibly_RB select_VB from_IN the_DT list_NN of_IN presentation_NN terms_NNS generated_VBN with_IN pseudo-feedback_JJ documents_NNS ,_, and_CC the_DT positive_JJ effects_NNS often_RB outweights_VBZ the_DT negative_JJ ones_NNS ._.
+We_PRP are_VBP interested_JJ to_TO know_VB under_IN what_WP circumstances_NNS term_NN feedback_NN has_VBZ advantage_NN over_IN relevance_NN feedback_NN ._.
+One_CD such_JJ situation_NN is_VBZ when_WRB none_NN of_IN the_DT top_JJ N_NN feedback_NN documents_NNS is_VBZ relevant_JJ ,_, rendering_VBG relevance_NN feedback_NN useless_JJ ._.
+This_DT is_VBZ not_RB infrequent_JJ ,_, as_IN one_NN might_MD have_VB thought_VBN :_: out_IN of_IN the_DT ##_NN topics_NNS ,_, there_EX are_VBP ##_CD such_JJ cases_NNS when_WRB N_NN =_JJ #_# ,_, ##_RB when_WRB N_NN =_JJ ##_CD ,_, and_CC still_RB #_# when_WRB N_NN =_JJ ##_CD ._.
+When_WRB this_DT happens_VBZ ,_, one_PRP can_MD only_RB back_VB off_RP to_TO the_DT original_JJ retrieval_NN method_NN ;_: the_DT power_NN of_IN relevance_NN feedback_NN is_VBZ lost_VBN ._.
+Surprisingly_RB ,_, in_IN ##_CD out_IN of_IN ##_CD such_JJ cases_NNS where_WRB relevance_NN feedback_NN seems_VBZ impossible_JJ ,_, the_DT user_NN is_VBZ able_JJ to_TO check_VB at_IN least_JJS #_# relevant_JJ terms_NNS from_IN the_DT #_# ##_CD clarification_NN form_NN -LRB-_-LRB- we_PRP consider_VBP term_NN t_NN to_TO be_VB relevant_JJ if_IN KLD_NNP -LRB-_-LRB- t_NN -RRB-_-RRB- >_JJR #_# ._.
+#_# -RRB-_-RRB- ._.
+Furthermore_RB ,_, in_IN ##_CD out_IN of_IN them_PRP TCFB3C_NN outperforms_VBZ the_DT pseudo-feedback_JJ baseline_NN ,_, increasing_VBG MAP_NN from_IN #_# ._.
+###_CD to_TO #_# ._.
+###_NN on_IN average_NN -LRB-_-LRB- these_DT are_VBP particularly_RB hard_JJ topics_NNS -RRB-_-RRB- ._.
+We_PRP think_VBP that_IN there_EX are_VBP two_CD possible_JJ explanations_NNS for_IN this_DT phenomenon_NN of_IN term_NN feedback_NN being_VBG active_JJ even_RB when_WRB relevance_NN feedback_NN does_VBZ not_RB work_VB :_: First_NNP ,_, even_RB if_IN none_NN of_IN the_DT top_JJ N_NN -LRB-_-LRB- suppose_VB it_PRP is_VBZ a_DT small_JJ number_NN -RRB-_-RRB- documents_NNS are_VBP relevant_JJ ,_, we_PRP may_MD still_RB find_VB relevant_JJ documents_NNS in_IN top_JJ ##_NNS ,_, which_WDT is_VBZ more_RBR inclusive_JJ but_CC usually_RB unreachable_JJ when_WRB people_NNS are_VBP doing_VBG relevance_NN feedback_NN in_IN interactive_JJ ad-hoc_JJ search_NN ,_, from_IN which_WDT we_PRP can_MD draw_VB feedback_NN terms_NNS ._.
+This_DT is_VBZ true_JJ for_IN topic_NN ###_CD piracy_NN ,_, where_WRB the_DT top_JJ ##_CD feedback_NN documents_NNS are_VBP all_DT about_IN software_NN piracy_NN ,_, yet_RB there_EX are_VBP documents_NNS between_IN 10-60_CD that_WDT are_VBP about_IN piracy_NN on_IN the_DT seas_NNS -LRB-_-LRB- which_WDT is_VBZ about_IN the_DT real_JJ information_NN need_NN -RRB-_-RRB- ,_, contributing_VBG terms_NNS such_JJ as_IN pirate_NN ,_, ship_NN for_IN selection_NN in_IN the_DT clarification_NN form_NN ._.
+Second_RB ,_, for_IN some_DT topics_NNS ,_, a_DT document_NN needs_VBZ to_TO meet_VB some_DT special_JJ condition_NN in_IN order_NN to_TO be_VB relevant_JJ ._.
+The_DT top_JJ N_NN documents_NNS may_MD be_VB related_VBN to_TO the_DT topic_NN ,_, but_CC nonetheless_RB irrelevant_JJ ._.
+In_IN this_DT case_NN ,_, we_PRP may_MD still_RB extract_VB useful_JJ terms_NNS from_IN these_DT documents_NNS ,_, even_RB if_IN they_PRP do_VBP not_RB qualify_VB as_IN relevant_JJ ones_NNS ._.
+For_IN example_NN ,_, in_IN topic_NN ###_CD consumer_NN online_JJ shopping_NN ,_, a_DT document_NN needs_VBZ to_TO mention_VB what_WP contributes_VBZ to_TO shopping_VBG growth_NN to_TO really_RB match_VB the_DT specified_VBN information_NN need_NN ,_, hence_RB none_NN of_IN the_DT top_JJ ##_CD feedback_NN documents_NNS are_VBP regarded_VBN as_IN relevant_JJ ._.
+But_CC nevertheless_RB ,_, the_DT feedback_NN terms_NNS such_JJ as_IN retail_JJ ,_, commerce_NN are_VBP good_JJ for_IN query_NN expansion_NN ._.
+7_CD ._.
+CONCLUSIONS_NNS In_IN this_DT paper_NN we_PRP studied_VBD the_DT use_NN of_IN term_NN feedback_NN for_IN interactive_JJ information_NN retrieval_NN in_IN the_DT language_NN modeling_NN approach_NN ._.
+We_PRP proposed_VBD a_DT cluster-based_JJ method_NN for_IN selecting_VBG presentation_NN terms_NNS as_RB well_RB as_IN algorithms_NNS to_TO estimate_VB refined_JJ query_NN models_NNS from_IN user_NN term_NN feedback_NN ._.
+We_PRP saw_VBD significant_JJ improvement_NN in_IN retrieval_NN accuracy_NN brought_VBN by_IN term_NN feedback_NN ,_, in_IN spite_NN of_IN the_DT fact_NN that_IN a_DT user_NN often_RB makes_VBZ mistakes_NNS in_IN relevance_NN judgment_NN that_WDT hurts_VBZ its_PRP$ performance_NN ._.
+We_PRP found_VBD the_DT best-performing_JJ algorithm_NN to_TO be_VB TCFB_NN ,_, which_WDT benefits_VBZ from_IN the_DT combination_NN of_IN directly_RB observed_VBN term_NN evidence_NN with_IN TFB_NN and_CC indirectly_RB learned_VBD cluster_NN relevance_NN with_IN CFB_NNP ._.
+When_WRB we_PRP reduced_VBD the_DT number_NN of_IN presentation_NN terms_NNS ,_, term_NN feedback_NN is_VBZ still_RB able_JJ to_TO keep_VB much_JJ of_IN its_PRP$ performance_NN gain_NN over_IN the_DT baseline_NN ._.
+Finally_RB ,_, we_PRP compared_VBD term_NN feedback_NN to_TO document-level_JJ relevance_NN feedback_NN ,_, and_CC found_VBD that_IN TCFB3C_NN ''_'' s_NNS performance_NN is_VBZ on_IN a_DT par_NN with_IN the_DT latter_JJ with_IN #_# feedback_NN documents_NNS ._.
+We_PRP regarded_VBD term_NN feedback_NN as_IN a_DT viable_JJ alternative_NN to_TO traditional_JJ relevance_NN feedback_NN ,_, especially_RB when_WRB there_EX are_VBP no_DT relevant_JJ documents_NNS in_IN the_DT top_NN ._.
+We_PRP propose_VBP to_TO extend_VB our_PRP$ work_NN in_IN several_JJ ways_NNS ._.
+First_RB ,_, we_PRP want_VBP to_TO study_VB whether_IN the_DT use_NN of_IN various_JJ contexts_NNS can_MD help_VB the_DT user_NN to_TO better_JJR identify_VB term_NN relevance_NN ,_, while_IN not_RB sacrificing_VBG the_DT simplicity_NN and_CC compactness_NN of_IN term_NN feedback_NN ._.
+Second_RB ,_, currently_RB all_DT terms_NNS are_VBP presented_VBN to_TO the_DT user_NN in_IN a_DT single_JJ batch_NN ._.
+We_PRP could_MD instead_RB consider_VB iterative_JJ term_NN feedback_NN ,_, by_IN presenting_VBG a_DT small_JJ number_NN of_IN terms_NNS first_RB ,_, and_CC show_VB more_JJR terms_NNS after_IN receiving_VBG user_NN feedback_NN or_CC stop_VB when_WRB the_DT refined_VBN query_NN is_VBZ good_JJ enough_RB ._.
+The_DT presented_VBN terms_NNS should_MD be_VB selected_VBN dynamically_RB to_TO maximize_VB learning_VBG benefits_NNS at_IN any_DT moment_NN ._.
+Third_NNP ,_, we_PRP have_VBP plans_NNS to_TO incorporate_VB term_NN feedback_NN into_IN our_PRP$ UCAIR_NN toolbar_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, an_DT Internet_NN Explorer_NNP plugin_NNP ,_, to_TO make_VB it_PRP work_VB for_IN web_NN search_NN ._.
+We_PRP are_VBP also_RB interested_JJ in_IN studying_VBG how_WRB to_TO combine_VB term_NN feedback_NN with_IN relevance_NN feedback_NN or_CC implicit_JJ feedback_NN ._.
+We_PRP could_MD ,_, for_IN example_NN ,_, allow_VBP the_DT user_NN to_TO dynamically_RB modify_VB terms_NNS in_IN a_DT language_NN model_NN learned_VBD from_IN feedback_NN documents_NNS ._.
+8_CD ._.
+ACKNOWLEDGMENT_NNP This_DT work_NN is_VBZ supported_VBN in_IN part_NN by_IN the_DT National_NNP Science_NNP Foundation_NNP grants_NNS IIS-0347933_NN and_CC IIS-0428472_NN ._.
+9_CD ._.
+REFERENCES_NNS -LSB-_-LRB- #_# -RSB-_-RRB- J_NN ._.
+Allan_NNP ._.
+Relevance_NN feedback_NN with_IN too_RB much_JJ data_NNS ._.
+In_IN Proceedings_NNP of_IN the_DT 18th_JJ annual_JJ international_JJ ACM_NNP SIGIR_NNP conference_NN on_IN research_NN and_CC development_NN in_IN information_NN retrieval_NN ,_, pages_NNS 337-343_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- J_NN ._.
+Allan_NNP ._.
+HARD_JJ track_NN overview_NN in_IN TREC_NN ####_CD -_: High_JJ Accuracy_NNP Retrieval_NNP from_IN Documents_NNS ._.
+In_IN The_DT Fourteenth_JJ Text_VB REtrieval_NNP Conference_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- P_NN ._.
+Anick_NNP ._.
+Using_VBG terminological_JJ feedback_NN for_IN web_NN search_NN refinement_NN :_: a_DT log-based_JJ study_NN ._.
+In_IN Proceedings_NNP of_IN the_DT 26th_JJ annual_JJ international_JJ ACM_NNP SIGIR_NNP conference_NN on_IN research_NN and_CC development_NN in_IN informaion_NN retrieval_NN ,_, pages_NNS 88-95_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- P_NN ._.
+G_NN ._.
+Anick_NNP and_CC S_NN ._.
+Tipirneni_NNP ._.
+The_DT paraphrase_NN search_NN assistant_NN :_: terminological_JJ feedback_NN for_IN iterative_JJ information_NN seeking_VBG ._.
+In_IN Proceedings_NNP of_IN the_DT 22nd_JJ annual_JJ international_JJ ACM_NNP SIGIR_NNP conference_NN on_IN research_NN and_CC development_NN in_IN information_NN retrieval_NN ,_, pages_NNS 153-159_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- C_NN ._.
+Buckley_NNP ,_, G_NNP ._.
+Salton_NNP ,_, J_NNP ._.
+Allan_NNP ,_, and_CC A_NN ._.
+Singhal_NNP ._.
+Automatic_NNP query_NN expansion_NN using_VBG SMART_NNP ._.
+In_IN Proceedings_NNP of_IN the_DT Third_NNP Text_VB REtrieval_NNP Conference_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- D_NN ._.
+Harman_NNP ._.
+Towards_IN interactive_JJ query_NN expansion_NN ._.
+In_IN Proceedings_NNP of_IN the_DT 11th_JJ annual_JJ international_JJ ACM_NNP SIGIR_NNP conference_NN on_IN research_NN and_CC development_NN in_IN information_NN retrieval_NN ,_, pages_NNS 321-331_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- N_NN ._.
+A_DT ._.
+Jaleel_NNP ,_, A_NNP ._.
+Corrada-Emmanuel_NNP ,_, Q_NNP ._.
+Li_NNP ,_, X_NN ._.
+Liu_NNP ,_, C_NNP ._.
+Wade_NNP ,_, and_CC J_NN ._.
+Allan_NNP ._.
+UMass_NNP at_IN TREC_NNP ####_CD :_: HARD_NN and_CC QA_NN ._.
+In_IN TREC_NN ,_, pages_NNS 715-725_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- H_NN ._.
+Joho_NNP ,_, C_NNP ._.
+Coverson_NNP ,_, M_NN ._.
+Sanderson_NNP ,_, and_CC M_NN ._.
+Beaulieu_NNP ._.
+Hierarchical_JJ presentation_NN of_IN expansion_NN terms_NNS ._.
+In_IN Proceedings_NNP of_IN the_DT ####_CD ACM_NNP symposium_NN on_IN applied_VBN computing_NN ,_, pages_NNS 645-649_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- K_NNP ._.
+S_NN ._.
+Jones_NNP ,_, S_NN ._.
+Walker_NNP ,_, and_CC S_NN ._.
+E_NN ._.
+Robertson_NNP ._.
+A_DT probabilistic_JJ model_NN of_IN information_NN retrieval_NN :_: development_NN and_CC status_NN ._.
+Technical_NNP Report_NNP ###_NNP ,_, Computer_NNP Laboratory_NNP ,_, University_NNP of_IN Cambridge_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- D_NN ._.
+Kelly_NNP ,_, V_NNP ._.
+D_NN ._.
+Dollu_NNP ,_, and_CC X_NN ._.
+Fu_NN ._.
+The_DT loquacious_JJ user_NN :_: a_DT document-independent_JJ source_NN of_IN terms_NNS for_IN query_NN expansion_NN ._.
+In_IN Proceedings_NNP of_IN the_DT 28th_JJ annual_JJ international_JJ ACM_NNP SIGIR_NNP conference_NN on_IN research_NN and_CC development_NN in_IN information_NN retrieval_NN ,_, pages_NNS 457-464_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- D_NN ._.
+Kelly_NNP and_CC X_NNP ._.
+Fu_NN ._.
+Elicitation_NN of_IN term_NN relevance_NN feedback_NN :_: an_DT investigation_NN of_IN term_NN source_NN and_CC context_NN ._.
+In_IN Proceedings_NNP of_IN the_DT 29th_JJ annual_JJ international_JJ ACM_NNP SIGIR_NNP conference_NN on_IN research_NN and_CC development_NN in_IN information_NN retrieval_NN ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+Koenemann_NNP and_CC N_NNP ._.
+Belkin_NNP ._.
+A_DT case_NN for_IN interaction_NN :_: A_DT study_NN of_IN interactive_JJ information_NN retrieval_NN behavior_NN and_CC effectiveness_NN ._.
+In_IN Proceedings_NNP of_IN the_DT SIGCHI_NNP conference_NN on_IN human_JJ factors_NNS in_IN computing_VBG systems_NNS ,_, pages_NNS 205-212_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- V_NN ._.
+Lavrenko_NNP and_CC W_NNP ._.
+B_NN ._.
+Croft_NNP ._.
+Relevance-based_JJ language_NN models_NNS ._.
+In_IN Research_NNP and_CC Development_NNP in_IN Information_NNP Retrieval_NNP ,_, pages_NNS 120-127_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Y_NN ._.
+Nemeth_NNP ,_, B_NN ._.
+Shapira_NNP ,_, and_CC M_NN ._.
+Taeib-Maimon_NNP ._.
+Evaluation_NN of_IN the_DT real_JJ and_CC perceived_VBN value_NN of_IN automatic_JJ and_CC interactive_JJ query_NN expansion_NN ._.
+In_IN Proceedings_NNP of_IN the_DT 27th_JJ annual_JJ international_JJ ACM_NNP SIGIR_NNP conference_NN on_IN research_NN and_CC development_NN in_IN information_NN retrieval_NN ,_, pages_NNS 526-527_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+Ponte_NNP ._.
+A_DT Language_NN Modeling_NN Approach_NN to_TO Information_NNP Retrieval_NNP ._.
+PhD_NN thesis_NN ,_, University_NNP of_IN Massachusetts_NNP at_IN Amherst_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- S_NN ._.
+E_NN ._.
+Robertson_NNP ,_, S_NN ._.
+Walker_NNP ,_, S_NN ._.
+Jones_NNP ,_, M_NN ._.
+Beaulieu_NNP ,_, and_CC M_NN ._.
+Gatford_NNP ._.
+Okapi_NNP at_IN TREC-3_NN ._.
+In_IN Proceedings_NNP of_IN the_DT Third_NNP Text_VB REtrieval_NNP Conference_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+Rocchio_NNP ._.
+Relevance_NN feedback_NN in_IN information_NN retrieval_NN ._.
+In_IN The_DT SMART_JJ retrieval_NN system_NN ,_, pages_NNS 313-323_CD ._.
+####_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- I_PRP ._.
+Ruthven_NNP ._.
+Re-examining_VBG the_DT potential_JJ effectiveness_NN of_IN interactive_JJ query_NN expansion_NN ._.
+In_IN Proceedings_NNP of_IN the_DT 26th_JJ annual_JJ international_JJ ACM_NNP SIGIR_NNP conference_NN on_IN research_NN and_CC development_NN in_IN informaion_NN retrieval_NN ,_, pages_NNS 213-220_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- G_NN ._.
+Salton_NNP and_CC C_NNP ._.
+Buckley_NNP ._.
+Improving_NN retrieval_NN performance_NN by_IN relevance_NN feedback_NN ._.
+Journal_NNP of_IN the_DT American_NNP Society_NNP for_IN Information_NNP Science_NNP ,_, ##_CD :_: 288-297_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- X_NN ._.
+Shen_NNP ,_, B_NN ._.
+Tan_NNP ,_, and_CC C_NN ._.
+Zhai_NNP ._.
+Implicit_JJ user_NN modeling_NN for_IN personalized_JJ search_NN ._.
+In_IN Proceedings_NNP of_IN the_DT 14th_JJ ACM_JJ international_JJ conference_NN on_IN information_NN and_CC knowledge_NN management_NN ,_, pages_NNS 824-831_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- X_NN ._.
+Shen_VBN and_CC C_NN ._.
+Zhai_NNP ._.
+Active_JJ feedback_NN in_IN ad-hoc_JJ information_NN retrieval_NN ._.
+In_IN Proceedings_NNP of_IN the_DT 28th_JJ annual_JJ international_JJ ACM_NNP SIGIR_NNP conference_NN on_IN research_NN and_CC development_NN in_IN information_NN retrieval_NN ,_, pages_NNS 59-66_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- A_DT ._.
+Spink_NNP ._.
+Term_NN relevance_NN feedback_NN and_CC query_NN expansion_NN :_: relation_NN to_TO design_NN ._.
+In_IN Proceedings_NNP of_IN the_DT 17th_JJ annual_JJ international_JJ ACM_NNP SIGIR_NNP conference_NN on_IN research_NN and_CC development_NN in_IN information_NN retrieval_NN ,_, pages_NNS 81-90_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+Xu_NN and_CC W_NN ._.
+B_NN ._.
+Croft_NNP ._.
+Query_NNP expansion_NN using_VBG local_JJ and_CC global_JJ document_NN analysis_NN ._.
+In_IN Proceedings_NNP of_IN the_DT 19th_JJ annual_JJ international_JJ ACM_NNP SIGIR_NNP conference_NN on_IN research_NN and_CC development_NN in_IN information_NN retrieval_NN ,_, pages_NNS 4-11_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- H_NN ._.
+Zaragoza_NNP ,_, N_NNP ._.
+Craswell_NNP ,_, M_NN ._.
+Taylor_NNP ,_, S_NN ._.
+Saria_NNP ,_, and_CC S_NN ._.
+Robertson_NNP ._.
+Microsoft_NNP cambridge_NN at_IN TREC-13_NN :_: Web_NN and_CC HARD_JJ tracks_NNS ._.
+In_IN Proceedings_NNP of_IN the_DT 13th_JJ Text_VB REtrieval_NNP Conference_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- C_NN ._.
+Zhai_NNP and_CC J_NNP ._.
+Lafferty_NNP ._.
+Model-based_JJ feedback_NN in_IN the_DT language_NN modeling_NN approach_NN to_TO information_NN retrieval_NN ._.
+In_IN Proceedings_NNP of_IN the_DT tenth_NN international_JJ conference_NN on_IN information_NN and_CC knowledge_NN management_NN ,_, pages_NNS 403-410_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- C_NN ._.
+Zhai_NNP ,_, A_NNP ._.
+Velivelli_NNP ,_, and_CC B_NN ._.
+Yu_NNP ._.
+A_DT cross-collection_JJ mixture_NN model_NN for_IN comparative_JJ text_NN mining_NN ._.
+In_IN Proceedings_NNP of_IN the_DT tenth_NN ACM_NNP SIGKDD_NNP international_JJ conference_NN on_IN knowledge_NN discovery_NN and_CC data_NNS mining_NN ,_, pages_NNS 743-748_CD ,_, ####_CD ._.

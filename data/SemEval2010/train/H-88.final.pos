@@ -1,0 +1,579 @@
+Controlling_VBG Overlap_NNP in_IN Content-Oriented_NNP XML_NN Retrieval_NNP Charles_NNP L_NNP ._.
+A_DT ._.
+Clarke_NNP School_NNP of_IN Computer_NNP Science_NNP ,_, University_NNP of_IN Waterloo_NNP ,_, Canada_NNP claclark_NN @_IN plg_NN ._.
+uwaterloo_NN ._.
+ca_MD ABSTRACT_NN The_DT direct_JJ application_NN of_IN standard_JJ ranking_JJ techniques_NNS to_TO retrieve_VB individual_JJ elements_NNS from_IN a_DT collection_NN of_IN XML_NN documents_NNS often_RB produces_VBZ a_DT result_NN set_VBN in_IN which_WDT the_DT top_JJ ranks_NNS are_VBP dominated_VBN by_IN a_DT large_JJ number_NN of_IN elements_NNS taken_VBN from_IN a_DT small_JJ number_NN of_IN highly_RB relevant_JJ documents_NNS ._.
+This_DT paper_NN presents_VBZ and_CC evaluates_VBZ an_DT algorithm_NN that_WDT re-ranks_VBZ this_DT result_NN set_NN ,_, with_IN the_DT aim_NN of_IN minimizing_VBG redundant_JJ content_NN while_IN preserving_VBG the_DT benefits_NNS of_IN element_NN retrieval_NN ,_, including_VBG the_DT benefit_NN of_IN identifying_VBG topic-focused_JJ components_NNS contained_VBD within_IN relevant_JJ documents_NNS ._.
+The_DT test_NN collection_NN developed_VBN by_IN the_DT INitiative_NN for_IN the_DT Evaluation_NN of_IN XML_NN Retrieval_NN -LRB-_-LRB- INEX_NN -RRB-_-RRB- forms_VBZ the_DT basis_NN for_IN the_DT evaluation_NN ._.
+Categories_NNS and_CC Subject_NNP Descriptors_NNPS H_NN ._.
+#_# ._.
+#_# -LSB-_-LRB- Information_NNP Systems_NNP -RSB-_-RRB- :_: Information_NNP Storage_NNP and_CC Retrieval-Information_NNP Search_VB and_CC Retrieval_NNP General_NNP Terms_NNS Algorithms_NNS ,_, Measurement_NNP ,_, Performance_NNP ,_, Experimentation_NN 1_CD ._.
+INTRODUCTION_NN The_DT representation_NN of_IN documents_NNS in_IN XML_NN provides_VBZ an_DT opportunity_NN for_IN information_NN retrieval_NN systems_NNS to_TO take_VB advantage_NN of_IN document_NN structure_NN ,_, returning_VBG individual_JJ document_NN components_NNS when_WRB appropriate_JJ ,_, rather_RB than_IN complete_JJ documents_NNS in_IN all_DT circumstances_NNS ._.
+In_IN response_NN to_TO a_DT user_NN query_NN ,_, an_DT XML_NN information_NN retrieval_NN system_NN might_MD return_VB a_DT mixture_NN of_IN paragraphs_NNS ,_, sections_NNS ,_, articles_NNS ,_, bibliographic_JJ entries_NNS and_CC other_JJ components_NNS ._.
+This_DT facility_NN is_VBZ of_IN particular_JJ benefit_NN when_WRB a_DT collection_NN contains_VBZ very_RB long_JJ documents_NNS ,_, such_JJ as_IN product_NN manuals_NNS or_CC books_NNS ,_, where_WRB the_DT user_NN should_MD be_VB directed_VBN to_TO the_DT most_RBS relevant_JJ portions_NNS of_IN these_DT documents_NNS ._.
+Text_VB Compression_NNP for_IN Dynamic_NNP Document_NNP Databases_NNP Alistair_NNP Moffat_NNP Justin_NNP Zobel_NNP Neil_NNP Sharman_NNP Abstract_NNP For_IN ..._: INTRODUCTION_NNP Modern_NNP document_NN databases_NNS ..._: There_EX are_VBP good_JJ reasons_NNS to_TO compress_VB ..._: REDUCING_NNP MEMORY_NNP REQUIREMENTS_NNS ..._: 2_CD ._.
+#_# Method_NNP A_NNP ..._: ..._: Figure_NNP #_# :_: A_DT journal_NN article_NN encoded_VBN in_IN XML_NN ._.
+Figure_NNP #_# provides_VBZ an_DT example_NN of_IN a_DT journal_NN article_NN encoded_VBN in_IN XML_NN ,_, illustrating_VBG many_JJ of_IN the_DT important_JJ characteristics_NNS of_IN XML_NN documents_NNS ._.
+Tags_NNS indicate_VBP the_DT beginning_NN and_CC end_NN of_IN each_DT element_NN ,_, with_IN elements_NNS varying_VBG widely_RB in_IN size_NN ,_, from_IN one_CD word_NN to_TO thousands_NNS of_IN words_NNS ._.
+Some_DT elements_NNS ,_, such_JJ as_IN paragraphs_NNS and_CC sections_NNS ,_, may_MD be_VB reasonably_RB presented_VBN to_TO the_DT user_NN as_IN retrieval_NN results_NNS ,_, but_CC others_NNS are_VBP not_RB appropriate_JJ ._.
+Elements_NNS overlap_VBP each_DT other_JJ -_: articles_NNS contain_VBP sections_NNS ,_, sections_NNS contain_VBP subsections_NNS ,_, and_CC subsections_NNS contain_VBP paragraphs_NNS ._.
+Each_DT of_IN these_DT characteristics_NNS affects_VBZ the_DT design_NN of_IN an_DT XML_NN IR_NN system_NN ,_, and_CC each_DT leads_VBZ to_TO fundamental_JJ problems_NNS that_WDT must_MD be_VB solved_VBN in_IN an_DT successful_JJ system_NN ._.
+Most_JJS of_IN these_DT fundamental_JJ problems_NNS can_MD be_VB solved_VBN through_IN the_DT careful_JJ adaptation_NN of_IN standard_JJ IR_NN techniques_NNS ,_, but_CC the_DT problems_NNS caused_VBN by_IN overlap_VBP are_VBP unique_JJ to_TO this_DT area_NN -LSB-_-LRB- #_# ,_, ##_NN -RSB-_-RRB- and_CC form_VB the_DT primary_JJ focus_NN of_IN this_DT paper_NN ._.
+The_DT article_NN of_IN figure_NN #_# may_MD be_VB viewed_VBN as_IN an_DT XML_NN tree_NN ,_, as_IN illustrated_VBN in_IN figure_NN #_# ._.
+Formally_RB ,_, a_DT collection_NN of_IN XML_NN documents_NNS may_MD be_VB represented_VBN as_IN a_DT forest_NN of_IN ordered_VBN ,_, rooted_VBN trees_NNS ,_, consisting_VBG of_IN a_DT set_NN of_IN nodes_NNS N_NN and_CC a_DT set_NN of_IN directed_VBN edges_NNS E_NN connecting_VBG these_DT nodes_NNS ._.
+For_IN each_DT node_NN x_NN N_NN ,_, the_DT notation_NN x_NN ._.
+parent_NN refers_VBZ to_TO the_DT parent_NN node_NN of_IN x_NN ,_, if_IN one_CD exists_VBZ ,_, and_CC the_DT notation_NN x_NN ._.
+children_NNS refers_VBZ to_TO the_DT set_NN of_IN child_NN nodes_NNS sec_VBP bdyfm_NN atl_NN au_NN au_NN au_NN abs_NNS p_NN b_NN st_NN ip1_NN sec_NN st_NN ss1_NN st_NN article_NN p_NN Figure_NN #_# :_: Example_NN XML_NN tree_NN ._.
+of_IN x_NN ._.
+Since_IN an_DT element_NN may_MD be_VB represented_VBN by_IN the_DT node_NN at_IN its_PRP$ root_NN ,_, the_DT output_NN of_IN an_DT XML_NN IR_NN system_NN may_MD be_VB viewed_VBN as_IN a_DT ranked_VBN list_NN of_IN the_DT top-m_JJ nodes_NNS ._.
+The_DT direct_JJ application_NN of_IN a_DT standard_JJ relevance_NN ranking_JJ technique_NN to_TO a_DT set_NN of_IN XML_NN elements_NNS can_MD produce_VB a_DT result_NN in_IN which_WDT the_DT top_JJ ranks_NNS are_VBP dominated_VBN by_IN many_JJ structurally_RB related_JJ elements_NNS ._.
+A_DT high_JJ scoring_VBG section_NN is_VBZ likely_JJ to_TO contain_VB several_JJ high_JJ scoring_VBG paragraphs_NNS and_CC to_TO be_VB contained_VBN in_IN an_DT high_JJ scoring_VBG article_NN ._.
+For_IN example_NN ,_, many_JJ of_IN the_DT elements_NNS in_IN figure_NN #_# would_MD receive_VB a_DT high_JJ score_NN on_IN the_DT keyword_NN query_NN text_NN index_NN compression_NN algorithms_NNS ._.
+If_IN each_DT of_IN these_DT elements_NNS are_VBP presented_VBN to_TO a_DT user_NN as_IN an_DT individual_JJ and_CC separate_JJ result_NN ,_, she_PRP may_MD waste_VB considerable_JJ time_NN reviewing_VBG and_CC rejecting_VBG redundant_JJ content_NN ._.
+One_CD possible_JJ solution_NN is_VBZ to_TO report_VB only_RB the_DT highest_JJS scoring_VBG element_NN along_IN a_DT given_VBN path_NN in_IN the_DT tree_NN ,_, and_CC to_TO remove_VB from_IN the_DT lower_JJR ranks_NNS any_DT element_NN containing_VBG it_PRP ,_, or_CC contained_VBN within_IN it_PRP ._.
+Unfortunately_RB ,_, this_DT approach_NN destroys_VBZ some_DT of_IN the_DT possible_JJ benefits_NNS of_IN XML_NN IR_NN ._.
+For_IN example_NN ,_, an_DT outer_JJ element_NN may_MD contain_VB a_DT substantial_JJ amount_NN of_IN information_NN that_WDT does_VBZ not_RB appear_VB in_IN an_DT inner_JJ element_NN ,_, but_CC the_DT inner_JJ element_NN may_MD be_VB heavily_RB focused_VBN on_IN the_DT query_NN topic_NN and_CC provide_VB a_DT short_JJ overview_NN of_IN the_DT key_JJ concepts_NNS ._.
+In_IN such_JJ cases_NNS ,_, it_PRP is_VBZ reasonable_JJ to_TO report_VB elements_NNS which_WDT contain_VBP ,_, or_CC are_VBP contained_VBN in_IN ,_, higher_JJR ranking_JJ elements_NNS ._.
+Even_RB when_WRB an_DT entire_JJ book_NN is_VBZ relevant_JJ ,_, a_DT user_NN may_MD still_RB wish_VB to_TO have_VB the_DT most_RBS important_JJ paragraphs_NNS highlighted_VBD ,_, to_TO guide_VB her_PRP$ reading_NN and_CC to_TO save_VB time_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+This_DT paper_NN presents_VBZ a_DT method_NN for_IN controlling_VBG overlap_VBP ._.
+Starting_VBG with_IN an_DT initial_JJ element_NN ranking_NN ,_, a_DT re-ranking_JJ algorithm_NN adjusts_VBZ the_DT scores_NNS of_IN lower_JJR ranking_JJ elements_NNS that_WDT contain_VBP ,_, or_CC are_VBP contained_VBN within_IN ,_, higher_JJR ranking_JJ elements_NNS ,_, reflecting_VBG the_DT fact_NN that_IN this_DT information_NN may_MD now_RB be_VB redundant_JJ ._.
+For_IN example_NN ,_, once_RB an_DT element_NN representing_VBG a_DT section_NN appears_VBZ in_IN the_DT ranking_NN ,_, the_DT scores_NNS for_IN the_DT paragraphs_NNS it_PRP contains_VBZ and_CC the_DT article_NN that_WDT contains_VBZ it_PRP are_VBP reduced_VBN ._.
+The_DT inspiration_NN for_IN this_DT strategy_NN comes_VBZ partially_RB from_IN recent_JJ work_NN on_IN structured_JJ documents_NNS retrieval_NN ,_, where_WRB terms_NNS appearing_VBG in_IN different_JJ fields_NNS ,_, such_JJ as_IN the_DT title_NN and_CC body_NN ,_, are_VBP given_VBN different_JJ weights_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Extending_VBG that_DT approach_NN ,_, the_DT re-ranking_JJ algorithm_NN varies_VBZ weights_NNS dynamically_RB as_IN elements_NNS are_VBP processed_VBN ._.
+The_DT remainder_NN of_IN the_DT paper_NN is_VBZ organized_VBN as_IN follows_VBZ :_: After_IN a_DT discussion_NN of_IN background_NN work_NN and_CC evaluation_NN methodology_NN ,_, a_DT baseline_NN retrieval_NN method_NN is_VBZ presented_VBN in_IN section_NN #_# ._.
+This_DT baseline_NN method_NN represents_VBZ a_DT reasonable_JJ adaptation_NN of_IN standard_JJ IR_NN technology_NN to_TO XML_NN ._.
+Section_NN #_# then_RB outlines_VBZ a_DT strategy_NN for_IN controlling_VBG overlap_VBP ,_, using_VBG the_DT baseline_NN method_NN as_IN a_DT starting_VBG point_NN ._.
+A_DT re-ranking_JJ algorithm_NN implementing_VBG this_DT strategy_NN is_VBZ presented_VBN in_IN section_NN #_# and_CC evaluated_VBN in_IN section_NN #_# ._.
+Section_NN #_# discusses_VBZ an_DT extended_VBN version_NN of_IN the_DT algorithm_NN ._.
+2_LS ._.
+BACKGROUND_NN This_DT section_NN provides_VBZ a_DT general_JJ overview_NN of_IN XML_NN information_NN retrieval_NN and_CC discusses_VBZ related_JJ work_NN ,_, with_IN an_DT emphasis_NN on_IN the_DT fundamental_JJ problems_NNS mentioned_VBN in_IN the_DT introduction_NN ._.
+Much_JJ research_NN in_IN the_DT area_NN of_IN XML_NN retrieval_NN views_VBZ it_PRP from_IN a_DT traditional_JJ database_NN perspective_NN ,_, being_VBG concerned_VBN with_IN such_JJ problems_NNS as_IN the_DT implementation_NN of_IN structured_JJ query_NN languages_NNS -LSB-_-LRB- #_# -RSB-_-RRB- and_CC the_DT processing_NN of_IN joins_VBZ -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+Here_RB ,_, we_PRP take_VBP a_DT content_NN oriented_VBN IR_NNP perceptive_JJ ,_, focusing_VBG on_IN XML_NN documents_NNS that_IN primarily_RB contain_VBP natural_JJ language_NN data_NNS and_CC queries_NNS that_WDT are_VBP primarily_RB expressed_VBN in_IN natural_JJ language_NN ._.
+We_PRP assume_VBP that_IN these_DT queries_NNS indicate_VBP only_RB the_DT nature_NN of_IN desired_VBN content_NN ,_, not_RB its_PRP$ structure_NN ,_, and_CC that_IN the_DT role_NN of_IN the_DT IR_NN system_NN is_VBZ to_TO determine_VB which_WDT elements_NNS best_JJS satisfy_VB the_DT underlying_VBG information_NN need_NN ._.
+Other_JJ IR_NNP research_NN has_VBZ considered_VBN mixed_JJ queries_NNS ,_, in_IN which_WDT both_CC content_NN and_CC structural_JJ requirements_NNS are_VBP specified_VBN -LSB-_-LRB- #_# ,_, #_# ,_, ##_NN ,_, ##_NN ,_, ##_NN -RSB-_-RRB- ._.
+2_LS ._.
+#_# Term_NN and_CC Document_NNP Statistics_NNPS In_IN traditional_JJ information_NN retrieval_NN applications_NNS the_DT standard_JJ unit_NN of_IN retrieval_NN is_VBZ taken_VBN to_TO be_VB the_DT document_NN ._.
+Depending_VBG on_IN the_DT application_NN ,_, this_DT term_NN might_MD be_VB interpreted_VBN to_TO encompass_VB many_JJ different_JJ objects_NNS ,_, including_VBG web_NN pages_NNS ,_, newspaper_NN articles_NNS and_CC email_NN messages_NNS ._.
+When_WRB applying_VBG standard_JJ relevance_NN ranking_NN techniques_NNS in_IN the_DT context_NN of_IN XML_NN IR_NN ,_, a_DT natural_JJ approach_NN is_VBZ to_TO treat_VB each_DT element_NN as_IN a_DT separate_JJ document_NN ,_, with_IN term_NN statistics_NNS available_JJ for_IN each_DT -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+In_IN addition_NN ,_, most_JJS ranking_JJ techniques_NNS require_VBP global_JJ statistics_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+inverse_JJ document_NN frequency_NN -RRB-_-RRB- computed_VBD over_IN the_DT collection_NN as_IN a_DT whole_NN ._.
+If_IN we_PRP consider_VBP this_DT collection_NN to_TO include_VB all_DT elements_NNS that_WDT might_MD be_VB returned_VBN by_IN the_DT system_NN ,_, a_DT specific_JJ occurrence_NN of_IN a_DT term_NN may_MD appear_VB in_IN several_JJ different_JJ documents_NNS ,_, perhaps_RB in_IN elements_NNS representing_VBG a_DT paragraph_NN ,_, a_DT subsection_NN ,_, a_DT section_NN and_CC an_DT article_NN ._.
+It_PRP is_VBZ not_RB appropriate_JJ to_TO compute_VB inverse_JJ document_NN frequency_NN under_IN the_DT assumption_NN that_IN the_DT term_NN is_VBZ contained_VBN in_IN all_DT of_IN these_DT elements_NNS ,_, since_IN the_DT number_NN of_IN elements_NNS that_WDT contain_VBP a_DT term_NN depends_VBZ entirely_RB on_IN the_DT structural_JJ arrangement_NN of_IN the_DT documents_NNS -LSB-_-LRB- ##_NNS ,_, ##_NN -RSB-_-RRB- ._.
+2_LS ._.
+#_# Retrievable_JJ Elements_NNS While_IN an_DT XML_NN IR_NN system_NN might_MD potentially_RB retrieve_VB any_DT element_NN ,_, many_JJ elements_NNS may_MD not_RB be_VB appropriate_JJ as_IN retrieval_NN results_NNS ._.
+This_DT is_VBZ usually_RB the_DT case_NN when_WRB elements_NNS contain_VBP very_RB little_JJ text_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+For_IN example_NN ,_, a_DT section_NN title_NN containing_VBG only_RB the_DT query_NN terms_NNS may_MD receive_VB a_DT high_JJ score_NN from_IN a_DT ranking_JJ algorithm_NN ,_, but_CC alone_RB it_PRP would_MD be_VB of_IN limited_JJ value_NN to_TO a_DT user_NN ,_, who_WP might_MD prefer_VB the_DT actual_JJ section_NN itself_PRP ._.
+Other_JJ elements_NNS may_MD reflect_VB the_DT document_NN ''_'' s_NNS physical_JJ ,_, rather_RB than_IN logical_JJ ,_, structure_NN ,_, which_WDT may_MD have_VB little_JJ or_CC no_DT meaning_NN to_TO a_DT user_NN ._.
+An_DT effective_JJ XML_NN IR_NN system_NN must_MD return_VB only_RB those_DT elements_NNS that_WDT have_VBP sufficient_JJ content_NN to_TO be_VB usable_JJ and_CC are_VBP able_JJ to_TO stand_VB alone_RB as_IN independent_JJ objects_NNS -LSB-_-LRB- ##_NNS ,_, ##_NN -RSB-_-RRB- ._.
+Standard_JJ document_NN components_NNS such_JJ as_IN paragraphs_NNS ,_, sections_NNS ,_, subsections_NNS ,_, and_CC abstracts_NNS usually_RB meet_VBP these_DT requirements_NNS ;_: titles_NNS ,_, italicized_JJ phrases_NNS ,_, and_CC individual_JJ metadata_NN fields_NNS often_RB do_VBP not_RB ._.
+2_LS ._.
+#_# Evaluation_NN Methodology_NN Over_IN the_DT past_JJ three_CD years_NNS ,_, the_DT INitiative_NN for_IN the_DT Evaluation_NN of_IN XML_NN Retrieval_NN -LRB-_-LRB- INEX_NN -RRB-_-RRB- has_VBZ encouraged_VBN research_NN into_IN XML_NN information_NN retrieval_NN technology_NN -LSB-_-LRB- #_# ,_, #_# -RSB-_-RRB- ._.
+INEX_NNP is_VBZ an_DT experimental_JJ conference_NN series_NN ,_, similar_JJ to_TO TREC_NN ,_, with_IN groups_NNS from_IN different_JJ institutions_NNS completing_VBG one_CD or_CC more_JJR experimental_JJ tasks_NNS using_VBG their_PRP$ own_JJ tools_NNS and_CC systems_NNS ,_, and_CC comparing_VBG their_PRP$ results_NNS at_IN the_DT conference_NN itself_PRP ._.
+Over_IN ##_NN groups_NNS participated_VBD in_IN INEX_NNP ####_CD ,_, and_CC the_DT conference_NN has_VBZ become_VBN as_IN influential_JJ in_IN the_DT area_NN of_IN XML_NN IR_NN as_IN TREC_NN is_VBZ in_IN other_JJ IR_NN areas_NNS ._.
+The_DT research_NN described_VBN in_IN this_DT paper_NN ,_, as_RB well_RB as_IN much_JJ of_IN the_DT related_JJ work_NN it_PRP cites_VBZ ,_, depends_VBZ on_IN the_DT test_NN collections_NNS developed_VBN by_IN INEX_NNP ._.
+Overlap_NN causes_VBZ considerable_JJ problems_NNS with_IN retrieval_NN evaluation_NN ,_, and_CC the_DT INEX_NNP organizers_NNS and_CC participants_NNS have_VBP wrestled_VBN with_IN these_DT problems_NNS since_IN the_DT beginning_NN ._.
+While_IN substantial_JJ progress_NN has_VBZ been_VBN made_VBN ,_, these_DT problem_NN are_VBP still_RB not_RB completely_RB solved_VBD ._.
+Kazai_NNP et_FW al_FW ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- provide_VBP a_DT detailed_JJ exposition_NN of_IN the_DT overlap_VBP problem_NN in_IN the_DT context_NN of_IN INEX_NNP retrieval_NN evaluation_NN and_CC discuss_VB both_DT current_JJ and_CC proposed_JJ evaluation_NN metrics_NNS ._.
+Many_JJ of_IN these_DT metrics_NNS are_VBP applied_VBN to_TO evaluate_VB the_DT experiments_NNS reported_VBN in_IN this_DT paper_NN ,_, and_CC they_PRP are_VBP briefly_RB outlined_VBN in_IN the_DT next_JJ section_NN ._.
+3_LS ._.
+INEX_NNP ####_NNP Space_NNP limitations_NNS prevent_VBP the_DT inclusion_NN of_IN more_JJR than_IN a_DT brief_JJ summary_NN of_IN INEX_NNP ####_CD tasks_NNS and_CC evaluation_NN methodology_NN ._.
+For_IN detailed_JJ information_NN ,_, the_DT proceedings_NNS of_IN the_DT conference_NN itself_PRP should_MD be_VB consulted_VBN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+3_LS ._.
+#_# Tasks_NNPS For_IN the_DT main_JJ experimental_JJ tasks_NNS ,_, INEX_NNP ####_CD participants_NNS were_VBD provided_VBN with_IN a_DT collection_NN of_IN ##_NN ,_, ###_CD articles_NNS taken_VBN from_IN the_DT IEEE_NNP Computer_NNP Societies_NNP magazines_NNS and_CC journals_NNS between_IN ####_CD and_CC ####_CD ._.
+Each_DT document_NN is_VBZ encoded_VBN in_IN XML_NN using_VBG a_DT common_JJ DTD_NNP ,_, with_IN the_DT document_NN of_IN figures_NNS #_# and_CC #_# providing_VBG one_CD example_NN ._.
+At_IN INEX_NNP ####_CD ,_, the_DT two_CD main_JJ experimental_JJ tasks_NNS were_VBD both_DT adhoc_NN retrieval_NN tasks_NNS ,_, investigating_VBG the_DT performance_NN of_IN systems_NNS searching_VBG a_DT static_JJ collection_NN using_VBG previously_RB unseen_JJ topics_NNS ._.
+The_DT two_CD tasks_NNS differed_VBD in_IN the_DT types_NNS of_IN topics_NNS they_PRP used_VBD ._.
+For_IN one_CD task_NN ,_, the_DT content-only_JJ or_CC CO_JJ task_NN ,_, the_DT topics_NNS consist_VBP of_IN short_JJ natural_JJ language_NN statements_NNS with_IN no_DT direct_JJ reference_NN to_TO the_DT structure_NN of_IN the_DT documents_NNS in_IN the_DT collection_NN ._.
+For_IN this_DT task_NN ,_, the_DT IR_NN system_NN is_VBZ required_VBN to_TO select_VB the_DT elements_NNS to_TO be_VB returned_VBN ._.
+For_IN the_DT other_JJ task_NN ,_, the_DT contentand-structure_NN or_CC CAS_NNP task_NN ,_, the_DT topics_NNS are_VBP written_VBN in_IN an_DT XML_NN query_NN language_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- and_CC contain_VBP explicit_JJ references_NNS to_TO document_VB structure_NN ,_, which_WDT the_DT IR_NN system_NN must_MD attempt_VB to_TO satisfy_VB ._.
+Since_IN the_DT work_NN described_VBN in_IN this_DT paper_NN is_VBZ directed_VBN at_IN the_DT content-only_JJ task_NN ,_, where_WRB the_DT IR_NN system_NN receives_VBZ no_DT guidance_NN regarding_VBG the_DT elements_NNS to_TO return_VB ,_, the_DT CAS_NNP task_NN is_VBZ ignored_VBN in_IN the_DT remainder_NN of_IN our_PRP$ description_NN ._.
+In_IN ####_CD ,_, ##_CD new_JJ CO_NNP topics_NNS were_VBD selected_VBN by_IN the_DT conference_NN organizers_NNS from_IN contributions_NNS provided_VBN by_IN the_DT conference_NN participants_NNS ._.
+Each_DT topic_NN includes_VBZ a_DT short_JJ keyword_NN query_NN ,_, which_WDT is_VBZ executed_VBN over_IN the_DT collection_NN by_IN each_DT participating_VBG group_NN on_IN their_PRP$ own_JJ XML_NN IR_NN system_NN ._.
+Each_DT group_NN could_MD submit_VB up_RP to_TO three_CD experimental_JJ runs_NNS consisting_VBG of_IN the_DT top_JJ m_NN =_JJ ####_CD elements_NNS for_IN each_DT topic_NN ._.
+3_LS ._.
+#_# Relevance_NNP Assessment_NNP Since_IN XML_NN IR_NN is_VBZ concerned_VBN with_IN locating_VBG those_DT elements_NNS that_WDT provide_VBP complete_JJ coverage_NN of_IN a_DT topic_NN while_IN containing_VBG as_RB little_JJ extraneous_JJ information_NN as_IN possible_JJ ,_, simple_JJ relevant_JJ vs_CC ._.
+not_RB relevant_JJ judgments_NNS are_VBP not_RB sufficient_JJ ._.
+Instead_RB ,_, the_DT INEX_NNP organizers_NNS adopted_VBD two_CD dimensions_NNS for_IN relevance_NN assessment_NN :_: The_DT exhaustivity_NN dimension_NN reflects_VBZ the_DT degree_NN to_TO which_WDT an_DT element_NN covers_VBZ the_DT topic_NN ,_, and_CC the_DT specificity_NN dimension_NN reflects_VBZ the_DT degree_NN to_TO which_WDT an_DT element_NN is_VBZ focused_VBN on_IN the_DT topic_NN ._.
+A_DT four-point_JJ scale_NN is_VBZ used_VBN in_IN both_CC dimensions_NNS ._.
+Thus_RB ,_, a_DT -LRB-_-LRB- #_# ,_, #_# -RRB-_-RRB- element_NN is_VBZ highly_RB exhaustive_JJ and_CC highly_RB specific_JJ ,_, a_DT -LRB-_-LRB- #_# ,_, #_# -RRB-_-RRB- element_NN is_VBZ marginally_RB exhaustive_JJ and_CC highly_RB specific_JJ ,_, and_CC a_DT -LRB-_-LRB- #_# ,_, #_# -RRB-_-RRB- element_NN is_VBZ not_RB relevant_JJ ._.
+Additional_JJ information_NN on_IN the_DT assessment_NN methodology_NN may_MD be_VB found_VBN in_IN Piwowarski_NNP and_CC Lalmas_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, who_WP provide_VBP a_DT detailed_JJ rationale_NN ._.
+3_LS ._.
+#_# Evaluation_NN Metrics_NNS The_DT principle_NN evaluation_NN metric_JJ used_VBN at_IN INEX_NNP ####_CD is_VBZ a_DT version_NN of_IN mean_JJ average_JJ precision_NN -LRB-_-LRB- MAP_NN -RRB-_-RRB- ,_, adjusted_VBN by_IN various_JJ quantization_NN functions_NNS to_TO give_VB different_JJ weights_NNS to_TO different_JJ elements_NNS ,_, depending_VBG on_IN their_PRP$ exhaustivity_NN and_CC specificity_NN values_NNS ._.
+One_CD variant_NN ,_, the_DT strict_JJ quantization_NN function_NN gives_VBZ a_DT weight_NN of_IN #_# to_TO -LRB-_-LRB- #_# ,_, #_# -RRB-_-RRB- elements_NNS and_CC a_DT weight_NN of_IN #_# to_TO all_DT others_NNS ._.
+This_DT variant_NN is_VBZ essentially_RB the_DT familiar_JJ MAP_NN value_NN ,_, with_IN -LRB-_-LRB- #_# ,_, #_# -RRB-_-RRB- elements_NNS treated_VBN as_IN relevant_JJ and_CC all_DT other_JJ elements_NNS treated_VBN as_IN not_RB relevant_JJ ._.
+Other_JJ quantization_NN functions_NNS are_VBP designed_VBN to_TO give_VB partial_JJ credit_NN to_TO elements_NNS which_WDT are_VBP near_IN misses_VBZ ,_, due_JJ to_TO a_DT lack_NN or_CC exhaustivity_NN and_CC /_: or_CC specificity_NN ._.
+Both_CC the_DT generalized_VBN quantization_NN function_NN and_CC the_DT specificity-oriented_JJ generalization_NN -LRB-_-LRB- sog_NN -RRB-_-RRB- function_NN credit_NN elements_NNS according_VBG to_TO their_PRP$ degree_NN of_IN relevance_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, with_IN the_DT second_JJ function_NN placing_VBG greater_JJR emphasis_NN on_IN specificity_NN ._.
+This_DT paper_NN reports_VBZ results_NNS of_IN this_DT metric_JJ using_VBG all_DT three_CD of_IN these_DT quantization_NN functions_NNS ._.
+Since_IN this_DT metric_NN was_VBD first_RB introduced_VBN at_IN INEX_NNP ####_CD ,_, it_PRP is_VBZ generally_RB referred_VBN as_IN the_DT inex-2002_NN metric_NN ._.
+The_DT inex-2002_NN metric_NN does_VBZ not_RB penalize_VB overlap_VB ._.
+In_IN particular_JJ ,_, both_CC the_DT generalized_VBN and_CC sog_NN quantization_NN functions_NNS give_VBP partial_JJ credit_NN to_TO a_DT near_JJ miss_VBP even_RB when_WRB a_DT -LRB-_-LRB- #_# ,_, #_# -RRB-_-RRB- element_NN overlapping_VBG it_PRP is_VBZ reported_VBN at_IN a_DT higher_JJR rank_NN ._.
+To_TO address_VB this_DT problem_NN ,_, Kazai_NNP et_FW al_FW ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- propose_VBP an_DT XML_NN cumulated_VBN gain_NN metric_JJ ,_, which_WDT compares_VBZ the_DT cumulated_JJ gain_NN -LSB-_-LRB- #_# -RSB-_-RRB- of_IN a_DT ranked_VBN list_NN to_TO an_DT ideal_JJ gain_NN vector_NN ._.
+This_DT ideal_JJ gain_NN vector_NN is_VBZ constructed_VBN from_IN the_DT relevance_NN judgments_NNS by_IN eliminating_VBG overlap_VBP and_CC retaining_VBG only_RB best_JJS element_NN along_IN a_DT given_VBN path_NN ._.
+Thus_RB ,_, the_DT XCG_NN metric_JJ rewards_NNS retrieval_NN runs_VBZ that_IN avoid_VBP overlap_VBP ._.
+While_IN XCG_NN was_VBD not_RB used_VBN officially_RB at_IN INEX_NNP 2004_CD ,_, a_DT version_NN of_IN it_PRP is_VBZ likely_JJ to_TO be_VB used_VBN in_IN the_DT future_NN ._.
+At_IN INEX_NNP ####_CD ,_, yet_RB another_DT metric_NN was_VBD introduced_VBN to_TO ameliorate_VB the_DT perceived_VBN limitations_NNS of_IN the_DT inex-2002_NN metric_NN ._.
+This_DT inex-2003_NN metric_JJ extends_VBZ the_DT definitions_NNS of_IN precision_NN and_CC recall_NN to_TO consider_VB both_CC the_DT size_NN of_IN reported_VBN components_NNS and_CC the_DT overlap_VBP between_IN them_PRP ._.
+Two_CD versions_NNS were_VBD created_VBN ,_, one_CD that_WDT considered_VBD only_RB component_NN size_NN and_CC another_DT that_WDT considered_VBD both_DT size_NN and_CC overlap_VBP ._.
+While_IN the_DT inex-2003_NN metric_JJ exhibits_NNS undesirable_JJ anomalies_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, and_CC was_VBD not_RB used_VBN in_IN 2004_CD ,_, values_NNS are_VBP reported_VBN in_IN the_DT evaluation_NN section_NN to_TO provide_VB an_DT additional_JJ instrument_NN for_IN investigating_VBG overlap_VBP ._.
+4_LS ._.
+BASELINE_NN RETRIEVAL_NN METHOD_NN This_DT section_NN provides_VBZ an_DT overview_NN of_IN baseline_NN XML_NN information_NN retrieval_NN method_NN currently_RB used_VBN in_IN the_DT MultiText_NNP IR_NNP system_NN ,_, developed_VBN by_IN the_DT Information_NN Retrieval_NNP Group_NNP at_IN the_DT University_NNP of_IN Waterloo_NNP -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+This_DT retrieval_NN method_NN results_VBZ from_IN the_DT adaptation_NN and_CC tuning_NN of_IN the_DT Okapi_NNP BM25_NN measure_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- to_TO the_DT XML_NN information_NN retrieval_NN task_NN ._.
+The_DT MultiText_JJ system_NN performed_VBN respectably_RB at_IN INEX_NNP ####_CD ,_, placing_VBG in_IN the_DT top_JJ ten_CD under_IN all_DT of_IN the_DT quantization_NN functions_NNS ,_, and_CC placing_VBG first_RB when_WRB the_DT quantization_NN function_NN emphasized_VBD exhaustivity_NN ._.
+To_TO support_VB retrieval_NN from_IN XML_NN and_CC other_JJ structured_JJ document_NN types_NNS ,_, the_DT system_NN provides_VBZ generalized_VBN queries_NNS of_IN the_DT form_NN :_: rank_NN X_NN by_IN Y_NN where_WRB X_NN is_VBZ a_DT sub-query_JJ specifying_VBG a_DT set_NN of_IN document_NN elements_NNS to_TO be_VB ranked_VBN and_CC Y_NN is_VBZ a_DT vector_NN of_IN sub-queries_NNS specifying_VBG individual_JJ retrieval_NN terms_NNS ._.
+For_IN our_PRP$ INEX_NNP ####_CD runs_NNS ,_, the_DT sub-query_JJ X_NN specified_VBN a_DT list_NN of_IN retrievable_JJ elements_NNS as_IN those_DT with_IN tag_NN names_NNS as_IN follows_VBZ :_: abs_NNS app_NN article_NN bb_NN bdy_NN bm_NN fig_NN fm_NN ip1_NN li_NN p_NN sec_NN ss1_NN ss2_NN vt_NN This_DT list_NN includes_VBZ bibliographic_JJ entries_NNS -LRB-_-LRB- bb_NN -RRB-_-RRB- and_CC figure_NN captions_NNS -LRB-_-LRB- fig_NN -RRB-_-RRB- as_RB well_RB as_IN paragraphs_NNS ,_, sections_NNS and_CC subsections_NNS ._.
+Prior_RB to_TO INEX_NNP ####_CD ,_, the_DT INEX_NNP collection_NN and_CC the_DT INEX_NNP ####_CD relevance_NN judgments_NNS were_VBD manually_RB analyzed_VBN to_TO select_VB these_DT tag_NN names_NNS ._.
+Tag_NN names_NNS were_VBD selected_VBN on_IN the_DT basis_NN of_IN their_PRP$ frequency_NN in_IN the_DT collection_NN ,_, the_DT average_JJ size_NN of_IN their_PRP$ associated_JJ elements_NNS ,_, and_CC the_DT relative_JJ number_NN of_IN positive_JJ relevance_NN judgments_NNS they_PRP received_VBD ._.
+Automating_VBG this_DT selection_NN process_NN is_VBZ planned_VBN as_IN future_JJ work_NN ._.
+For_IN INEX_NNP ####_CD ,_, the_DT term_NN vector_NN Y_NN was_VBD derived_VBN from_IN the_DT topic_NN by_IN splitting_NN phrases_NNS into_IN individual_JJ words_NNS ,_, eliminating_VBG stopwords_NNS and_CC negative_JJ terms_NNS -LRB-_-LRB- those_DT starting_VBG with_IN -_: -RRB-_-RRB- ,_, and_CC applying_VBG a_DT stemmer_NN ._.
+For_IN example_NN ,_, keyword_JJ field_NN of_IN topic_NN 166_CD +_CC ''_'' tree_NN edit_VB distance_NN ''_'' +_CC XML_NN -_: image_NN became_VBD the_DT four-term_JJ query_NN ''_'' $_$ tree_NN ''_'' ''_'' $_$ edit_CD ''_'' ''_'' $_$ distance_NN ''_'' ''_'' $_$ xml_CD ''_'' where_WRB the_DT $_$ operator_NN within_IN a_DT quoted_VBN string_NN stems_VBZ the_DT term_NN that_WDT follows_VBZ it_PRP ._.
+Our_PRP$ implementation_NN of_IN Okapi_NNP BM25_NNP is_VBZ derived_VBN from_IN the_DT formula_NN of_IN Robertson_NNP et_FW al_FW ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- by_IN setting_VBG parameters_NNS k2_NN =_JJ #_# and_CC k3_NN =_JJ ._.
+Given_VBN a_DT term_NN set_VBN Q_NNP ,_, an_DT element_NN x_NN is_VBZ assigned_VBN the_DT score_NN tQ_NN w_NN -LRB-_-LRB- #_# -RRB-_-RRB- qt_NN -LRB-_-LRB- k1_NN +_CC #_# -RRB-_-RRB- xt_NN K_NN +_CC xt_NN -LRB-_-LRB- #_# -RRB-_-RRB- where_WRB w_NN -LRB-_-LRB- #_# -RRB-_-RRB- =_JJ log_NN D_NN Dt_NN +_CC #_# ._.
+#_# Dt_NN +_CC #_# ._.
+#_# D_NN =_JJ number_NN of_IN documents_NNS in_IN the_DT corpus_NN Dt_NN =_JJ number_NN of_IN documents_NNS containing_VBG t_NN qt_NN =_JJ frequency_NN that_WDT t_NN occurs_VBZ in_IN the_DT topic_NN xt_NN =_JJ frequency_NN that_WDT t_NN occurs_VBZ in_IN x_CC K_NN =_JJ k1_NN -LRB-_-LRB- -LRB-_-LRB- #_# b_LS -RRB-_-RRB- +_CC b_NN lx_NN /_: lavg_NN -RRB-_-RRB- lx_NN =_JJ length_NN of_IN x_CC lavg_NN =_JJ average_JJ document_NN length_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD #_# #_# #_# #_# ##_CD ##_CD ##_CD ##_CD MeanAveragePrecision_NNP -LRB-_-LRB- inex-2002_NN -RRB-_-RRB- k1_NN strict_JJ generalized_VBN sog_NN Figure_NN #_# :_: Impact_NN of_IN k1_NN on_IN inex-2002_NN mean_JJ average_JJ precision_NN with_IN b_NN =_JJ #_# ._.
+##_NN -LRB-_-LRB- INEX_NNP ####_CD CO_NNP topics_NNS -RRB-_-RRB- ._.
+Prior_RB to_TO INEX_NNP ####_CD ,_, the_DT INEX_NNP ####_CD topics_NNS and_CC judgments_NNS were_VBD used_VBN to_TO tune_VB the_DT b_NN and_CC k1_NN parameters_NNS ,_, and_CC the_DT impact_NN of_IN this_DT tuning_NN is_VBZ discussed_VBN later_RB in_IN this_DT section_NN ._.
+For_IN the_DT purposes_NNS of_IN computing_VBG document-level_JJ statistics_NNS -LRB-_-LRB- D_NN ,_, Dt_NN and_CC lavg_NN -RRB-_-RRB- a_DT document_NN is_VBZ defined_VBN to_TO be_VB an_DT article_NN ._.
+These_DT statistics_NNS are_VBP used_VBN for_IN ranking_VBG all_DT element_NN types_NNS ._.
+Following_VBG the_DT suggestion_NN of_IN Kamps_NNP et_FW al_FW ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- ,_, the_DT retrieval_NN results_NNS are_VBP filtered_VBN to_TO eliminate_VB very_RB short_JJ elements_NNS ,_, those_DT less_JJR than_IN ##_CD words_NNS in_IN length_NN ._.
+The_DT use_NN of_IN article_NN statistics_NNS for_IN all_DT element_NN types_NNS might_MD be_VB questioned_VBN ._.
+This_DT approach_NN may_MD be_VB justified_VBN by_IN viewing_VBG the_DT collection_NN as_IN a_DT set_NN of_IN articles_NNS to_TO be_VB searched_VBN using_VBG standard_JJ document-oriented_JJ techniques_NNS ,_, where_WRB only_RB articles_NNS may_MD be_VB returned_VBN ._.
+The_DT score_NN computed_VBD for_IN an_DT element_NN is_VBZ essentially_RB the_DT score_NN it_PRP would_MD receive_VB if_IN it_PRP were_VBD added_VBN to_TO the_DT collection_NN as_IN a_DT new_JJ document_NN ,_, ignoring_VBG the_DT minor_JJ adjustments_NNS needed_VBN to_TO the_DT document-level_JJ statistics_NNS ._.
+Nonetheless_RB ,_, we_PRP plan_VBP to_TO examine_VB this_DT issue_NN again_RB in_IN the_DT future_NN ._.
+In_IN our_PRP$ experience_NN ,_, the_DT performance_NN of_IN BM25_NN typically_RB benefits_NNS from_IN tuning_NN the_DT b_NN and_CC k1_NN parameters_NNS to_TO the_DT collection_NN ,_, whenever_WRB training_NN queries_NNS are_VBP available_JJ for_IN this_DT purpose_NN ._.
+Prior_RB to_TO INEX_NNP ####_CD ,_, we_PRP trained_VBD the_DT MultiText_JJ system_NN using_VBG the_DT INEX_NNP ####_CD queries_NNS ._.
+As_IN a_DT starting_VBG point_NN we_PRP used_VBD the_DT values_NNS b_NN =_JJ #_# ._.
+##_NN and_CC k1_NN =_JJ #_# ._.
+#_# ,_, which_WDT perform_VBP well_RB on_IN TREC_NN adhoc_NN collections_NNS and_CC are_VBP used_VBN as_IN default_NN values_NNS in_IN our_PRP$ system_NN ._.
+The_DT results_NNS were_VBD surprising_JJ ._.
+Figure_NNP #_# shows_VBZ the_DT result_NN of_IN varying_VBG k1_NN with_IN b_NN =_JJ #_# ._.
+##_NN on_IN the_DT MAP_NN values_NNS under_IN three_CD quantization_NN functions_NNS ._.
+In_IN our_PRP$ experience_NN ,_, optimal_JJ values_NNS for_IN k1_NN are_VBP typically_RB in_IN the_DT range_NN #_# ._.
+#_# to_TO #_# ._.
+#_# ._.
+In_IN this_DT case_NN ,_, large_JJ values_NNS are_VBP required_VBN for_IN good_JJ performance_NN ._.
+Between_IN k1_NN =_JJ #_# ._.
+#_# and_CC k1_NN =_JJ #_# ._.
+#_# MAP_NN increases_NNS by_IN over_IN ##_CD %_NN under_IN the_DT strict_JJ quantization_NN ._.
+Similar_JJ improvements_NNS are_VBP seen_VBN under_IN the_DT generalized_VBN and_CC sog_NN quantizations_NNS ._.
+In_IN contrast_NN ,_, our_PRP$ default_NN value_NN of_IN b_NN =_JJ #_# ._.
+##_NN works_VBZ well_RB under_IN all_DT quantization_NN functions_NNS -LRB-_-LRB- figure_NN #_# -RRB-_-RRB- ._.
+After_IN tuning_NN over_IN a_DT wide_JJ range_NN of_IN values_NNS under_IN several_JJ quantization_NN functions_NNS ,_, we_PRP selected_VBD values_NNS of_IN k_NN =_JJ ##_CD ._.
+#_# and_CC b_NN =_JJ #_# ._.
+##_NN for_IN our_PRP$ INEX_NNP ####_CD experiments_NNS ,_, and_CC these_DT values_NNS are_VBP used_VBN for_IN the_DT experiments_NNS reported_VBN in_IN section_NN #_# ._.
+0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# MeanAveragePrecision_NNP -LRB-_-LRB- inex-2002_NN -RRB-_-RRB- b_NN strict_JJ generalized_VBN sog_NN Figure_NN #_# :_: Impact_NN of_IN b_NN on_IN inex-2002_NN mean_JJ average_JJ precision_NN with_IN k1_NN =_JJ ##_NN -LRB-_-LRB- INEX_NNP ####_CD CO_NNP topics_NNS -RRB-_-RRB- ._.
+5_CD ._.
+CONTROLLING_VBG OVERLAP_NNP Starting_VBG with_IN an_DT element_NN ranking_JJ generated_VBN by_IN the_DT baseline_NN method_NN described_VBN in_IN the_DT previous_JJ section_NN ,_, elements_NNS are_VBP re-ranked_JJ to_TO control_VB overlap_VBP by_IN iteratively_RB adjusting_VBG the_DT scores_NNS of_IN those_DT elements_NNS containing_VBG or_CC contained_VBN in_IN higher_JJR ranking_JJ elements_NNS ._.
+At_IN a_DT conceptual_JJ level_NN ,_, re-ranking_JJ proceeds_NNS as_IN follows_VBZ :_: 1_CD ._.
+Report_NNP the_DT highest_JJS ranking_JJ element_NN ._.
+2_LS ._.
+Adjust_VB the_DT scores_NNS of_IN the_DT unreported_JJ elements_NNS ._.
+3_LS ._.
+Repeat_NN steps_NNS #_# and_CC #_# until_IN m_NN elements_NNS are_VBP reported_VBN ._.
+One_CD approach_NN to_TO adjusting_VBG the_DT scores_NNS of_IN unreported_JJ elements_NNS in_IN step_NN #_# might_MD be_VB based_VBN on_IN the_DT Okapi_NNP BM25_NN scores_NNS of_IN the_DT involved_JJ elements_NNS ._.
+For_IN example_NN ,_, assume_VB a_DT paragraph_NN with_IN score_NN p_NN is_VBZ reported_VBN in_IN step_NN #_# ._.
+In_IN step_NN #_# ,_, the_DT section_NN containing_VBG the_DT paragraph_NN might_MD then_RB have_VB its_PRP$ score_NN s_VBZ lowered_VBN by_IN an_DT amount_NN p_NN to_TO reflect_VB the_DT reduced_VBN contribution_NN the_DT paragraph_NN should_MD make_VB to_TO the_DT section_NN ''_'' s_NNS score_VBP ._.
+In_IN a_DT related_JJ context_NN ,_, Robertson_NNP et_FW al_FW ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- argue_VBP strongly_RB against_IN the_DT linear_JJ combination_NN of_IN Okapi_NNP scores_NNS in_IN this_DT fashion_NN ._.
+That_DT work_NN considers_VBZ the_DT problem_NN of_IN assigning_VBG different_JJ weights_NNS to_TO different_JJ document_NN fields_NNS ,_, such_JJ as_IN the_DT title_NN and_CC body_NN associated_VBN with_IN Web_NN pages_NNS ._.
+A_DT common_JJ approach_NN to_TO this_DT problem_NN scores_NNS the_DT title_NN and_CC body_NN separately_RB and_CC generates_VBZ a_DT final_JJ score_NN as_IN a_DT linear_JJ combination_NN of_IN the_DT two_CD ._.
+Robertson_NNP et_FW al_FW ._.
+discuss_VB the_DT theoretical_JJ flaws_NNS in_IN this_DT approach_NN and_CC demonstrate_VBP experimentally_RB that_IN it_PRP can_MD actually_RB harm_VB retrieval_NN effectiveness_NN ._.
+Instead_RB ,_, they_PRP apply_VBP the_DT weights_NNS at_IN the_DT term_NN frequency_NN level_NN ,_, with_IN an_DT occurrence_NN of_IN a_DT query_NN term_NN t_NN in_IN the_DT title_NN making_VBG a_DT greater_JJR contribution_NN to_TO the_DT score_NN than_IN an_DT occurrence_NN in_IN the_DT body_NN ._.
+In_IN equation_NN #_# ,_, xt_NN becomes_VBZ 0_CD yt_NN +_CC #_# zt_NN ,_, where_WRB yt_NN is_VBZ the_DT number_NN of_IN times_NNS t_NN occurs_VBZ in_IN the_DT title_NN and_CC zt_NN is_VBZ the_DT number_NN of_IN times_NNS t_NN occurs_VBZ in_IN the_DT body_NN ._.
+Translating_VBG this_DT approach_NN to_TO our_PRP$ context_NN ,_, the_DT contribution_NN of_IN terms_NNS appearing_VBG in_IN elements_NNS is_VBZ dynamically_RB reduced_VBN as_IN they_PRP are_VBP reported_VBN ._.
+The_DT next_JJ section_NN presents_NNS and_CC analysis_NN a_DT simple_JJ re-ranking_JJ algorithm_NN that_WDT follows_VBZ this_DT strategy_NN ._.
+The_DT algorithm_NN is_VBZ evaluated_VBN experimentally_RB in_IN section_NN #_# ._.
+One_CD limitation_NN of_IN the_DT algorithm_NN is_VBZ that_IN the_DT contribution_NN of_IN terms_NNS appearing_VBG in_IN reported_VBN elements_NNS is_VBZ reduced_VBN by_IN the_DT same_JJ factor_NN regardless_RB of_IN the_DT number_NN of_IN reported_VBN elements_NNS in_IN which_WDT it_PRP appears_VBZ ._.
+In_IN section_NN #_# the_DT algorithm_NN is_VBZ extended_VBN to_TO apply_VB increasing_VBG weights_NNS ,_, lowering_VBG the_DT score_NN ,_, when_WRB a_DT term_NN appears_VBZ in_IN more_JJR than_IN one_CD reported_VBD element_NN ._.
+6_CD ._.
+RE-RANKING_NNP ALGORITHM_NNP The_NNP re-ranking_JJ algorithm_NN operates_VBZ over_IN XML_NN trees_NNS ,_, such_JJ as_IN the_DT one_CD appearing_VBG in_IN figure_NN #_# ._.
+Input_NN to_TO the_DT algorithm_NN is_VBZ a_DT list_NN of_IN n_NN elements_NNS ranked_VBD according_VBG to_TO their_PRP$ initial_JJ BM25_NN scores_NNS ._.
+During_IN the_DT initial_JJ ranking_VBG the_DT XML_NN tree_NN is_VBZ dynamically_RB re-constructed_JJ to_TO include_VB only_RB those_DT nodes_NNS with_IN nonzero_NN BM25_NN scores_NNS ,_, so_RB n_NN may_MD be_VB considerably_RB less_JJR than_IN |_CD N_NN |_NN ._.
+Output_NN from_IN the_DT algorithm_NN is_VBZ a_DT list_NN of_IN the_DT top_JJ m_NN elements_NNS ,_, ranked_VBD according_VBG to_TO their_PRP$ adjusted_VBN scores_NNS ._.
+An_DT element_NN is_VBZ represented_VBN by_IN the_DT node_NN x_NN N_NN at_IN its_PRP$ root_NN ._.
+Associated_VBN with_IN this_DT node_NN are_VBP fields_NNS storing_VBG the_DT length_NN of_IN element_NN ,_, term_NN frequencies_NNS ,_, and_CC other_JJ information_NN required_VBN by_IN the_DT re-ranking_JJ algorithm_NN ,_, as_IN follows_VBZ :_: x_NN ._.
+f_SYM -_: term_NN frequency_NN vector_NN x_NN ._.
+g_NN -_: term_NN frequency_NN adjustments_NNS x_CC ._.
+l_NN -_: element_NN length_NN x_NN ._.
+score_NN -_: current_JJ Okapi_NNP BM25_NN score_NN x_NN ._.
+reported_VBN -_: boolean_JJ flag_NN ,_, initially_RB false_JJ x_NN ._.
+children_NNS -_: set_NN of_IN child_NN nodes_NNS x_CC ._.
+parent_NN -_: parent_NN node_NN ,_, if_IN one_CD exists_VBZ These_DT fields_NNS are_VBP populated_VBN during_IN the_DT initial_JJ ranking_JJ process_NN ,_, and_CC updated_VBN as_IN the_DT algorithm_NN progresses_VBZ ._.
+The_DT vector_NN x_NN ._.
+f_LS contains_VBZ term_NN frequency_NN information_NN corresponding_VBG to_TO each_DT term_NN in_IN the_DT query_NN ._.
+The_DT vector_NN x_NN ._.
+g_NN is_VBZ initially_RB zero_CD and_CC is_VBZ updated_VBN by_IN the_DT algorithm_NN as_IN elements_NNS are_VBP reported_VBN ._.
+The_DT score_NN field_NN contains_VBZ the_DT current_JJ BM25_NN score_NN for_IN the_DT element_NN ,_, which_WDT will_MD change_VB as_IN the_DT values_NNS in_IN x_NN ._.
+g_NN change_NN ._.
+The_DT score_NN is_VBZ computed_VBN using_VBG equation_NN #_# ,_, with_IN the_DT xt_NN value_NN for_IN each_DT term_NN determined_VBN by_IN a_DT combination_NN of_IN the_DT values_NNS in_IN x_NN ._.
+f_LS and_CC x_NN ._.
+g_NN ._.
+Given_VBN a_DT term_NN t_NN Q_NNP ,_, let_VBD ft_NN be_VB the_DT component_NN of_IN x_NN ._.
+f_LS corresponding_VBG to_TO t_NN ,_, and_CC let_VB gt_NN be_VB the_DT component_NN of_IN x_NN ._.
+g_NN corresponding_VBG to_TO t_NN ,_, then_RB :_: xt_NN =_JJ ft_NN gt_NN -LRB-_-LRB- #_# -RRB-_-RRB- For_IN processing_NN by_IN the_DT re-ranking_JJ algorithm_NN ,_, nodes_NNS are_VBP stored_VBN in_IN priority_NN queues_NNS ,_, ordered_VBN by_IN decreasing_VBG score_NN ._.
+Each_DT priority_NN queue_NN PQ_NN supports_VBZ three_CD operations_NNS :_: PQ_NN ._.
+front_NN -LRB-_-LRB- -RRB-_-RRB- -_: returns_NNS the_DT node_NN with_IN greatest_JJS score_NN PQ_NN ._.
+add_VB -LRB-_-LRB- x_NN -RRB-_-RRB- -_: adds_VBZ node_NN x_NN to_TO the_DT queue_NN PQ_NN ._.
+remove_VB -LRB-_-LRB- x_NN -RRB-_-RRB- -_: removes_VBZ node_NN x_NN from_IN the_DT queue_NN When_WRB implemented_VBN using_VBG standard_JJ data_NNS structures_NNS ,_, the_DT front_JJ operation_NN requires_VBZ O_NN -LRB-_-LRB- #_# -RRB-_-RRB- time_NN ,_, and_CC the_DT other_JJ operations_NNS require_VBP O_NN -LRB-_-LRB- log_NN n_NN -RRB-_-RRB- time_NN ,_, where_WRB n_NN is_VBZ the_DT size_NN of_IN the_DT queue_NN ._.
+The_DT core_NN of_IN the_DT re-ranking_JJ algorithm_NN is_VBZ presented_VBN in_IN figure_NN #_# ._.
+The_DT algorithm_NN takes_VBZ as_IN input_NN the_DT priority_NN queue_NN S_NN containing_VBG the_DT initial_JJ ranking_NN ,_, and_CC produces_VBZ the_DT top-m_JJ reranked_JJ nodes_NNS in_IN the_DT priority_NN queue_NN F_NN ._.
+After_IN initializing_VBG F_NN to_TO be_VB empty_JJ on_IN line_NN #_# ,_, the_DT algorithm_NN loops_NNS m_NN times_NNS over_IN lines_NNS 215_CD ,_, transferring_VBG at_IN least_JJS one_CD node_NN from_IN S_NN to_TO F_NN during_IN each_DT iteration_NN ._.
+At_IN the_DT start_NN of_IN each_DT iteration_NN ,_, the_DT unreported_JJ node_NN at_IN the_DT front_NN of_IN S_NN has_VBZ the_DT greatest_JJS adjusted_JJ score_NN ,_, and_CC it_PRP is_VBZ removed_VBN and_CC added_VBN to_TO F_NN ._.
+The_DT algorithm_NN then_RB traverses_VBZ the_DT 1_CD F_NN 2_CD for_IN i_FW #_# to_TO m_NN do_VBP 3_CD x_CC S_NN ._.
+front_NN -LRB-_-LRB- -RRB-_-RRB- 4_CD S_NN ._.
+remove_VB -LRB-_-LRB- x_NN -RRB-_-RRB- 5_CD x_NN ._.
+reported_VBN true_JJ 6_CD F_NN ._.
+add_VB -LRB-_-LRB- x_NN -RRB-_-RRB- 7_CD 8_CD foreach_NN y_NN x_NN ._.
+children_NNS do_VBP 9_CD Down_NN -LRB-_-LRB- y_NN -RRB-_-RRB- 10_CD end_NN do_VBP 11_CD 12_CD if_IN x_NN is_VBZ not_RB a_DT root_NN node_NN then_RB 13_CD Up_IN -LRB-_-LRB- x_NN ,_, x_NN ._.
+parent_NN -RRB-_-RRB- 14_CD end_NN if_IN 15_CD end_NN do_VBP Figure_NNP #_# :_: Re-Ranking_JJ Algorithm_NN -_: As_IN input_NN ,_, the_DT algorithm_NN takes_VBZ a_DT priority_NN queue_NN S_NN ,_, containing_VBG XML_NN nodes_NNS ranked_VBD by_IN their_PRP$ initial_JJ scores_NNS ,_, and_CC returns_VBZ its_PRP$ results_NNS in_IN priority_NN queue_NN F_NN ,_, ranked_VBD by_IN adjusted_VBN scores_NNS ._.
+1_CD Up_IN -LRB-_-LRB- x_NN ,_, y_NN -RRB-_-RRB- 2_CD S_NN ._.
+remove_VB -LRB-_-LRB- y_NN -RRB-_-RRB- 3_CD y_NN ._.
+g_NN y_NN ._.
+g_NN +_CC x_NN ._.
+f_LS x_NN ._.
+g_NN 4_CD recompute_NN y_NN ._.
+score_NN 5_CD S_NN ._.
+add_VB -LRB-_-LRB- y_NN -RRB-_-RRB- 6_CD if_IN y_NN is_VBZ not_RB a_DT root_NN node_NN then_RB 7_CD Up_IN -LRB-_-LRB- x_NN ,_, y_NN ._.
+parent_NN -RRB-_-RRB- 8_CD end_NN if_IN 9_CD 10_CD Down_NN -LRB-_-LRB- x_NN -RRB-_-RRB- 11_CD if_IN not_RB x_NN ._.
+reported_VBN then_RB 12_CD S_NN ._.
+remove_VB -LRB-_-LRB- x_NN -RRB-_-RRB- 14_CD x_NN ._.
+g_NN x_NN ._.
+f_LS 15_CD recompute_NN x_NN ._.
+score_NN 16_CD if_IN x_NN ._.
+score_NN >_JJR #_# then_RB 17_CD F_NN ._.
+add_VB -LRB-_-LRB- x_NN -RRB-_-RRB- 18_CD end_NN if_IN 19_CD x_NN ._.
+reported_VBN true_JJ 20_CD foreach_NN y_NN x_NN ._.
+children_NNS do_VBP 21_CD Down_NN -LRB-_-LRB- y_NN -RRB-_-RRB- 22_CD end_NN do_VBP 23_CD end_NN if_IN Figure_NNP #_# :_: Tree_NN traversal_NN routines_NNS called_VBN by_IN the_DT reranking_NN algorithm_NN ._.
+0_CD ._.
+#_# 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN MeanAveragePrecision_NN -LRB-_-LRB- inex-2002_NN -RRB-_-RRB- XMLCumulatedGain_NN -LRB-_-LRB- XCG_NN -RRB-_-RRB- alpha_NN MAP_NN -LRB-_-LRB- strict_JJ -RRB-_-RRB- MAP_NN -LRB-_-LRB- generalized_VBN -RRB-_-RRB- MAP_NN -LRB-_-LRB- sog_NN -RRB-_-RRB- XCG_NN -LRB-_-LRB- sog2_NN -RRB-_-RRB- Figure_NN #_# :_: Impact_NN of_IN on_IN XCG_NN and_CC inex-2002_NN MAP_NN -LRB-_-LRB- INEX_NNP ####_CD CO_NNP topics_NNS ;_: assessment_NN set_NN I_NN -RRB-_-RRB- ._.
+node_NN ''_'' s_NNS ancestors_NNS -LRB-_-LRB- lines_NNS 8-10_CD -RRB-_-RRB- and_CC descendants_NNS -LRB-_-LRB- lines_NNS 12-14_CD -RRB-_-RRB- adjusting_VBG the_DT scores_NNS of_IN these_DT nodes_NNS ._.
+The_DT tree_NN traversal_NN routines_NNS ,_, Up_IN and_CC Down_NN are_VBP given_VBN in_RP figure_NN #_# ._.
+The_DT Up_IN routine_JJ removes_VBZ each_DT ancestor_NN node_NN from_IN S_NN ,_, adjusts_VBZ its_PRP$ term_NN frequency_NN values_NNS ,_, recomputes_VBZ its_PRP$ score_NN ,_, and_CC adds_VBZ it_PRP back_RB into_IN S_NN ._.
+The_DT adjustment_NN of_IN the_DT term_NN frequency_NN values_NNS -LRB-_-LRB- line_NN #_# -RRB-_-RRB- adds_VBZ to_TO y_VB ._.
+g_NN only_RB the_DT previously_RB unreported_JJ term_NN occurrences_NNS in_IN x_NN ._.
+Re-computation_NN of_IN the_DT score_NN on_IN line_NN #_# uses_VBZ equations_NNS #_# and_CC #_# ._.
+The_DT Down_NN routine_JJ performs_VBZ a_DT similar_JJ operation_NN on_IN each_DT descendant_NN ._.
+However_RB ,_, since_IN the_DT contents_NNS of_IN each_DT descendant_NN are_VBP entirely_RB contained_VBN in_IN a_DT reported_VBN element_NN its_PRP$ final_JJ score_NN may_MD be_VB computed_VBN ,_, and_CC it_PRP is_VBZ removed_VBN from_IN S_NN and_CC added_VBD to_TO F_NN ._.
+In_IN order_NN to_TO determine_VB the_DT time_NN complexity_NN of_IN the_DT algorithm_NN ,_, first_JJ note_NN that_IN a_DT node_NN may_MD be_VB an_DT argument_NN to_TO Down_NN at_IN most_JJS once_RB ._.
+Thereafter_RB ,_, the_DT reported_VBN flag_NN of_IN its_PRP$ parent_NN is_VBZ true_JJ ._.
+During_IN each_DT call_NN to_TO Down_NN a_DT node_NN may_MD be_VB moved_VBN from_IN S_NN to_TO F_NN ,_, requiring_VBG O_NN -LRB-_-LRB- log_NN n_NN -RRB-_-RRB- time_NN ._.
+Thus_RB ,_, the_DT total_JJ time_NN for_IN all_DT calls_NNS to_TO Down_NN is_VBZ O_NN -LRB-_-LRB- n_NN log_NN n_NN -RRB-_-RRB- ,_, and_CC we_PRP may_MD temporarily_RB ignore_VB lines_NNS 8-10_CD of_IN figure_NN #_# when_WRB considering_VBG the_DT time_NN complexity_NN of_IN the_DT loop_NN over_IN lines_NNS 2-15_CD ._.
+During_IN each_DT iteration_NN of_IN this_DT loop_NN ,_, a_DT node_NN and_CC each_DT of_IN its_PRP$ ancestors_NNS are_VBP removed_VBN from_IN a_DT priority_NN queue_NN and_CC then_RB added_VBD back_RB into_IN a_DT priority_NN queue_NN ._.
+Since_IN a_DT node_NN may_MD have_VB at_IN most_JJS h_NN ancestors_NNS ,_, where_WRB h_NN is_VBZ the_DT maximum_NN height_NN of_IN any_DT tree_NN in_IN the_DT collection_NN ,_, each_DT of_IN the_DT m_NN iterations_NNS requires_VBZ O_NN -LRB-_-LRB- h_NN log_NN n_NN -RRB-_-RRB- time_NN ._.
+Combining_VBG these_DT observations_NNS produces_VBZ an_DT overall_JJ time_NN complexity_NN of_IN O_NN -LRB-_-LRB- -LRB-_-LRB- n_NN +_CC mh_NN -RRB-_-RRB- log_NN n_NN -RRB-_-RRB- ._.
+In_IN practice_NN ,_, re-ranking_VBG an_DT INEX_NNP result_NN set_NN requires_VBZ less_JJR than_IN 200ms_NNS on_IN a_DT three-year-old_JJ desktop_NN PC_NN ._.
+7_CD ._.
+EVALUATION_NN None_NN of_IN the_DT metrics_NNS described_VBN in_IN section_NN #_# ._.
+#_# is_VBZ a_DT close_JJ fit_NN with_IN the_DT view_NN of_IN overlap_VBP advocated_VBN by_IN this_DT paper_NN ._.
+Nonetheless_RB ,_, when_WRB taken_VBN together_RB they_PRP provide_VBP insight_NN into_IN the_DT behaviour_NN of_IN the_DT re-ranking_JJ algorithm_NN ._.
+The_DT INEX_NNP evaluation_NN packages_NNS -LRB-_-LRB- inex_NN __CD eval_NN and_CC inex_NN __CD eval_JJ __NN ng_NN -RRB-_-RRB- were_VBD used_VBN to_TO compute_VB values_NNS for_IN the_DT inex-2002_NN and_CC inex-2003_NN metrics_NNS ._.
+Values_NNS for_IN the_DT XCG_NN metrics_NNS were_VBD computed_VBN using_VBG software_NN supplied_VBN by_IN its_PRP$ inventors_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Figure_NNP #_# plots_NNS the_DT three_CD variants_NNS of_IN inex-2002_NN MAP_NN metric_JJ together_RB with_IN the_DT XCG_NN metric_NN ._.
+Values_NNS for_IN these_DT metrics_NNS 0_CD ._.
+#_# 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# MeanAveragePrecision_NNP -LRB-_-LRB- inex-2003_NN -RRB-_-RRB- alpha_NN strict_JJ ,_, overlap_VBP not_RB considered_VBN strict_JJ ,_, overlap_VBP considered_VBN generalized_VBN ,_, overlap_VBP not_RB considered_VBN generalized_VBN ,_, overlap_VBP considered_VBN Figure_NNP #_# :_: Impact_NN of_IN on_IN inex-2003_NN MAP_NN -LRB-_-LRB- INEX_NNP 2004_CD CO_NNP topics_NNS ;_: assessment_NN set_NN I_NN -RRB-_-RRB- ._.
+are_VBP plotted_VBN for_IN values_NNS of_IN between_IN #_# ._.
+#_# and_CC #_# ._.
+#_# ._.
+Recalling_VBG that_IN the_DT XCG_NN metric_NN is_VBZ designed_VBN to_TO penalize_VB overlap_VB ,_, while_IN the_DT inex-2002_NN metric_JJ ignores_VBZ overlap_VBP ,_, the_DT conflict_NN between_IN the_DT metrics_NNS is_VBZ obvious_JJ ._.
+The_DT MAP_NN values_NNS at_IN one_CD extreme_NN -LRB-_-LRB- =_JJ #_# ._.
+#_# -RRB-_-RRB- and_CC the_DT XCG_NN value_NN at_IN the_DT other_JJ extreme_JJ -LRB-_-LRB- =_JJ 1_CD ._.
+#_# -RRB-_-RRB- represent_VBP retrieval_NN performance_NN comparable_JJ to_TO the_DT best_JJS systems_NNS at_IN INEX_NNP ####_CD -LSB-_-LRB- #_# ,_, ##_NN -RSB-_-RRB- ._.
+Figure_NNP #_# plots_NNS values_NNS of_IN the_DT inex-2003_NN MAP_NN metric_JJ for_IN two_CD quantizations_NNS ,_, with_IN and_CC without_IN consideration_NN of_IN overlap_VBP ._.
+Once_RB again_RB ,_, conflict_NN is_VBZ apparent_JJ ,_, with_IN the_DT influence_NN of_IN substantially_RB lessened_VBN when_WRB overlap_VBP is_VBZ considered_VBN ._.
+8_CD ._.
+EXTENDED_VBN ALGORITHM_NNP One_CD limitation_NN of_IN the_DT re-ranking_JJ algorithm_NN is_VBZ that_IN a_DT single_JJ weight_NN is_VBZ used_VBN to_TO adjust_VB the_DT scores_NNS of_IN both_CC the_DT ancestors_NNS and_CC descendants_NNS of_IN reported_VBN elements_NNS ._.
+An_DT obvious_JJ extension_NN is_VBZ to_TO use_VB different_JJ weights_NNS in_IN these_DT two_CD cases_NNS ._.
+Furthermore_RB ,_, the_DT same_JJ weight_NN is_VBZ used_VBN regardless_RB of_IN the_DT number_NN of_IN times_NNS an_DT element_NN is_VBZ contained_VBN in_IN a_DT reported_VBN element_NN ._.
+For_IN example_NN ,_, a_DT paragraph_NN may_MD form_VB part_NN of_IN a_DT reported_VBN section_NN and_CC then_RB form_VB part_NN of_IN a_DT reported_VBN article_NN ._.
+Since_IN the_DT user_NN may_MD now_RB have_VB seen_VBN this_DT paragraph_NN twice_RB ,_, its_PRP$ score_NN should_MD be_VB further_JJ lowered_VBN by_IN increasing_VBG the_DT value_NN of_IN the_DT weight_NN ._.
+Motivated_VBN by_IN these_DT observations_NNS ,_, the_DT re-ranking_JJ algorithm_NN may_MD be_VB extended_VBN with_IN a_DT series_NN of_IN weights_NNS 1_CD =_JJ #_# #_# #_# ..._: M_NN #_# ._.
+where_WRB j_NN is_VBZ the_DT weight_NN applied_VBD to_TO a_DT node_NN that_WDT has_VBZ been_VBN a_DT descendant_NN of_IN a_DT reported_VBN node_NN j_NN times_NNS ._.
+Note_VB that_IN an_DT upper_JJ bound_VBN on_IN M_NN is_VBZ h_NN ,_, the_DT maximum_NN height_NN of_IN any_DT XML_NN tree_NN in_IN the_DT collection_NN ._.
+However_RB ,_, in_IN practice_NN M_NN is_VBZ likely_JJ to_TO be_VB relatively_RB small_JJ -LRB-_-LRB- perhaps_RB #_# or_CC #_# -RRB-_-RRB- ._.
+Figure_NNP #_# presents_VBZ replacements_NNS for_IN the_DT Up_IN and_CC Down_IN routines_NNS of_IN figure_NN #_# ,_, incorporating_VBG this_DT series_NN of_IN weights_NNS ._.
+One_CD extra_JJ field_NN is_VBZ required_VBN in_IN each_DT node_NN ,_, as_IN follows_VBZ :_: x_NN ._.
+j_SYM -_: down_IN count_NN The_DT value_NN of_IN x_NN ._.
+j_NN is_VBZ initially_RB set_VBN to_TO zero_VB in_IN all_DT nodes_NNS and_CC is_VBZ incremented_JJ each_DT time_NN Down_NN is_VBZ called_VBN with_IN x_CC as_IN its_PRP$ argument_NN ._.
+When_WRB computing_VBG the_DT score_NN of_IN node_NN ,_, the_DT value_NN of_IN x_NN ._.
+j_NN selects_VBZ 1_CD Up_IN -LRB-_-LRB- x_NN ,_, y_NN -RRB-_-RRB- 2_CD if_IN not_RB y_NN ._.
+reported_VBN then_RB 3_CD S_NN ._.
+remove_VB -LRB-_-LRB- y_NN -RRB-_-RRB- 4_CD y_NN ._.
+g_NN y_NN ._.
+g_NN +_CC x_NN ._.
+f_LS x_NN ._.
+g_NN 5_CD recompute_NN y_NN ._.
+score_NN 6_CD S_NN ._.
+add_VB -LRB-_-LRB- y_NN -RRB-_-RRB- 8_CD if_IN y_NN is_VBZ not_RB a_DT root_NN node_NN then_RB 9_CD Up_IN -LRB-_-LRB- x_NN ,_, y_NN ._.
+parent_NN -RRB-_-RRB- 10_CD end_NN if_IN 11_CD end_NN if_IN 12_CD 13_CD Down_NN -LRB-_-LRB- x_NN -RRB-_-RRB- 14_CD if_IN x_NN ._.
+j_NN <_JJR M_NN then_RB 15_CD x_NN ._.
+j_NN x_NN ._.
+j_NN +_CC #_# 16_CD if_IN not_RB x_NN ._.
+reported_VBN then_RB 17_CD S_NN ._.
+remove_VB -LRB-_-LRB- x_NN -RRB-_-RRB- 18_CD recompute_NN x_NN ._.
+score_NN 19_CD S_NN ._.
+add_VB -LRB-_-LRB- x_NN -RRB-_-RRB- 20_CD end_NN if_IN 21_CD foreach_NN y_NN x_NN ._.
+children_NNS do_VBP 22_CD Down_NN -LRB-_-LRB- y_NN -RRB-_-RRB- 23_CD end_NN do_VBP 24_CD end_NN if_IN Figure_NNP #_# :_: Extended_JJ tree_NN traversal_NN routines_NNS ._.
+the_DT weight_NN to_TO be_VB applied_VBN to_TO the_DT node_NN by_IN adjusting_VBG the_DT value_NN of_IN xt_NN in_IN equation_NN #_# ,_, as_IN follows_VBZ :_: xt_NN =_JJ x_NN ._.
+j_NN -LRB-_-LRB- ft_NN gt_NN -RRB-_-RRB- -LRB-_-LRB- #_# -RRB-_-RRB- where_WRB ft_NN and_CC gt_NN are_VBP the_DT components_NNS of_IN x_NN ._.
+f_LS and_CC x_NN ._.
+g_NN corresponding_VBG to_TO term_VB t_NN ._.
+A_DT few_JJ additional_JJ changes_NNS are_VBP required_VBN to_TO extend_VB Up_RP and_CC Down_NN ._.
+The_DT Up_IN routine_JJ returns_NNS immediately_RB -LRB-_-LRB- line_NN #_# -RRB-_-RRB- if_IN its_PRP$ argument_NN has_VBZ already_RB been_VBN reported_VBN ,_, since_IN term_NN frequencies_NNS have_VBP already_RB been_VBN adjusted_VBN in_IN its_PRP$ ancestors_NNS ._.
+The_DT Down_NN routine_NN does_VBZ not_RB report_VB its_PRP$ argument_NN ,_, but_CC instead_RB recomputes_VBZ its_PRP$ score_NN and_CC adds_VBZ it_PRP back_RB into_IN S_NN ._.
+A_DT node_NN can_MD not_RB be_VB an_DT argument_NN to_TO Down_NN more_JJR than_IN M_NN +_CC #_# times_NNS ,_, which_WDT in_IN turn_NN implies_VBZ an_DT overall_JJ time_NN complexity_NN of_IN O_NN -LRB-_-LRB- -LRB-_-LRB- nM_NN +_CC mh_NN -RRB-_-RRB- log_NN n_NN -RRB-_-RRB- ._.
+Since_IN M_NN h_NN and_CC m_NN n_NN ,_, the_DT time_NN complexity_NN is_VBZ also_RB O_NN -LRB-_-LRB- nh_NN log_NN n_NN -RRB-_-RRB- ._.
+9_CD ._.
+CONCLUDING_VBG DISCUSSION_NNP When_WRB generating_VBG retrieval_NN results_VBZ over_IN an_DT XML_NN collection_NN ,_, some_DT overlap_VBP in_IN the_DT results_NNS should_MD be_VB tolerated_VBN ,_, and_CC may_MD be_VB beneficial_JJ ._.
+For_IN example_NN ,_, when_WRB a_DT highly_RB exhaustive_JJ and_CC fairly_RB specific_JJ -LRB-_-LRB- #_# ,_, #_# -RRB-_-RRB- element_NN contains_VBZ a_DT much_RB smaller_JJR -LRB-_-LRB- #_# ,_, #_# -RRB-_-RRB- element_NN ,_, both_DT should_MD be_VB reported_VBN to_TO the_DT user_NN ,_, and_CC retrieval_NN algorithms_NNS and_CC evaluation_NN metrics_NNS should_MD respect_VB this_DT relationship_NN ._.
+The_DT algorithm_NN presented_VBN in_IN this_DT paper_NN controls_VBZ overlap_VBP by_IN weighting_NN the_DT terms_NNS occurring_VBG in_IN reported_VBN elements_NNS to_TO reflect_VB their_PRP$ reduced_VBN importance_NN ._.
+Other_JJ approaches_NNS may_MD also_RB help_VB to_TO control_VB overlap_VBP ._.
+For_IN example_NN ,_, when_WRB XML_NN retrieval_NN results_NNS are_VBP presented_VBN to_TO users_NNS it_PRP may_MD be_VB desirable_JJ to_TO cluster_VB structurally_RB related_JJ elements_NNS together_RB ,_, visually_RB illustrating_VBG the_DT relationships_NNS between_IN them_PRP ._.
+While_IN this_DT style_NN of_IN user_NN interface_NN may_MD help_VB a_DT user_NN cope_VB with_IN overlap_VBP ,_, the_DT strategy_NN presented_VBN in_IN this_DT paper_NN continues_VBZ to_TO be_VB applicable_JJ ,_, by_IN determining_VBG the_DT best_JJS elements_NNS to_TO include_VB in_IN each_DT cluster_NN ._.
+At_IN Waterloo_NNP ,_, we_PRP continue_VBP to_TO develop_VB and_CC test_VB our_PRP$ ideas_NNS for_IN INEX_NNP ####_CD ._.
+In_IN particular_JJ ,_, we_PRP are_VBP investigating_VBG methods_NNS for_IN learning_VBG the_DT and_CC j_NN weights_NNS ._.
+We_PRP are_VBP also_RB re-evaluating_VBG our_PRP$ approach_NN to_TO document_NN statistics_NNS and_CC examining_VBG appropriate_JJ adjustments_NNS to_TO the_DT k1_NN parameter_NN as_IN term_NN weights_NNS change_VBP -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+10_CD ._.
+ACKNOWLEDGMENTS_NNP Thanks_NNS to_TO Gabriella_NNP Kazai_NNP and_CC Arjen_NNP de_IN Vries_NNP for_IN providing_VBG an_DT early_JJ version_NN of_IN their_PRP$ software_NN for_IN computing_VBG the_DT XCG_NN metric_JJ ,_, and_CC thanks_NNS to_TO Phil_NNP Tilker_NNP and_CC Stefan_NNP Buttcher_NNP for_IN their_PRP$ help_NN with_IN the_DT experimental_JJ evaluation_NN ._.
+In_IN part_NN ,_, funding_VBG for_IN this_DT project_NN was_VBD provided_VBN by_IN IBM_NNP Canada_NNP through_IN the_DT National_NNP Institute_NNP for_IN Software_NNP Research_NNP ._.
+11_CD ._.
+REFERENCES_NNS -LSB-_-LRB- #_# -RSB-_-RRB- N_NN ._.
+Bruno_NNP ,_, N_NNP ._.
+Koudas_NNP ,_, and_CC D_NN ._.
+Srivastava_NNP ._.
+Holistic_JJ twig_NN joins_VBZ :_: Optimal_JJ XML_NN pattern_NN matching_NN ._.
+In_IN Proceedings_NNP of_IN the_DT ####_CD ACM_NNP SIGMOD_NNP International_NNP Conference_NNP on_IN the_DT Management_NN of_IN Data_NNS ,_, pages_NNS 310-321_CD ,_, Madison_NNP ,_, Wisconsin_NNP ,_, June_NNP ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- D_NN ._.
+Carmel_NNP ,_, Y_NN ._.
+S_NN ._.
+Maarek_NNP ,_, M_NN ._.
+Mandelbrod_NNP ,_, Y_NN ._.
+Mass_NNP ,_, and_CC A_NN ._.
+Soffer_NNP ._.
+Searching_NN XML_NN documents_NNS via_IN XML_NN fragments_NNS ._.
+In_IN Proceedings_NNP of_IN the_DT 26th_JJ Annual_JJ International_NNP ACM_NNP SIGIR_NNP Conference_NNP on_IN Research_NNP and_CC Development_NNP in_IN Information_NNP Retrieval_NNP ,_, pages_NNS 151-158_CD ,_, Toronto_NNP ,_, Canada_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- C_NN ._.
+L_NN ._.
+A_DT ._.
+Clarke_NNP and_CC P_NN ._.
+L_NN ._.
+Tilker_NNP ._.
+MultiText_JJ experiments_NNS for_IN INEX_NNP ####_CD ._.
+In_IN INEX_NNP ####_CD Workshop_NNP Proceedings_NNP ,_, ####_CD ._.
+Published_VBN in_IN LNCS_NNP ####_CD -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- A_DT ._.
+P_NN ._.
+de_IN Vries_NNP ,_, G_NNP ._.
+Kazai_NNP ,_, and_CC M_NN ._.
+Lalmas_NNP ._.
+Tolerance_NN to_TO irrelevance_NN :_: A_DT user-effort_NN oriented_VBN evaluation_NN of_IN retrieval_NN systems_NNS without_IN predefined_JJ retrieval_NN unit_NN ._.
+In_IN RIAO_NN ####_CD Conference_NN Proceedings_NNP ,_, pages_NNS 463-473_CD ,_, Avignon_NNP ,_, France_NNP ,_, April_NNP ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- D_NN ._.
+DeHaan_NNP ,_, D_NNP ._.
+Toman_NNP ,_, M_NN ._.
+P_NN ._.
+Consens_NNP ,_, and_CC M_NN ._.
+T_NN ._.
+Ozsu_NN ._.
+A_DT comprehensive_JJ XQuery_NN to_TO SQL_NN translation_NN using_VBG dynamic_JJ interval_JJ encoding_NN ._.
+In_IN Proceedings_NNP of_IN the_DT 2003_CD ACM_NNP SIGMOD_NNP International_NNP Conference_NNP on_IN the_DT Management_NN of_IN Data_NNS ,_, San_NNP Diego_NNP ,_, June_NNP ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- N_NN ._.
+Fuhr_NNP and_CC K_NNP ._.
+Grojohann_NNP ._.
+XIRQL_NNP :_: A_NNP query_NN language_NN for_IN information_NN retrieval_NN in_IN XML_NN documents_NNS ._.
+In_IN Proceedings_NNP of_IN the_DT 24th_JJ Annual_JJ International_NNP ACM_NNP SIGIR_NNP Conference_NNP on_IN Research_NNP and_CC Development_NNP in_IN Information_NNP Retrieval_NNP ,_, pages_NNS 172-180_CD ,_, New_NNP Orleans_NNP ,_, September_NNP ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- N_NN ._.
+Fuhr_NNP ,_, M_NN ._.
+Lalmas_NNP ,_, and_CC S_NN ._.
+Malik_NNP ,_, editors_NNS ._.
+Initiative_NNP for_IN the_DT Evaluation_NN of_IN XML_NN Retrieval_NN ._.
+Proceedings_NNP of_IN the_DT Second_JJ Workshop_NNP -LRB-_-LRB- INEX_NNP ####_CD -RRB-_-RRB- ,_, Dagstuhl_NN ,_, Germany_NNP ,_, December_NNP ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- N_NN ._.
+Fuhr_NNP ,_, M_NN ._.
+Lalmas_NNP ,_, S_NN ._.
+Malik_NNP ,_, and_CC Zoltan_NNP Szlavik_NNP ,_, editors_NNS ._.
+Initiative_NNP for_IN the_DT Evaluation_NN of_IN XML_NN Retrieval_NN ._.
+Proceedings_NNP of_IN the_DT Third_NNP Workshop_NNP -LRB-_-LRB- INEX_NNP 2004_CD -RRB-_-RRB- ,_, Dagstuhl_NN ,_, Germany_NNP ,_, December_NNP ####_CD ._.
+Published_VBN as_IN Advances_NNS in_IN XML_NN Information_NN Retrieval_NNP ,_, Lecture_NNP Notes_NNP in_IN Computer_NNP Science_NNP ,_, volume_NN ####_CD ,_, Springer_NNP ,_, 2005_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- K_NNP ._.
+Javelin_NNP and_CC J_NNP ._.
+Kekalainen_NNP ._.
+Cumulated_JJ gain-based_JJ evaluation_NN of_IN IR_NN techniques_NNS ._.
+ACM_NNP Transactions_NNS on_IN Information_NNP Systems_NNP ,_, ##_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 422-446_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+Kamps_NNP ,_, M_NN ._.
+de_IN Rijke_NNP ,_, and_CC B_NN ._.
+Sigurbjornsson_NN ._.
+Length_NN normalization_NN in_IN XML_NN retrieval_NN ._.
+In_IN Proceedings_NNP of_IN the_DT 27th_JJ Annual_JJ International_NNP ACM_NNP SIGIR_NNP Conference_NNP on_IN Research_NNP and_CC Development_NNP in_IN Information_NNP Retrieval_NNP ,_, pages_NNS 80-87_CD ,_, Sheffield_NNP ,_, UK_NNP ,_, July_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- G_NN ._.
+Kazai_NNP ,_, M_NN ._.
+Lalmas_NNP ,_, and_CC A_NN ._.
+P_NN ._.
+de_IN Vries_NNP ._.
+The_DT overlap_VBP problem_NN in_IN content-oriented_JJ XML_NN retrieval_NN evaluation_NN ._.
+In_IN Proceedings_NNP of_IN the_DT 27th_JJ Annual_JJ International_NNP ACM_NNP SIGIR_NNP Conference_NNP on_IN Research_NNP and_CC Development_NNP in_IN Information_NNP Retrieval_NNP ,_, pages_NNS 72-79_CD ,_, Sheffield_NNP ,_, UK_NNP ,_, July_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- G_NN ._.
+Kazai_NNP ,_, M_NN ._.
+Lalmas_NNP ,_, and_CC A_NN ._.
+P_NN ._.
+de_IN Vries_NNP ._.
+Reliability_NN tests_NNS for_IN the_DT XCG_NN and_CC inex-2002_NN metrics_NNS ._.
+In_IN INEX_NNP 2004_CD Workshop_NNP Proceedings_NNP ,_, ####_CD ._.
+Published_VBN in_IN LNCS_NNP 3493_CD -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+Kekalainen_NNP ,_, M_NN ._.
+Junkkari_NNP ,_, P_NN ._.
+Arvola_NNP ,_, and_CC T_NN ._.
+Aalto_NNP ._.
+TRIX_NNP ####_SYM -_: Struggling_VBG with_IN the_DT overlap_VBP ._.
+In_IN INEX_NNP 2004_CD Workshop_NNP Proceedings_NNP ,_, ####_CD ._.
+Published_VBN in_IN LNCS_NNP 3493_CD -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- S_NN ._.
+Liu_NNP ,_, Q_NNP ._.
+Zou_NNP ,_, and_CC W_NN ._.
+W_NN ._.
+Chu_NNP ._.
+Configurable_JJ indexing_NN and_CC ranking_NN for_IN XML_NN information_NN retrieval_NN ._.
+In_IN Proceedings_NNP of_IN the_DT 27th_JJ Annual_JJ International_NNP ACM_NNP SIGIR_NNP Conference_NNP on_IN Research_NNP and_CC Development_NNP in_IN Information_NNP Retrieval_NNP ,_, pages_NNS 88-95_CD ,_, Sheffield_NNP ,_, UK_NNP ,_, July_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Y_NN ._.
+Mass_JJ and_CC M_NN ._.
+Mandelbrod_NNP ._.
+Retrieving_VBG the_DT most_RBS relevant_JJ XML_NN components_NNS ._.
+In_IN INEX_NNP ####_CD Workshop_NNP Proceedings_NNP ,_, Dagstuhl_NNP ,_, Germany_NNP ,_, December_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Y_NN ._.
+Mass_JJ and_CC M_NN ._.
+Mandelbrod_NNP ._.
+Component_NN ranking_NN and_CC automatic_JJ query_NN refinement_NN for_IN XML_NN retrieval_NN ._.
+In_IN INEX_NNP ####_CD Workshop_NNP Proceedings_NNP ,_, ####_CD ._.
+Published_VBN in_IN LNCS_NNP ####_CD -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- P_NN ._.
+Ogilvie_NNP and_CC J_NNP ._.
+Callan_NNP ._.
+Hierarchical_JJ language_NN models_NNS for_IN XML_NN component_NN retrieval_NN ._.
+In_IN INEX_NNP ####_CD Workshop_NNP Proceedings_NNP ,_, ####_CD ._.
+Published_VBN in_IN LNCS_NNP 3493_CD -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+Pehcevski_NNP ,_, J_NNP ._.
+A_DT ._.
+Thom_NNP ,_, and_CC A_NN ._.
+Vercoustre_NNP ._.
+Hybrid_NN XML_NN retrieval_NN re-visited_VBN ._.
+In_IN INEX_NNP ####_CD Workshop_NNP Proceedings_NNP ,_, ####_CD ._.
+Published_VBN in_IN LNCS_NNP ####_CD -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- B_NN ._.
+Piwowarski_NNP and_CC M_NN ._.
+Lalmas_NNP ._.
+Providing_VBG consistent_JJ and_CC exhaustive_JJ relevance_NN assessments_NNS for_IN XML_NN retrieval_NN evaluation_NN ._.
+In_IN Proceedings_NNP of_IN the_DT 13th_JJ ACM_NNP Conference_NN on_IN Information_NN and_CC Knowledge_NNP Management_NNP ,_, pages_NNS 361-370_CD ,_, Washington_NNP ,_, DC_NNP ,_, November_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- S_NN ._.
+Robertson_NNP ,_, H_NN ._.
+Zaragoza_NNP ,_, and_CC M_NN ._.
+Taylor_NNP ._.
+Simple_JJ BM25_NN extension_NN to_TO multiple_JJ weighted_JJ fields_NNS ._.
+In_IN Proceedings_NNP of_IN the_DT 13th_JJ ACM_NNP Conference_NN on_IN Information_NN and_CC Knowledge_NNP Management_NNP ,_, pages_NNS 42-50_CD ,_, Washington_NNP ,_, DC_NNP ,_, November_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- S_NN ._.
+E_NN ._.
+Robertson_NNP ,_, S_NN ._.
+Walker_NNP ,_, and_CC M_NN ._.
+Beaulieu_NNP ._.
+Okapi_NNP at_IN TREC-7_NNP :_: Automatic_NNP ad-hoc_JJ ,_, filtering_VBG ,_, VLC_NNP and_CC interactive_JJ track_NN ._.
+In_IN Proceedings_NNP of_IN the_DT Seventh_NNP Text_VB REtrieval_NNP Conference_NNP ,_, Gaithersburg_NNP ,_, MD_NNP ,_, November_NNP 1998_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- A_DT ._.
+Trotman_NNP and_CC B_NNP ._.
+Sigurbjornsson_NN ._.
+NEXI_NNP ,_, now_RB and_CC next_RB ._.
+In_IN INEX_NNP ####_CD Workshop_NNP Proceedings_NNP ,_, ####_CD ._.
+Published_VBN in_IN LNCS_NNP ####_CD -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+Vittaut_NNP ,_, B_NN ._.
+Piwowarski_NNP ,_, and_CC P_NN ._.
+Gallinari_NNP ._.
+An_DT algebra_NN for_IN structured_JJ queries_NNS in_IN bayesian_JJ networks_NNS ._.
+In_IN INEX_NNP ####_CD Workshop_NNP Proceedings_NNP ,_, ####_CD ._.
+Published_VBN in_IN LNCS_NNP ####_CD -LSB-_-LRB- #_# -RSB-_-RRB- ._.

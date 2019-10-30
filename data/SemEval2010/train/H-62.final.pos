@@ -1,0 +1,632 @@
+Implicit_NNP User_NN Modeling_NN for_IN Personalized_NNP Search_VB Xuehua_NNP Shen_NNP ,_, Bin_NNP Tan_NNP ,_, ChengXiang_NNP Zhai_NNP Department_NNP of_IN Computer_NNP Science_NNP University_NNP of_IN Illinois_NNP at_IN Urbana-Champaign_NNP ABSTRACT_NN Information_NN retrieval_NN systems_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, web_NN search_NN engines_NNS -RRB-_-RRB- are_VBP critical_JJ for_IN overcoming_VBG information_NN overload_NN ._.
+A_DT major_JJ deficiency_NN of_IN existing_VBG retrieval_NN systems_NNS is_VBZ that_IN they_PRP generally_RB lack_VBP user_NN modeling_NN and_CC are_VBP not_RB adaptive_JJ to_TO individual_JJ users_NNS ,_, resulting_VBG in_IN inherently_RB non-optimal_JJ retrieval_NN performance_NN ._.
+For_IN example_NN ,_, a_DT tourist_NN and_CC a_DT programmer_NN may_MD use_VB the_DT same_JJ word_NN java_NN to_TO search_VB for_IN different_JJ information_NN ,_, but_CC the_DT current_JJ search_NN systems_NNS would_MD return_VB the_DT same_JJ results_NNS ._.
+In_IN this_DT paper_NN ,_, we_PRP study_VBD how_WRB to_TO infer_VB a_DT user_NN ''_'' s_NNS interest_NN from_IN the_DT user_NN ''_'' s_VBZ search_NN context_NN and_CC use_VB the_DT inferred_VBN implicit_JJ user_NN model_NN for_IN personalized_JJ search_NN ._.
+We_PRP present_VBP a_DT decision_NN theoretic_JJ framework_NN and_CC develop_VB techniques_NNS for_IN implicit_JJ user_NN modeling_NN in_IN information_NN retrieval_NN ._.
+We_PRP develop_VBP an_DT intelligent_JJ client-side_JJ web_NN search_NN agent_NN -LRB-_-LRB- UCAIR_NN -RRB-_-RRB- that_WDT can_MD perform_VB eager_JJ implicit_JJ feedback_NN ,_, e_LS ._.
+g_NN ._.
+,_, query_NN expansion_NN based_VBN on_IN previous_JJ queries_NNS and_CC immediate_JJ result_NN reranking_NN based_VBN on_IN clickthrough_JJ information_NN ._.
+Experiments_NNS on_IN web_NN search_NN show_VBP that_IN our_PRP$ search_NN agent_NN can_MD improve_VB search_NN accuracy_NN over_IN the_DT popular_JJ Google_NNP search_NN engine_NN ._.
+Categories_NNS and_CC Subject_NNP Descriptors_NNPS H_NN ._.
+#_# ._.
+#_# -LSB-_-LRB- Information_NNP Search_VB and_CC Retrieval_NN -RSB-_-RRB- :_: Retrieval_NNP models_NNS ,_, Relevance_NN feedback_NN ,_, Search_VB Process_VB General_NNP Terms_NNS Algorithms_NNS 1_CD ._.
+INTRODUCTION_NNP Although_IN many_JJ information_NN retrieval_NN systems_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, web_NN search_NN engines_NNS and_CC digital_JJ library_NN systems_NNS -RRB-_-RRB- have_VBP been_VBN successfully_RB deployed_VBN ,_, the_DT current_JJ retrieval_NN systems_NNS are_VBP far_RB from_IN optimal_JJ ._.
+A_DT major_JJ deficiency_NN of_IN existing_VBG retrieval_NN systems_NNS is_VBZ that_IN they_PRP generally_RB lack_VBP user_NN modeling_NN and_CC are_VBP not_RB adaptive_JJ to_TO individual_JJ users_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+This_DT inherent_JJ non-optimality_NN is_VBZ seen_VBN clearly_RB in_IN the_DT following_VBG two_CD cases_NNS :_: -LRB-_-LRB- #_# -RRB-_-RRB- Different_JJ users_NNS may_MD use_VB exactly_RB the_DT same_JJ query_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, Java_NNP -RRB-_-RRB- to_TO search_VB for_IN different_JJ information_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, the_DT Java_NNP island_NN in_IN Indonesia_NNP or_CC the_DT Java_NNP programming_NN language_NN -RRB-_-RRB- ,_, but_CC existing_VBG IR_NNP systems_NNS return_VBP the_DT same_JJ results_NNS for_IN these_DT users_NNS ._.
+Without_IN considering_VBG the_DT actual_JJ user_NN ,_, it_PRP is_VBZ impossible_JJ to_TO know_VB which_WDT sense_NN Java_NNP refers_VBZ to_TO in_IN a_DT query_NN ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- A_DT user_NN ''_'' s_NNS information_NN needs_VBZ may_MD change_VB over_IN time_NN ._.
+The_DT same_JJ user_NN may_MD use_VB Java_NNP sometimes_RB to_TO mean_VB the_DT Java_NNP island_NN in_IN Indonesia_NNP and_CC some_DT other_JJ times_NNS to_TO mean_VB the_DT programming_NN language_NN ._.
+Without_IN recognizing_VBG the_DT search_NN context_NN ,_, it_PRP would_MD be_VB again_RB impossible_JJ to_TO recognize_VB the_DT correct_JJ sense_NN ._.
+In_IN order_NN to_TO optimize_VB retrieval_NN accuracy_NN ,_, we_PRP clearly_RB need_VBP to_TO model_VB the_DT user_NN appropriately_RB and_CC personalize_VB search_NN according_VBG to_TO each_DT individual_JJ user_NN ._.
+The_DT major_JJ goal_NN of_IN user_NN modeling_NN for_IN information_NN retrieval_NN is_VBZ to_TO accurately_RB model_VB a_DT user_NN ''_'' s_NNS information_NN need_NN ,_, which_WDT is_VBZ ,_, unfortunately_RB ,_, a_DT very_RB difficult_JJ task_NN ._.
+Indeed_RB ,_, it_PRP is_VBZ even_RB hard_JJ for_IN a_DT user_NN to_TO precisely_RB describe_VB what_WP his_PRP$ /_: her_PRP$ information_NN need_NN is_VBZ ._.
+What_WDT information_NN is_VBZ available_JJ for_IN a_DT system_NN to_TO infer_VB a_DT user_NN ''_'' s_NNS information_NN need_VB ?_.
+Obviously_RB ,_, the_DT user_NN ''_'' s_NNS query_NN provides_VBZ the_DT most_RBS direct_JJ evidence_NN ._.
+Indeed_RB ,_, most_JJS existing_VBG retrieval_NN systems_NNS rely_VBP solely_RB on_IN the_DT query_NN to_TO model_VB a_DT user_NN ''_'' s_NNS information_NN need_NN ._.
+However_RB ,_, since_IN a_DT query_NN is_VBZ often_RB extremely_RB short_JJ ,_, the_DT user_NN model_NN constructed_VBN based_VBN on_IN a_DT keyword_NN query_NN is_VBZ inevitably_RB impoverished_JJ ._.
+An_DT effective_JJ way_NN to_TO improve_VB user_NN modeling_NN in_IN information_NN retrieval_NN is_VBZ to_TO ask_VB the_DT user_NN to_TO explicitly_RB specify_VB which_WDT documents_NNS are_VBP relevant_JJ -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, useful_JJ for_IN satisfying_VBG his_PRP$ /_: her_PRP$ information_NN need_NN -RRB-_-RRB- ,_, and_CC then_RB to_TO improve_VB user_NN modeling_NN based_VBN on_IN such_JJ examples_NNS of_IN relevant_JJ documents_NNS ._.
+This_DT is_VBZ called_VBN relevance_NN feedback_NN ,_, which_WDT has_VBZ been_VBN proved_VBN to_TO be_VB quite_RB effective_JJ for_IN improving_VBG retrieval_NN accuracy_NN -LSB-_-LRB- ##_CD ,_, ##_CD -RSB-_-RRB- ._.
+Unfortunately_RB ,_, in_IN real_JJ world_NN applications_NNS ,_, users_NNS are_VBP usually_RB reluctant_JJ to_TO make_VB the_DT extra_JJ effort_NN to_TO provide_VB relevant_JJ examples_NNS for_IN feedback_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+It_PRP is_VBZ thus_RB very_RB interesting_JJ to_TO study_VB how_WRB to_TO infer_VB a_DT user_NN ''_'' s_NNS information_NN need_VBP based_VBN on_IN any_DT implicit_JJ feedback_NN information_NN ,_, which_WDT naturally_RB exists_VBZ through_IN user_NN interactions_NNS and_CC thus_RB does_VBZ not_RB require_VB any_DT extra_JJ user_NN effort_NN ._.
+Indeed_RB ,_, several_JJ previous_JJ studies_NNS have_VBP shown_VBN that_IN implicit_JJ user_NN modeling_NN can_MD improve_VB retrieval_NN accuracy_NN ._.
+In_IN -LSB-_-LRB- #_# -RSB-_-RRB- ,_, a_DT web_NN browser_NN -LRB-_-LRB- Curious_JJ Browser_NN -RRB-_-RRB- is_VBZ developed_VBN to_TO record_VB a_DT user_NN ''_'' s_NNS explicit_JJ relevance_NN ratings_NNS of_IN web_NN pages_NNS -LRB-_-LRB- relevance_NN feedback_NN -RRB-_-RRB- and_CC browsing_VBG behavior_NN when_WRB viewing_VBG a_DT page_NN ,_, such_JJ as_IN dwelling_NN time_NN ,_, mouse_NN click_VBP ,_, mouse_NN movement_NN and_CC scrolling_NN -LRB-_-LRB- implicit_JJ feedback_NN -RRB-_-RRB- ._.
+It_PRP is_VBZ shown_VBN that_IN the_DT dwelling_NN time_NN on_IN a_DT page_NN ,_, amount_NN of_IN scrolling_VBG on_IN a_DT page_NN and_CC the_DT combination_NN of_IN time_NN and_CC scrolling_NN have_VBP a_DT strong_JJ correlation_NN with_IN explicit_JJ relevance_NN ratings_NNS ,_, which_WDT suggests_VBZ that_IN implicit_JJ feedback_NN may_MD be_VB helpful_JJ for_IN inferring_VBG user_NN information_NN need_NN ._.
+In_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ,_, user_NN clickthrough_JJ data_NNS is_VBZ collected_VBN as_IN training_NN data_NNS to_TO learn_VB a_DT retrieval_NN function_NN ,_, which_WDT is_VBZ used_VBN to_TO produce_VB a_DT customized_VBN ranking_NN of_IN search_NN results_VBZ that_IN suits_NNS a_DT group_NN of_IN users_NNS ''_'' preferences_NNS ._.
+In_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ,_, the_DT clickthrough_JJ data_NNS collected_VBN over_IN a_DT long_JJ time_NN period_NN is_VBZ exploited_VBN through_IN query_NN expansion_NN to_TO improve_VB retrieval_NN accuracy_NN ._.
+824_CD While_IN a_DT user_NN may_MD have_VB general_JJ long_JJ term_NN interests_NNS and_CC preferences_NNS for_IN information_NN ,_, often_RB he_PRP /_: she_PRP is_VBZ searching_VBG for_IN documents_NNS to_TO satisfy_VB an_DT ad-hoc_JJ information_NN need_NN ,_, which_WDT only_RB lasts_VBZ for_IN a_DT short_JJ period_NN of_IN time_NN ;_: once_RB the_DT information_NN need_NN is_VBZ satisfied_JJ ,_, the_DT user_NN would_MD generally_RB no_RB longer_RB be_VB interested_JJ in_IN such_JJ information_NN ._.
+For_IN example_NN ,_, a_DT user_NN may_MD be_VB looking_VBG for_IN information_NN about_IN used_VBN cars_NNS in_IN order_NN to_TO buy_VB one_CD ,_, but_CC once_RB the_DT user_NN has_VBZ bought_VBN a_DT car_NN ,_, he_PRP /_: she_PRP is_VBZ generally_RB no_RB longer_RBR interested_JJ in_IN such_JJ information_NN ._.
+In_IN such_JJ cases_NNS ,_, implicit_JJ feedback_NN information_NN collected_VBN over_IN a_DT long_JJ period_NN of_IN time_NN is_VBZ unlikely_JJ to_TO be_VB very_RB useful_JJ ,_, but_CC the_DT immediate_JJ search_NN context_NN and_CC feedback_NN information_NN ,_, such_JJ as_IN which_WDT of_IN the_DT search_NN results_VBZ for_IN the_DT current_JJ information_NN need_NN are_VBP viewed_VBN ,_, can_MD be_VB expected_VBN to_TO be_VB much_RB more_RBR useful_JJ ._.
+Consider_VB the_DT query_NN Java_NNP again_RB ._.
+Any_DT of_IN the_DT following_VBG immediate_JJ feedback_NN information_NN about_IN the_DT user_NN could_MD potentially_RB help_VB determine_VB the_DT intended_JJ meaning_NN of_IN Java_NNP in_IN the_DT query_NN :_: -LRB-_-LRB- #_# -RRB-_-RRB- The_DT previous_JJ query_NN submitted_VBN by_IN the_DT user_NN is_VBZ hashtable_JJ -LRB-_-LRB- as_IN opposed_VBN to_TO ,_, e_LS ._.
+g_NN ._.
+,_, travel_NN Indonesia_NNP -RRB-_-RRB- ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- In_IN the_DT search_NN results_VBZ ,_, the_DT user_NN viewed_VBD a_DT page_NN where_WRB words_NNS such_JJ as_IN programming_NN ,_, software_NN ,_, and_CC applet_NN occur_VBP many_JJ times_NNS ._.
+To_TO the_DT best_JJS of_IN our_PRP$ knowledge_NN ,_, how_WRB to_TO exploit_VB such_JJ immediate_JJ and_CC short-term_JJ search_NN context_NN to_TO improve_VB search_NN has_VBZ so_RB far_RB not_RB been_VBN well_RB addressed_VBN in_IN the_DT previous_JJ work_NN ._.
+In_IN this_DT paper_NN ,_, we_PRP study_VBD how_WRB to_TO construct_VB and_CC update_VB a_DT user_NN model_NN based_VBN on_IN the_DT immediate_JJ search_NN context_NN and_CC implicit_JJ feedback_NN information_NN and_CC use_VB the_DT model_NN to_TO improve_VB the_DT accuracy_NN of_IN ad-hoc_JJ retrieval_NN ._.
+In_IN order_NN to_TO maximally_RB benefit_VB the_DT user_NN of_IN a_DT retrieval_NN system_NN through_IN implicit_JJ user_NN modeling_NN ,_, we_PRP propose_VBP to_TO perform_VB eager_JJ implicit_JJ feedback_NN ._.
+That_DT is_VBZ ,_, as_RB soon_RB as_IN we_PRP observe_VBP any_DT new_JJ piece_NN of_IN evidence_NN from_IN the_DT user_NN ,_, we_PRP would_MD update_VB the_DT system_NN ''_'' s_NNS belief_NN about_IN the_DT user_NN ''_'' s_NNS information_NN need_NN and_CC respond_VBP with_IN improved_VBN retrieval_NN results_VBZ based_VBN on_IN the_DT updated_VBN user_NN model_NN ._.
+We_PRP present_VBP a_DT decision-theoretic_JJ framework_NN for_IN optimizing_VBG interactive_JJ information_NN retrieval_NN based_VBN on_IN eager_JJ user_NN model_NN updating_VBG ,_, in_IN which_WDT the_DT system_NN responds_VBZ to_TO every_DT action_NN of_IN the_DT user_NN by_IN choosing_VBG a_DT system_NN action_NN to_TO optimize_VB a_DT utility_NN function_NN ._.
+In_IN a_DT traditional_JJ retrieval_NN paradigm_NN ,_, the_DT retrieval_NN problem_NN is_VBZ to_TO match_VB a_DT query_NN with_IN documents_NNS and_CC rank_NN documents_NNS according_VBG to_TO their_PRP$ relevance_NN values_NNS ._.
+As_IN a_DT result_NN ,_, the_DT retrieval_NN process_NN is_VBZ a_DT simple_JJ independent_JJ cycle_NN of_IN query_NN and_CC result_VBP display_NN ._.
+In_IN the_DT proposed_VBN new_JJ retrieval_NN paradigm_NN ,_, the_DT user_NN ''_'' s_VBZ search_NN context_NN plays_VBZ an_DT important_JJ role_NN and_CC the_DT inferred_VBN implicit_JJ user_NN model_NN is_VBZ exploited_VBN immediately_RB to_TO benefit_VB the_DT user_NN ._.
+The_DT new_JJ retrieval_NN paradigm_NN is_VBZ thus_RB fundamentally_RB different_JJ from_IN the_DT traditional_JJ paradigm_NN ,_, and_CC is_VBZ inherently_RB more_RBR general_JJ ._.
+We_PRP further_RB propose_VBP specific_JJ techniques_NNS to_TO capture_VB and_CC exploit_VB two_CD types_NNS of_IN implicit_JJ feedback_NN information_NN :_: -LRB-_-LRB- #_# -RRB-_-RRB- identifying_VBG related_JJ immediately_RB preceding_VBG query_NN and_CC using_VBG the_DT query_NN and_CC the_DT corresponding_JJ search_NN results_VBZ to_TO select_VB appropriate_JJ terms_NNS to_TO expand_VB the_DT current_JJ query_NN ,_, and_CC -LRB-_-LRB- #_# -RRB-_-RRB- exploiting_VBG the_DT viewed_VBN document_NN summaries_NNS to_TO immediately_RB rerank_VB any_DT documents_NNS that_WDT have_VBP not_RB yet_RB been_VBN seen_VBN by_IN the_DT user_NN ._.
+Using_VBG these_DT techniques_NNS ,_, we_PRP develop_VBP a_DT client-side_JJ web_NN search_NN agent_NN UCAIR_NN -LRB-_-LRB- User-Centered_JJ Adaptive_JJ Information_NN Retrieval_NN -RRB-_-RRB- on_IN top_NN of_IN a_DT popular_JJ search_NN engine_NN -LRB-_-LRB- Google_NNP -RRB-_-RRB- ._.
+Experiments_NNS on_IN web_NN search_NN show_VBP that_IN our_PRP$ search_NN agent_NN can_MD improve_VB search_NN accuracy_NN over_IN Google_NNP ._.
+Since_IN the_DT implicit_JJ information_NN we_PRP exploit_VBP already_RB naturally_RB exists_VBZ through_IN user_NN interactions_NNS ,_, the_DT user_NN does_VBZ not_RB need_VB to_TO make_VB any_DT extra_JJ effort_NN ._.
+Thus_RB the_DT developed_VBN search_NN agent_NN can_MD improve_VB existing_VBG web_NN search_NN performance_NN without_IN additional_JJ effort_NN from_IN the_DT user_NN ._.
+The_DT remaining_VBG sections_NNS are_VBP organized_VBN as_IN follows_VBZ ._.
+In_IN Section_NN #_# ,_, we_PRP discuss_VBP the_DT related_JJ work_NN ._.
+In_IN Section_NN #_# ,_, we_PRP present_VBP a_DT decisiontheoretic_JJ interactive_JJ retrieval_NN framework_NN for_IN implicit_JJ user_NN modeling_NN ._.
+In_IN Section_NN #_# ,_, we_PRP present_VBP the_DT design_NN and_CC implementation_NN of_IN an_DT intelligent_JJ client-side_JJ web_NN search_NN agent_NN -LRB-_-LRB- UCAIR_NN -RRB-_-RRB- that_WDT performs_VBZ eager_JJ implicit_JJ feedback_NN ._.
+In_IN Section_NN #_# ,_, we_PRP report_VBP our_PRP$ experiment_NN results_VBZ using_VBG the_DT search_NN agent_NN ._.
+Section_NN #_# concludes_VBZ our_PRP$ work_NN ._.
+2_LS ._.
+RELATED_JJ WORK_VBP Implicit_JJ user_NN modeling_NN for_IN personalized_JJ search_NN has_VBZ been_VBN studied_VBN in_IN previous_JJ work_NN ,_, but_CC our_PRP$ work_NN differs_VBZ from_IN all_DT previous_JJ work_NN in_IN several_JJ aspects_NNS :_: -LRB-_-LRB- #_# -RRB-_-RRB- We_PRP emphasize_VBP the_DT exploitation_NN of_IN immediate_JJ search_NN context_NN such_JJ as_IN the_DT related_JJ immediately_RB preceding_VBG query_NN and_CC the_DT viewed_VBN documents_NNS in_IN the_DT same_JJ session_NN ,_, while_IN most_JJS previous_JJ work_NN relies_VBZ on_IN long-term_JJ collection_NN of_IN implicit_JJ feedback_NN information_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- We_PRP perform_VBP eager_JJ feedback_NN and_CC bring_VB the_DT benefit_NN of_IN implicit_JJ user_NN modeling_NN as_RB soon_RB as_IN any_DT new_JJ implicit_JJ feedback_NN information_NN is_VBZ available_JJ ,_, while_IN the_DT previous_JJ work_NN mostly_RB exploits_VBZ longterm_JJ implicit_JJ feedback_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- We_PRP propose_VBP a_DT retrieval_NN framework_NN to_TO integrate_VB implicit_JJ user_NN modeling_NN with_IN the_DT interactive_JJ retrieval_NN process_NN ,_, while_IN the_DT previous_JJ work_NN either_CC studies_NNS implicit_JJ user_NN modeling_NN separately_RB from_IN retrieval_NN -LSB-_-LRB- #_# -RSB-_-RRB- or_CC only_RB studies_NNS specific_JJ retrieval_NN models_NNS for_IN exploiting_VBG implicit_JJ feedback_NN to_TO better_JJR match_NN a_DT query_NN with_IN documents_NNS -LSB-_-LRB- ##_CD ,_, ##_CD ,_, ##_CD -RSB-_-RRB- ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- We_PRP develop_VBP and_CC evaluate_VBP a_DT personalized_JJ Web_NN search_NN agent_NN with_IN online_JJ user_NN studies_NNS ,_, while_IN most_JJS existing_VBG work_NN evaluates_VBZ algorithms_NNS offline_NN without_IN real_JJ user_NN interactions_NNS ._.
+Currently_RB some_DT search_NN engines_NNS provide_VBP rudimentary_JJ personalization_NN ,_, such_JJ as_IN Google_NNP Personalized_NNP web_NN search_NN -LSB-_-LRB- #_# -RSB-_-RRB- ,_, which_WDT allows_VBZ users_NNS to_TO explicitly_RB describe_VB their_PRP$ interests_NNS by_IN selecting_VBG from_IN predefined_JJ topics_NNS ,_, so_RB that_IN those_DT results_NNS that_WDT match_VBP their_PRP$ interests_NNS are_VBP brought_VBN to_TO the_DT top_NN ,_, and_CC My_PRP$ Yahoo_NNP !_.
+search_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, which_WDT gives_VBZ users_NNS the_DT option_NN to_TO save_VB web_NN sites_NNS they_PRP like_VBP and_CC block_VBP those_DT they_PRP dislike_VBP ._.
+In_IN contrast_NN ,_, UCAIR_NN personalizes_VBZ web_NN search_NN through_IN implicit_JJ user_NN modeling_NN without_IN any_DT additional_JJ user_NN efforts_NNS ._.
+Furthermore_RB ,_, the_DT personalization_NN of_IN UCAIR_NNP is_VBZ provided_VBN on_IN the_DT client_NN side_NN ._.
+There_EX are_VBP two_CD remarkable_JJ advantages_NNS on_IN this_DT ._.
+First_RB ,_, the_DT user_NN does_VBZ not_RB need_VB to_TO worry_VB about_IN the_DT privacy_NN infringement_NN ,_, which_WDT is_VBZ a_DT big_JJ concern_NN for_IN personalized_JJ search_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Second_RB ,_, both_CC the_DT computation_NN of_IN personalization_NN and_CC the_DT storage_NN of_IN the_DT user_NN profile_NN are_VBP done_VBN at_IN the_DT client_NN side_NN so_IN that_IN the_DT server_NN load_NN is_VBZ reduced_VBN dramatically_RB -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+There_EX have_VBP been_VBN many_JJ works_NNS studying_VBG user_NN query_NN logs_NNS -LSB-_-LRB- #_# -RSB-_-RRB- or_CC query_NN dynamics_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+UCAIR_NNP makes_VBZ direct_JJ use_NN of_IN a_DT user_NN ''_'' s_NNS query_JJ history_NN to_TO benefit_VB the_DT same_JJ user_NN immediately_RB in_IN the_DT same_JJ search_NN session_NN ._.
+UCAIR_NN first_JJ judges_NNS whether_IN two_CD neighboring_VBG queries_NNS belong_VBP to_TO the_DT same_JJ information_NN session_NN and_CC if_IN so_RB ,_, it_PRP selects_VBZ terms_NNS from_IN the_DT previous_JJ query_NN to_TO perform_VB query_JJ expansion_NN ._.
+Our_PRP$ query_JJ expansion_NN approach_NN is_VBZ similar_JJ to_TO automatic_JJ query_NN expansion_NN -LSB-_-LRB- ##_CD ,_, ##_CD ,_, #_# -RSB-_-RRB- ,_, but_CC instead_RB of_IN using_VBG pseudo_NN feedback_NN to_TO expand_VB the_DT query_NN ,_, we_PRP use_VBP user_NN ''_'' s_NNS implicit_JJ feedback_NN information_NN to_TO expand_VB the_DT current_JJ query_NN ._.
+These_DT two_CD techniques_NNS may_MD be_VB combined_VBN ._.
+3_LS ._.
+OPTIMIZATION_NNP IN_IN INTERACTIVE_NNP IR_NNP In_IN interactive_JJ IR_NNP ,_, a_DT user_NN interacts_VBZ with_IN the_DT retrieval_NN system_NN through_IN an_DT action_NN dialogue_NN ,_, in_IN which_WDT the_DT system_NN responds_VBZ to_TO each_DT user_NN action_NN with_IN some_DT system_NN action_NN ._.
+For_IN example_NN ,_, the_DT user_NN ''_'' s_NNS action_NN may_MD be_VB submitting_VBG a_DT query_NN and_CC the_DT system_NN ''_'' s_NNS response_NN may_MD be_VB returning_VBG a_DT list_NN of_IN ##_CD document_NN summaries_NNS ._.
+In_IN general_JJ ,_, the_DT space_NN of_IN user_NN actions_NNS and_CC system_NN responses_NNS and_CC their_PRP$ granularities_NNS would_MD depend_VB on_IN the_DT interface_NN of_IN a_DT particular_JJ retrieval_NN system_NN ._.
+In_IN principle_NN ,_, every_DT action_NN of_IN the_DT user_NN can_MD potentially_RB provide_VB new_JJ evidence_NN to_TO help_VB the_DT system_NN better_RBR infer_VB the_DT user_NN ''_'' s_NNS information_NN need_NN ._.
+Thus_RB in_IN order_NN to_TO respond_VB optimally_RB ,_, the_DT system_NN should_MD use_VB all_PDT the_DT evidence_NN collected_VBN so_RB far_RB about_IN the_DT user_NN when_WRB choosing_VBG a_DT response_NN ._.
+When_WRB viewed_VBN in_IN this_DT way_NN ,_, most_JJS existing_VBG search_NN engines_NNS are_VBP clearly_RB non-optimal_JJ ._.
+For_IN example_NN ,_, if_IN a_DT user_NN has_VBZ viewed_VBN some_DT documents_NNS on_IN the_DT first_JJ page_NN of_IN search_NN results_NNS ,_, when_WRB the_DT user_NN clicks_VBZ on_IN the_DT Next_JJ link_NN to_TO fetch_VB more_JJR results_NNS ,_, an_DT existing_VBG retrieval_NN system_NN would_MD still_RB return_VB the_DT next_JJ page_NN of_IN results_NNS retrieved_VBD based_VBN on_IN the_DT original_JJ query_NN without_IN considering_VBG the_DT new_JJ evidence_NN that_IN a_DT particular_JJ result_NN has_VBZ been_VBN viewed_VBN by_IN the_DT user_NN ._.
+825_CD We_PRP propose_VBP to_TO optimize_VB retrieval_NN performance_NN by_IN adapting_VBG system_NN responses_NNS based_VBN on_IN every_DT action_NN that_IN a_DT user_NN has_VBZ taken_VBN ,_, and_CC cast_VBD the_DT optimization_NN problem_NN as_IN a_DT decision_NN task_NN ._.
+Specifically_RB ,_, at_IN any_DT time_NN ,_, the_DT system_NN would_MD attempt_VB to_TO do_VB two_CD tasks_NNS :_: -LRB-_-LRB- #_# -RRB-_-RRB- User_NN model_NN updating_VBG :_: Monitor_NNP any_DT useful_JJ evidence_NN from_IN the_DT user_NN regarding_VBG his_PRP$ /_: her_PRP$ information_NN need_NN and_CC update_VB the_DT user_NN model_NN as_RB soon_RB as_IN such_JJ evidence_NN is_VBZ available_JJ ;_: -LRB-_-LRB- #_# -RRB-_-RRB- Improving_NN search_NN results_VBZ :_: Rerank_NNP immediately_RB all_PDT the_DT documents_NNS that_IN the_DT user_NN has_VBZ not_RB yet_RB seen_VBN ,_, as_RB soon_RB as_IN the_DT user_NN model_NN is_VBZ updated_VBN ._.
+We_PRP emphasize_VBP eager_JJ updating_VBG and_CC reranking_VBG ,_, which_WDT makes_VBZ our_PRP$ work_NN quite_RB different_JJ from_IN any_DT existing_VBG work_NN ._.
+Below_IN we_PRP present_VBP a_DT formal_JJ decision_NN theoretic_JJ framework_NN for_IN optimizing_VBG retrieval_NN performance_NN through_IN implicit_JJ user_NN modeling_NN in_IN interactive_JJ information_NN retrieval_NN ._.
+3_LS ._.
+#_# A_DT decision-theoretic_JJ framework_NN Let_VB A_DT be_VB the_DT set_NN of_IN all_DT user_NN actions_NNS and_CC R_NN -LRB-_-LRB- a_DT -RRB-_-RRB- be_VB the_DT set_NN of_IN all_DT possible_JJ system_NN responses_NNS to_TO a_DT user_NN action_NN a_DT A_NN ._.
+At_IN any_DT time_NN ,_, let_VB At_IN =_JJ -LRB-_-LRB- a1_NN ,_, ..._: ,_, at_IN -RRB-_-RRB- be_VB the_DT observed_VBN sequence_NN of_IN user_NN actions_NNS so_RB far_RB -LRB-_-LRB- up_RB to_TO time_NN point_NN t_NN -RRB-_-RRB- and_CC Rt1_NN =_JJ -LRB-_-LRB- r1_NN ,_, ..._: ,_, rt1_NN -RRB-_-RRB- be_VB the_DT responses_NNS that_IN the_DT system_NN has_VBZ made_VBN responding_VBG to_TO the_DT user_NN actions_NNS ._.
+The_DT system_NN ''_'' s_NNS goal_NN is_VBZ to_TO choose_VB an_DT optimal_JJ response_NN rt_NN R_NN -LRB-_-LRB- at_IN -RRB-_-RRB- for_IN the_DT current_JJ user_NN action_NN at_IN ._.
+Let_VB M_NN be_VB the_DT space_NN of_IN all_DT possible_JJ user_NN models_NNS ._.
+We_PRP further_RB define_VBP a_DT loss_NN function_NN L_NN -LRB-_-LRB- a_DT ,_, r_NN ,_, m_NN -RRB-_-RRB- ,_, where_WRB a_DT A_NN is_VBZ a_DT user_NN action_NN ,_, r_NN R_NN -LRB-_-LRB- a_DT -RRB-_-RRB- is_VBZ a_DT system_NN response_NN ,_, and_CC m_NN M_NN is_VBZ a_DT user_NN model_NN ._.
+L_NN -LRB-_-LRB- a_DT ,_, r_NN ,_, m_NN -RRB-_-RRB- encodes_VBZ our_PRP$ decision_NN preferences_NNS and_CC assesses_VBZ the_DT optimality_NN of_IN responding_VBG with_IN r_NN when_WRB the_DT current_JJ user_NN model_NN is_VBZ m_NN and_CC the_DT current_JJ user_NN action_NN is_VBZ a_DT ._.
+According_VBG to_TO Bayesian_JJ decision_NN theory_NN ,_, the_DT optimal_JJ decision_NN at_IN time_NN t_NN is_VBZ to_TO choose_VB a_DT response_NN that_WDT minimizes_VBZ the_DT Bayes_NNP risk_NN ,_, i_FW ._.
+e_LS ._.
+,_, r_NN t_NN =_JJ argmin_JJ rR_NN -LRB-_-LRB- at_IN -RRB-_-RRB- M_NN L_NN -LRB-_-LRB- at_IN ,_, r_NN ,_, mt_NN -RRB-_-RRB- P_NN -LRB-_-LRB- mt_NN |_CD U_NNP ,_, D_NNP ,_, At_IN ,_, Rt1_NN -RRB-_-RRB- dmt_NN -LRB-_-LRB- #_# -RRB-_-RRB- where_WRB P_NN -LRB-_-LRB- mt_NN |_CD U_NNP ,_, D_NNP ,_, At_IN ,_, Rt1_NN -RRB-_-RRB- is_VBZ the_DT posterior_JJ probability_NN of_IN the_DT user_NN model_NN mt_NN given_VBN all_PDT the_DT observations_NNS about_IN the_DT user_NN U_NN we_PRP have_VBP made_VBN up_RP to_TO time_NN t_NN ._.
+To_TO simplify_VB the_DT computation_NN of_IN Equation_NN #_# ,_, let_VB us_PRP assume_VB that_IN the_DT posterior_JJ probability_NN mass_NN P_NN -LRB-_-LRB- mt_NN |_CD U_NNP ,_, D_NNP ,_, At_IN ,_, Rt1_NN -RRB-_-RRB- is_VBZ mostly_RB concentrated_VBN on_IN the_DT mode_NN m_NN t_NN =_JJ argmaxmt_NN P_NN -LRB-_-LRB- mt_NN |_CD U_NNP ,_, D_NNP ,_, At_IN ,_, Rt1_NN -RRB-_-RRB- ._.
+We_PRP can_MD then_RB approximate_JJ the_DT integral_JJ with_IN the_DT value_NN of_IN the_DT loss_NN function_NN at_IN m_NN t_NN ._.
+That_DT is_VBZ ,_, r_NN t_NN argminrR_NN -LRB-_-LRB- at_IN -RRB-_-RRB- L_NN -LRB-_-LRB- at_IN ,_, r_NN ,_, m_NN t_NN -RRB-_-RRB- -LRB-_-LRB- #_# -RRB-_-RRB- where_WRB m_NN t_NN =_JJ argmaxmt_NN P_NN -LRB-_-LRB- mt_NN |_CD U_NNP ,_, D_NNP ,_, At_IN ,_, Rt1_NN -RRB-_-RRB- ._.
+Leaving_VBG aside_RB how_WRB to_TO define_VB and_CC estimate_VB these_DT probabilistic_JJ models_NNS and_CC the_DT loss_NN function_NN ,_, we_PRP can_MD see_VB that_IN such_PDT a_DT decision-theoretic_JJ formulation_NN suggests_VBZ that_IN ,_, in_IN order_NN to_TO choose_VB the_DT optimal_JJ response_NN to_TO at_IN ,_, the_DT system_NN should_MD perform_VB two_CD tasks_NNS :_: -LRB-_-LRB- #_# -RRB-_-RRB- compute_VBP the_DT current_JJ user_NN model_NN and_CC obtain_VB m_NN t_NN based_VBN on_IN all_PDT the_DT useful_JJ information_NN ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- choose_VB a_DT response_NN rt_NN to_TO minimize_VB the_DT loss_NN function_NN value_NN L_NN -LRB-_-LRB- at_IN ,_, rt_NN ,_, m_NN t_NN -RRB-_-RRB- ._.
+When_WRB at_IN does_VBZ not_RB affect_VB our_PRP$ belief_NN about_IN m_NN t_NN ,_, the_DT first_JJ step_NN can_MD be_VB omitted_VBN and_CC we_PRP may_MD reuse_VB m_NN t1_NN for_IN m_NN t_NN ._.
+Note_VB that_IN our_PRP$ framework_NN is_VBZ quite_RB general_JJ since_IN we_PRP can_MD potentially_RB model_VB any_DT kind_NN of_IN user_NN actions_NNS and_CC system_NN responses_NNS ._.
+In_IN most_JJS cases_NNS ,_, as_IN we_PRP may_MD expect_VB ,_, the_DT system_NN ''_'' s_NNS response_NN is_VBZ some_DT ranking_NN of_IN documents_NNS ,_, i_FW ._.
+e_LS ._.
+,_, for_IN most_JJS actions_NNS a_DT ,_, R_NN -LRB-_-LRB- a_DT -RRB-_-RRB- consists_VBZ of_IN all_PDT the_DT possible_JJ rankings_NNS of_IN the_DT unseen_JJ documents_NNS ,_, and_CC the_DT decision_NN problem_NN boils_VBZ down_RP to_TO choosing_VBG the_DT best_JJS ranking_NN of_IN unseen_JJ documents_NNS based_VBN on_IN the_DT most_RBS current_JJ user_NN model_NN ._.
+When_WRB a_DT is_VBZ the_DT action_NN of_IN submitting_VBG a_DT keyword_NN query_NN ,_, such_PDT a_DT response_NN is_VBZ exactly_RB what_WP a_DT current_JJ retrieval_NN system_NN would_MD do_VB ._.
+However_RB ,_, we_PRP can_MD easily_RB imagine_VB that_IN a_DT more_RBR intelligent_JJ web_NN search_NN engine_NN would_MD respond_VB to_TO a_DT user_NN ''_'' s_NNS clicking_VBG of_IN the_DT Next_JJ link_NN -LRB-_-LRB- to_TO fetch_VB more_JJR unseen_JJ results_NNS -RRB-_-RRB- with_IN a_DT more_RBR optimized_VBN ranking_NN of_IN documents_NNS based_VBN on_IN any_DT viewed_VBN documents_NNS in_IN the_DT current_JJ page_NN of_IN results_NNS ._.
+In_IN fact_NN ,_, according_VBG to_TO our_PRP$ eager_JJ updating_VBG strategy_NN ,_, we_PRP may_MD even_RB allow_VB a_DT system_NN to_TO respond_VB to_TO a_DT user_NN ''_'' s_NNS clicking_VBG of_IN browser_NN ''_'' s_VBZ Back_RB button_NN after_IN viewing_VBG a_DT document_NN in_IN the_DT same_JJ way_NN ,_, so_RB that_IN the_DT user_NN can_MD maximally_RB benefit_VB from_IN implicit_JJ feedback_NN ._.
+These_DT are_VBP precisely_RB what_WP our_PRP$ UCAIR_NN system_NN does_VBZ ._.
+3_LS ._.
+#_# User_NN models_NNS A_DT user_NN model_NN m_NN M_NN represents_VBZ what_WP we_PRP know_VBP about_IN the_DT user_NN U_NN ,_, so_RB in_IN principle_NN ,_, it_PRP can_MD contain_VB any_DT information_NN about_IN the_DT user_NN that_IN we_PRP wish_VBP to_TO model_NN ._.
+We_PRP now_RB discuss_VBP two_CD important_JJ components_NNS in_IN a_DT user_NN model_NN ._.
+The_DT first_JJ component_NN is_VBZ a_DT component_NN model_NN of_IN the_DT user_NN ''_'' s_NNS information_NN need_NN ._.
+Presumably_RB ,_, the_DT most_RBS important_JJ factor_NN affecting_VBG the_DT optimality_NN of_IN the_DT system_NN ''_'' s_NNS response_NN is_VBZ how_WRB well_RB the_DT response_NN addresses_VBZ the_DT user_NN ''_'' s_NNS information_NN need_NN ._.
+Indeed_RB ,_, at_IN any_DT time_NN ,_, we_PRP may_MD assume_VB that_IN the_DT system_NN has_VBZ some_DT belief_NN about_IN what_WP the_DT user_NN is_VBZ interested_JJ in_IN ,_, which_WDT we_PRP model_VBP through_IN a_DT term_NN vector_NN x_NN =_JJ -LRB-_-LRB- x1_NN ,_, ..._: ,_, x_CC |_CD V_NN |_NN -RRB-_-RRB- ,_, where_WRB V_NN =_JJ -LCB-_-LRB- w1_NN ,_, ..._: ,_, w_VB |_CD V_NNP |_CD -RCB-_-RRB- is_VBZ the_DT set_NN of_IN all_DT terms_NNS -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, vocabulary_NN -RRB-_-RRB- and_CC xi_NN is_VBZ the_DT weight_NN of_IN term_NN wi_NN ._.
+Such_PDT a_DT term_NN vector_NN is_VBZ commonly_RB used_VBN in_IN information_NN retrieval_NN to_TO represent_VB both_CC queries_NNS and_CC documents_NNS ._.
+For_IN example_NN ,_, the_DT vector-space_JJ model_NN ,_, assumes_VBZ that_IN both_CC the_DT query_NN and_CC the_DT documents_NNS are_VBP represented_VBN as_IN term_NN vectors_NNS and_CC the_DT score_NN of_IN a_DT document_NN with_IN respect_NN to_TO a_DT query_NN is_VBZ computed_VBN based_VBN on_IN the_DT similarity_NN between_IN the_DT query_NN vector_NN and_CC the_DT document_NN vector_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+In_IN a_DT language_NN modeling_NN approach_NN ,_, we_PRP may_MD also_RB regard_VB the_DT query_NN unigram_JJ language_NN model_NN -LSB-_-LRB- ##_CD ,_, ##_CD -RSB-_-RRB- or_CC the_DT relevance_NN model_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- as_IN a_DT term_NN vector_NN representation_NN of_IN the_DT user_NN ''_'' s_NNS information_NN need_NN ._.
+Intuitively_RB ,_, x_NN would_MD assign_VB high_JJ weights_NNS to_TO terms_NNS that_WDT characterize_VBP the_DT topics_NNS which_WDT the_DT user_NN is_VBZ interested_JJ in_IN ._.
+The_DT second_JJ component_NN we_PRP may_MD include_VB in_IN our_PRP$ user_NN model_NN is_VBZ the_DT documents_NNS that_IN the_DT user_NN has_VBZ already_RB viewed_VBN ._.
+Obviously_RB ,_, even_RB if_IN a_DT document_NN is_VBZ relevant_JJ ,_, if_IN the_DT user_NN has_VBZ already_RB seen_VBN the_DT document_NN ,_, it_PRP would_MD not_RB be_VB useful_JJ to_TO present_VB the_DT same_JJ document_NN again_RB ._.
+We_PRP thus_RB introduce_VB another_DT variable_JJ S_NN D_NN -LRB-_-LRB- D_NN is_VBZ the_DT whole_JJ set_NN of_IN documents_NNS in_IN the_DT collection_NN -RRB-_-RRB- to_TO denote_VB the_DT subset_NN of_IN documents_NNS in_IN the_DT search_NN results_VBZ that_IN the_DT user_NN has_VBZ already_RB seen_VBN /_: viewed_VBN ._.
+In_IN general_JJ ,_, at_IN time_NN t_NN ,_, we_PRP may_MD represent_VB a_DT user_NN model_NN as_IN mt_NN =_JJ -LRB-_-LRB- S_NN ,_, x_NN ,_, At_IN ,_, Rt1_NN -RRB-_-RRB- ,_, where_WRB S_NN is_VBZ the_DT seen_VBN documents_NNS ,_, x_NN is_VBZ the_DT system_NN ''_'' s_NNS understanding_NN of_IN the_DT user_NN ''_'' s_NNS information_NN need_NN ,_, and_CC -LRB-_-LRB- At_IN ,_, Rt1_NN -RRB-_-RRB- represents_VBZ the_DT user_NN ''_'' s_NNS interaction_NN history_NN ._.
+Note_VB that_IN an_DT even_RB more_RBR general_JJ user_NN model_NN may_MD also_RB include_VB other_JJ factors_NNS such_JJ as_IN the_DT user_NN ''_'' s_NNS reading_VBG level_NN and_CC occupation_NN ._.
+If_IN we_PRP assume_VBP that_IN the_DT uncertainty_NN of_IN a_DT user_NN model_NN mt_NN is_VBZ solely_RB due_JJ to_TO the_DT uncertainty_NN of_IN x_NN ,_, the_DT computation_NN of_IN our_PRP$ current_JJ estimate_NN of_IN user_NN model_NN m_NN t_NN will_MD mainly_RB involve_VB computing_VBG our_PRP$ best_JJS estimate_NN of_IN x_NN ._.
+That_DT is_VBZ ,_, the_DT system_NN would_MD choose_VB a_DT response_NN according_VBG to_TO r_NN t_NN =_JJ argminrR_NN -LRB-_-LRB- at_IN -RRB-_-RRB- L_NN -LRB-_-LRB- at_IN ,_, r_NN ,_, S_NN ,_, x_NN ,_, At_IN ,_, Rt1_NN -RRB-_-RRB- -LRB-_-LRB- #_# -RRB-_-RRB- where_WRB x_NN =_JJ argmaxx_NN P_NN -LRB-_-LRB- x_NN |_CD U_NNP ,_, D_NNP ,_, At_IN ,_, Rt1_NN -RRB-_-RRB- ._.
+This_DT is_VBZ the_DT decision_NN mechanism_NN implemented_VBD in_IN the_DT UCAIR_NN system_NN to_TO be_VB described_VBN later_RB ._.
+In_IN this_DT system_NN ,_, we_PRP avoided_VBD specifying_VBG the_DT probabilistic_JJ model_NN P_NN -LRB-_-LRB- x_NN |_CD U_NNP ,_, D_NNP ,_, At_IN ,_, Rt1_NN -RRB-_-RRB- by_IN computing_VBG x_CC directly_RB with_IN some_DT existing_VBG feedback_NN method_NN ._.
+3_LS ._.
+#_# Loss_NN functions_NNS The_DT exact_JJ definition_NN of_IN loss_NN function_NN L_NN depends_VBZ on_IN the_DT responses_NNS ,_, thus_RB it_PRP is_VBZ inevitably_RB application-specific_JJ ._.
+We_PRP now_RB briefly_RB discuss_VB some_DT possibilities_NNS when_WRB the_DT response_NN is_VBZ to_TO rank_VB all_PDT the_DT unseen_JJ documents_NNS and_CC present_VB the_DT top_JJ k_NN of_IN them_PRP ._.
+Let_VB r_NN =_JJ -LRB-_-LRB- d1_NN ,_, ..._: ,_, dk_NN -RRB-_-RRB- be_VB the_DT top_JJ k_NN documents_NNS ,_, S_NN be_VB the_DT set_NN of_IN seen_VBN documents_NNS by_IN the_DT user_NN ,_, and_CC x_NN be_VB the_DT system_NN ''_'' s_NNS best_JJS guess_NN of_IN the_DT user_NN ''_'' s_NNS information_NN need_NN ._.
+We_PRP 826_CD may_MD simply_RB define_VB the_DT loss_NN associated_VBN with_IN r_NN as_IN the_DT negative_JJ sum_NN of_IN the_DT probability_NN that_IN each_DT of_IN the_DT di_FW is_VBZ relevant_JJ ,_, i_FW ._.
+e_LS ._.
+,_, L_NN -LRB-_-LRB- a_DT ,_, r_NN ,_, m_NN -RRB-_-RRB- =_JJ k_NN i_FW =_JJ #_# P_NN -LRB-_-LRB- relevant_JJ |_NN di_FW ,_, m_NN -RRB-_-RRB- ._.
+Clearly_RB ,_, in_IN order_NN to_TO minimize_VB this_DT loss_NN function_NN ,_, the_DT optimal_JJ response_NN r_NN would_MD contain_VB the_DT k_NN documents_NNS with_IN the_DT highest_JJS probability_NN of_IN relevance_NN ,_, which_WDT is_VBZ intuitively_RB reasonable_JJ ._.
+One_CD deficiency_NN of_IN this_DT top-k_JJ loss_NN function_NN is_VBZ that_IN it_PRP is_VBZ not_RB sensitive_JJ to_TO the_DT internal_JJ order_NN of_IN the_DT selected_VBN top_JJ k_NN documents_NNS ,_, so_RB switching_VBG the_DT ranking_JJ order_NN of_IN a_DT non-relevant_JJ document_NN and_CC a_DT relevant_JJ one_CD would_MD not_RB affect_VB the_DT loss_NN ,_, which_WDT is_VBZ unreasonable_JJ ._.
+To_TO model_VB ranking_JJ ,_, we_PRP can_MD introduce_VB a_DT factor_NN of_IN the_DT user_NN model_NN -_: the_DT probability_NN of_IN each_DT of_IN the_DT k_NN documents_NNS being_VBG viewed_VBN by_IN the_DT user_NN ,_, P_NN -LRB-_-LRB- view_NN |_CD di_FW -RRB-_-RRB- ,_, and_CC define_VB the_DT following_VBG ranking_JJ loss_NN function_NN :_: L_NN -LRB-_-LRB- a_DT ,_, r_NN ,_, m_NN -RRB-_-RRB- =_JJ k_NN i_FW =_JJ #_# P_NN -LRB-_-LRB- view_NN |_CD di_FW -RRB-_-RRB- P_NN -LRB-_-LRB- relevant_JJ |_NN di_FW ,_, m_NN -RRB-_-RRB- Since_IN in_IN general_JJ ,_, if_IN di_FW is_VBZ ranked_VBN above_IN dj_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, i_FW P_NN -LRB-_-LRB- view_NN |_CD dj_NN -RRB-_-RRB- ,_, this_DT loss_NN function_NN would_MD favor_VB a_DT decision_NN to_TO rank_VB relevant_JJ documents_NNS above_IN non-relevant_JJ ones_NNS ,_, as_IN otherwise_RB ,_, we_PRP could_MD always_RB switch_VB di_FW with_IN dj_NN to_TO reduce_VB the_DT loss_NN value_NN ._.
+Thus_RB the_DT system_NN should_MD simply_RB perform_VB a_DT regular_JJ retrieval_NN and_CC rank_NN documents_NNS according_VBG to_TO the_DT probability_NN of_IN relevance_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Depending_VBG on_IN the_DT user_NN ''_'' s_NNS retrieval_NN preferences_NNS ,_, there_EX can_MD be_VB many_JJ other_JJ possibilities_NNS ._.
+For_IN example_NN ,_, if_IN the_DT user_NN does_VBZ not_RB want_VB to_TO see_VB redundant_JJ documents_NNS ,_, the_DT loss_NN function_NN should_MD include_VB some_DT redundancy_NN measure_NN on_IN r_NN based_VBN on_IN the_DT already_RB seen_VBN documents_NNS S_NN ._.
+Of_IN course_NN ,_, when_WRB the_DT response_NN is_VBZ not_RB to_TO choose_VB a_DT ranked_VBN list_NN of_IN documents_NNS ,_, we_PRP would_MD need_VB a_DT different_JJ loss_NN function_NN ._.
+We_PRP discuss_VBP one_CD such_JJ example_NN that_WDT is_VBZ relevant_JJ to_TO the_DT search_NN agent_NN that_IN we_PRP implement_VBP ._.
+When_WRB a_DT user_NN enters_VBZ a_DT query_NN qt_NN -LRB-_-LRB- current_JJ action_NN -RRB-_-RRB- ,_, our_PRP$ search_NN agent_NN relies_VBZ on_IN some_DT existing_VBG search_NN engine_NN to_TO actually_RB carry_VB out_RP search_NN ._.
+In_IN such_PDT a_DT case_NN ,_, even_RB though_IN the_DT search_NN agent_NN does_VBZ not_RB have_VB control_NN of_IN the_DT retrieval_NN algorithm_NN ,_, it_PRP can_MD still_RB attempt_VB to_TO optimize_VB the_DT search_NN results_VBZ through_IN refining_VBG the_DT query_NN sent_VBN to_TO the_DT search_NN engine_NN and_CC /_: or_CC reranking_VBG the_DT results_NNS obtained_VBN from_IN the_DT search_NN engine_NN ._.
+The_DT loss_NN functions_NNS for_IN reranking_NN are_VBP already_RB discussed_VBN above_IN ;_: we_PRP now_RB take_VBP a_DT look_NN at_IN the_DT loss_NN functions_NNS for_IN query_NN refinement_NN ._.
+Let_VB f_SYM be_VB the_DT retrieval_NN function_NN of_IN the_DT search_NN engine_NN that_WDT our_PRP$ agent_NN uses_VBZ so_RB that_IN f_FW -LRB-_-LRB- q_NN -RRB-_-RRB- would_MD give_VB us_PRP the_DT search_NN results_VBZ using_VBG query_NN q_NN ._.
+Given_VBN that_IN the_DT current_JJ action_NN of_IN the_DT user_NN is_VBZ entering_VBG a_DT query_NN qt_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, at_IN =_JJ qt_NN -RRB-_-RRB- ,_, our_PRP$ response_NN would_MD be_VB f_FW -LRB-_-LRB- q_NN -RRB-_-RRB- for_IN some_DT q_NN ._.
+Since_IN we_PRP have_VBP no_DT choice_NN of_IN f_FW ,_, our_PRP$ decision_NN is_VBZ to_TO choose_VB a_DT good_JJ q_NN ._.
+Formally_RB ,_, r_NN t_NN =_JJ argminrt_NN L_NN -LRB-_-LRB- a_DT ,_, rt_NN ,_, m_NN -RRB-_-RRB- =_JJ argminf_NN -LRB-_-LRB- q_NN -RRB-_-RRB- L_NN -LRB-_-LRB- a_DT ,_, f_FW -LRB-_-LRB- q_NN -RRB-_-RRB- ,_, m_NN -RRB-_-RRB- =_JJ f_FW -LRB-_-LRB- argminqL_NN -LRB-_-LRB- qt_NN ,_, f_FW -LRB-_-LRB- q_NN -RRB-_-RRB- ,_, m_NN -RRB-_-RRB- -RRB-_-RRB- which_WDT shows_VBZ that_IN our_PRP$ goal_NN is_VBZ to_TO find_VB q_NN =_JJ argminqL_NN -LRB-_-LRB- qt_NN ,_, f_FW -LRB-_-LRB- q_NN -RRB-_-RRB- ,_, m_NN -RRB-_-RRB- ,_, i_FW ._.
+e_LS ._.
+,_, an_DT optimal_JJ query_NN that_WDT would_MD give_VB us_PRP the_DT best_JJS f_FW -LRB-_-LRB- q_NN -RRB-_-RRB- ._.
+A_DT different_JJ choice_NN of_IN loss_NN function_NN L_NN -LRB-_-LRB- qt_NN ,_, f_FW -LRB-_-LRB- q_NN -RRB-_-RRB- ,_, m_NN -RRB-_-RRB- would_MD lead_VB to_TO a_DT different_JJ query_NN refinement_NN strategy_NN ._.
+In_IN UCAIR_NNP ,_, we_PRP heuristically_RB compute_VBP q_NN by_IN expanding_VBG qt_NN with_IN terms_NNS extracted_VBN from_IN rt1_NN whenever_WRB qt1_NN and_CC qt_NN have_VBP high_JJ similarity_NN ._.
+Note_VB that_DT rt1_NN and_CC qt1_NN are_VBP contained_VBN in_IN m_NN as_IN part_NN of_IN the_DT user_NN ''_'' s_NNS interaction_NN history_NN ._.
+3_LS ._.
+#_# Implicit_NNP user_NN modeling_NN Implicit_NNP user_NN modeling_NN is_VBZ captured_VBN in_IN our_PRP$ framework_NN through_IN the_DT computation_NN of_IN x_NN =_JJ argmaxx_NN P_NN -LRB-_-LRB- x_NN |_CD U_NNP ,_, D_NNP ,_, At_IN ,_, Rt1_NN -RRB-_-RRB- ,_, i_FW ._.
+e_LS ._.
+,_, the_DT system_NN ''_'' s_NNS current_JJ belief_NN of_IN what_WP the_DT user_NN ''_'' s_NNS information_NN need_NN is_VBZ ._.
+Here_RB again_RB there_EX may_MD be_VB many_JJ possibilities_NNS ,_, leading_VBG to_TO different_JJ algorithms_NNS for_IN implicit_JJ user_NN modeling_NN ._.
+We_PRP now_RB discuss_VBP a_DT few_JJ of_IN them_PRP ._.
+First_RB ,_, when_WRB two_CD consecutive_JJ queries_NNS are_VBP related_JJ ,_, the_DT previous_JJ query_NN can_MD be_VB exploited_VBN to_TO enrich_VB the_DT current_JJ query_NN and_CC provide_VB more_JJR search_NN context_NN to_TO help_VB disambiguation_NN ._.
+For_IN this_DT purpose_NN ,_, instead_RB of_IN performing_VBG query_NN expansion_NN as_IN we_PRP did_VBD in_IN the_DT previous_JJ section_NN ,_, we_PRP could_MD also_RB compute_VB an_DT updated_VBN x_NN based_VBN on_IN the_DT previous_JJ query_NN and_CC retrieval_NN results_NNS ._.
+The_DT computed_VBN new_JJ user_NN model_NN can_MD then_RB be_VB used_VBN to_TO rank_VB the_DT documents_NNS with_IN a_DT standard_JJ information_NN retrieval_NN model_NN ._.
+Second_RB ,_, we_PRP can_MD also_RB infer_VB a_DT user_NN ''_'' s_NNS interest_NN based_VBN on_IN the_DT summaries_NNS of_IN the_DT viewed_VBN documents_NNS ._.
+When_WRB a_DT user_NN is_VBZ presented_VBN with_IN a_DT list_NN of_IN summaries_NNS of_IN top_JJ ranked_VBD documents_NNS ,_, if_IN the_DT user_NN chooses_VBZ to_TO skip_VB the_DT first_JJ n_NN documents_NNS and_CC to_TO view_VB the_DT -LRB-_-LRB- n_NN +_CC #_# -RRB-_-RRB- -_: th_DT document_NN ,_, we_PRP may_MD infer_VB that_IN the_DT user_NN is_VBZ not_RB interested_JJ in_IN the_DT displayed_VBN summaries_NNS for_IN the_DT first_JJ n_NN documents_NNS ,_, but_CC is_VBZ attracted_VBN by_IN the_DT displayed_VBN summary_NN of_IN the_DT -LRB-_-LRB- n_NN +_CC #_# -RRB-_-RRB- -_: th_DT document_NN ._.
+We_PRP can_MD thus_RB use_VB these_DT summaries_NNS as_IN negative_JJ and_CC positive_JJ examples_NNS to_TO learn_VB a_DT more_RBR accurate_JJ user_NN model_NN x_NN ._.
+Here_RB many_JJ standard_JJ relevance_NN feedback_NN techniques_NNS can_MD be_VB exploited_VBN -LSB-_-LRB- ##_CD ,_, ##_CD -RSB-_-RRB- ._.
+Note_VB that_IN we_PRP should_MD use_VB the_DT displayed_VBN summaries_NNS ,_, as_IN opposed_VBN to_TO the_DT actual_JJ contents_NNS of_IN those_DT documents_NNS ,_, since_IN it_PRP is_VBZ possible_JJ that_IN the_DT displayed_VBN summary_NN of_IN the_DT viewed_VBN document_NN is_VBZ relevant_JJ ,_, but_CC the_DT document_NN content_NN is_VBZ actually_RB not_RB ._.
+Similarly_RB ,_, a_DT displayed_VBN summary_NN may_MD mislead_VB a_DT user_NN to_TO skip_VB a_DT relevant_JJ document_NN ._.
+Inferring_VBG user_NN models_NNS based_VBN on_IN such_JJ displayed_VBN information_NN ,_, rather_RB than_IN the_DT actual_JJ content_NN of_IN a_DT document_NN is_VBZ an_DT important_JJ difference_NN between_IN UCAIR_NNP and_CC some_DT other_JJ similar_JJ systems_NNS ._.
+In_IN UCAIR_NNP ,_, both_DT of_IN these_DT strategies_NNS for_IN inferring_VBG an_DT implicit_JJ user_NN model_NN are_VBP implemented_VBN ._.
+4_LS ._.
+UCAIR_NNP :_: A_DT PERSONALIZED_JJ SEARCH_NN AGENT_NN 4_CD ._.
+#_# Design_NNP In_IN this_DT section_NN ,_, we_PRP present_VBP a_DT client-side_JJ web_NN search_NN agent_NN called_VBN UCAIR_NNP ,_, in_IN which_WDT we_PRP implement_VBP some_DT of_IN the_DT methods_NNS discussed_VBN in_IN the_DT previous_JJ section_NN for_IN performing_VBG personalized_JJ search_NN through_IN implicit_JJ user_NN modeling_NN ._.
+UCAIR_NNP is_VBZ a_DT web_NN browser_NN plug-in_JJ #_# that_WDT acts_VBZ as_IN a_DT proxy_NN for_IN web_NN search_NN engines_NNS ._.
+Currently_RB ,_, it_PRP is_VBZ only_RB implemented_VBN for_IN Internet_NN Explorer_NNP and_CC Google_NNP ,_, but_CC it_PRP is_VBZ a_DT matter_NN of_IN engineering_NN to_TO make_VB it_PRP run_VB on_IN other_JJ web_NN browsers_NNS and_CC interact_VBP with_IN other_JJ search_NN engines_NNS ._.
+The_DT issue_NN of_IN privacy_NN is_VBZ a_DT primary_JJ obstacle_NN for_IN deploying_VBG any_DT real_JJ world_NN applications_NNS involving_VBG serious_JJ user_NN modeling_NN ,_, such_JJ as_IN personalized_JJ search_NN ._.
+For_IN this_DT reason_NN ,_, UCAIR_NN is_VBZ strictly_RB running_VBG as_IN a_DT client-side_JJ search_NN agent_NN ,_, as_IN opposed_VBN to_TO a_DT server-side_JJ application_NN ._.
+This_DT way_NN ,_, the_DT captured_VBN user_NN information_NN always_RB resides_VBZ on_IN the_DT computer_NN that_IN the_DT user_NN is_VBZ using_VBG ,_, thus_RB the_DT user_NN does_VBZ not_RB need_VB to_TO release_VB any_DT information_NN to_TO the_DT outside_NN ._.
+Client-side_JJ personalization_NN also_RB allows_VBZ the_DT system_NN to_TO easily_RB observe_VB a_DT lot_NN of_IN user_NN information_NN that_WDT may_MD not_RB be_VB easily_RB available_JJ to_TO a_DT server_NN ._.
+Furthermore_RB ,_, performing_VBG personalized_JJ search_NN on_IN the_DT client-side_JJ is_VBZ more_RBR scalable_JJ than_IN on_IN the_DT serverside_NN ,_, since_IN the_DT overhead_NN of_IN computation_NN and_CC storage_NN is_VBZ distributed_VBN among_IN clients_NNS ._.
+As_IN shown_VBN in_IN Figure_NNP #_# ,_, the_DT UCAIR_NNP toolbar_NN has_VBZ #_# major_JJ components_NNS :_: -LRB-_-LRB- #_# -RRB-_-RRB- The_DT -LRB-_-LRB- implicit_JJ -RRB-_-RRB- user_NN modeling_NN module_NN captures_VBZ a_DT user_NN ''_'' s_VBZ search_NN context_NN and_CC history_NN information_NN ,_, including_VBG the_DT submitted_VBN queries_NNS and_CC any_DT clicked_VBD search_NN results_NNS and_CC infers_VBZ search_NN session_NN boundaries_NNS ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- The_DT query_NN modification_NN module_NN selectively_RB improves_VBZ the_DT query_NN formulation_NN according_VBG to_TO the_DT current_JJ user_NN model_NN ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- The_DT result_NN re-ranking_NN module_NN immediately_RB re-ranks_VBZ any_DT unseen_JJ search_NN results_VBZ whenever_WRB the_DT user_NN model_NN is_VBZ updated_VBN ._.
+In_IN UCAIR_NNP ,_, we_PRP consider_VBP four_CD basic_JJ user_NN actions_NNS :_: -LRB-_-LRB- #_# -RRB-_-RRB- submitting_VBG a_DT keyword_NN query_NN ;_: -LRB-_-LRB- #_# -RRB-_-RRB- viewing_VBG a_DT document_NN ;_: -LRB-_-LRB- #_# -RRB-_-RRB- clicking_VBG the_DT Back_NNP button_NN ;_: -LRB-_-LRB- #_# -RRB-_-RRB- clicking_VBG the_DT Next_JJ link_NN on_IN a_DT result_NN page_NN ._.
+For_IN each_DT of_IN these_DT four_CD actions_NNS ,_, the_DT system_NN responds_VBZ with_IN ,_, respectively_RB ,_, -LRB-_-LRB- #_# -RRB-_-RRB- 1_CD UCAIR_NN is_VBZ available_JJ at_IN :_: http_NN :_: /_: /_: sifaka_FW ._.
+cs_NNS ._.
+uiuc_NN ._.
+edu_FW /_: ir_FW /_: ucair_JJ /_: download_NN ._.
+html_NN 827_CD Search_VB Engine_NNP -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, Google_NNP -RRB-_-RRB- Search_VB History_NN Log_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, past_JJ queries_NNS ,_, clicked_VBD results_NNS -RRB-_-RRB- Query_NNP Modification_NNP Result_NN Re-Ranking_NN User_NN Modeling_VBG Result_NN Buffer_NN UCAIR_NN Userquery_NN results_VBZ clickthrough_JJ Figure_NN #_# :_: UCAIR_NN architecture_NN generating_VBG a_DT ranked_VBN list_NN of_IN results_NNS by_IN sending_VBG a_DT possibly_RB expanded_VBN query_NN to_TO a_DT search_NN engine_NN ;_: -LRB-_-LRB- #_# -RRB-_-RRB- updating_VBG the_DT information_NN need_NN model_NN x_NN ;_: -LRB-_-LRB- #_# -RRB-_-RRB- reranking_VBG the_DT unseen_JJ results_NNS on_IN the_DT current_JJ result_NN page_NN based_VBN on_IN the_DT current_JJ model_NN x_NN ;_: and_CC -LRB-_-LRB- #_# -RRB-_-RRB- reranking_VBG the_DT unseen_JJ pages_NNS and_CC generating_VBG the_DT next_JJ page_NN of_IN results_NNS based_VBN on_IN the_DT current_JJ model_NN x_NN ._.
+Behind_IN these_DT responses_NNS ,_, there_EX are_VBP three_CD basic_JJ tasks_NNS :_: -LRB-_-LRB- #_# -RRB-_-RRB- Decide_VBP whether_IN the_DT previous_JJ query_NN is_VBZ related_VBN to_TO the_DT current_JJ query_NN and_CC if_IN so_RB expand_VB the_DT current_JJ query_NN with_IN useful_JJ terms_NNS from_IN the_DT previous_JJ query_NN or_CC the_DT results_NNS of_IN the_DT previous_JJ query_NN ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- Update_NNP the_DT information_NN need_NN model_NN x_NN based_VBN on_IN a_DT newly_RB clicked_VBN document_NN summary_NN ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- Rerank_NNP a_DT set_NN of_IN unseen_JJ documents_NNS based_VBN on_IN the_DT current_JJ model_NN x_NN ._.
+Below_IN we_PRP describe_VBP our_PRP$ algorithms_NNS for_IN each_DT of_IN them_PRP ._.
+4_LS ._.
+#_# Session_NN boundary_NN detection_NN and_CC query_NN expansion_NN To_TO effectively_RB exploit_VB previous_JJ queries_NNS and_CC their_PRP$ corresponding_JJ clickthrough_JJ information_NN ,_, UCAIR_NNP needs_VBZ to_TO judge_VB whether_IN two_CD adjacent_JJ queries_NNS belong_VBP to_TO the_DT same_JJ search_NN session_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, detect_VB session_NN boundaries_NNS -RRB-_-RRB- ._.
+Existing_VBG work_NN on_IN session_NN boundary_NN detection_NN is_VBZ mostly_RB in_IN the_DT context_NN of_IN web_NN log_NN analysis_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, -LSB-_-LRB- #_# -RSB-_-RRB- -RRB-_-RRB- ,_, and_CC uses_VBZ statistical_JJ information_NN rather_RB than_IN textual_JJ features_NNS ._.
+Since_IN our_PRP$ clientside_JJ agent_NN does_VBZ not_RB have_VB access_NN to_TO server_NN query_NN logs_NNS ,_, we_PRP make_VBP session_NN boundary_NN decisions_NNS based_VBN on_IN textual_JJ similarity_NN between_IN two_CD queries_NNS ._.
+Because_IN related_JJ queries_NNS do_VBP not_RB necessarily_RB share_VB the_DT same_JJ words_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, java_NN island_NN and_CC travel_NN Indonesia_NNP -RRB-_-RRB- ,_, it_PRP is_VBZ insufficient_JJ to_TO use_VB only_RB query_JJ text_NN ._.
+Therefore_RB we_PRP use_VBP the_DT search_NN results_NNS of_IN the_DT two_CD queries_NNS to_TO help_VB decide_VB whether_IN they_PRP are_VBP topically_RB related_JJ ._.
+For_IN example_NN ,_, for_IN the_DT above_JJ queries_NNS java_NN island_NN and_CC travel_NN Indonesia_NNP ''_'' ,_, the_DT words_NNS java_NN ,_, bali_NN ,_, island_NN ,_, indonesia_NN and_CC travel_NN may_MD occur_VB frequently_RB in_IN both_CC queries_NNS ''_'' search_NN results_NNS ,_, yielding_VBG a_DT high_JJ similarity_NN score_NN ._.
+We_PRP only_RB use_VBP the_DT titles_NNS and_CC summaries_NNS of_IN the_DT search_NN results_VBZ to_TO calculate_VB the_DT similarity_NN since_IN they_PRP are_VBP available_JJ in_IN the_DT retrieved_VBN search_NN result_VBP page_NN and_CC fetching_VBG the_DT full_JJ text_NN of_IN every_DT result_NN page_NN would_MD significantly_RB slow_VB down_RP the_DT process_NN ._.
+To_TO compensate_VB for_IN the_DT terseness_NN of_IN titles_NNS and_CC summaries_NNS ,_, we_PRP retrieve_VBP more_JJR results_NNS than_IN a_DT user_NN would_MD normally_RB view_VB for_IN the_DT purpose_NN of_IN detecting_VBG session_NN boundaries_NNS -LRB-_-LRB- typically_RB ##_CD results_NNS -RRB-_-RRB- ._.
+The_DT similarity_NN between_IN the_DT previous_JJ query_NN q_NN and_CC the_DT current_JJ query_NN q_NN is_VBZ computed_VBN as_IN follows_VBZ ._.
+Let_VB -LCB-_-LRB- s1_NN ,_, s2_NN ,_, ..._: ,_, sn_NN -RCB-_-RRB- and_CC -LCB-_-LRB- s1_NN ,_, s2_NN ,_, ..._: ,_, sn_NN -RCB-_-RRB- be_VB the_DT result_NN sets_VBZ for_IN the_DT two_CD queries_NNS ._.
+We_PRP use_VBP the_DT pivoted_VBN normalization_NN TF-IDF_NN weighting_NN formula_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- to_TO compute_VB a_DT term_NN weight_NN vector_NN si_NN for_IN each_DT result_NN si_NN ._.
+We_PRP define_VBP the_DT average_JJ result_NN savg_NN to_TO be_VB the_DT centroid_NN of_IN all_PDT the_DT result_NN vectors_NNS ,_, i_FW ._.
+e_LS ._.
+,_, -LRB-_-LRB- s1_NN +_CC s2_NN +_CC ..._: +_CC sn_NN -RRB-_-RRB- /_: n_NN ._.
+The_DT cosine_NN similarity_NN between_IN the_DT two_CD average_JJ results_NNS is_VBZ calculated_VBN as_IN s_NNS avg_VBP savg_JJ /_: s_NNS 2_CD avg_NN s2_NN avg_NN If_IN the_DT similarity_NN value_NN exceeds_VBZ a_DT predefined_JJ threshold_NN ,_, the_DT two_CD queries_NNS will_MD be_VB considered_VBN to_TO be_VB in_IN the_DT same_JJ information_NN session_NN ._.
+If_IN the_DT previous_JJ query_NN and_CC the_DT current_JJ query_NN are_VBP found_VBN to_TO belong_VB to_TO the_DT same_JJ search_NN session_NN ,_, UCAIR_NN would_MD attempt_VB to_TO expand_VB the_DT current_JJ query_NN with_IN terms_NNS from_IN the_DT previous_JJ query_NN and_CC its_PRP$ search_NN results_NNS ._.
+Specifically_RB ,_, for_IN each_DT term_NN in_IN the_DT previous_JJ query_NN or_CC the_DT corresponding_JJ search_NN results_NNS ,_, if_IN its_PRP$ frequency_NN in_IN the_DT results_NNS of_IN the_DT current_JJ query_NN is_VBZ greater_JJR than_IN a_DT preset_JJ threshold_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+#_# results_VBZ out_IN of_IN ##_NN -RRB-_-RRB- ,_, the_DT term_NN would_MD be_VB added_VBN to_TO the_DT current_JJ query_NN to_TO form_VB an_DT expanded_VBN query_NN ._.
+In_IN this_DT case_NN ,_, UCAIR_NN would_MD send_VB this_DT expanded_VBN query_NN rather_RB than_IN the_DT original_JJ one_CD to_TO the_DT search_NN engine_NN and_CC return_VB the_DT results_NNS corresponding_VBG to_TO the_DT expanded_VBN query_NN ._.
+Currently_RB ,_, UCAIR_NN only_RB uses_VBZ the_DT immediate_JJ preceding_VBG query_NN for_IN query_NN expansion_NN ;_: in_IN principle_NN ,_, we_PRP could_MD exploit_VB all_DT related_JJ past_JJ queries_NNS ._.
+4_LS ._.
+#_# Information_NNP need_MD model_VB updating_VBG Suppose_VB at_IN time_NN t_NN ,_, we_PRP have_VBP observed_VBN that_IN the_DT user_NN has_VBZ viewed_VBN k_NN documents_NNS whose_WP$ summaries_NNS are_VBP s1_NN ,_, ..._: ,_, sk_NN ._.
+We_PRP update_VBP our_PRP$ user_NN model_NN by_IN computing_VBG a_DT new_JJ information_NN need_NN vector_NN with_IN a_DT standard_JJ feedback_NN method_NN in_IN information_NN retrieval_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, Rocchio_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- -RRB-_-RRB- ._.
+According_VBG to_TO the_DT vector_NN space_NN retrieval_NN model_NN ,_, each_DT clicked_VBD summary_NN si_NN can_MD be_VB represented_VBN by_IN a_DT term_NN weight_NN vector_NN si_NN with_IN each_DT term_NN weighted_VBN by_IN a_DT TF-IDF_NN weighting_NN formula_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Rocchio_NNP computes_VBZ the_DT centroid_NN vector_NN of_IN all_PDT the_DT summaries_NNS and_CC interpolates_VBZ it_PRP with_IN the_DT original_JJ query_NN vector_NN to_TO obtain_VB an_DT updated_VBN term_NN vector_NN ._.
+That_DT is_VBZ ,_, x_NN =_JJ q_NN +_CC -LRB-_-LRB- #_# -RRB-_-RRB- 1_CD k_NN k_NN i_FW =_JJ #_# si_FW where_WRB q_NN is_VBZ the_DT query_NN vector_NN ,_, k_NN is_VBZ the_DT number_NN of_IN summaries_NNS the_DT user_NN clicks_VBZ immediately_RB following_VBG the_DT current_JJ query_NN and_CC is_VBZ a_DT parameter_NN that_WDT controls_VBZ the_DT influence_NN of_IN the_DT clicked_VBN summaries_NNS on_IN the_DT inferred_VBN information_NN need_NN model_NN ._.
+In_IN our_PRP$ experiments_NNS ,_, is_VBZ set_VBN to_TO #_# ._.
+#_# ._.
+Note_VB that_IN we_PRP update_VBP the_DT information_NN need_NN model_NN whenever_WRB the_DT user_NN views_VBZ a_DT document_NN ._.
+4_LS ._.
+#_# Result_NN reranking_NN In_IN general_JJ ,_, we_PRP want_VBP to_TO rerank_VB all_PDT the_DT unseen_JJ results_NNS as_RB soon_RB as_IN the_DT user_NN model_NN is_VBZ updated_VBN ._.
+Currently_RB ,_, UCAIR_NN implements_VBZ reranking_NN in_IN two_CD cases_NNS ,_, corresponding_VBG to_TO the_DT user_NN clicking_VBG the_DT Back_NNP button_NN and_CC Next_JJ link_NN in_IN the_DT Internet_NN Explorer_NNP ._.
+In_IN both_DT cases_NNS ,_, the_DT current_JJ -LRB-_-LRB- updated_VBN -RRB-_-RRB- user_NN model_NN would_MD be_VB used_VBN to_TO rerank_VB the_DT unseen_JJ results_NNS so_IN that_IN the_DT user_NN would_MD see_VB improved_JJ search_NN results_VBZ immediately_RB ._.
+To_TO rerank_VB any_DT unseen_JJ document_NN summaries_NNS ,_, UCAIR_NNP uses_VBZ the_DT standard_JJ vector_NN space_NN retrieval_NN model_NN and_CC scores_NNS each_DT summary_NN based_VBN on_IN the_DT similarity_NN of_IN the_DT result_NN and_CC the_DT current_JJ user_NN information_NN need_VBP vector_NN x_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Since_IN implicit_JJ feedback_NN is_VBZ not_RB completely_RB reliable_JJ ,_, we_PRP bring_VBP up_RP only_RB a_DT small_JJ number_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+#_# -RRB-_-RRB- of_IN highest_JJS reranked_JJ results_NNS to_TO be_VB followed_VBN by_IN any_DT originally_RB high_JJ ranked_VBD results_NNS ._.
+828_CD Google_NNP result_NN -LRB-_-LRB- user_NN query_NN =_JJ java_NN map_NN -RRB-_-RRB- UCAIR_NN result_NN -LRB-_-LRB- user_NN query_NN =_JJ java_NN map_NN -RRB-_-RRB- previous_JJ query_NN =_JJ travel_NN Indonesia_NNP previous_JJ query_NN =_JJ hashtable_JJ expanded_VBN user_NN query_NN =_JJ java_NN map_NN Indonesia_NNP expanded_VBD user_NN query_NN =_JJ java_NN map_NN class_NN 1_CD Java_NNP map_NN projections_NNS of_IN the_DT world_NN ..._: Lonely_NNP Planet_NN -_: Indonesia_NNP Map_NNP Map_NN -LRB-_-LRB- Java_NNP #_# Platform_FW SE_NN v1_NN ._.
+#_# ._.
+#_# -RRB-_-RRB- www_NN ._.
+btinternet_NN ._.
+com_NN /_: se16_NN /_: js_NNS /_: mapproj_NN ._.
+htm_NN www_NN ._.
+lonelyplanet_NN ._.
+com_NN /_: mapshells_NNS /_: ..._: java_NN ._.
+sun_NN ._.
+com_NN /_: j2se_NN /_: #_# ._.
+#_# ._.
+#_# /_: docs_NNS /_: ..._: 2_CD Java_NNP map_NN projections_NNS of_IN the_DT world_NN ..._: INDONESIA_NNP TOURISM_NNP :_: CENTRAL_NNP JAVA_NNP -_: MAP_NN Java_NNP #_# Platform_FW SE_NN v1_NN ._.
+#_# ._.
+#_# :_: Interface_NNP Map_NNP www_NN ._.
+btinternet_NN ._.
+com_NN /_: se16_NN /_: js_NNS /_: oldmapproj_NN ._.
+htm_NN www_NN ._.
+indonesia-tourism_NN ._.
+com_NN /_: ..._: java_NN ._.
+sun_NN ._.
+com_NN /_: j2se_NN /_: #_# ._.
+#_# /_: docs_NNS /_: api_NN /_: java_NN /_: ..._: 3_CD Java_NNP Map_NNP INDONESIA_NNP TOURISM_NNP :_: WEST_NNP JAVA_NNP -_: MAP_NN An_DT Introduction_NN to_TO Java_NNP Map_NNP Collection_NNP Classes_NNS java_NN ._.
+sun_NN ._.
+com_NN /_: developer_NN /_: ..._: www_NN ._.
+indonesia-tourism_NN ._.
+com_NN /_: ..._: www_NN ._.
+oracle_NN ._.
+com_NN /_: technology_NN /_: ..._: 4_CD Java_NNP Technology_NNP Concept_NNP Map_NNP IndoStreets_NNPS -_: Java_NNP Map_NNP An_DT Introduction_NN to_TO Java_NNP Map_NNP Collection_NNP Classes_NNS java_NN ._.
+sun_NN ._.
+com_NN /_: developer_NN /_: onlineTraining_VBG /_: ..._: www_NN ._.
+indostreets_NNS ._.
+com_NN /_: maps_NNS /_: java_NN /_: www_NN ._.
+theserverside_RB ._.
+com_NN /_: news_NN /_: ..._: 5_CD Science_NN @_IN NASA_NNP Home_NNP Indonesia_NNP Regions_NNPS and_CC Islands_NNPS Maps_NNPS ,_, Bali_NNP ,_, Java_NNP ,_, ..._: Koders_NNP -_: Mappings_NNS ._.
+java_NN science_NN ._.
+nasa_NN ._.
+gov_NN /_: Realtime_NNP /_: ..._: www_NN ._.
+maps2anywhere_NN ._.
+com_NN /_: Maps_NNS /_: ..._: www_NN ._.
+koders_NNS ._.
+com_NN /_: java_NN /_: 6_CD An_DT Introduction_NN to_TO Java_NNP Map_NNP Collection_NNP Classes_NNS Indonesia_NNP City_NNP Street_NNP Map_NN ,_, ..._: Hibernate_NNP simplifies_VBZ inheritance_NN mapping_NN www_NN ._.
+oracle_NN ._.
+com_NN /_: technology_NN /_: ..._: www_NN ._.
+maps2anywhere_NN ._.
+com_NN /_: Maps_NNS /_: ..._: www_NN ._.
+ibm_NN ._.
+com_NN /_: developerworks_NNS /_: java_NN /_: ..._: 7_CD Lonely_NNP Planet_NN -_: Java_NNP Map_NNP Maps_NNP Of_IN Indonesia_NNP tmap_NN ##_NN ._.
+map_NN Class_NN Hierarchy_NNP www_NN ._.
+lonelyplanet_NN ._.
+com_NN /_: mapshells_NNS /_: www_NN ._.
+embassyworld_NN ._.
+com_NN /_: maps_NNS /_: ..._: tmap_NN ._.
+pmel_NN ._.
+noaa_NN ._.
+gov_NN /_: ..._: 8_CD ONJava_NN ._.
+com_NN :_: Java_NNP API_NNP Map_NNP Maps_NNP of_IN Indonesia_NNP by_IN Peter_NNP Loud_JJ Class_NN Scope_NNP www_NN ._.
+onjava_NN ._.
+com_NN /_: pub_NN /_: a_DT /_: onjava_JJ /_: api_NN map_NN /_: users_NNS ._.
+powernet_NN ._.
+co_NN ._.
+uk_NN /_: ..._: jalbum_NN ._.
+net_JJ /_: api_NN /_: se_FW /_: datadosen_JJ /_: util_NN /_: Scope_NNP ._.
+html_NN 9_CD GTA_NNP San_NNP Andreas_NNP :_: Sam_NNP Maps_NNP of_IN Indonesia_NNP by_IN Peter_NNP Loud_JJ Class_NN PrintSafeHashMap_NNP www_NN ._.
+gtasanandreas_NNS ._.
+net_JJ /_: sam_NN /_: users_NNS ._.
+powernet_NN ._.
+co_NN ._.
+uk_NN /_: mkmarina_NN /_: indonesia_NN /_: jalbum_NN ._.
+net_JJ /_: api_NN /_: se_FW /_: datadosen_JJ /_: ..._: 10_CD INDONESIA_NNP TOURISM_NNP :_: WEST_NNP JAVA_NNP -_: MAP_NN indonesiaphoto_NN ._.
+com_NN Java_NNP Pro_FW -_: Union_NNP and_CC Vertical_NNP Mapping_NN of_IN Classes_NNS www_NN ._.
+indonesia-tourism_NN ._.
+com_NN /_: ..._: www_NN ._.
+indonesiaphoto_NN ._.
+com_NN /_: ..._: www_NN ._.
+fawcette_NN ._.
+com_NN /_: javapro_NN /_: ..._: Table_NNP #_# :_: Sample_VB results_NNS of_IN query_NN expansion_NN 5_CD ._.
+EVALUATION_NN OF_IN UCAIR_NNP We_PRP now_RB present_VBP some_DT results_NNS on_IN evaluating_VBG the_DT two_CD major_JJ UCAIR_NN functions_NNS :_: selective_JJ query_NN expansion_NN and_CC result_VBP reranking_NN based_VBN on_IN user_NN clickthrough_JJ data_NNS ._.
+5_CD ._.
+#_# Sample_FW results_VBZ The_DT query_NN expansion_NN strategy_NN implemented_VBD in_IN UCAIR_NNP is_VBZ intentionally_RB conservative_JJ to_TO avoid_VB misinterpretation_NN of_IN implicit_JJ user_NN models_NNS ._.
+In_IN practice_NN ,_, whenever_WRB it_PRP chooses_VBZ to_TO expand_VB the_DT query_NN ,_, the_DT expansion_NN usually_RB makes_VBZ sense_NN ._.
+In_IN Table_NNP #_# ,_, we_PRP show_VBP how_WRB UCAIR_NNP can_MD successfully_RB distinguish_VB two_CD different_JJ search_NN contexts_NNS for_IN the_DT query_NN java_NN map_NN ,_, corresponding_VBG to_TO two_CD different_JJ previous_JJ queries_NNS -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, travel_NN Indonesia_NNP vs_CC ._.
+hashtable_JJ -RRB-_-RRB- ._.
+Due_JJ to_TO implicit_JJ user_NN modeling_NN ,_, UCAIR_NN intelligently_RB figures_VBZ out_RP to_TO add_VB Indonesia_NNP and_CC class_NN ,_, respectively_RB ,_, to_TO the_DT user_NN ''_'' s_NNS query_VBP java_NN map_NN ,_, which_WDT would_MD otherwise_RB be_VB ambiguous_JJ as_IN shown_VBN in_IN the_DT original_JJ results_NNS from_IN Google_NNP on_IN March_NNP ##_CD ,_, ####_CD ._.
+UCAIR_NN ''_'' s_NNS results_NNS are_VBP much_RB more_RBR accurate_JJ than_IN Google_NNP ''_'' s_VBZ results_NNS and_CC reflect_VBP personalization_NN in_IN search_NN ._.
+The_DT eager_JJ implicit_JJ feedback_NN component_NN is_VBZ designed_VBN to_TO immediately_RB respond_VB to_TO a_DT user_NN ''_'' s_NNS activity_NN such_JJ as_IN viewing_VBG a_DT document_NN ._.
+In_IN Figure_NNP #_# ,_, we_PRP show_VBP how_WRB UCAIR_NNP can_MD successfully_RB disambiguate_VB an_DT ambiguous_JJ query_NN jaguar_NN by_IN exploiting_VBG a_DT viewed_VBN document_NN summary_NN ._.
+In_IN this_DT case_NN ,_, the_DT initial_JJ retrieval_NN results_NNS using_VBG jaguar_NN -LRB-_-LRB- shown_VBN on_IN the_DT left_JJ side_NN -RRB-_-RRB- contain_VBP two_CD results_NNS about_IN the_DT Jaguar_NNP cars_NNS followed_VBN by_IN two_CD results_NNS about_IN the_DT Jaguar_NNP software_NN ._.
+However_RB ,_, after_IN the_DT user_NN views_VBZ the_DT web_NN page_NN content_NN of_IN the_DT second_JJ result_NN -LRB-_-LRB- about_IN Jaguar_NNP car_NN -RRB-_-RRB- and_CC returns_NNS to_TO the_DT search_NN result_VBP page_NN by_IN clicking_VBG Back_RB button_NN ,_, UCAIR_NN automatically_RB nominates_VBZ two_CD new_JJ search_NN results_VBZ about_IN Jaguar_NNP cars_NNS -LRB-_-LRB- shown_VBN on_IN the_DT right_JJ side_NN -RRB-_-RRB- ,_, while_IN the_DT original_JJ two_CD results_NNS about_IN Jaguar_NNP software_NN are_VBP pushed_VBN down_RP on_IN the_DT list_NN -LRB-_-LRB- unseen_JJ from_IN the_DT picture_NN -RRB-_-RRB- ._.
+5_CD ._.
+#_# Quantitative_JJ evaluation_NN To_TO further_RB evaluate_VB UCAIR_NN quantitatively_RB ,_, we_PRP conduct_VBP a_DT user_NN study_NN on_IN the_DT effectiveness_NN of_IN the_DT eager_JJ implicit_JJ feedback_NN component_NN ._.
+It_PRP is_VBZ a_DT challenge_NN to_TO quantitatively_RB evaluate_VB the_DT potential_JJ performance_NN improvement_NN of_IN our_PRP$ proposed_VBN model_NN and_CC UCAIR_NN over_IN Google_NNP in_IN an_DT unbiased_JJ way_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+Here_RB ,_, we_PRP design_VBP a_DT user_NN study_NN ,_, in_IN which_WDT participants_NNS would_MD do_VB normal_JJ web_NN search_NN and_CC judge_NN a_DT randomly_RB and_CC anonymously_RB mixed_JJ set_NN of_IN results_NNS from_IN Google_NNP and_CC UCAIR_NNP at_IN the_DT end_NN of_IN the_DT search_NN session_NN ;_: participants_NNS do_VBP not_RB know_VB whether_IN a_DT result_NN comes_VBZ from_IN Google_NNP or_CC UCAIR_NNP ._.
+We_PRP recruited_VBD #_# graduate_JJ students_NNS for_IN this_DT user_NN study_NN ,_, who_WP have_VBP different_JJ backgrounds_NNS -LRB-_-LRB- #_# computer_NN science_NN ,_, #_# biology_NN ,_, and_CC #_# chem_FW Number_FW :_: ###_CD Spammer_NN arrest_NN sue_VB Description_NN :_: Have_VBP any_DT spammers_NNS been_VBN arrested_VBN or_CC sued_VBN for_IN sending_VBG unsolicited_JJ e-mail_NN ?_.
+Narrative_NNP :_: Instances_NNS of_IN arrests_NNS ,_, prosecutions_NNS ,_, convictions_NNS ,_, and_CC punishments_NNS of_IN spammers_NNS ,_, and_CC lawsuits_NNS against_IN them_PRP are_VBP relevant_JJ ._.
+Documents_NNS which_WDT describe_VBP laws_NNS to_TO limit_VB spam_NN without_IN giving_VBG details_NNS of_IN lawsuits_NNS or_CC criminal_JJ trials_NNS are_VBP not_RB relevant_JJ ._.
+Figure_NNP #_# :_: An_DT example_NN of_IN TREC_NN query_NN topic_NN ,_, expressed_VBN in_IN a_DT form_NN which_WDT might_MD be_VB given_VBN to_TO a_DT human_JJ assistant_NN or_CC librarian_NN istry_NN -RRB-_-RRB- ._.
+We_PRP use_VBP query_JJ topics_NNS from_IN TREC_NN #_# 2004_CD Terabyte_NNP track_NN -LSB-_-LRB- #_# -RSB-_-RRB- and_CC TREC_NN ####_CD Web_NN track_NN -LSB-_-LRB- #_# -RSB-_-RRB- topic_NN distillation_NN task_NN in_IN the_DT way_NN to_TO be_VB described_VBN below_IN ._.
+An_DT example_NN topic_NN from_IN TREC_NN ####_CD Terabyte_NN track_NN appears_VBZ in_IN Figure_NNP #_# ._.
+The_DT title_NN is_VBZ a_DT short_JJ phrase_NN and_CC may_MD be_VB used_VBN as_IN a_DT query_NN to_TO the_DT retrieval_NN system_NN ._.
+The_DT description_NN field_NN provides_VBZ a_DT slightly_RB longer_JJR statement_NN of_IN the_DT topic_NN requirement_NN ,_, usually_RB expressed_VBN as_IN a_DT single_JJ complete_JJ sentence_NN or_CC question_NN ._.
+Finally_RB the_DT narrative_JJ supplies_NNS additional_JJ information_NN necessary_JJ to_TO fully_RB specify_VB the_DT requirement_NN ,_, expressed_VBN in_IN the_DT form_NN of_IN a_DT short_JJ paragraph_NN ._.
+Initially_RB ,_, each_DT participant_NN would_MD browse_VB ##_CD topics_NNS either_CC from_IN Terabyte_NN track_NN or_CC Web_NN track_NN and_CC pick_VB #_# or_CC #_# most_RBS interesting_JJ topics_NNS ._.
+For_IN each_DT picked_VBN topic_NN ,_, the_DT participant_NN would_MD essentially_RB do_VB the_DT normal_JJ web_NN search_NN using_VBG UCAIR_NN to_TO find_VB many_JJ relevant_JJ web_NN pages_NNS by_IN using_VBG the_DT title_NN of_IN the_DT query_NN topic_NN as_IN the_DT initial_JJ keyword_NN query_NN ._.
+During_IN this_DT process_NN ,_, the_DT participant_NN may_MD view_VB the_DT search_NN results_VBZ and_CC possibly_RB click_VB on_IN some_DT interesting_JJ ones_NNS to_TO view_VB the_DT web_NN pages_NNS ,_, just_RB as_IN in_IN a_DT normal_JJ web_NN search_NN ._.
+There_EX is_VBZ no_DT requirement_NN or_CC restriction_NN on_IN how_WRB many_JJ queries_NNS the_DT participant_NN must_MD submit_VB or_CC when_WRB the_DT participant_NN should_MD stop_VB the_DT search_NN for_IN one_CD topic_NN ._.
+When_WRB the_DT participant_NN plans_VBZ to_TO change_VB the_DT search_NN topic_NN ,_, he_PRP /_: she_PRP will_MD simply_RB press_VB a_DT button_NN 2_CD Text_VBP REtrieval_NNP Conference_NNP :_: http_NN :_: /_: /_: trec_NN ._.
+nist_NN ._.
+gov_NN /_: 829_CD Figure_NNP #_# :_: Screen_NNP shots_NNS for_IN result_NN reranking_NN to_TO evaluate_VB the_DT search_NN results_VBZ before_IN actually_RB switching_VBG to_TO the_DT next_JJ topic_NN ._.
+At_IN the_DT time_NN of_IN evaluation_NN ,_, ##_CD top_JJ ranked_VBD results_NNS from_IN Google_NNP and_CC UCAIR_NNP -LRB-_-LRB- some_DT are_VBP overlapping_VBG -RRB-_-RRB- are_VBP randomly_RB mixed_VBN together_RB so_RB that_IN the_DT participant_NN would_MD not_RB know_VB whether_IN a_DT result_NN comes_VBZ from_IN Google_NNP or_CC UCAIR_NNP ._.
+The_DT participant_NN would_MD then_RB judge_VB the_DT relevance_NN of_IN these_DT results_NNS ._.
+We_PRP measure_VBP precision_NN at_IN top_JJ n_NN -LRB-_-LRB- n_NN =_JJ #_# ,_, ##_CD ,_, ##_CD ,_, ##_CD -RRB-_-RRB- documents_NNS of_IN Google_NNP and_CC UCAIR_NNP ._.
+We_PRP also_RB evaluate_VBP precisions_NNS at_IN different_JJ recall_NN levels_NNS ._.
+Altogether_RB ,_, ###_CD documents_NNS judged_VBN as_IN relevant_JJ from_IN Google_NNP search_NN results_NNS and_CC ###_CD documents_NNS judged_VBN as_IN relevant_JJ from_IN UCAIR_NN by_IN participants_NNS ._.
+Scatter_VB plots_NNS of_IN precision_NN at_IN top_JJ ##_NNS and_CC top_JJ ##_CD documents_NNS are_VBP shown_VBN in_IN Figure_NNP #_# and_CC Figure_NNP #_# respectively_RB -LRB-_-LRB- The_DT scatter_NN plot_NN of_IN precision_NN at_IN top_JJ ##_CD documents_NNS is_VBZ very_RB similar_JJ to_TO precision_NN at_IN top_JJ 20_CD documents_NNS -RRB-_-RRB- ._.
+Each_DT point_NN of_IN the_DT scatter_NN plots_NNS represents_VBZ the_DT precisions_NNS of_IN Google_NNP and_CC UCAIR_NNP on_IN one_CD query_NN topic_NN ._.
+Table_NNP #_# shows_VBZ the_DT average_JJ precision_NN at_IN top_JJ n_NN documents_NNS among_IN 32_CD topics_NNS ._.
+From_IN Figure_NNP #_# ,_, Figure_NNP #_# and_CC Table_NNP #_# ,_, we_PRP see_VBP that_IN the_DT search_NN results_VBZ from_IN UCAIR_NNP are_VBP consistently_RB better_JJR than_IN those_DT from_IN Google_NNP by_IN all_PDT the_DT measures_NNS ._.
+Moreover_RB ,_, the_DT performance_NN improvement_NN is_VBZ more_RBR dramatic_JJ for_IN precision_NN at_IN top_JJ ##_CD documents_NNS than_IN that_DT at_IN precision_NN at_IN top_JJ ##_CD documents_NNS ._.
+One_CD explanation_NN for_IN this_DT is_VBZ that_IN the_DT more_JJR interaction_NN the_DT user_NN has_VBZ with_IN the_DT system_NN ,_, the_DT more_RBR clickthrough_JJ data_NNS UCAIR_NN can_MD be_VB expected_VBN to_TO collect_VB ._.
+Thus_RB the_DT retrieval_NN system_NN can_MD build_VB more_RBR precise_JJ implicit_JJ user_NN models_NNS ,_, which_WDT lead_VBP to_TO better_JJR retrieval_NN accuracy_NN ._.
+Ranking_JJ Method_NN prec_NN @_IN #_# prec_FW @_SYM ##_CD prec_JJ @_IN ##_CD prec_NN @_IN ##_CD Google_NNP #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_SYM UCAIR_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NNP Improvement_NNP #_# ._.
+#_# %_NN ##_CD ._.
+#_# %_NN ##_CD ._.
+#_# %_NN ##_CD ._.
+#_# %_NN Table_NNP #_# :_: Table_NNP of_IN average_JJ precision_NN at_IN top_JJ n_NN documents_NNS for_IN ##_CD query_NN topics_NNS The_DT plot_NN in_IN Figure_NNP #_# shows_VBZ the_DT precision-recall_JJ curves_NNS for_IN UCAIR_NN and_CC Google_NNP ,_, where_WRB it_PRP is_VBZ clearly_RB seen_VBN that_IN the_DT performance_NN of_IN UCAIR_NN 0_CD #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# 0_CD 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 1_CD UCAIR_NN prec_NN @_IN ##_CD Googleprec_NNP @_IN ##_CD Scatterplot_NN of_IN Precision_NN at_IN Top_JJ ##_CD Documents_NNS Figure_NNP #_# :_: Precision_NN at_IN top_JJ ##_CD documents_NNS of_IN UCAIR_NN and_CC Google_NNP is_VBZ consistently_RB and_CC considerably_RB better_JJR than_IN that_DT of_IN Google_NNP at_IN all_DT levels_NNS of_IN recall_NN ._.
+6_CD ._.
+CONCLUSIONS_NNS In_IN this_DT paper_NN ,_, we_PRP studied_VBD how_WRB to_TO exploit_VB implicit_JJ user_NN modeling_NN to_TO intelligently_RB personalize_VB information_NN retrieval_NN and_CC improve_VB search_NN accuracy_NN ._.
+Unlike_IN most_JJS previous_JJ work_NN ,_, we_PRP emphasize_VBP the_DT use_NN of_IN immediate_JJ search_NN context_NN and_CC implicit_JJ feedback_NN information_NN as_RB well_RB as_IN eager_JJ updating_VBG of_IN search_NN results_VBZ to_TO maximally_RB benefit_VB a_DT user_NN ._.
+We_PRP presented_VBD a_DT decision-theoretic_JJ framework_NN for_IN optimizing_VBG interactive_JJ information_NN retrieval_NN based_VBN on_IN eager_JJ user_NN model_NN updating_VBG ,_, in_IN which_WDT the_DT system_NN responds_VBZ to_TO every_DT action_NN of_IN the_DT user_NN by_IN choosing_VBG a_DT system_NN action_NN to_TO optimize_VB a_DT utility_NN function_NN ._.
+We_PRP further_RB propose_VBP specific_JJ techniques_NNS to_TO capture_VB and_CC exploit_VB two_CD types_NNS of_IN implicit_JJ feedback_NN information_NN :_: -LRB-_-LRB- #_# -RRB-_-RRB- identifying_VBG related_JJ immediately_RB preceding_VBG query_NN and_CC using_VBG the_DT query_NN and_CC the_DT corresponding_JJ search_NN results_VBZ to_TO select_VB appropriate_JJ terms_NNS to_TO expand_VB the_DT current_JJ query_NN ,_, and_CC -LRB-_-LRB- #_# -RRB-_-RRB- exploiting_VBG the_DT viewed_VBN document_NN summaries_NNS to_TO immediately_RB rerank_VB any_DT documents_NNS that_WDT have_VBP not_RB yet_RB been_VBN seen_VBN by_IN the_DT user_NN ._.
+Using_VBG these_DT techniques_NNS ,_, we_PRP develop_VBP a_DT client-side_JJ web_NN search_NN agent_NN -LRB-_-LRB- UCAIR_NN -RRB-_-RRB- on_IN top_NN of_IN a_DT popular_JJ search_NN engine_NN -LRB-_-LRB- Google_NNP -RRB-_-RRB- ._.
+Experiments_NNS on_IN web_NN search_NN show_VBP that_IN our_PRP$ search_NN agent_NN can_MD improve_VB search_NN accuracy_NN over_IN 830_CD 0_CD #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# 0_CD 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 1_CD UCAIR_NN prec_NN @_IN ##_CD Googleprec_NNP @_IN ##_CD Scatterplot_NN of_IN Precision_NN at_IN Top_JJ ##_CD documents_NNS Figure_NNP #_# :_: Precision_NN at_IN top_JJ ##_CD documents_NNS of_IN UCAIR_NN and_CC Google_NNP 0_CD #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# 0_CD ._.
+#_# 0_CD ._.
+##_NN 0_CD ._.
+#_# 0_CD ._.
+##_NN 0_CD ._.
+#_# 0_CD ._.
+##_NN 0_CD ._.
+#_# 0_CD ._.
+##_NN 0_CD ._.
+#_# 0_CD ._.
+##_NN 0_CD ._.
+#_# recall_VBP precision_NN PrecisionRecall_NNP curves_NNS Google_NNP Result_NN UCAIR_NN Result_NN Figure_NN #_# :_: Precision_NN at_IN top_JJ ##_JJ result_NN of_IN UCAIR_NN and_CC Google_NNP Google_NNP ._.
+Since_IN the_DT implicit_JJ information_NN we_PRP exploit_VBP already_RB naturally_RB exists_VBZ through_IN user_NN interactions_NNS ,_, the_DT user_NN does_VBZ not_RB need_VB to_TO make_VB any_DT extra_JJ effort_NN ._.
+The_DT developed_JJ search_NN agent_NN thus_RB can_MD improve_VB existing_VBG web_NN search_NN performance_NN without_IN any_DT additional_JJ effort_NN from_IN the_DT user_NN ._.
+7_CD ._.
+ACKNOWLEDGEMENT_NN We_PRP thank_VBP the_DT six_CD participants_NNS of_IN our_PRP$ evaluation_NN experiments_NNS ._.
+This_DT work_NN was_VBD supported_VBN in_IN part_NN by_IN the_DT National_NNP Science_NNP Foundation_NNP grants_NNS IIS-0347933_NN and_CC IIS-0428472_NN ._.
+8_CD ._.
+REFERENCES_NNS -LSB-_-LRB- #_# -RSB-_-RRB- S_NN ._.
+M_NN ._.
+Beitzel_NNP ,_, E_NNP ._.
+C_NN ._.
+Jensen_NNP ,_, A_NNP ._.
+Chowdhury_NNP ,_, D_NNP ._.
+Grossman_NNP ,_, and_CC O_NN ._.
+Frieder_NNP ._.
+Hourly_JJ analysis_NN of_IN a_DT very_RB large_JJ topically_RB categorized_VBN web_NN query_NN log_NN ._.
+In_IN Proceedings_NNP of_IN SIGIR_NNP ####_CD ,_, pages_NNS 321-328_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- C_NN ._.
+Clarke_NNP ,_, N_NNP ._.
+Craswell_NNP ,_, and_CC I_PRP ._.
+Soboroff_NNP ._.
+Overview_NN of_IN the_DT TREC_NN ####_CD terabyte_NN track_NN ._.
+In_IN Proceedings_NNP of_IN TREC_NNP ####_CD ,_, 2004_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- M_NN ._.
+Claypool_NNP ,_, P_NN ._.
+Le_NNP ,_, M_NN ._.
+Waseda_NNP ,_, and_CC D_NN ._.
+Brown_NNP ._.
+Implicit_JJ interest_NN indicators_NNS ._.
+In_IN Proceedings_NNP of_IN Intelligent_NNP User_NN Interfaces_NNS ####_CD ,_, pages_NNS 33-40_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- N_NN ._.
+Craswell_NNP ,_, D_NNP ._.
+Hawking_VBG ,_, R_NN ._.
+Wilkinson_NNP ,_, and_CC M_NN ._.
+Wu_NNP ._.
+Overview_NN of_IN the_DT TREC_NN ####_CD web_NN track_NN ._.
+In_IN Proceedings_NNP of_IN TREC_NNP ####_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- W_NN ._.
+B_NN ._.
+Croft_NNP ,_, S_NN ._.
+Cronen-Townsend_NNP ,_, and_CC V_NN ._.
+Larvrenko_NNP ._.
+Relevance_NN feedback_NN and_CC personalization_NN :_: A_DT language_NN modeling_NN perspective_NN ._.
+In_IN Proeedings_NNP of_IN Second_NNP DELOS_NNP Workshop_NNP :_: Personalisation_NNP and_CC Recommender_NNP Systems_NNPS in_IN Digital_NNP Libraries_NNPS ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- Google_NNP Personalized_NNP ._.
+http_NN :_: /_: /_: labs_NNS ._.
+google_NN ._.
+com_NN /_: personalized_VBN ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- D_NN ._.
+Hawking_VBG ,_, N_NN ._.
+Craswell_NNP ,_, P_NN ._.
+B_NN ._.
+Thistlewaite_NNP ,_, and_CC D_NN ._.
+Harman_NNP ._.
+Results_NNS and_CC challenges_NNS in_IN web_NN search_NN evaluation_NN ._.
+Computer_NN Networks_NNP ,_, ##_CD -LRB-_-LRB- 11-16_CD -RRB-_-RRB- :_: 1321-1330_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- X_NN ._.
+Huang_NNP ,_, F_NN ._.
+Peng_NNP ,_, A_NNP ._.
+An_DT ,_, and_CC D_NN ._.
+Schuurmans_NNS ._.
+Dynamic_NNP web_NN log_NN session_NN identification_NN with_IN statistical_JJ language_NN models_NNS ._.
+Journal_NNP of_IN the_DT American_NNP Society_NNP for_IN Information_NNP Science_NNP and_CC Technology_NNP ,_, ##_CD -LRB-_-LRB- ##_CD -RRB-_-RRB- :_: 1290-1303_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- G_NN ._.
+Jeh_NNP and_CC J_NNP ._.
+Widom_NNP ._.
+Scaling_VBG personalized_JJ web_NN search_NN ._.
+In_IN Proceedings_NNP of_IN WWW_NNP ####_CD ,_, pages_NNS 271-279_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- T_NN ._.
+Joachims_NNP ._.
+Optimizing_VBG search_NN engines_NNS using_VBG clickthrough_JJ data_NNS ._.
+In_IN Proceedings_NNP of_IN SIGKDD_NNP ####_CD ,_, pages_NNS 133-142_CD ,_, 2002_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- D_NN ._.
+Kelly_NNP and_CC J_NNP ._.
+Teevan_NNP ._.
+Implicit_JJ feedback_NN for_IN inferring_VBG user_NN preference_NN :_: A_DT bibliography_NN ._.
+SIGIR_NNP Forum_NNP ,_, ##_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 18-28_CD ,_, 2003_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+Lafferty_NNP and_CC C_NNP ._.
+Zhai_NNP ._.
+Document_NNP language_NN models_NNS ,_, query_NN models_NNS ,_, and_CC risk_NN minimization_NN for_IN information_NN retrieval_NN ._.
+In_IN Proceedings_NNP of_IN SIGIR_NNP ''_'' ##_NN ,_, pages_NNS 111-119_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- T_NN ._.
+Lau_NN and_CC E_NN ._.
+Horvitz_NNP ._.
+Patterns_NN of_IN search_NN :_: Analyzing_VBG and_CC modeling_NN web_NN query_NN refinement_NN ._.
+In_IN Proceedings_NNP of_IN the_DT Seventh_NNP International_NNP Conference_NNP on_IN User_NN Modeling_NN -LRB-_-LRB- UM_NN -RRB-_-RRB- ,_, pages_NNS ###_SYM -_: ###_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- V_NN ._.
+Lavrenko_NNP and_CC B_NNP ._.
+Croft_NNP ._.
+Relevance-based_JJ language_NN models_NNS ._.
+In_IN Proceedings_NNP of_IN SIGIR_NNP ''_'' ##_NN ,_, pages_NNS 120-127_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- M_NN ._.
+Mitra_NNP ,_, A_NNP ._.
+Singhal_NNP ,_, and_CC C_NN ._.
+Buckley_NNP ._.
+Improving_NN automatic_JJ query_NN expansion_NN ._.
+In_IN Proceedings_NNP of_IN SIGIR_NNP ####_CD ,_, pages_NNS 206-214_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- My_PRP$ Yahoo_NNP !_.
+http_NN :_: /_: /_: mysearch_NN ._.
+yahoo_NN ._.
+com_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- G_NN ._.
+Nunberg_NNP ._.
+As_IN google_NN goes_VBZ ,_, so_RB goes_VBZ the_DT nation_NN ._.
+New_NNP York_NNP Times_NNP ,_, May_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- S_NN ._.
+E_NN ._.
+Robertson_NNP ._.
+The_DT probability_NN ranking_JJ principle_NN in_IN ._.
+Journal_NNP of_IN Documentation_NNP ,_, ##_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 294-304_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+J_NN ._.
+Rocchio_NNP ._.
+Relevance_NN feedback_NN in_IN information_NN retrieval_NN ._.
+In_IN The_DT SMART_NNP Retrieval_NNP System_NNP :_: Experiments_NNS in_IN Automatic_NNP Document_NNP Processing_NNP ,_, pages_NNS 313-323_CD ._.
+Prentice-Hall_NNP Inc_NNP ._.
+,_, 1971_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- G_NN ._.
+Salton_NNP and_CC C_NNP ._.
+Buckley_NNP ._.
+Improving_NN retrieval_NN performance_NN by_IN retrieval_NN feedback_NN ._.
+Journal_NNP of_IN the_DT American_NNP Society_NNP for_IN Information_NNP Science_NNP ,_, ##_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 288-297_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- G_NN ._.
+Salton_NNP and_CC M_NN ._.
+J_NN ._.
+McGill_NNP ._.
+Introduction_NN to_TO Modern_NNP Information_NNP Retrieval_NNP ._.
+McGraw-Hill_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- X_NN ._.
+Shen_NNP ,_, B_NN ._.
+Tan_NNP ,_, and_CC C_NN ._.
+Zhai_NNP ._.
+Context-sensitive_JJ information_NN retrieval_NN using_VBG implicit_JJ feedback_NN ._.
+In_IN Proceedings_NNP of_IN SIGIR_NNP 2005_CD ,_, pages_NNS 43-50_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- X_NN ._.
+Shen_VBN and_CC C_NN ._.
+Zhai_NNP ._.
+Exploiting_VBG query_JJ history_NN for_IN document_NN ranking_NN in_IN interactive_JJ information_NN retrieval_NN -LRB-_-LRB- Poster_NN -RRB-_-RRB- ._.
+In_IN Proceedings_NNP of_IN SIGIR_NNP ####_CD ,_, pages_NNS 377-378_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- A_DT ._.
+Singhal_NNP ._.
+Modern_NNP information_NN retrieval_NN :_: A_DT brief_JJ overview_NN ._.
+Bulletin_NNP of_IN the_DT IEEE_NNP Computer_NNP Society_NNP Technical_NNP Committee_NNP on_IN Data_NNP Engineering_NNP ,_, ##_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 35-43_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- K_NN ._.
+Sugiyama_NNP ,_, K_NNP ._.
+Hatano_NNP ,_, and_CC M_NN ._.
+Yoshikawa_NNP ._.
+Adaptive_JJ web_NN search_NN based_VBN on_IN user_NN profile_NN constructed_VBN without_IN any_DT effort_NN from_IN users_NNS ._.
+In_IN Proceedings_NNP of_IN WWW_NNP ####_CD ,_, pages_NNS 675-684_CD ,_, 2004_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- E_NN ._.
+Volokh_NNP ._.
+Personalization_NN and_CC privacy_NN ._.
+Communications_NNPS of_IN the_DT ACM_NNP ,_, ##_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 84-88_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- R_NN ._.
+W_NN ._.
+White_NNP ,_, J_NNP ._.
+M_NN ._.
+Jose_NNP ,_, C_NNP ._.
+J_NN ._.
+van_NN Rijsbergen_NNP ,_, and_CC I_PRP ._.
+Ruthven_NNP ._.
+A_DT simulated_JJ study_NN of_IN implicit_JJ feedback_NN models_NNS ._.
+In_IN Proceedings_NNP of_IN ECIR_NNP ####_CD ,_, pages_NNS 311-326_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+Xu_NN and_CC W_NN ._.
+B_NN ._.
+Croft_NNP ._.
+Query_NNP expansion_NN using_VBG local_JJ and_CC global_JJ document_NN analysis_NN ._.
+In_IN Proceedings_NNP of_IN SIGIR_NNP ####_CD ,_, pages_NNS 4-11_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- C_NN ._.
+Zhai_NNP and_CC J_NNP ._.
+Lafferty_NNP ._.
+Model-based_JJ feedback_NN in_IN KL_NN divergence_NN retrieval_NN model_NN ._.
+In_IN Proceedings_NNP of_IN the_DT CIKM_NNP 2001_CD ,_, pages_NNS 403-410_CD ,_, ####_CD ._.
+831_CD

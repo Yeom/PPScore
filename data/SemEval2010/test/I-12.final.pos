@@ -1,0 +1,562 @@
+Sharing_VBG Experiences_NNS to_TO Learn_VB User_NN Characteristics_NNS in_IN Dynamic_NNP Environments_NNS with_IN Sparse_NNP Data_NNP David_NNP Sarne_NNP ,_, Barbara_NNP J_NNP ._.
+Grosz_NNP School_NNP of_IN Engineering_NNP and_CC Applied_NNP Sciences_NNPS Harvard_NNP University_NNP ,_, Cambridge_NNP MA_NNP #####_NNP USA_NNP -LCB-_-LRB- sarned_VBN ,_, grosz_NN -RCB-_-RRB- @_SYM eecs_NNS ._.
+harvard_NN ._.
+edu_NN ABSTRACT_NN This_DT paper_NN investigates_VBZ the_DT problem_NN of_IN estimating_VBG the_DT value_NN of_IN probabilistic_JJ parameters_NNS needed_VBN for_IN decision_NN making_VBG in_IN environments_NNS in_IN which_WDT an_DT agent_NN ,_, operating_VBG within_IN a_DT multi-agent_JJ system_NN ,_, has_VBZ no_DT a_DT priori_FW information_NN about_IN the_DT structure_NN of_IN the_DT distribution_NN of_IN parameter_NN values_NNS ._.
+The_DT agent_NN must_MD be_VB able_JJ to_TO produce_VB estimations_NNS even_RB when_WRB it_PRP may_MD have_VB made_VBN only_RB a_DT small_JJ number_NN of_IN direct_JJ observations_NNS ,_, and_CC thus_RB it_PRP must_MD be_VB able_JJ to_TO operate_VB with_IN sparse_JJ data_NNS ._.
+The_DT paper_NN describes_VBZ a_DT mechanism_NN that_WDT enables_VBZ the_DT agent_NN to_TO significantly_RB improve_VB its_PRP$ estimation_NN by_IN augmenting_VBG its_PRP$ direct_JJ observations_NNS with_IN those_DT obtained_VBN by_IN other_JJ agents_NNS with_IN which_WDT it_PRP is_VBZ coordinating_VBG ._.
+To_TO avoid_VB undesirable_JJ bias_NN in_IN relatively_RB heterogeneous_JJ environments_NNS while_IN effectively_RB using_VBG relevant_JJ data_NNS to_TO improve_VB its_PRP$ estimations_NNS ,_, the_DT mechanism_NN weighs_VBZ the_DT contributions_NNS of_IN other_JJ agents_NNS ''_'' observations_NNS based_VBN on_IN a_DT real-time_JJ estimation_NN of_IN the_DT level_NN of_IN similarity_NN between_IN each_DT of_IN these_DT agents_NNS and_CC itself_PRP ._.
+The_DT coordination_NN autonomy_NN module_NN of_IN a_DT coordination-manager_NN system_NN provided_VBD an_DT empirical_JJ setting_NN for_IN evaluation_NN ._.
+Simulation-based_JJ evaluations_NNS demonstrated_VBD that_IN the_DT proposed_VBN mechanism_NN outperforms_VBZ estimations_NNS based_VBN exclusively_RB on_IN an_DT agent_NN ''_'' s_NNS own_JJ observations_NNS as_RB well_RB as_IN estimations_NNS based_VBN on_IN an_DT unweighted_JJ aggregate_NN of_IN all_DT other_JJ agents_NNS ''_'' observations_NNS ._.
+Categories_NNS and_CC Subject_NNP Descriptors_NNS I_PRP ._.
+#_# ._.
+#_# -LSB-_-LRB- Artificial_NNP Intelligence_NNP -RSB-_-RRB- :_: Learning-Parameter_NN learning_NN ;_: I_PRP ._.
+#_# ._.
+##_NN -LSB-_-LRB- Artificial_NNP Intelligence_NNP -RSB-_-RRB- :_: Distributed_VBN Artificial_JJ Intelligence-Intelligent_JJ agents_NNS ,_, Multiagent_JJ systems_NNS ;_: G_NN ._.
+#_# -LSB-_-LRB- Mathematics_NNS of_IN Computing_NNP -RSB-_-RRB- :_: Probability_NN and_CC Statistics-Distribution_NN functions_NNS General_NNP Terms_NNS Algorithms_NNS ,_, Experimentation_NN 1_CD ._.
+INTRODUCTION_NN For_IN many_JJ real-world_JJ scenarios_NNS ,_, autonomous_JJ agents_NNS need_VBP to_TO operate_VB in_IN dynamic_JJ ,_, uncertain_JJ environments_NNS in_IN which_WDT they_PRP have_VBP only_RB incomplete_JJ information_NN about_IN the_DT results_NNS of_IN their_PRP$ actions_NNS and_CC characteristics_NNS of_IN other_JJ agents_NNS or_CC people_NNS with_IN whom_WP they_PRP need_VBP to_TO cooperate_VB or_CC collaborate_VB ._.
+In_IN such_JJ environments_NNS ,_, agents_NNS can_MD benefit_VB from_IN sharing_VBG information_NN they_PRP gather_VBP ,_, pooling_VBG their_PRP$ individual_JJ experiences_NNS to_TO improve_VB their_PRP$ estimations_NNS of_IN unknown_JJ parameters_NNS required_VBN for_IN reasoning_NN about_IN actions_NNS under_IN uncertainty_NN ._.
+This_DT paper_NN addresses_VBZ the_DT problem_NN of_IN learning_VBG the_DT distribution_NN of_IN the_DT values_NNS of_IN a_DT probabilistic_JJ parameter_NN that_WDT represents_VBZ a_DT characteristic_NN of_IN a_DT person_NN who_WP is_VBZ interacting_VBG with_IN a_DT computer_NN agent_NN ._.
+The_DT characteristic_JJ to_TO be_VB learned_VBN is_VBZ -LRB-_-LRB- or_CC is_VBZ clearly_RB related_JJ to_TO -RRB-_-RRB- an_DT important_JJ factor_NN in_IN the_DT agent_NN ''_'' s_NNS decision_NN making_NN ._.
+#_# The_DT basic_JJ setting_NN we_PRP consider_VBP is_VBZ one_CD in_IN which_WDT an_DT agent_NN accumulates_VBZ observations_NNS about_IN a_DT specific_JJ user_NN characteristic_JJ and_CC uses_VBZ them_PRP to_TO produce_VB a_DT timely_JJ estimate_NN of_IN some_DT measure_NN that_WDT depends_VBZ on_IN that_DT characteristic_JJ ''_'' s_NNS distribution_NN ._.
+The_DT mechanisms_NNS we_PRP develop_VBP are_VBP designed_VBN to_TO be_VB useful_JJ in_IN a_DT range_NN of_IN application_NN domains_NNS ,_, such_JJ as_IN disaster_NN rescue_NN ,_, that_WDT are_VBP characterized_VBN by_IN environments_NNS in_IN which_WDT conditions_NNS may_MD be_VB rapidly_RB changing_VBG ,_, actions_NNS -LRB-_-LRB- whether_IN of_IN autonomous_JJ agents_NNS or_CC of_IN people_NNS -RRB-_-RRB- and_CC the_DT overall_JJ operations_NNS occur_VBP at_IN a_DT fast_JJ pace_NN ,_, and_CC decisions_NNS must_MD be_VB made_VBN within_IN tightly_RB constrained_VBN time_NN frames_NNS ._.
+Typically_RB ,_, agents_NNS must_MD make_VB decisions_NNS in_IN real_JJ time_NN ,_, concurrent_JJ with_IN task_NN execution_NN ,_, and_CC in_IN the_DT midst_NN of_IN great_JJ uncertainty_NN ._.
+In_IN the_DT remainder_NN of_IN this_DT paper_NN ,_, we_PRP use_VBP the_DT term_NN fast-paced_JJ to_TO refer_VB to_TO such_JJ environments_NNS ._.
+In_IN fast-paced_JJ environments_NNS ,_, information_NN gathering_NN may_MD be_VB limited_VBN ,_, and_CC it_PRP is_VBZ not_RB possible_JJ to_TO learn_VB offline_JJ or_CC to_TO wait_VB until_IN large_JJ amounts_NNS of_IN data_NNS are_VBP collected_VBN before_IN making_VBG decisions_NNS ._.
+Fast-paced_JJ environments_NNS impose_VBP three_CD constraints_NNS on_IN any_DT mechanism_NN for_IN learning_VBG a_DT distribution_NN function_NN -LRB-_-LRB- including_VBG the_DT large_JJ range_NN of_IN Bayesian_JJ update_VBP techniques_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- -RRB-_-RRB- :_: -LRB-_-LRB- a_LS -RRB-_-RRB- the_DT no_DT structure_NN constraint_NN :_: no_DT a_DT priori_FW information_NN about_IN the_DT structure_NN of_IN the_DT estimated_VBN parameter_NN ''_'' s_NNS distribution_NN nor_CC any_DT initial_JJ data_NNS from_IN which_WDT such_JJ structure_NN can_MD be_VB inferred_VBN is_VBZ available_JJ ;_: -LRB-_-LRB- b_LS -RRB-_-RRB- the_DT limited_JJ use_NN constraint_NN :_: agents_NNS typically_RB need_VBP to_TO produce_VB only_RB a_DT small_JJ number_NN of_IN estimations_NNS in_IN total_NN for_IN this_DT parameter_NN ;_: -LRB-_-LRB- c_LS -RRB-_-RRB- the_DT early_JJ use_NN constraint_NN :_: high_JJ accuracy_NN is_VBZ a_DT critical_JJ requirement_NN even_RB in_IN the_DT initial_JJ stages_NNS of_IN learning_NN ._.
+Thus_RB ,_, the_DT goal_NN of_IN the_DT estimation_NN methods_NNS presented_VBN in_IN this_DT paper_NN is_VBZ to_TO minimize_VB the_DT average_JJ error_NN over_IN time_NN ,_, rather_RB than_IN to_TO determine_VB an_DT accurate_JJ value_NN at_IN the_DT end_NN of_IN a_DT long_JJ period_NN of_IN interaction_NN ._.
+That_DT is_VBZ ,_, the_DT agent_NN is_VBZ expected_VBN to_TO work_VB with_IN the_DT user_NN for_IN a_DT limited_JJ time_NN ,_, and_CC it_PRP attempts_VBZ to_TO minimize_VB the_DT overall_JJ error_NN in_IN its_PRP$ estimations_NNS ._.
+In_IN such_JJ environments_NNS ,_, an_DT agent_NN ''_'' s_NNS individually_RB acquired_VBD data_NNS -LRB-_-LRB- its_PRP$ own_JJ observations_NNS -RRB-_-RRB- are_VBP too_RB sparse_JJ for_IN it_PRP to_TO obtain_VB good_JJ estimations_NNS in_IN the_DT requisite_JJ time_NN frame_NN ._.
+Given_VBN the_DT no-structure-constraint_NN of_IN the_DT environment_NN ,_, approaches_VBZ that_IN depend_VBP on_IN structured_JJ distributions_NNS may_MD result_VB in_IN a_DT significantly_RB high_JJ estimation_NN bias_NN ._.
+We_PRP consider_VBP this_DT problem_NN in_IN the_DT context_NN of_IN a_DT multi-agent_JJ distributed_VBN system_NN in_IN which_WDT computer_NN agents_NNS support_VBP people_NNS who_WP are_VBP carrying_VBG out_RP complex_JJ tasks_NNS in_IN a_DT dynamic_JJ environment_NN ._.
+The_DT fact_NN that_IN agents_NNS are_VBP part_NN of_IN a_DT multi-agent_JJ setting_NN ,_, in_IN which_WDT other_JJ agents_NNS may_MD 1_LS Learning_VBG the_DT distribution_NN rather_RB than_IN just_RB determining_VBG some_DT value_NN in_IN the_DT distribution_NN is_VBZ important_JJ whenever_WRB the_DT overall_JJ shape_NN of_IN the_DT distribution_NN and_CC not_RB just_RB such_JJ individual_JJ features_NNS as_IN mean_NN are_VBP important_JJ ._.
+also_RB be_VB gathering_VBG data_NNS to_TO estimate_VB a_DT similar_JJ characteristic_NN of_IN their_PRP$ users_NNS ,_, offers_VBZ the_DT possibility_NN for_IN an_DT agent_NN to_TO augment_VB its_PRP$ own_JJ observations_NNS with_IN those_DT of_IN other_JJ agents_NNS ,_, thus_RB improving_VBG the_DT accuracy_NN of_IN its_PRP$ learning_NN process_NN ._.
+Furthermore_RB ,_, in_IN the_DT environments_NNS we_PRP consider_VBP ,_, agents_NNS are_VBP usually_RB accumulating_VBG data_NNS at_IN a_DT relatively_RB similar_JJ rate_NN ._.
+Nonetheless_RB ,_, the_DT extent_NN to_TO which_WDT the_DT observations_NNS of_IN other_JJ agents_NNS will_MD be_VB useful_JJ to_TO a_DT given_VBN agent_NN depends_VBZ on_IN the_DT extent_NN to_TO which_WDT their_PRP$ users_NNS ''_'' characteristics_NNS ''_'' distributions_NNS are_VBP correlated_VBN with_IN that_DT of_IN this_DT agent_NN ''_'' s_NNS user_NN ._.
+There_EX is_VBZ no_DT guarantee_NN that_IN the_DT distribution_NN for_IN two_CD different_JJ agents_NNS is_VBZ highly_RB ,_, positively_RB correlated_VBD ,_, let_VB alone_RB that_IN they_PRP are_VBP the_DT same_JJ ._.
+Therefore_RB ,_, to_TO use_VB a_DT data-sharing_JJ approach_NN ,_, a_DT learning_VBG mechanism_NN must_MD be_VB capable_JJ of_IN effectively_RB identifying_VBG the_DT level_NN of_IN correlation_NN between_IN the_DT data_NNS collected_VBN by_IN different_JJ agents_NNS and_CC to_TO weigh_VB shared_JJ data_NNS depending_VBG on_IN the_DT level_NN of_IN correlation_NN ._.
+The_DT design_NN of_IN a_DT coordination_NN autonomy_NN -LRB-_-LRB- CA_NNP -RRB-_-RRB- module_NN within_IN a_DT coordination-manager_NN system_NN -LRB-_-LRB- as_IN part_NN of_IN the_DT DARPA_NNP Coordinators_NNPS project_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- -RRB-_-RRB- ,_, in_IN which_WDT agents_NNS support_VBP a_DT distributed_VBN scheduling_NN task_NN ,_, provided_VBD the_DT initial_JJ motivation_NN and_CC a_DT conceptual_JJ setting_NN for_IN this_DT work_NN ._.
+However_RB ,_, the_DT mechanisms_NNS themselves_PRP are_VBP general_JJ and_CC can_MD be_VB applied_VBN not_RB only_RB to_TO other_JJ fast-paced_JJ domains_NNS ,_, but_CC also_RB in_IN other_JJ multi-agent_JJ settings_NNS in_IN which_WDT agents_NNS are_VBP collecting_VBG data_NNS that_WDT overlaps_VBZ to_TO some_DT extent_NN ,_, at_IN approximately_RB similar_JJ rates_NNS ,_, and_CC in_IN which_WDT the_DT environment_NN imposes_VBZ the_DT no-structure_NN ,_, limited_JJ -_: and_CC early-use_JJ constraints_NNS defined_VBN above_IN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, exploration_NN of_IN remote_JJ planets_NNS -RRB-_-RRB- ._.
+In_IN particular_JJ ,_, our_PRP$ techniques_NNS would_MD be_VB useful_JJ in_IN any_DT setting_NN in_IN which_WDT a_DT group_NN of_IN agents_NNS undertakes_VBZ a_DT task_NN in_IN a_DT new_JJ environment_NN ,_, with_IN each_DT agent_NN obtaining_VBG observations_NNS at_IN a_DT similar_JJ rate_NN of_IN individual_JJ parameters_NNS they_PRP need_VBP for_IN their_PRP$ decision-making_NN ._.
+In_IN this_DT paper_NN ,_, we_PRP present_VBP a_DT mechanism_NN that_WDT was_VBD used_VBN for_IN learning_VBG key_JJ user_NN characteristics_NNS in_IN fast-paced_JJ environments_NNS ._.
+The_DT mechanism_NN provides_VBZ relatively_RB accurate_JJ estimations_NNS within_IN short_JJ time_NN frames_NNS by_IN augmenting_VBG an_DT individual_JJ agent_NN ''_'' s_NNS direct_JJ observations_NNS with_IN observations_NNS obtained_VBN by_IN other_JJ agents_NNS with_IN which_WDT it_PRP is_VBZ coordinating_VBG ._.
+In_IN particular_JJ ,_, we_PRP focus_VBP on_IN the_DT related_JJ problems_NNS of_IN estimating_VBG the_DT cost_NN of_IN interrupting_VBG a_DT person_NN and_CC estimating_VBG the_DT probability_NN that_IN that_IN person_NN will_MD have_VB the_DT information_NN required_VBN by_IN the_DT system_NN ._.
+Our_PRP$ adaptive_JJ approach_NN ,_, which_WDT we_PRP will_MD refer_VB to_TO throughout_IN the_DT paper_NN as_IN selective-sharing_NN ,_, allows_VBZ our_PRP$ CA_NNP to_TO improve_VB the_DT accuracy_NN of_IN its_PRP$ distribution-based_JJ estimations_NNS in_IN comparison_NN to_TO relying_VBG only_RB on_IN the_DT interactions_NNS with_IN a_DT specific_JJ user_NN -LRB-_-LRB- subsequently_RB ,_, self-learning_NN -RRB-_-RRB- or_CC pooling_VBG all_DT data_NNS unconditionally_RB -LRB-_-LRB- average_JJ all_DT -RRB-_-RRB- ,_, in_IN particular_JJ when_WRB the_DT number_NN of_IN available_JJ observations_NNS is_VBZ relatively_RB small_JJ ._.
+The_DT mechanism_NN was_VBD successfully_RB tested_VBN using_VBG a_DT system_NN that_WDT simulates_VBZ a_DT Coordinators_NNS environment_NN ._.
+The_DT next_JJ section_NN of_IN the_DT paper_NN describes_VBZ the_DT problem_NN of_IN estimating_VBG user-related_JJ parameters_NNS in_IN fastpaced_JJ domains_NNS ._.
+Section_NN #_# provides_VBZ an_DT overview_NN of_IN the_DT methods_NNS we_PRP developed_VBD ._.
+The_DT implementation_NN ,_, empirical_JJ setting_NN ,_, and_CC results_NNS are_VBP given_VBN in_IN Sections_NNS #_# and_CC #_# ._.
+A_DT comparison_NN with_IN related_JJ methods_NNS is_VBZ given_VBN in_IN Section_NN #_# and_CC conclusions_NNS in_IN section_NN #_# ._.
+2_LS ._.
+PARAMETER_NN ESTIMATION_NN IN_IN FASTPACED_NNP DOMAINS_NNPS The_DT CA_NNP module_NN and_CC algorithms_NNS we_PRP describe_VBP in_IN this_DT paper_NN were_VBD developed_VBN and_CC tested_VBN in_IN the_DT Coordinators_NNS domain_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+In_IN this_DT domain_NN ,_, autonomous_JJ agents_NNS ,_, called_VBN Coordinators_NNP ,_, are_VBP intended_VBN to_TO help_VB maximize_VB an_DT overall_JJ team_NN objective_NN by_IN handling_VBG changes_NNS in_IN the_DT task_NN schedule_NN as_IN conditions_NNS of_IN operation_NN change_NN ._.
+Each_DT agent_NN operates_VBZ on_IN behalf_NN of_IN its_PRP$ owner_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, the_DT team_NN leader_NN of_IN a_DT firstresponse_JJ team_NN or_CC a_DT unit_NN commander_NN -RRB-_-RRB- whose_WP$ schedule_NN it_PRP manages_VBZ ._.
+Thus_RB ,_, the_DT actual_JJ tasks_NNS being_VBG scheduled_VBN are_VBP executed_VBN either_CC by_IN owners_NNS or_CC by_IN units_NNS they_PRP oversee_VBP ,_, and_CC the_DT agent_NN ''_'' s_NNS responsibility_NN is_VBZ limited_VBN to_TO maintaining_VBG the_DT scheduling_NN of_IN these_DT tasks_NNS and_CC coordinating_VBG with_IN the_DT agents_NNS of_IN other_JJ human_JJ team_NN members_NNS -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, other_JJ owners_NNS -RRB-_-RRB- ._.
+In_IN this_DT domain_NN ,_, scheduling_NN information_NN and_CC constraints_NNS are_VBP distributed_VBN ._.
+Each_DT agent_NN receives_VBZ a_DT different_JJ view_NN of_IN the_DT tasks_NNS and_CC structures_NNS that_WDT constitute_VBP the_DT full_JJ multi-agent_JJ problem-typically_RB only_RB a_DT partial_JJ ,_, local_JJ one_CD ._.
+Schedule_VB revisions_NNS that_WDT affect_VBP more_JJR than_IN one_CD agent_NN must_MD be_VB coordinated_VBN ,_, so_RB agents_NNS thus_RB must_MD share_VB certain_JJ kinds_NNS of_IN information_NN ._.
+-LRB-_-LRB- In_IN a_DT team_NN context_NN they_PRP may_MD be_VB designed_VBN to_TO share_VB other_JJ types_NNS as_RB well_RB ._. -RRB-_-RRB-
+However_RB ,_, the_DT fast-paced_JJ nature_NN of_IN the_DT domain_NN constrains_VBZ the_DT amount_NN of_IN information_NN they_PRP can_MD share_VB ,_, precluding_VBG a_DT centralized_JJ solution_NN ;_: scheduling_NN problems_NNS must_MD be_VB solved_VBN distributively_RB ._.
+The_DT agent-owner_JJ relationship_NN is_VBZ a_DT collaborative_JJ one_CD ,_, with_IN the_DT agent_NN needing_VBG to_TO interact_VB with_IN its_PRP$ owner_NN to_TO obtain_VB task_NN and_CC environment_NN information_NN relevant_JJ to_TO scheduling_NN ._.
+The_DT CA_NNP module_NN is_VBZ responsible_JJ for_IN deciding_VBG intelligently_RB when_WRB and_CC how_WRB to_TO interact_VB with_IN the_DT owner_NN for_IN improving_VBG the_DT agent_NN ''_'' s_NNS scheduling_NN ._.
+As_IN a_DT result_NN ,_, the_DT CA_NNP must_MD estimate_VB the_DT expected_VBN benefit_NN of_IN any_DT such_JJ interaction_NN and_CC the_DT cost_NN associated_VBN with_IN it_PRP -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+In_IN general_JJ ,_, the_DT net_JJ benefit_NN of_IN a_DT potential_JJ interaction_NN is_VBZ PV_NN C_NN ,_, where_WRB V_NN is_VBZ the_DT value_NN of_IN the_DT information_NN the_DT user_NN may_MD have_VB ,_, P_NN is_VBZ the_DT probability_NN that_IN the_DT user_NN has_VBZ this_DT information_NN ,_, and_CC C_NN is_VBZ the_DT cost_NN associated_VBN with_IN an_DT interaction_NN ._.
+The_DT values_NNS of_IN P_NN ,_, V_NN ,_, and_CC C_NN are_VBP time-varying_JJ ,_, and_CC the_DT CA_NNP estimates_VBZ their_PRP$ value_NN at_IN the_DT intended_JJ time_NN of_IN initiating_VBG the_DT interaction_NN with_IN its_PRP$ owner_NN ._.
+This_DT paper_NN focuses_VBZ on_IN the_DT twin_JJ problems_NNS of_IN estimating_VBG the_DT parameters_NNS P_NN and_CC C_NN ,_, both_DT of_IN which_WDT are_VBP user-centric_JJ in_IN the_DT sense_NN of_IN being_VBG determined_VBN by_IN characteristics_NNS of_IN the_DT owner_NN and_CC the_DT environment_NN in_IN which_WDT the_DT owner_NN is_VBZ operating_VBG -RRB-_-RRB- ;_: it_PRP presumes_VBZ a_DT mechanism_NN for_IN determining_VBG V_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+2_LS ._.
+#_# Estimating_VBG Interruption_NNP Costs_NNS The_DT cost_NN of_IN interrupting_VBG owners_NNS derives_VBZ from_IN the_DT potential_JJ degradation_NN in_IN performance_NN of_IN tasks_NNS they_PRP are_VBP doing_VBG caused_VBN by_IN the_DT disruption_NN -LSB-_-LRB- #_# ;_: #_# ,_, inter_NN alia_NN -RSB-_-RRB- ._.
+Research_NN on_IN interaction_NN management_NN has_VBZ deployed_VBN sensor-based_JJ statistical_JJ models_NNS of_IN human_JJ interruptibility_NN to_TO infer_VB the_DT degree_NN of_IN distraction_NN likely_JJ to_TO be_VB caused_VBN by_IN an_DT interruption_NN ._.
+This_DT work_NN aims_VBZ to_TO reduce_VB interruption_NN costs_NNS by_IN delaying_VBG interruptions_NNS to_TO times_NNS that_WDT are_VBP convenient_JJ ._.
+It_PRP typically_RB uses_VBZ Bayesian_JJ models_NNS to_TO learn_VB a_DT user_NN ''_'' s_NNS current_JJ or_CC likely_JJ future_NN focus_NN of_IN attention_NN from_IN an_DT ongoing_JJ stream_NN of_IN actions_NNS ._.
+By_IN using_VBG sensors_NNS to_TO provide_VB continuous_JJ incoming_JJ indications_NNS of_IN the_DT user_NN ''_'' s_NNS attentional_JJ state_NN ,_, these_DT models_NNS attempt_VBP to_TO provide_VB a_DT means_NN for_IN computing_VBG probability_NN distributions_NNS over_IN a_DT user_NN ''_'' s_NNS attention_NN and_CC intentions_NNS -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+Work_NN which_WDT examines_VBZ such_JJ interruptibility-cost_JJ factors_NNS as_IN user_NN frustration_NN and_CC distractability_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- includes_VBZ work_NN on_IN the_DT cost_NN of_IN repeatedly_RB bothering_VBG the_DT user_NN which_WDT takes_VBZ into_IN account_NN the_DT fact_NN that_IN recent_JJ interruptions_NNS and_CC difficult_JJ questions_NNS should_MD carry_VB more_JJR weight_NN than_IN interruptions_NNS in_IN the_DT distant_JJ past_NN or_CC straightforward_JJ questions_NNS -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+Although_IN this_DT prior_JJ work_NN uses_VBZ interruptibility_NN estimates_NNS to_TO balance_VB the_DT interaction_NN ''_'' s_NNS estimated_VBN importance_NN against_IN the_DT degree_NN of_IN distraction_NN likely_JJ to_TO be_VB caused_VBN ,_, it_PRP differs_VBZ from_IN the_DT fast-paced_JJ environments_NNS problem_NN we_PRP address_VBP in_IN three_CD ways_NNS that_WDT fundamentally_RB change_VBP the_DT nature_NN of_IN the_DT problem_NN and_CC hence_RB alter_VB the_DT possible_JJ solutions_NNS ._.
+First_RB ,_, it_PRP considers_VBZ settings_NNS in_IN which_WDT the_DT computer_NN system_NN has_VBZ information_NN that_WDT may_MD be_VB relevant_JJ to_TO its_PRP$ user_NN rather_RB than_IN the_DT user_NN -LRB-_-LRB- owner_NN -RRB-_-RRB- having_VBG information_NN needed_VBN by_IN the_DT system_NN ,_, which_WDT is_VBZ the_DT complement_NN of_IN the_DT information_NN exchange_NN situation_NN we_PRP consider_VBP ._.
+Second_RB ,_, the_DT interruptibility-estimation_NN models_NNS are_VBP task-based_JJ ._.
+Lastly_RB ,_, it_PRP relies_VBZ on_IN continuous_JJ monitoring_NN of_IN a_DT user_NN ''_'' s_NNS activities_NNS ._.
+In_IN fast-paced_JJ environments_NNS ,_, there_EX usually_RB is_VBZ no_DT single_JJ task_NN structure_NN ,_, and_CC some_DT of_IN the_DT activities_NNS themselves_PRP may_MD have_VB little_JJ internal_JJ structure_NN ._.
+As_IN a_DT result_NN ,_, it_PRP is_VBZ difficult_JJ to_TO determine_VB the_DT actual_JJ attentional_JJ state_NN of_IN agent-owners_JJ -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+In_IN such_JJ settings_NNS ,_, owners_NNS must_MD make_VB complex_NN decisions_NNS that_WDT typically_RB involve_VBP a_DT number_NN of_IN other_JJ members_NNS of_IN their_PRP$ units_NNS ,_, while_IN remaining_VBG reactive_JJ to_TO events_NNS that_WDT diverge_VBP from_IN expectations_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+For_IN instance_NN ,_, during_IN disaster_NN rescue_NN ,_, a_DT first-response_JJ unit_NN may_MD begin_VB rescuing_VBG survivors_NNS trapped_VBN in_IN a_DT burning_NN house_NN ,_, when_WRB a_DT wall_NN collapses_VBZ suddenly_RB ,_, forcing_VBG the_DT unit_NN to_TO The_DT Sixth_NNP Intl_NNP ._.
+Joint_NNP Conf_NNP ._.
+on_IN Autonomous_NNP Agents_NNPS and_CC Multi-Agent_NNP Systems_NNP -LRB-_-LRB- AAMAS_NNP ##_CD -RRB-_-RRB- ###_CD retract_NN and_CC re-plan_JJ their_PRP$ actions_NNS ._.
+Prior_RB work_NN has_VBZ tracked_VBN users_NNS ''_'' focus_NN of_IN attention_NN using_VBG a_DT range_NN of_IN devices_NNS ,_, including_VBG those_DT able_JJ to_TO monitor_VB gestures_NNS -LSB-_-LRB- #_# -RSB-_-RRB- and_CC track_NN eyegaze_NN to_TO identify_VB focus_NN of_IN visual_JJ attention_NN -LSB-_-LRB- ##_CD ,_, ##_CD -RSB-_-RRB- ,_, thus_RB enabling_VBG estimations_NNS of_IN cognitive_JJ load_NN and_CC physical_JJ indicators_NNS of_IN performance_NN degradation_NN ._.
+The_DT mechanisms_NNS described_VBN in_IN this_DT paper_NN also_RB presume_VBP the_DT existence_NN of_IN such_JJ sensors_NNS ._.
+However_RB ,_, in_IN contrast_NN to_TO prior_JJ work_NN ,_, which_WDT relies_VBZ on_IN these_DT devices_NNS operating_VBG continuously_RB ,_, our_PRP$ mechanism_NN presumes_VBZ that_IN fast-paced_JJ environments_NNS only_RB allow_VBP for_IN the_DT activation_NN of_IN sensors_NNS for_IN short_JJ periods_NNS of_IN time_NN on_IN an_DT ad-hoc_JJ basis_NN ,_, because_IN agents_NNS ''_'' resources_NNS are_VBP severely_RB limited_VBN ._.
+Methods_NNS that_WDT depend_VBP on_IN predicting_VBG what_WP a_DT person_NN will_MD do_VB next_JJ based_VBN only_RB on_IN what_WP the_DT user_NN is_VBZ currently_RB doing_VBG -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, MDPs_NNS -RRB-_-RRB- are_VBP not_RB appropriate_JJ for_IN modeling_NN focus_NN of_IN attention_NN in_IN fast-paced_JJ domains_NNS ,_, because_IN an_DT agent_NN can_MD not_RB rely_VB on_IN a_DT person_NN ''_'' s_NNS attentional_JJ state_NN being_VBG well_RB structured_JJ and_CC monitoring_NN can_MD only_RB be_VB done_VBN on_IN a_DT sporadic_JJ ,_, non-continuous_JJ basis_NN ._.
+Thus_RB ,_, at_IN any_DT given_VBN time_NN ,_, the_DT cost_NN of_IN interaction_NN with_IN the_DT user_NN is_VBZ essentially_RB probabilistic_JJ ,_, as_IN reflected_VBN over_IN a_DT single_JJ random_JJ monitoring_NN event_NN ,_, and_CC can_MD be_VB assigned_VBN a_DT probability_NN distribution_NN function_NN ._.
+Consequently_RB ,_, in_IN fast-paced_JJ environments_NNS ,_, an_DT agent_NN needs_VBZ a_DT sampling_NN strategy_NN by_IN which_WDT the_DT CA_NNP samples_NNS its_PRP$ owner_NN ''_'' s_NNS interruptibility_NN level_NN -LRB-_-LRB- with_IN some_DT cost_NN -RRB-_-RRB- and_CC decides_VBZ whether_IN to_TO initiate_VB an_DT interaction_NN at_IN this_DT specific_JJ time_NN or_CC to_TO delay_VB until_IN a_DT lower_JJR cost_NN is_VBZ observed_VBN in_IN future_JJ samplings_NNS ._.
+The_DT method_NN we_PRP describe_VBP in_IN the_DT remainder_NN of_IN this_DT subsection_NN applies_VBZ concepts_NNS from_IN economic_JJ search_NN theory_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- to_TO this_DT problem_NN ._.
+The_DT CA_NNP ''_'' s_VBZ cost_NN estimation_NN uses_VBZ a_DT mechanism_NN that_WDT integrates_VBZ the_DT distribution_NN of_IN an_DT owner_NN ''_'' s_NNS interruptibility_NN level_NN -LRB-_-LRB- as_IN estimated_VBN by_IN the_DT CA_NNP -RRB-_-RRB- into_IN an_DT economic_JJ search_NN strategy_NN ,_, in_IN a_DT way_NN that_IN the_DT overall_JJ combined_JJ cost_NN of_IN sensor_NN costs_NNS and_CC interaction_NN costs_NNS is_VBZ minimized_VBN ._.
+In_IN its_PRP$ most_JJS basic_JJ form_NN ,_, the_DT economic_JJ search_NN problem_NN aims_VBZ to_TO identify_VB an_DT opportunity_NN that_WDT will_MD minimize_VB expected_VBN cost_NN or_CC maximize_VB expected_VBN utility_NN ._.
+The_DT search_NN process_NN itself_PRP is_VBZ associated_VBN with_IN a_DT cost_NN ,_, and_CC opportunities_NNS -LRB-_-LRB- in_IN our_PRP$ case_NN ,_, interruption_NN opportunities_NNS -RRB-_-RRB- are_VBP associated_VBN with_IN a_DT stationary_JJ distribution_NN function_NN ._.
+We_PRP use_VBP a_DT sequential_JJ search_NN strategy_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- in_IN which_WDT one_CD observation_NN is_VBZ drawn_VBN at_IN a_DT time_NN ,_, over_IN multiple_JJ search_NN stages_NNS ._.
+The_DT dominating_VBG strategy_NN in_IN this_DT model_NN is_VBZ a_DT reservation-value_JJ based_VBN strategy_NN which_WDT determines_VBZ a_DT lower_JJR bound_VBN ,_, and_CC keeps_VBZ drawing_VBG samples_NNS as_RB long_RB as_IN no_DT opportunity_NN above_IN the_DT bound_VBN was_VBD drawn_VBN ._.
+In_IN particular_JJ ,_, we_PRP consider_VBP the_DT situation_NN in_IN which_WDT an_DT agent_NN ''_'' s_NNS owner_NN has_VBZ an_DT interruption_NN cost_NN described_VBN by_IN a_DT probability_NN distribution_NN function_NN -LRB-_-LRB- pdf_NN -RRB-_-RRB- f_FW -LRB-_-LRB- x_NN -RRB-_-RRB- and_CC a_DT cumulative_JJ distribution_NN function_NN -LRB-_-LRB- cdf_NN -RRB-_-RRB- F_NN -LRB-_-LRB- x_NN -RRB-_-RRB- ._.
+The_DT agent_NN can_MD activate_VB sensing_VBG devices_NNS to_TO get_VB an_DT estimation_NN of_IN the_DT interruption_NN cost_NN ,_, x_NN ,_, at_IN the_DT current_JJ time_NN ,_, but_CC there_EX is_VBZ a_DT cost_NN c_NN of_IN operating_VBG the_DT sensing_VBG devices_NNS for_IN a_DT single_JJ time_NN unit_NN ._.
+The_DT CA_NNP module_NN sets_VBZ a_DT reservation_NN value_NN and_CC as_RB long_RB as_IN the_DT sensor-based_JJ observation_NN x_NN is_VBZ greater_JJR than_IN this_DT reservation_NN value_NN ,_, the_DT CA_NNP will_MD wait_VB and_CC re-sample_VB the_DT user_NN for_IN a_DT new_JJ estimation_NN ._.
+The_DT expected_VBN cost_NN ,_, V_NN -LRB-_-LRB- xrv_NN -RRB-_-RRB- ,_, using_VBG such_JJ a_DT strategy_NN with_IN reservation_NN value_NN xrv_NN is_VBZ described_VBN by_IN Equation_NN #_# ,_, V_NN -LRB-_-LRB- xrv_NN -RRB-_-RRB- =_JJ c_NN +_CC R_NN xrv_NN y_NN =_JJ #_# yf_FW -LRB-_-LRB- y_NN -RRB-_-RRB- F_NN -LRB-_-LRB- xrv_NN -RRB-_-RRB- ,_, -LRB-_-LRB- #_# -RRB-_-RRB- which_WDT decomposes_VBZ into_IN two_CD parts_NNS ._.
+The_DT first_JJ part_NN ,_, c_NN divided_VBN by_IN F_NN -LRB-_-LRB- xrv_NN -RRB-_-RRB- ,_, represents_VBZ the_DT expected_VBN sampling_NN cost_NN ._.
+The_DT second_JJ ,_, the_DT integral_JJ divided_VBN by_IN F_NN -LRB-_-LRB- xrv_NN -RRB-_-RRB- ,_, represents_VBZ the_DT expected_VBN cost_NN of_IN interruption_NN ,_, because_IN the_DT expected_VBN number_NN of_IN search_NN cycles_NNS is_VBZ -LRB-_-LRB- random_JJ -RRB-_-RRB- geometric_JJ and_CC the_DT probability_NN of_IN success_NN is_VBZ F_NN -LRB-_-LRB- xrv_NN -RRB-_-RRB- ._.
+Taking_VBG the_DT derivative_NN of_IN the_DT left-hand-side_NN of_IN Equation_NN #_# and_CC equating_VBG it_PRP to_TO zero_CD ,_, yields_VBZ the_DT characteristics_NNS of_IN the_DT optimal_JJ reservation_NN value_NN ,_, namely_RB x_CC rv_NN must_MD satisfy_VB ,_, V_NN -LRB-_-LRB- x_NN rv_NN -RRB-_-RRB- =_JJ x_CC rv_NN ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- Substituting_VBG -LRB-_-LRB- #_# -RRB-_-RRB- in_IN Equation_NN #_# yields_NNS Equation_NN #_# -LRB-_-LRB- after_IN integration_NN by_IN parts_NNS -RRB-_-RRB- from_IN which_WDT the_DT optimal_JJ reservation_NN value_NN ,_, x_CC rv_NN ,_, and_CC consequently_RB -LRB-_-LRB- from_IN Equation_NN #_# -RRB-_-RRB- V_NN -LRB-_-LRB- x_NN rv_NN -RRB-_-RRB- can_MD be_VB computed_VBN ._.
+c_NN =_JJ Z_NN x_NN rv_NN y_NN =_JJ #_# F_NN -LRB-_-LRB- y_NN -RRB-_-RRB- -LRB-_-LRB- #_# -RRB-_-RRB- This_DT method_NN ,_, which_WDT depends_VBZ on_IN extracting_VBG the_DT optimal_JJ sequence_NN of_IN sensor-based_JJ user_NN sampling_NN ,_, relies_VBZ heavily_RB on_IN the_DT structure_NN of_IN the_DT distribution_NN function_NN ,_, f_FW -LRB-_-LRB- x_NN -RRB-_-RRB- ._.
+However_RB ,_, we_PRP need_VBP only_RB a_DT portion_NN of_IN the_DT distribution_NN function_NN ,_, namely_RB from_IN the_DT origin_NN to_TO the_DT reservation_NN value_NN ._.
+-LRB-_-LRB- See_VB Equation_NN #_# and_CC Figure_NNP #_# ._. -RRB-_-RRB-
+Thus_RB ,_, when_WRB we_PRP consider_VBP sharing_VBG data_NNS ,_, it_PRP is_VBZ not_RB necessary_JJ to_TO rely_VB on_IN complete_JJ similarity_NN in_IN the_DT distribution_NN function_NN of_IN different_JJ users_NNS ._.
+For_IN some_DT parameters_NNS ,_, including_VBG the_DT user_NN ''_'' s_NNS interruptibility_NN level_NN ,_, it_PRP is_VBZ enough_RB to_TO rely_VB on_IN similarity_NN in_IN the_DT relevant_JJ portion_NN of_IN the_DT distribution_NN function_NN ._.
+The_DT implementation_NN described_VBN in_IN Sections_NNS 4-5_CD relies_VBZ on_IN this_DT fact_NN ._.
+Figure_NNP #_# :_: The_DT distribution_NN structure_NN affecting_VBG the_DT expected_VBN cost_NN ''_'' s_NNS calculation_NN 2_CD ._.
+#_# Estimating_VBG the_DT Probability_NN of_IN Having_VBG Information_NNP One_CD way_NN an_DT agent_NN can_MD estimate_VB the_DT probability_NN a_DT user_NN will_MD have_VB information_NN it_PRP needs_VBZ -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, will_MD know_VB at_IN a_DT specific_JJ interruption_NN time_NN ,_, with_IN some_DT level_NN of_IN reliability_NN ,_, the_DT actual_JJ outcome_NN of_IN a_DT task_NN currently_RB being_VBG executed_VBN -RRB-_-RRB- is_VBZ to_TO rely_VB on_IN prior_JJ interactions_NNS with_IN this_DT user_NN ,_, calculating_VBG the_DT ratio_NN between_IN the_DT number_NN of_IN times_NNS the_DT user_NN had_VBD the_DT information_NN and_CC the_DT total_JJ number_NN of_IN interactions_NNS ._.
+Alternatively_RB ,_, the_DT agent_NN can_MD attempt_VB to_TO infer_VB this_DT probability_NN from_IN measurable_JJ characteristics_NNS of_IN the_DT user_NN ''_'' s_NNS behavior_NN ,_, which_WDT it_PRP can_MD assess_VB without_IN requiring_VBG an_DT interruption_NN ._.
+This_DT indirect_JJ approach_NN ,_, which_WDT does_VBZ not_RB require_VB interrupting_VBG the_DT user_NN ,_, is_VBZ especially_RB useful_JJ in_IN fast-paced_JJ domains_NNS ._.
+The_DT CA_NNP module_NN we_PRP designed_VBD uses_NNS such_PDT an_DT indirect_JJ method_NN :_: ownerenvironment_NN interactions_NNS are_VBP used_VBN as_IN a_DT proxy_NN for_IN measuring_VBG whether_IN the_DT owner_NN has_VBZ certain_JJ information_NN ._.
+For_IN instance_NN ,_, in_IN Coordinatorslike_JJ scenarios_NNS ,_, owners_NNS may_MD obtain_VB a_DT variety_NN of_IN information_NN through_IN occasional_JJ coordination_NN meetings_NNS of_IN all_DT owners_NNS ,_, direct_JJ communication_NN with_IN other_JJ individual_JJ owners_NNS participating_VBG in_IN the_DT execution_NN of_IN a_DT joint_JJ task_NN -LRB-_-LRB- through_IN which_WDT they_PRP may_MD learn_VB informally_RB about_IN the_DT existence_NN or_CC status_NN of_IN other_JJ actions_NNS they_PRP are_VBP executing_VBG -RRB-_-RRB- ,_, open_JJ communications_NNS they_PRP overhear_VBP -LRB-_-LRB- e_LS ._.
+g_NN ._.
+if_IN commanders_NNS leave_VBP their_PRP$ radios_NNS open_JJ ,_, they_PRP can_MD listen_VB to_TO messages_NNS associated_VBN with_IN other_JJ teams_NNS in_IN their_PRP$ area_NN -RRB-_-RRB- ,_, and_CC other_JJ formal_JJ or_CC informal_JJ communication_NN channels_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Thus_RB ,_, owners_NNS ''_'' levels_NNS of_IN communication_NN with_IN others_NNS ,_, which_WDT can_MD be_VB obtained_VBN without_IN interrupting_VBG them_PRP ,_, provide_VBP some_DT indication_NN of_IN the_DT frequency_NN with_IN which_WDT they_PRP obtain_VB new_JJ information_NN ._.
+Given_VBN occasional_JJ updates_NNS about_IN its_PRP$ owner_NN ''_'' s_NNS level_NN of_IN communication_NN ,_, the_DT CA_NNP can_MD estimate_VB the_DT probability_NN that_IN a_DT random_JJ interaction_NN with_IN the_DT owner_NN will_MD yield_VB the_DT information_NN it_PRP needs_VBZ ._.
+Denoting_VBG the_DT probability_NN distribution_NN function_NN of_IN the_DT amount_NN of_IN communication_NN the_DT user_NN generally_RB maintains_VBZ with_IN its_PRP$ environment_NN by_IN g_NN -LRB-_-LRB- x_NN -RRB-_-RRB- ,_, and_CC using_VBG the_DT transformation_NN function_NN Z_NN -LRB-_-LRB- x_NN -RRB-_-RRB- ,_, mapping_VBG from_IN a_DT level_NN of_IN communication_NN ,_, x_NN ,_, to_TO a_DT probability_NN of_IN having_VBG the_DT information_NN ,_, the_DT expected_VBN probability_NN of_IN getting_VBG the_DT information_NN that_WDT is_VBZ needed_VBN from_IN the_DT owner_NN when_WRB interrupting_VBG at_IN a_DT given_VBN time_NN can_MD be_VB calculated_VBN from_IN P_NN =_JJ Z_NN 0_CD Z_NN -LRB-_-LRB- x_NN -RRB-_-RRB- g_NN -LRB-_-LRB- x_NN -RRB-_-RRB- dy_NN ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- 204_CD The_DT Sixth_NNP Intl_NNP ._.
+Joint_NNP Conf_NNP ._.
+on_IN Autonomous_NNP Agents_NNPS and_CC Multi-Agent_NNP Systems_NNP -LRB-_-LRB- AAMAS_NNP ##_CD -RRB-_-RRB- The_DT more_JJR observations_NNS an_DT agent_NN can_MD accumulate_VB about_IN the_DT distribution_NN of_IN the_DT frequency_NN of_IN an_DT owner_NN ''_'' s_NNS interaction_NN with_IN the_DT environment_NN at_IN a_DT given_VBN time_NN ,_, the_DT better_JJR it_PRP can_MD estimate_VB the_DT probability_NN the_DT owner_NN has_VBZ the_DT information_NN needed_VBN by_IN the_DT system_NN ._.
+3_LS ._.
+THE_DT SELECTIVE-SHARING_NN MECHANISM_NN This_DT section_NN presents_VBZ the_DT selective-sharing_JJ mechanism_NN by_IN which_WDT the_DT CA_NNP learns_VBZ the_DT distribution_NN function_NN of_IN a_DT probabilistic_JJ parameter_NN by_IN taking_VBG advantage_NN of_IN data_NNS collected_VBN by_IN other_JJ CAs_NNS in_IN its_PRP$ environment_NN ._.
+We_PRP first_RB explain_VB the_DT need_NN for_IN increasing_VBG the_DT number_NN of_IN observations_NNS used_VBN as_IN the_DT basis_NN of_IN estimation_NN and_CC then_RB present_VB a_DT method_NN for_IN determining_VBG how_WRB much_JJ data_NNS to_TO adopt_VB from_IN other_JJ agents_NNS ._.
+The_DT most_RBS straightforward_JJ method_NN for_IN the_DT CA_NNP to_TO learn_VB the_DT distribution_NN functions_NNS associated_VBN with_IN the_DT different_JJ parameters_NNS characterizing_VBG an_DT owner_NN is_VBZ by_IN building_VBG a_DT histogram_NN based_VBN on_IN the_DT observations_NNS it_PRP has_VBZ accumulated_VBN up_RP to_TO the_DT estimation_NN point_NN ._.
+Based_VBN on_IN this_DT histogram_NN ,_, the_DT CA_NNP can_MD estimate_VB the_DT parameter_NN either_CC by_IN taking_VBG into_IN account_NN the_DT entire_JJ range_NN of_IN values_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, to_TO estimate_VB the_DT mean_NN -RRB-_-RRB- or_CC a_DT portion_NN of_IN it_PRP -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, to_TO find_VB the_DT expected_VBN cost_NN when_WRB using_VBG a_DT reservation-value-based_JJ strategy_NN -RRB-_-RRB- ._.
+The_DT accuracy_NN of_IN the_DT estimation_NN will_MD vary_VB widely_RB if_IN it_PRP is_VBZ based_VBN on_IN only_RB a_DT small_JJ number_NN of_IN observations_NNS ._.
+For_IN example_NN ,_, Figure_NNP #_# illustrates_VBZ the_DT reservation-value-based_JJ cost_NN calculated_VBN according_VBG to_TO observations_NNS received_VBN from_IN an_DT owner_NN with_IN a_DT uniform_JJ interruption_NN cost_NN distribution_NN U_NN -LRB-_-LRB- #_# ,_, ###_CD -RRB-_-RRB- as_IN a_DT function_NN of_IN the_DT number_NN of_IN accumulated_VBN observations_NNS used_VBN for_IN generating_VBG the_DT distribution_NN histogram_NN ._.
+-LRB-_-LRB- In_IN this_DT simulation_NN ,_, device_NN activation_NN cost_NN was_VBD taken_VBN to_TO be_VB c_NN =_JJ #_# ._.
+#_# -RRB-_-RRB- ._.
+Figure_NNP #_# :_: The_DT convergence_NN of_IN a_DT single_JJ CA_NNP to_TO its_PRP$ optimal_JJ strategy_NN These_DT deviations_NNS from_IN the_DT actual_JJ -LRB-_-LRB- true_JJ -RRB-_-RRB- value_NN -LRB-_-LRB- which_WDT is_VBZ ##_CD in_IN this_DT case_NN ,_, according_VBG to_TO Equation_NN #_# -RRB-_-RRB- is_VBZ because_IN the_DT sample_NN used_VBN in_IN each_DT stage_NN can_MD not_RB accurately_RB capture_VB the_DT actual_JJ structure_NN of_IN the_DT distribution_NN function_NN ._.
+Eventually_RB this_DT method_NN yields_VBZ a_DT very_RB accurate_JJ estimation_NN for_IN the_DT expected_VBN interruption_NN cost_NN ._.
+However_RB ,_, in_IN the_DT initial_JJ stages_NNS of_IN the_DT process_NN ,_, its_PRP$ estimation_NN deviates_VBZ significantly_RB from_IN the_DT true_JJ value_NN ._.
+This_DT error_NN could_MD seriously_RB degrade_VB the_DT CA_NNP ''_'' s_NNS decision_NN making_VBG process_NN :_: underestimating_VBG the_DT cost_NN may_MD result_VB in_IN initiating_VBG costly_JJ ,_, non-beneficial_JJ interactions_NNS ,_, and_CC overestimating_VBG the_DT cost_NN might_MD result_VB in_IN missing_VBG opportunities_NNS for_IN valuable_JJ interactions_NNS ._.
+Any_DT improvement_NN that_WDT can_MD be_VB achieved_VBN in_IN predicting_VBG the_DT cost_NN values_NNS ,_, especially_RB in_IN the_DT initial_JJ stages_NNS of_IN learning_NN ,_, can_MD make_VB a_DT significant_JJ difference_NN in_IN performance_NN ,_, especially_RB because_IN the_DT agent_NN is_VBZ severely_RB limited_VBN in_IN the_DT number_NN of_IN times_NNS it_PRP can_MD interact_VB with_IN its_PRP$ owner_NN in_IN fastpaced_JJ domains_NNS ._.
+One_CD way_NN to_TO decrease_VB the_DT deviation_NN from_IN the_DT actual_JJ value_NN is_VBZ by_IN augmenting_VBG the_DT data_NNS the_DT CA_NNP acquires_VBZ by_IN observing_VBG its_PRP$ owner_NN with_IN observations_NNS made_VBN by_IN other_JJ owners_NNS ''_'' agents_NNS ._.
+Such_PDT an_DT approach_NN depends_VBZ on_IN identifying_VBG other_JJ owners_NNS with_IN distribution_NN functions_NNS for_IN the_DT characteristic_NN of_IN interest_NN similar_JJ to_TO the_DT CA_NNP ''_'' s_VBZ owner_NN ._.
+This_DT dataaugmentation_NN idea_NN is_VBZ simple_JJ :_: different_JJ owners_NNS may_MD exhibit_VB similar_JJ basic_JJ behaviors_NNS or_CC patterns_NNS in_IN similar_JJ fast-paced_JJ task_NN scenarios_NNS ._.
+Since_IN they_PRP are_VBP all_DT coordinating_VBG on_IN a_DT common_JJ overall_JJ task_NN and_CC are_VBP operating_VBG in_IN the_DT same_JJ environment_NN ,_, it_PRP is_VBZ reasonable_JJ to_TO assume_VB some_DT level_NN of_IN similarity_NN in_IN the_DT distribution_NN function_NN of_IN their_PRP$ modeled_VBN parameters_NNS ._.
+People_NNS vary_VBP in_IN their_PRP$ behavior_NN ,_, so_RB ,_, obviously_RB ,_, there_EX may_MD be_VB different_JJ types_NNS of_IN owners_NNS :_: some_DT will_MD emphasize_VB communication_NN with_IN their_PRP$ teams_NNS ,_, and_CC some_DT will_MD spend_VB more_JJR time_NN on_IN map-based_JJ planning_NN ;_: some_DT will_MD dislike_VB being_VBG disturbed_VBN while_IN trying_VBG to_TO evaluate_VB their_PRP$ team_NN ''_'' s_NNS progress_NN ,_, while_IN others_NNS may_MD be_VB more_RBR open_JJ to_TO interruptions_NNS ._.
+Consequently_RB ,_, an_DT owner_NN ''_'' s_NNS CA_NNP is_VBZ likely_JJ to_TO be_VB able_JJ to_TO find_VB some_DT CAs_NNS that_WDT are_VBP working_VBG with_IN owners_NNS who_WP are_VBP similar_JJ to_TO its_PRP$ owner_NN ._.
+When_WRB adopting_VBG data_NNS collected_VBN by_IN other_JJ agents_NNS ,_, the_DT two_CD main_JJ questions_NNS are_VBP which_WDT agents_NNS the_DT CA_NNP should_MD rely_VB on_IN and_CC to_TO what_WP extent_NN it_PRP should_MD rely_VB on_IN each_DT of_IN them_PRP ._.
+The_DT selective-sharing_JJ mechanism_NN relies_VBZ on_IN a_DT statistical_JJ measure_NN of_IN similarity_NN that_WDT allows_VBZ the_DT CA_NNP of_IN any_DT specific_JJ user_NN to_TO identify_VB the_DT similarity_NN between_IN its_PRP$ owner_NN and_CC other_JJ owners_NNS dynamically_RB ._.
+Based_VBN on_IN this_DT similarity_NN level_NN ,_, the_DT CA_NNP decides_VBZ if_IN and_CC to_TO what_WP degree_NN to_TO import_VB other_JJ CAs_NNS ''_'' data_NNS in_IN order_NN to_TO augment_VB its_PRP$ direct_JJ observations_NNS ,_, and_CC thus_RB to_TO enable_VB better_JJR modeling_NN of_IN its_PRP$ owner_NN ''_'' s_NNS characteristics_NNS ._.
+It_PRP is_VBZ notable_JJ that_IN the_DT cost_NN of_IN transferring_VBG observations_NNS between_IN different_JJ CA_NNP modules_NNS of_IN different_JJ agents_NNS is_VBZ relatively_RB small_JJ ._.
+This_DT information_NN can_MD be_VB transferred_VBN as_IN part_NN of_IN regular_JJ negotiation_NN communication_NN between_IN agents_NNS ._.
+The_DT volume_NN of_IN such_JJ communication_NN is_VBZ negligible_JJ :_: it_PRP involves_VBZ just_RB the_DT transmission_NN of_IN new_JJ observations_NNS ''_'' values_NNS ._.
+In_IN our_PRP$ learning_VBG mechanism_NN ,_, the_DT CA_NNP constantly_RB updates_NNS its_PRP$ estimation_NN of_IN the_DT level_NN of_IN similarity_NN between_IN its_PRP$ owner_NN and_CC the_DT owners_NNS represented_VBN by_IN other_JJ CAs_NNS in_IN the_DT environment_NN ._.
+Each_DT new_JJ observation_NN obtained_VBN either_CC by_IN that_DT CA_NNP or_CC any_DT of_IN the_DT other_JJ CAs_NNS updates_NNS this_DT estimation_NN ._.
+The_DT similarity_NN level_NN is_VBZ determined_VBN using_VBG the_DT Wilcoxon_NNP rank-sum_NN test_NN -LRB-_-LRB- Subsection_NN #_# ._.
+#_# -RRB-_-RRB- ._.
+Whenever_NNP it_PRP is_VBZ necessary_JJ to_TO produce_VB a_DT parameter_NN estimate_NN ,_, the_DT CA_NNP decides_VBZ on_IN the_DT number_NN of_IN additional_JJ observations_NNS it_PRP intends_VBZ to_TO rely_VB on_IN for_IN extracting_VBG its_PRP$ estimation_NN ._.
+The_DT number_NN of_IN additional_JJ observations_NNS to_TO be_VB taken_VBN from_IN each_DT other_JJ agent_NN is_VBZ a_DT function_NN of_IN the_DT number_NN of_IN observations_NNS it_PRP currently_RB has_VBZ from_IN former_JJ interactions_NNS with_IN its_PRP$ owner_NN and_CC the_DT level_NN of_IN confidence_NN the_DT CA_NNP has_VBZ in_IN the_DT similarity_NN between_IN its_PRP$ owner_NN and_CC other_JJ owners_NNS ._.
+In_IN most_JJS cases_NNS ,_, the_DT number_NN of_IN observations_NNS the_DT CA_NNP will_MD want_VB to_TO take_VB from_IN another_DT agent_NN is_VBZ smaller_JJR than_IN the_DT overall_JJ number_NN of_IN observations_NNS the_DT other_JJ agent_NN has_VBZ ;_: thus_RB ,_, it_PRP randomly_RB samples_NNS -LRB-_-LRB- without_IN repetitions_NNS -RRB-_-RRB- the_DT required_VBN number_NN of_IN observations_NNS from_IN this_DT other_JJ agent_NN ''_'' s_NNS database_NN ._.
+The_DT additional_JJ observations_NNS the_DT CA_NNP takes_VBZ from_IN other_JJ agents_NNS are_VBP used_VBN only_RB to_TO model_VB its_PRP$ owner_NN ''_'' s_NNS characteristics_NNS ._.
+Future_JJ similarity_NN level_NN determination_NN is_VBZ not_RB affected_VBN by_IN this_DT information_NN augmentation_NN procedure_NN ._.
+3_LS ._.
+#_# The_DT Wilcoxon_NNP Test_NNP We_PRP use_VBP a_DT nonparametric_JJ method_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, one_CD that_WDT makes_VBZ no_DT assumptions_NNS about_IN the_DT parametric_JJ form_NN of_IN the_DT distributions_NNS each_DT set_NN is_VBZ drawn_VBN from_IN -RRB-_-RRB- ,_, because_IN user_NN characteristics_NNS in_IN fast-paced_JJ domains_NNS do_VBP not_RB have_VB the_DT structure_NN needed_VBN for_IN parametric_JJ approaches_NNS ._.
+Two_CD additional_JJ advantages_NNS of_IN a_DT non-parametric_JJ approach_NN are_VBP their_PRP$ usefulness_NN for_IN dealing_VBG with_IN unexpected_JJ ,_, outlying_JJ observations_NNS -LRB-_-LRB- possibly_RB problematic_JJ for_IN a_DT parametric_JJ approach_NN -RRB-_-RRB- ,_, and_CC the_DT fact_NN that_IN non-parametric_JJ approaches_NNS are_VBP computationally_RB very_RB simple_JJ and_CC thus_RB ideal_JJ for_IN settings_NNS in_IN which_WDT computational_JJ resources_NNS are_VBP scarce_JJ ._.
+The_DT Wilcoxon_NNP rank-sum_NN test_NN we_PRP use_VBP is_VBZ a_DT nonparametric_JJ alternative_NN to_TO the_DT two-sample_JJ t-test_NN -LSB-_-LRB- ##_CD ,_, ##_CD -RSB-_-RRB- #_# ._.
+While_IN the_DT t-test_NN compares_VBZ means_NNS ,_, the_DT Wilcoxon_NNP test_NN can_MD be_VB used_VBN to_TO test_VB the_DT null_JJ hypothesis_NN that_IN two_CD populations_NNS X_NN and_CC Y_NN have_VBP the_DT same_JJ continuous_JJ distribution_NN ._.
+We_PRP assume_VBP that_IN we_PRP have_VBP independent_JJ random_JJ samples_NNS -LCB-_-LRB- x1_NN ,_, x2_NN ,_, ..._: ,_, xm_NN -RCB-_-RRB- and_CC -LCB-_-LRB- y1_NN ,_, y2_NN ,_, ..._: ,_, yn_NN -RCB-_-RRB- ,_, of_IN sizes_NNS m_NN and_CC n_NN respectively_RB ,_, from_IN each_DT population_NN ._.
+We_PRP then_RB merge_VBP the_DT data_NNS and_CC rank_VB each_DT measurement_NN from_IN lowest_JJS to_TO highest_JJS ._.
+All_DT sequences_NNS of_IN ties_NNS are_VBP assigned_VBN an_DT average_JJ rank_NN ._.
+From_IN the_DT sum_NN of_IN the_DT ranks_NNS of_IN the_DT smaller_JJR 2_CD Chi-Square_NNP Goodness-of-Fit_NNP Test_NNP is_VBZ for_IN a_DT single_JJ sample_NN and_CC thus_RB not_RB suitable_JJ ._.
+The_DT Sixth_NNP Intl_NNP ._.
+Joint_NNP Conf_NNP ._.
+on_IN Autonomous_NNP Agents_NNPS and_CC Multi-Agent_NNP Systems_NNP -LRB-_-LRB- AAMAS_NNP ##_CD -RRB-_-RRB- ###_CD sample_NN ,_, we_PRP calculate_VBP the_DT test_NN statistic_NN and_CC extract_NN the_DT level_NN of_IN confidence_NN for_IN rejecting_VBG the_DT null_JJ hypothesis_NN ._.
+This_DT level_NN of_IN confidence_NN becomes_VBZ the_DT measure_NN for_IN the_DT level_NN of_IN similarity_NN between_IN the_DT two_CD owners_NNS ._.
+The_DT Wilcoxon_NNP test_NN does_VBZ not_RB require_VB that_IN the_DT data_NNS originates_VBZ from_IN a_DT normally_RB distributed_VBN population_NN or_CC that_IN the_DT distribution_NN is_VBZ characterized_VBN by_IN a_DT finite_JJ set_NN of_IN parameters_NNS ._.
+3_LS ._.
+#_# Determining_VBG Required_NNP Information_NNP Correctly_RB identifying_VBG the_DT right_JJ number_NN of_IN additional_JJ observations_NNS to_TO gather_VB is_VBZ a_DT key_JJ determinant_NN of_IN success_NN of_IN the_DT selective-sharing_JJ mechanism_NN ._.
+Obviously_RB ,_, if_IN the_DT CA_NNP can_MD identify_VB another_DT owner_NN who_WP has_VBZ identical_JJ characteristics_NNS to_TO the_DT owner_NN it_PRP represents_VBZ ,_, then_RB it_PRP should_MD use_VB all_DT of_IN the_DT observations_NNS collected_VBN by_IN that_DT owner_NN ''_'' s_NNS agent_NN ._.
+However_RB ,_, cases_NNS of_IN identical_JJ matches_NNS are_VBP likely_JJ to_TO be_VB very_RB uncommon_JJ ._.
+Furthermore_RB ,_, even_RB to_TO establish_VB that_IN another_DT user_NN is_VBZ identical_JJ to_TO its_PRP$ own_JJ ,_, the_DT CA_NNP would_MD need_VB substantial_JJ sample_NN sizes_NNS to_TO have_VB a_DT relatively_RB high_JJ level_NN of_IN confidence_NN ._.
+Thus_RB ,_, usually_RB the_DT CA_NNP needs_VBZ to_TO decide_VB how_WRB much_JJ to_TO rely_VB on_IN another_DT agent_NN ''_'' s_NNS data_NNS while_IN estimating_VBG various_JJ levels_NNS of_IN similarity_NN with_IN a_DT changing_VBG level_NN of_IN confidence_NN ._.
+At_IN the_DT beginning_NN of_IN its_PRP$ process_NN ,_, the_DT selective-sharing_JJ mechanism_NN has_VBZ almost_RB no_DT data_NNS to_TO rely_VB on_IN ,_, and_CC thus_RB no_DT similarity_NN measure_NN can_MD be_VB used_VBN ._.
+In_IN this_DT case_NN ,_, the_DT CA_NNP module_NN relies_VBZ heavily_RB on_IN other_JJ agents_NNS ,_, in_IN the_DT expectation_NN that_IN all_DT owners_NNS have_VBP some_DT basic_JJ level_NN of_IN similarity_NN in_IN their_PRP$ distribution_NN ._.
+As_IN the_DT number_NN of_IN its_PRP$ direct_JJ observations_NNS increases_NNS ,_, the_DT CA_NNP module_NN refines_VBZ the_DT number_NN of_IN additional_JJ observations_NNS required_VBN ._.
+Again_RB ,_, there_EX are_VBP two_CD conflicting_JJ effects_NNS ._.
+On_IN one_CD hand_NN ,_, the_DT more_RBR data_NNS the_DT CA_NNP has_VBZ ,_, the_DT better_JJR it_PRP can_MD determine_VB its_PRP$ level_NN of_IN confidence_NN in_IN the_DT similarity_NN ratings_NNS it_PRP has_VBZ for_IN other_JJ owners_NNS ._.
+On_IN the_DT other_JJ hand_NN ,_, assuming_VBG there_EX is_VBZ some_DT difference_NN among_IN owners_NNS -LRB-_-LRB- even_RB if_IN not_RB noticed_VBN yet_RB -RRB-_-RRB- ,_, as_IN the_DT number_NN of_IN its_PRP$ direct_JJ observations_NNS increases_NNS ,_, the_DT owner_NN ''_'' s_NNS own_VBP data_NNS should_MD gain_VB weight_NN in_IN its_PRP$ analysis_NN ._.
+Therefore_RB ,_, when_WRB CAi_NNP decides_VBZ how_WRB many_JJ additional_JJ observations_NNS ,_, Oi_NN j_NN should_MD be_VB adopted_VBN from_IN CAj_NN ''_'' s_NNS database_NN ,_, it_PRP calculates_VBZ Oi_NN j_NN as_IN follows_VBZ :_: Oi_NN j_NN =_JJ N_NN -LRB-_-LRB- #_# i_FW ,_, j_NN -RRB-_-RRB- N_NN +_CC 2_CD +_CC ln_NN -LRB-_-LRB- N_NN -RRB-_-RRB- N_NN -LRB-_-LRB- #_# -RRB-_-RRB- where_WRB N_NN is_VBZ the_DT number_NN of_IN observations_NNS CAi_NNP already_RB has_VBZ -LRB-_-LRB- which_WDT is_VBZ similar_JJ in_IN magnitude_NN to_TO the_DT number_NN of_IN observations_NNS CAj_NN has_VBZ -RRB-_-RRB- and_CC i_FW ,_, j_NN is_VBZ the_DT confidence_NN of_IN rejecting_VBG the_DT Wilcoxon_NNP null_JJ hypothesis_NN ._.
+The_DT function_NN in_IN Equation_NN #_# ensures_VBZ that_IN the_DT number_NN of_IN additional_JJ observations_NNS to_TO be_VB taken_VBN from_IN another_DT CA_NNP module_NN increases_VBZ as_IN the_DT confidence_NN in_IN the_DT similarity_NN with_IN the_DT source_NN for_IN these_DT additional_JJ observations_NNS increases_NNS ._.
+At_IN the_DT same_JJ time_NN ,_, it_PRP ensures_VBZ that_IN the_DT level_NN of_IN dependency_NN on_IN external_JJ observations_NNS decreases_VBZ as_IN the_DT number_NN of_IN direct_JJ observations_NNS increases_NNS ._.
+When_WRB calculating_VBG the_DT parameter_NN i_FW ,_, j_NN ,_, we_PRP always_RB perform_VBP the_DT test_NN over_IN the_DT interval_NN relevant_JJ to_TO the_DT originating_VBG CA_NNP ''_'' s_VBZ distribution_NN function_NN ._.
+For_IN example_NN ,_, when_WRB estimating_VBG the_DT cost_NN of_IN interrupting_VBG the_DT user_NN ,_, we_PRP apply_VBP the_DT Wilcoxon_NNP test_NN only_RB for_IN observations_NNS in_IN the_DT interval_NN that_WDT starts_VBZ from_IN zero_CD and_CC ends_VBZ slightly_RB to_TO the_DT right_NN of_IN the_DT formerly_RB estimated_VBN RV_NN ._.
+4_LS ._.
+EMPIRICAL_JJ SETTING_VBG We_PRP tested_VBD the_DT selective-sharing_JJ mechanism_NN in_IN a_DT system_NN that_WDT simulates_VBZ a_DT distributed_VBN ,_, Coordinators-like_JJ MAS_NNP ._.
+This_DT testbed_JJ environment_NN includes_VBZ a_DT variable_JJ number_NN of_IN agents_NNS ,_, each_DT corresponding_VBG to_TO a_DT single_JJ CA_NNP module_NN ._.
+Each_DT agent_NN is_VBZ assigned_VBN an_DT external_JJ source_NN -LRB-_-LRB- simulating_VBG an_DT owner_NN -RRB-_-RRB- which_WDT it_PRP periodically_RB samples_NNS to_TO obtain_VB a_DT value_NN from_IN the_DT distribution_NN being_VBG estimated_VBN ._.
+The_DT simulation_NN system_NN enabled_VBD us_PRP to_TO avoid_VB unnecessary_JJ inter-agent_JJ scheduling_NN and_CC communication_NN overhead_NN -LRB-_-LRB- which_WDT are_VBP an_DT inherent_JJ part_NN of_IN the_DT Coordinators_NNS environment_NN -RRB-_-RRB- and_CC thus_RB to_TO better_JJR isolate_VB the_DT performance_NN and_CC effectiveness_NN of_IN the_DT estimation_NN and_CC decision-making_JJ mechanisms_NNS ._.
+The_DT distribution_NN functions_NNS used_VBN in_IN the_DT experiments_NNS -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, the_DT distribution_NN functions_VBZ assigned_VBN to_TO each_DT user_NN in_IN the_DT simulated_JJ environment_NN -RRB-_-RRB- are_VBP multi-rectangular_JJ shaped_VBN ._.
+This_DT type_NN of_IN function_NN is_VBZ ideal_JJ for_IN representing_VBG empirical_JJ distribution_NN functions_NNS ._.
+It_PRP is_VBZ composed_VBN of_IN k_NN rectangles_NNS ,_, where_WRB each_DT rectangle_NN i_FW is_VBZ defined_VBN over_IN the_DT interval_NN -LRB-_-LRB- xi1_NN ,_, xi_NN -RRB-_-RRB- ,_, and_CC represents_VBZ a_DT probability_NN pi_NN ,_, -LRB-_-LRB- Pk_NN i_FW =_JJ #_# pi_NN =_JJ #_# -RRB-_-RRB- ._.
+For_IN any_DT value_NN x_NN in_IN rectangle_NN i_FW ,_, we_PRP can_MD formulate_VB F_NN -LRB-_-LRB- x_NN -RRB-_-RRB- and_CC f_FW -LRB-_-LRB- x_NN -RRB-_-RRB- as_IN :_: f_LS -LRB-_-LRB- x_NN -RRB-_-RRB- =_JJ pi_NN xi_NN xi1_NN F_NN -LRB-_-LRB- x_NN -RRB-_-RRB- =_JJ i1X_NN j_NN =_JJ #_# pj_NN +_CC -LRB-_-LRB- x_CC xi1_NN -RRB-_-RRB- pi_NN xi_NN xi1_NN -LRB-_-LRB- #_# -RRB-_-RRB- For_IN example_NN ,_, the_DT multi-rectangular_JJ function_NN in_IN Figure_NNP #_# depicts_VBZ a_DT possible_JJ interruption_NN cost_NN distribution_NN for_IN a_DT specific_JJ user_NN ._.
+Each_DT rectangle_NN is_VBZ associated_VBN with_IN one_CD of_IN the_DT user_NN ''_'' s_NNS typical_JJ activities_NNS ,_, characterized_VBN by_IN a_DT set_NN of_IN typical_JJ interruption_NN costs_NNS ._.
+-LRB-_-LRB- We_PRP assume_VBP the_DT distribution_NN of_IN cost_NN within_IN each_DT activity_NN is_VBZ uniform_JJ ._. -RRB-_-RRB-
+The_DT rectangular_JJ area_NN represents_VBZ the_DT probability_NN of_IN the_DT user_NN being_VBG engaged_VBN in_IN this_DT type_NN of_IN activity_NN when_WRB she_PRP is_VBZ randomly_RB interrupted_JJ ._.
+Any_DT overlap_VBP between_IN the_DT interruption_NN costs_NNS of_IN two_CD or_CC more_JJR activities_NNS results_VBZ in_IN a_DT new_JJ rectangle_NN for_IN the_DT overlapped_JJ interval_NN ._.
+The_DT user_NN associated_VBN with_IN the_DT above_JJ distribution_NN function_NN spends_VBZ most_JJS of_IN her_PRP$ time_NN in_IN reporting_NN -LRB-_-LRB- notice_NN that_IN this_DT is_VBZ the_DT largest_JJS rectangle_NN in_IN terms_NNS of_IN area_NN -RRB-_-RRB- ,_, an_DT activity_NN associated_VBN with_IN a_DT relatively_RB high_JJ cost_NN of_IN interruption_NN ._.
+The_DT user_NN also_RB spends_VBZ a_DT large_JJ portion_NN of_IN her_PRP$ time_NN in_IN planning_NN -LRB-_-LRB- associated_VBN with_IN a_DT very_RB high_JJ cost_NN of_IN interruption_NN -RRB-_-RRB- ,_, monitoring_VBG his_PRP$ team_NN -LRB-_-LRB- with_IN a_DT relatively_RB small_JJ interruption_NN cost_NN -RRB-_-RRB- and_CC receiving_VBG reports_NNS -LRB-_-LRB- mid-level_JJ cost_NN of_IN interruption_NN -RRB-_-RRB- ._.
+The_DT user_NN spends_VBZ a_DT relatively_RB small_JJ portion_NN of_IN her_PRP$ time_NN in_IN scouting_VBG the_DT enemy_NN -LRB-_-LRB- associated_VBN with_IN relatively_RB high_JJ interruption_NN cost_NN -RRB-_-RRB- and_CC resting_VBG ._.
+Figure_NNP #_# :_: Representing_VBG interruption_NN cost_NN distribution_NN using_VBG a_DT multi-rectangular_JJ function_NN Multi-rectangular_JJ functions_NNS are_VBP modular_JJ and_CC allow_VB the_DT representation_NN of_IN any_DT distribution_NN shape_NN by_IN controlling_VBG the_DT number_NN and_CC dimensions_NNS of_IN the_DT rectangles_NNS used_VBN ._.
+Furthermore_RB ,_, these_DT functions_NNS have_VBP computational_JJ advantages_NNS ,_, mostly_RB due_JJ to_TO the_DT ability_NN to_TO re-use_VB many_JJ of_IN their_PRP$ components_NNS when_WRB calculating_VBG the_DT optimal_JJ reservation_NN value_NN in_IN economical_JJ search_NN models_NNS ._.
+They_PRP also_RB fit_VBP well_RB the_DT parameters_NNS the_DT CA_NNP is_VBZ trying_VBG to_TO estimate_VB in_IN fast-paced_JJ domains_NNS ,_, because_IN these_DT parameters_NNS are_VBP mostly_RB influenced_VBN by_IN activities_NNS in_IN which_WDT the_DT user_NN is_VBZ engaged_VBN ._.
+The_DT testbed_JJ system_NN enabled_VBD us_PRP to_TO define_VB either_CC hand-crafted_JJ or_CC automatically_RB generated_VBN multi-rectangular_JJ distribution_NN functions_NNS ._.
+At_IN each_DT step_NN of_IN a_DT simulation_NN ,_, each_DT of_IN the_DT CAs_NNS samples_NNS its_PRP$ owner_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, all_DT CAs_NNS in_IN the_DT system_NN collect_VB data_NNS at_IN a_DT similar_JJ rate_NN -RRB-_-RRB- and_CC then_RB estimates_VBZ the_DT parameter_NN -LRB-_-LRB- either_CC the_DT expected_VBN cost_NN when_WRB using_VBG the_DT sequential_JJ interruption_NN technique_NN described_VBN in_IN Section_NN #_# or_CC the_DT probability_NN that_IN the_DT owner_NN will_MD have_VB the_DT required_VBN information_NN -RRB-_-RRB- using_VBG one_CD of_IN the_DT following_VBG methods_NNS :_: -LRB-_-LRB- a_LS -RRB-_-RRB- relying_VBG solely_RB on_IN direct_JJ observation_NN -LRB-_-LRB- self-learning_NN -RRB-_-RRB- data_NNS ;_: -LRB-_-LRB- b_LS -RRB-_-RRB- relying_VBG on_IN the_DT combined_JJ data_NNS of_IN all_DT other_JJ agents_NNS -LRB-_-LRB- average_NN all_DT -RRB-_-RRB- ;_: and_CC ,_, -LRB-_-LRB- c_NN -RRB-_-RRB- relying_VBG on_IN its_PRP$ own_JJ data_NNS and_CC selective_JJ portions_NNS of_IN the_DT other_JJ agents_NNS ''_'' data_NNS based_VBN on_IN the_DT selective-sharing_JJ mechanism_NN described_VBN in_IN Section_NN #_# ._.
+5_CD ._.
+RESULTS_NNS We_PRP present_VBP the_DT results_NNS in_IN two_CD parts_NNS :_: -LRB-_-LRB- #_# -RRB-_-RRB- using_VBG a_DT specific_JJ sample_NN environment_NN for_IN illustrating_VBG the_DT basic_JJ behavior_NN of_IN the_DT selectivesharing_NN mechanism_NN ;_: and_CC -LRB-_-LRB- #_# -RRB-_-RRB- using_VBG general_JJ environments_NNS that_WDT were_VBD automatically_RB generated_VBN ._.
+206_CD The_DT Sixth_NNP Intl_NNP ._.
+Joint_NNP Conf_NNP ._.
+on_IN Autonomous_NNP Agents_NNPS and_CC Multi-Agent_NNP Systems_NNP -LRB-_-LRB- AAMAS_NNP ##_CD -RRB-_-RRB- 5_CD ._.
+#_# Sample_NNP Environment_NNP To_TO illustrate_VB the_DT gain_NN obtained_VBN by_IN using_VBG the_DT selective-sharing_JJ mechanism_NN ,_, we_PRP used_VBD an_DT environment_NN of_IN ##_CD agents_NNS ,_, associated_VBN with_IN #_# different_JJ interruptibility_NN cost_NN distribution_NN function_NN types_NNS ._.
+The_DT table_NN in_IN Figure_NNP #_# details_NNS the_DT division_NN of_IN the_DT ##_CD agents_NNS into_IN types_NNS ,_, the_DT dimensions_NNS of_IN the_DT rectangles_NNS that_WDT form_VBP the_DT distribution_NN functions_NNS ,_, and_CC the_DT theoretical_JJ mean_NN and_CC reservation_NN value_NN -LRB-_-LRB- RV_NN -RRB-_-RRB- -LRB-_-LRB- following_VBG Equation_NN #_# -RRB-_-RRB- with_IN a_DT cost_NN c_NN =_JJ #_# for_IN sensing_VBG the_DT interruption_NN cost_NN ._.
+Even_RB though_IN the_DT means_NNS of_IN the_DT five_CD types_NNS are_VBP relatively_RB similar_JJ ,_, the_DT use_NN of_IN a_DT reservation-value_JJ based_VBN interruption_NN strategy_NN yields_NNS relatively_RB different_JJ expected_VBN interruption_NN costs_NNS -LRB-_-LRB- RV_NN ,_, following_VBG Equation_NN #_# -RRB-_-RRB- ._.
+The_DT histogram_NN in_IN this_DT figure_NN depicts_VBZ the_DT number_NN of_IN observations_NNS obtained_VBN for_IN each_DT bin_NN of_IN size_NN #_# out_IN of_IN a_DT sample_NN of_IN ######_CD observations_NNS taken_VBN from_IN each_DT type_NN ''_'' s_NNS distribution_NN function_NN ._.
+Type_NN Agents_NNS Rect_NNP ._.
+Range_NNP prob_FW mean_VB RV_NN I_PRP #_# ,_, #_# #_# 0-20_CD #_# ._.
+##_NN ##_CD ##_NN ._.
+#_# 2_CD 20-80_CD #_# ._.
+##_NN 3_CD 80-100_CD #_# ._.
+##_NN II_CD #_# ,_, #_# ,_, #_# ,_, #_# #_# 0-40_CD #_# ._.
+##_NN ##_CD ##_NN ._.
+#_# 2_CD 40-60_CD #_# ._.
+##_NN 3_CD 60-100_CD #_# ._.
+##_NN III_CD #_# #_# 0-80_CD #_# ._.
+##_NN ##_CD ##_NN ._.
+#_# 2_CD 80-100_CD #_# ._.
+##_NN IV_CD #_# ,_, #_# #_# 0-60_CD #_# ._.
+##_NN ##_CD ##_NN ._.
+#_# 2_CD 60-90_CD #_# ._.
+##_NN V_NN ##_CD #_# 0-100_CD #_# ._.
+##_NN ##_CD ##_NN ._.
+#_# 0_CD 500_CD 1000_CD 1500_CD 2000_CD 2500_CD 1_CD #_# ##_FW ##_FW ##_FW ##_FW ##_FW ##_FW ##_FW ##_FW ##_FW ##_FW ##_FW ##_FW ##_FW type_NN I_CD type_NN II_CD type_NN III_CD type_NN IV_CD type_NN V_NN #_# ofobservations_NNS range_VBP Figure_NNP #_# :_: Users_NNS ''_'' interruptibility_NN cost_NN distribution_NN functions_NNS -LRB-_-LRB- #_# types_NNS -RRB-_-RRB- Figure_NNP #_# gives_VBZ CA_NNP performance_NN in_IN estimating_VBG the_DT expected_VBN cost_NN of_IN interruption_NN when_WRB using_VBG the_DT reservation-value_JJ based_VBN interruption_NN initiation_NN technique_NN ._.
+Each_DT graph_NN presents_VBZ the_DT average_JJ prediction_NN accuracy_NN -LRB-_-LRB- in_IN terms_NNS of_IN the_DT absolute_JJ deviation_NN from_IN the_DT theoretical_JJ value_NN ,_, so_IN the_DT lower_JJR the_DT curve_NN the_DT better_JJR the_DT performance_NN -RRB-_-RRB- of_IN a_DT different_JJ type_NN ,_, based_VBN on_IN #####_CD simulation_NN runs_NNS ._.
+The_DT three_CD curves_NNS in_IN each_DT graph_NN represent_VBP the_DT methods_NNS being_VBG compared_VBN -LRB-_-LRB- self-learning_JJ ,_, average_JJ all_DT ,_, and_CC selective-sharing_NN -RRB-_-RRB- ._.
+The_DT data_NNS is_VBZ given_VBN as_IN a_DT function_NN of_IN the_DT accumulated_VBN number_NN of_IN observations_NNS collected_VBN ._.
+The_DT sixth_JJ graph_NN in_IN the_DT figure_NN is_VBZ the_DT average_NN for_IN all_DT types_NNS ,_, weighted_JJ according_VBG to_TO the_DT number_NN of_IN agents_NNS of_IN each_DT type_NN ._.
+Similarly_RB ,_, the_DT following_VBG table_NN summarizes_VBZ the_DT overall_JJ average_JJ performance_NN in_IN terms_NNS of_IN the_DT absolute_JJ deviation_NN from_IN the_DT theoretical_JJ value_NN of_IN each_DT of_IN the_DT different_JJ methods_NNS :_: Iterations_NNS Self-Learning_JJ Averaging-All_NNP Selective-Sharing_NNP %_NN Improvement3_NN 5_CD ##_NN ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN ##_CD %_NN 15_CD ##_NN ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN ##_CD %_NN 40_CD #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN ##_CD %_NN Table_NNP #_# :_: Average_JJ absolute_JJ error_NN along_IN time_NN Several_JJ observations_NNS may_MD be_VB made_VBN from_IN Figure_NNP #_# ._.
+First_RB ,_, although_IN the_DT average-all_NN method_NN may_MD produce_VB relatively_RB good_JJ results_NNS ,_, it_PRP quickly_RB reaches_VBZ stagnation_NN ,_, while_IN the_DT other_JJ two_CD methods_NNS exhibit_VBP continuous_JJ improvement_NN as_IN a_DT function_NN of_IN the_DT amount_NN of_IN accumulated_VBN data_NNS ._.
+For_IN the_DT Figure_NNP #_# environment_NN ,_, average-all_NN is_VBZ a_DT good_JJ strategy_NN for_IN agents_NNS of_IN type_NN II_CD ,_, IV_CD and_CC V_NN ,_, because_IN the_DT theoretical_JJ reservation_NN value_NN of_IN each_DT of_IN these_DT types_NNS is_VBZ close_JJ to_TO the_DT one_CD obtained_VBN based_VBN on_IN the_DT aggregated_JJ distribution_NN function_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, ##_NN ._.
+##_NN -RRB-_-RRB- ._.
+#_# However_RB ,_, for_IN types_NNS I_CD and_CC III_CD for_IN which_WDT the_DT optimal_JJ RV_NN differs_VBZ from_IN that_IN value_NN ,_, the_DT average-all_JJ method_NN performs_VBZ significantly_RB worse_JJR ._.
+Overall_RB ,_, the_DT sixth_JJ graph_NN and_CC the_DT table_NN above_IN show_NN that_IN while_IN in_IN this_DT specific_JJ environment_NN the_DT average-all_NN method_NN works_VBZ well_RB in_IN the_DT first_JJ interactions_NNS ,_, it_PRP 3_CD The_DT improvement_NN is_VBZ measured_VBN in_IN percentages_NNS relative_JJ to_TO the_DT self-learning_NN method_NN ._.
+4_CD The_DT value_NN is_VBZ obtained_VBN by_IN constructing_VBG the_DT weighted_JJ aggregated_JJ distributed_VBN function_NN according_VBG to_TO the_DT different_JJ agents_NNS ''_'' types_NNS and_CC extracting_VBG the_DT optimal_JJ RV_NN using_VBG Equation_NN #_# ._.
+0_CD 4_CD 8_CD 12_CD 16_CD 20_CD 1_CD #_# ##_CD ##_CD ##_CD ##_CD ##_CD ##_CD Type_NN I_CD 0_CD 4_CD 8_CD 12_CD 16_CD 20_CD 1_CD #_# ##_CD ##_CD ##_CD ##_CD ##_CD ##_CD selective_JJ sharing_VBG self-learning_JJ average_NN all_DT 0_CD 4_CD 8_CD 12_CD 16_CD 20_CD 1_CD #_# ##_CD ##_CD ##_CD ##_CD ##_CD ##_CD Type_NN II_CD 0_CD 8_CD 16_CD 24_CD 32_CD 40_CD 1_CD #_# ##_CD ##_CD ##_CD ##_CD ##_CD ##_CD Type_NN III_CD 0_CD 4_CD 8_CD 12_CD 16_CD 20_CD 1_CD #_# ##_CD ##_CD ##_CD ##_CD ##_CD ##_CD Type_NN IV_CD 0_CD 4_CD 8_CD 12_CD 16_CD 20_CD 1_CD #_# ##_CD ##_CD ##_CD ##_CD ##_CD ##_CD Type_NN V_NN 0_CD 4_CD 8_CD 12_CD 16_CD 20_CD 1_CD #_# ##_CD ##_CD ##_CD ##_CD ##_CD ##_CD Weighted_NNP Average_NNP Figure_NNP #_# :_: Average_JJ absolute_JJ deviation_NN from_IN the_DT theoretical_JJ RV_NN in_IN each_DT method_NN -LRB-_-LRB- #####_CD runs_NNS -RRB-_-RRB- is_VBZ quickly_RB outperformed_VBN by_IN the_DT selective-sharing_JJ mechanism_NN ._.
+Furthermore_RB ,_, the_DT more_JJR user_NN observations_NNS the_DT agents_NNS accumulate_VBP -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, as_IN we_PRP extend_VBP the_DT horizontal_JJ axis_NN -RRB-_-RRB- ,_, the_DT better_JJR the_DT other_JJ two_CD methods_NNS are_VBP in_IN comparison_NN to_TO average-all_NN ._.
+In_IN the_DT long_JJ run_NN -LRB-_-LRB- and_CC as_IN shown_VBN in_IN the_DT following_VBG subsection_NN for_IN the_DT general_JJ case_NN -RRB-_-RRB- ,_, the_DT average-all_JJ method_NN exhibits_VBZ the_DT worst_JJS performance_NN ._.
+Second_RB ,_, the_DT selective-sharing_JJ mechanism_NN starts_VBZ with_IN a_DT significant_JJ improvement_NN in_IN comparison_NN to_TO relying_VBG on_IN the_DT agent_NN ''_'' s_NNS own_JJ observations_NNS ,_, and_CC then_RB this_DT improvement_NN gradually_RB decreases_VBZ until_IN finally_RB its_PRP$ performance_NN curve_NN coincides_VBZ with_IN the_DT self-learning_NN method_NN ''_'' s_NNS curve_NN ._.
+The_DT selective-sharing_JJ mechanism_NN performs_VBZ better_JJR or_CC worse_JJR ,_, depending_VBG on_IN the_DT type_NN ,_, because_IN the_DT Wilcoxon_NNP test_NN can_MD not_RB guarantee_VB an_DT exact_JJ identification_NN of_IN similarity_NN ;_: different_JJ combinations_NNS of_IN distribution_NN function_NN can_MD result_VB in_IN an_DT inability_NN to_TO exactly_RB identify_VB the_DT similar_JJ users_NNS for_IN some_DT of_IN the_DT specific_JJ types_NNS ._.
+For_IN example_NN ,_, for_IN type_NN I_CD agents_NNS ,_, the_DT selective-sharing_JJ mechanism_NN actually_RB performs_VBZ worse_JJR than_IN self-learning_NN in_IN the_DT short_JJ term_NN -LRB-_-LRB- in_IN the_DT long_JJ run_NN the_DT two_CD methods_NNS ''_'' performance_NN converge_VBP -RRB-_-RRB- ._.
+Nevertheless_RB ,_, for_IN the_DT other_JJ types_NNS in_IN our_PRP$ example_NN ,_, the_DT selective-sharing_JJ mechanism_NN is_VBZ the_DT most_RBS efficient_JJ one_CD ,_, and_CC outperforms_VBZ the_DT other_JJ two_CD methods_NNS overall_RB ._.
+Third_NNP ,_, it_PRP is_VBZ notable_JJ that_IN for_IN agents_NNS that_WDT have_VBP a_DT unique_JJ type_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, agent_NN III_CD -RRB-_-RRB- ,_, the_DT selective-sharing_JJ mechanism_NN quickly_RB converges_VBZ towards_IN relying_VBG on_IN self-collected_JJ data_NNS ._.
+This_DT behavior_NN guarantees_VBZ that_IN even_RB in_IN scenarios_NNS in_IN which_WDT users_NNS are_VBP completely_RB different_JJ ,_, the_DT method_NN exhibits_VBZ a_DT graceful_JJ initial_JJ degradation_NN but_CC manages_VBZ ,_, within_IN a_DT few_JJ time_NN steps_NNS ,_, to_TO adopt_VB the_DT proper_JJ behavior_NN of_IN counting_VBG exclusively_RB on_IN self-generated_JJ data_NNS ._.
+Last_JJ ,_, despite_IN the_DT difference_NN in_IN their_PRP$ overall_JJ distribution_NN function_NN ,_, agents_NNS of_IN type_NN IV_CD and_CC V_NNP exhibit_VBP similar_JJ performance_NN because_IN the_DT relevant_JJ portion_NN of_IN their_PRP$ distribution_NN functions_NNS -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, the_DT effective_JJ parts_NNS that_WDT affect_VBP the_DT RV_NN calculation_NN as_IN explained_VBN in_IN Figure_NNP #_# -RRB-_-RRB- is_VBZ identical_JJ ._.
+Thus_RB ,_, the_DT selective-sharing_JJ mechanism_NN enables_VBZ the_DT agent_NN of_IN type_NN V_NN ,_, despite_IN its_PRP$ unique_JJ distribution_NN function_NN ,_, to_TO adopt_VB relevant_JJ information_NN collected_VBN by_IN agents_NNS of_IN types_NNS IV_CD which_WDT improves_VBZ its_PRP$ estimation_NN of_IN the_DT expected_VBN interruption_NN cost_NN ._.
+5_CD ._.
+#_# General_NNP Evaluation_NN To_TO evaluate_VB selective-sharing_NN ,_, we_PRP ran_VBD a_DT series_NN of_IN simulations_NNS in_IN which_WDT the_DT environment_NN was_VBD randomly_RB generated_VBN ._.
+These_DT experiments_NNS focused_VBD on_IN the_DT CAs_NNS ''_'' estimations_NNS of_IN the_DT probability_NN that_IN the_DT user_NN would_MD have_VB the_DT required_VBN information_NN if_IN interrupted_VBN ._.
+They_PRP used_VBD a_DT multi-rectangular_JJ probability_NN distribution_NN function_NN to_TO represent_VB The_DT Sixth_NNP Intl_NNP ._.
+Joint_NNP Conf_NNP ._.
+on_IN Autonomous_NNP Agents_NNPS and_CC Multi-Agent_NNP Systems_NNP -LRB-_-LRB- AAMAS_NNP ##_CD -RRB-_-RRB- ###_VBP the_DT amount_NN of_IN communication_NN the_DT user_NN is_VBZ engaged_VBN in_IN with_IN its_PRP$ environment_NN ._.
+We_PRP models_NNS the_DT growth_NN of_IN the_DT probability_NN the_DT user_NN has_VBZ the_DT required_VBN information_NN as_IN a_DT function_NN of_IN the_DT amount_NN of_IN communication_NN using_VBG the_DT logistic_JJ function_NN ,_, #_# G_NN -LRB-_-LRB- x_NN -RRB-_-RRB- =_JJ 1_CD +_CC e_SYM x_CC 12_CD 1_CD +_CC 60e_CD x_CC 12_CD ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- The_DT expected_VBN -LRB-_-LRB- mean_NN -RRB-_-RRB- value_NN of_IN the_DT parameter_NN representing_VBG the_DT probability_NN the_DT user_NN has_VBZ the_DT required_VBN information_NN is_VBZ thus_RB =_JJ Z_NN y_NN =_JJ #_# G_NN -LRB-_-LRB- y_NN -RRB-_-RRB- f_FW -LRB-_-LRB- y_NN -RRB-_-RRB- dy_NN =_JJ kX_NN i_FW =_JJ #_# hx_NN +_CC 708ln_NN -LRB-_-LRB- ##_NN +_CC e_SYM x_CC 12_CD -RRB-_-RRB- pi_NN 60_CD -LRB-_-LRB- xi_NN xi1_NN -RRB-_-RRB- ixi_NN xi1_NN -LRB-_-LRB- #_# -RRB-_-RRB- where_WRB k_NN is_VBZ the_DT number_NN of_IN rectangles_NNS used_VBN ._.
+We_PRP ran_VBD #####_CD simulation_NN runs_NNS ._.
+For_IN each_DT simulation_NN ,_, a_DT new_JJ 20-agent_JJ environment_NN was_VBD automatically_RB generated_VBN by_IN the_DT system_NN ,_, and_CC the_DT agents_NNS were_VBD randomly_RB divided_VBN into_IN a_DT random_JJ number_NN of_IN different_JJ types_NNS ._.
+#_# For_IN each_DT type_NN ,_, a_DT random_JJ 3-rectangle_JJ distribution_NN function_NN was_VBD generated_VBN ._.
+Each_DT simulation_NN ran_VBD ##_CD time_NN steps_NNS ._.
+At_IN each_DT time_NN step_VB each_DT one_CD of_IN the_DT agents_NNS accumulated_VBN one_CD additional_JJ observation_NN ._.
+Each_DT CA_NNP calculated_VBD an_DT estimate_NN of_IN the_DT probability_NN its_PRP$ user_NN had_VBD the_DT necessary_JJ information_NN according_VBG to_TO the_DT three_CD methods_NNS ,_, and_CC the_DT absolute_JJ error_NN -LRB-_-LRB- difference_NN from_IN the_DT theoretical_JJ value_NN calculated_VBN according_VBG to_TO Equation_NN #_# -RRB-_-RRB- was_VBD recorded_VBN ._.
+The_DT following_VBG table_NN summarizes_VBZ the_DT average_JJ performance_NN of_IN the_DT three_CD mechanisms_NNS along_IN different_JJ time_NN horizons_NNS -LRB-_-LRB- measured_VBN at_IN #_# ,_, ##_NN and_CC ##_NN time_NN steps_NNS -RRB-_-RRB- :_: Iterations_NNS Self-Learning_JJ Averaging-All_NNP Selective-Sharing_NNP %_NN Improvement_NN 5_CD #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_CD ##_CD ._.
+#_# %_NN 15_CD #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_CD ##_CD ._.
+#_# %_NN 40_CD #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_CD ##_CD ._.
+#_# %_NN Table_NNP #_# :_: Average_JJ absolute_JJ error_NN along_IN time_NN steps_NNS As_IN can_MD be_VB seen_VBN in_IN the_DT table_NN above_IN ,_, the_DT proposed_VBN selective-sharing_NN method_NN outperforms_VBZ the_DT two_CD other_JJ methods_NNS over_IN any_DT execution_NN in_IN which_WDT more_JJR than_IN ##_CD observations_NNS are_VBP collected_VBN by_IN each_DT of_IN the_DT agents_NNS ._.
+As_IN in_IN the_DT sample_NN environment_NN ,_, the_DT average-all_JJ method_NN performs_VBZ well_RB in_IN the_DT initial_JJ few_JJ time_NN steps_NNS ,_, but_CC does_VBZ not_RB exhibit_VB further_JJ improvement_NN ._.
+Thus_RB ,_, the_DT more_RBR data_NNS collected_VBN ,_, the_DT greater_JJR the_DT difference_NN between_IN this_DT latter_JJ method_NN and_CC the_DT two_CD other_JJ methods_NNS ._.
+The_DT average_JJ difference_NN between_IN selective-sharing_JJ and_CC self-learning_JJ decreases_NNS as_IN more_JJR data_NNS is_VBZ collected_VBN ._.
+Finally_RB ,_, we_PRP measured_VBD the_DT effect_NN of_IN the_DT number_NN of_IN types_NNS in_IN the_DT environment_NN ._.
+For_IN this_DT purpose_NN ,_, we_PRP used_VBD the_DT same_JJ self-generation_NN method_NN ,_, but_CC controlled_VBD the_DT number_NN of_IN types_NNS generated_VBN for_IN each_DT run_NN ._.
+The_DT number_NN of_IN types_NNS is_VBZ a_DT good_JJ indication_NN for_IN the_DT level_NN of_IN heterogeneity_NN in_IN the_DT environment_NN ._.
+For_IN each_DT number_NN of_IN types_NNS ,_, we_PRP ran_VBD 10000_CD simulations_NNS ._.
+Figure_NNP #_# depicts_VBZ the_DT performance_NN of_IN the_DT different_JJ methods_NNS -LRB-_-LRB- for_IN a_DT 40-observation_JJ collection_NN period_NN for_IN each_DT agent_NN -RRB-_-RRB- ._.
+Since_IN all_DT simulation_NN runs_VBZ used_VBN for_IN generating_VBG Figure_NNP #_# are_VBP based_VBN on_IN the_DT same_JJ seed_NN ,_, the_DT performance_NN of_IN the_DT self-learning_JJ mechanism_NN is_VBZ constant_JJ regardless_RB of_IN the_DT number_NN of_IN types_NNS in_IN the_DT environment_NN ._.
+As_IN expected_VBN ,_, the_DT average-all_JJ mechanism_NN performs_VBZ best_JJS when_WRB all_DT agents_NNS are_VBP of_IN the_DT same_JJ type_NN ;_: however_RB its_PRP$ performance_NN deteriorates_VBZ as_IN the_DT number_NN of_IN types_NNS increases_NNS ._.
+Similarly_RB ,_, the_DT selective-sharing_JJ mechanism_NN exhibits_VBZ good_JJ results_NNS when_WRB all_DT agents_NNS are_VBP of_IN the_DT same_JJ type_NN ,_, and_CC as_IN the_DT number_NN of_IN types_NNS increases_NNS ,_, its_PRP$ performance_NN deteriorates_VBZ ._.
+However_RB ,_, the_DT performance_NN decrease_NN is_VBZ significantly_RB more_RBR modest_JJ in_IN comparison_NN to_TO the_DT one_CD experienced_VBN in_IN the_DT average-all_JJ mechanism_NN ._.
+5_CD The_DT specific_JJ coefficients_NNS used_VBN guarantee_VBP an_DT S-like_JJ curve_NN of_IN growth_NN ,_, along_IN the_DT interval_NN -LRB-_-LRB- #_# ,_, ###_CD -RRB-_-RRB- ,_, where_WRB the_DT initial_JJ stage_NN of_IN growth_NN is_VBZ approximately_RB exponential_JJ ,_, followed_VBN by_IN asymptotically_RB slowing_VBG growth_NN ._.
+6_CD In_IN this_DT suggested_VBN environment-generation_NN scheme_NN there_EX is_VBZ no_DT guarantee_NN that_IN every_DT agent_NN will_MD have_VB a_DT potential_JJ similar_JJ agent_NN to_TO share_VB information_NN with_IN ._.
+In_IN those_DT non-rare_JJ scenarios_NNS where_WRB the_DT CA_NNP is_VBZ the_DT only_RB one_CD of_IN its_PRP$ type_NN ,_, it_PRP will_MD rapidly_RB need_VB to_TO stop_VB relying_VBG on_IN others_NNS ._.
+0_CD 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+#_# 0_CD ._.
+##_NN 0_CD ._.
+##_NN 1_CD #_# #_# #_# #_# Self_NN Learning_NNP Average_NNP All_NNP Selective_JJ Sharing_VBG number_NN of_IN types_NNS averageabsoluteerror_JJ Figure_NN #_# :_: Average_JJ absolute_JJ deviation_NN from_IN actual_JJ value_NN in_IN ##_JJ agent_NN scenarios_NNS as_IN a_DT function_NN of_IN the_DT agents_NNS ''_'' heterogeneity_NN level_NN Overall_RB ,_, the_DT selective-sharing_JJ mechanism_NN outperforms_VBZ both_CC other_JJ methods_NNS for_IN any_DT number_NN of_IN types_NNS greater_JJR than_IN one_CD ._.
+6_CD ._.
+RELATED_JJ WORK_VBP In_IN addition_NN to_TO the_DT interruption_NN management_NN literature_NN reviewed_VBN in_IN Section_NN #_# ,_, several_JJ other_JJ areas_NNS of_IN prior_JJ work_NN are_VBP relevant_JJ to_TO the_DT selective-sharing_JJ mechanism_NN described_VBN in_IN this_DT paper_NN ._.
+Collaborative_JJ filtering_VBG ,_, which_WDT makes_VBZ predictions_NNS -LRB-_-LRB- filtering_VBG -RRB-_-RRB- about_IN the_DT interests_NNS of_IN a_DT user_NN -LSB-_-LRB- #_# -RSB-_-RRB- ,_, operates_VBZ similarly_RB to_TO selective-sharing_NN ._.
+However_RB ,_, collaborative_JJ filtering_VBG systems_NNS exhibit_VBP poor_JJ performance_NN when_WRB there_EX is_VBZ not_RB sufficient_JJ information_NN about_IN the_DT users_NNS and_CC when_WRB there_EX is_VBZ not_RB sufficient_JJ information_NN about_IN a_DT new_JJ user_NN whose_WP$ taste_VBP the_DT system_NN attempts_VBZ to_TO predict_VB -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+Selective-sharing_JJ relies_VBZ on_IN the_DT ability_NN to_TO find_VB similarity_NN between_IN specific_JJ parts_NNS of_IN the_DT probability_NN distribution_NN function_NN associated_VBN with_IN a_DT characteristic_NN of_IN different_JJ users_NNS ._.
+This_DT capability_NN is_VBZ closely_RB related_JJ to_TO clustering_NN and_CC classification_NN ,_, an_DT area_NN widely_RB studied_VBN in_IN machine_NN learning_NN ._.
+Given_VBN space_NN considerations_NNS ,_, our_PRP$ review_NN of_IN this_DT area_NN is_VBZ restricted_JJ to_TO some_DT representative_JJ approaches_NNS for_IN clustering_NN ._.
+In_IN spite_NN of_IN the_DT richness_NN of_IN available_JJ clustering_NN algorithms_NNS -LRB-_-LRB- such_JJ as_IN the_DT famous_JJ K-means_JJ clustering_NN algorithm_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, hierarchical_JJ methods_NNS ,_, Bayesian_JJ classifiers_NNS -LSB-_-LRB- #_# -RSB-_-RRB- ,_, and_CC maximum_NN entropy_NN -RRB-_-RRB- ,_, various_JJ characteristics_NNS of_IN fast-paced_JJ domains_NNS do_VBP not_RB align_VB well_RB with_IN the_DT features_NNS of_IN attributesbased_JJ clustering_NN mechanisms_NNS ,_, suggesting_VBG these_DT mechanisms_NNS would_MD not_RB perform_VB well_RB in_IN such_JJ domains_NNS ._.
+Of_IN particular_JJ importance_NN is_VBZ that_IN the_DT CA_NNP needs_VBZ to_TO find_VB similarity_NN between_IN functions_NNS ,_, defined_VBN over_IN a_DT continuous_JJ interval_NN ,_, with_IN no_DT distinct_JJ pre-defined_JJ attributes_NNS ._.
+An_DT additional_JJ difficulty_NN is_VBZ defining_VBG the_DT distance_NN measure_NN ._.
+Many_JJ clustering_NN techniques_NNS have_VBP been_VBN used_VBN in_IN data_NNS mining_NN -LSB-_-LRB- #_# -RSB-_-RRB- ,_, with_IN particular_JJ focus_NN on_IN incremental_JJ updates_NNS of_IN the_DT clustering_NN ,_, due_JJ to_TO the_DT very_RB large_JJ size_NN of_IN the_DT databases_NNS -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+However_RB the_DT applicability_NN of_IN these_DT to_TO fast-paced_JJ domains_NNS is_VBZ quite_RB limited_JJ because_IN they_PRP rely_VBP on_IN a_DT large_JJ set_NN of_IN existing_VBG data_NNS ._.
+Similarly_RB ,_, clustering_NN algorithms_NNS designed_VBN for_IN the_DT task_NN of_IN class_NN identification_NN in_IN spatial_JJ databases_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, relying_VBG on_IN a_DT density-based_JJ notion_NN -LSB-_-LRB- #_# -RSB-_-RRB- -RRB-_-RRB- are_VBP not_RB useful_JJ for_IN our_PRP$ case_NN ,_, because_IN our_PRP$ data_NNS has_VBZ no_DT spatial_JJ attributes_NNS ._.
+The_DT most_RBS relevant_JJ method_NN for_IN our_PRP$ purposes_NNS is_VBZ the_DT Kullback-Leibler_NN relative_JJ entropy_JJ index_NN that_WDT is_VBZ used_VBN in_IN probability_NN theory_NN and_CC information_NN theory_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+This_DT measure_NN ,_, which_WDT can_MD also_RB be_VB applied_VBN on_IN continuous_JJ random_JJ variables_NNS ,_, relies_VBZ on_IN a_DT natural_JJ distance_NN measure_NN from_IN a_DT true_JJ probability_NN distribution_NN -LRB-_-LRB- either_CC observation-based_JJ or_CC calculated_VBN -RRB-_-RRB- to_TO an_DT arbitrary_JJ probability_NN distribution_NN ._.
+However_RB ,_, the_DT method_NN will_MD perform_VB poorly_RB in_IN scenarios_NNS in_IN which_WDT the_DT functions_NNS alternate_JJ between_IN different_JJ levels_NNS while_IN keeping_VBG the_DT general_JJ structure_NN and_CC moments_NNS ._.
+For_IN example_NN ,_, consider_VB the_DT two_CD functions_NNS f_LS -LRB-_-LRB- x_NN -RRB-_-RRB- =_JJ -LRB-_-LRB- x_CC mod2_NN -RRB-_-RRB- /_: ###_CD and_CC g_NN -LRB-_-LRB- x_NN -RRB-_-RRB- =_JJ -LRB-_-LRB- x_CC mod2_NN -RRB-_-RRB- /_: ###_CD defined_VBN over_IN the_DT interval_NN -LRB-_-LRB- #_# ,_, ###_CD -RRB-_-RRB- ._.
+While_IN these_DT two_CD functions_NNS are_VBP associated_VBN with_IN almost_RB identical_JJ reservation_NN values_NNS -LRB-_-LRB- for_IN any_DT sampling_NN cost_NN -RRB-_-RRB- and_CC mean_VB ,_, the_DT Kullback-Leibler_NNP method_NN will_MD assign_VB a_DT poor_JJ correlation_NN between_IN 208_CD The_DT Sixth_NNP Intl_NNP ._.
+Joint_NNP Conf_NNP ._.
+on_IN Autonomous_NNP Agents_NNPS and_CC Multi-Agent_NNP Systems_NNP -LRB-_-LRB- AAMAS_NNP ##_CD -RRB-_-RRB- them_PRP ,_, while_IN our_PRP$ Wilcoxon-based_JJ approach_NN will_MD give_VB them_PRP the_DT highest_JJS rank_NN in_IN terms_NNS of_IN similarity_NN ._.
+While_IN the_DT Wilcoxon_NNP test_NN is_VBZ a_DT widely_RB used_VBN statistical_JJ procedure_NN -LSB-_-LRB- ##_CD ,_, ##_CD -RSB-_-RRB- ,_, it_PRP is_VBZ usually_RB used_VBN for_IN comparing_VBG two_CD sets_NNS of_IN single-variate_JJ data_NNS ._.
+To_TO our_PRP$ knowledge_NN ,_, no_DT attempt_NN has_VBZ been_VBN made_VBN yet_RB to_TO extend_VB its_PRP$ properties_NNS as_IN an_DT infrastructure_NN for_IN determining_VBG with_IN whom_WP and_CC to_TO what_WP extent_NN information_NN should_MD be_VB shared_VBN ,_, as_IN presented_VBN in_IN this_DT paper_NN ._.
+Typical_JJ use_NN of_IN this_DT non-parametric_JJ tool_NN includes_VBZ detection_NN of_IN rare_JJ events_NNS in_IN time_NN series_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, a_DT hard_JJ drive_NN failure_NN prediction_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- -RRB-_-RRB- and_CC bioinformatics_NNS applications_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, finding_VBG informative_JJ genes_NNS from_IN microarray_NN data_NNS -RRB-_-RRB- ._.
+In_IN these_DT applications_NNS ,_, it_PRP is_VBZ used_VBN primarily_RB as_IN an_DT identification_NN tool_NN and_CC ranking_JJ criterion_NN ._.
+7_CD ._.
+DISCUSSION_NN AND_CC CONCLUSIONS_NNS The_DT selective-sharing_JJ mechanism_NN presented_VBN in_IN this_DT paper_NN does_VBZ not_RB make_VB any_DT assumptions_NNS about_IN the_DT format_NN of_IN the_DT data_NNS used_VBN or_CC about_IN the_DT structure_NN of_IN the_DT distribution_NN function_NN of_IN the_DT parameter_NN to_TO be_VB estimated_VBN ._.
+It_PRP is_VBZ computationally_RB lightweight_JJ and_CC very_RB simple_JJ to_TO execute_VB ._.
+Selective-sharing_NN allows_VBZ an_DT agent_NN to_TO benefit_VB from_IN other_JJ agents_NNS ''_'' observations_NNS in_IN scenarios_NNS in_IN which_WDT data_NNS sources_NNS of_IN the_DT same_JJ type_NN are_VBP available_JJ ._.
+It_PRP also_RB guarantees_VBZ ,_, as_IN a_DT fallback_NN ,_, performance_NN equivalent_NN to_TO that_DT of_IN a_DT self-learner_NN when_WRB the_DT information_NN source_NN is_VBZ unique_JJ ._.
+Furthermore_RB ,_, selective-sharing_NN does_VBZ not_RB require_VB any_DT prior_JJ knowledge_NN about_IN the_DT types_NNS of_IN information_NN sources_NNS available_JJ in_IN the_DT environment_NN or_CC of_IN the_DT number_NN of_IN agents_NNS associated_VBN with_IN each_DT type_NN ._.
+The_DT results_NNS of_IN our_PRP$ simulations_NNS demonstrate_VBP the_DT selective-sharing_JJ mechanism_NN ''_'' s_NNS effectiveness_NN in_IN improving_VBG the_DT estimation_NN produced_VBD for_IN probabilistic_JJ parameters_NNS based_VBN on_IN a_DT limited_JJ set_NN of_IN observations_NNS ._.
+Furthermore_RB ,_, most_JJS of_IN the_DT improvement_NN is_VBZ achieved_VBN in_IN initial_JJ interactions_NNS ,_, which_WDT is_VBZ of_IN great_JJ importance_NN for_IN agents_NNS operating_VBG in_IN fast-paced_JJ environments_NNS ._.
+Although_IN we_PRP tested_VBD the_DT selective-sharing_JJ mechanism_NN in_IN the_DT context_NN of_IN the_DT Coordinators_NNPS project_NN ,_, it_PRP is_VBZ applicable_JJ in_IN any_DT MAS_NN environment_NN having_VBG the_DT characteristics_NNS of_IN a_DT fast-paced_JJ environment_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, rescue_NN environments_NNS -RRB-_-RRB- ._.
+Evidence_NN for_IN its_PRP$ general_JJ effectiveness_NN is_VBZ given_VBN in_IN the_DT general_JJ evaluation_NN section_NN ,_, where_WRB environments_NNS were_VBD continuously_RB randomly_RB generated_VBN ._.
+The_DT Wilcoxon_NNP statistic_NN used_VBN as_IN described_VBN in_IN this_DT paper_NN to_TO provide_VB a_DT classifier_NN for_IN similarity_NN between_IN users_NNS provides_VBZ high_JJ flexibility_NN with_IN low_JJ computational_JJ costs_NNS and_CC is_VBZ applicable_JJ for_IN any_DT characteristic_JJ being_VBG learned_VBN ._.
+Its_PRP$ use_NN provides_VBZ a_DT good_JJ measure_NN of_IN similarity_NN which_WDT an_DT agent_NN can_MD use_VB to_TO decide_VB how_WRB much_JJ external_JJ information_NN to_TO adopt_VB for_IN its_PRP$ assessments_NNS ._.
+8_CD ._.
+ACKNOWLEDGEMENT_NN The_DT research_NN reported_VBN in_IN this_DT paper_NN was_VBD supported_VBN in_IN part_NN by_IN contract_NN number_NN 55-000720_CD ,_, a_DT subcontract_JJ to_TO SRI_NN International_NN ''_'' s_NNS DARPA_NNP Contract_NNP No_NNP ._.
+FA8750-05-C-0033_NN ._.
+Any_DT opinions_NNS ,_, findings_NNS and_CC conclusions_NNS ,_, or_CC recommendations_NNS expressed_VBN in_IN this_DT material_NN are_VBP those_DT of_IN the_DT authors_NNS and_CC do_VBP not_RB necessarily_RB reflect_VB the_DT views_NNS of_IN DARPA_NNP or_CC the_DT U_NNP ._.
+S_NN ._.
+Government_NN ._.
+We_PRP are_VBP grateful_JJ to_TO an_DT anonymous_JJ AAMAS_NNP reviewer_NN for_IN an_DT exceptionally_RB comprehensive_JJ review_NN of_IN this_DT paper_NN ._.
+9_CD ._.
+REFERENCES_NNS -LSB-_-LRB- #_# -RSB-_-RRB- P_NN ._.
+Adamczyk_NNP ,_, S_NN ._.
+Iqbal_NNP ,_, and_CC B_NN ._.
+Bailey_NNP ._.
+A_DT method_NN ,_, system_NN ,_, and_CC tools_NNS for_IN intelligent_JJ interruption_NN management_NN ._.
+In_IN TAMODIA_NN ''_'' ##_NN ,_, pages_NNS 123-126_CD ,_, New_NNP York_NNP ,_, NY_NNP ,_, USA_NNP ,_, ####_CD ._.
+ACM_NNP Press_NNP ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- P_NN ._.
+Berkhin_NNP ._.
+Survey_NN of_IN clustering_NN data_NNS mining_NN techniques_NNS ._.
+Technical_NNP report_NN ,_, Accrue_NNP Software_NNP ,_, San_NNP Jose_NNP ,_, CA_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- M_NN ._.
+Ester_NN ,_, H_NN ._.
+Kriegel_NNP ,_, J_NNP ._.
+Sander_NNP ,_, M_NN ._.
+Wimmer_NNP ,_, and_CC X_NN ._.
+Xu_NNP ._.
+Incremental_JJ clustering_NN for_IN mining_NN in_IN a_DT data_NN warehousing_NN environment_NN ._.
+In_IN Proc_NNP ._.
+24th_JJ Int_NN ._.
+Conf_NNP ._.
+Very_RB Large_JJ Data_NNS Bases_NNS ,_, VLDB_NN ,_, pages_NNS 323-333_CD ,_, 24-27_CD ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- M_NN ._.
+Ester_NN ,_, H_NN ._.
+Kriegel_NNP ,_, J_NNP ._.
+Sander_NNP ,_, and_CC X_NN ._.
+Xu_NNP ._.
+A_DT density-based_JJ algorithm_NN for_IN discovering_VBG clusters_NNS in_IN large_JJ spatial_JJ databases_NNS with_IN noise_NN ._.
+In_IN KDD-96_NN ,_, pages_NNS 226-231_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- M_NN ._.
+Fleming_NNP and_CC R_NN ._.
+Cohen_NNP ._.
+A_DT decision_NN procedure_NN for_IN autonomous_JJ agents_NNS to_TO reason_NN about_IN interaction_NN with_IN humans_NNS ._.
+In_IN AAAI_NNP Spring_NNP Symp_NNP ._.
+on_IN Interaction_NN between_IN Humans_NNS and_CC Autonomous_NNP Systems_NNPS over_IN Extended_NNP Operation_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- N_NN ._.
+Friedman_NNP ,_, D_NNP ._.
+Geiger_NNP ,_, and_CC M_NN ._.
+Goldszmidt_NNP ._.
+Bayesian_JJ network_NN classifiers_NNS ._.
+Machine_NN Learning_NNP ,_, ##_CD :_: 131-163_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- N_NN ._.
+Good_JJ ,_, J_NN ._.
+Ben_NNP Schafer_NNP ,_, J_NNP ._.
+Konstan_NNP ,_, A_NNP ._.
+Borchers_NNP ,_, B_NN ._.
+Sarwar_NNP ,_, J_NNP ._.
+Herlocker_NNP ,_, and_CC J_NN ._.
+Riedl_NNP ._.
+Combining_VBG collaborative_JJ filtering_VBG with_IN personal_JJ agents_NNS for_IN better_JJR recommendations_NNS ._.
+In_IN AAAI_NNP /_: IAAI_NNP ,_, pages_NNS 439-446_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- K_NNP ._.
+Hinckley_NNP ,_, J_NNP ._.
+Pierce_NNP ,_, M_NN ._.
+Sinclair_NNP ,_, and_CC E_NN ._.
+Horvitz_NNP ._.
+Sensing_VBG techniques_NNS for_IN mobile_JJ interaction_NN ._.
+In_IN UIST_NNP ''_'' ##_NN ,_, pages_NNS 91-100_CD ,_, New_NNP York_NNP ,_, NY_NNP ,_, USA_NNP ,_, ####_CD ._.
+ACM_NNP Press_NNP ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- E_NN ._.
+Horvitz_NNP ,_, C_NNP ._.
+Kadie_NNP ,_, T_NN ._.
+Paek_NNP ,_, and_CC D_NN ._.
+Hovel_NNP ._.
+Models_NNS of_IN attention_NN in_IN computing_NN and_CC communication_NN :_: from_IN principles_NNS to_TO applications_NNS ._.
+Commun_NNP ._.
+ACM_NNP ,_, ##_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 52-59_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- B_NN ._.
+Hui_NNP and_CC C_NNP ._.
+Boutilier_NNP ._.
+Who_WP ''_'' s_VBZ asking_VBG for_IN help_NN ?_.
+:_: a_DT bayesian_JJ approach_NN to_TO intelligent_JJ assistance_NN ._.
+In_IN IUI_NN ''_'' ##_NN ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+Jang_NNP ,_, C_NNP ._.
+Sun_NNP ,_, and_CC E_NN ._.
+Mizutani_NNP ._.
+Neuro-Fuzzy_NNP and_CC Soft_NNP Computing_NNP A_NNP Computational_NNP Approach_NNP to_TO Learning_NNP and_CC Machine_NNP Intelligence_NNP ._.
+Prentice_NNP Hall_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- S_NN ._.
+Kullback_NN and_CC R_NN ._.
+Leibler_NNP ._.
+On_IN information_NN and_CC sufficiency_NN ._.
+Ann_NNP ._.
+Math_NNP ._.
+Statist_NNP ._.
+,_, ##_CD :_: 79-86_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- P_NN ._.
+Maglio_NNP ,_, T_NN ._.
+Matlock_NNP ,_, C_NNP ._.
+Campbell_NNP ,_, S_NN ._.
+Zhai_NNP ,_, and_CC B_NN ._.
+Smith_NNP ._.
+Gaze_NN and_CC speech_NN in_IN attentive_JJ user_NN interfaces_NNS ._.
+In_IN ICMI_NN ,_, pages_NNS 1-7_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- H_NN ._.
+Mann_NNP and_CC D_NNP ._.
+Whitney_NNP ._.
+On_IN a_DT test_NN of_IN whether_IN one_CD of_IN #_# random_JJ variables_NNS is_VBZ stochastically_RB larger_JJR than_IN the_DT other_JJ ._.
+Annals_NNS of_IN Mathematical_JJ Statistics_NNPS ,_, ##_CD :_: 50-60_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- W_NN ._.
+McClure_NNP ._.
+Technology_NN and_CC command_NN :_: Implications_NNS for_IN military_JJ operations_NNS in_IN the_DT twenty-first_JJ century_NN ._.
+Maxwell_NNP Air_NNP Force_NNP Base_NNP ,_, Center_NNP for_IN Strategy_NNP and_CC Technology_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+McMillan_NNP and_CC M_NN ._.
+Rothschild_NNP ._.
+Search_VB ._.
+In_IN Robert_NNP J_NNP ._.
+Aumann_NNP and_CC Amsterdam_NNP Sergiu_NNP Hart_NNP ,_, editors_NNS ,_, Handbook_NN of_IN Game_NNP Theory_NNP with_IN Economic_NNP Applications_NNS ,_, pages_NNS 905-927_CD ._.
+####_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+Murray_NNP ,_, G_NNP ._.
+Hughes_NNP ,_, and_CC K_NN ._.
+Kreutz-Delgado_NNP ._.
+Machine_NN learning_NN methods_NNS for_IN predicting_VBG failures_NNS in_IN hard_JJ drives_NNS :_: A_DT multiple-instance_JJ application_NN ._.
+J_NN ._.
+Mach_NNP ._.
+Learn_VB ._.
+Res_NNP ._.
+,_, 6_CD :_: 783-816_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- D_NN ._.
+Sarne_NNP and_CC B_NNP ._.
+J_NN ._.
+Grosz_NNP ._.
+Estimating_VBG information_NN value_NN in_IN collaborative_JJ multi-agent_JJ planning_NN systems_NNS ._.
+In_IN AAMAS_NNP ''_'' ##_NN ,_, page_NN -LRB-_-LRB- to_TO appear_VB -RRB-_-RRB- ,_, ####_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- D_NN ._.
+Sarne_NNP and_CC B_NNP ._.
+J_NN ._.
+Grosz_NNP ._.
+Timing_NN interruptions_NNS for_IN better_JJR human-computer_NN coordinated_VBN planning_NN ._.
+In_IN AAAI_NNP Spring_NNP Symp_NNP ._.
+on_IN Distributed_VBN Plan_NN and_CC Schedule_VB Management_NN ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- R_NN ._.
+Vertegaal_NNP ._.
+The_DT GAZE_NN groupware_NN system_NN :_: Mediating_VBG joint_JJ attention_NN in_IN multiparty_JJ communication_NN and_CC collaboration_NN ._.
+In_IN CHI_NNP ,_, pages_NNS 294-301_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- T_NN ._.
+Wagner_NNP ,_, J_NNP ._.
+Phelps_NNP ,_, V_NNP ._.
+Guralnik_NNP ,_, and_CC R_NN ._.
+VanRiper_NNP ._.
+An_DT application_NN view_NN of_IN coordinators_NNS :_: Coordination_NN managers_NNS for_IN first_JJ responders_NNS ._.
+In_IN AAAI_NNP ,_, pages_NNS 908-915_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- F_NN Wilcoxon_NNP ._.
+Individual_JJ comparisons_NNS by_IN ranking_VBG methods_NNS ._.
+Biometrics_NNS ,_, #_# :_: 80-83_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- D_NN ._.
+Zeng_NNP and_CC K_NNP ._.
+Sycara_NNP ._.
+Bayesian_JJ learning_NN in_IN negotiation_NN ._.
+In_IN AAAI_NNP Symposium_NNP on_IN Adaptation_NNP ,_, Co-evolution_NN and_CC Learning_NNP in_IN Multiagent_NNP Systems_NNPS ,_, pages_NNS 99-104_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Y_NN ._.
+Zhang_NNP ,_, K_NNP ._.
+Biggers_NNP ,_, L_NNP ._.
+He_PRP ,_, S_NN ._.
+Reddy_NNP ,_, D_NNP ._.
+Sepulvado_NNP ,_, J_NNP ._.
+Yen_NN ,_, and_CC T_NN ._.
+Ioerger_NNP ._.
+A_DT distributed_VBN intelligent_JJ agent_NN architecture_NN for_IN simulating_VBG aggregate-level_JJ behavior_NN and_CC interactions_NNS on_IN the_DT battlefield_NN ._.
+In_IN SCI-2001_NN ,_, pages_NNS 58-63_CD ,_, ####_CD ._.
+The_DT Sixth_NNP Intl_NNP ._.
+Joint_NNP Conf_NNP ._.
+on_IN Autonomous_NNP Agents_NNPS and_CC Multi-Agent_NNP Systems_NNP -LRB-_-LRB- AAMAS_NNP ##_CD -RRB-_-RRB- ###_CD

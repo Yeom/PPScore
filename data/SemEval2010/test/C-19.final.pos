@@ -1,0 +1,408 @@
+Service_NNP Interface_NNP :_: A_NNP New_NNP Abstraction_NNP for_IN Implementing_NNP and_CC Composing_NNP Protocols_NNP Olivier_NNP Rutti_NNP Pawe_NNP T_NN ._.
+Wojciechowski_NNP Andre_NNP Schiper_NNP Ecole_NNP Polytechnique_NNP Federale_NNP de_IN Lausanne_NNP -LRB-_-LRB- EPFL_NNP -RRB-_-RRB- 1015_CD Lausanne_NNP ,_, Switzerland_NNP -LCB-_-LRB- Olivier_NNP ._.
+Rutti_NNP ,_, Pawel_NNP ._.
+Wojciechowski_NNP ,_, Andre_NNP ._.
+Schiper_NNP -RCB-_-RRB- @_SYM epfl_FW ._.
+ch_NN ABSTRACT_NN In_IN this_DT paper_NN we_PRP compare_VBP two_CD approaches_NNS to_TO the_DT design_NN of_IN protocol_NN frameworks_NNS -_: tools_NNS for_IN implementing_VBG modular_JJ network_NN protocols_NNS ._.
+The_DT most_RBS common_JJ approach_NN uses_VBZ events_NNS as_IN the_DT main_JJ abstraction_NN for_IN a_DT local_JJ interaction_NN between_IN protocol_NN modules_NNS ._.
+We_PRP argue_VBP that_IN an_DT alternative_JJ approach_NN ,_, that_WDT is_VBZ based_VBN on_IN service_NN abstraction_NN ,_, is_VBZ more_RBR suitable_JJ for_IN expressing_VBG modular_JJ protocols_NNS ._.
+It_PRP also_RB facilitates_VBZ advanced_JJ features_NNS in_IN the_DT design_NN of_IN protocols_NNS ,_, such_JJ as_IN dynamic_JJ update_VBP of_IN distributed_VBN protocols_NNS ._.
+We_PRP then_RB describe_VBP an_DT experimental_JJ implementation_NN of_IN a_DT service-based_JJ protocol_NN framework_NN in_IN Java_NNP ._.
+Categories_NNS and_CC Subject_NNP Descriptors_NNPS C_NNP ._.
+#_# ._.
+#_# -LSB-_-LRB- Computer-Communication_NNP Networks_NNP -RSB-_-RRB- :_: Distributed_VBN Applications_NNS 1_CD ._.
+INTRODUCTION_NN Protocol_NNP frameworks_NNS ,_, such_JJ Cactus_NN -LSB-_-LRB- #_# ,_, #_# -RSB-_-RRB- ,_, Appia_NN -LSB-_-LRB- #_# ,_, ##_NN -RSB-_-RRB- ,_, Ensemble_NN -LSB-_-LRB- ##_CD ,_, ##_CD -RSB-_-RRB- ,_, Eva_NNP -LSB-_-LRB- #_# -RSB-_-RRB- ,_, SDL_NN -LSB-_-LRB- #_# -RSB-_-RRB- and_CC Neko_NN -LSB-_-LRB- #_# ,_, ##_NN -RSB-_-RRB- ,_, are_VBP programming_VBG tools_NNS for_IN developing_VBG modular_JJ network_NN protocols_NNS ._.
+They_PRP allow_VBP complex_JJ protocols_NNS to_TO be_VB implemented_VBN by_IN decomposing_VBG them_PRP into_IN several_JJ modules_NNS cooperating_VBG together_RB ._.
+This_DT approach_NN facilitates_VBZ code_NN reuse_NN and_CC customization_NN of_IN distributed_VBN protocols_NNS in_IN order_NN to_TO fit_VB the_DT needs_NNS of_IN different_JJ applications_NNS ._.
+Moreover_RB ,_, protocol_NN modules_NNS can_MD be_VB plugged_VBN in_IN to_TO the_DT system_NN dynamically_RB ._.
+All_PDT these_DT features_NNS of_IN protocol_NN frameworks_NNS make_VBP them_PRP an_DT interesting_JJ enabling_VBG technology_NN for_IN implementing_VBG adaptable_JJ systems_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- -_: an_DT important_JJ class_NN of_IN applications_NNS ._.
+Most_JJS protocol_NN frameworks_NNS are_VBP based_VBN on_IN events_NNS -LRB-_-LRB- all_DT frameworks_NNS cited_VBD above_RB are_VBP based_VBN on_IN this_DT abstraction_NN -RRB-_-RRB- ._.
+Events_NNS are_VBP used_VBN for_IN asynchronous_JJ communication_NN between_IN different_JJ modules_NNS on_IN the_DT same_JJ machine_NN ._.
+However_RB ,_, the_DT use_NN of_IN events_NNS raises_VBZ some_DT problems_NNS -LSB-_-LRB- #_# ,_, ##_NN -RSB-_-RRB- ._.
+For_IN instance_NN ,_, the_DT composition_NN of_IN modules_NNS may_MD require_VB connectors_NNS to_TO route_NN events_NNS ,_, which_WDT introduces_VBZ burden_NN for_IN a_DT protocol_NN composer_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+Protocol_NNP frameworks_NNS such_JJ as_IN Appia_NN and_CC Eva_NNP extend_VBP the_DT event-based_JJ approach_NN with_IN channels_NNS ._.
+However_RB ,_, in_IN our_PRP$ opinion_NN ,_, this_DT solution_NN is_VBZ not_RB satisfactory_JJ since_IN composition_NN of_IN complex_JJ protocol_NN stacks_NNS becomes_VBZ more_RBR difficult_JJ ._.
+In_IN this_DT paper_NN ,_, we_PRP propose_VBP a_DT new_JJ approach_NN for_IN building_VBG modular_JJ protocols_NNS ,_, that_DT is_VBZ based_VBN on_IN a_DT service_NN abstraction_NN ._.
+We_PRP compare_VBP this_DT new_JJ approach_NN with_IN the_DT common_JJ ,_, event-based_JJ approach_NN ._.
+We_PRP show_VBP that_IN protocol_NN frameworks_NNS based_VBN on_IN services_NNS have_VBP several_JJ advantages_NNS ,_, e_LS ._.
+g_NN ._.
+allow_VB for_IN a_DT fairly_RB straightforward_JJ protocol_NN composition_NN ,_, clear_JJ implementation_NN ,_, and_CC better_JJR support_NN of_IN dynamic_JJ replacement_NN of_IN distributed_VBN protocols_NNS ._.
+To_TO validate_VB our_PRP$ claims_NNS ,_, we_PRP have_VBP implemented_VBN SAMOA_NNP -_: an_DT experimental_JJ protocol_NN framework_NN that_WDT is_VBZ purely_RB based_VBN on_IN the_DT service-based_JJ approach_NN to_TO module_NN composition_NN and_CC implementation_NN ._.
+The_DT framework_NN allowed_VBD us_PRP to_TO compare_VB the_DT service_NN -_: and_CC event-based_JJ implementations_NNS of_IN an_DT adaptive_JJ group_NN communication_NN middleware_NN ._.
+The_DT paper_NN is_VBZ organized_VBN as_IN follows_VBZ ._.
+Section_NN #_# defines_VBZ general_JJ notions_NNS ._.
+Section_NN #_# presents_VBZ the_DT main_JJ characteristics_NNS of_IN event-based_JJ frameworks_NNS ,_, and_CC features_VBZ that_DT are_VBP distinct_JJ for_IN each_DT framework_NN ._.
+Section_NN #_# describes_VBZ our_PRP$ new_JJ approach_NN ,_, which_WDT is_VBZ based_VBN on_IN service_NN abstraction_NN ._.
+Section_NN #_# discusses_VBZ the_DT advantages_NNS of_IN a_DT service-based_JJ protocol_NN framework_NN compared_VBN to_TO an_DT event-based_JJ protocol_NN framework_NN ._.
+The_DT description_NN of_IN our_PRP$ experimental_JJ implementation_NN is_VBZ presented_VBN in_IN Section_NN #_# ._.
+Finally_RB ,_, we_PRP conclude_VBP in_IN Section_NN #_# ._.
+2_LS ._.
+PROTOCOL_NN FRAMEWORKS_NNS In_IN this_DT section_NN ,_, we_PRP describe_VBP notions_NNS that_WDT are_VBP common_JJ to_TO all_DT protocol_NN frameworks_NNS ._.
+Protocols_NNS and_CC Protocol_NNP Modules_NNPS ._.
+A_DT protocol_NN is_VBZ a_DT distributed_VBN algorithm_NN that_WDT solves_VBZ a_DT specific_JJ problem_NN in_IN a_DT distributed_VBN system_NN ,_, e_LS ._.
+g_NN ._.
+a_DT TCP_NN protocol_NN solves_VBZ the_DT reliable_JJ channel_NN problem_NN ._.
+A_DT protocol_NN is_VBZ implemented_VBN as_IN a_DT set_NN of_IN identical_JJ protocol_NN modules_NNS located_VBN on_IN different_JJ machines_NNS ._.
+Protocol_NNP Stacks_NNP ._.
+A_DT stack_VBP is_VBZ a_DT set_NN of_IN protocol_NN modules_NNS -LRB-_-LRB- of_IN different_JJ protocols_NNS -RRB-_-RRB- that_WDT are_VBP located_JJ on_IN the_DT same_JJ machine_NN ._.
+Note_VB that_IN ,_, despite_IN its_PRP$ name_NN ,_, a_DT stack_VBP is_VBZ not_RB strictly_RB layered_JJ ,_, 691_CD i_LS ._.
+e_LS ._.
+a_DT protocol_NN module_NN can_MD interact_VB with_IN all_DT other_JJ protocol_NN modules_NNS in_IN the_DT same_JJ stack_VBP ,_, not_RB only_RB with_IN the_DT protocol_NN modules_NNS directly_RB above_IN and_CC below_IN ._.
+In_IN the_DT remainder_NN of_IN this_DT paper_NN ,_, we_PRP use_VBP the_DT terms_NNS machine_NN and_CC stack_VB interchangeably_RB ._.
+Stack_VB #_# S1_NN Q1_NN R1_NN P1_NN Network_NNP Figure_NNP #_# :_: Example_NN of_IN a_DT protocol_NN stack_VB In_IN Figure_NNP #_# ,_, we_PRP show_VBP an_DT example_NN protocol_NN stack_VBP ._.
+We_PRP represent_VBP protocol_NN modules_NNS by_IN capital_NN letters_NNS indexed_VBN with_IN a_DT natural_JJ number_NN ,_, e_LS ._.
+g_NN ._.
+P1_NN ,_, Q1_NN ,_, R1_NN and_CC S1_NN ._.
+We_PRP write_VBP Pi_NN to_TO denote_VB the_DT protocol_NN module_NN of_IN a_DT protocol_NN P_NN in_IN stack_VBP i_LS ._.
+We_PRP use_VBP this_DT notation_NN throughout_IN the_DT paper_NN ._.
+Modules_NNS are_VBP represented_VBN as_IN white_JJ boxes_NNS ._.
+Arrows_NNS show_VBP module_NN interactions_NNS ._.
+For_IN instance_NN ,_, protocol_NN module_NN P1_NN interacts_VBZ with_IN the_DT protocol_NN module_NN Q1_NN and_CC conversely_RB -LRB-_-LRB- See_VB Fig_NN ._.
+#_# -RRB-_-RRB- ._.
+Protocol_NNP Module_NNP Interactions_NNS ._.
+Below_IN ,_, we_PRP define_VBP the_DT different_JJ kinds_NNS of_IN interaction_NN between_IN protocol_NN modules_NNS ._.
+Requests_NNS are_VBP issued_VBN by_IN protocol_NN modules_NNS ._.
+A_DT request_NN by_IN a_DT protocol_NN module_NN Pi_NN is_VBZ an_DT asynchronous_JJ call_NN by_IN Pi_NN of_IN another_DT protocol_NN module_NN ._.
+Replies_NNS are_VBP the_DT results_NNS of_IN a_DT request_NN ._.
+A_DT single_JJ request_NN can_MD generate_VB several_JJ replies_NNS ._.
+Only_RB protocol_NN modules_NNS belonging_VBG to_TO the_DT same_JJ protocol_NN as_IN the_DT module_NN that_WDT has_VBZ issued_VBN the_DT request_NN are_VBP concerned_VBN by_IN the_DT corresponding_JJ replies_NNS ._.
+For_IN example_NN ,_, a_DT request_NN by_IN Pi_NN generates_VBZ replies_VBZ that_IN concern_NN only_RB protocol_NN modules_NNS Pj_NN ._.
+Notifications_NNS can_MD be_VB used_VBN by_IN a_DT protocol_NN module_NN to_TO inform_VB -LRB-_-LRB- possibly_RB many_JJ -RRB-_-RRB- protocol_NN modules_NNS in_IN the_DT same_JJ stack_VBP about_IN the_DT occurrence_NN of_IN a_DT specific_JJ event_NN ._.
+Notifications_NNS may_MD also_RB be_VB the_DT results_NNS of_IN a_DT request_NN ._.
+3_LS ._.
+EVENT-BASED_JJ PROTOCOL_NN FRAMEWORK_NN DESIGN_NN Most_JJS existing_VBG protocol_NN frameworks_NNS are_VBP event-based_JJ ._.
+Examples_NNS are_VBP Cactus_NNP -LSB-_-LRB- #_# ,_, #_# -RSB-_-RRB- ,_, Appia_NN -LSB-_-LRB- #_# ,_, ##_NN -RSB-_-RRB- and_CC Ensemble_NN -LSB-_-LRB- ##_CD ,_, 17_CD -RSB-_-RRB- ._.
+In_IN this_DT section_NN ,_, we_PRP define_VBP the_DT notion_NN of_IN an_DT event_NN in_IN protocol_NN frameworks_NNS ._.
+We_PRP also_RB explain_VBP how_WRB protocol_NN modules_NNS are_VBP structured_VBN in_IN event-based_JJ frameworks_NNS ._.
+Events_NNS ._.
+An_DT event_NN is_VBZ a_DT special_JJ object_NN for_IN indirect_JJ communication_NN between_IN protocol_NN modules_NNS in_IN the_DT same_JJ stack_VBP ._.
+Events_NNS may_MD transport_VB some_DT information_NN ,_, e_LS ._.
+g_NN ._.
+a_DT network_NN message_NN or_CC some_DT other_JJ data_NNS ._.
+With_IN events_NNS ,_, the_DT communication_NN is_VBZ indirect_JJ ,_, i_FW ._.
+e_LS ._.
+a_DT protocol_NN module_NN that_WDT triggers_VBZ an_DT event_NN is_VBZ not_RB aware_JJ of_IN the_DT module_NN -LRB-_-LRB- s_NNS -RRB-_-RRB- that_WDT handle_VBP the_DT event_NN ._.
+Events_NNS enable_VBP one-to-many_JJ communication_NN within_IN a_DT protocol_NN stack_VBP ._.
+Triggering_VBG an_DT event_NN can_MD be_VB done_VBN either_CC synchronously_RB or_CC asynchronously_RB ._.
+In_IN the_DT former_JJ case_NN ,_, the_DT thread_NN that_WDT triggers_VBZ an_DT event_NN e_SYM is_VBZ blocked_VBN until_IN all_DT protocol_NN modules_NNS that_WDT handle_VBP e_SYM have_VBP terminated_VBN handling_NN of_IN event_NN e_LS ._.
+In_IN the_DT latter_JJ case_NN ,_, the_DT thread_NN that_WDT triggers_VBZ the_DT event_NN is_VBZ not_RB blocked_VBN ._.
+Protocol_NNP Modules_NNPS ._.
+In_IN event-based_JJ protocol_NN frameworks_NNS ,_, a_DT protocol_NN module_NN consists_VBZ of_IN a_DT set_NN of_IN handlers_NNS ._.
+Each_DT handler_NN is_VBZ dedicated_VBN to_TO handling_NN of_IN a_DT specific_JJ event_NN ._.
+Handlers_NNS of_IN the_DT same_JJ protocol_NN module_NN may_MD share_VB data_NNS ._.
+Handlers_NNS can_MD be_VB dynamically_RB bound_VBN to_TO events_NNS ._.
+Handlers_NNS can_MD also_RB be_VB unbound_JJ dynamically_RB ._.
+Upon_IN triggering_VBG some_DT event_NN e_SYM ,_, all_DT handlers_NNS bound_VBD to_TO e_SYM are_VBP executed_VBN ._.
+If_IN no_DT handler_NN is_VBZ bound_VBN ,_, the_DT behavior_NN is_VBZ usually_RB unspecified_JJ ._.
+Stack_VB #_# P1_NN Q1_NN R1_NN S1_NN Network_NNP f_LS e_SYM gg_NN deliver_VB send_VB h_NN Figure_NN #_# :_: Example_NN of_IN an_DT event-based_JJ protocol_NN stack_VBP In_IN Figure_NNP #_# ,_, we_PRP show_VBP an_DT example_NN of_IN an_DT event-based_JJ stack_VBP ._.
+Events_NNS are_VBP represented_VBN by_IN small_JJ letters_NNS ,_, e_LS ._.
+g_NN ._.
+e_LS ,_, f_FW ,_, ..._: The_DT fact_NN that_IN a_DT protocol_NN module_NN can_MD trigger_VB an_DT event_NN is_VBZ represented_VBN by_IN an_DT arrow_NN starting_VBG from_IN the_DT module_NN ._.
+A_DT white_JJ trapezoid_NN inside_IN a_DT module_NN box_NN represents_VBZ a_DT handler_NN defined_VBN by_IN the_DT protocol_NN module_NN ._.
+To_TO mark_VB that_IN some_DT handler_NN is_VBZ bound_VBN to_TO event_NN e_SYM ,_, we_PRP use_VBP an_DT arrow_NN pointing_VBG to_TO the_DT handler_NN -LRB-_-LRB- the_DT label_NN on_IN the_DT arrow_NN represents_VBZ the_DT event_NN e_LS -RRB-_-RRB- ._.
+For_IN example_NN ,_, the_DT protocol_NN module_NN P1_NN triggers_VBZ event_NN e_SYM and_CC handles_VBZ event_NN f_FW ._.
+Note_VB that_IN the_DT network_NN is_VBZ represented_VBN as_IN a_DT special_JJ protocol_NN module_NN that_WDT handles_VBZ the_DT send_VB event_NN -LRB-_-LRB- to_TO send_VB a_DT message_NN to_TO another_DT machine_NN -RRB-_-RRB- and_CC triggers_VBZ the_DT deliver_VB event_NN -LRB-_-LRB- upon_IN receipt_NN of_IN a_DT message_NN from_IN another_DT machine_NN -RRB-_-RRB- ._.
+Specific_JJ Features_NNS ._.
+Some_DT protocol_NN frameworks_NNS have_VBP unique_JJ features_NNS ._.
+Below_IN ,_, we_PRP present_VBP the_DT features_NNS that_WDT influence_VBP composition_NN and_CC implementation_NN of_IN protocol_NN modules_NNS ._.
+In_IN Cactus_NN -LSB-_-LRB- #_# ,_, #_# -RSB-_-RRB- ,_, the_DT programmer_NN can_MD give_VB a_DT priority_NN number_NN to_TO a_DT handler_NN upon_IN binding_VBG it_PRP to_TO an_DT event_NN ._.
+When_WRB an_DT event_NN is_VBZ triggered_VBN ,_, all_DT handlers_NNS are_VBP executed_VBN following_VBG the_DT order_NN of_IN priority_NN ._.
+A_DT handler_NN h_NN is_VBZ also_RB able_JJ to_TO cancel_VB the_DT execution_NN of_IN an_DT event_NN trigger_NN :_: all_DT handlers_NNS that_WDT should_MD be_VB executed_VBN after_IN h_NN according_VBG to_TO the_DT priority_NN are_VBP not_RB executed_VBN ._.
+Appia_NN -LSB-_-LRB- #_# ,_, ##_NN -RSB-_-RRB- and_CC Eva_NNP -LSB-_-LRB- #_# -RSB-_-RRB- introduce_VB the_DT notion_NN of_IN channels_NNS ._.
+Channels_NNS allow_VBP to_TO build_VB routes_NNS of_IN events_NNS in_IN protocol_NN stacks_NNS ._.
+Each_DT protocol_NN module_NN has_VBZ to_TO subscribe_VB to_TO one_CD or_CC many_JJ channels_NNS ._.
+All_DT events_NNS are_VBP triggered_VBN by_IN specifying_VBG a_DT channel_NN they_PRP belong_VBP to_TO ._.
+When_WRB a_DT protocol_NN module_NN triggers_VBZ an_DT event_NN e_SYM specifying_VBG channel_NN c_NN ,_, all_DT handlers_NNS bound_VBD to_TO e_SYM that_WDT are_VBP part_NN of_IN a_DT protocol_NN that_WDT subscribes_VBZ to_TO c_NN are_VBP executed_VBN -LRB-_-LRB- in_IN the_DT order_NN prescribed_VBN by_IN the_DT definition_NN of_IN channel_NN c_NN -RRB-_-RRB- ._.
+4_LS ._.
+SERVICE-BASED_JJ PROTOCOL_NN FRAMEWORK_NN In_IN this_DT section_NN ,_, we_PRP describe_VBP our_PRP$ new_JJ approach_NN for_IN implementing_VBG and_CC composing_VBG protocols_NNS that_WDT is_VBZ based_VBN on_IN services_NNS ._.
+692_CD We_PRP show_VBP in_IN Section_NN #_# the_DT advantages_NNS of_IN service-based_JJ protocol_NN frameworks_NNS over_IN event-based_JJ protocol_NN frameworks_NNS ._.
+Service_NNP Interface_NNP ._.
+In_IN our_PRP$ service-based_JJ framework_NN ,_, protocol_NN modules_NNS in_IN the_DT same_JJ stack_VBP communicate_VBP through_IN objects_NNS called_VBN service_NN interfaces_NNS ._.
+Requests_NNS ,_, replies_VBZ and_CC notifications_NNS are_VBP all_DT issued_VBN to_TO service_NN interfaces_NNS ._.
+Protocol_NNP Modules_NNPS ._.
+A_DT protocol_NN module_NN is_VBZ a_DT set_NN of_IN executers_NNS ,_, listeners_NNS and_CC interceptors_NNS ._.
+Executers_NNS handle_VBP requests_NNS ._.
+An_DT executer_NN can_MD be_VB dynamically_RB bound_VBN to_TO a_DT service_NN interface_NN ._.
+It_PRP can_MD be_VB later_RB unbound_JJ ._.
+A_DT request_NN issued_VBN to_TO a_DT service_NN interface_NN si_NN leads_VBZ to_TO the_DT execution_NN of_IN the_DT executer_NN bound_VBD to_TO si_VB ._.
+If_IN no_DT executer_NN is_VBZ bound_VBN to_TO si_VB ,_, the_DT request_NN is_VBZ delayed_VBN until_IN some_DT executer_NN is_VBZ bound_VBN to_TO si_VB ._.
+Contrary_JJ to_TO events_NNS ,_, at_IN most_JJS one_CD executer_NN at_IN any_DT time_NN can_MD be_VB bound_VBN to_TO a_DT service_NN interface_NN on_IN every_DT machine_NN ._.
+Listeners_NNS handle_VBP replies_NNS and_CC notifications_NNS ._.
+A_DT listener_NN can_MD be_VB dynamically_RB bound_VBN and_CC unbound_JJ to_TO /_: from_IN a_DT service_NN interface_NN si_NN ._.
+A_DT notification_NN issued_VBN to_TO a_DT service_NN interface_NN si_NN is_VBZ handled_VBN by_IN all_DT listeners_NNS bound_VBD to_TO si_VB in_IN the_DT local_JJ stack_VBP ._.
+A_DT reply_NN issued_VBN to_TO a_DT service_NN interface_NN is_VBZ handled_VBN by_IN one_CD single_JJ listener_NN ._.
+To_TO ensure_VB that_IN one_CD single_JJ listener_NN handles_VBZ a_DT reply_NN ,_, a_DT module_NN Pi_NN has_VBZ to_TO identify_VB ,_, each_DT time_NN it_PRP issues_VBZ a_DT request_NN ,_, the_DT listener_NN to_TO handle_VB the_DT possible_JJ reply_NN ._.
+If_IN the_DT request_NN and_CC the_DT reply_NN occur_VBP respectively_RB ,_, in_IN stack_VBP i_FW and_CC in_IN stack_VBP j_NN ,_, the_DT service_NN interface_NN si_NN on_IN i_FW communicates_VBZ to_TO the_DT service_NN interface_NN si_NN on_IN j_NN the_DT listener_NN that_WDT must_MD handle_VB the_DT reply_NN ._.
+If_IN the_DT listener_NN that_WDT must_MD handle_VB the_DT reply_NN does_VBZ not_RB exist_VB ,_, the_DT reply_NN is_VBZ delayed_VBN until_IN the_DT listener_NN is_VBZ created_VBN ._.
+Stack_VB #_# P1_NN Q1_NN R1_NN S1_NN Network_NNP t_NN u_FW nt_NN Figure_NN #_# :_: Example_NN of_IN a_DT service-based_JJ protocol_NN stack_VBP In_IN Figure_NNP #_# ,_, we_PRP show_VBP an_DT example_NN of_IN a_DT service-based_JJ stack_VBP ._.
+We_PRP denote_VBP a_DT service_NN interface_NN by_IN a_DT small_JJ letter_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+t_NN ,_, u_NN and_CC nt_NN -RRB-_-RRB- in_IN a_DT hexagonal_JJ box_NN ._.
+The_DT fact_NN that_IN a_DT module_NN Pi_NN can_MD generate_VB a_DT request_NN to_TO a_DT service_NN interface_NN si_NN is_VBZ represented_VBN by_IN a_DT dashed_VBN black_JJ arrow_NN going_VBG from_IN Pi_NN to_TO si_FW ._.
+Similarly_RB ,_, a_DT dashed_VBN white_JJ arrow_NN going_VBG from_IN module_NN Pi_NN to_TO service_NN interface_NN si_NN represents_VBZ the_DT fact_NN that_IN Pi_NN can_MD generate_VB a_DT reply_NN or_CC a_DT notification_NN to_TO si_FW ._.
+We_PRP represent_VBP executers_NNS with_IN white_JJ boxes_NNS inside_IN protocol_NN modules_NNS and_CC listeners_NNS with_IN white_JJ boxes_NNS with_IN a_DT gray_JJ border_NN ._.
+A_DT connecting_VBG line_NN between_IN a_DT service_NN interface_NN si_NN and_CC an_DT executer_NN e_SYM -LRB-_-LRB- resp_NN ._.
+a_DT listener_NN l_NN -RRB-_-RRB- shows_VBZ that_IN e_LS -LRB-_-LRB- resp_NN ._.
+l_NN -RRB-_-RRB- is_VBZ bound_VBN to_TO si_VB ._.
+In_IN Figure_NNP #_# ,_, module_NN Q1_NN contains_VBZ an_DT executer_NN bound_VBD to_TO service_NN interface_NN t_NN and_CC a_DT listener_NN bound_VBD to_TO service_NN interface_NN u_NN ._.
+Module_NN Q1_NN can_MD generate_VB replies_NNS and_CC notifications_NNS to_TO service_NN interface_NN t_NN and_CC requests_NNS to_TO service_NN interface_NN u_NN ._.
+Note_VB that_IN the_DT service_NN interface_NN nt_NN allows_VBZ to_TO access_VB the_DT network_NN ._.
+P1_NN Q1_NN P1_NN Q1_NN T1T1_NN t_NN t_NN t_NN Figure_NN #_# :_: Execution_NN of_IN protocol_NN interactions_NNS with_IN interceptors_NNS An_DT interceptor_NN plays_VBZ a_DT special_JJ role_NN ._.
+Similarly_RB to_TO executers_NNS ,_, interceptors_NNS can_MD be_VB dynamically_RB bound_VBN or_CC unbound_JJ to_TO a_DT service_NN interface_NN ._.
+They_PRP are_VBP activated_VBN each_DT time_NN a_DT request_NN ,_, a_DT reply_NN or_CC a_DT notification_NN is_VBZ issued_VBN to_TO the_DT service_NN interface_NN they_PRP are_VBP bound_VBN to_TO ._.
+This_DT is_VBZ illustrated_VBN in_IN Figure_NNP #_# ._.
+In_IN the_DT right_JJ part_NN of_IN the_DT figure_NN ,_, the_DT interceptor_NN of_IN the_DT protocol_NN module_NN T1_NN is_VBZ represented_VBN by_IN a_DT rounded_VBN box_NN ._.
+The_DT interceptor_NN is_VBZ bound_VBN to_TO service_NN interface_NN t_NN ._.
+The_DT left_JJ part_NN of_IN the_DT figure_NN shows_VBZ that_IN an_DT interceptor_NN can_MD be_VB seen_VBN as_IN an_DT executer_NN plus_CC a_DT listener_NN ._.
+When_WRB P1_NN issues_NNS a_DT request_NN req_NN to_TO the_DT service_NN interface_NN t_NN ,_, the_DT executer-interceptor_NN of_IN T1_NN is_VBZ executed_VBN ._.
+Then_RB ,_, module_NN T1_NN may_MD forward_RB a_DT request_NN req_NN to_TO the_DT service_NN interface_NN t_NN ,_, where_WRB we_PRP can_MD have_VB req_NN =_JJ req_NN #_# ._.
+When_WRB module_NN Q1_NN issues_NNS a_DT reply_NN or_CC a_DT notification_NN ,_, a_DT similar_JJ mechanism_NN is_VBZ used_VBN ,_, except_IN that_IN this_DT time_NN the_DT listener-interceptor_NN of_IN T1_NN is_VBZ executed_VBN ._.
+Note_VB that_IN a_DT protocol_NN module_NN Ti_NNP ,_, that_WDT has_VBZ an_DT interceptor_NN bound_VBD to_TO a_DT service_NN interface_NN ,_, is_VBZ able_JJ to_TO modify_VB requests_NNS ,_, replies_VBZ and_CC notifications_NNS ._.
+Upon_IN requests_NNS ,_, if_IN several_JJ interceptors_NNS are_VBP bound_VBN to_TO the_DT same_JJ service_NN interface_NN ,_, they_PRP are_VBP executed_VBN in_IN the_DT order_NN of_IN binding_NN ._.
+Upon_IN replies_NNS and_CC notifications_NNS ,_, the_DT order_NN is_VBZ reversed_VBN ._.
+5_CD ._.
+ADVANTAGES_NNS OF_IN SERVICE-BASED_NNP PROTOCOL_NNP FRAMEWORK_NNP DESIGN_NN We_PRP show_VBP in_IN this_DT section_NN the_DT advantages_NNS of_IN service-based_JJ protocol_NN frameworks_NNS over_IN event-based_JJ protocol_NN frameworks_NNS ._.
+We_PRP structure_VBP our_PRP$ discussion_NN in_IN three_CD parts_NNS ._.
+Firstly_RB ,_, we_PRP present_VBP how_WRB protocol_NN interactions_NNS are_VBP modeled_VBN in_IN each_DT of_IN the_DT protocol_NN frameworks_NNS ._.
+Then_RB ,_, we_PRP discuss_VBP the_DT composition_NN of_IN protocol_NN modules_NNS in_IN each_DT of_IN these_DT frameworks_NNS ._.
+Finally_RB ,_, we_PRP present_VBP the_DT problem_NN of_IN dynamic_JJ protocol_NN replacement_NN and_CC the_DT advantages_NNS of_IN service_NN interfaces_NNS in_IN order_NN to_TO implement_VB it_PRP ._.
+The_DT discussion_NN is_VBZ summarized_VBN in_IN Table_NNP #_# ._.
+5_CD ._.
+#_# Protocol_NNP Module_NNP Interactions_NNS A_DT natural_JJ model_NN of_IN protocol_NN interactions_NNS -LRB-_-LRB- as_IN presented_VBN in_IN Section_NN #_# -RRB-_-RRB- facilitates_VBZ the_DT implementation_NN of_IN protocol_NN modules_NNS ._.
+For_IN each_DT protocol_NN interaction_NN ,_, we_PRP show_VBP how_WRB it_PRP is_VBZ modeled_VBN in_IN both_CC frameworks_NNS ._.
+We_PRP also_RB explain_VBP that_IN an_DT inadequate_JJ model_NN may_MD lead_VB to_TO problems_NNS ._.
+Requests_NNS ._.
+In_IN service-based_JJ frameworks_NNS ,_, a_DT request_NN is_VBZ generated_VBN to_TO a_DT service_NN interface_NN ._.
+Each_DT request_NN is_VBZ handled_VBN by_IN at_IN most_JJS one_CD executer_NN ,_, since_IN we_PRP allow_VBP only_RB one_CD executer_NN to_TO be_VB bound_VBN to_TO a_DT service_NN interface_NN at_IN any_DT time_NN ._.
+On_IN the_DT other_JJ hand_NN ,_, in_IN event-based_JJ frameworks_NNS ,_, a_DT protocol_NN module_NN emulates_VBZ a_DT request_NN by_IN triggering_VBG an_DT event_NN ._.
+There_EX is_VBZ no_DT guarantee_NN 1_CD The_DT two_CD service_NN interfaces_NNS t_NN in_IN the_DT left_JJ part_NN of_IN Figure_NNP #_# represent_VBP the_DT same_JJ service_NN interface_NN t_NN ._.
+The_DT duplication_NN is_VBZ only_RB to_TO make_VB the_DT figure_NN readable_JJ ._.
+693_CD that_IN this_DT event_NN is_VBZ bound_VBN to_TO only_RB one_CD handler_NN ,_, which_WDT may_MD lead_VB to_TO programming_NN errors_NNS ._.
+Replies_NNPS ._.
+When_WRB a_DT protocol_NN module_NN generates_VBZ a_DT reply_NN in_IN a_DT service-based_JJ framework_NN ,_, only_RB the_DT correct_JJ listener_NN -LRB-_-LRB- identified_VBN at_IN the_DT time_NN the_DT corresponding_JJ request_NN was_VBD issued_VBN -RRB-_-RRB- is_VBZ executed_VBN ._.
+This_DT ensures_VBZ that_IN a_DT request_NN issued_VBN by_IN some_DT protocol_NN module_NN Qi_NNP ,_, leads_VBZ to_TO replies_NNS handled_VBN by_IN protocol_NN modules_NNS Qj_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+protocol_NN modules_NNS of_IN the_DT same_JJ protocol_NN -RRB-_-RRB- ._.
+This_DT is_VBZ not_RB the_DT case_NN in_IN event-based_JJ frameworks_NNS ,_, as_IN we_PRP now_RB show_VBP ._.
+Consider_VB protocol_NN module_NN Q1_NN in_IN Figure_NNP #_# that_WDT triggers_VBZ event_NN g_NN to_TO emulate_VB a_DT request_NN ._.
+Module_NN S1_NN handles_VBZ the_DT request_NN ._.
+When_WRB modules_NNS Si_NNP triggers_VBZ event_NN h_NN to_TO emulate_VB a_DT reply_NN -LRB-_-LRB- remember_VB that_IN a_DT reply_NN can_MD occur_VB in_IN many_JJ stacks_NNS -RRB-_-RRB- ,_, both_DT modules_NNS Qi_NNP and_CC Ri_NNP will_MD handle_VB the_DT reply_NN -LRB-_-LRB- they_PRP both_DT contain_VBP a_DT handler_NN bound_VBD to_TO h_NN -RRB-_-RRB- ._.
+This_DT behavior_NN is_VBZ not_RB correct_VB :_: only_RB protocol_NN modules_NNS Qi_NNP should_MD handle_VB the_DT reply_NN ._.
+Moreover_RB ,_, as_IN modules_NNS Ri_NNP are_VBP not_RB necessarily_RB implemented_VBN to_TO interact_VB with_IN modules_NNS Qi_NNP ,_, this_DT behavior_NN may_MD lead_VB to_TO errors_NNS ._.
+Solutions_NNPS to_TO solve_VB this_DT problem_NN exist_VBP ._.
+However_RB ,_, they_PRP introduce_VBP an_DT unnecessary_JJ burden_NN on_IN the_DT protocol_NN programmers_NNS and_CC the_DT stack_VBP composer_NN ._.
+For_IN instance_NN ,_, channels_NNS allow_VBP to_TO route_NN events_NNS to_TO ensure_VB that_IN modules_NNS handle_VBP only_RB events_NNS concerning_VBG them_PRP ._.
+However_RB ,_, the_DT protocol_NN programmer_NN must_MD take_VB channels_NNS into_IN account_NN when_WRB implementing_VBG protocols_NNS ._.
+Moreover_RB ,_, the_DT composition_NN of_IN complex_JJ stacks_NNS becomes_VBZ more_RBR difficult_JJ due_JJ to_TO the_DT fact_NN that_IN the_DT composer_NN has_VBZ to_TO create_VB many_JJ channels_NNS to_TO ensure_VB that_IN modules_NNS handle_VBP events_NNS correctly_RB ._.
+An_DT addition_NN of_IN special_JJ protocol_NN modules_NNS -LRB-_-LRB- named_VBN connectors_NNS -RRB-_-RRB- for_IN routing_VBG events_NNS is_VBZ also_RB not_RB satisfactory_JJ ,_, since_IN it_PRP requires_VBZ additional_JJ work_NN from_IN the_DT composer_NN and_CC introduces_VBZ overhead_NN ._.
+Notifications_NNS ._.
+Contrary_JJ to_TO requests_NNS and_CC replies_NNS ,_, notifications_NNS are_VBP well_RB modeled_VBN in_IN event-based_JJ frameworks_NNS ._.
+The_DT reason_NN is_VBZ that_IN notifications_NNS correspond_VBP to_TO the_DT one-to-many_JJ communication_NN scheme_NN provided_VBN by_IN events_NNS ._.
+In_IN service-based_JJ frameworks_NNS ,_, notifications_NNS are_VBP also_RB well_RB modeled_VBN ._.
+When_WRB a_DT module_NN generates_VBZ a_DT notification_NN to_TO a_DT service_NN interface_NN si_NNS ,_, all_DT listeners_NNS bound_VBD to_TO s_NNS are_VBP executed_VBN ._.
+Note_VB that_IN in_IN this_DT case_NN ,_, service_NN interfaces_NNS provide_VBP the_DT same_JJ pattern_NN of_IN communication_NN as_IN events_NNS ._.
+5_CD ._.
+#_# Protocol_NNP Module_NNP Composition_NNP Replies_NNPS -LRB-_-LRB- and_CC sometimes_RB notifications_NNS -RRB-_-RRB- are_VBP the_DT results_NNS of_IN a_DT request_NN ._.
+Thus_RB ,_, there_EX is_VBZ a_DT semantic_JJ link_NN between_IN them_PRP ._.
+The_DT composer_NN of_IN protocol_NN modules_NNS must_MD preserve_VB this_DT link_NN in_IN order_NN to_TO compose_VB correct_JJ stacks_NNS ._.
+We_PRP explain_VBP now_RB that_IN service_NN based_VBN frameworks_NNS provide_VBP a_DT mechanism_NN to_TO preserve_VB this_DT link_NN ,_, while_IN in_IN event-based_JJ frameworks_NNS ,_, the_DT lack_NN of_IN such_JJ mechanism_NN leads_VBZ to_TO error-prone_JJ composition_NN ._.
+In_IN service-based_JJ frameworks_NNS ,_, requests_NNS ,_, replies_VBZ and_CC notifications_NNS are_VBP issued_VBN to_TO a_DT service_NN interface_NN ._.
+Thus_RB ,_, a_DT service_NN interface_NN introduces_VBZ a_DT link_NN between_IN these_DT interactions_NNS ._.
+To_TO compose_VB a_DT correct_JJ stack_VBP ,_, the_DT composer_NN has_VBZ to_TO bound_VBN a_DT listener_NN to_TO service_NN interface_NN si_NN for_IN each_DT module_NN that_WDT issues_VBZ a_DT request_NN to_TO si_FW ._.
+The_DT same_JJ must_MD be_VB done_VBN for_IN one_CD executer_NN that_WDT is_VBZ part_NN of_IN a_DT module_NN that_WDT issues_VBZ replies_NNS or_CC notifications_NNS ._.
+Applying_VBG this_DT simple_JJ methodology_NN ensures_VBZ that_IN every_DT request_NN issued_VBN to_TO a_DT service_NN interface_NN si_NN eventually_RB results_VBZ in_IN several_JJ replies_NNS or_CC notifications_NNS issued_VBN to_TO the_DT same_JJ service_NN interface_NN si_NN ._.
+In_IN event-based_JJ frameworks_NNS ,_, all_DT protocol_NN interactions_NNS are_VBP issued_VBN through_IN different_JJ events_NNS :_: there_EX is_VBZ no_DT explicit_JJ link_NN between_IN an_DT event_NN triggered_VBN upon_IN requests_NNS and_CC an_DT event_NN triggered_VBN upon_IN the_DT corresponding_JJ replies_NNS ._.
+Thus_RB ,_, the_DT composer_NN of_IN a_DT protocol_NN stack_VBP must_MD know_VB the_DT meaning_NN of_IN each_DT event_NN in_IN order_NN to_TO preserve_VB the_DT semantic_JJ link_NN between_IN replies_NNS -LRB-_-LRB- and_CC notifications_NNS -RRB-_-RRB- and_CC requests_NNS ._.
+Moreover_RB ,_, nothing_NN prevents_VBZ from_IN binding_VBG a_DT handler_NN that_WDT should_MD handle_VB a_DT request_NN to_TO an_DT event_NN used_VBN to_TO issue_VB a_DT reply_NN ._.
+Note_VB that_IN these_DT problems_NNS can_MD be_VB partially_RB solved_VBN by_IN typing_NN events_NNS and_CC handlers_NNS ._.
+However_RB ,_, it_PRP does_VBZ not_RB prevent_VB from_IN errors_NNS if_IN there_EX are_VBP several_JJ instances_NNS of_IN the_DT same_JJ event_NN type_NN ._.
+Note_VB that_DT protocol_NN composition_NN is_VBZ clearer_JJR in_IN the_DT protocol_NN frameworks_NNS that_WDT are_VBP based_VBN on_IN services_NNS ,_, rather_RB than_IN on_IN events_NNS ._.
+The_DT reason_NN is_VBZ that_IN several_JJ events_NNS that_WDT are_VBP used_VBN to_TO model_VB different_JJ protocol_NN interactions_NNS can_MD be_VB modeled_VBN by_IN a_DT single_JJ service_NN interface_NN ._.
+5_CD ._.
+#_# Dynamic_NNP Replacement_NNP of_IN Protocols_NNPS Dynamic_NNP replacement_NN of_IN protocols_NNS consists_VBZ in_IN switching_VBG on-the-fly_JJ between_IN protocols_NNS that_WDT solve_VBP the_DT same_JJ problem_NN ._.
+Replacement_NN of_IN a_DT protocol_NN P_NN by_IN a_DT new_JJ protocol_NN newP_NN means_VBZ that_IN a_DT protocol_NN module_NN Pi_NN is_VBZ replaced_VBN by_IN newPi_NN in_IN every_DT stack_VBP i_LS ._.
+This_DT replacement_NN is_VBZ problematic_JJ since_IN the_DT local_JJ replacements_NNS -LRB-_-LRB- within_IN stacks_NNS -RRB-_-RRB- must_MD be_VB synchronized_VBN in_IN order_NN to_TO guarantee_VB protocol_NN correctness_NN -LSB-_-LRB- ##_CD ,_, ##_CD -RSB-_-RRB- ._.
+Q1_NN Q1_NN R1_NN P1_NN 1P_NN 1newP_NN 1_CD ReplP1_NN ReplP1_NN R_NN newP1_NN gg_NN h_NN h_NN ''_'' g_NN ''_'' t_NN Figure_NN #_# :_: Dynamic_NNP replacement_NN of_IN protocol_NN P_NN For_IN the_DT synchronization_NN algorithms_NNS to_TO work_VB ,_, module_NN interactions_NNS are_VBP intercepted_VBN in_IN order_NN to_TO detect_VB a_DT time_NN when_WRB Pi_NN should_MD be_VB replaced_VBN by_IN newPi_NN ._.
+-LRB-_-LRB- Other_JJ solutions_NNS ,_, e_LS ._.
+g_NN ._.
+in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ,_, are_VBP more_RBR complex_JJ ._. -RRB-_-RRB-
+In_IN Fig_NN ._.
+#_# ,_, we_PRP show_VBP how_WRB this_DT interception_NN can_MD be_VB implemented_VBN in_IN protocol_NN frameworks_NNS that_WDT are_VBP based_VBN on_IN services_NNS -LRB-_-LRB- in_IN the_DT left_JJ part_NN of_IN the_DT figure_NN -RRB-_-RRB- and_CC events_NNS -LRB-_-LRB- in_IN the_DT right_JJ part_NN of_IN the_DT figure_NN -RRB-_-RRB- ._.
+The_DT two-sided_JJ arrows_NNS point_VBP to_TO the_DT protocol_NN modules_NNS P1_NN and_CC newP1_NN that_WDT are_VBP switched_VBN ._.
+It_PRP can_MD be_VB seen_VBN that_IN the_DT approach_NN that_WDT uses_VBZ the_DT Service_NNP Interface_NNP mechanism_NN has_VBZ advantages_NNS ._.
+The_DT intercepting_VBG module_NN Repl-P1_NN has_VBZ an_DT interceptor_NN bound_VBD to_TO service_NN interface_NN t_NN that_WDT intercepts_VBZ every_DT request_NN handled_VBN by_IN modules_NNS P1_NN and_CC all_DT replies_NNS and_CC notifications_NNS issued_VBN by_IN P1_NN ._.
+The_DT code_NN of_IN the_DT module_NN P1_NN can_MD therefore_RB remain_VB unchanged_JJ ._.
+In_IN event-based_JJ frameworks_NNS ,_, the_DT solution_NN is_VBZ to_TO add_VB an_DT intermediate_JJ module_NN Repl-P1_NN that_WDT intercepts_VBZ the_DT requests_NNS issued_VBN to_TO P1_NN and_CC also_RB the_DT replies_NNS and_CC notifications_NNS issued_VBN by_IN P1_NN ._.
+Although_IN this_DT ad-hoc_JJ solution_NN may_MD seem_VB similar_JJ to_TO the_DT servicebased_JJ approach_NN ,_, there_EX is_VBZ an_DT important_JJ difference_NN ._.
+The_DT eventbased_JJ solution_NN requires_VBZ to_TO slightly_RB modify_VB the_DT module_NN P1_NN since_IN instead_RB of_IN handling_VBG event_NN g_NN and_CC triggering_VBG event_NN h_NN ,_, P1_NN must_MD now_RB handle_VB different_JJ events_NNS g_NN ''_'' and_CC h_NN ''_'' ._.
+6_CD ._.
+IMPLEMENTATION_NN We_PRP have_VBP implemented_VBN an_DT experimental_JJ service-based_JJ protocol_NN framework_NN -LRB-_-LRB- called_VBN SAMOA_NNP -RRB-_-RRB- -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+Our_PRP$ implementation_NN is_VBZ light-weight_JJ :_: it_PRP consists_VBZ of_IN approximately_RB ####_JJ lines_NNS of_IN code_NN in_IN Java_NNP #_# ._.
+#_# -LRB-_-LRB- with_IN generics_NNS -RRB-_-RRB- ._.
+In_IN this_DT section_NN ,_, we_PRP describe_VBP the_DT main_JJ two_CD classes_NNS of_IN our_PRP$ implementation_NN :_: Service_NNP -LRB-_-LRB- encoding_VBG the_DT Service_NNP Interface_NNP -RRB-_-RRB- and_CC 694_CD service-based_JJ event-based_JJ Protocol_NNP Interaction_NN an_DT adequate_JJ an_DT inadequate_JJ representation_NN representation_NN Protocol_NNP Composition_NNP clear_JJ and_CC safe_JJ complex_NN and_CC error-prone_JJ Dynamic_NNP Replacement_NNP an_DT integrated_VBN ad-hoc_JJ solutions_NNS mechanism_NN Table_NNP #_# :_: Service-based_JJ vs_CC ._.
+event-based_JJ Protocol_NNP -LRB-_-LRB- encoding_VBG protocol_NN modules_NNS -RRB-_-RRB- ._.
+Finally_RB ,_, we_PRP present_VBP an_DT example_NN protocol_NN stack_VBP that_IN we_PRP have_VBP implemented_VBN to_TO validate_VB the_DT service-based_JJ approach_NN ._.
+The_DT Service_NNP Class_NNP ._.
+A_DT Service_NNP object_NN is_VBZ characterized_VBN by_IN the_DT arguments_NNS of_IN requests_NNS and_CC the_DT arguments_NNS of_IN responses_NNS ._.
+A_DT response_NN is_VBZ either_CC a_DT reply_NN or_CC a_DT notification_NN ._.
+A_DT special_JJ argument_NN ,_, called_VBN message_NN ,_, determines_VBZ the_DT kind_NN of_IN interactions_NNS modeled_VBN by_IN the_DT response_NN ._.
+A_DT message_NN represents_VBZ a_DT piece_NN of_IN information_NN sent_VBN over_IN the_DT network_NN ._.
+When_WRB a_DT protocol_NN module_NN issues_NNS a_DT request_NN ,_, it_PRP can_MD give_VB a_DT message_NN as_IN an_DT argument_NN ._.
+The_DT message_NN can_MD specify_VB the_DT listener_NN that_WDT must_MD handle_VB the_DT reply_NN ._.
+When_WRB a_DT protocol_NN module_NN issues_NNS a_DT response_NN to_TO a_DT service_NN interface_NN ,_, a_DT reply_NN is_VBZ issued_VBN if_IN one_CD of_IN the_DT arguments_NNS of_IN the_DT response_NN is_VBZ a_DT message_NN specifying_VBG a_DT listener_NN ._.
+Otherwise_RB ,_, a_DT notification_NN is_VBZ issued_VBN ._.
+Executers_NNS ,_, listeners_NNS and_CC interceptors_NNS are_VBP encoded_VBN as_IN innerclasses_NNS of_IN the_DT Service_NNP class_NN ._.
+This_DT allows_VBZ to_TO provide_VB type-safe_JJ protocol_NN interactions_NNS ._.
+For_IN instance_NN ,_, executers_NNS can_MD only_RB be_VB bound_VBN to_TO the_DT Service_NNP object_NN ,_, they_PRP belong_VBP to_TO ._.
+Thus_RB ,_, the_DT parameters_NNS passed_VBD to_TO requests_NNS -LRB-_-LRB- that_WDT are_VBP verified_VBN statically_RB -RRB-_-RRB- always_RB correspond_VBP to_TO the_DT parameters_NNS accepted_VBN by_IN the_DT corresponding_JJ executers_NNS ._.
+The_DT type_NN of_IN a_DT Service_NNP object_NN is_VBZ determined_VBN by_IN the_DT type_NN of_IN the_DT arguments_NNS of_IN requests_NNS and_CC responses_NNS ._.
+A_DT Service_NNP object_NN t_NN is_VBZ compatible_JJ with_IN another_DT Service_NNP object_NN s_VBZ if_IN the_DT type_NN of_IN the_DT arguments_NNS of_IN requests_NNS -LRB-_-LRB- and_CC responses_NNS -RRB-_-RRB- of_IN t_NN is_VBZ a_DT subtype_NN of_IN the_DT arguments_NNS of_IN requests_NNS -LRB-_-LRB- and_CC responses_NNS -RRB-_-RRB- of_IN s_NNS ._.
+In_IN practice_NN ,_, if_IN a_DT protocol_NN module_NN Pi_NN can_MD issue_VB a_DT request_NN to_TO a_DT protocol_NN UDP_NNP ,_, then_RB it_PRP may_MD also_RB issue_VB a_DT request_NN to_TO TCP_NN -LRB-_-LRB- compatible_JJ with_IN UDP_NN -RRB-_-RRB- due_JJ to_TO the_DT subtyping_NN relation_NN on_IN parameters_NNS of_IN communicating_VBG modules_NNS ._.
+The_DT Protocol_NNP Class_NNP ._.
+A_DT Protocol_NNP object_NN consists_VBZ of_IN three_CD sets_NNS of_IN components_NNS ,_, one_CD set_NN for_IN each_DT component_NN type_NN -LRB-_-LRB- a_DT listener_NN ,_, an_DT executer_NN ,_, and_CC an_DT interceptor_NN -RRB-_-RRB- ._.
+Protocol_NNP objects_NNS are_VBP characterized_VBN by_IN names_NNS to_TO retrieve_VB them_PRP easily_RB ._.
+Moreover_RB ,_, we_PRP have_VBP added_VBN some_DT features_NNS to_TO bind_VB and_CC unbind_VB all_DT executers_NNS or_CC interceptors_NNS to_TO /_: from_IN the_DT corresponding_JJ Service_NNP objects_NNS ._.
+Protocol_NNP objects_NNS can_MD be_VB loaded_VBN to_TO a_DT stack_VBP dynamically_RB ._.
+All_PDT these_DT features_NNS made_VBD it_PRP easy_JJ to_TO implement_VB dynamic_JJ replacement_NN of_IN network_NN protocols_NNS ._.
+Protocol_NNP Stack_NNP Implementation_NNP ._.
+To_TO validate_VB our_PRP$ ideas_NNS ,_, we_PRP have_VBP developed_VBN an_DT Adaptive_NNP Group_NNP Communication_NNP -LRB-_-LRB- AGC_NNP -RRB-_-RRB- middleware_NN ,_, adopting_VBG both_CC the_DT service_NN -_: and_CC the_DT event-based_JJ approaches_NNS ._.
+Fig_NN ._.
+#_# shows_VBZ the_DT corresponding_JJ stacks_NNS of_IN the_DT AGC_NN middleware_NN ._.
+Both_DT stacks_NNS allow_VBP the_DT Consensus_NN and_CC Atomic_JJ Broadcast_NNP protocols_NNS to_TO be_VB dynamically_RB updated_VBN ._.
+The_DT architecture_NN of_IN our_PRP$ middleware_NN ,_, shown_VBN in_IN Fig_NN ._.
+#_# ,_, builds_VBZ on_IN the_DT group_NN communication_NN stack_VBP described_VBN in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ._.
+The_DT UDP_NN and_CC RP2P_NN modules_NNS provide_VBP respectively_RB ,_, unreliable_JJ and_CC reliable_JJ point-to-point_NN transport_NN ._.
+The_DT FD_NN module_NN implements_VBZ a_DT failure_NN detector_NN ;_: we_PRP assume_VBP that_IN it_PRP ensures_VBZ the_DT Stack_NN #_# UDP1RP2P1_CD Repl_NN CT1_NN 1ABc_NN ._.
+Repl_JJ CT1_NN ABc_NN ._.
+#_# Network_NNP FD1_NN GM1_NN rp2p_NN nt_NN udp_NN d_NN f_FW abcast_FW consensus_NN Stack_NN #_# Repl_NNP CT1_NN 1ABc_NN ._.
+Repl_NNP ABc_NNP ._.
+#_# UDP1_NN FD1_NN RP2P1_NN CT1_NN Network_NNP 1GM_NNP send_VB deliver_VB Figure_NNP #_# :_: Adaptive_NNP Group_NNP Communication_NNP Middleware_NNP :_: service-based_JJ -LRB-_-LRB- left_JJ -RRB-_-RRB- vs_CC ._.
+event-based_JJ -LRB-_-LRB- right_JJ -RRB-_-RRB- properties_NNS of_IN the_DT 3S_NN failure_NN detector_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+The_DT CT_NN module_NN provides_VBZ a_DT distributed_VBN consensus_NN service_NN using_VBG the_DT ChandraToueg_NNP algorithm_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+The_DT ABc_NNP ._.
+module_NN implements_VBZ atomic_JJ broadcast_NN -_: a_DT group_NN communication_NN primitive_JJ that_IN delivers_VBZ messages_NNS to_TO all_DT processes_NNS in_IN the_DT same_JJ order_NN ._.
+The_DT GM_NNP module_NN provides_VBZ a_DT group_NN membership_NN service_NN that_WDT maintains_VBZ consistent_JJ membership_NN data_NNS among_IN group_NN members_NNS -LRB-_-LRB- see_VB -LSB-_-LRB- ##_CD -RSB-_-RRB- for_IN details_NNS -RRB-_-RRB- ._.
+The_DT Repl_NNP ABc_NNP ._.
+and_CC the_DT Repl_NNP CT_NNP modules_NNS implement_VBP the_DT replacement_NN algorithms_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- for_IN ,_, respectively_RB ,_, the_DT ABc_NNP ._.
+and_CC the_DT CT_NN protocol_NN modules_NNS ._.
+Note_VB that_IN each_DT arrow_NN in_IN the_DT event-based_JJ architecture_NN represents_VBZ an_DT event_NN ._.
+We_PRP do_VBP not_RB name_VB events_NNS in_IN the_DT figure_NN for_IN readability_NN ._.
+The_DT left_JJ stack_VB in_IN Figure_NNP #_# shows_VBZ the_DT implementation_NN of_IN AGC_NN with_IN our_PRP$ service-based_JJ framework_NN ._.
+The_DT right_JJ stack_VBP shows_VBZ the_DT same_JJ implementation_NN with_IN an_DT event-based_JJ framework_NN ._.
+Performance_NNP Evaluation_NN ._.
+To_TO evaluate_VB the_DT overhead_NN of_IN service_NN interfaces_NNS ,_, we_PRP compared_VBD performance_NN of_IN the_DT serviceand_NN event-based_JJ implementations_NNS of_IN the_DT AGC_NN middleware_NN ._.
+The_DT latter_JJ implementation_NN of_IN AGC_NNP uses_VBZ the_DT Cactus_NNP protocol_NN framework_NN -LSB-_-LRB- #_# ,_, #_# -RSB-_-RRB- ._.
+In_IN our_PRP$ experiment_NN ,_, we_PRP compared_VBD the_DT average_JJ latency_NN of_IN Atomic_JJ Broadcast_NNP -LRB-_-LRB- ABcast_NNP -RRB-_-RRB- ,_, which_WDT is_VBZ defined_VBN as_IN follows_VBZ ._.
+Consider_VB a_DT message_NN m_NN sent_VBN using_VBG ABcast_NN ._.
+We_PRP denote_VBP by_IN ti_NN -LRB-_-LRB- m_NN -RRB-_-RRB- the_DT time_NN between_IN the_DT moment_NN of_IN sending_VBG m_NN and_CC the_DT moment_NN of_IN delivering_VBG m_NN on_IN a_DT machine_NN -LRB-_-LRB- stack_VB -RRB-_-RRB- i_LS ._.
+We_PRP define_VBP the_DT average_JJ latency_NN of_IN m_NN as_IN the_DT average_NN of_IN ti_NN -LRB-_-LRB- m_NN -RRB-_-RRB- for_IN all_DT machines_NNS -LRB-_-LRB- stacks_NNS -RRB-_-RRB- i_FW within_IN a_DT group_NN of_IN stacks_NNS ._.
+Performance_NNP tests_NNS have_VBP been_VBN made_VBN using_VBG a_DT cluster_NN of_IN PCs_NNS running_VBG Red_NNP Hat_NNP Linux_NNP #_# ._.
+#_# ,_, where_WRB each_DT PC_NN has_VBZ a_DT Pentium_NNP III_NNP ###_CD MHz_NNP processor_NN and_CC 128MB_NN of_IN RAM_NNP ._.
+All_DT PCs_NNS are_VBP interconnected_VBN by_IN a_DT ###_CD Base-TX_JJ duplex_NN Ethernet_NNP hub_NN ._.
+Our_PRP$ experiment_NN has_VBZ involved_VBN #_# machines_NNS -LRB-_-LRB- stacks_NNS -RRB-_-RRB- that_WDT ABcast_NNP messages_NNS of_IN 4Mb_NN under_IN a_DT constant_JJ load_NN ,_, where_WRB a_DT load_NN is_VBZ a_DT number_NN of_IN messages_NNS per_IN second_NN ._.
+In_IN Figure_NNP #_# ,_, we_PRP show_VBP the_DT results_NNS of_IN our_PRP$ experiment_NN for_IN different_JJ loads_NNS ._.
+Latencies_NNS are_VBP shown_VBN on_IN the_DT vertical_JJ axis_NN ,_, while_IN message_NN loads_NNS are_VBP shown_VBN on_IN the_DT horizontal_JJ axis_NN ._.
+The_DT solid_JJ line_NN shows_VBZ the_DT results_NNS obtained_VBN with_IN our_PRP$ service-based_JJ framework_NN ._.
+The_DT dashed_VBN line_NN shows_VBZ the_DT results_NNS obtained_VBN with_IN the_DT Cactus_NNP framework_NN ._.
+The_DT 695_CD 0_CD 500_CD 1000_CD 1500_CD 2000_CD 10_CD ##_NN ##_CD ##_CD ##_CD ##_CD ##_CD ##_CD ##_CD ###_CD Averagelatency_NN -LSB-_-LRB- ms_NN -RSB-_-RRB- Load_NN -LSB-_-LRB- msg_NN /_: s_NNS -RSB-_-RRB- Service-Based_NNP Framework_NNP Cactus_NNP Figure_NNP #_# :_: Comparison_NN between_IN our_PRP$ service-based_JJ framework_NN and_CC Cactus_NN overhead_NN of_IN the_DT service-based_JJ framework_NN is_VBZ approximately_RB 10_CD %_NN ._.
+This_DT can_MD be_VB explained_VBN as_IN follows_VBZ ._.
+Firstly_RB ,_, the_DT servicebased_JJ framework_NN provides_VBZ a_DT higher_JJR level_NN abstraction_NN ,_, which_WDT has_VBZ a_DT small_JJ cost_NN ._.
+Secondly_RB ,_, the_DT AGC_NN middleware_NN was_VBD initially_RB implemented_VBN and_CC optimized_VBN for_IN the_DT event-based_JJ Cactus_NNP framework_NN ._.
+However_RB ,_, it_PRP is_VBZ possible_JJ to_TO optimize_VB the_DT AGC_NN middleware_NN for_IN the_DT service-based_JJ framework_NN ._.
+7_CD ._.
+CONCLUSION_NN In_IN the_DT paper_NN ,_, we_PRP proposed_VBD a_DT new_JJ approach_NN to_TO the_DT protocol_NN composition_NN that_WDT is_VBZ based_VBN on_IN the_DT notion_NN of_IN Service_NNP Interface_NNP ,_, instead_RB of_IN events_NNS ._.
+We_PRP believe_VBP that_IN the_DT service-based_JJ framework_NN has_VBZ several_JJ advantages_NNS over_IN event-based_JJ frameworks_NNS ._.
+It_PRP allows_VBZ us_PRP to_TO :_: -LRB-_-LRB- #_# -RRB-_-RRB- model_NN accurately_RB protocol_NN interactions_NNS ,_, -LRB-_-LRB- #_# -RRB-_-RRB- reduce_VB the_DT risk_NN of_IN errors_NNS during_IN the_DT composition_NN phase_NN ,_, and_CC -LRB-_-LRB- #_# -RRB-_-RRB- simply_RB implement_VB dynamic_JJ protocol_NN updates_NNS ._.
+A_DT prototype_NN implementation_NN allowed_VBD us_PRP to_TO validate_VB our_PRP$ ideas_NNS ._.
+8_CD ._.
+REFERENCES_NNS -LSB-_-LRB- #_# -RSB-_-RRB- The_DT Appia_NN project_NN ._.
+Documentation_NN available_JJ electronically_RB at_IN http_NN :_: /_: /_: appia_NN ._.
+di_FW ._.
+fc_NN ._.
+ul_NN ._.
+pt_NN /_: ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- Nina_NNP T_NN ._.
+Bhatti_NNP ,_, Matti_NNP A_NNP ._.
+Hiltunen_NNP ,_, Richard_NNP D_NNP ._.
+Schlichting_NN ,_, and_CC Wanda_NNP Chiu_NNP ._.
+Coyote_NN :_: a_DT system_NN for_IN constructing_VBG fine-grain_JJ configurable_JJ communication_NN services_NNS ._.
+ACM_NNP Transactions_NNS on_IN Computer_NNP Systems_NNPS ,_, 16_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 321-366_CD ,_, November_NNP ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- Francisco_NNP Vilar_NNP Brasileiro_NNP ,_, Fabola_NNP Greve_NNP ,_, Frederic_NNP Tronel_NNP ,_, Michel_NNP Hurfin_NNP ,_, and_CC Jean-Pierre_NNP Le_NNP Narzul_NNP ._.
+Eva_NNP :_: An_DT event-based_JJ framework_NN for_IN developing_VBG specialized_VBN communication_NN protocols_NNS ._.
+In_IN Proceedings_NNP of_IN the_DT 1st_JJ IEEE_NNP International_NNP Symposium_NNP on_IN Network_NNP Computing_NNP and_CC Applications_NNS -LRB-_-LRB- NCA_NN ''_'' ##_NN -RRB-_-RRB- ,_, ####_NN ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- Daniel_NNP C_NNP ._.
+Bunzli_NNP ,_, Sergio_NNP Mena_NNP ,_, and_CC Uwe_NNP Nestmann_NNP ._.
+Protocol_NNP composition_NN frameworks_NNS ._.
+A_DT header-driven_JJ model_NN ._.
+In_IN Proceedings_NNP of_IN the_DT 4th_JJ IEEE_NNP International_NNP Symposium_NNP on_IN Network_NNP Computing_NNP and_CC Applications_NNS -LRB-_-LRB- NCA_NN ''_'' ##_NN -RRB-_-RRB- ,_, July_NNP ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- The_DT Cactus_NN project_NN ._.
+Documentation_NN available_JJ electronically_RB at_IN http_NN :_: /_: /_: www_NN ._.
+cs_NNS ._.
+arizona_NN ._.
+edu_FW /_: cactus_NN /_: ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- The_DT Neko_NNP project_NN ._.
+Documentation_NN available_JJ electronically_RB at_IN http_NN :_: /_: /_: lsrwww_NN ._.
+epfl_NN ._.
+ch_NN /_: neko_NN /_: ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- The_DT SAMOA_NNP project_NN ._.
+Documentation_NN available_JJ electronically_RB at_IN http_NN :_: /_: /_: lsrwww_NN ._.
+epfl_NN ._.
+ch_NN /_: samoa_NN /_: ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- The_DT SDL_NN project_NN ._.
+Documentation_NN available_JJ electronically_RB at_IN http_NN :_: /_: /_: www_NN ._.
+sdl-forum_NN ._.
+org_NN /_: SDL_NNP /_: ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- Tushar_NNP Deepak_NNP Chandra_NNP ,_, Vassos_NNP Hadzilacos_NNP ,_, and_CC Sam_NNP Toueg_NNP ._.
+The_DT weakest_JJS failure_NN detector_NN for_IN solving_VBG consensus_NN ._.
+Journal_NNP of_IN the_DT ACM_NNP ,_, ##_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 685-722_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Tushar_NNP Deepak_NNP Chandra_NNP and_CC Sam_NNP Toueg_NNP ._.
+Unreliable_JJ failure_NN detectors_NNS for_IN reliable_JJ distributed_VBN systems_NNS ._.
+Journal_NNP of_IN the_DT ACM_NNP ,_, ##_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 225-267_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Wen-Ke_NN Chen_NNP ,_, Matti_NNP A_NNP ._.
+Hiltunen_NNP ,_, and_CC Richard_NNP D_NNP ._.
+Schlichting_NN ._.
+Constructing_VBG adaptive_JJ software_NN in_IN distributed_VBN systems_NNS ._.
+In_IN Proceedings_NNP of_IN the_DT 21st_CD IEEE_NNP International_NNP Conference_NNP on_IN Distributed_VBN Computing_NNP System_NNP -LRB-_-LRB- ICDCS_NNP ''_'' ##_NN -RRB-_-RRB- ,_, April_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- The_DT Ensemble_NN project_NN ._.
+Documentation_NN available_JJ electronically_RB at_IN http_NN :_: /_: /_: www_NN ._.
+cs_NNS ._.
+cornell_NN ._.
+edu_NN /_: Info_NNP /_: Projects_NNP /_: Ensemble_NNP /_: ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Richard_NNP Ekwall_NNP ,_, Sergio_NNP Mena_NNP ,_, Stefan_NNP Pleisch_NNP ,_, and_CC Andre_NNP Schiper_NNP ._.
+Towards_IN flexible_JJ finite-state-machine-based_JJ protocol_NN composition_NN ._.
+In_IN Proceedings_NNP of_IN the_DT 3rd_JJ IEEE_NNP International_NNP Symposium_NNP on_IN Network_NNP Computing_NNP and_CC Applications_NNS -LRB-_-LRB- NCA_NN ''_'' ##_NN -RRB-_-RRB- ,_, August_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Philip_NNP K_NNP ._.
+McKinley_NNP ,_, Seyed_NNP Masoud_NNP Sadjadi_NNP ,_, Eric_NNP P_NN ._.
+Kasten_NNP ,_, and_CC Betty_NNP H_NNP ._.
+C_NN ._.
+Cheng_NNP ._.
+Composing_VBG adaptive_JJ software_NN ._.
+IEEE_NNP Computer_NNP ,_, ##_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 56-64_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Sergio_NNP Mena_NNP ,_, Andre_NNP Schiper_NNP ,_, and_CC Pawel_NNP T_NN ._.
+Wojciechowski_NNP ._.
+A_DT step_NN towards_IN a_DT new_JJ generation_NN of_IN group_NN communication_NN systems_NNS ._.
+In_IN Proceedings_NNP of_IN the_DT 4th_JJ ACM_NN /_: IFIP_NN /_: USENIX_NNP International_NNP Middleware_NNP Conference_NNP -LRB-_-LRB- Middleware_NNP ''_'' ##_NN -RRB-_-RRB- ,_, LNCS_NN ####_CD ,_, June_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Hugo_NNP Miranda_NNP ,_, Alexandre_NNP Pinto_NNP ,_, and_CC Lus_NNP Rodrigues_NNP ._.
+Appia_NNP ,_, a_DT flexible_JJ protocol_NN kernel_NN supporting_VBG multiple_JJ coordinated_VBN channels_NNS ._.
+In_IN Proceedings_NNP of_IN the_DT 21st_CD IEEE_NNP International_NNP Conference_NNP on_IN Distributed_VBN Computing_NNP Systems_NNP -LRB-_-LRB- ICDCS_NNP ''_'' ##_NN -RRB-_-RRB- ,_, April_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Ohad_NNP Rodeh_NNP ,_, Kenneth_NNP P_NN ._.
+Birman_NNP ,_, Mark_NNP Hayden_NNP ,_, Zhen_NNP Xiao_NNP ,_, and_CC Danny_NNP Dolev_NNP ._.
+The_DT architecture_NN and_CC performance_NN of_IN security_NN protocols_NNS in_IN the_DT Ensemble_NN group_NN communication_NN system_NN ._.
+Technical_NNP Report_NNP TR-98-1703_NN ,_, Computer_NNP Science_NNP Department_NNP ,_, Cornell_NNP University_NNP ,_, September_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Olivier_NNP Rutti_NNP ,_, Pawel_NNP T_NN ._.
+Wojciechowski_NNP ,_, and_CC Andre_NNP Schiper_NNP ._.
+Dynamic_NNP update_VB of_IN distributed_VBN agreement_NN protocols_NNS ._.
+TR_NN IC-2005-12_NN ,_, School_NNP of_IN Computer_NNP and_CC Communication_NNP Sciences_NNPS ,_, Ecole_NNP Polytechnique_NNP Federale_NNP de_IN Lausanne_NNP -LRB-_-LRB- EPFL_NNP -RRB-_-RRB- ,_, March_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Andre_NNP Schiper_NNP ._.
+Dynamic_NNP Group_NNP Communication_NNP ._.
+Technical_NNP Report_NNP IC-2003-27_NN ,_, School_NNP of_IN Computer_NNP and_CC Communication_NNP Sciences_NNPS ,_, Ecole_NNP Polytechnique_NNP Federale_NNP de_IN Lausanne_NNP -LRB-_-LRB- EPFL_NNP -RRB-_-RRB- ,_, April_NNP ####_CD ._.
+To_TO appear_VB in_IN ACM_NNP Distributed_VBD Computing_NNP ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Peter_NNP Urban_NNP ,_, Xavier_NNP Defago_NNP ,_, and_CC Andre_NNP Schiper_NNP ._.
+Neko_NNP :_: A_NNP single_JJ environment_NN to_TO simulate_VB and_CC prototype_NN distributed_VBN algorithms_NNS ._.
+In_IN Proceedings_NNP of_IN the_DT 15th_JJ International_NNP Conference_NNP on_IN Information_NNP Networking_NNP -LRB-_-LRB- ICOIN_NNP ''_'' ##_NN -RRB-_-RRB- ,_, February_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Pawel_NNP T_NN ._.
+Wojciechowski_NNP and_CC Olivier_NNP Rutti_NNP ._.
+On_IN correctness_NN of_IN dynamic_JJ protocol_NN update_VBP ._.
+In_IN Proceedings_NNP of_IN the_DT 7th_JJ IFIP_NN Conference_NN on_IN Formal_JJ Methods_NNS for_IN Open_NNP Object-Based_NNP Distributed_VBD Systems_NNP -LRB-_-LRB- FMOODS_NNP ''_'' ##_NN -RRB-_-RRB- ,_, LNCS_NN ####_CD ._.
+Springer_NNP ,_, June_NNP ####_CD ._.
+696_CD

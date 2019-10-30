@@ -1,0 +1,568 @@
+Improving_NN Web_NN Search_VB Ranking_NN by_IN Incorporating_VBG User_NN Behavior_NNP Information_NNP Eugene_NNP Agichtein_NNP Microsoft_NNP Research_NNP eugeneag_NN @_IN microsoft_NN ._.
+com_NN Eric_NNP Brill_NNP Microsoft_NNP Research_NNP brill_NNP @_IN microsoft_NN ._.
+com_NN Susan_NNP Dumais_NNP Microsoft_NNP Research_NNP sdumais_VBZ @_IN microsoft_NN ._.
+com_NN ABSTRACT_NN We_PRP show_VBP that_IN incorporating_VBG user_NN behavior_NN data_NNS can_MD significantly_RB improve_VB ordering_VBG of_IN top_JJ results_NNS in_IN real_JJ web_NN search_NN setting_NN ._.
+We_PRP examine_VBP alternatives_NNS for_IN incorporating_VBG feedback_NN into_IN the_DT ranking_JJ process_NN and_CC explore_VB the_DT contributions_NNS of_IN user_NN feedback_NN compared_VBN to_TO other_JJ common_JJ web_NN search_NN features_NNS ._.
+We_PRP report_VBP results_NNS of_IN a_DT large_JJ scale_NN evaluation_NN over_IN #_# ,_, ###_CD queries_NNS and_CC ##_CD million_CD user_NN interactions_NNS with_IN a_DT popular_JJ web_NN search_NN engine_NN ._.
+We_PRP show_VBP that_IN incorporating_VBG implicit_JJ feedback_NN can_MD augment_VB other_JJ features_NNS ,_, improving_VBG the_DT accuracy_NN of_IN a_DT competitive_JJ web_NN search_NN ranking_JJ algorithms_NNS by_IN as_RB much_JJ as_IN ##_CD %_NN relative_JJ to_TO the_DT original_JJ performance_NN ._.
+Categories_NNS and_CC Subject_NNP Descriptors_NNPS H_NN ._.
+#_# ._.
+#_# Information_NNP Search_VB and_CC Retrieval_NNP -_: Relevance_NN feedback_NN ,_, search_NN process_NN ;_: H_NN ._.
+#_# ._.
+#_# Online_NNP Information_NNP Services_NNP -_: Web-based_JJ services_NNS ._.
+General_NNP Terms_NNS Algorithms_NNS ,_, Measurement_NNP ,_, Experimentation_NN 1_CD ._.
+INTRODUCTION_NNP Millions_NNPS of_IN users_NNS interact_VBP with_IN search_NN engines_NNS daily_RB ._.
+They_PRP issue_VBP queries_NNS ,_, follow_VB some_DT of_IN the_DT links_NNS in_IN the_DT results_NNS ,_, click_VBP on_IN ads_NNS ,_, spend_VBP time_NN on_IN pages_NNS ,_, reformulate_VB their_PRP$ queries_NNS ,_, and_CC perform_VB other_JJ actions_NNS ._.
+These_DT interactions_NNS can_MD serve_VB as_IN a_DT valuable_JJ source_NN of_IN information_NN for_IN tuning_NN and_CC improving_VBG web_NN search_NN result_VBP ranking_JJ and_CC can_MD compliment_VB more_RBR costly_JJ explicit_JJ judgments_NNS ._.
+Implicit_JJ relevance_NN feedback_NN for_IN ranking_JJ and_CC personalization_NN has_VBZ become_VBN an_DT active_JJ area_NN of_IN research_NN ._.
+Recent_JJ work_NN by_IN Joachims_NNP and_CC others_NNS exploring_VBG implicit_JJ feedback_NN in_IN controlled_JJ environments_NNS have_VBP shown_VBN the_DT value_NN of_IN incorporating_VBG implicit_JJ feedback_NN into_IN the_DT ranking_JJ process_NN ._.
+Our_PRP$ motivation_NN for_IN this_DT work_NN is_VBZ to_TO understand_VB how_WRB implicit_JJ feedback_NN can_MD be_VB used_VBN in_IN a_DT large-scale_JJ operational_JJ environment_NN to_TO improve_VB retrieval_NN ._.
+How_WRB does_VBZ it_PRP compare_VB to_TO and_CC compliment_NN evidence_NN from_IN page_NN content_NN ,_, anchor_NN text_NN ,_, or_CC link-based_JJ features_NNS such_JJ as_IN inlinks_NNS or_CC PageRank_NN ?_.
+While_IN it_PRP is_VBZ intuitive_JJ that_IN user_NN interactions_NNS with_IN the_DT web_NN search_NN engine_NN should_MD reveal_VB at_IN least_JJS some_DT information_NN that_WDT could_MD be_VB used_VBN for_IN ranking_JJ ,_, estimating_VBG user_NN preferences_NNS in_IN real_JJ web_NN search_NN settings_NNS is_VBZ a_DT challenging_JJ problem_NN ,_, since_IN real_JJ user_NN interactions_NNS tend_VBP to_TO be_VB more_RBR noisy_JJ than_IN commonly_RB assumed_VBN in_IN the_DT controlled_JJ settings_NNS of_IN previous_JJ studies_NNS ._.
+Our_PRP$ paper_NN explores_VBZ whether_IN implicit_JJ feedback_NN can_MD be_VB helpful_JJ in_IN realistic_JJ environments_NNS ,_, where_WRB user_NN feedback_NN can_MD be_VB noisy_JJ -LRB-_-LRB- or_CC adversarial_JJ -RRB-_-RRB- and_CC a_DT web_NN search_NN engine_NN already_RB uses_VBZ hundreds_NNS of_IN features_NNS and_CC is_VBZ heavily_RB tuned_VBN ._.
+To_TO this_DT end_NN ,_, we_PRP explore_VBP different_JJ approaches_NNS for_IN ranking_JJ web_NN search_NN results_VBZ using_VBG real_JJ user_NN behavior_NN obtained_VBN as_IN part_NN of_IN normal_JJ interactions_NNS with_IN the_DT web_NN search_NN engine_NN ._.
+The_DT specific_JJ contributions_NNS of_IN this_DT paper_NN include_VBP :_: Analysis_NN of_IN alternatives_NNS for_IN incorporating_VBG user_NN behavior_NN into_IN web_NN search_NN ranking_NN -LRB-_-LRB- Section_NN #_# -RRB-_-RRB- ._.
+An_DT application_NN of_IN a_DT robust_JJ implicit_JJ feedback_NN model_NN derived_VBN from_IN mining_NN millions_NNS of_IN user_NN interactions_NNS with_IN a_DT major_JJ web_NN search_NN engine_NN -LRB-_-LRB- Section_NN #_# -RRB-_-RRB- ._.
+A_DT large_JJ scale_NN evaluation_NN over_IN real_JJ user_NN queries_NNS and_CC search_NN results_NNS ,_, showing_VBG significant_JJ improvements_NNS derived_VBN from_IN incorporating_VBG user_NN feedback_NN -LRB-_-LRB- Section_NN #_# -RRB-_-RRB- ._.
+We_PRP summarize_VBP our_PRP$ findings_NNS and_CC discuss_VBP extensions_NNS to_TO the_DT current_JJ work_NN in_IN Section_NN #_# ,_, which_WDT concludes_VBZ the_DT paper_NN ._.
+2_LS ._.
+BACKGROUND_NN AND_CC RELATED_JJ WORK_VBP Ranking_NN search_NN results_VBZ is_VBZ a_DT fundamental_JJ problem_NN in_IN information_NN retrieval_NN ._.
+Most_RBS common_JJ approaches_NNS primarily_RB focus_VBP on_IN similarity_NN of_IN query_NN and_CC a_DT page_NN ,_, as_RB well_RB as_IN the_DT overall_JJ page_NN quality_NN -LSB-_-LRB- #_# ,_, #_# ,_, ##_NN -RSB-_-RRB- ._.
+However_RB ,_, with_IN increasing_VBG popularity_NN of_IN search_NN engines_NNS ,_, implicit_JJ feedback_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, the_DT actions_NNS users_NNS take_VB when_WRB interacting_VBG with_IN the_DT search_NN engine_NN -RRB-_-RRB- can_MD be_VB used_VBN to_TO improve_VB the_DT rankings_NNS ._.
+Implicit_JJ relevance_NN measures_NNS have_VBP been_VBN studied_VBN by_IN several_JJ research_NN groups_NNS ._.
+An_DT overview_NN of_IN implicit_JJ measures_NNS is_VBZ compiled_VBN in_IN Kelly_NNP and_CC Teevan_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+This_DT research_NN ,_, while_IN developing_VBG valuable_JJ insights_NNS into_IN implicit_JJ relevance_NN measures_NNS ,_, was_VBD not_RB applied_VBN to_TO improve_VB the_DT ranking_NN of_IN web_NN search_NN results_VBZ in_IN realistic_JJ settings_NNS ._.
+Closely_RB related_VBN to_TO our_PRP$ work_NN ,_, Joachims_JJ -LSB-_-LRB- ##_CD -RSB-_-RRB- collected_VBN implicit_JJ measures_NNS in_IN place_NN of_IN explicit_JJ measures_NNS ,_, introducing_VBG a_DT technique_NN based_VBN entirely_RB on_IN clickthrough_JJ data_NNS to_TO learn_VB ranking_JJ functions_NNS ._.
+Fox_NNP et_FW al_FW ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- explored_VBD the_DT relationship_NN between_IN implicit_JJ and_CC explicit_JJ measures_NNS in_IN Web_NN search_NN ,_, and_CC developed_VBD Bayesian_JJ models_NNS to_TO correlate_VB implicit_JJ measures_NNS and_CC explicit_JJ relevance_NN judgments_NNS for_IN both_DT individual_JJ queries_NNS and_CC search_NN sessions_NNS ._.
+This_DT work_NN considered_VBN a_DT wide_JJ range_NN of_IN user_NN behaviors_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, dwell_NN time_NN ,_, scroll_NN time_NN ,_, reformulation_NN patterns_NNS -RRB-_-RRB- in_IN addition_NN to_TO the_DT popular_JJ clickthrough_JJ behavior_NN ._.
+However_RB ,_, the_DT modeling_NN effort_NN was_VBD aimed_VBN at_IN predicting_VBG explicit_JJ relevance_NN judgments_NNS from_IN implicit_JJ user_NN actions_NNS and_CC not_RB specifically_RB at_IN learning_VBG ranking_JJ functions_NNS ._.
+Other_JJ studies_NNS of_IN user_NN behavior_NN in_IN web_NN search_NN include_VBP Pharo_NNP and_CC Jrvelin_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, but_CC were_VBD not_RB directly_RB applied_VBN to_TO improve_VB ranking_NN ._.
+More_RBR recently_RB ,_, Joachims_NNP et_FW al_FW ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- presented_VBD an_DT empirical_JJ evaluation_NN of_IN interpreting_VBG clickthrough_JJ evidence_NN ._.
+By_IN performing_VBG eye_NN tracking_NN studies_NNS and_CC correlating_VBG predictions_NNS of_IN their_PRP$ strategies_NNS with_IN explicit_JJ ratings_NNS ,_, the_DT authors_NNS showed_VBD that_IN it_PRP is_VBZ possible_JJ to_TO accurately_RB interpret_VB clickthroughs_NNS in_IN a_DT controlled_VBN ,_, laboratory_NN setting_NN ._.
+Unfortunately_RB ,_, the_DT extent_NN to_TO which_WDT previous_JJ research_NN applies_VBZ to_TO real-world_JJ web_NN search_NN is_VBZ unclear_JJ ._.
+At_IN the_DT same_JJ time_NN ,_, while_IN recent_JJ work_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, -LSB-_-LRB- ##_CD -RSB-_-RRB- -RRB-_-RRB- on_IN using_VBG clickthrough_JJ information_NN for_IN improving_VBG web_NN search_NN ranking_NN is_VBZ promising_JJ ,_, it_PRP captures_VBZ only_RB one_CD aspect_NN of_IN the_DT user_NN interactions_NNS with_IN web_NN search_NN engines_NNS ._.
+We_PRP build_VBP on_IN existing_VBG research_NN to_TO develop_VB robust_JJ user_NN behavior_NN interpretation_NN techniques_NNS for_IN the_DT real_JJ web_NN search_NN setting_NN ._.
+Instead_RB of_IN treating_VBG each_DT user_NN as_IN a_DT reliable_JJ expert_NN ,_, we_PRP aggregate_JJ information_NN from_IN multiple_JJ ,_, unreliable_JJ ,_, user_NN search_NN session_NN traces_NNS ,_, as_IN we_PRP describe_VBP in_IN the_DT next_JJ two_CD sections_NNS ._.
+3_LS ._.
+INCORPORATING_VBG IMPLICIT_JJ FEEDBACK_NN We_PRP consider_VBP two_CD complementary_JJ approaches_NNS to_TO ranking_JJ with_IN implicit_JJ feedback_NN :_: -LRB-_-LRB- #_# -RRB-_-RRB- treating_VBG implicit_JJ feedback_NN as_IN independent_JJ evidence_NN for_IN ranking_JJ results_NNS ,_, and_CC -LRB-_-LRB- #_# -RRB-_-RRB- integrating_VBG implicit_JJ feedback_NN features_NNS directly_RB into_IN the_DT ranking_JJ algorithm_NN ._.
+We_PRP describe_VBP the_DT two_CD general_JJ ranking_JJ approaches_NNS next_JJ ._.
+The_DT specific_JJ implicit_JJ feedback_NN features_NNS are_VBP described_VBN in_IN Section_NN #_# ,_, and_CC the_DT algorithms_NNS for_IN interpreting_VBG and_CC incorporating_VBG implicit_JJ feedback_NN are_VBP described_VBN in_IN Section_NN #_# ._.
+3_LS ._.
+#_# Implicit_NNP Feedback_NNP as_IN Independent_NNP Evidence_NN The_DT general_JJ approach_NN is_VBZ to_TO re-rank_VB the_DT results_NNS obtained_VBN by_IN a_DT web_NN search_NN engine_NN according_VBG to_TO observed_VBN clickthrough_JJ and_CC other_JJ user_NN interactions_NNS for_IN the_DT query_NN in_IN previous_JJ search_NN sessions_NNS ._.
+Each_DT result_NN is_VBZ assigned_VBN a_DT score_NN according_VBG to_TO expected_VBN relevance_NN /_: user_NN satisfaction_NN based_VBN on_IN previous_JJ interactions_NNS ,_, resulting_VBG in_IN some_DT preference_NN ordering_VBG based_VBN on_IN user_NN interactions_NNS alone_RB ._.
+While_IN there_EX has_VBZ been_VBN significant_JJ work_NN on_IN merging_VBG multiple_JJ rankings_NNS ,_, we_PRP adapt_VBP a_DT simple_JJ and_CC robust_JJ approach_NN of_IN ignoring_VBG the_DT original_JJ rankers_NNS ''_'' scores_NNS ,_, and_CC instead_RB simply_RB merge_VB the_DT rank_NN orders_NNS ._.
+The_DT main_JJ reason_NN for_IN ignoring_VBG the_DT original_JJ scores_NNS is_VBZ that_IN since_IN the_DT feature_NN spaces_NNS and_CC learning_VBG algorithms_NNS are_VBP different_JJ ,_, the_DT scores_NNS are_VBP not_RB directly_RB comparable_JJ ,_, and_CC re-normalization_NN tends_VBZ to_TO remove_VB the_DT benefit_NN of_IN incorporating_VBG classifier_NN scores_NNS ._.
+We_PRP experimented_VBD with_IN a_DT variety_NN of_IN merging_VBG functions_NNS on_IN the_DT development_NN set_NN of_IN queries_NNS -LRB-_-LRB- and_CC using_VBG a_DT set_NN of_IN interactions_NNS from_IN a_DT different_JJ time_NN period_NN from_IN final_JJ evaluation_NN sets_NNS -RRB-_-RRB- ._.
+We_PRP found_VBD that_IN a_DT simple_JJ rank_NN merging_VBG heuristic_NN combination_NN works_VBZ well_RB ,_, and_CC is_VBZ robust_JJ to_TO variations_NNS in_IN score_NN values_NNS from_IN original_JJ rankers_NNS ._.
+For_IN a_DT given_VBN query_NN q_NN ,_, the_DT implicit_JJ score_NN ISd_NN is_VBZ computed_VBN for_IN each_DT result_NN d_NN from_IN available_JJ user_NN interaction_NN features_NNS ,_, resulting_VBG in_IN the_DT implicit_JJ rank_NN Id_NN for_IN each_DT result_NN ._.
+We_PRP compute_VBP a_DT merged_JJ score_NN SM_NN -LRB-_-LRB- d_NN -RRB-_-RRB- for_IN d_NN by_IN combining_VBG the_DT ranks_NNS obtained_VBN from_IN implicit_JJ feedback_NN ,_, Id_NN with_IN the_DT original_JJ rank_NN of_IN d_NN ,_, Od_NN :_: +_CC +_CC +_CC +_CC =_JJ otherwise_RB O_NN dforexistsfeedbackimplicitif_NN OI_NN w_NN wOIdS_NN d_NN dd_NN I_PRP IddM_VBP 1_CD 1_CD 1_CD 1_CD 1_CD 1_LS -RRB-_-RRB- ,_, ,_, ,_, -LRB-_-LRB- where_WRB the_DT weight_NN wI_NN is_VBZ a_DT heuristically_RB tuned_VBN scaling_NN factor_NN representing_VBG the_DT relative_JJ importance_NN of_IN the_DT implicit_JJ feedback_NN ._.
+The_DT query_NN results_NNS are_VBP ordered_VBN in_IN by_IN decreasing_VBG values_NNS of_IN SM_NN to_TO produce_VB the_DT final_JJ ranking_NN ._.
+One_CD special_JJ case_NN of_IN this_DT model_NN arises_VBZ when_WRB setting_VBG wI_NN to_TO a_DT very_RB large_JJ value_NN ,_, effectively_RB forcing_VBG clicked_VBD results_NNS to_TO be_VB ranked_VBN higher_JJR than_IN un-clicked_JJ results_NNS -_: an_DT intuitive_JJ and_CC effective_JJ heuristic_NN that_IN we_PRP will_MD use_VB as_IN a_DT baseline_NN ._.
+Applying_VBG more_RBR sophisticated_JJ classifier_NN and_CC ranker_NN combination_NN algorithms_NNS may_MD result_VB in_IN additional_JJ improvements_NNS ,_, and_CC is_VBZ a_DT promising_JJ direction_NN for_IN future_JJ work_NN ._.
+The_DT approach_NN above_IN assumes_VBZ that_IN there_EX are_VBP no_DT interactions_NNS between_IN the_DT underlying_VBG features_NNS producing_VBG the_DT original_JJ web_NN search_NN ranking_NN and_CC the_DT implicit_JJ feedback_NN features_NNS ._.
+We_PRP now_RB relax_VBP this_DT assumption_NN by_IN integrating_VBG implicit_JJ feedback_NN features_NNS directly_RB into_IN the_DT ranking_JJ process_NN ._.
+3_LS ._.
+#_# Ranking_VBG with_IN Implicit_NNP Feedback_NNP Features_VBZ Modern_NNP web_NN search_NN engines_NNS rank_VBP results_NNS based_VBN on_IN a_DT large_JJ number_NN of_IN features_NNS ,_, including_VBG content-based_JJ features_NNS -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, how_WRB closely_RB a_DT query_NN matches_VBZ the_DT text_NN or_CC title_NN or_CC anchor_NN text_NN of_IN the_DT document_NN -RRB-_-RRB- ,_, and_CC query-independent_JJ page_NN quality_NN features_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, PageRank_NN of_IN the_DT document_NN or_CC the_DT domain_NN -RRB-_-RRB- ._.
+In_IN most_JJS cases_NNS ,_, automatic_JJ -LRB-_-LRB- or_CC semiautomatic_JJ -RRB-_-RRB- methods_NNS are_VBP developed_VBN for_IN tuning_NN the_DT specific_JJ ranking_JJ function_NN that_WDT combines_VBZ these_DT feature_NN values_NNS ._.
+Hence_RB ,_, a_DT natural_JJ approach_NN is_VBZ to_TO incorporate_VB implicit_JJ feedback_NN features_NNS directly_RB as_IN features_NNS for_IN the_DT ranking_JJ algorithm_NN ._.
+During_IN training_NN or_CC tuning_NN ,_, the_DT ranker_NN can_MD be_VB tuned_VBN as_IN before_IN but_CC with_IN additional_JJ features_NNS ._.
+At_IN runtime_NN ,_, the_DT search_NN engine_NN would_MD fetch_VB the_DT implicit_JJ feedback_NN features_NNS associated_VBN with_IN each_DT query-result_JJ URL_NN pair_NN ._.
+This_DT model_NN requires_VBZ a_DT ranking_JJ algorithm_NN to_TO be_VB robust_JJ to_TO missing_VBG values_NNS :_: more_JJR than_IN ##_CD %_NN of_IN queries_NNS to_TO web_NN search_NN engines_NNS are_VBP unique_JJ ,_, with_IN no_DT previous_JJ implicit_JJ feedback_NN available_JJ ._.
+We_PRP now_RB describe_VBP such_JJ a_DT ranker_NN that_IN we_PRP used_VBD to_TO learn_VB over_IN the_DT combined_JJ feature_NN sets_NNS including_VBG implicit_JJ feedback_NN ._.
+3_LS ._.
+#_# Learning_VBG to_TO Rank_NNP Web_NN Search_VB Results_NNS A_DT key_JJ aspect_NN of_IN our_PRP$ approach_NN is_VBZ exploiting_VBG recent_JJ advances_NNS in_IN machine_NN learning_NN ,_, namely_RB trainable_JJ ranking_JJ algorithms_NNS for_IN web_NN search_NN and_CC information_NN retrieval_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, -LSB-_-LRB- #_# ,_, ##_NN -RSB-_-RRB- and_CC classical_JJ results_NNS reviewed_VBN in_IN -LSB-_-LRB- #_# -RSB-_-RRB- -RRB-_-RRB- ._.
+In_IN our_PRP$ setting_NN ,_, explicit_JJ human_JJ relevance_NN judgments_NNS -LRB-_-LRB- labels_NNS -RRB-_-RRB- are_VBP available_JJ for_IN a_DT set_NN of_IN web_NN search_NN queries_NNS and_CC results_NNS ._.
+Hence_RB ,_, an_DT attractive_JJ choice_NN to_TO use_VB is_VBZ a_DT supervised_JJ machine_NN learning_VBG technique_NN to_TO learn_VB a_DT ranking_JJ function_NN that_WDT best_JJS predicts_VBZ relevance_NN judgments_NNS ._.
+RankNet_NNP is_VBZ one_CD such_JJ algorithm_NN ._.
+It_PRP is_VBZ a_DT neural_JJ net_JJ tuning_NN algorithm_NN that_WDT optimizes_VBZ feature_NN weights_NNS to_TO best_JJS match_NN explicitly_RB provided_VBD pairwise_JJ user_NN preferences_NNS ._.
+While_IN the_DT specific_JJ training_NN algorithms_NNS used_VBN by_IN RankNet_NNP are_VBP beyond_IN the_DT scope_NN of_IN this_DT paper_NN ,_, it_PRP is_VBZ described_VBN in_IN detail_NN in_IN -LSB-_-LRB- #_# -RSB-_-RRB- and_CC includes_VBZ extensive_JJ evaluation_NN and_CC comparison_NN with_IN other_JJ ranking_JJ methods_NNS ._.
+An_DT attractive_JJ feature_NN of_IN RankNet_NNP is_VBZ both_DT train_NN -_: and_CC run-time_JJ efficiency_NN -_: runtime_NN ranking_NN can_MD be_VB quickly_RB computed_VBN and_CC can_MD scale_VB to_TO the_DT web_NN ,_, and_CC training_NN can_MD be_VB done_VBN over_IN thousands_NNS of_IN queries_NNS and_CC associated_VBN judged_VBN results_NNS ._.
+We_PRP use_VBP a_DT 2-layer_JJ implementation_NN of_IN RankNet_NNP in_IN order_NN to_TO model_NN non-linear_JJ relationships_NNS between_IN features_NNS ._.
+Furthermore_RB ,_, RankNet_NNP can_MD learn_VB with_IN many_JJ -LRB-_-LRB- differentiable_JJ -RRB-_-RRB- cost_NN functions_NNS ,_, and_CC hence_RB can_MD automatically_RB learn_VB a_DT ranking_JJ function_NN from_IN human-provided_JJ labels_NNS ,_, an_DT attractive_JJ alternative_NN to_TO heuristic_NN feature_NN combination_NN techniques_NNS ._.
+Hence_RB ,_, we_PRP will_MD also_RB use_VB RankNet_NNP as_IN a_DT generic_JJ ranker_NN to_TO explore_VB the_DT contribution_NN of_IN implicit_JJ feedback_NN for_IN different_JJ ranking_JJ alternatives_NNS ._.
+4_LS ._.
+IMPLICIT_NNP USER_NNP FEEDBACK_NNP MODEL_NNP Our_PRP$ goal_NN is_VBZ to_TO accurately_RB interpret_VB noisy_JJ user_NN feedback_NN obtained_VBN as_IN by_IN tracing_VBG user_NN interactions_NNS with_IN the_DT search_NN engine_NN ._.
+Interpreting_VBG implicit_JJ feedback_NN in_IN real_JJ web_NN search_NN setting_NN is_VBZ not_RB an_DT easy_JJ task_NN ._.
+We_PRP characterize_VBP this_DT problem_NN in_IN detail_NN in_IN -LSB-_-LRB- #_# -RSB-_-RRB- ,_, where_WRB we_PRP motivate_VBP and_CC evaluate_VBP a_DT wide_JJ variety_NN of_IN models_NNS of_IN implicit_JJ user_NN activities_NNS ._.
+The_DT general_JJ approach_NN is_VBZ to_TO represent_VB user_NN actions_NNS for_IN each_DT search_NN result_VBP as_IN a_DT vector_NN of_IN features_NNS ,_, and_CC then_RB train_VB a_DT ranker_NN on_IN these_DT features_NNS to_TO discover_VB feature_NN values_NNS indicative_JJ of_IN relevant_JJ -LRB-_-LRB- and_CC nonrelevant_JJ -RRB-_-RRB- search_NN results_VBZ ._.
+We_PRP first_RB briefly_RB summarize_VB our_PRP$ features_NNS and_CC model_NN ,_, and_CC the_DT learning_VBG approach_NN -LRB-_-LRB- Section_NN #_# ._.
+#_# -RRB-_-RRB- in_IN order_NN to_TO provide_VB sufficient_JJ information_NN to_TO replicate_VB our_PRP$ ranking_JJ methods_NNS and_CC the_DT subsequent_JJ experiments_NNS ._.
+4_LS ._.
+#_# Representing_VBG User_NN Actions_NNS as_IN Features_NNS We_PRP model_VBP observed_VBN web_NN search_NN behaviors_NNS as_IN a_DT combination_NN of_IN a_DT `_`` `_`` background_NN ''_'' ''_'' component_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, query_NN -_: and_CC relevance-independent_JJ noise_NN in_IN user_NN behavior_NN ,_, including_VBG positional_JJ biases_NNS with_IN result_NN interactions_NNS -RRB-_-RRB- ,_, and_CC a_DT `_`` `_`` relevance_NN ''_'' ''_'' component_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, query-specific_JJ behavior_NN indicative_JJ of_IN relevance_NN of_IN a_DT result_NN to_TO a_DT query_NN -RRB-_-RRB- ._.
+We_PRP design_VBP our_PRP$ features_NNS to_TO take_VB advantage_NN of_IN aggregated_JJ user_NN behavior_NN ._.
+The_DT feature_NN set_NN is_VBZ comprised_VBN of_IN directly_RB observed_VBN features_NNS -LRB-_-LRB- computed_VBN directly_RB from_IN observations_NNS for_IN each_DT query_NN -RRB-_-RRB- ,_, as_RB well_RB as_IN queryspecific_JJ derived_VBN features_NNS ,_, computed_VBN as_IN the_DT deviation_NN from_IN the_DT overall_JJ query-independent_JJ distribution_NN of_IN values_NNS for_IN the_DT corresponding_JJ directly_RB observed_VBN feature_NN values_NNS ._.
+The_DT features_NNS used_VBN to_TO represent_VB user_NN interactions_NNS with_IN web_NN search_NN results_NNS are_VBP summarized_VBN in_IN Table_NNP #_# ._.
+#_# ._.
+This_DT information_NN was_VBD obtained_VBN via_IN opt-in_JJ client-side_JJ instrumentation_NN from_IN users_NNS of_IN a_DT major_JJ web_NN search_NN engine_NN ._.
+We_PRP include_VBP the_DT traditional_JJ implicit_JJ feedback_NN features_NNS such_JJ as_IN clickthrough_JJ counts_NNS for_IN the_DT results_NNS ,_, as_RB well_RB as_IN our_PRP$ novel_JJ derived_VBN features_NNS such_JJ as_IN the_DT deviation_NN of_IN the_DT observed_VBN clickthrough_JJ number_NN for_IN a_DT given_VBN query-URL_NN pair_NN from_IN the_DT expected_VBN number_NN of_IN clicks_NNS on_IN a_DT result_NN in_IN the_DT given_VBN position_NN ._.
+We_PRP also_RB model_VBP the_DT browsing_VBG behavior_NN after_IN a_DT result_NN was_VBD clicked_VBN -_: e_LS ._.
+g_NN ._.
+,_, the_DT average_JJ page_NN dwell_NN time_NN for_IN a_DT given_VBN query-URL_NN pair_NN ,_, as_RB well_RB as_IN its_PRP$ deviation_NN from_IN the_DT expected_VBN -LRB-_-LRB- average_NN -RRB-_-RRB- dwell_NN time_NN ._.
+Furthermore_RB ,_, the_DT feature_NN set_NN was_VBD designed_VBN to_TO provide_VB essential_JJ information_NN about_IN the_DT user_NN experience_NN to_TO make_VB feedback_NN interpretation_NN robust_JJ ._.
+For_IN example_NN ,_, web_NN search_NN users_NNS can_MD often_RB determine_VB whether_IN a_DT result_NN is_VBZ relevant_JJ by_IN looking_VBG at_IN the_DT result_NN title_NN ,_, URL_NN ,_, and_CC summary_NN -_: in_IN many_JJ cases_NNS ,_, looking_VBG at_IN the_DT original_JJ document_NN is_VBZ not_RB necessary_JJ ._.
+To_TO model_VB this_DT aspect_NN of_IN user_NN experience_NN we_PRP include_VBP features_NNS such_JJ as_IN overlap_VBP in_IN words_NNS in_IN title_NN and_CC words_NNS in_IN query_NN -LRB-_-LRB- TitleOverlap_NN -RRB-_-RRB- and_CC the_DT fraction_NN of_IN words_NNS shared_VBN by_IN the_DT query_NN and_CC the_DT result_NN summary_NN ._.
+Clickthrough_JJ features_NNS Position_NN Position_NN of_IN the_DT URL_NN in_IN Current_JJ ranking_JJ ClickFrequency_NNP Number_NNP of_IN clicks_NNS for_IN this_DT query_NN ,_, URL_NN pair_NN ClickProbability_NN Probability_NN of_IN a_DT click_VBP for_IN this_DT query_NN and_CC URL_NN ClickDeviation_NN Deviation_NN from_IN expected_VBN click_VBP probability_NN IsNextClicked_NNP #_# if_IN clicked_VBN on_IN next_JJ position_NN ,_, #_# otherwise_RB IsPreviousClicked_VBN #_# if_IN clicked_VBN on_IN previous_JJ position_NN ,_, #_# otherwise_RB IsClickAbove_NNP #_# if_IN there_EX is_VBZ a_DT click_VB above_RB ,_, #_# otherwise_RB IsClickBelow_NNP #_# if_IN there_EX is_VBZ click_VB below_RB ,_, #_# otherwise_RB Browsing_VBG features_NNS TimeOnPage_NNP Page_NNP dwell_NN time_NN CumulativeTimeOnPage_NNP Cumulative_NNP time_NN for_IN all_DT subsequent_JJ pages_NNS after_IN search_NN TimeOnDomain_NNP Cumulative_NNP dwell_NN time_NN for_IN this_DT domain_NN TimeOnShortUrl_NNP Cumulative_NNP time_NN on_IN URL_NN prefix_NN ,_, no_DT parameters_NNS IsFollowedLink_NNP #_# if_IN followed_VBN link_NN to_TO result_VB ,_, #_# otherwise_RB IsExactUrlMatch_NNP #_# if_IN aggressive_JJ normalization_NN used_VBN ,_, #_# otherwise_RB IsRedirected_NNP #_# if_IN initial_JJ URL_NN same_JJ as_IN final_JJ URL_NN ,_, #_# otherwise_RB IsPathFromSearch_NNP #_# if_IN only_RB followed_VBN links_NNS after_IN query_NN ,_, #_# otherwise_RB ClicksFromSearch_NNP Number_NNP of_IN hops_VBZ to_TO reach_VB page_NN from_IN query_NN AverageDwellTime_NNP Average_NNP time_NN on_IN page_NN for_IN this_DT query_NN DwellTimeDeviation_NNP Deviation_NN from_IN average_JJ dwell_NN time_NN on_IN page_NN CumulativeDeviation_NN Deviation_NN from_IN average_JJ cumulative_JJ dwell_NN time_NN DomainDeviation_NNP Deviation_NN from_IN average_JJ dwell_NN time_NN on_IN domain_NN Query-text_JJ features_NNS TitleOverlap_NNP Words_NNS shared_VBD between_IN query_NN and_CC title_NN SummaryOverlap_NNP Words_NNS shared_VBD between_IN query_NN and_CC snippet_NN QueryURLOverlap_NNP Words_NNS shared_VBD between_IN query_NN and_CC URL_NN QueryDomainOverlap_NN Words_NNS shared_VBN between_IN query_NN and_CC URL_NN domain_NN QueryLength_NNP Number_NNP of_IN tokens_NNS in_IN query_NN QueryNextOverlap_NNP Fraction_NNP of_IN words_NNS shared_VBN with_IN next_JJ query_NN Table_NNP #_# ._.
+#_# :_: Some_DT features_NNS used_VBN to_TO represent_VB post-search_JJ navigation_NN history_NN for_IN a_DT given_VBN query_NN and_CC search_NN result_VBP URL_NN ._.
+Having_VBG described_VBN our_PRP$ feature_NN set_NN ,_, we_PRP briefly_RB review_VBP our_PRP$ general_JJ method_NN for_IN deriving_VBG a_DT user_NN behavior_NN model_NN ._.
+4_LS ._.
+#_# Deriving_VBG a_DT User_NN Feedback_NNP Model_NNP To_TO learn_VB to_TO interpret_VB the_DT observed_VBN user_NN behavior_NN ,_, we_PRP correlate_VBP user_NN actions_NNS -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, the_DT features_NNS in_IN Table_NNP #_# ._.
+#_# representing_VBG the_DT actions_NNS -RRB-_-RRB- with_IN the_DT explicit_JJ user_NN judgments_NNS for_IN a_DT set_NN of_IN training_NN queries_NNS ._.
+We_PRP find_VBP all_PDT the_DT instances_NNS in_IN our_PRP$ session_NN logs_NNS where_WRB these_DT queries_NNS were_VBD submitted_VBN to_TO the_DT search_NN engine_NN ,_, and_CC aggregate_NN the_DT user_NN behavior_NN features_NNS for_IN all_DT search_NN sessions_NNS involving_VBG these_DT queries_NNS ._.
+Each_DT observed_VBN query-URL_NN pair_NN is_VBZ represented_VBN by_IN the_DT features_NNS in_IN Table_NNP #_# ._.
+#_# ,_, with_IN values_NNS averaged_VBD over_IN all_DT search_NN sessions_NNS ,_, and_CC assigned_VBN one_CD of_IN six_CD possible_JJ relevance_NN labels_NNS ,_, ranging_VBG from_IN Perfect_NNP to_TO Bad_NNP ,_, as_IN assigned_VBN by_IN explicit_JJ relevance_NN judgments_NNS ._.
+These_DT labeled_VBN feature_NN vectors_NNS are_VBP used_VBN as_IN input_NN to_TO the_DT RankNet_NNP training_NN algorithm_NN -LRB-_-LRB- Section_NN #_# ._.
+#_# -RRB-_-RRB- which_WDT produces_VBZ a_DT trained_JJ user_NN behavior_NN model_NN ._.
+This_DT approach_NN is_VBZ particularly_RB attractive_JJ as_IN it_PRP does_VBZ not_RB require_VB heuristics_NNS beyond_IN feature_NN engineering_NN ._.
+The_DT resulting_VBG user_NN behavior_NN model_NN is_VBZ used_VBN to_TO help_VB rank_VB web_NN search_NN resultseither_NN directly_RB or_CC in_IN combination_NN with_IN other_JJ features_NNS ,_, as_IN described_VBN below_IN ._.
+5_CD ._.
+EXPERIMENTAL_JJ SETUP_NN The_DT ultimate_JJ goal_NN of_IN incorporating_VBG implicit_JJ feedback_NN into_IN ranking_NN is_VBZ to_TO improve_VB the_DT relevance_NN of_IN the_DT returned_VBN web_NN search_NN results_NNS ._.
+Hence_RB ,_, we_PRP compare_VBP the_DT ranking_JJ methods_NNS over_IN a_DT large_JJ set_NN of_IN judged_VBN queries_NNS with_IN explicit_JJ relevance_NN labels_VBZ provided_VBN by_IN human_JJ judges_NNS ._.
+In_IN order_NN for_IN the_DT evaluation_NN to_TO be_VB realistic_JJ we_PRP obtained_VBD a_DT random_JJ sample_NN of_IN queries_NNS from_IN web_NN search_NN logs_NNS of_IN a_DT major_JJ search_NN engine_NN ,_, with_IN associated_VBN results_NNS and_CC traces_NNS for_IN user_NN actions_NNS ._.
+We_PRP describe_VBP this_DT dataset_NN in_IN detail_NN next_JJ ._.
+Our_PRP$ metrics_NNS are_VBP described_VBN in_IN Section_NN #_# ._.
+#_# that_IN we_PRP use_VBP to_TO evaluate_VB the_DT ranking_JJ alternatives_NNS ,_, listed_VBN in_IN Section_NN 5_CD ._.
+#_# in_IN the_DT experiments_NNS of_IN Section_NN #_# ._.
+5_CD ._.
+#_# Datasets_NNPS We_PRP compared_VBD our_PRP$ ranking_JJ methods_NNS over_IN a_DT random_JJ sample_NN of_IN #_# ,_, ###_CD queries_NNS from_IN the_DT search_NN engine_NN query_NN logs_NNS ._.
+The_DT queries_NNS were_VBD drawn_VBN from_IN the_DT logs_NNS uniformly_RB at_IN random_JJ by_IN token_JJ without_IN replacement_NN ,_, resulting_VBG in_IN a_DT query_NN sample_NN representative_NN of_IN the_DT overall_JJ query_NN distribution_NN ._.
+On_IN average_NN ,_, ##_CD results_NNS were_VBD explicitly_RB labeled_VBN by_IN human_JJ judges_NNS using_VBG a_DT six_CD point_NN scale_NN ranging_VBG from_IN Perfect_NNP down_IN to_TO Bad_NNP ._.
+Overall_RB ,_, there_EX were_VBD over_IN ##_CD ,_, ###_CD results_NNS with_IN explicit_JJ relevance_NN judgments_NNS ._.
+In_IN order_NN to_TO compute_VB various_JJ statistics_NNS ,_, documents_NNS with_IN label_NN Good_JJ or_CC better_JJR will_MD be_VB considered_VBN relevant_JJ ,_, and_CC with_IN lower_JJR labels_NNS to_TO be_VB non-relevant_JJ ._.
+Note_VB that_IN the_DT experiments_NNS were_VBD performed_VBN over_IN the_DT results_NNS already_RB highly_RB ranked_VBN by_IN a_DT web_NN search_NN engine_NN ,_, which_WDT corresponds_VBZ to_TO a_DT typical_JJ user_NN experience_NN which_WDT is_VBZ limited_VBN to_TO the_DT small_JJ number_NN of_IN the_DT highly_RB ranked_VBD results_NNS for_IN a_DT typical_JJ web_NN search_NN query_NN ._.
+The_DT user_NN interactions_NNS were_VBD collected_VBN over_IN a_DT period_NN of_IN #_# weeks_NNS using_VBG voluntary_JJ opt-in_JJ information_NN ._.
+In_IN total_NN ,_, over_IN #_# ._.
+#_# million_CD unique_JJ queries_NNS were_VBD instrumented_JJ ,_, resulting_VBG in_IN over_IN ##_CD million_CD individual_JJ interactions_NNS with_IN the_DT search_NN engine_NN ._.
+The_DT data_NNS consisted_VBD of_IN user_NN interactions_NNS with_IN the_DT web_NN search_NN engine_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, clicking_VBG on_IN a_DT result_NN link_NN ,_, going_VBG back_RB to_TO search_VB results_NNS ,_, etc_FW ._. -RRB-_-RRB-
+performed_VBN after_IN a_DT query_NN was_VBD submitted_VBN ._.
+These_DT actions_NNS were_VBD aggregated_VBN across_IN users_NNS and_CC search_NN sessions_NNS and_CC converted_VBD to_TO features_NNS in_IN Table_NNP #_# ._.
+#_# ._.
+To_TO create_VB the_DT training_NN ,_, validation_NN ,_, and_CC test_NN query_NN sets_NNS ,_, we_PRP created_VBD three_CD different_JJ random_JJ splits_VBZ of_IN #_# ,_, ###_CD training_NN ,_, ###_CD validation_NN ,_, and_CC 1000_CD test_NN queries_NNS ._.
+The_DT splits_VBZ were_VBD done_VBN randomly_RB by_IN query_NN ,_, so_RB that_IN there_EX was_VBD no_DT overlap_VBP in_IN training_NN ,_, validation_NN ,_, and_CC test_NN queries_NNS ._.
+5_CD ._.
+#_# Evaluation_NN Metrics_NNS We_PRP evaluate_VBP the_DT ranking_JJ algorithms_NNS over_IN a_DT range_NN of_IN accepted_VBN information_NN retrieval_NN metrics_NNS ,_, namely_RB Precision_NNP at_IN K_NNP -LRB-_-LRB- P_NN -LRB-_-LRB- K_NN -RRB-_-RRB- -RRB-_-RRB- ,_, Normalized_VBN Discounted_JJ Cumulative_JJ Gain_NN -LRB-_-LRB- NDCG_NN -RRB-_-RRB- ,_, and_CC Mean_NN Average_JJ Precision_NN -LRB-_-LRB- MAP_NN -RRB-_-RRB- ._.
+Each_DT metric_JJ focuses_VBZ on_IN a_DT deferent_JJ aspect_NN of_IN system_NN performance_NN ,_, as_IN we_PRP describe_VBP below_IN ._.
+Precision_NN at_IN K_NN :_: As_IN the_DT most_RBS intuitive_JJ metric_JJ ,_, P_NN -LRB-_-LRB- K_NN -RRB-_-RRB- reports_VBZ the_DT fraction_NN of_IN documents_NNS ranked_VBD in_IN the_DT top_JJ K_NN results_VBZ that_DT are_VBP labeled_VBN as_IN relevant_JJ ._.
+In_IN our_PRP$ setting_NN ,_, we_PRP require_VBP a_DT relevant_JJ document_NN to_TO be_VB labeled_VBN Good_JJ or_CC higher_JJR ._.
+The_DT position_NN of_IN relevant_JJ documents_NNS within_IN the_DT top_JJ K_NN is_VBZ irrelevant_JJ ,_, and_CC hence_RB this_DT metric_JJ measure_NN overall_JJ user_NN satisfaction_NN with_IN the_DT top_JJ K_NN results_NNS ._.
+NDCG_NN at_IN K_NN :_: NDCG_NN is_VBZ a_DT retrieval_NN measure_NN devised_VBD specifically_RB for_IN web_NN search_NN evaluation_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+For_IN a_DT given_VBN query_NN q_NN ,_, the_DT ranked_VBD results_NNS are_VBP examined_VBN from_IN the_DT top_JJ ranked_VBD down_RP ,_, and_CC the_DT NDCG_NN computed_VBD as_IN :_: =_JJ +_CC =_JJ K_NN j_NN jr_NN qq_NN jMN_NN 1_CD -RRB-_-RRB- -LRB-_-LRB- -RRB-_-RRB- 1log_NN -LRB-_-LRB- /_: -RRB-_-RRB- ##_NN -LRB-_-LRB- Where_WRB Mq_NN is_VBZ a_DT normalization_NN constant_JJ calculated_VBN so_IN that_IN a_DT perfect_JJ ordering_VBG would_MD obtain_VB NDCG_NN of_IN #_# ;_: and_CC each_DT r_NN -LRB-_-LRB- j_NN -RRB-_-RRB- is_VBZ an_DT integer_NN relevance_NN label_NN -LRB-_-LRB- #_# =_JJ Bad_JJ and_CC #_# =_JJ Perfect_NNP -RRB-_-RRB- of_IN result_NN returned_VBD at_IN position_NN j_NN ._.
+Note_VB that_DT unlabeled_JJ and_CC Bad_JJ documents_NNS do_VBP not_RB contribute_VB to_TO the_DT sum_NN ,_, but_CC will_MD reduce_VB NDCG_NNP for_IN the_DT query_NN pushing_VBG down_RP the_DT relevant_JJ labeled_VBN documents_NNS ,_, reducing_VBG their_PRP$ contributions_NNS ._.
+NDCG_NN is_VBZ well_RB suited_VBN to_TO web_NN search_NN evaluation_NN ,_, as_IN it_PRP rewards_VBZ relevant_JJ documents_NNS in_IN the_DT top_JJ ranked_VBD results_NNS more_RBR heavily_RB than_IN those_DT ranked_VBD lower_JJR ._.
+MAP_NN :_: Average_JJ precision_NN for_IN each_DT query_NN is_VBZ defined_VBN as_IN the_DT mean_NN of_IN the_DT precision_NN at_IN K_NNP values_NNS computed_VBD after_IN each_DT relevant_JJ document_NN was_VBD retrieved_VBN ._.
+The_DT final_JJ MAP_NN value_NN is_VBZ defined_VBN as_IN the_DT mean_NN of_IN average_JJ precisions_NNS of_IN all_DT queries_NNS in_IN the_DT test_NN set_NN ._.
+This_DT metric_JJ is_VBZ the_DT most_RBS commonly_RB used_VBN single-value_JJ summary_NN of_IN a_DT run_NN over_IN a_DT set_NN of_IN queries_NNS ._.
+5_CD ._.
+#_# Ranking_NNP Methods_NNS Compared_VBD Recall_VB that_IN our_PRP$ goal_NN is_VBZ to_TO quantify_VB the_DT effectiveness_NN of_IN implicit_JJ behavior_NN for_IN real_JJ web_NN search_NN ._.
+One_CD dimension_NN is_VBZ to_TO compare_VB the_DT utility_NN of_IN implicit_JJ feedback_NN with_IN other_JJ information_NN available_JJ to_TO a_DT web_NN search_NN engine_NN ._.
+Specifically_RB ,_, we_PRP compare_VBP effectiveness_NN of_IN implicit_JJ user_NN behaviors_NNS with_IN content-based_JJ matching_NN ,_, static_JJ page_NN quality_NN features_NNS ,_, and_CC combinations_NNS of_IN all_DT features_NNS ._.
+BM25F_NN :_: As_IN a_DT strong_JJ web_NN search_NN baseline_NN we_PRP used_VBD the_DT BM25F_NN scoring_VBG ,_, which_WDT was_VBD used_VBN in_IN one_CD of_IN the_DT best_JJS performing_VBG systems_NNS in_IN the_DT TREC_NN ####_CD Web_NN track_NN -LSB-_-LRB- ##_CD ,_, ##_CD -RSB-_-RRB- ._.
+BM25F_NN and_CC its_PRP$ variants_NNS have_VBP been_VBN extensively_RB described_VBN and_CC evaluated_VBN in_IN IR_NNP literature_NN ,_, and_CC hence_RB serve_VB as_IN a_DT strong_JJ ,_, reproducible_JJ baseline_NN ._.
+The_DT BM25F_NN variant_NN we_PRP used_VBD for_IN our_PRP$ experiments_NNS computes_VBZ separate_JJ match_NN scores_NNS for_IN each_DT field_NN for_IN a_DT result_NN document_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, body_NN text_NN ,_, title_NN ,_, and_CC anchor_NN text_NN -RRB-_-RRB- ,_, and_CC incorporates_VBZ query-independent_JJ linkbased_JJ information_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, PageRank_NNP ,_, ClickDistance_NNP ,_, and_CC URL_NN depth_NN -RRB-_-RRB- ._.
+The_DT scoring_VBG function_NN and_CC field-specific_JJ tuning_NN is_VBZ described_VBN in_IN detail_NN in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ._.
+Note_VB that_DT BM25F_NN does_VBZ not_RB directly_RB consider_VB explicit_JJ or_CC implicit_JJ feedback_NN for_IN tuning_NN ._.
+RN_NN :_: The_DT ranking_NN produced_VBN by_IN a_DT neural_JJ net_JJ ranker_NN -LRB-_-LRB- RankNet_NNP ,_, described_VBN in_IN Section_NN #_# ._.
+#_# -RRB-_-RRB- that_WDT learns_VBZ to_TO rank_VB web_NN search_NN results_VBZ by_IN incorporating_VBG BM25F_NN and_CC a_DT large_JJ number_NN of_IN additional_JJ static_JJ and_CC dynamic_JJ features_NNS describing_VBG each_DT search_NN result_NN ._.
+This_DT system_NN automatically_RB learns_VBZ weights_NNS for_IN all_DT features_NNS -LRB-_-LRB- including_VBG the_DT BM25F_NN score_NN for_IN a_DT document_NN -RRB-_-RRB- based_VBN on_IN explicit_JJ human_JJ labels_NNS for_IN a_DT large_JJ set_NN of_IN queries_NNS ._.
+A_DT system_NN incorporating_VBG an_DT implementation_NN of_IN RankNet_NNP is_VBZ currently_RB in_IN use_NN by_IN a_DT major_JJ search_NN engine_NN and_CC can_MD be_VB considered_VBN representative_NN of_IN the_DT state_NN of_IN the_DT art_NN in_IN web_NN search_NN ._.
+BM25F-RerankCT_NN :_: The_DT ranking_NN produced_VBN by_IN incorporating_VBG clickthrough_JJ statistics_NNS to_TO reorder_VB web_NN search_NN results_VBZ ranked_VBN by_IN BM25F_NN above_IN ._.
+Clickthrough_NNP is_VBZ a_DT particularly_RB important_JJ special_JJ case_NN of_IN implicit_JJ feedback_NN ,_, and_CC has_VBZ been_VBN shown_VBN to_TO correlate_VB with_IN result_NN relevance_NN ._.
+This_DT is_VBZ a_DT special_JJ case_NN of_IN the_DT ranking_JJ method_NN in_IN Section_NN #_# ._.
+#_# ,_, with_IN the_DT weight_NN wI_NN set_VBN to_TO ####_VB and_CC the_DT ranking_JJ Id_NN is_VBZ simply_RB the_DT number_NN of_IN clicks_NNS on_IN the_DT result_NN corresponding_VBG to_TO d_NN ._.
+In_IN effect_NN ,_, this_DT ranking_JJ brings_VBZ to_TO the_DT top_JJ all_DT returned_VBD web_NN search_NN results_VBZ with_IN at_IN least_JJS one_CD click_VBP -LRB-_-LRB- and_CC orders_NNS them_PRP in_IN decreasing_VBG order_NN by_IN number_NN of_IN clicks_NNS -RRB-_-RRB- ._.
+The_DT relative_JJ ranking_NN of_IN the_DT remainder_NN of_IN results_NNS is_VBZ unchanged_JJ and_CC they_PRP are_VBP inserted_VBN below_IN all_DT clicked_VBD results_NNS ._.
+This_DT method_NN serves_VBZ as_IN our_PRP$ baseline_NN implicit_JJ feedback_NN reranking_NN method_NN ._.
+BM25F-RerankAll_JJ The_DT ranking_NN produced_VBN by_IN reordering_NN the_DT BM25F_NN results_VBZ using_VBG all_DT user_NN behavior_NN features_NNS -LRB-_-LRB- Section_NN #_# -RRB-_-RRB- ._.
+This_DT method_NN learns_VBZ a_DT model_NN of_IN user_NN preferences_NNS by_IN correlating_VBG feature_NN values_NNS with_IN explicit_JJ relevance_NN labels_NNS using_VBG the_DT RankNet_NNP neural_JJ net_JJ algorithm_NN -LRB-_-LRB- Section_NN #_# ._.
+#_# -RRB-_-RRB- ._.
+At_IN runtime_NN ,_, for_IN a_DT given_VBN query_NN the_DT implicit_JJ score_NN Ir_NN is_VBZ computed_VBN for_IN each_DT result_NN r_NN with_IN available_JJ user_NN interaction_NN features_NNS ,_, and_CC the_DT implicit_JJ ranking_NN is_VBZ produced_VBN ._.
+The_DT merged_JJ ranking_NN is_VBZ computed_VBN as_IN described_VBN in_IN Section_NN #_# ._.
+#_# ._.
+Based_VBN on_IN the_DT experiments_NNS over_IN the_DT development_NN set_NN we_PRP fix_VBP the_DT value_NN of_IN wI_NN to_TO #_# -LRB-_-LRB- the_DT effect_NN of_IN the_DT wI_NN parameter_NN for_IN this_DT ranker_NN turned_VBD out_RP to_TO be_VB negligible_JJ -RRB-_-RRB- ._.
+BM25F_NN +_CC All_DT :_: Ranking_NN derived_VBN by_IN training_VBG the_DT RankNet_NNP -LRB-_-LRB- Section_NNP #_# ._.
+#_# -RRB-_-RRB- learner_NN over_IN the_DT features_NNS set_VBN of_IN the_DT BM25F_NN score_NN as_RB well_RB as_IN all_DT implicit_JJ feedback_NN features_NNS -LRB-_-LRB- Section_NN #_# ._.
+#_# -RRB-_-RRB- ._.
+We_PRP used_VBD the_DT 2-layer_JJ implementation_NN of_IN RankNet_NNP -LSB-_-LRB- #_# -RSB-_-RRB- trained_VBN on_IN the_DT queries_NNS and_CC labels_NNS in_IN the_DT training_NN and_CC validation_NN sets_NNS ._.
+RN_NN +_CC All_DT :_: Ranking_NN derived_VBN by_IN training_VBG the_DT 2-layer_JJ RankNet_NN ranking_JJ algorithm_NN -LRB-_-LRB- Section_NN #_# ._.
+#_# -RRB-_-RRB- over_IN the_DT union_NN of_IN all_DT content_NN ,_, dynamic_JJ ,_, and_CC implicit_JJ feedback_NN features_NNS -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, all_DT of_IN the_DT features_NNS described_VBN above_IN as_RB well_RB as_IN all_DT of_IN the_DT new_JJ implicit_JJ feedback_NN features_NNS we_PRP introduced_VBD -RRB-_-RRB- ._.
+The_DT ranking_JJ methods_NNS above_IN span_NN the_DT range_NN of_IN the_DT information_NN used_VBN for_IN ranking_JJ ,_, from_IN not_RB using_VBG the_DT implicit_JJ or_CC explicit_JJ feedback_NN at_IN all_DT -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, BM25F_NN -RRB-_-RRB- to_TO a_DT modern_JJ web_NN search_NN engine_NN using_VBG hundreds_NNS of_IN features_NNS and_CC tuned_VBN on_IN explicit_JJ judgments_NNS -LRB-_-LRB- RN_NN -RRB-_-RRB- ._.
+As_IN we_PRP will_MD show_VB next_JJ ,_, incorporating_VBG user_NN behavior_NN into_IN these_DT ranking_JJ systems_NNS dramatically_RB improves_VBZ the_DT relevance_NN of_IN the_DT returned_VBN documents_NNS ._.
+6_CD ._.
+EXPERIMENTAL_JJ RESULTS_NNS Implicit_JJ feedback_NN for_IN web_NN search_NN ranking_NN can_MD be_VB exploited_VBN in_IN a_DT number_NN of_IN ways_NNS ._.
+We_PRP compare_VBP alternative_JJ methods_NNS of_IN exploiting_VBG implicit_JJ feedback_NN ,_, both_CC by_IN re-ranking_VBG the_DT top_JJ results_NNS -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, the_DT BM25F-RerankCT_NN and_CC BM25F-RerankAll_NN methods_NNS that_WDT reorder_VBP BM25F_NN results_NNS -RRB-_-RRB- ,_, as_RB well_RB as_IN by_IN integrating_VBG the_DT implicit_JJ features_NNS directly_RB into_IN the_DT ranking_JJ process_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, the_DT RN_NN +_CC ALL_NN and_CC BM25F_NN +_CC All_DT methods_NNS which_WDT learn_VBP to_TO rank_VB results_NNS over_IN the_DT implicit_JJ feedback_NN and_CC other_JJ features_NNS -RRB-_-RRB- ._.
+We_PRP compare_VBP our_PRP$ methods_NNS over_IN strong_JJ baselines_NNS -LRB-_-LRB- BM25F_NN and_CC RN_NN -RRB-_-RRB- over_IN the_DT NDCG_NNP ,_, Precision_NNP at_IN K_NNP ,_, and_CC MAP_NN measures_NNS defined_VBN in_IN Section_NN #_# ._.
+#_# ._.
+The_DT results_NNS were_VBD averaged_VBN over_IN three_CD random_JJ splits_VBZ of_IN the_DT overall_JJ dataset_NN ._.
+Each_DT split_NN contained_VBD ####_CD training_NN ,_, ###_CD validation_NN ,_, and_CC ####_CD test_NN queries_NNS ,_, all_DT query_NN sets_VBZ disjoint_NN ._.
+We_PRP first_RB present_VB the_DT results_NNS over_IN all_DT ####_CD test_NN queries_NNS -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, including_VBG queries_NNS for_IN which_WDT there_EX are_VBP no_DT implicit_JJ measures_NNS so_IN we_PRP use_VBP the_DT original_JJ web_NN rankings_NNS -RRB-_-RRB- ._.
+We_PRP then_RB drill_VB down_RP to_TO examine_VB the_DT effects_NNS on_IN reranking_NN for_IN the_DT attempted_VBN queries_NNS in_IN more_JJR detail_NN ,_, analyzing_VBG where_WRB implicit_JJ feedback_NN proved_VBD most_RBS beneficial_JJ ._.
+We_PRP first_RB experimented_VBD with_IN different_JJ methods_NNS of_IN re-ranking_VBG the_DT output_NN of_IN the_DT BM25F_NN search_NN results_NNS ._.
+Figures_NNS #_# ._.
+#_# and_CC #_# ._.
+#_# report_NN NDCG_NN and_CC Precision_NN for_IN BM25F_NN ,_, as_RB well_RB as_IN for_IN the_DT strategies_NNS reranking_VBG results_NNS with_IN user_NN feedback_NN -LRB-_-LRB- Section_NN #_# ._.
+#_# -RRB-_-RRB- ._.
+Incorporating_VBG all_DT user_NN feedback_NN -LRB-_-LRB- either_CC in_IN reranking_VBG framework_NN or_CC as_IN features_NNS to_TO the_DT learner_NN directly_RB -RRB-_-RRB- results_VBZ in_IN significant_JJ improvements_NNS -LRB-_-LRB- using_VBG two-tailed_JJ t-test_NN with_IN p_NN =_JJ #_# ._.
+##_NN -RRB-_-RRB- over_IN both_CC the_DT original_JJ BM25F_NN ranking_NN as_RB well_RB as_IN over_IN reranking_VBG with_IN clickthrough_NN alone_RB ._.
+The_DT improvement_NN is_VBZ consistent_JJ across_IN the_DT top_JJ ##_CD results_NNS and_CC largest_JJS for_IN the_DT top_JJ result_NN :_: NDCG_NN at_IN #_# for_IN BM25F_NN +_CC All_DT is_VBZ #_# ._.
+###_NN compared_VBN to_TO 0_CD ._.
+###_NN of_IN the_DT original_JJ results_NNS ,_, and_CC precision_NN at_IN #_# similarly_RB increases_VBZ from_IN #_# ._.
+#_# to_TO #_# ._.
+##_NN ._.
+Based_VBN on_IN these_DT results_NNS we_PRP will_MD use_VB the_DT direct_JJ feature_NN combination_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, BM25F_NN +_CC All_DT -RRB-_-RRB- ranker_NN for_IN subsequent_JJ comparisons_NNS involving_VBG implicit_JJ feedback_NN ._.
+0_CD ._.
+#_# 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+#_# 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 1_CD #_# #_# #_# #_# #_# #_# #_# #_# 10K_CD NDCG_NN BM25_NN BM25-Rerank-CT_NN BM25-Rerank-All_NN BM25_NN +_CC All_DT Figure_NNP #_# ._.
+#_# :_: NDCG_NN at_IN K_NN for_IN BM25F_NN ,_, BM25F-RerankCT_NN ,_, BM25F-Rerank-All_NN ,_, and_CC BM25F_NN +_CC All_DT for_IN varying_VBG K_NN 0_CD ._.
+##_NN 0_CD ._.
+#_# 0_CD ._.
+##_NN 0_CD ._.
+#_# 0_CD ._.
+##_NN 0_CD ._.
+#_# 0_CD ._.
+##_NN 1_CD #_# #_# ##_CD K_NN Precision_NN BM25_NN BM25-Rerank-CT_NN BM25-Rerank-All_NN BM25_NN +_CC All_DT Figure_NNP #_# ._.
+#_# :_: Precision_NN at_IN K_NN for_IN BM25F_NN ,_, BM25F-RerankCT_NN ,_, BM25F-Rerank-All_NN ,_, and_CC BM25F_NN +_CC All_DT for_IN varying_VBG K_NN Interestingly_RB ,_, using_VBG clickthrough_JJ alone_RB ,_, while_IN giving_VBG significant_JJ benefit_NN over_IN the_DT original_JJ BM25F_NN ranking_NN ,_, is_VBZ not_RB as_RB effective_JJ as_IN considering_VBG the_DT full_JJ set_NN of_IN features_NNS in_IN Table_NNP #_# ._.
+#_# ._.
+While_IN we_PRP analyze_VBP user_NN behavior_NN -LRB-_-LRB- and_CC most_RBS effective_JJ component_NN features_NNS -RRB-_-RRB- in_IN a_DT separate_JJ paper_NN -LSB-_-LRB- #_# -RSB-_-RRB- ,_, it_PRP is_VBZ worthwhile_JJ to_TO give_VB a_DT concrete_JJ example_NN of_IN the_DT kind_NN of_IN noise_NN inherent_JJ in_IN real_JJ user_NN feedback_NN in_IN web_NN search_NN setting_NN ._.
+0_CD 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 1_CD 1_CD #_# #_# #_# Result_NN position_NN Relativeclickfrequency_NNP PTR_NN =_JJ #_# PTR_NN =_JJ #_# PTR_NN =_JJ #_# Figure_NNP #_# ._.
+#_# :_: Relative_JJ clickthrough_JJ frequency_NN for_IN queries_NNS with_IN varying_VBG Position_NN of_IN Top_JJ Relevant_JJ result_NN -LRB-_-LRB- PTR_NN -RRB-_-RRB- ._.
+If_IN users_NNS considered_VBN only_RB the_DT relevance_NN of_IN a_DT result_NN to_TO their_PRP$ query_NN ,_, they_PRP would_MD click_VB on_IN the_DT topmost_JJS relevant_JJ results_NNS ._.
+Unfortunately_RB ,_, as_IN Joachims_NNP and_CC others_NNS have_VBP shown_VBN ,_, presentation_NN also_RB influences_VBZ which_WDT results_VBZ users_NNS click_VB on_IN quite_RB dramatically_RB ._.
+Users_NNS often_RB click_VBP on_IN results_NNS above_IN the_DT relevant_JJ one_CD presumably_RB because_IN the_DT short_JJ summaries_NNS do_VBP not_RB provide_VB enough_JJ information_NN to_TO make_VB accurate_JJ relevance_NN assessments_NNS and_CC they_PRP have_VBP learned_VBN that_IN on_IN average_JJ topranked_JJ items_NNS are_VBP relevant_JJ ._.
+Figure_NNP #_# ._.
+#_# shows_VBZ relative_JJ clickthrough_JJ frequencies_NNS for_IN queries_NNS with_IN known_JJ relevant_JJ items_NNS at_IN positions_NNS other_JJ than_IN the_DT first_JJ position_NN ;_: the_DT position_NN of_IN the_DT top_JJ relevant_JJ result_NN -LRB-_-LRB- PTR_NN -RRB-_-RRB- ranges_VBZ from_IN 2-10_CD in_IN the_DT figure_NN ._.
+For_IN example_NN ,_, for_IN queries_NNS with_IN first_JJ relevant_JJ result_NN at_IN position_NN #_# -LRB-_-LRB- PTR_NN =_JJ #_# -RRB-_-RRB- ,_, there_EX are_VBP more_RBR clicks_VBZ on_IN the_DT non-relevant_JJ results_NNS in_IN higher_JJR ranked_VBD positions_NNS than_IN on_IN the_DT first_JJ relevant_JJ result_NN at_IN position_NN #_# ._.
+As_IN we_PRP will_MD see_VB ,_, learning_VBG over_IN a_DT richer_JJR behavior_NN feature_NN set_NN ,_, results_VBZ in_IN substantial_JJ accuracy_NN improvement_NN over_IN clickthrough_JJ alone_RB ._.
+We_PRP now_RB consider_VBP incorporating_VBG user_NN behavior_NN into_IN a_DT much_JJ richer_JJR feature_NN set_NN ,_, RN_NN -LRB-_-LRB- Section_NN #_# ._.
+#_# -RRB-_-RRB- used_VBN by_IN a_DT major_JJ web_NN search_NN engine_NN ._.
+RN_NN incorporates_VBZ BM25F_NN ,_, link-based_JJ features_NNS ,_, and_CC hundreds_NNS of_IN other_JJ features_NNS ._.
+Figure_NNP #_# ._.
+#_# reports_NNS NDCG_NN at_IN K_NNP and_CC Figure_NNP #_# ._.
+#_# reports_NNS Precision_NN at_IN K_NNP ._.
+Interestingly_RB ,_, while_IN the_DT original_JJ RN_NN rankings_NNS are_VBP significantly_RB more_RBR accurate_JJ than_IN BM25F_NN alone_RB ,_, incorporating_VBG implicit_JJ feedback_NN features_NNS -LRB-_-LRB- BM25F_NN +_CC All_DT -RRB-_-RRB- results_VBZ in_IN ranking_VBG that_DT significantly_RB outperforms_VBZ the_DT original_JJ RN_NN rankings_NNS ._.
+In_IN other_JJ words_NNS ,_, implicit_JJ feedback_NN incorporates_VBZ sufficient_JJ information_NN to_TO replace_VB the_DT hundreds_NNS of_IN other_JJ features_NNS available_JJ to_TO the_DT RankNet_NNP learner_NN trained_VBN on_IN the_DT RN_NN feature_NN set_NN ._.
+0_CD ._.
+#_# 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+#_# 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+#_# 1_CD #_# #_# #_# #_# #_# #_# #_# #_# 10K_CD NDCG_NN RN_NN RN_NN +_CC All_DT BM25_NN BM25_NN +_CC All_DT Figure_NNP #_# ._.
+#_# :_: NDCG_NN at_IN K_NN for_IN BM25F_NN ,_, BM25F_NN +_CC All_DT ,_, RN_NN ,_, and_CC RN_NN +_CC All_DT for_IN varying_VBG K_NNP Furthermore_RB ,_, enriching_VBG the_DT RN_NN features_VBZ with_IN implicit_JJ feedback_NN set_NN exhibits_VBZ significant_JJ gain_NN on_IN all_DT measures_NNS ,_, allowing_VBG RN_NN +_CC All_DT to_TO outperform_VB all_DT other_JJ methods_NNS ._.
+This_DT demonstrates_VBZ the_DT complementary_JJ nature_NN of_IN implicit_JJ feedback_NN with_IN other_JJ features_NNS available_JJ to_TO a_DT state_NN of_IN the_DT art_NN web_NN search_NN engine_NN ._.
+0_CD ._.
+#_# 0_CD ._.
+##_NN 0_CD ._.
+#_# 0_CD ._.
+##_NN 0_CD ._.
+#_# 0_CD ._.
+##_NN 1_CD #_# #_# ##_CD K_NN Precision_NN RN_NN RN_NN +_CC All_DT BM25_NN BM25_NN +_CC All_DT Figure_NNP #_# ._.
+#_# :_: Precision_NN at_IN K_NN for_IN BM25F_NN ,_, BM25F_NN +_CC All_DT ,_, RN_NN ,_, and_CC RN_NN +_CC All_DT for_IN varying_VBG K_NNP We_PRP summarize_VBP the_DT performance_NN of_IN the_DT different_JJ ranking_JJ methods_NNS in_IN Table_NNP #_# ._.
+#_# ._.
+We_PRP report_VBP the_DT Mean_NN Average_JJ Precision_NN -LRB-_-LRB- MAP_NN -RRB-_-RRB- score_NN for_IN each_DT system_NN ._.
+While_IN not_RB intuitive_JJ to_TO interpret_VB ,_, MAP_NN allows_VBZ quantitative_JJ comparison_NN on_IN a_DT single_JJ metric_JJ ._.
+The_DT gains_NNS marked_VBN with_IN *_SYM are_VBP significant_JJ at_IN p_NN =_JJ #_# ._.
+##_NN level_NN using_VBG two_CD tailed_VBD t-test_NN ._.
+MAP_NN Gain_NN P_NN -LRB-_-LRB- #_# -RRB-_-RRB- Gain_NN BM25F_NN #_# ._.
+###_SYM -_: 0_CD ._.
+503BM25F-Rerank-CT_JJ #_# ._.
+###_NN #_# ._.
+###_CD *_SYM #_# ._.
+###_NN #_# ._.
+###_CD *_SYM BM25F-RerankImplicit_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_CD *_SYM BM25F_NN +_CC Implicit_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_CD *_SYM RN_NN #_# ._.
+###_SYM -_: 0_CD ._.
+597RN_NN +_CC All_DT #_# ._.
+###_NN #_# ._.
+###_CD *_SYM #_# ._.
+###_NN #_# ._.
+###_CD *_SYM Table_NNP #_# ._.
+#_# :_: Mean_NN Average_JJ Precision_NN -LRB-_-LRB- MAP_NN -RRB-_-RRB- for_IN all_DT strategies_NNS ._.
+So_RB far_RB we_PRP reported_VBD results_NNS averaged_VBD across_IN all_DT queries_NNS in_IN the_DT test_NN set_NN ._.
+Unfortunately_RB ,_, less_JJR than_IN half_NN had_VBD sufficient_JJ interactions_NNS to_TO attempt_VB reranking_NN ._.
+Out_IN of_IN the_DT ####_CD queries_NNS in_IN test_NN ,_, between_IN ##_CD %_NN and_CC ##_CD %_NN ,_, depending_VBG on_IN the_DT train-test_JJ split_NN ,_, had_VBD sufficient_JJ interaction_NN information_NN to_TO make_VB predictions_NNS -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, there_EX was_VBD at_IN least_JJS 1_CD search_NN session_NN in_IN which_WDT at_IN least_JJS #_# result_VBP URL_NN was_VBD clicked_VBN on_IN by_IN the_DT user_NN -RRB-_-RRB- ._.
+This_DT is_VBZ not_RB surprising_JJ :_: web_NN search_NN is_VBZ heavy-tailed_JJ ,_, and_CC there_EX are_VBP many_JJ unique_JJ queries_NNS ._.
+We_PRP now_RB consider_VBP the_DT performance_NN on_IN the_DT queries_NNS for_IN which_WDT user_NN interactions_NNS were_VBD available_JJ ._.
+Figure_NNP 6_CD ._.
+#_# reports_NNS NDCG_NN for_IN the_DT subset_NN of_IN the_DT test_NN queries_NNS with_IN the_DT implicit_JJ feedback_NN features_NNS ._.
+The_DT gains_NNS at_IN top_JJ #_# are_VBP dramatic_JJ ._.
+The_DT NDCG_NN at_IN #_# of_IN BM25F_NN +_CC All_DT increases_NNS from_IN #_# ._.
+#_# to_TO #_# ._.
+##_NN -LRB-_-LRB- a_DT ##_CD %_NN relative_JJ gain_NN -RRB-_-RRB- ,_, achieving_VBG performance_NN comparable_JJ to_TO RN_NN +_CC All_DT operating_VBG over_IN a_DT much_JJ richer_JJR feature_NN set_NN ._.
+0_CD ._.
+#_# 0_CD ._.
+##_NN 0_CD ._.
+#_# 0_CD ._.
+##_NN 0_CD ._.
+#_# 1_CD #_# #_# 10K_CD NDCG_NN RN_NN RN_NN +_CC All_DT BM25_NN BM25_NN +_CC All_DT Figure_NNP #_# ._.
+#_# :_: NDCG_NN at_IN K_NN for_IN BM25F_NN ,_, BM25F_NN +_CC All_DT ,_, RN_NN ,_, and_CC RN_NN +_CC All_DT on_IN test_NN queries_NNS with_IN user_NN interactions_NNS Similarly_RB ,_, gains_NNS on_IN precision_NN at_IN top_JJ #_# are_VBP substantial_JJ -LRB-_-LRB- Figure_NN #_# ._.
+#_# -RRB-_-RRB- ,_, and_CC are_VBP likely_JJ to_TO be_VB apparent_JJ to_TO web_NN search_NN users_NNS ._.
+When_WRB implicit_JJ feedback_NN is_VBZ available_JJ ,_, the_DT BM25F_NN +_CC All_DT system_NN returns_VBZ relevant_JJ document_NN at_IN top_JJ #_# almost_RB ##_CD %_NN of_IN the_DT time_NN ,_, compared_VBN ##_CD %_NN of_IN the_DT time_NN when_WRB implicit_JJ feedback_NN is_VBZ not_RB considered_VBN by_IN the_DT original_JJ BM25F_NN system_NN ._.
+0_CD ._.
+##_NN 0_CD ._.
+#_# 0_CD ._.
+##_NN 0_CD ._.
+#_# 0_CD ._.
+##_NN 0_CD ._.
+#_# 1_CD #_# #_# 10K_CD Precision_NN RN_NN RN_NN +_CC All_DT BM25_NN BM25_NN +_CC All_DT Figure_NNP #_# ._.
+#_# :_: Precision_NN at_IN K_NNP NDCG_NNP at_IN K_NNP for_IN BM25F_NN ,_, BM25F_NN +_CC All_DT ,_, RN_NN ,_, and_CC RN_NN +_CC All_DT on_IN test_NN queries_NNS with_IN user_NN interactions_NNS We_PRP summarize_VBP the_DT results_NNS on_IN the_DT MAP_NN measure_NN for_IN attempted_VBN queries_NNS in_IN Table_NNP #_# ._.
+#_# ._.
+MAP_NN improvements_NNS are_VBP both_DT substantial_JJ and_CC significant_JJ ,_, with_IN improvements_NNS over_IN the_DT BM25F_NN ranker_NN most_RBS pronounced_JJ ._.
+Method_NNP MAP_NN Gain_NN P_NN -LRB-_-LRB- #_# -RRB-_-RRB- Gain_NN RN_NN #_# ._.
+###_NN #_# ._.
+###_NN RN_NN +_CC All_DT #_# ._.
+###_NN #_# ._.
+###_NN -LRB-_-LRB- ##_CD %_NN -RRB-_-RRB- #_# ._.
+###_NN #_# ._.
+###_NN -LRB-_-LRB- ##_CD %_NN -RRB-_-RRB- BM25F_NN #_# ._.
+###_NN #_# ._.
+###_CD BM25F_NN +_CC All_DT #_# ._.
+###_NN #_# ._.
+###_NN -LRB-_-LRB- ##_CD %_NN -RRB-_-RRB- #_# ._.
+###_NN #_# ._.
+###_NN -LRB-_-LRB- ##_CD %_NN -RRB-_-RRB- Table_NNP #_# ._.
+#_# :_: Mean_NN Average_JJ Precision_NN -LRB-_-LRB- MAP_NN -RRB-_-RRB- on_IN attempted_VBN queries_NNS for_IN best_JJS performing_VBG methods_NNS We_PRP now_RB analyze_VBP the_DT cases_NNS where_WRB implicit_JJ feedback_NN was_VBD shown_VBN most_RBS helpful_JJ ._.
+Figure_NNP #_# ._.
+#_# reports_VBZ the_DT MAP_NN improvements_NNS over_IN the_DT baseline_NN BM25F_NN run_NN for_IN each_DT query_NN with_IN MAP_NN under_IN #_# ._.
+#_# ._.
+Note_VB that_DT most_JJS of_IN the_DT improvement_NN is_VBZ for_IN poorly_RB performing_VBG queries_NNS -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, MAP_NN <_JJR #_# ._.
+#_# -RRB-_-RRB- ._.
+Interestingly_RB ,_, incorporating_VBG user_NN behavior_NN information_NN degrades_VBZ accuracy_NN for_IN queries_NNS with_IN high_JJ original_JJ MAP_NN score_NN ._.
+One_CD possible_JJ explanation_NN is_VBZ that_IN these_DT easy_JJ queries_NNS tend_VBP to_TO be_VB navigational_JJ -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, having_VBG a_DT single_JJ ,_, highly-ranked_JJ most_RBS appropriate_JJ answer_NN -RRB-_-RRB- ,_, and_CC user_NN interactions_NNS with_IN lower-ranked_JJ results_NNS may_MD indicate_VB divergent_JJ information_NN needs_VBZ that_DT are_VBP better_RBR served_VBN by_IN the_DT less_JJR popular_JJ results_NNS -LRB-_-LRB- with_IN correspondingly_RB poor_JJ overall_JJ relevance_NN ratings_NNS -RRB-_-RRB- ._.
+0_CD 50_CD 100_CD 150_CD 200_CD 250_CD 300_CD 350_CD 0_CD ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# -0_CD ._.
+#_# -0_CD ._.
+##_NN -0_CD ._.
+#_# -0_CD ._.
+##_NN -0_CD ._.
+#_# -0_CD ._.
+##_NN -0_CD ._.
+#_# -0_CD ._.
+##_NN 0_CD 0_CD ._.
+##_NN 0_CD ._.
+#_# 0_CD ._.
+##_NN 0_CD ._.
+#_# Frequency_NNP Average_NNP Gain_NNP Figure_NNP #_# ._.
+#_# :_: Gain_NN of_IN BM25F_NN +_CC All_DT over_IN original_JJ BM25F_NN ranking_JJ To_TO summarize_VB our_PRP$ experimental_JJ results_NNS ,_, incorporating_VBG implicit_JJ feedback_NN in_IN real_JJ web_NN search_NN setting_NN resulted_VBD in_IN significant_JJ improvements_NNS over_IN the_DT original_JJ rankings_NNS ,_, using_VBG both_CC BM25F_NN and_CC RN_NN baselines_NNS ._.
+Our_PRP$ rich_JJ set_NN of_IN implicit_JJ features_NNS ,_, such_JJ as_IN time_NN on_IN page_NN and_CC deviations_NNS from_IN the_DT average_JJ behavior_NN ,_, provides_VBZ advantages_NNS over_IN using_VBG clickthrough_JJ alone_RB as_IN an_DT indicator_NN of_IN interest_NN ._.
+Furthermore_RB ,_, incorporating_VBG implicit_JJ feedback_NN features_NNS directly_RB into_IN the_DT learned_VBN ranking_JJ function_NN is_VBZ more_RBR effective_JJ than_IN using_VBG implicit_JJ feedback_NN for_IN reranking_NN ._.
+The_DT improvements_NNS observed_VBN over_IN large_JJ test_NN sets_NNS of_IN queries_NNS -LRB-_-LRB- #_# ,_, ###_CD total_NN ,_, between_IN ###_CD and_CC ###_CD with_IN implicit_JJ feedback_NN available_JJ -RRB-_-RRB- are_VBP both_DT substantial_JJ and_CC statistically_RB significant_JJ ._.
+7_CD ._.
+CONCLUSIONS_NNS AND_CC FUTURE_NNS WORK_VBP In_IN this_DT paper_NN we_PRP explored_VBD the_DT utility_NN of_IN incorporating_VBG noisy_JJ implicit_JJ feedback_NN obtained_VBN in_IN a_DT real_JJ web_NN search_NN setting_VBG to_TO improve_VB web_NN search_NN ranking_NN ._.
+We_PRP performed_VBD a_DT large-scale_JJ evaluation_NN over_IN #_# ,_, ###_CD queries_NNS and_CC more_JJR than_IN ##_CD million_CD user_NN interactions_NNS with_IN a_DT major_JJ search_NN engine_NN ,_, establishing_VBG the_DT utility_NN of_IN incorporating_VBG noisy_JJ implicit_JJ feedback_NN to_TO improve_VB web_NN search_NN relevance_NN ._.
+We_PRP compared_VBD two_CD alternatives_NNS of_IN incorporating_VBG implicit_JJ feedback_NN into_IN the_DT search_NN process_NN ,_, namely_RB reranking_VBG with_IN implicit_JJ feedback_NN and_CC incorporating_VBG implicit_JJ feedback_NN features_NNS directly_RB into_IN the_DT trained_JJ ranking_JJ function_NN ._.
+Our_PRP$ experiments_NNS showed_VBD significant_JJ improvement_NN over_IN methods_NNS that_WDT do_VBP not_RB consider_VB implicit_JJ feedback_NN ._.
+The_DT gains_NNS are_VBP particularly_RB dramatic_JJ for_IN the_DT top_JJ K_NN =_JJ #_# result_VBP in_IN the_DT final_JJ ranking_NN ,_, with_IN precision_NN improvements_NNS as_IN high_JJ as_IN ##_CD %_NN ,_, and_CC the_DT gains_NNS are_VBP substantial_JJ for_IN all_DT values_NNS of_IN K_NN ._.
+Our_PRP$ experiments_NNS showed_VBD that_IN implicit_JJ user_NN feedback_NN can_MD further_RB improve_VB web_NN search_NN performance_NN ,_, when_WRB incorporated_VBN directly_RB with_IN popular_JJ content_NN -_: and_CC link-based_JJ features_NNS ._.
+Interestingly_RB ,_, implicit_JJ feedback_NN is_VBZ particularly_RB valuable_JJ for_IN queries_NNS with_IN poor_JJ original_JJ ranking_NN of_IN results_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, MAP_NN lower_JJR than_IN #_# ._.
+#_# -RRB-_-RRB- ._.
+One_CD promising_JJ direction_NN for_IN future_JJ work_NN is_VBZ to_TO apply_VB recent_JJ research_NN on_IN automatically_RB predicting_VBG query_NN difficulty_NN ,_, and_CC only_RB attempt_NN to_TO incorporate_VB implicit_JJ feedback_NN for_IN the_DT difficult_JJ queries_NNS ._.
+As_IN another_DT research_NN direction_NN we_PRP are_VBP exploring_VBG methods_NNS for_IN extending_VBG our_PRP$ predictions_NNS to_TO the_DT previously_RB unseen_JJ queries_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, query_NN clustering_NN -RRB-_-RRB- ,_, which_WDT should_MD further_RB improve_VB the_DT web_NN search_NN experience_NN of_IN users_NNS ._.
+ACKNOWLEDGMENTS_NNS We_PRP thank_VBP Chris_NNP Burges_NNP and_CC Matt_NNP Richardson_NNP for_IN an_DT implementation_NN of_IN RankNet_NNP for_IN our_PRP$ experiments_NNS ._.
+We_PRP also_RB thank_VBP Robert_NNP Ragno_NNP for_IN his_PRP$ valuable_JJ suggestions_NNS and_CC many_JJ discussions_NNS ._.
+8_CD ._.
+REFERENCES_NNS -LSB-_-LRB- #_# -RSB-_-RRB- E_NN ._.
+Agichtein_NNP ,_, E_NNP ._.
+Brill_NNP ,_, S_NN ._.
+Dumais_NNP ,_, and_CC R_NN ._.
+Ragno_NNP ,_, Learning_NNP User_NN Interaction_NN Models_NNS for_IN Predicting_VBG Web_NN Search_VB Result_NN Preferences_NNPS ._.
+In_IN Proceedings_NNP of_IN the_DT ACM_NNP Conference_NN on_IN Research_NNP and_CC Development_NNP on_IN Information_NNP Retrieval_NNP -LRB-_-LRB- SIGIR_NNP -RRB-_-RRB- ,_, 2006_CD -LSB-_-LRB- #_# -RSB-_-RRB- J_NN ._.
+Allan_NNP ,_, HARD_NNP Track_NNP Overview_NNP in_IN TREC_NNP ####_CD ,_, High_JJ Accuracy_NNP Retrieval_NNP from_IN Documents_NNS ,_, ####_CD -LSB-_-LRB- #_# -RSB-_-RRB- R_NN ._.
+Baeza-Yates_NNS and_CC B_NN ._.
+Ribeiro-Neto_NNP ,_, Modern_NNP Information_NNP Retrieval_NNP ,_, Addison-Wesley_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- S_NN ._.
+Brin_NNP and_CC L_NNP ._.
+Page_NNP ,_, The_DT Anatomy_NNP of_IN a_DT Large-scale_JJ Hypertextual_JJ Web_NN Search_VB Engine_NNP ,_, in_IN Proceedings_NNP of_IN WWW_NNP ,_, 1997_CD -LSB-_-LRB- #_# -RSB-_-RRB- C_NN ._.
+J_NN ._.
+C_NN ._.
+Burges_NNP ,_, T_NN ._.
+Shaked_NNP ,_, E_NNP ._.
+Renshaw_NNP ,_, A_NNP ._.
+Lazier_NNP ,_, M_NN ._.
+Deeds_NNS ,_, N_NN ._.
+Hamilton_NNP ,_, G_NNP ._.
+Hullender_NNP ,_, Learning_NNP to_TO Rank_NNP using_VBG Gradient_NNP Descent_NNP ,_, in_IN Proceedings_NNP of_IN the_DT International_NNP Conference_NN on_IN Machine_NN Learning_NNP ,_, ####_CD -LSB-_-LRB- #_# -RSB-_-RRB- D_NN ._.
+M_NN ._.
+Chickering_NNP ,_, The_DT WinMine_NNP Toolkit_NNP ,_, Microsoft_NNP Technical_NNP Report_NNP MSR-TR-2002-103_NNP ,_, ####_CD -LSB-_-LRB- #_# -RSB-_-RRB- M_NN ._.
+Claypool_NNP ,_, D_NNP ._.
+Brown_NNP ,_, P_NN ._.
+Lee_NNP and_CC M_NN ._.
+Waseda_NNP ._.
+Inferring_VBG user_NN interest_NN ._.
+IEEE_NNP Internet_NNP Computing_NNP ._.
+####_NN -LSB-_-LRB- #_# -RSB-_-RRB- S_NN ._.
+Fox_NNP ,_, K_NNP ._.
+Karnawat_NNP ,_, M_NN ._.
+Mydland_NN ,_, S_NN ._.
+T_NN ._.
+Dumais_NNP and_CC T_NN ._.
+White_NNP ._.
+Evaluating_VBG implicit_JJ measures_NNS to_TO improve_VB the_DT search_NN experience_NN ._.
+In_IN ACM_NNP Transactions_NNS on_IN Information_NNP Systems_NNP ,_, 2005_CD -LSB-_-LRB- #_# -RSB-_-RRB- J_NN ._.
+Goecks_NNP and_CC J_NNP ._.
+Shavlick_NNP ._.
+Learning_NNP users_NNS ''_'' interests_NNS by_IN unobtrusively_RB observing_VBG their_PRP$ normal_JJ behavior_NN ._.
+In_IN Proceedings_NNP of_IN the_DT IJCAI_NNP Workshop_NNP on_IN Machine_NNP Learning_NNP for_IN Information_NNP Filtering_NNP ._.
+####_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- K_NN Jarvelin_NN and_CC J_NN ._.
+Kekalainen_NNP ._.
+IR_NN evaluation_NN methods_NNS for_IN retrieving_VBG highly_RB relevant_JJ documents_NNS ._.
+In_IN Proceedings_NNP of_IN the_DT ACM_NNP Conference_NN on_IN Research_NNP and_CC Development_NNP on_IN Information_NNP Retrieval_NNP -LRB-_-LRB- SIGIR_NNP -RRB-_-RRB- ,_, ####_CD -LSB-_-LRB- ##_CD -RSB-_-RRB- T_NN ._.
+Joachims_NNP ,_, Optimizing_NNP Search_VB Engines_NNS Using_VBG Clickthrough_NNP Data_NNP ._.
+In_IN Proceedings_NNP of_IN the_DT ACM_NNP Conference_NN on_IN Knowledge_NNP Discovery_NNP and_CC Datamining_NNP -LRB-_-LRB- SIGKDD_NNP -RRB-_-RRB- ,_, ####_CD -LSB-_-LRB- ##_CD -RSB-_-RRB- T_NN ._.
+Joachims_NNP ,_, L_NNP ._.
+Granka_NNP ,_, B_NN ._.
+Pang_NNP ,_, H_NN ._.
+Hembrooke_NNP ,_, and_CC G_NN ._.
+Gay_NNS ,_, Accurately_RB Interpreting_VBG Clickthrough_NNP Data_NNP as_IN Implicit_NNP Feedback_NNP ,_, Proceedings_NNP of_IN the_DT ACM_NNP Conference_NN on_IN Research_NNP and_CC Development_NNP on_IN Information_NNP Retrieval_NNP -LRB-_-LRB- SIGIR_NNP -RRB-_-RRB- ,_, ####_CD -LSB-_-LRB- ##_CD -RSB-_-RRB- T_NN ._.
+Joachims_NNP ,_, Making_VBG Large-Scale_JJ SVM_NNP Learning_NNP Practical_NNP ._.
+Advances_NNS in_IN Kernel_NNP Methods_NNS ,_, in_IN Support_NN Vector_NNP Learning_NNP ,_, MIT_NNP Press_NNP ,_, ####_CD -LSB-_-LRB- ##_CD -RSB-_-RRB- D_NNP ._.
+Kelly_NNP and_CC J_NNP ._.
+Teevan_NNP ,_, Implicit_NNP feedback_NN for_IN inferring_VBG user_NN preference_NN :_: A_DT bibliography_NN ._.
+In_IN SIGIR_NNP Forum_NNP ,_, ####_CD -LSB-_-LRB- ##_CD -RSB-_-RRB- J_NNP ._.
+Konstan_NNP ,_, B_NN ._.
+Miller_NNP ,_, D_NNP ._.
+Maltz_NNP ,_, J_NNP ._.
+Herlocker_NNP ,_, L_NNP ._.
+Gordon_NNP ,_, and_CC J_NN ._.
+Riedl_NNP ._.
+GroupLens_NNP :_: Applying_VBG collaborative_JJ filtering_VBG to_TO usenet_VB news_NN ._.
+In_IN Communications_NNP of_IN ACM_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- M_NN ._.
+Morita_NNP ,_, and_CC Y_NN ._.
+Shinoda_NNP ,_, Information_NNP filtering_VBG based_VBN on_IN user_NN behavior_NN analysis_NN and_CC best_JJS match_NN text_NN retrieval_NN ._.
+Proceedings_NNP of_IN the_DT ACM_NNP Conference_NN on_IN Research_NNP and_CC Development_NNP on_IN Information_NNP Retrieval_NNP -LRB-_-LRB- SIGIR_NNP -RRB-_-RRB- ,_, ####_NN -LSB-_-LRB- ##_NN -RSB-_-RRB- D_NN ._.
+Oard_NN and_CC J_NN ._.
+Kim_NNP ._.
+Implicit_JJ feedback_NN for_IN recommender_NN systems_NNS ._.
+In_IN Proceedings_NNP of_IN the_DT AAAI_NNP Workshop_NNP on_IN Recommender_NNP Systems_NNPS ._.
+####_NN -LSB-_-LRB- ##_NN -RSB-_-RRB- D_NN ._.
+Oard_NN and_CC J_NN ._.
+Kim_NNP ._.
+Modeling_VBG information_NN content_NN using_VBG observable_JJ behavior_NN ._.
+In_IN Proceedings_NNP of_IN the_DT 64th_JJ Annual_JJ Meeting_VBG of_IN the_DT American_NNP Society_NNP for_IN Information_NNP Science_NNP and_CC Technology_NNP ._.
+####_NN -LSB-_-LRB- ##_NN -RSB-_-RRB- N_NN ._.
+Pharo_NNP ,_, N_NNP ._.
+and_CC K_NNP ._.
+Jrvelin_NNP ._.
+The_DT SST_NN method_NN :_: a_DT tool_NN for_IN analyzing_VBG web_NN information_NN search_NN processes_NNS ._.
+In_IN Information_NNP Processing_NNP &_CC Management_NNP ,_, ####_CD -LSB-_-LRB- ##_CD -RSB-_-RRB- P_NN ._.
+Pirolli_NNP ,_, The_DT Use_NN of_IN Proximal_JJ Information_NN Scent_NNP to_TO Forage_VB for_IN Distal_JJ Content_NN on_IN the_DT World_NNP Wide_NN Web_NN ._.
+In_IN Working_VBG with_IN Technology_NN in_IN Mind_NNP :_: Brunswikian_NNP ._.
+Resources_NNPS for_IN Cognitive_NNP Science_NNP and_CC Engineering_NNP ,_, Oxford_NNP University_NNP Press_NNP ,_, ####_CD -LSB-_-LRB- ##_CD -RSB-_-RRB- F_NN ._.
+Radlinski_NNP and_CC T_NN ._.
+Joachims_NNP ,_, Query_NNP Chains_NNP :_: Learning_NNP to_TO Rank_NNP from_IN Implicit_NNP Feedback_NNP ._.
+In_IN Proceedings_NNP of_IN the_DT ACM_NNP Conference_NN on_IN Knowledge_NNP Discovery_NNP and_CC Data_NNP Mining_NNP -LRB-_-LRB- SIGKDD_NNP -RRB-_-RRB- ,_, ####_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- F_NN ._.
+Radlinski_NNP and_CC T_NN ._.
+Joachims_NNP ,_, Evaluating_VBG the_DT Robustness_NN of_IN Learning_NNP from_IN Implicit_NNP Feedback_NNP ,_, in_IN Proceedings_NNP of_IN the_DT ICML_NNP Workshop_NNP on_IN Learning_NNP in_IN Web_NN Search_VB ,_, ####_CD -LSB-_-LRB- ##_CD -RSB-_-RRB- S_NN ._.
+E_NN ._.
+Robertson_NNP ,_, H_NN ._.
+Zaragoza_NNP ,_, and_CC M_NN ._.
+Taylor_NNP ,_, Simple_JJ BM25_NN extension_NN to_TO multiple_JJ weighted_JJ fields_NNS ,_, in_IN Proceedings_NNP of_IN the_DT Conference_NN on_IN Information_NN and_CC Knowledge_NNP Management_NNP -LRB-_-LRB- CIKM_NNP -RRB-_-RRB- ,_, ####_NN -LSB-_-LRB- ##_NN -RSB-_-RRB- G_NN ._.
+Salton_NNP &_CC M_NNP ._.
+McGill_NNP ._.
+Introduction_NN to_TO modern_JJ information_NN retrieval_NN ._.
+McGraw-Hill_NNP ,_, ####_CD -LSB-_-LRB- ##_CD -RSB-_-RRB- E_NN ._.
+M_NN ._.
+Voorhees_NNP ,_, D_NNP ._.
+Harman_NNP ,_, Overview_NNP of_IN TREC_NNP ,_, ####_CD -LSB-_-LRB- ##_CD -RSB-_-RRB- G_NN ._.
+R_NN ._.
+Xue_NNP ,_, H_NN ._.
+J_NN ._.
+Zeng_NNP ,_, Z_NN ._.
+Chen_NNP ,_, Y_NN ._.
+Yu_NNP ,_, W_NNP ._.
+Y_NN ._.
+Ma_NNP ,_, W_NNP ._.
+S_NN ._.
+Xi_NN ,_, and_CC W_NN ._.
+G_NN ._.
+Fan_NN ,_, Optimizing_VBG web_NN search_NN using_VBG web_NN clickthrough_JJ data_NNS ,_, in_IN Proceedings_NNP of_IN the_DT Conference_NN on_IN Information_NN and_CC Knowledge_NNP Management_NNP -LRB-_-LRB- CIKM_NNP -RRB-_-RRB- ,_, ####_CD -LSB-_-LRB- ##_CD -RSB-_-RRB- H_NN ._.
+Zaragoza_NNP ,_, N_NNP ._.
+Craswell_NNP ,_, M_NN ._.
+Taylor_NNP ,_, S_NN ._.
+Saria_NNP ,_, and_CC S_NN ._.
+Robertson_NNP ._.
+Microsoft_NNP Cambridge_NNP at_IN TREC_NNP ##_CD :_: Web_NN and_CC Hard_JJ Tracks_NNPS ._.
+In_IN Proceedings_NNP of_IN TREC_NNP ####_CD

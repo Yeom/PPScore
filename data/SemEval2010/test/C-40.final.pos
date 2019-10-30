@@ -1,0 +1,662 @@
+Edge_NNP Indexing_NN in_IN a_DT Grid_NNP for_IN Highly_NNP Dynamic_NNP Virtual_NNP Environments_NNP Beomjoo_NNP Seo_NNP bseo_NN @_IN usc_NN ._.
+edu_NN Roger_NNP Zimmermann_NNP rzimmerm_NN @_IN imsc_NN ._.
+usc_NN ._.
+edu_NN Computer_NN Science_NNP Department_NNP University_NNP of_IN Southern_NNP California_NNP Los_NNP Angeles_NNP ,_, CA_NNP #####_NNP ABSTRACT_NN Newly_RB emerging_VBG game-based_JJ application_NN systems_NNS such_JJ as_IN Second_JJ Life1_NN provide_VBP 3D_NN virtual_JJ environments_NNS where_WRB multiple_JJ users_NNS interact_VBP with_IN each_DT other_JJ in_IN real-time_JJ ._.
+They_PRP are_VBP filled_VBN with_IN autonomous_JJ ,_, mutable_JJ virtual_JJ content_NN which_WDT is_VBZ continuously_RB augmented_VBN by_IN the_DT users_NNS ._.
+To_TO make_VB the_DT systems_NNS highly_RB scalable_JJ and_CC dynamically_RB extensible_JJ ,_, they_PRP are_VBP usually_RB built_VBN on_IN a_DT client-server_JJ based_VBN grid_NN subspace_NN division_NN where_WRB the_DT virtual_JJ worlds_NNS are_VBP partitioned_VBN into_IN manageable_JJ sub-worlds_NNS ._.
+In_IN each_DT sub-world_JJ ,_, the_DT user_NN continuously_RB receives_VBZ relevant_JJ geometry_NN updates_NNS of_IN moving_VBG objects_NNS from_IN remotely_RB connected_VBN servers_NNS and_CC renders_VBZ them_PRP according_VBG to_TO her_PRP$ viewpoint_NN ,_, rather_RB than_IN retrieving_VBG them_PRP from_IN a_DT local_JJ storage_NN medium_NN ._.
+In_IN such_JJ systems_NNS ,_, the_DT determination_NN of_IN the_DT set_NN of_IN objects_NNS that_WDT are_VBP visible_JJ from_IN a_DT user_NN ''_'' s_NNS viewpoint_NN is_VBZ one_CD of_IN the_DT primary_JJ factors_NNS that_WDT affect_VBP server_NN throughput_NN and_CC scalability_NN ._.
+Specifically_RB ,_, performing_VBG real-time_JJ visibility_NN tests_NNS in_IN extremely_RB dynamic_JJ virtual_JJ environments_NNS is_VBZ a_DT very_RB challenging_JJ task_NN as_IN millions_NNS of_IN objects_NNS and_CC sub-millions_NNS of_IN active_JJ users_NNS are_VBP moving_VBG and_CC interacting_VBG ._.
+We_PRP recognize_VBP that_IN the_DT described_VBN challenges_NNS are_VBP closely_RB related_JJ to_TO a_DT spatial_JJ database_NN problem_NN ,_, and_CC hence_RB we_PRP map_VBP the_DT moving_VBG geometry_NN objects_NNS in_IN the_DT virtual_JJ space_NN to_TO a_DT set_NN of_IN multi-dimensional_JJ objects_NNS in_IN a_DT spatial_JJ database_NN while_IN modeling_NN each_DT avatar_NN both_CC as_IN a_DT spatial_JJ object_NN and_CC a_DT moving_VBG query_NN ._.
+Unfortunately_RB ,_, existing_VBG spatial_JJ indexing_NN methods_NNS are_VBP unsuitable_JJ for_IN this_DT kind_NN of_IN new_JJ environments_NNS ._.
+The_DT main_JJ goal_NN of_IN this_DT paper_NN is_VBZ to_TO present_VB an_DT efficient_JJ spatial_JJ index_NN structure_NN that_WDT minimizes_VBZ unexpected_JJ object_NN popping_VBG and_CC supports_VBZ highly_RB scalable_JJ real-time_JJ visibility_NN determination_NN ._.
+We_PRP then_RB uncover_VBP many_JJ useful_JJ properties_NNS of_IN this_DT structure_NN and_CC compare_VB the_DT index_NN structure_NN with_IN various_JJ spatial_JJ indexing_NN methods_NNS in_IN terms_NNS of_IN query_JJ quality_NN ,_, system_NN throughput_NN ,_, and_CC resource_NN utilization_NN ._.
+We_PRP expect_VBP our_PRP$ approach_NN to_TO lay_VB the_DT groundwork_NN for_IN next-generation_JJ virtual_JJ frameworks_NNS that_WDT may_MD merge_VB into_IN existing_VBG web-based_JJ services_NNS in_IN the_DT near_JJ future_NN ._.
+Categories_NNS and_CC Subject_NNP Descriptors_NNPS :_: C_NN ._.
+#_# ._.
+#_# -LSB-_-LRB- Computer_NN -_: Communication_NNP Networks_NNP -RSB-_-RRB- :_: Distributed_VBN Systems_NNPS -_: Client_NN /_: server_NN ,_, Distributed_VBN applications_NNS ,_, Distributed_VBN databases_NNS ;_: I_PRP ._.
+#_# ._.
+#_# -LSB-_-LRB- Computer_NNP Graphics_NNP -RSB-_-RRB- :_: Three-Dimensional_JJ Graphics_NNS and_CC Realism_NN -_: Virtual_JJ Reality_NN General_NNP Terms_NNS :_: Algorithms_NNS ,_, Design_NN ,_, Performance_NNP 1_CD ._.
+INTRODUCTION_NNP Recently_RB ,_, Massively_RB Multiplayer_NNP Online_NNP Games_NNPS -LRB-_-LRB- MMOGs_NNS -RRB-_-RRB- have_VBP been_VBN studied_VBN as_IN a_DT framework_NN for_IN next-generation_JJ virtual_JJ environments_NNS ._.
+Many_JJ MMOG_NN applications_NNS ,_, however_RB ,_, still_RB limit_VB themselves_PRP to_TO a_DT traditional_JJ design_NN approach_NN where_WRB their_PRP$ 3D_NN scene_NN complexity_NN is_VBZ carefully_RB controlled_VBN in_IN advance_NN to_TO meet_VB real-time_JJ rendering_VBG constraints_NNS at_IN the_DT client_NN console_NN side_NN ._.
+To_TO enable_VB a_DT virtual_JJ landscape_NN in_IN next-generation_JJ environments_NNS that_WDT is_VBZ seamless_JJ ,_, endless_JJ ,_, and_CC limitless_JJ ,_, Marshall_NNP et_NNP al_NNP ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- identified_VBD four_CD new_JJ requirements2_NN :_: dynamic_JJ extensibility_NN -LRB-_-LRB- a_DT system_NN allows_VBZ the_DT addition_NN or_CC the_DT change_NN of_IN components_NNS at_IN run_NN time_NN -RRB-_-RRB- ;_: scalability_NN -LRB-_-LRB- although_IN the_DT number_NN of_IN concurrent_JJ users_NNS increases_NNS ,_, the_DT system_NN continues_VBZ to_TO function_VB effectively_RB -RRB-_-RRB- ;_: interactibility_NN ;_: and_CC interoperability_NN ._.
+In_IN this_DT paper_NN ,_, we_PRP mainly_RB focus_VBP on_IN the_DT first_JJ two_CD requirements_NNS ._.
+Dynamic_NNP extensibility_NN allows_VBZ regular_JJ game-users_NNS to_TO deploy_VB their_PRP$ own_JJ created_VBN content_NN ._.
+This_DT is_VBZ a_DT powerful_JJ concept_NN ,_, but_CC unfortunately_RB ,_, user-created_JJ content_NN tends_VBZ to_TO create_VB imbalances_NNS among_IN the_DT existing_VBG scene_NN complexity_NN ,_, causing_VBG system-wide_JJ performance_NN problems_NNS ._.
+Full_JJ support_NN for_IN dynamic_JJ extensibility_NN will_MD ,_, thus_RB ,_, continue_VBP to_TO be_VB one_CD of_IN the_DT biggest_JJS challenges_NNS for_IN game_NN developers_NNS ._.
+Another_DT important_JJ requirement_NN is_VBZ scalability_NN ._.
+Although_IN MMOG_NN developers_NNS proclaim_VBP that_IN their_PRP$ systems_NNS can_MD support_VB hundreds_NNS of_IN thousands_NNS of_IN concurrent_JJ users_NNS ,_, it_PRP usually_RB does_VBZ not_RB mean_VB that_IN all_PDT the_DT users_NNS can_MD interact_VB with_IN each_DT other_JJ in_IN the_DT same_JJ world_NN ._.
+By_IN carefully_RB partitioning_VBG the_DT world_NN into_IN multiple_JJ sub-worlds_NNS or_CC replicating_VBG worlds_NNS at_IN geographically_RB dispersed_VBN locations_NNS ,_, massive_JJ numbers_NNS of_IN concurrent_JJ users_NNS can_MD be_VB supported_VBN ._.
+Typically_RB ,_, the_DT maximum_NN number_NN of_IN users_NNS in_IN the_DT same_JJ world_NN managed_VBN by_IN a_DT single_JJ server_NN or_CC a_DT server-cluster_NN is_VBZ limited_VBN to_TO several_JJ thousands_NNS ,_, assuming_VBG a_DT rather_RB stationary_JJ world_NN -LSB-_-LRB- #_# ,_, #_# -RSB-_-RRB- ._.
+Second_NNP Life_NNP -LSB-_-LRB- #_# -RSB-_-RRB- is_VBZ the_DT first_JJ successfully_RB deployed_VBN MMOG_NN system_NN that_WDT meets_VBZ both_DT requirements_NNS ._.
+To_TO mitigate_VB the_DT dynamics_NNS of_IN the_DT game_NN world_NN ,_, where_WRB a_DT large_JJ number_NN of_IN autonomous_JJ objects_NNS are_VBP continuously_RB moving_VBG ,_, it_PRP partitions_VBZ the_DT space_NN in_IN a_DT grid-like_JJ manner_NN and_CC 2_CD Originally_RB ,_, these_DT requirements_NNS were_VBD specified_VBN for_IN their_PRP$ dedicated_JJ platform_NN ._.
+But_CC we_PRP acknowledge_VBP that_IN these_DT requirements_NNS are_VBP also_RB valid_JJ for_IN new_JJ virtual_JJ environments_NNS ._.
+402_CD Avatar_NNP Object_NNP PoppingAutonomous_NNP Entities_NNP -LRB-_-LRB- a_DT -RRB-_-RRB- At_IN time_NN t_NN -LRB-_-LRB- b_NN -RRB-_-RRB- At_IN time_NN t_NN +_CC Figure_NN #_# :_: Object_NNP popping_VBG occurred_VBD as_IN a_DT user_NN moves_VBZ forward_RB -LRB-_-LRB- screenshots_NNS from_IN Second_NNP Life_NNP -RRB-_-RRB- where_WRB =_JJ #_# seconds_NNS ._.
+employs_VBZ a_DT client_NN /_: server_NN based_VBN 3D_NN object_NN streaming_NN model_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+In_IN this_DT model_NN ,_, a_DT server_NN continuously_RB transmits_VBZ both_CC update_VBP events_NNS and_CC geometry_NN data_NNS to_TO every_DT connected_JJ user_NN ._.
+As_IN a_DT result_NN ,_, this_DT extensible_JJ gaming_NN environment_NN has_VBZ accelerated_VBN the_DT deployment_NN of_IN usercreated_JJ content_NN and_CC provides_VBZ users_NNS with_IN unlimited_JJ freedom_NN to_TO pursue_VB a_DT navigational_JJ experience_NN in_IN its_PRP$ space_NN ._.
+One_CD of_IN the_DT main_JJ operations_NNS in_IN MMOG_NNP applications_NNS that_WDT stream_NN 3D_NN objects_NNS is_VBZ to_TO accurately_RB calculate_VB all_DT objects_NNS that_WDT are_VBP visible_JJ to_TO a_DT user_NN ._.
+The_DT traditional_JJ visibility_NN determination_NN approach_NN ,_, however_RB ,_, has_VBZ an_DT object_NN popping_VBG problem_NN ._.
+For_IN example_NN ,_, a_DT house_NN outside_IN a_DT user_NN ''_'' s_NNS visible_JJ range_NN is_VBZ not_RB drawn_VBN at_IN time_NN t_NN ,_, illustrated_VBD in_IN Figure_NNP #_# -LRB-_-LRB- a_DT -RRB-_-RRB- ._.
+As_IN the_DT user_NN moves_VBZ forward_RB ,_, the_DT house_NN will_MD suddenly_RB appear_VB at_IN time_NN -LRB-_-LRB- t_NN +_CC -RRB-_-RRB- as_IN shown_VBN in_IN Figure_NNP #_# -LRB-_-LRB- b_NN -RRB-_-RRB- ._.
+If_IN is_VBZ small_JJ ,_, or_CC the_DT house_NN is_VBZ large_JJ enough_RB to_TO collide_VB with_IN the_DT user_NN ,_, it_PRP will_MD disrupt_VB the_DT user_NN ''_'' s_NNS navigational_JJ experience_NN ._.
+The_DT visibility_NN calculation_NN for_IN each_DT user_NN not_RB only_RB needs_VBZ to_TO be_VB accurate_JJ ,_, but_CC also_RB fast_RB ._.
+This_DT challenge_NN is_VBZ illustrated_VBN by_IN the_DT fact_NN that_IN the_DT maximum_NN number_NN of_IN concurrent_JJ users_NNS per_IN server_NN of_IN Second_NNP Life_NNP is_VBZ still_RB an_DT order_NN of_IN magnitude_NN smaller_JJR than_IN for_IN stationary_JJ worlds_NNS ._.
+To_TO address_VB these_DT challenges_NNS ,_, we_PRP propose_VBP a_DT method_NN that_WDT identifies_VBZ the_DT most_RBS relevant_JJ visible_JJ objects_NNS from_IN a_DT given_VBN geometry_NN database_NN -LRB-_-LRB- view_NN model_NN -RRB-_-RRB- and_CC then_RB put_VBD forth_RB a_DT fast_JJ indexing_NN method_NN that_WDT computes_VBZ the_DT visible_JJ objects_NNS for_IN each_DT user_NN -LRB-_-LRB- spatial_JJ indexing_NN -RRB-_-RRB- ._.
+Our_PRP$ two_CD novel_JJ methods_NNS represent_VBP the_DT main_JJ contributions_NNS of_IN this_DT work_NN ._.
+The_DT organization_NN of_IN this_DT paper_NN is_VBZ as_IN follows_VBZ ._.
+Section_NN #_# presents_VBZ related_JJ work_NN ._.
+Section_NN #_# describes_VBZ our_PRP$ new_JJ view_NN method_NN ._.
+In_IN Section_NN #_# ,_, we_PRP present_VBP assumptions_NNS on_IN our_PRP$ target_NN application_NN and_CC introduce_VB a_DT new_JJ spatial_JJ indexing_NN method_NN designed_VBN to_TO support_VB real-time_JJ visibility_NN computations_NNS ._.
+We_PRP also_RB discuss_VBP its_PRP$ optimization_NN issues_NNS ._.
+Section_NN #_# reports_NNS on_IN the_DT quantitative_JJ analysis_NN and_CC Section_NN #_# presents_VBZ preliminary_JJ results_NNS of_IN our_PRP$ simulation_NN based_VBN experiments_NNS ._.
+Finally_RB ,_, we_PRP conclude_VBP and_CC address_VBP future_JJ research_NN directions_NNS in_IN Section_NN #_# ._.
+2_LS ._.
+RELATED_JJ WORK_VBP Visibility_NN determination_NN has_VBZ been_VBN widely_RB explored_VBN in_IN the_DT field_NN of_IN 3D_NN graphics_NNS ._.
+Various_JJ local_JJ rendering_VBG algorithms_NNS have_VBP been_VBN proposed_VBN to_TO eliminate_VB unnecessary_JJ objects_NNS before_IN rendering_VBG or_CC at_IN any_DT stage_NN in_IN the_DT rendering_VBG pipeline_NN ._.
+View-frustum_JJ culling_NN ,_, back-face_JJ culling_NN ,_, and_CC occlusion_NN culling_NN are_VBP some_DT of_IN the_DT well-known_JJ visibility_NN culling_NN techniques_NNS -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+However_RB ,_, these_DT algorithms_NNS assume_VBP that_IN all_PDT the_DT candidate_NN visible_JJ objects_NNS have_VBP been_VBN stored_VBN locally_RB ._.
+If_IN the_DT target_NN objects_NNS are_VBP stored_VBN on_IN remote_JJ servers_NNS ,_, the_DT clients_NNS receive_VBP the_DT geometry_NN items_NNS that_WDT are_VBP necessary_JJ for_IN rendering_VBG from_IN the_DT server_NN databases_NNS ._.
+Teller_NNP et_FW al_FW ._.
+described_VBN a_DT geometry_NN data_NNS scheduling_NN algorithm_NN that_WDT maximizes_VBZ the_DT quality_NN of_IN the_DT frame_NN rate_NN over_IN time_NN in_IN remote_JJ walkthroughs_NNS of_IN complex_JJ 3D_NN scenes_NNS from_IN a_DT user_NN ''_'' s_NNS navigational_JJ path_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+Funkhouser_NNP et_FW al_FW ._.
+showed_VBD that_IN multi-resolutional_JJ representation_NN ,_, such_JJ as_IN Levels_NNS Of_IN Detail_NN -LRB-_-LRB- LOD_NN -RRB-_-RRB- ,_, can_MD be_VB used_VBN to_TO improve_VB rendering_VBG frame_NN rates_NNS and_CC memory_NN utilization_NN during_IN interactive_JJ visualization_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+However_RB ,_, these_DT online_JJ optimization_NN algorithms_NNS fail_VBP to_TO address_VB performance_NN issue_NN at_IN the_DT server_NN in_IN highly_RB crowded_VBN environments_NNS ._.
+On_IN the_DT other_JJ hand_NN ,_, our_PRP$ visibility_NN computation_NN model_NN ,_, a_DT representative_NN of_IN this_DT category_NN ,_, is_VBZ based_VBN on_IN different_JJ assumptions_NNS on_IN the_DT data_NNS representation_NN of_IN virtual_JJ entities_NNS ._.
+In_IN the_DT graphics_NNS area_NN ,_, there_EX has_VBZ been_VBN little_JJ work_NN on_IN supporting_VBG real-time_JJ visibility_NN computations_NNS for_IN a_DT massive_JJ number_NN of_IN moving_VBG objects_NNS and_CC users_NNS ._.
+Here_RB we_PRP recognize_VBP that_IN such_JJ graphics_NNS related_JJ issues_NNS have_VBP a_DT very_RB close_JJ similarity_NN to_TO spatial_JJ database_NN problems_NNS ._.
+Recently_RB ,_, a_DT number_NN of_IN publications_NNS have_VBP addressed_VBN the_DT scalability_NN issue_NN on_IN how_WRB to_TO support_VB massive_JJ numbers_NNS of_IN objects_NNS and_CC queries_NNS in_IN highly_RB dynamic_JJ environments_NNS ._.
+To_TO support_VB frequent_JJ updates_NNS ,_, two_CD partitioning_VBG policies_NNS have_VBP been_VBN studied_VBN in_IN depth_NN :_: -LRB-_-LRB- #_# -RRB-_-RRB- R-tree_NN based_VBN spatial_JJ indexing_NN ,_, and_CC -LRB-_-LRB- #_# -RRB-_-RRB- grid-based_JJ spatial_JJ indexing_NN ._.
+The_DT R-tree_NN is_VBZ a_DT well-known_JJ spatial_JJ index_NN structure_NN that_WDT allows_VBZ overlapping_VBG between_IN the_DT regions_NNS in_IN different_JJ branches_NNS which_WDT are_VBP represented_VBN by_IN Minimum_NNP Bounding_NNP Rectangles_NNP -LRB-_-LRB- MBR_NNP -RRB-_-RRB- ._.
+The_DT grid-based_JJ partitioning_NN model_NN is_VBZ a_DT special_JJ case_NN of_IN fixed_VBN partitioning_NN ._.
+Recently_RB ,_, it_PRP has_VBZ been_VBN re-discovered_VBN since_IN it_PRP can_MD be_VB efficient_JJ in_IN highly_RB dynamic_JJ environments_NNS ._.
+Many_JJ studies_NNS have_VBP reported_VBN that_IN the_DT R-tree_NN and_CC its_PRP$ variants_NNS -LRB-_-LRB- R_NN +_CC tree_NN ,_, R_NN -_: tree_NN -RRB-_-RRB- suffer_VBP from_IN unacceptable_JJ performance_NN degradation_NN in_IN a_DT highly_RB dynamic_JJ environment_NN ,_, primarily_RB due_JJ to_TO the_DT computational_JJ complexity_NN of_IN the_DT split_NN algorithm_NN -LSB-_-LRB- #_# ,_, #_# ,_, ##_NN ,_, ##_NN ,_, ##_NN -RSB-_-RRB- ._.
+A_DT bottom-up_JJ update_VBP strategy_NN proposed_VBN for_IN R-trees_NNS -LSB-_-LRB- #_# -RSB-_-RRB- optimizes_VBZ update_VB operations_NNS of_IN the_DT index_NN while_IN maintaining_VBG a_DT top_JJ down_IN query_NN processing_NN mechanism_NN ._.
+Instead_RB of_IN traversing_VBG a_DT tree_NN from_IN the_DT root_NN node_NN for_IN frequent_JJ update_VBP requests_NNS -LRB-_-LRB- top-down_JJ approach_NN -RRB-_-RRB- ,_, it_PRP directly_RB accesses_VBZ the_DT leaf_NN node_NN of_IN the_DT object_NN to_TO be_VB updated_VBN via_IN an_DT object_NN hash_NN table_NN ._.
+Q-Index_NN -LSB-_-LRB- ##_CD ,_, ##_CD -RSB-_-RRB- is_VBZ one_CD of_IN the_DT earlier_JJR work_NN that_WDT re-discovers_VBZ the_DT usefulness_NN of_IN grid-based_JJ space_NN partitioning_VBG for_IN emerging_VBG moving_VBG object_NN environments_NNS ._.
+In_IN contrast_NN to_TO traditional_JJ spatial_JJ indexing_NN methods_NNS that_WDT construct_VBP an_DT index_NN on_IN the_DT moving_VBG objects_NNS ,_, it_PRP builds_VBZ an_DT index_NN on_IN the_DT continuous_JJ range_NN queries_NNS ,_, assuming_VBG that_IN the_DT queries_NNS move_VBP infrequently_RB while_IN the_DT objects_NNS move_VBP freely_RB ._.
+The_DT basic_JJ idea_NN of_IN the_DT Q_NNP +_CC Rtree_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- is_VBZ to_TO separate_JJ indexing_NN structures_NNS for_IN quasistationary_JJ objects_NNS and_CC moving_VBG objects_NNS :_: fast-moving_JJ objects_NNS are_VBP indexed_VBN in_IN a_DT Quadtree_NN and_CC quasi-stationary_JJ objects_NNS are_VBP stored_VBN in_IN an_DT R_NN -_: tree_NN ._.
+SINA_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- was_VBD proposed_VBN to_TO provide_VB efficient_JJ query_NN evaluations_NNS for_IN any_DT combination_NN of_IN stationary_JJ /_: moving_VBG objects_NNS and_CC stationary_JJ /_: moving_VBG queries_NNS ._.
+Specifically_RB ,_, this_DT approach_NN only_RB detects_VBZ newly_RB discovered_VBN -LRB-_-LRB- positive_JJ -RRB-_-RRB- or_CC no_DT longer_JJR relevant_JJ -LRB-_-LRB- negative_JJ -RRB-_-RRB- object_NN updates_NNS efficiently_RB ._.
+Unlike_IN other_JJ spatial_JJ indexing_NN methods_NNS that_WDT focus_VBP on_IN reducing_VBG the_DT query_NN evaluation_NN cost_NN ,_, Hu_NNP et_FW al_FW ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- proposed_VBD a_DT general_JJ framework_NN that_WDT minimizes_VBZ the_DT communication_NN cost_NN for_IN location_NN updates_NNS by_IN maintaining_VBG a_DT rectangular_JJ area_NN called_VBD a_DT safe_JJ region_NN around_IN moving_VBG objects_NNS ._.
+As_RB long_RB as_IN any_DT object_NN resides_VBZ in_IN this_DT region_NN ,_, all_PDT the_DT query_NN results_NNS are_VBP guaranteed_VBN to_TO be_VB valid_JJ in_IN the_DT system_NN ._.
+If_IN objects_NNS move_VBP out_IN of_IN their_PRP$ region_NN ,_, location_NN update_VBP requests_NNS should_MD be_VB delivered_VBN to_TO the_DT database_NN server_NN and_CC the_DT affected_VBN queries_NNS are_VBP re-evaluated_VBN on_IN the_DT fly_NN ._.
+Our_PRP$ indexing_NN method_NN is_VBZ very_RB similar_JJ to_TO the_DT above_JJ approaches_NNS ._.
+The_DT major_JJ difference_NN is_VBZ that_IN we_PRP are_VBP more_RBR concentrating_VBG on_IN real-time_JJ visibility_NN determination_NN while_IN others_NNS assume_VBP loose_JJ timing_NN constraints_NNS ._.
+3_LS ._.
+OBJECT-INITIATED_JJ VIEW_NN MODEL_NN In_IN this_DT section_NN we_PRP illustrate_VBP how_WRB the_DT object_NN popping_VBG problem_NN can_MD be_VB associated_VBN with_IN a_DT typical_JJ view_NN decision_NN model_NN ._.
+We_PRP then_RB propose_VBP our_PRP$ own_JJ model_NN ,_, and_CC finally_RB we_PRP discuss_VBP its_PRP$ strengths_NNS and_CC limitations_NNS ._.
+To_TO begin_VB with_IN ,_, we_PRP define_VBP the_DT terminologies_NNS commonly_RB used_VBN throughout_IN this_DT paper_NN ._.
+Entities_NNS in_IN a_DT virtual_JJ space_NN can_MD be_VB categorized_VBN into_IN three_CD types_NNS 403_CD based_VBN on_IN their_PRP$ role_NN -_: autonomous_JJ entities_NNS ,_, spectator_NN entities_NNS ,_, and_CC avatars_NNS ._.
+The_DT term_NN autonomous_JJ entity_NN refers_VBZ to_TO an_DT ordinary_JJ moving_NN or_CC stationary_JJ geometric_JJ object_NN that_WDT can_MD be_VB visible_JJ to_TO other_JJ entities_NNS ._.
+The_DT spectator_NN entity_NN corresponds_VBZ to_TO a_DT player_NN ''_'' s_NNS viewpoint_NN ,_, but_CC is_VBZ invisible_JJ to_TO other_JJ entities_NNS ._.
+It_PRP has_VBZ no_DT shape_NN and_CC is_VBZ represented_VBN only_RB by_IN a_DT point_NN location_NN ._.
+It_PRP is_VBZ designed_VBN to_TO allow_VB a_DT game_NN participant_NN to_TO see_VB from_IN a_DT third-person_JJ viewpoint_NN ._.
+It_PRP functions_VBZ similar_JJ to_TO a_DT camera_NN control_NN in_IN the_DT 3D_NN graphics_NNS field_NN ._.
+It_PRP also_RB has_VBZ a_DT higher_JJR degree_NN of_IN mobility_NN than_IN other_JJ entities_NNS ._.
+The_DT avatar_NN represents_VBZ a_DT normal_JJ game_NN user_NN who_WP can_MD freely_RB navigate_VB in_IN the_DT space_NN and_CC interact_VBP with_IN other_JJ entities_NNS ._.
+It_PRP possesses_VBZ both_DT features_NNS :_: its_PRP$ own_JJ viewpoint_NN and_CC visibility_NN ._.
+For_IN the_DT remainder_NN we_PRP use_VBP the_DT term_NN object_NN entity_NN to_TO refer_VB to_TO an_DT autonomous_JJ entity_NN or_CC an_DT avatar_NN while_IN we_PRP use_VBP user_NN entity_NN to_TO denote_VB an_DT avatar_NN or_CC a_DT spectator_NN entity_NN ._.
+The_DT visible_JJ range_NN of_IN an_DT entity_NN refers_VBZ to_TO the_DT spatial_JJ extent_NN within_IN which_WDT any_DT other_JJ entity_NN can_MD recognize_VB its_PRP$ existence_NN ._.
+It_PRP is_VBZ based_VBN on_IN the_DT assumptions_NNS that_IN there_EX always_RB exists_VBZ an_DT optimal_JJ visible_JJ distance_NN between_IN a_DT user_NN and_CC an_DT object_NN at_IN any_DT given_VBN time_NN and_CC every_DT user_NN possesses_VBZ equal_JJ visibility_NN ._.
+Thus_RB ,_, the_DT user_NN and_CC the_DT object_NN ,_, only_RB when_WRB their_PRP$ current_JJ distance_NN is_VBZ smaller_JJR than_IN or_CC equal_JJ to_TO the_DT optimal_JJ ,_, can_MD see_VB each_DT other_JJ ._.
+To_TO specify_VB the_DT visible_JJ range_NN ,_, much_JJ literature_NN in_IN the_DT graphics_NNS area_NN -LSB-_-LRB- #_# ,_, #_# -RSB-_-RRB- uses_VBZ a_DT circular_JJ Area_NN Of_IN Interest_NN -LRB-_-LRB- AOI_NN -RRB-_-RRB- whose_WP$ center_NN is_VBZ the_DT location_NN of_IN an_DT entity_NN ._.
+Its_PRP$ omnidirectional_JJ nature_NN allows_VBZ rapid_JJ directional_JJ changes_NNS without_IN any_DT display_NN disruptions_NNS at_IN the_DT periphery_NN of_IN the_DT viewable_JJ area_NN ._.
+However_RB ,_, we_PRP employ_VBP a_DT squareshaped_JJ AOI_NN at_IN the_DT expense_NN of_IN accuracy_NN because_IN the_DT square-shaped_JJ spatial_JJ extension_NN is_VBZ very_RB simple_JJ and_CC efficient_JJ to_TO be_VB indexed_VBN in_IN a_DT grid_NN partitioned_VBD world_NN ._.
+The_DT traditional_JJ view_NN model_NN ,_, which_WDT we_PRP call_VBP user-initiated_JJ view_NN model_NN ,_, assumes_VBZ that_IN a_DT user_NN entity_NN has_VBZ an_DT AOI_NN while_IN an_DT object_NN entity_NN does_VBZ not_RB ._.
+As_IN the_DT user_NN navigates_VBZ ,_, she_PRP continuously_RB searches_VBZ for_IN all_DT the_DT entities_NNS within_IN her_PRP$ AOI_NN ._.
+Due_JJ to_TO its_PRP$ simple_JJ design_NN and_CC its_PRP$ low_JJ indexing_NN overhead_NN ,_, many_JJ Location_NNP Based_VBD Services_NNP -LRB-_-LRB- LBSs_NNS -RRB-_-RRB- and_CC game_NN applications_NNS use_VBP this_DT model_NN ._.
+However_RB ,_, the_DT user-initiated_JJ model_NN has_VBZ a_DT serious_JJ object_NN popping_VBG problem_NN during_IN navigation_NN ._.
+Recall_VB ,_, as_IN shown_VBN in_IN Figure_NNP #_# ,_, that_IN the_DT house_NN that_WDT will_MD have_VB appeared_VBN at_IN time_NN t_NN +_CC does_VBZ not_RB appear_VB at_IN time_NN t_NN because_IN the_DT user_NN can_MD not_RB recognize_VB objects_NNS that_WDT are_VBP outside_IN of_IN her_PRP$ AOI_NN at_IN time_NN t_NN ._.
+In_IN fact_NN ,_, it_PRP turned_VBD out_RP that_IN the_DT side_NN length_NN of_IN her_PRP$ AOI_NN was_VBD smaller_JJR than_IN the_DT optimal_JJ distance_NN between_IN the_DT user_NN and_CC the_DT house_NN at_IN the_DT time_NN t_NN ._.
+Therefore_RB ,_, there_EX is_VBZ no_DT other_JJ way_NN but_CC to_TO increase_VB the_DT visible_JJ range_NN of_IN the_DT user_NN in_IN this_DT model_NN to_TO make_VB such_PDT an_DT experience_NN unlikely_JJ ._.
+A_DT large_JJ AOI_NNP ,_, however_RB ,_, may_MD lead_VB to_TO a_DT significant_JJ system_NN degradation_NN ._.
+To_TO overcome_VB the_DT object_NN popping_VBG problem_NN ,_, we_PRP propose_VBP a_DT new_JJ view_NN model_NN which_WDT we_PRP call_VBP object-initiated_JJ view_NN model_NN ._.
+All_DT object_NN entities_NNS have_VBP their_PRP$ own_JJ AOI_NN centered_VBN at_IN their_PRP$ current_JJ location_NN while_IN all_DT spectator_NN entities_NNS have_VBP no_DT AOI_NN ._.
+Every_DT user_NN entity_NN recognizes_VBZ the_DT objects_NNS whose_WP$ AOIs_NNS cover_VBP its_PRP$ point_NN location_NN ._.
+The_DT main_JJ strengths_NNS of_IN the_DT new_JJ model_NN are_VBP that_IN -LRB-_-LRB- #_# -RRB-_-RRB- it_PRP has_VBZ no_DT object_NN popping_VBG problem_NN as_RB long_RB as_IN the_DT underlying_VBG system_NN can_MD manage_VB the_DT optimal_JJ visible_JJ range_NN of_IN all_DT object_NN entities_NNS correctly_RB and_CC that_IN -LRB-_-LRB- #_# -RRB-_-RRB- the_DT content_NN creators_NNS can_MD produce_VB an_DT enriched_JJ expressiveness_NN of_IN various_JJ behavioral_JJ and_CC temporal_JJ changes_NNS ._.
+A_DT huge_JJ object_NN may_MD have_VB a_DT farther_RBR visible_JJ range_NN than_IN a_DT small_JJ one_CD ;_: an_DT object_NN has_VBZ a_DT broader_JJR visible_JJ range_NN during_IN day-time_JJ than_IN at_IN night_NN ;_: even_RB during_IN the_DT night_NN the_DT visible_JJ range_NN of_IN an_DT object_NN that_WDT owns_VBZ a_DT light_JJ source_NN will_MD have_VB a_DT much_JJ wider_JJR visible_JJ area_NN than_IN a_DT non-illuminated_JJ object_NN ;_: if_IN an_DT object_NN is_VBZ located_JJ inside_IN a_DT building_NN ,_, its_PRP$ visible_JJ range_NN would_MD be_VB constrained_VBN by_IN the_DT surrounding_VBG structure_NN ._.
+One_CD of_IN the_DT potential_JJ arguments_NNS against_IN the_DT object-initiated_JJ view_NN is_VBZ that_IN indexing_NN of_IN the_DT spatial_JJ extension_NN of_IN an_DT object_NN is_VBZ too_RB complex_JJ to_TO be_VB practical_JJ ,_, compared_VBN with_IN the_DT user-initiated_JJ view_NN ._.
+We_PRP agree_VBP E2_NN E1_NN A_NN S_NN Client_NN S_NN Client_NN A_NN Sub-world_JJ Server_NN Figure_NN #_# :_: Target_NN system_NN in_IN a_DT #_# #_# grid_NN partition_NN ._.
+that_IN existing_VBG spatial_JJ indexing_NN methods_NNS are_VBP inefficient_JJ in_IN supporting_VBG our_PRP$ view_NN model_NN ._.
+To_TO refute_VB this_DT argument_NN ,_, we_PRP propose_VBP a_DT novel_JJ spatial_JJ indexing_NN solution_NN detailed_VBN in_IN Section_NN #_# ._.
+#_# ._.
+Our_PRP$ spatial_JJ indexing_NN solution_NN offers_VBZ a_DT very_RB promising_JJ performance_NN even_RB with_IN a_DT large_JJ number_NN of_IN mobile_JJ entities_NNS and_CC visibility_NN calculations_NNS in_IN real-time_JJ ._.
+For_IN the_DT rest_NN of_IN the_DT paper_NN our_PRP$ design_NN scope_NN is_VBZ limited_VBN to_TO a_DT 2D_NN space_NN ,_, although_IN our_PRP$ application_NN is_VBZ targeted_VBN for_IN 3D_NN environments3_NN ._.
+Note_VB that_IN our_PRP$ view_NN model_NN is_VBZ not_RB intended_VBN to_TO rival_VB a_DT sophisticated_JJ visibility_NN decision_NN algorithm_NN such_JJ as_IN visibility_NN culling_NN -LSB-_-LRB- #_# -RSB-_-RRB- ,_, but_CC to_TO efficiently_RB filter_NN out_RP unnecessary_JJ entities_NNS that_WDT do_VBP not_RB contribute_VB to_TO the_DT final_JJ image_NN ._.
+In_IN Section_NN #_# ._.
+#_# we_PRP evaluate_VBP both_CC models_NNS through_IN quantitatively_RB measures_NNS such_JJ as_IN the_DT degree_NN of_IN expressiveness_NN and_CC the_DT quality_NN of_IN the_DT two_CD view_NN models_NNS and_CC we_PRP discuss_VBP simulation_NN results_NNS ._.
+4_LS ._.
+DESIGN_NN OF_IN EDGE_NNP INDEXING_NNP In_IN Section_NNP #_# ._.
+#_# we_PRP introduce_VB our_PRP$ target_NN application_NN model_NN ._.
+Next_RB ,_, Section_NN #_# ._.
+#_# presents_VBZ an_DT abstraction_NN of_IN our_PRP$ node_NN and_CC edge_NN structures_NNS whose_WP$ detailed_JJ indexing_NN and_CC cell_NN evaluation_NN methods_NNS are_VBP explained_VBN later_RB in_IN Sections_NNS #_# ._.
+#_# and_CC #_# ._.
+#_# ._.
+Several_JJ optimization_NN issues_NNS for_IN edge_NN indexing_NN follow_VB in_IN Section_NN #_# ._.
+#_# ._.
+4_LS ._.
+#_# Target_NN Application_NN Our_PRP$ target_NN application_NN assumes_VBZ both_CC 3D_NN object_VBP streaming_NN and_CC sub-world_JJ hosting_VBG ._.
+The_DT sub-world_JJ hosting_VBG is_VBZ a_DT collaborative_JJ virtual_JJ environment_NN where_WRB every_DT server_NN hosts_NNS one_CD sub-world_JJ ,_, thus_RB constructing_VBG a_DT single_JJ world_NN ._.
+Second_NNP Life_NNP is_VBZ the_DT classic_JJ example_NN of_IN such_PDT an_DT approach_NN ._.
+A_DT virtual_JJ space_NN is_VBZ partitioned_VBN into_IN equal-sized_JJ sub-worlds_NNS ._.
+The_DT sample_NN sub-world_JJ separated_VBN with_IN bold-dashed_JJ lines_NNS in_IN Figure_NNP #_# contains_VBZ four_CD virtual_JJ entities_NNS :_: two_CD autonomous_JJ entities_NNS -LRB-_-LRB- E1_NN ,_, E2_NN -RRB-_-RRB- ;_: one_CD spectator_NN entity_NN S_NN ;_: and_CC one_CD avatar_NN A_NN ._.
+As_IN mentioned_VBN in_IN Section_NN #_# ,_, all_DT object_NN entities_NNS -LRB-_-LRB- E1_NN ,_, E2_NN ,_, A_NN -RRB-_-RRB- have_VBP their_PRP$ own_JJ square-shaped_JJ AOI_NN ._.
+Two_CD user_NN entities_NNS -LRB-_-LRB- S_NN ,_, A_NN -RRB-_-RRB- are_VBP associated_VBN with_IN individual_JJ client_NN machines_NNS ,_, -LRB-_-LRB- client_NN S_NN and_CC client_NN A_NN in_IN the_DT figure_NN -RRB-_-RRB- ._.
+The_DT spatial_JJ condition_NN that_IN the_DT point_NN location_NN of_IN S_NN resides_VBZ inside_IN the_DT AOI_NN of_IN E2_NN can_MD be_VB symbolized_VBN as_IN S_NN ._.
+P_NN E2_NN ._.
+R_NN ._.
+Every_DT sub-world_NN is_VBZ managed_VBN by_IN its_PRP$ dedicated_JJ server_NN machine_NN ._.
+Each_DT server_NN indexes_NNS all_PDT the_DT entities_NNS ,_, delivers_VBZ any_DT new_JJ events_NNS -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, a_DT new_JJ user_NN enters_VBZ into_IN the_DT sub-world_JJ or_CC an_DT object_NN moves_VBZ from_IN one_CD place_NN to_TO another_DT -RRB-_-RRB- to_TO clients_NNS ,_, and_CC resolves_VBZ any_DT inconsistencies_NNS among_IN the_DT entities_NNS ._.
+For_IN efficient_JJ management_NN of_IN moving_VBG entities_NNS ,_, a_DT server_NN further_RB divides_VBZ its_PRP$ sub-world_JJ into_IN smaller_JJR partitions_NNS ,_, called_VBN grid_NN cells_NNS ._.
+Figure_NNP #_# shows_VBZ the_DT #_# #_# grid_NN enclosed_VBN by_IN the_DT dashed_VBN lines_NNS ._.
+Instead_RB of_IN indexing_NN the_DT object_NN entities_NNS with_IN a_DT user_NN entity_NN structure_NN ,_, our_PRP$ system_NN indexes_NNS their_PRP$ visible_JJ regions_NNS on_IN the_DT grid_NN cells_NNS ._.
+Retrieval_NN of_IN the_DT indexed_VBN objects_NNS for_IN a_DT given_VBN user_NN includes_VBZ the_DT search_NN and_CC de3_NN A_NN better_JJR indexing_NN method_NN for_IN a_DT 3D_NN space_NN is_VBZ work_NN in_IN progress_NN ._.
+404_CD Tokens_NNS :_: IT_NNP -LRB-_-LRB- E1_NN -RRB-_-RRB- IT_PRP -LRB-_-LRB- E2_NN -RRB-_-RRB- IT_PRP -LRB-_-LRB- A_NN -RRB-_-RRB- IT_PRP -LRB-_-LRB- S_NN -RRB-_-RRB- Tokens_NNS :_: AT_IN -LRB-_-LRB- E1_NN -RRB-_-RRB- DT_NN -LRB-_-LRB- E1_NN -RRB-_-RRB- AT_IN -LRB-_-LRB- E2_NN -RRB-_-RRB- DT_NN -LRB-_-LRB- E2_NN -RRB-_-RRB- AT_IN -LRB-_-LRB- A_NN -RRB-_-RRB- DT_NN -LRB-_-LRB- A_NN -RRB-_-RRB- IT_PRP -LRB-_-LRB- S_NN -RRB-_-RRB- -LRB-_-LRB- a_DT -RRB-_-RRB- node_NN indexing_NN -LRB-_-LRB- b_NN -RRB-_-RRB- edge_NN indexing_NN -LRB-_-LRB- c_NN -RRB-_-RRB- edge_NN indexing_NN with_IN row-wise_JJ cell_NN evaluation_NN Figure_NN #_# :_: Illustration_NN of_IN different_JJ data_NNS structures_NNS for_IN node_NN indexing_NN and_CC edge_NN indexing_NN for_IN the_DT sample_NN space_NN in_IN Figure_NNP #_# ._.
+There_EX are_VBP three_CD object_NN entities_NNS ,_, -LCB-_-LRB- E1_NN ,_, E2_NN ,_, A_DT -RCB-_-RRB- ,_, and_CC two_CD user_NN entities_NNS ,_, -LCB-_-LRB- S_NN ,_, A_DT -RCB-_-RRB- in_IN the_DT world_NN ._.
+livery_NN of_IN the_DT indices_NNS stored_VBN on_IN the_DT cell_NN it_PRP is_VBZ located_JJ in_IN ._.
+This_DT retrieval_NN process_NN is_VBZ interchangeably_RB called_VBN a_DT user_NN -LRB-_-LRB- or_CC query_NN -RRB-_-RRB- evaluation_NN ._.
+Our_PRP$ application_NN only_RB considers_VBZ the_DT efficient_JJ indexing_NN of_IN virtual_JJ entities_NNS and_CC the_DT search_NN for_IN the_DT most_RBS relevant_JJ entities_NNS -_: that_WDT is_VBZ ,_, how_WRB many_JJ entities_NNS per_IN sub-world_NN are_VBP indexed_VBN and_CC how_WRB quickly_RB index_NN updates_NNS are_VBP recognized_VBN and_CC retrieved_VBN ._.
+Efficient_JJ delivery_NN of_IN retrieved_VBN real_JJ geometry_NN data_NNS is_VBZ out_IN of_IN the_DT scope_NN of_IN this_DT paper_NN ._.
+4_LS ._.
+#_# Abstraction_NNP We_PRP define_VBP a_DT token_JJ as_IN an_DT abstraction_NN of_IN a_DT virtual_JJ entity_NN that_IN satisfies_VBZ a_DT specific_JJ spatial_JJ relationship_NN with_IN a_DT given_VBN cell_NN ._.
+In_IN our_PRP$ application_NN ,_, we_PRP use_VBP three_CD types_NNS of_IN tokens_NNS :_: Inclusion_NNP Token_NNP -LRB-_-LRB- IT_NNP -RRB-_-RRB- indicates_VBZ that_IN its_PRP$ entity_NN overlaps_VBZ with_IN or_CC is_VBZ covered_VBN by_IN the_DT given_VBN cell_NN ._.
+Appearance_NN Token_NN -LRB-_-LRB- AT_IN -RRB-_-RRB- denotes_VBZ that_IN its_PRP$ entity_NN is_VBZ an_DT IT_PRP for_IN the_DT given_VBN cell_NN ,_, but_CC not_RB for_IN the_DT previously_RB adjacent_JJ cell_NN ._.
+Disappearance_NNP Token_NNP -LRB-_-LRB- DT_NNP -RRB-_-RRB- is_VBZ the_DT opposite_NN of_IN AT_NNP ,_, meaning_VBG that_IN while_IN its_PRP$ entity_NN does_VBZ not_RB satisfy_VB the_DT IT_NNP relationship_NN with_IN the_DT given_VBN cell_NN ,_, it_PRP does_VBZ so_RB with_IN the_DT previously_RB adjacent_JJ cell_NN ._.
+We_PRP also_RB define_VBP two_CD data_NNS structures_NNS for_IN storing_VBG and_CC retrieving_VBG the_DT tokens_NNS :_: a_DT node_NN and_CC an_DT edge_NN ._.
+A_DT node_NN is_VBZ a_DT data_NN structure_NN that_WDT stores_NNS ITs_NNS of_IN a_DT cell_NN ._.
+Thus_RB ,_, the_DT node_NN for_IN cell_NN i_FW is_VBZ defined_VBN as_IN a_DT set_NN of_IN IT_PRP entities_NNS and_CC formally_RB expressed_VBN as_IN Ni_NN =_JJ -LCB-_-LRB- o_NN |_CD o_NN ._.
+Ri_NNP ._.
+R_NN =_JJ -RCB-_-RRB- ,_, where_WRB R_NN is_VBZ either_CC an_DT AOI_NN or_CC a_DT cell_NN region_NN ._.
+An_DT edge_NN is_VBZ another_DT data_NN structure_NN for_IN two_CD adjacent_JJ cells_NNS that_WDT stores_NNS their_PRP$ ATs_NNS or_CC DTs_NNS ._.
+If_IN the_DT edge_NN only_RB stores_VBZ the_DT AT_NNP entities_NNS ,_, it_PRP is_VBZ termed_VBN an_DT Appearance_NN Edge_NNP -LRB-_-LRB- AE_NNP -RRB-_-RRB- ;_: otherwise_RB ,_, if_IN it_PRP stores_NNS DTs_NNS ,_, it_PRP is_VBZ termed_VBN a_DT Disappearance_NNP Edge_NNP -LRB-_-LRB- DE_NN -RRB-_-RRB- ._.
+The_DT AE_NN for_IN two_CD adjacent_JJ cells_NNS i_FW and_CC j_FW is_VBZ defined_VBN as_IN a_DT set_NN of_IN ATs_NNS and_CC expressed_VBN as_IN E_NN +_CC -LRB-_-LRB- i_LS ,_, j_NN -RRB-_-RRB- =_JJ Nj_NN -LRB-_-LRB- Ni_NN Nj_NN -RRB-_-RRB- -LRB-_-LRB- #_# -RRB-_-RRB- where_WRB Ni_NN and_CC Nj_NN are_VBP the_DT node_NN structures_NNS for_IN the_DT cells_NNS i_FW and_CC j_FW ._.
+The_DT DE_NN for_IN two_CD adjacent_JJ cells_NNS i_LS ,_, j_NN is_VBZ defined_VBN as_IN a_DT set_NN of_IN DTs_NNS ,_, satisfying_VBG :_: E_NN -LRB-_-LRB- i_FW ,_, j_NN -RRB-_-RRB- =_JJ Ni_NN -LRB-_-LRB- Ni_NN Nj_NN -RRB-_-RRB- -LRB-_-LRB- #_# -RRB-_-RRB- In_IN a_DT 2D_NN map_NN ,_, depending_VBG on_IN the_DT adjacency_NN relationship_NN between_IN two_CD neighboring_JJ cells_NNS ,_, edges_NNS are_VBP further_JJ classified_VBN as_IN either_DT rowwise_NN ,_, if_IN two_CD neighbors_NNS are_VBP adjacent_JJ horizontally_RB -LRB-_-LRB- Er_NN -RRB-_-RRB- ,_, or_CC columnwise_NN ,_, if_IN they_PRP are_VBP adjacent_JJ vertically_RB -LRB-_-LRB- Ec_NN -RRB-_-RRB- ._.
+Consequently_RB ,_, edges_NNS are_VBP of_IN four_CD different_JJ types_NNS ,_, according_VBG to_TO their_PRP$ token_JJ type_NN and_CC adjacency_NN :_: Er_NN +_CC -LRB-_-LRB- i_LS ,_, j_NN -RRB-_-RRB- ,_, Er_NN -LRB-_-LRB- i_FW ,_, j_NN -RRB-_-RRB- ,_, Ec_NN +_CC -LRB-_-LRB- i_LS ,_, j_NN -RRB-_-RRB- ,_, and_CC Ec_NN -LRB-_-LRB- i_FW ,_, j_NN -RRB-_-RRB- ._.
+4_LS ._.
+#_# Node_NNP Indexing_NN Grid_NNP partitioning_NN is_VBZ a_DT popular_JJ space_NN subdivision_NN method_NN that_WDT has_VBZ recently_RB gained_VBN popularity_NN for_IN indexing_NN moving_VBG entities_NNS in_IN highly_RB dynamic_JJ virtual_JJ environments_NNS -LSB-_-LRB- ##_NNS ,_, #_# ,_, ##_NN ,_, ##_NN -RSB-_-RRB- ._.
+To_TO highlight_VB the_DT difference_NN to_TO our_PRP$ newly_RB proposed_VBN method_NN ,_, we_PRP term_VBP all_DT existing_VBG grid_NN partitioning-based_JJ indexing_NN methods_NNS node_NN indexing_NN ._.
+Node_NN indexing_NN partitions_NNS the_DT space_NN into_IN equi-sized_JJ subspaces_NNS -LRB-_-LRB- grid_NN cells_NNS -RRB-_-RRB- ,_, indexes_NNS entities_NNS on_IN each_DT cell_NN ,_, and_CC searches_NNS for_IN entities_NNS that_WDT satisfy_VBP a_DT spatial_JJ condition_NN with_IN a_DT given_VBN query_NN ._.
+In_IN many_JJ LBS_NNP applications_NNS ,_, node_NN indexing_NN maintains_VBZ a_DT node_NN structure_NN per_IN cell_NN and_CC stores_NNS an_DT index_NN of_IN entities_NNS whose_WP$ spatial_JJ extent_NN is_VBZ a_DT point_NN location_NN ._.
+For_IN a_DT given_VBN range_NN query_NN ,_, a_DT search_NN is_VBZ performed_VBN from_IN the_DT node_NN structures_NNS of_IN the_DT cells_NNS whose_WP$ region_NN intersects_NNS with_IN the_DT spatial_JJ extent_NN of_IN the_DT range_NN query_NN ._.
+Due_JJ to_TO the_DT use_NN of_IN a_DT simple_JJ point_NN geometry_NN for_IN entities_NNS ,_, this_DT allows_VBZ for_IN lightweight_JJ index_NN updates_NNS ._.
+Much_JJ of_IN the_DT existing_VBG work_NN falls_VBZ into_IN this_DT category_NN ._.
+However_RB ,_, if_IN the_DT spatial_JJ extent_NN of_IN an_DT entity_NN is_VBZ a_DT complex_JJ geometry_NN such_JJ as_IN rectangle_NN ,_, node_NN indexing_NN will_MD suffer_VB from_IN significant_JJ system_NN degradation_NN due_JJ to_TO expensive_JJ update_VBP overhead_NN ._.
+For_IN example_NN ,_, a_DT single_JJ movement_NN of_IN an_DT entity_NN whose_WP$ spatial_JJ extent_NN overlaps_VBZ with_IN ###_CD grid_NN cells_NNS requires_VBZ ###_CD token_JJ deletions_NNS and_CC ###_CD token_JJ insertions_NNS ,_, in_IN the_DT worst_JJS case_NN ._.
+One_CD of_IN the_DT popular_JJ node_NN indexing_NN methods_NNS ,_, Query_NNP Indexing_NN ,_, has_VBZ been_VBN reported_VBN to_TO have_VB such_JJ performance_NN degradation_NN during_IN the_DT update_VBP of_IN rectangle-shaped_JJ range_NN queries_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+For_IN the_DT sample_NN space_NN shown_VBN in_IN Figure_NNP #_# ,_, the_DT concept_NN of_IN node_NN indexing_NN is_VBZ illustrated_VBN in_IN Figure_NNP #_# -LRB-_-LRB- a_DT -RRB-_-RRB- ._.
+Every_DT cell_NN stores_NNS IT_PRP entities_NNS that_WDT intersect_VBP with_IN its_PRP$ region_NN ._.
+Query_NNP processing_NN for_IN the_DT spectator_NN S_NN means_VBZ to_TO search_VB the_DT node_NN structure_NN whose_WP$ cell_NN region_NN intersects_VBZ with_IN S_NN ._.
+In_IN Figure_NNP #_# -LRB-_-LRB- a_DT -RRB-_-RRB- ,_, E2_NN is_VBZ indexed_VBN on_IN the_DT same_JJ cell_NN ,_, thus_RB being_VBG delivered_VBN to_TO the_DT client_NN S_NN after_IN the_DT query_NN evaluation_NN ._.
+4_LS ._.
+#_# Edge_NNP Indexing_NN Our_PRP$ new_JJ indexing_NN method_NN ,_, edge_NN indexing_NN ,_, is_VBZ designed_VBN to_TO provide_VB an_DT efficient_JJ indexing_NN method_NN for_IN the_DT specific_JJ spatial_JJ extension_NN -LRB-_-LRB- square_NN -RRB-_-RRB- of_IN the_DT entities_NNS in_IN a_DT grid_NN ._.
+Its_PRP$ features_NNS are_VBP -LRB-_-LRB- #_# -RRB-_-RRB- an_DT edge_NN structure_NN and_CC -LRB-_-LRB- #_# -RRB-_-RRB- periodic_JJ entity_NN update_VB and_CC cell_NN evaluation_NN ._.
+4_LS ._.
+#_# ._.
+#_# Idea_NNP Edge_NNP Structure_NN The_DT main_JJ characteristic_NN of_IN our_PRP$ approach_NN is_VBZ that_IN it_PRP maintains_VBZ edge_NN structures_NNS instead_RB of_IN using_VBG node_NN structures_NNS ._.
+With_IN this_DT approach_NN ,_, redundant_JJ ITs_NNS between_IN two_CD adjacent_JJ cells_NNS -LRB-_-LRB- Ni_NNS Nj_NN -RRB-_-RRB- are_VBP eliminated_VBN ._.
+In_IN a_DT 2D_NN M_NN M_NN grid_NN map_NN ,_, each_DT cell_NN i_FW is_VBZ surrounded_VBN by_IN four_CD neighboring_JJ cells_NNS -LRB-_-LRB- i_FW #_# -RRB-_-RRB- ,_, -LRB-_-LRB- i_FW +_CC #_# -RRB-_-RRB- ,_, -LRB-_-LRB- i_FW M_NN -RRB-_-RRB- ,_, -LRB-_-LRB- i_FW +_CC M_NN -RRB-_-RRB- -LRB-_-LRB- except_IN for_IN the_DT 405_CD outermost_NN cells_NNS -RRB-_-RRB- and_CC eight_CD different_JJ edge_NN structures_NNS ._.
+If_IN the_DT first_JJ two_CD neighbor_NN cells_NNS are_VBP horizontally_RB adjacent_JJ to_TO i_FW and_CC the_DT last_JJ two_CD cells_NNS -LRB-_-LRB- iM_NN -RRB-_-RRB- ,_, -LRB-_-LRB- i_FW +_CC M_NN -RRB-_-RRB- are_VBP vertically_RB nearby_RB ,_, the_DT eight_CD edge_NN structures_NNS are_VBP Ec_NN +_CC -LRB-_-LRB- iM_NNP ,_, i_LS -RRB-_-RRB- ,_, Ec_NN -LRB-_-LRB- iM_NN ,_, i_LS -RRB-_-RRB- ,_, Er_NN +_CC -LRB-_-LRB- i1_NN ,_, i_LS -RRB-_-RRB- ,_, Er_NN -LRB-_-LRB- i1_NN ,_, i_LS -RRB-_-RRB- ,_, Er_NN +_CC -LRB-_-LRB- i_LS ,_, i_FW +_CC 1_LS -RRB-_-RRB- ,_, Er_NN -LRB-_-LRB- i_FW ,_, i_FW +_CC #_# -RRB-_-RRB- ,_, Ec_NN +_CC -LRB-_-LRB- i_LS ,_, i_FW +_CC M_NN -RRB-_-RRB- ,_, and_CC Ec_NN -LRB-_-LRB- i_FW ,_, i_FW +_CC M_NN -RRB-_-RRB- ._.
+Figure_NNP #_# -LRB-_-LRB- b_NN -RRB-_-RRB- illustrates_VBZ how_WRB edge_NN structures_NNS are_VBP constructed_VBN from_IN node_NN structures_NNS ,_, using_VBG Equations_NNS #_# and_CC #_# ._.
+Inversely_RB ,_, the_DT cell_NN evaluation_NN process_NN with_IN edge_NN indexing_NN derives_VBZ node_NN structures_NNS from_IN the_DT edge_NN structures_NNS ._.
+If_IN any_DT node_NN structure_NN and_CC all_PDT the_DT edge_NN structures_NNS are_VBP known_VBN a_DT priori_FW ,_, we_PRP can_MD derive_VB all_PDT the_DT node_NN structures_NNS as_IN defined_VBN by_IN Lemma_NNP #_# ._.
+The_DT proof_NN of_IN Lemma_NNP #_# is_VBZ trivial_JJ as_IN it_PRP is_VBZ easily_RB induced_VBN from_IN Equations_NNS #_# and_CC #_# ._.
+Lemma_NNP #_# ._.
+Nj_NN ,_, a_DT set_NN of_IN ITs_NNS of_IN a_DT given_VBN cell_NN j_NN can_MD be_VB derived_VBN from_IN a_DT set_NN of_IN ITs_NNS of_IN its_PRP$ neighbor_NN cell_NN i_FW ,_, Ni_NN and_CC its_PRP$ edges_NNS E_NN +_CC -LRB-_-LRB- i_LS ,_, j_NN -RRB-_-RRB- E_NN -LRB-_-LRB- i_FW ,_, j_NN -RRB-_-RRB- :_: Nj_NN =_JJ Ni_NN +_CC E_NN +_CC -LRB-_-LRB- i_LS ,_, j_NN -RRB-_-RRB- E_NN -LRB-_-LRB- i_FW ,_, j_NN -RRB-_-RRB- Row-wise_JJ and_CC column-wise_JJ edge_NN structures_NNS ,_, however_RB ,_, capture_VBP some_DT redundant_JJ information_NN ._.
+Thus_RB ,_, nave_NN edge_NN indexing_NN stores_NNS more_RBR tokens_NNS than_IN node_NN indexing_NN -_: the_DT total_JJ number_NN of_IN edge_NN tokens_NNS shown_VBN in_IN Figure_NNP #_# -LRB-_-LRB- b_NN -RRB-_-RRB- is_VBZ ##_NN -LRB-_-LRB- ##_CD ATs_NNS +_CC ##_CD DTs_NNS +_CC #_# IT_PRP -RRB-_-RRB- ;_: for_IN node_NN indexing_NN in_IN Figure_NNP #_# -LRB-_-LRB- a_DT -RRB-_-RRB- the_DT number_NN is_VBZ ##_CD ._.
+To_TO reduce_VB such_JJ redundancy_NN ,_, a_DT subsequent_JJ two-step_JJ algorithm_NN can_MD be_VB applied_VBN to_TO the_DT original_JJ edge_NN indexing_NN ._.
+Periodic_JJ Entity_NNP Update_NNP and_CC Cell_NNP Evaluation_NN Many_JJ objects_NNS are_VBP continuously_RB moving_VBG and_CC hence_RB index_NN structures_NNS must_MD be_VB regularly_RB updated_VBN ._.
+Generally_RB ,_, this_DT is_VBZ done_VBN through_IN a_DT twostep_JJ algorithm_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- that_WDT works_VBZ as_IN follows_VBZ ._.
+The_DT algorithm_NN begins_VBZ by_IN updating_VBG all_PDT the_DT corresponding_JJ indices_NNS of_IN newly_RB moved_VBN entities_NNS -LRB-_-LRB- the_DT entity_NN update_VBP step_NN -RRB-_-RRB- and_CC then_RB computes_VBZ the_DT node_NN structures_NNS of_IN every_DT cell_NN -LRB-_-LRB- the_DT cell_NN evaluation_NN step_NN -RRB-_-RRB- ._.
+After_IN one_CD cell_NN evaluation_NN ,_, the_DT indexed_VBN user_NN entities_NNS are_VBP retrieved_VBN and_CC the_DT computed_JJ node_NN structure_NN is_VBZ delivered_VBN for_IN every_DT client_NN that_WDT is_VBZ associated_VBN with_IN a_DT user_NN ._.
+After_IN all_PDT the_DT cells_NNS are_VBP evaluated_VBN ,_, the_DT algorithm_NN starts_VBZ over_RP ._.
+The_DT two-step_JJ algorithm_NN can_MD also_RB be_VB used_VBN for_IN our_PRP$ edge_NN indexing_NN by_IN updating_VBG the_DT edge_NN structures_NNS of_IN the_DT entities_NNS that_WDT moved_VBD during_IN the_DT previous_JJ time_NN period_NN and_CC by_IN applying_VBG Lemma_NNP #_# during_IN the_DT cell_NN evaluations_NNS ._.
+In_IN addition_NN to_TO this_DT adaptability_NN ,_, the_DT Lemma_NNP also_RB reveals_VBZ another_DT important_JJ property_NN of_IN cell_NN evaluations_NNS :_: either_CC row_NN edges_NNS or_CC column_NN edges_NNS are_VBP enough_JJ to_TO obtain_VB all_PDT the_DT node_NN structures_NNS ._.
+Let_VB us_PRP assume_VB that_IN the_DT system_NN maintains_VBZ the_DT row-wise_JJ edges_NNS ._.
+The_DT leftmost_JJS node_NN structures_NNS are_VBP assumed_VBN to_TO be_VB obtained_VBN in_IN advance_NN ._.
+Once_RB we_PRP know_VBP the_DT node_NN structure_NN of_IN the_DT leftmost_JJ cell_NN per_IN row_NN ,_, we_PRP can_MD compute_VB that_DT of_IN its_PRP$ right-hand_JJ cell_NN from_IN the_DT leftmost_JJS node_NN structure_NN and_CC the_DT row-wise_JJ edges_NNS ._.
+We_PRP repeat_VBP this_DT computation_NN until_IN we_PRP reach_VBP the_DT rightmost_JJ cell_NN ._.
+Hence_RB ,_, without_IN any_DT column-wise_JJ edges_NNS we_PRP can_MD obtain_VB all_PDT the_DT node_NN structures_NNS successfully_RB ._.
+As_IN a_DT result_NN ,_, we_PRP reduce_VBP the_DT complexity_NN of_IN the_DT index_NN construction_NN and_CC update_VB by_IN a_DT factor_NN of_IN two_CD ._.
+Figure_NNP #_# -LRB-_-LRB- c_NN -RRB-_-RRB- illustrates_VBZ the_DT concept_NN of_IN our_PRP$ row-wise_JJ edge_NN indexing_NN method_NN ._.
+The_DT total_JJ number_NN of_IN tokens_NNS is_VBZ reduced_VBN to_TO ##_NN -LRB-_-LRB- #_# ATs_NNS +_CC #_# DTs_NNS +_CC #_# IT_PRP -RRB-_-RRB- ._.
+The_DT detailed_JJ analysis_NN of_IN its_PRP$ indexing_NN complexity_NN is_VBZ presented_VBN in_IN Section_NN #_# ._.
+4_LS ._.
+#_# ._.
+#_# Another_DT Example_NN Figure_NN #_# illustrates_VBZ how_WRB to_TO construct_VB edge_NN structures_NNS from_IN two_CD nearby_JJ cells_NNS ._.
+In_IN the_DT figure_NN ,_, two_CD row-wise_JJ adjacent_JJ cells_NNS #_# and_CC #_# have_VBP two_CD row-wise_JJ edge_NN transitions_NNS between_IN them_PRP ,_, E_NN +_CC -LRB-_-LRB- #_# ,_, #_# -RRB-_-RRB- ,_, E_NN -LRB-_-LRB- #_# ,_, #_# -RRB-_-RRB- ;_: two_CD point_NN entities_NNS P1_NN ,_, P2_NN ;_: and_CC two_CD polygonal_JJ entities_NNS R1_NN ,_, R2_NN ._.
+As_IN shown_VBN in_IN the_DT figure_NN ,_, N3_NN indexes_NNS -LCB-_-LRB- P2_NN ,_, R1_NN ,_, R2_NN -RCB-_-RRB- and_CC N4_NN maintains_VBZ the_DT indices_NNS of_IN -LCB-_-LRB- P1_NN ,_, R2_NN -RCB-_-RRB- ._.
+E_NN +_CC -LRB-_-LRB- #_# ,_, #_# -RRB-_-RRB- is_VBZ obtained_VBN from_IN Equation_NN #_# :_: N4_NN -LRB-_-LRB- N3_NN N4_NN -RRB-_-RRB- =_JJ -LCB-_-LRB- P1_NN -RCB-_-RRB- ._.
+Similarly_RB ,_, E_NN -LRB-_-LRB- #_# ,_, #_# -RRB-_-RRB- =_JJ N3_NN Cell_NN #_# Cell_NN #_# E_NN +_CC -LRB-_-LRB- #_# ,_, #_# -RRB-_-RRB- =_JJ -LCB-_-LRB- P1_NN -RCB-_-RRB- E_NN __NN -LRB-_-LRB- #_# ,_, #_# -RRB-_-RRB- =_JJ -LCB-_-LRB- P2_NN ,_, R1_NN -RCB-_-RRB- P2_NN P1_NN R2_NN R1_NN Figure_NN #_# :_: Example_NN of_IN edge_NN indexing_NN of_IN two_CD point_NN entities_NNS -LCB-_-LRB- P1_NN ,_, P2_NN -RCB-_-RRB- and_CC two_CD polygonal_JJ entities_NNS -LCB-_-LRB- R1_NN ,_, R2_NN -RCB-_-RRB- between_IN two_CD row-wise_JJ adjacent_JJ cells_NNS ._.
+-LRB-_-LRB- N3_NN N4_NN -RRB-_-RRB- =_JJ -LCB-_-LRB- P2_NN ,_, R1_NN -RCB-_-RRB- ._.
+If_IN we_PRP know_VBP N3_NN ,_, E_NN +_CC -LRB-_-LRB- #_# ,_, #_# -RRB-_-RRB- ,_, and_CC E_NN -LRB-_-LRB- #_# ,_, #_# -RRB-_-RRB- ,_, we_PRP can_MD compute_VB N4_NN according_VBG to_TO Lemma_NNP #_# ,_, N4_NN =_JJ N3_NN +_CC E_NN +_CC -LRB-_-LRB- #_# ,_, #_# -RRB-_-RRB- E_NN -LRB-_-LRB- #_# ,_, #_# -RRB-_-RRB- =_JJ -LCB-_-LRB- P1_NN ,_, R2_NN -RCB-_-RRB- ._.
+The_DT above_JJ calculation_NN also_RB corresponds_VBZ to_TO our_PRP$ intuition_NN ._.
+P2_NN ,_, R1_NN ,_, R2_NN overlap_VBP with_IN cell_NN #_# while_IN P1_NN ,_, R2_NN overlap_VBP with_IN cell_NN #_# ._.
+When_WRB transiting_VBG from_IN cell_NN #_# to_TO #_# ,_, the_DT algorithm_NN will_MD recognize_VB that_IN P2_NN ,_, R1_NN disappear_VB and_CC P1_NN is_VBZ newly_RB appearing_VBG while_IN the_DT spatial_JJ condition_NN of_IN R2_NN is_VBZ unchanged_JJ ._.
+Thus_RB ,_, we_PRP can_MD insert_VB P2_NN ,_, R1_NN in_IN the_DT disappearance_NN edge_NN set_NN and_CC insert_NN P1_NN in_IN the_DT appearance_NN edge_NN set_NN ._.
+Obviously_RB ,_, edge_NN indexing_NN is_VBZ inefficient_JJ for_IN indexing_NN a_DT point_NN geometry_NN ._.
+Node_NN indexing_NN has_VBZ one_CD IT_PRP per_IN point_NN entity_NN and_CC requires_VBZ one_CD token_JJ removal_NN and_CC one_CD insertion_NN upon_IN any_DT location_NN movement_NN ._.
+Edge_NNP indexing_NN ,_, however_RB ,_, requires_VBZ one_CD AT_IN and_CC one_CD DT_NNP per_IN point_NN entity_NN and_CC two_CD token_JJ removals_NNS and_CC two_CD insertions_NNS during_IN the_DT update_VBP ,_, in_IN the_DT worst_JJS case_NN ._.
+In_IN such_PDT a_DT situation_NN ,_, we_PRP take_VBP advantage_NN of_IN using_VBG both_CC according_VBG to_TO the_DT spatial_JJ property_NN of_IN entity_NN extension_NN ._.
+In_IN summary_NN ,_, as_IN shown_VBN in_IN Figure_NNP #_# -LRB-_-LRB- c_NN -RRB-_-RRB- ,_, our_PRP$ edge_NN indexing_NN method_NN uses_VBZ edge_NN structures_NNS for_IN the_DT AOI_NN enabled_VBD entities_NNS -LRB-_-LRB- A_NN ,_, E1_NN ,_, E2_NN -RRB-_-RRB- while_IN it_PRP uses_VBZ node_NN structures_NNS for_IN the_DT point_NN entity_NN -LRB-_-LRB- S_NN -RRB-_-RRB- ._.
+4_LS ._.
+#_# Optimization_NNP Issues_NNP In_IN this_DT section_NN ,_, we_PRP describe_VBP several_JJ optimization_NN techniques_NNS for_IN edge_NN indexing_NN ,_, which_WDT reduces_VBZ the_DT algorithm_NN complexity_NN significantly_RB ._.
+4_LS ._.
+#_# ._.
+#_# Single-table_JJ Approach_NNP :_: Update_NNP Typically_RB ,_, there_EX exist_VBP two_CD practical_JJ policies_NNS for_IN a_DT region_NN update_VBP :_: Full_JJ Update_NNP simply_RB removes_VBZ every_DT token_JJ of_IN the_DT previous_JJ entity_NN region_NN and_CC re-inserts_NNS newly_RB updated_VBN tokens_NNS into_IN newly_RB positioned_VBN areas_NNS ._.
+Incremental_JJ Update_NNP only_RB removes_VBZ the_DT tokens_NNS whose_WP$ spatial_JJ relationship_NN with_IN the_DT cells_NNS changed_VBN upon_IN an_DT update_VBP and_CC inserts_NNS them_PRP into_IN new_JJ edge_NN structures_NNS that_WDT satisfy_VBP the_DT new_JJ spatial_JJ conditions_NNS ._.
+4_LS ._.
+#_# ._.
+#_# Two-table_JJ Approach_NNP :_: Separating_VBG Moving_VBG Entities_NNS from_IN Stationary_JJ Entities_NNS So_RB far_RB ,_, we_PRP have_VBP not_RB addressed_VBN any_DT side-effect_NN of_IN token_JJ removals_NNS during_IN the_DT update_VBP operation_NN ._.
+Let_VB us_PRP assume_VB that_IN an_DT edge_NN index_NN is_VBZ realized_VBN with_IN a_DT hash_NN table_NN ._.
+Inserting_VBG a_DT token_JJ is_VBZ implemented_VBN by_IN inserting_VBG it_PRP at_IN the_DT head_NN of_IN the_DT corresponding_JJ hash_NN bucket_NN ,_, hence_RB the_DT processing_NN time_NN becomes_VBZ constant_JJ ._.
+However_RB ,_, the_DT token_JJ removal_NN time_NN depends_VBZ on_IN the_DT expected_VBN number_NN of_IN tokens_NNS per_IN hash_NN bucket_NN ._.
+Therefore_RB ,_, the_DT hash_NN implementation_NN may_MD suffer_VB from_IN a_DT significant_JJ system_NN penalty_NN when_WRB used_VBN with_IN a_DT huge_JJ number_NN of_IN populated_JJ entities_NNS ._.
+Two-table_JJ edge_NN indexing_NN is_VBZ designed_VBN to_TO make_VB the_DT token_JJ removal_NN overhead_NN constant_NN ._.
+First_RB ,_, we_PRP split_VBD a_DT single_JJ edge_NN structure_NN that_WDT indexes_NNS both_CC stationary_JJ and_CC moving_VBG entities_NNS into_IN two_CD separate_JJ edge_NN 406_CD Table_NNP #_# :_: Summary_NNP of_IN notations_NNS for_IN virtual_JJ entities_NNS and_CC their_PRP$ properties_NNS ._.
+Symbol_NN Meaning_NN U_NN set_NN of_IN populated_JJ object_NN entities_NNS O_NN set_NN of_IN moving_VBG object_NN entities_NNS ,_, O_NN U_NNP Uq_NNP set_NN of_IN populated_JJ user_NN entities_NNS Q_NNP set_NN of_IN moving_VBG user_NN entities_NNS ,_, Q_NNP Uq_NNP A_NNP set_NN of_IN avatars_NNS ,_, A_NN =_JJ -LCB-_-LRB- a_DT |_NN a_DT U_NNP Uq_NNP -RCB-_-RRB- i_LS ._.
+P_NN location_NN of_IN entity_NN i_FW where_WRB i_FW -LRB-_-LRB- U_NNP Uq_NNP -RRB-_-RRB- i_LS ._.
+R_NN AOI_NN of_IN entity_NN i_FW where_WRB i_FW -LRB-_-LRB- U_NNP Uq_NNP -RRB-_-RRB- mi_FW side_NN length_NN of_IN entity_NN i_FW where_WRB i_FW -LRB-_-LRB- U_NNP Uq_NNP -RRB-_-RRB- ._.
+It_PRP is_VBZ represented_VBN by_IN the_DT number_NN of_IN cell_NN units_NNS ._.
+m_NN average_JJ side_NN length_NN of_IN the_DT AOI_NN of_IN entities_NNS V_NN ar_NN -LRB-_-LRB- mi_NN -RRB-_-RRB- variance_NN of_IN random_JJ variable_JJ mi_FW v_LS maximum_NN reachable_JJ distance_NN ._.
+It_PRP is_VBZ represented_VBN by_IN the_DT number_NN of_IN cell_NN units_NNS ._.
+structures_NNS ._.
+If_IN an_DT entity_NN is_VBZ not_RB moving_VBG ,_, its_PRP$ tokens_NNS will_MD be_VB placed_VBN in_IN a_DT stationary_JJ edge_NN structure_NN ._.
+Otherwise_RB ,_, it_PRP will_MD be_VB placed_VBN with_IN a_DT moving_VBG edge_NN ._.
+Second_RB ,_, all_DT moving_VBG edge_NN structures_NNS are_VBP periodically_RB reconstructed_VBN ._.
+After_IN the_DT reconstruction_NN ,_, all_DT grid_NN cells_NNS are_VBP evaluated_VBN to_TO compute_VB their_PRP$ visible_JJ sets_NNS ._.
+Once_RB all_PDT the_DT cells_NNS are_VBP evaluated_VBN ,_, the_DT moving_VBG edges_NNS are_VBP destroyed_VBN and_CC the_DT reconstruction_NN step_NN follows_VBZ ._.
+As_IN a_DT result_NN ,_, search_NN operations_NNS on_IN the_DT moving_VBG edge_NN structures_NNS are_VBP no_RB longer_RB necessary_JJ and_CC the_DT system_NN becomes_VBZ insensitive_JJ to_TO any_DT underlying_JJ distribution_NN pattern_NN and_CC moving_VBG speed_NN of_IN the_DT entities_NNS ._.
+A_DT singly_RB linked_VBN list_NN implementation_NN is_VBZ used_VBN for_IN the_DT moving_VBG edge_NN structure_NN ._.
+5_CD ._.
+ANALYSIS_NN We_PRP analyze_VBP three_CD indexing_NN schemes_NNS quantitatively_RB -LRB-_-LRB- node_NN indexing_NN ,_, edge_NN indexing_NN ,_, and_CC two-table_JJ edge_NN indexing_NN -RRB-_-RRB- in_IN terms_NNS of_IN memory_NN utilization_NN and_CC processing_NN time_NN ._.
+In_IN this_DT analysis_NN ,_, we_PRP assume_VBP that_IN node_NN and_CC edge_NN structures_NNS are_VBP implemented_VBN with_IN hash_NN tables_NNS ._.
+For_IN hash_JJ table_NN manipulations_NNS we_PRP assume_VBP three_CD memory-access_JJ functions_NNS :_: token_JJ insertion_NN ,_, token_JJ removal_NN ,_, and_CC token_JJ scan_VB ._.
+Their_PRP$ processing_NN costs_NNS are_VBP denoted_VBN by_IN Ta_NNP ,_, Td_NNP ,_, and_CC Ts_NNS ,_, respectively_RB ._.
+A_DT token_JJ scan_VB operation_NN reads_VBZ the_DT tokens_NNS in_IN a_DT hash_JJ bucket_NN sequentially_RB ._.
+It_PRP is_VBZ extensively_RB used_VBN during_IN cell_NN evaluations_NNS ._.
+Ts_NNS and_CC Td_NN are_VBP a_DT function_NN of_IN the_DT number_NN of_IN tokens_NNS in_IN the_DT bucket_NN while_IN Ta_NN is_VBZ constant_JJ ._.
+For_IN the_DT purpose_NN of_IN analysis_NN ,_, we_PRP define_VBP two_CD random_JJ variables_NNS ._.
+One_CD variable_NN ,_, denoted_VBN by_IN mo_NN ,_, represents_VBZ the_DT side_NN length_NN of_IN the_DT AOI_NN of_IN an_DT entity_NN o_NN ._.
+The_DT side_NN lengths_NNS are_VBP uniformly_RB distributed_VBN in_IN the_DT range_NN of_IN -LSB-_-LRB- mmin_NN ,_, mmax_NN -RSB-_-RRB- ._.
+The_DT average_JJ value_NN of_IN mo_NN is_VBZ denoted_VBN by_IN m_NN ._.
+The_DT second_JJ random_JJ variable_JJ v_LS denotes_VBZ the_DT x-directional_JJ or_CC ydirectional_JJ maximum_NN distance_NN of_IN a_DT moving_VBG entity_NN during_IN a_DT time_NN interval_NN ._.
+The_DT simulated_JJ movement_NN of_IN an_DT entity_NN during_IN the_DT given_VBN time_NN is_VBZ also_RB uniformly_RB distributed_VBN in_IN the_DT range_NN of_IN -LSB-_-LRB- #_# ,_, v_LS -RSB-_-RRB- ._.
+For_IN a_DT simple_JJ calculation_NN ,_, both_CC random_JJ variables_NNS are_VBP expressed_VBN as_IN the_DT number_NN of_IN cell_NN units_NNS ._.
+Table_NNP #_# summarizes_VBZ the_DT symbolic_JJ notations_NNS and_CC their_PRP$ meaning_NN ._.
+5_CD ._.
+#_# Memory_NN Requirements_NNS Let_VB the_DT token_JJ size_NN be_VB denoted_VBN by_IN s_NNS ._.
+Node_NN indexing_NN uses_VBZ s_NNS |_VBP Uq_NNP |_CD memory_NN units_NNS for_IN user_NN entities_NNS and_CC s_NNS oU_NN -LRB-_-LRB- mo_NN +_CC #_# -RRB-_-RRB- #_# s_NNS -LRB-_-LRB- m2_NN +_CC 2m_NN +_CC #_# +_CC V_NN ar_NN -LRB-_-LRB- mo_NN -RRB-_-RRB- -RRB-_-RRB- |_CD U_NNP |_CD units_NNS for_IN object_NN entities_NNS ._.
+Single-table_JJ edge_NN indexing_NN consumes_VBZ s_NNS |_VBP Uq_NNP |_CD storage_NN units_NNS for_IN the_DT user_NN entities_NNS and_CC s_NNS oU_NNP #_# -LRB-_-LRB- mo_NN +_CC #_# -RRB-_-RRB- 2s_NNS -LRB-_-LRB- m_NN +_CC #_# -RRB-_-RRB- |_CD U_NNP |_NNP for_IN the_DT object_NN entities_NNS ._.
+Two-table_JJ edge_NN indexing_NN occupies_VBZ s_NNS |_VBP Uq_NNP |_CD units_NNS for_IN the_DT users_NNS and_CC s_NNS -LCB-_-LRB- iO_NN #_# -LRB-_-LRB- mi_FW +_CC #_# -RRB-_-RRB- +_CC j_NN -LRB-_-LRB- UO_NN -RRB-_-RRB- #_# -LRB-_-LRB- mj_NN +_CC #_# -RRB-_-RRB- -RCB-_-RRB- 2s_NNS -LRB-_-LRB- m_NN +_CC #_# -RRB-_-RRB- |_CD U_NNP |_CD units_NNS for_IN the_DT objects_NNS ._.
+Table_NNP #_# summarizes_VBZ these_DT results_NNS ._.
+In_IN our_PRP$ target_NN apTable_JJ #_# :_: Memory_NN requirements_NNS of_IN different_JJ indexing_NN methods_NNS ._.
+indexing_NN method_NN user_NN entities_NNS object_VBP entities_NNS node_NN indexing_NN s_NNS |_VBP Uq_NNP |_CD s_NNS -LRB-_-LRB- -LRB-_-LRB- m_NN +_CC #_# -RRB-_-RRB- #_# +_CC V_NN ar_NN -LRB-_-LRB- mo_NN -RRB-_-RRB- -RRB-_-RRB- |_CD U_NNP |_NNP single-table_JJ edge_NN s_NNS |_VBP Uq_NNP |_CD 2s_NNS -LRB-_-LRB- m_NN +_CC #_# -RRB-_-RRB- |_CD U_NNP |_NNP two-table_JJ edge_NN s_NNS |_VBP Uq_NNP |_CD 2s_NNS -LRB-_-LRB- m_NN +_CC #_# -RRB-_-RRB- |_CD U_NNP |_NNP plication_NN ,_, our_PRP$ edge_NN indexing_NN methods_NNS consume_VBP approximately_RB m_NN +_CC #_# 2_CD times_NNS less_JJR memory_NN space_NN than_IN node_NN indexing_NN ._.
+Different_JJ grid_NN cell_NN partitioning_VBG with_IN edge_NN methods_NNS will_MD lead_VB to_TO different_JJ memory_NN requirements_NNS ._.
+For_IN example_NN ,_, here_RB are_VBP two_CD grids_NNS :_: a_DT M_NN M_NN grid_NN and_CC a_DT 2M_NN 2M_NN grid_NN ._.
+The_DT memory_NN requirement_NN for_IN the_DT user_NN entities_NNS is_VBZ unchanged_JJ because_IN it_PRP depends_VBZ only_RB on_IN the_DT total_JJ number_NN of_IN user_NN entities_NNS ._.
+The_DT memory_NN requirements_NNS for_IN the_DT object_NN entities_NNS are_VBP approximately_RB 2s_JJ -LRB-_-LRB- m_NN +_CC #_# -RRB-_-RRB- |_CD U_NNP |_NNP in_IN the_DT M_NN M_NN grid_NN case_NN and_CC 2s_NNS -LRB-_-LRB- 2m_NN +_CC #_# -RRB-_-RRB- |_CD U_NNP |_NNP for_IN the_DT -LRB-_-LRB- 2M_NN -RRB-_-RRB- -LRB-_-LRB- 2M_NN -RRB-_-RRB- grid_NN ._.
+Thus_RB ,_, a_DT four_CD times_NNS larger_JJR cell_NN size_NN will_MD lead_VB to_TO an_DT approximately_RB two_CD times_NNS smaller_JJR number_NN of_IN tokens_NNS ._.
+5_CD ._.
+#_# Processing_NNP Cost_NN In_IN this_DT section_NN ,_, we_PRP focus_VBP on_IN the_DT cost_NN analysis_NN of_IN update_VB operations_NNS and_CC cell_NN evaluations_NNS ._.
+For_IN a_DT fair_JJ comparison_NN of_IN the_DT different_JJ methods_NNS ,_, we_PRP only_RB analyze_VBP the_DT run-time_JJ complexity_NN of_IN moving_VBG objects_NNS and_CC moving_VBG users_NNS ._.
+5_CD ._.
+#_# ._.
+#_# Update_NNP Cost_NN We_PRP assume_VBP that_IN a_DT set_NN of_IN moving_VBG objects_NNS O_NN and_CC a_DT set_NN of_IN moving_VBG users_NNS Q_NNP are_VBP known_VBN in_IN advance_NN ._.
+Similar_JJ to_TO edge_VB indexing_NN ,_, node_NN indexing_NN has_VBZ two_CD update_VBP policies_NNS :_: full_JJ update_VB and_CC incremental_JJ update_VBP ._.
+Full_JJ update_VBP ,_, implemented_VBN in_IN Q-Index_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- and_CC SINA_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, removes_VBZ all_PDT the_DT old_JJ tokens_NNS from_IN the_DT old_JJ cell_NN node_NN structures_NNS and_CC inserts_NNS all_PDT the_DT new_JJ tokens_NNS into_IN the_DT new_JJ cell_NN nodes_NNS ._.
+The_DT incremental_JJ update_VBP policy_NN ,_, implemented_VBN by_IN no_DT existing_VBG work_NN ,_, removes_VBZ and_CC inserts_NNS all_PDT the_DT tokens_NNS whose_WP$ spatial_JJ condition_NN changed_VBN during_IN a_DT period_NN ._.
+In_IN this_DT analysis_NN ,_, we_PRP only_RB consider_VBP incremental_JJ node_NN indexing_NN ._.
+To_TO analyze_VB the_DT update_VBP cost_NN of_IN node_NN indexing_NN ,_, we_PRP introduce_VBP the_DT maximum_NN reachable_JJ distance_NN -LRB-_-LRB- v_LS -RRB-_-RRB- ,_, where_WRB the_DT next_JJ location_NN of_IN a_DT moving_VBG entity_NN ,_, whose_WP$ previous_JJ location_NN was_VBD at_IN cell_NN -LRB-_-LRB- #_# ,_, #_# -RRB-_-RRB- ,_, is_VBZ uniformly_RB distributed_VBN over_IN the_DT -LRB-_-LRB- v_LS ,_, v_LS -RRB-_-RRB- grid_NN cell_NN space_NN as_IN illustrated_VBN in_IN Figure_NNP #_# ._.
+We_PRP also_RB assume_VBP that_IN the_DT given_VBN maximum_NN reachable_JJ distance_NN is_VBZ less_JJR than_IN any_DT side_NN length_NN of_IN the_DT AOI_NN of_IN the_DT objects_NNS in_IN the_DT system_NN ;_: that_DT is_VBZ ,_, v_LS <_JJR mo_NN where_WRB o_NN O_NN ._.
+As_IN seen_VBN in_IN Figure_NNP #_# ,_, the_DT next_JJ location_NN may_MD fall_VB into_IN three_CD categories_NNS :_: areas_NNS A_DT ,_, B_NN ,_, and_CC the_DT center_NN cell_NN area_NN -LRB-_-LRB- #_# ,_, #_# -RRB-_-RRB- ._.
+If_IN an_DT object_NN resides_VBZ in_IN the_DT same_JJ cell_NN ,_, there_EX will_MD be_VB no_DT update_VBP ._.
+If_IN the_DT object_NN moves_VBZ into_IN the_DT area_NN A_NN ,_, there_EX will_MD be_VB -LRB-_-LRB- i_FW +_CC j_FW -RRB-_-RRB- -LRB-_-LRB- mo_NN +_CC #_# -RRB-_-RRB- ij_NN token_JJ insertions_NNS and_CC removals_NNS ,_, where_WRB 1_CD i_LS ,_, j_NN v_LS ._.
+Otherwise_RB ,_, there_EX will_MD be_VB k_NN -LRB-_-LRB- mo_NN +_CC #_# -RRB-_-RRB- token_JJ insertions_NNS and_CC removals_NNS ,_, where_WRB #_# k_NN v_LS ._.
+Thus_RB ,_, the_DT expected_VBN processing_NN time_NN of_IN an_DT object_NN update_VB for_IN node_NN indexing_NN is_VBZ the_DT summation_NN of_IN three_CD different_JJ movement_NN types_NNS T_NN node_NN per_IN update_VB -LRB-_-LRB- o_NN -RRB-_-RRB- =_JJ 4_CD -LRB-_-LRB- A_NN -RRB-_-RRB- +_CC #_# -LRB-_-LRB- B_NN -RRB-_-RRB- -LRB-_-LRB- 2v_NN +_CC #_# -RRB-_-RRB- #_# -LRB-_-LRB- Ta_NN +_CC Td_NN -RRB-_-RRB- =_JJ v_LS -LRB-_-LRB- v_LS +_CC #_# -RRB-_-RRB- -LCB-_-LRB- v_LS -LRB-_-LRB- 4mo_JJ +_CC #_# v_LS -RRB-_-RRB- +_CC #_# -LRB-_-LRB- mo_NN +_CC #_# -RRB-_-RRB- -RCB-_-RRB- -LRB-_-LRB- 2v_NN +_CC #_# -RRB-_-RRB- #_# -LRB-_-LRB- Ta_NN +_CC Td_NN -RRB-_-RRB- -LRB-_-LRB- #_# -RRB-_-RRB- and_CC the_DT expected_VBN processing_NN time_NN of_IN any_DT object_NN for_IN node_NN indexing_NN is_VBZ obtained_VBN by_IN T_NN node_NN per_IN update_VB =_JJ oO_NN ,_, v_LS <_JJR mo_NN T_NN node_NN per_IN update_VB -LRB-_-LRB- o_NN -RRB-_-RRB- |_CD O_NN |_NN =_JJ v_LS -LRB-_-LRB- v_LS +_CC #_# -RRB-_-RRB- -LCB-_-LRB- v_LS -LRB-_-LRB- 4m_NN +_CC #_# v_LS -RRB-_-RRB- +_CC 2m_NN +_CC #_# -RRB-_-RRB- -RCB-_-RRB- -LRB-_-LRB- 2v_NN +_CC #_# -RRB-_-RRB- #_# -LRB-_-LRB- Ta_NN +_CC Td_NN -RRB-_-RRB- -LRB-_-LRB- #_# -RRB-_-RRB- ._.
+407_CD Table_NNP #_# :_: Update_NNP time_NN cost_NN for_IN any_DT single_JJ update_VBP event_NN where_WRB v_LS <_JJR mq_NN ,_, mo_NN and_CC q_VB Q_NNP ._.
+indexing_NN method_NN queries_NNS -LRB-_-LRB- Ta_NN +_CC Td_NN -RRB-_-RRB- -LRB-_-LRB- seconds_NNS -RRB-_-RRB- objects_NNS -LRB-_-LRB- Ta_NN +_CC Td_NN -RRB-_-RRB- -LRB-_-LRB- seconds_NNS -RRB-_-RRB- node_NN indexing_NN with_IN incremental_JJ update_VBP |_CD Q_NNP |_CD |_CD O_NN |_CD v_LS -LRB-_-LRB- v_LS +_CC #_# -RRB-_-RRB- -LCB-_-LRB- v_LS -LRB-_-LRB- 4m_NN +_CC 3v_NN -RRB-_-RRB- +_CC #_# -LRB-_-LRB- m_NN +_CC #_# -RRB-_-RRB- -RCB-_-RRB- -LRB-_-LRB- 2v_NN +_CC #_# -RRB-_-RRB- #_# single-table_JJ edge_NN indexing_NN with_IN full_JJ update_VBP |_CD Q_NNP |_CD |_CD O_NN |_CD #_# -LRB-_-LRB- m_NN +_CC #_# -RRB-_-RRB- single-table_JJ edge_NN indexing_NN with_IN incremental_JJ update_VBP |_CD Q_NNP |_CD |_CD O_NN |_CD v_LS -LRB-_-LRB- 4m_NN -LRB-_-LRB- #_# +_CC 2v_NN -RRB-_-RRB- +_CC 9v_NN +_CC #_# -RRB-_-RRB- -LRB-_-LRB- 2v_NN +_CC #_# -RRB-_-RRB- #_# two-table_JJ edge_NN indexing_NN |_CD Q_NNP |_CD Ta_NNP Ta_NNP +_CC Td_NNP |_CD O_NNP |_CD #_# -LRB-_-LRB- m_NN +_CC #_# -RRB-_-RRB- Ta_NNP Ta_NNP +_CC Td_NNP Maximum_NNP Reachable_NNP Distance_NNP -LRB-_-LRB- v_LS -RRB-_-RRB- -LRB-_-LRB- #_# ,_, #_# -RRB-_-RRB- i_FW j_FW -LRB-_-LRB- i_FW ,_, j_NN -RRB-_-RRB- A_NN A_NN AA_NN B_NN B_NN B_NN B_NN Figure_NN #_# :_: Illustration_NN of_IN next_JJ cell_NN location_NN ,_, cell_NN -LRB-_-LRB- i_FW ,_, j_NN -RRB-_-RRB- ,_, of_IN a_DT moving_VBG entity_NN whose_WP$ initial_JJ location_NN was_VBD at_IN cell_NN -LRB-_-LRB- #_# ,_, #_# -RRB-_-RRB- ._.
+The_DT expected_VBN time_NN of_IN any_DT single_JJ entity_NN update_VB for_IN edge_NN indexing_NN with_IN full_JJ update_VBP is_VBZ :_: T_NN edgefull_NN per_IN update_VB =_JJ oO_NN T_NN edgefull_NN per_IN update_VB -LRB-_-LRB- o_NN -RRB-_-RRB- |_CD O_NN |_NN =_JJ #_# -LRB-_-LRB- m_NN +_CC #_# -RRB-_-RRB- -LRB-_-LRB- Ta_NN +_CC Td_NN -RRB-_-RRB- -LRB-_-LRB- #_# -RRB-_-RRB- The_DT analysis_NN of_IN the_DT expected_VBN time_NN of_IN any_DT single_JJ entity_NN update_VB for_IN edge_NN indexing_NN with_IN incremental_JJ update_VBP becomes_VBZ complicated_JJ because_IN the_DT time_NN cost_NN depends_VBZ both_DT on_IN the_DT side_NN length_NN of_IN the_DT entity_NN AOI_NN and_CC on_IN the_DT moving_VBG speed_NN ._.
+Roughly_RB speaking_VBG ,_, its_PRP$ worst-case_JJ processing_NN cost_NN is_VBZ the_DT same_JJ as_IN Tedgefull_NNP per_IN update_VBP ._.
+Due_JJ to_TO space_NN limitations_NNS we_PRP only_RB show_VBP the_DT analysis_NN result_NN of_IN the_DT expected_VBN processing_NN time_NN when_WRB v_LS of_IN any_DT object_NN o_NN O_NN is_VBZ smaller_JJR than_IN mo_NN :_: Tedgeincremental_JJ per_IN update_VBP =_JJ oO_NN ,_, v_LS <_JJR mo_NN Tedgeincremental_JJ per_IN update_VBP -LRB-_-LRB- o_NN -RRB-_-RRB- |_CD O_NN |_NN =_JJ v_LS -LRB-_-LRB- 4m_NN -LRB-_-LRB- #_# +_CC 2v_NN -RRB-_-RRB- +_CC 9v_NN +_CC #_# -RRB-_-RRB- -LRB-_-LRB- 2v_NN +_CC #_# -RRB-_-RRB- #_# -LRB-_-LRB- Ta_NN +_CC Td_NN -RRB-_-RRB- =_JJ v_LS -LRB-_-LRB- 4m_NN -LRB-_-LRB- #_# +_CC 2v_NN -RRB-_-RRB- +_CC 9v_NN +_CC #_# -RRB-_-RRB- -LRB-_-LRB- 2v_NN +_CC #_# -RRB-_-RRB- #_# #_# -LRB-_-LRB- m_NN +_CC #_# -RRB-_-RRB- Tedgefull_NNP per_IN update_VBP -LRB-_-LRB- #_# -RRB-_-RRB- All_DT update_VBP complexities_NNS are_VBP summarized_VBN in_IN Table_NNP #_# ._.
+In_IN this_DT table_NN ,_, it_PRP is_VBZ evident_JJ that_IN while_IN the_DT update_VBP cost_NN of_IN the_DT worst-case_JJ edge_NN indexing_NN -LRB-_-LRB- single-table_JJ edge_NN indexing_NN with_IN full_JJ update_VBP policy_NN -RRB-_-RRB- depends_VBZ only_RB on_IN m_NN ,_, that_DT of_IN the_DT best-case_JJ node_NN indexing_NN -LRB-_-LRB- node_NN indexing_NN with_IN incremental_JJ update_VBP policy_NN -RRB-_-RRB- is_VBZ still_RB proportional_JJ to_TO two_CD variables_NNS ,_, v_LS and_CC m_NN ._.
+For_IN a_DT smaller_JJR value_NN of_IN v_LS -LRB-_-LRB- v_LS =_JJ #_# -RRB-_-RRB- ,_, the_DT update_VBP cost_NN of_IN node_NN indexing_NN slightly_RB outperforms_VBZ that_IN of_IN edge_NN indexing_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, 12m_NN +_CC #_# 9_CD vs_CC ._.
+#_# -LRB-_-LRB- m_NN +_CC #_# -RRB-_-RRB- -RRB-_-RRB- ._.
+However_RB ,_, as_IN v_LS increases_NNS ,_, the_DT performance_NN gain_NN is_VBZ then_RB immediately_RB reversed_VBN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, 60m_NN +_CC ##_CD 25_CD versus_CC #_# -LRB-_-LRB- m_NN +_CC #_# -RRB-_-RRB- ,_, where_WRB v_LS =_JJ #_# -RRB-_-RRB- ._.
+Another_DT interesting_JJ result_NN is_VBZ that_IN two-table_JJ edge_NN indexing_NN depends_VBZ only_RB on_IN the_DT token_JJ insertion_NN cost_NN ,_, Ta_NN ._.
+Typically_RB ,_, Td_NN is_VBZ slightly_RB 1_CD #_# #_# #_# #_# 0_CD 5_CD 10_CD 15_CD 20_CD 25_CD 30_CD 35_CD 40_CD Maximum_NNP Reachable_NNP Distance_NNP -LRB-_-LRB- v_LS -RRB-_-RRB- -LRB-_-LRB- %_NN -RRB-_-RRB- #_# ofAffectedTokens_NNPS Twotable_NNP Edge_NNP Indexing_NN Incremental_JJ Edge_NNP Indexing_NN Full_JJ Edge_NNP Indexing_NN Incremental_JJ Node_NN Indexing_NN Figure_NN #_# :_: Simulation_NN results_NNS of_IN update_VBP complexity_NN of_IN different_JJ indexing_NN methods_NNS ._.
+The_DT update_VBP complexity_NN ,_, the_DT expected_VBN number_NN of_IN token_JJ removals_NNS and_CC insertions_NNS per_IN object_NN update_VBP ,_, is_VBZ drawn_VBN as_IN a_DT function_NN of_IN maximum_NN reachable_JJ distance_NN -LRB-_-LRB- v_LS -RRB-_-RRB- ._.
+The_DT average_JJ side_NN length_NN of_IN object_NN AOIs_NNS is_VBZ ##_CD %_NN of_IN the_DT side_NN length_NN of_IN a_DT given_VBN 2-D_NN map_NN ._.
+greater_JJR than_IN Ta_NN because_IN Td_NN requires_VBZ at_IN least_JJS one_CD token_JJ lookup_NN operation_NN ._.
+After_IN the_DT lookup_NN ,_, Td_NN executes_VBZ the_DT reverse_JJ operation_NN of_IN Ta_NNP ._.
+Thus_RB ,_, Td_NN may_MD well_RB be_VB expressed_VBN as_IN -LRB-_-LRB- Ta_NN +_CC Tlookup_NN -RRB-_-RRB- and_CC can_MD be_VB simplified_VBN as_IN -LRB-_-LRB- Ta_NN +_CC |_CD E_NN |_CD 2b_JJ Ts_NNS -RRB-_-RRB- where_WRB |_JJ E_NN |_NN is_VBZ the_DT size_NN of_IN the_DT edge_NN structure_NN and_CC b_NN is_VBZ the_DT number_NN of_IN its_PRP$ hash_JJ buckets_NNS ._.
+From_IN this_DT observation_NN ,_, we_PRP can_MD infer_VB that_IN full_JJ update_VBP of_IN single-table_JJ edge_NN indexing_NN takes_VBZ at_IN least_JJS twice_RB as_RB long_JJ as_IN the_DT update_VBP for_IN two-table_JJ edge_NN indexing_NN ._.
+Figure_NNP #_# shows_VBZ that_IN full_JJ update_VBP of_IN edge_NN indexing_NN when_WRB the_DT maximum_NN reachable_JJ distance_NN is_VBZ less_JJR than_IN the_DT side_NN length_NN of_IN any_DT moving_VBG entities_NNS takes_VBZ constant_JJ time_NN to_TO update_VB the_DT corresponding_JJ edge_NN structures_NNS ,_, which_WDT mainly_RB depends_VBZ on_IN the_DT side_NN length_NN of_IN the_DT given_VBN AOI_NN ._.
+In_IN this_DT figure_NN we_PRP assume_VBP that_IN the_DT average_JJ side_NN length_NN of_IN the_DT AOI_NNP is_VBZ 0_CD ._.
+#_# -LRB-_-LRB- or_CC ##_CD %_NN -RRB-_-RRB- ._.
+The_DT node_NN indexing_NN method_NN ,_, however_RB ,_, depends_VBZ not_RB only_RB on_IN the_DT side_NN length_NN but_CC also_RB on_IN the_DT reachable_JJ distance_NN ._.
+Thus_RB the_DT entity_NN update_VB in_IN node_NN indexing_NN is_VBZ much_JJ heavier_JJR than_IN the_DT full_JJ update_VB for_IN edge_NN indexing_NN ._.
+As_IN expected_VBN ,_, these_DT simulation_NN results_VBZ validate_VB a_DT common_JJ belief_NN that_IN in_IN less_JJR dynamic_JJ environments_NNS ,_, incremental_JJ updates_NNS reduce_VB the_DT amount_NN of_IN token_JJ insertions_NNS and_CC removals_NNS noticeably_RB while_IN in_IN extremely_RB dynamic_JJ environments_NNS the_DT reduction_NN ratio_NN becomes_VBZ negligible_JJ ._.
+5_CD ._.
+#_# ._.
+#_# Cell_NN Evaluation_NN Cost_NN Node_NN indexing_NN scans_VBZ all_DT entities_NNS and_CC then_RB collects_VBZ the_DT user_NN entities_NNS indexed_VBN on_IN every_DT cell_NN node_NN ._.
+Therefore_RB ,_, it_PRP would_MD take_VB |_CD Q_NNP |_CD Ts_NNS to_TO scan_VB all_DT user_NN entities_NNS ._.
+If_IN every_DT node_NN stores_NNS -LRB-_-LRB- m2_NN +_CC 2m_NN +_CC #_# +_CC V_NN ar_NN -LRB-_-LRB- mo_NN -RRB-_-RRB- -RRB-_-RRB- |_CD O_NN |_CD M2_NN object_NN entities_NNS on_IN average_NN ,_, the_DT expected_VBN completion_NN time_NN of_IN one_CD cell_NN evaluation_NN will_MD then_RB be_VB oO_NN -LRB-_-LRB- m2_NN +_CC 2m_NN +_CC #_# +_CC V_NN ar_NN -LRB-_-LRB- mo_NN -RRB-_-RRB- -RRB-_-RRB- |_CD O_NN |_CD M2_NN Ts_NNS ._.
+If_IN every_DT cell_NN has_VBZ at_IN most_JJS one_CD user_NN entity_NN ,_, the_DT expected_VBN completion_NN time_NN of_IN all_DT cell_NN evaluations_NNS will_MD be_VB |_JJ Q_NNP |_NN -LRB-_-LRB- m2_NN +_CC 2m_NN +_CC #_# +_CC V_NN ar_NN -LRB-_-LRB- mo_NN -RRB-_-RRB- -RRB-_-RRB- |_CD O_NN |_CD M2_NN Ts_NNS ._.
+The_DT runtime_NN complexity_NN of_IN the_DT single-table_JJ cell_NN evaluation_NN can_MD 408_CD Table_NNP #_# :_: Summary_NNP of_IN cell_NN evaluation_NN cost_NN ._.
+indexing_NN method_NN expected_VBN elapsed_JJ time_NN node_NN indexing_NN Ts_NNS |_VBP Q_NNP |_CD -LRB-_-LRB- m2_NN +_CC 2m_NN +_CC #_# +_CC V_NN ar_NN -LRB-_-LRB- mo_NN -RRB-_-RRB- -RRB-_-RRB- |_CD O_NN |_CD M2_NN single-table_JJ edge_NN Ts_NNS -LRB-_-LRB- |_CD Q_NNP |_CD +_CC |_CD O_NN |_CD #_# -LRB-_-LRB- m_NN +_CC #_# -RRB-_-RRB- -RRB-_-RRB- two-table_JJ edge_NN -LRB-_-LRB- Ts_NN +_CC Td_NN -RRB-_-RRB- -LRB-_-LRB- |_CD Q_NNP |_CD +_CC |_CD O_NN |_CD #_# -LRB-_-LRB- m_NN +_CC #_# -RRB-_-RRB- -RRB-_-RRB- be_VB simplified_VBN as_IN Ts_NNS |_VBP O_NN |_CD #_# -LRB-_-LRB- m_NN +_CC #_# -RRB-_-RRB- ._.
+In_IN this_DT analysis_NN ,_, we_PRP do_VBP not_RB consider_VB any_DT data_NNS delivery_NN overhead_NN after_IN a_DT cell_NN evaluation_NN ._.
+Note_VB that_IN in_IN single-table_JJ edge_NN indexing_NN we_PRP need_VBP to_TO scan_VB all_PDT the_DT tokens_NNS for_IN cell_NN evaluations_NNS ._.
+Two-table_JJ edge_NN indexing_NN executes_VBZ in_IN Td_NN to_TO remove_VB the_DT evaluated_VBN tokens_NNS after_IN a_DT cell_NN evaluation_NN ._.
+Unlike_IN the_DT Td_NN operation_NN ,_, the_DT Td_NN operation_NN is_VBZ much_JJ lighter_JJR because_IN it_PRP does_VBZ not_RB require_VB any_DT lookup_NN operation_NN ._.
+Table_NNP #_# shows_VBZ the_DT expected_VBN complexities_NNS of_IN different_JJ cell_NN evaluation_NN scenarios_NNS ._.
+If_IN previously_RB computed_VBN result_NN sets_NNS are_VBP re-used_VBN during_IN the_DT next_JJ evaluation_NN round_NN ,_, the_DT expected_VBN elapsed_JJ time_NN of_IN node_NN indexing_NN will_MD be_VB bound_VBN by_IN the_DT total_JJ number_NN of_IN cell_NN evaluations_NNS -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, Ts_NNS -LRB-_-LRB- m2_NN +_CC 2m_NN +_CC #_# +_CC V_NN ar_NN -LRB-_-LRB- mo_NN -RRB-_-RRB- -RRB-_-RRB- |_CD O_NN |_NN -RRB-_-RRB- ._.
+However_RB ,_, in_IN the_DT worst_JJS case_NN ,_, the_DT cell_NN evaluation_NN of_IN node_NN indexing_NN is_VBZ still_RB m_NN +_CC #_# 2_CD times_NNS longer_JJR than_IN that_DT of_IN any_DT edge_NN indexing_NN method_NN ._.
+5_CD ._.
+#_# ._.
+#_# Putting_VBG it_PRP Together_RB :_: Periodic_JJ Monitoring_NN Cost_NN As_IN we_PRP saw_VBD in_IN Section_NN #_# ._.
+#_# ._.
+#_# ,_, edge_NN indexing_NN methods_NNS outperform_VBP node_NN indexing_NN in_IN terms_NNS of_IN updates_NNS and_CC cell_NN evaluations_NNS ._.
+In_IN this_DT section_NN we_PRP focus_VBP on_IN evaluating_VBG the_DT performance_NN difference_NN between_IN single-table_JJ edge_NN indexing_NN and_CC two-table_JJ edge_NN indexing_NN ._.
+The_DT total_JJ elapsed_JJ time_NN of_IN full_JJ update_VBP based_VBN single-table_JJ edge_NN indexing_NN for_IN a_DT given_VBN set_NN of_IN moving_VBG entities_NNS is_VBZ the_DT summation_NN of_IN the_DT elapsed_JJ time_NN of_IN updates_NNS and_CC cell_NN evaluations_NNS :_: -LRB-_-LRB- Ta_NN +_CC Td_NN +_CC Ts_NNS -RRB-_-RRB- -LCB-_-LRB- |_CD Q_NNP |_CD +_CC |_CD O_NN |_CD #_# -LRB-_-LRB- m_NN +_CC #_# -RRB-_-RRB- -RCB-_-RRB- -LRB-_-LRB- #_# -RRB-_-RRB- Similarly_RB ,_, the_DT total_JJ elapsed_JJ time_NN of_IN two-table_JJ edge_NN indexing_NN is_VBZ as_IN follows_VBZ :_: -LRB-_-LRB- Ta_NN +_CC Td_NN +_CC Ts_NNS -RRB-_-RRB- -LCB-_-LRB- |_CD Q_NNP |_CD +_CC |_CD O_NN |_CD #_# -LRB-_-LRB- m_NN +_CC #_# -RRB-_-RRB- -RCB-_-RRB- -LRB-_-LRB- #_# -RRB-_-RRB- From_IN Equation_NN #_# and_CC #_# we_PRP conclude_VBP that_IN two-table_JJ edge_NN indexing_NN ,_, even_RB though_IN it_PRP represents_VBZ a_DT minor_JJ optimization_NN of_IN single-table_JJ edge_NN indexing_NN by_IN replacing_VBG unpredictable_JJ Td_NN with_IN predictable_JJ Td_NN ,_, achieves_VBZ a_DT significant_JJ performance_NN improvement_NN ._.
+First_NNP of_IN all_DT ,_, Td_NN is_VBZ very_RB predictable_JJ and_CC a_DT more_RBR lightweight_JJ procedure_NN than_IN Td_NN ._.
+All_PDT the_DT data_NNS structure_NN manipulation_NN overheads_NNS ,_, such_JJ as_IN Ta_NNP ,_, Ts_NNP ,_, and_CC Td_NN can_MD be_VB easily_RB profiled_VBN and_CC all_DT become_VBP constant_JJ ._.
+In_IN addition_NN ,_, twotable_JJ indexing_NN is_VBZ guaranteed_VBN to_TO outperform_VB single-table_JJ full_JJ update_VBP edge_NN indexing_NN ._.
+Another_DT novelty_NN of_IN the_DT two-table_JJ approach_NN is_VBZ that_IN it_PRP is_VBZ highly_RB resilient_JJ to_TO the_DT underlying_VBG data_NNS distribution_NN ,_, regardless_RB of_IN whether_IN it_PRP is_VBZ highly_RB skewed_JJ or_CC uniform_JJ ._.
+Equation_NN #_# also_RB reveals_VBZ the_DT minimum_JJ time_NN interval_NN that_WDT satisfies_VBZ the_DT given_VBN input_NN parameters_NNS ,_, Ta_NNP ,_, Ts_NNP ,_, Td_NNP ,_, |_CD Q_NNP |_CD ,_, |_CD O_NN |_NN ,_, and_CC m_NN ._.
+While_IN Ta_NN ,_, Ts_NN and_CC Td_NN are_VBP system-specific_JJ parameters_NNS ,_, |_CD O_NN |_CD ,_, |_CD Q_NNP |_CD ,_, and_CC m_NN are_VBP all_DT application-specific_JJ ._.
+The_DT latter_NN can_MD be_VB configured_VBN by_IN the_DT former_JJ and_CC any_DT given_VBN real-time_JJ constraint_NN T_NN ._.
+Thus_RB ,_, the_DT system_NN throughput_NN -_: how_WRB many_JJ moving_VBG objects_NNS and_CC users_NNS are_VBP supported_VBN by_IN the_DT given_VBN system_NN -_: is_VBZ obtained_VBN from_IN Equation_NN #_# ._.
+Maximum_NNP System_NNP Throughput_NNP =_JJ |_CD Q_NNP |_CD +_CC |_CD O_NN |_CD #_# -LRB-_-LRB- m_NN +_CC #_# -RRB-_-RRB- =_JJ T_NN Ts_NNS +_CC Ta_NN +_CC Td_NN -LRB-_-LRB- #_# -RRB-_-RRB- For_IN example_NN ,_, if_IN a_DT given_VBN sub-world_NN is_VBZ only_RB filled_VBN with_IN moving_VBG avatars_NNS ,_, A_NN =_JJ Q_NNP =_JJ O_NN ,_, whose_WP$ average_JJ side_NN length_NN is_VBZ ##_CD %_NN of_IN the_DT map_NN side_NN length_NN ,_, then_RB Ts_NN +_CC Td_NN takes_VBZ #_# ._.
+##_NN microseconds_NNS per_IN token_JJ evaluation_NN ,_, and_CC Ta_NN takes_VBZ #_# ._.
+##_NN microseconds_NNS ,_, and_CC the_DT system_NN will_MD handle_VB about_IN ##_NN ,_, ###_CD avatars_NNS per_IN second_NN ._.
+Every_DT avatar_NN can_MD navigate_VB in_IN the_DT sub-world_JJ freely_RB and_CC the_DT same_JJ number_NN of_IN remotely_RB connected_VBN clients_NNS receive_VBP the_DT latest_JJS update_VBP events_NNS continuously_RB ._.
+6_CD ._.
+EVALUATION_NN This_DT section_NN presents_VBZ two_CD simulation_NN setups_NNS and_CC their_PRP$ performance_NN results_NNS ._.
+Section_NN #_# ._.
+#_# examines_VBZ whether_IN our_PRP$ new_JJ view_NN approach_NN is_VBZ superior_JJ to_TO existing_VBG view_NN models_NNS ,_, in_IN spite_NN of_IN its_PRP$ higher_JJR indexing_NN complexity_NN ._.
+Section_NN #_# ._.
+#_# discusses_VBZ the_DT degree_NN of_IN practicality_NN and_CC scalability_NN of_IN our_PRP$ indexing_NN method_NN that_WDT is_VBZ designed_VBN for_IN our_PRP$ new_JJ view_NN model_NN ._.
+6_CD ._.
+#_# JustificationofObject-initiatedView_NNP Model_NNP 6_CD ._.
+#_# ._.
+#_# Evaluation_NN Metrics_NNS To_TO quantify_VB the_DT quality_NN of_IN the_DT retrieved_VBN results_NNS of_IN query_NN processing_NN ,_, we_PRP use_VBP two_CD widely_RB known_JJ evaluation_NN metrics_NNS ,_, Precision_NN -LRB-_-LRB- P_NN -RRB-_-RRB- and_CC Recall_VB -LRB-_-LRB- R_NN -RRB-_-RRB- ,_, that_WDT estimate_VBP the_DT degree_NN of_IN accuracy_NN and_CC comprehensiveness_NN of_IN a_DT given_VBN result_NN set_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+P_NN is_VBZ the_DT ratio_NN of_IN relevant_JJ ,_, retrieved_VBN items_NNS to_TO all_DT retrieved_VBN items_NNS ._.
+A_DT lower_JJR value_NN of_IN P_NN implies_VBZ that_IN the_DT query_JJ result_NN set_NN contains_VBZ a_DT large_JJ number_NN of_IN unnecessary_JJ objects_NNS that_WDT do_VBP not_RB have_VB to_TO be_VB delivered_VBN to_TO a_DT client_NN ._.
+A_DT higher_JJR P_NN value_NN means_VBZ a_DT higher_JJR network_NN traffic_NN load_NN than_IN required_VBN ._.
+R_NN is_VBZ the_DT ratio_NN of_IN relevant_JJ ,_, retrieved_VBN items_NNS to_TO all_DT relevant_JJ items_NNS ._.
+A_DT lower_JJR R_NN value_NN means_VBZ that_IN more_JJR objects_NNS that_WDT should_MD be_VB recognized_VBN are_VBP ignored_VBN ._.
+From_IN the_DT R_NN measure_NN ,_, we_PRP can_MD quantitatively_RB estimate_VB the_DT occurrence_NN of_IN object_NN popping_VBG ._.
+In_IN addition_NN to_TO the_DT P_NN and_CC R_NN metrics_NNS ,_, we_PRP use_VBP a_DT standardized_JJ singlevalued_JJ query_NN evaluation_NN metric_NN that_WDT combines_VBZ P_NN and_CC R_NN ,_, called_VBN Emeasure_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+The_DT E-measure_NN is_VBZ defined_VBN as_IN :_: E_NN =_JJ #_# -LRB-_-LRB- #_# +_CC #_# -RRB-_-RRB- PR_NN 2P_NN +_CC R_NN where_WRB is_VBZ the_DT relative_JJ importance_NN of_IN P_NN or_CC R_NN ._.
+If_IN is_VBZ equal_JJ to_TO #_# ,_, P_NN and_CC R_NN are_VBP equally_RB important_JJ ._.
+If_IN is_VBZ less_JJR than_IN #_# ,_, P_NN becomes_VBZ more_RBR important_JJ ._.
+Otherwise_RB ,_, R_NN will_MD affect_VB the_DT E-measure_NN significantly_RB ._.
+A_DT lower_JJR E-measure_NN value_NN implies_VBZ that_IN the_DT tested_VBN view_NN model_NN has_VBZ a_DT higher_JJR quality_NN ._.
+The_DT best_JJS E-measure_NN value_NN is_VBZ zero_CD ,_, where_WRB the_DT best_JJS values_NNS for_IN P_NN and_CC R_NN are_VBP both_DT ones_NNS ._.
+6_CD ._.
+#_# ._.
+#_# Simulation_NNP Setup_NNP We_PRP tested_VBD four_CD query_NN processing_NN schemes_NNS ,_, which_WDT use_VBP either_CC a_DT user-initiated_JJ or_CC an_DT object-initiated_JJ view_NN model_NN :_: User-initiated_JJ visibility_NN computation_NN -_: RQ-OP_NN :_: Region_NNP Query_NNP -_: Object_NNP Point_NNP Object-oriented_JJ visibility_NN computation_NN -_: PQ-OR_NN :_: Point_NN Query_NN -_: Object_NNP Region_NNP -_: RQ-OR_NN :_: Region_NNP Query_NNP -_: Object_NNP Region_NNP -_: ACQ-OR_NN :_: Approximate_NNP Cell_NNP Query_NNP -_: Object_NNP Region_NNP RQ-OP_NN is_VBZ the_DT typical_JJ computation_NN scheme_NN that_WDT collects_VBZ all_DT objects_NNS whose_WP$ location_NN is_VBZ inside_IN a_DT user_NN defined_VBN AOI_NNP ._.
+PQ-OR_NN collects_VBZ a_DT set_NN of_IN objects_NNS whose_WP$ AOI_NNP intersects_VBZ with_IN a_DT given_VBN user_NN point_NN ,_, formally_RB -LCB-_-LRB- o_NN |_CD q_NN ._.
+P_NN o_NN ._.
+R_NN -RCB-_-RRB- ._.
+RQ-OR_NN ,_, an_DT imaginary_JJ computation_NN scheme_NN ,_, is_VBZ the_DT combination_NN of_IN RQ-OP_NN and_CC PQ-OR_NN where_WRB the_DT AOI_NN of_IN an_DT object_NN intersects_VBZ with_IN that_DT of_IN a_DT user_NN ,_, -LCB-_-LRB- o_NN |_CD o_NN ._.
+R_NN q_NN ._.
+R_NN =_JJ -RCB-_-RRB- ._.
+Lastly_RB ,_, ACQ-OR_NN ,_, an_DT approximate_JJ visibility_NN computation_NN model_NN ,_, is_VBZ a_DT special_JJ scheme_NN designed_VBN for_IN grid-based_JJ space_NN partitioning_NN ,_, which_WDT is_VBZ our_PRP$ choice_NN of_IN cell_NN evaluation_NN methodology_NN for_IN edge_NN indexing_NN ._.
+If_IN a_DT virtual_JJ space_NN is_VBZ partitioned_VBN into_IN tiled_JJ cells_NNS and_CC a_DT user_NN point_NN belongs_VBZ to_TO one_CD of_IN the_DT cells_NNS ,_, the_DT ACQ-OR_NN searches_VBZ the_DT objects_NNS whose_WP$ AOI_NN 409_CD Table_NNP #_# :_: P_NN and_CC R_NN computations_NNS of_IN different_JJ visibility_NN determination_NN schemes_NNS ._.
+Scheme_NN P_NN R_NN RQ-OP_NN |_CD -LCB-_-LRB- o_NN |_CD o_NN ._.
+P_NN q_NN ._.
+Rq_NN ._.
+P_NN o_NN ._.
+R_NN -RRB-_-RRB- -RCB-_-RRB- |_CD |_CD -LCB-_-LRB- o_NN |_CD o_NN ._.
+P_NN q_NN ._.
+R_NN -RCB-_-RRB- |_CD |_CD -LCB-_-LRB- o_NN |_CD o_NN ._.
+P_NN q_NN ._.
+Rq_NN ._.
+P_NN o_NN ._.
+R_NN -RRB-_-RRB- -RCB-_-RRB- |_CD |_CD -LCB-_-LRB- o_NN |_CD q_NN ._.
+P_NN o_NN ._.
+R_NN -RCB-_-RRB- |_CD PQ-OR_NN |_CD -LCB-_-LRB- o_NN |_CD q_NN ._.
+P_NN o_NN ._.
+R_NN -RCB-_-RRB- |_CD |_CD -LCB-_-LRB- o_NN |_CD q_NN ._.
+P_NN o_NN ._.
+R_NN -RCB-_-RRB- |_NN =_JJ #_# |_CD -LCB-_-LRB- o_NN |_CD q_NN ._.
+P_NN o_NN ._.
+R_NN -RCB-_-RRB- |_CD |_CD -LCB-_-LRB- o_NN |_CD q_NN ._.
+P_NN o_NN ._.
+R_NN -RCB-_-RRB- |_NN =_JJ #_# RQ-OR_NN |_CD -LCB-_-LRB- o_NN |_CD q_NN ._.
+P_NN o_NN ._.
+R_NN -RCB-_-RRB- |_CD |_CD -LCB-_-LRB- o_NN |_CD q_NN ._.
+Ro_NN ._.
+R_NN =_JJ -RCB-_-RRB- |_CD |_CD -LCB-_-LRB- o_NN |_CD q_NN ._.
+P_NN o_NN ._.
+R_NN -RCB-_-RRB- |_CD |_CD -LCB-_-LRB- o_NN |_CD q_NN ._.
+P_NN o_NN ._.
+R_NN -RCB-_-RRB- |_NN =_JJ #_# ACQ-OR_NN |_CD -LCB-_-LRB- o_NN |_CD q_NN ._.
+P_NN o_NN ._.
+R_NN -RCB-_-RRB- |_CD |_CD -LCB-_-LRB- o_NN |_CD c_NN ._.
+Ro_NN ._.
+R_NN =_JJ ,_, q_VB ._.
+P_NN c_NN ._.
+R_NN -RCB-_-RRB- |_CD |_CD -LCB-_-LRB- o_NN |_CD q_NN ._.
+P_NN o_NN ._.
+R_NN -RCB-_-RRB- |_CD |_CD -LCB-_-LRB- o_NN |_CD q_NN ._.
+P_NN o_NN ._.
+R_NN -RCB-_-RRB- |_NN =_JJ #_# would_MD intersect_VB with_IN the_DT region_NN of_IN the_DT corresponding_JJ grid_NN cell_NN ._.
+Of_IN course_NN ,_, it_PRP exhibits_VBZ similar_JJ properties_NNS as_IN RQ-OR_NN while_IN the_DT result_NN set_NN of_IN its_PRP$ query_NN is_VBZ not_RB a_DT subset_NN of_IN the_DT RQ-OR_NN query_NN result_NN ._.
+It_PRP identifies_VBZ any_DT object_NN o_NN satisfying_VBG the_DT condition_NN c_NN ._.
+R_NN o_NN ._.
+R_NN =_SYM where_WRB the_DT cell_NN c_NN satisfies_NNS q_VBP ._.
+P_NN c_NN ._.
+R_NN as_RB well_RB ._.
+Our_PRP$ simulation_NN program_NN populated_JJ 100K_NN object_NN entities_NNS and_CC 10K_CD user_NN entities_NNS in_IN a_DT 2D_NN unit_NN space_NN ,_, -LSB-_-LRB- #_# ,_, #_# -RRB-_-RRB- -LSB-_-LRB- #_# ,_, #_# -RRB-_-RRB- ._.
+The_DT populated_JJ entities_NNS are_VBP uniformly_RB located_JJ in_IN the_DT unit_NN space_NN ._.
+The_DT side_NN length_NN of_IN their_PRP$ AOI_NN is_VBZ also_RB uniformly_RB assigned_VBN in_IN the_DT range_NN of_IN -LSB-_-LRB- #_# ._.
+##_NN ,_, #_# ._.
+##_NN -RSB-_-RRB- ,_, meaning_VBG #_# %_NN to_TO ##_CD %_NN of_IN the_DT side_NN length_NN of_IN the_DT unit_NN space_NN ._.
+The_DT program_NN performs_VBZ intersection_NN tests_NNS between_IN all_DT user_NN and_CC all_DT object_NN entities_NNS exhaustively_RB and_CC computes_VBZ the_DT P_NN ,_, R_NN ,_, and_CC E-measure_NN values_NNS -LRB-_-LRB- shown_VBN in_IN Table_NNP #_# -RRB-_-RRB- ._.
+6_CD ._.
+#_# ._.
+#_# Experimental_JJ Results_NNS Distribution_NN of_IN P_NN and_CC R_NN measure_NN :_: Figure_NNP #_# shows_VBZ the_DT distribution_NN of_IN P_NN and_CC R_NN for_IN RQ-OP_NN ._.
+We_PRP can_MD observe_VB that_DT P_NN and_CC R_NN are_VBP roughly_RB inversely_RB proportional_JJ to_TO each_DT other_JJ when_WRB varying_VBG a_DT user_NN AOI_NN range_NN ._.
+A_DT smaller_JJR side_NN length_NN leads_VBZ to_TO higher_JJR accuracy_NN but_CC lower_JJR comprehensiveness_NN ._.
+For_IN example_NN ,_, #_# %_NN of_IN the_DT side_NN length_NN of_IN a_DT user_NN AOI_NN detects_VBZ all_DT objects_NNS whose_WP$ side_NN length_NN of_IN the_DT AOI_NNP is_VBZ at_IN least_JJS #_# %_NN ._.
+Thus_RB ,_, every_DT object_NN retrieved_VBN by_IN RQ-OP_NN is_VBZ guaranteed_VBN to_TO be_VB all_DT rendered_VBN at_IN the_DT client_NN ._.
+But_CC RQ-OP_NN can_MD not_RB detect_VB the_DT objects_NNS outside_IN the_DT AOI_NN of_IN the_DT user_NN ,_, thus_RB suffering_VBG from_IN too_RB many_JJ missing_VBG objects_NNS that_WDT should_MD be_VB rendered_VBN ._.
+Similarly_RB ,_, the_DT user_NN whose_WP$ AOI_NNP is_VBZ wider_JJR than_IN any_DT other_JJ AOI_NN can_MD not_RB miss_VB any_DT objects_NNS that_WDT should_MD be_VB rendered_VBN ,_, but_CC detects_VBZ too_RB many_JJ unnecessary_JJ objects_NNS ._.
+To_TO remove_VB any_DT object_NN popping_VBG problem_NN ,_, the_DT side_NN length_NN of_IN any_DT AOI_NN should_MD be_VB greater_JJR than_IN or_CC equal_JJ to_TO the_DT maximum_NN visible_JJ distance_NN of_IN any_DT object_NN in_IN the_DT system_NN ,_, which_WDT may_MD incur_VB significant_JJ system_NN degradation_NN ._.
+E-measure_NN Distribution_NN :_: Figure_NNP #_# reveals_VBZ two_CD trends_NNS ._.
+First_RB ,_, the_DT precision_NN values_NNS of_IN RQ-OP_NN lie_NN in_IN between_IN those_DT of_IN ACQ-OR_NN -LRB-_-LRB- ###_CD ###_CD grid_NN -RRB-_-RRB- and_CC RQ-OR_NN ._.
+Second_RB ,_, the_DT tendency_NN curve_NN of_IN the_DT Precision-to-E-measure_NN plot_NN of_IN RQ-OR_NN shows_VBZ resemblance_NN to_TO that_DT of_IN ACQ-OR_NN ._.
+It_PRP looks_VBZ as_IN if_IN the_DT two_CD curves_NNS lie_VBP on_IN the_DT same_JJ imaginary_JJ curve_NN ,_, which_WDT conveys_VBZ that_IN ACQ-OR_NN inherits_VBZ the_DT properties_NNS of_IN RQ-OR_NN ._.
+Effect_NN of_IN Different_JJ Grid_NNP Size_NN :_: Figure_NNP #_# shows_VBZ the_DT statistical_JJ difference_NN of_IN E-measure_NN values_NNS of_IN seven_CD different_JJ grid_NN partitioning_VBG schemes_NNS -LRB-_-LRB- using_VBG ACQ-OR_NN -RRB-_-RRB- and_CC one_CD RQ-OP_NN model_NN ._.
+We_PRP use_VBP a_DT boxand-whisker_NN plot_NN to_TO show_VB both_CC median_JJ values_NNS and_CC the_DT variances_NNS of_IN E-measure_NN distributions_NNS and_CC the_DT outliers_NNS of_IN each_DT scheme_NN ._.
+We_PRP also_RB draw_VBP the_DT median_JJ value_NN of_IN the_DT RQ-OP_NN E-measures_NNS -LRB-_-LRB- green_JJ line_NN -RRB-_-RRB- for_IN comparison_NN purposes_NNS ._.
+While_IN the_DT ACQ-OR_NN schemes_NNS have_VBP some_DT outliers_NNS ,_, their_PRP$ E-measure_NN values_NNS are_VBP heavily_RB concentrated_JJ around_IN the_DT median_NN values_NNS ,_, thus_RB ,_, they_PRP are_VBP less_RBR sensitive_JJ to_TO object_VB AOI_NNP ._.
+As_IN expected_VBN ,_, fine-grained_JJ grid_NN partitioning_NN showed_VBD a_DT smaller_JJR E-measure_NN value_NN ._.
+The_DT RQ-OP_NN scheme_NN showed_VBD a_DT wider_JJR variance_NN of_IN its_PRP$ quality_NN than_IN other_JJ schemes_NNS ,_, which_WDT is_VBZ largely_RB attributable_JJ to_TO different_JJ user_NN side_NN lengths_NNS ._.
+As_IN the_DT R_NN measure_NN becomes_VBZ more_RBR important_JJ ,_, the_DT query_JJ quality_NN of_IN ACQ-OR_NN is_VBZ improved_VBN more_JJR evidently_RB than_IN that_DT of_IN RQOP_NN ._.
+From_IN Figure_NNP #_# ,_, the_DT ####_CD grid_NN scheme_NN had_VBD a_DT better_RBR E-measure_JJ Table_NNP #_# :_: Measured_VBN elapsed_JJ time_NN -LRB-_-LRB- seconds_NNS -RRB-_-RRB- of_IN 100K_CD moving_VBG objects_NNS and_CC 10K_CD moving_VBG users_NNS in_IN a_DT slowly_RB moving_VBG environment_NN -LRB-_-LRB- v_LS =_JJ #_# -RRB-_-RRB- ._.
+indexing_NN Update_NNP Time_NNP Evaluation_NN Time_NNP Total_NNP Single-tableF_JJ ull_NN 3_CD ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN Single-tableIncr_NN 2_CD ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN Two-table_JJ #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_RB Table_NNP #_# :_: Measured_VBN elapsed_JJ time_NN -LRB-_-LRB- seconds_NNS -RRB-_-RRB- of_IN 100K_CD moving_VBG objects_NNS and_CC 10K_CD moving_VBG users_NNS in_IN a_DT highly_RB dynamic_JJ environment_NN -LRB-_-LRB- v_LS =_SYM ##_CD -RRB-_-RRB- ._.
+indexing_NN Update_NNP Time_NNP Evaluation_NN Time_NNP Total_NNP Single-tableF_JJ ull_NN 3_CD ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN Single-tableIncr_JJ 3_CD ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN Two-table_JJ #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN value_NN in_IN a_DT prioritized_JJ environment_NN than_IN in_IN an_DT equal-prioritized_JJ environment_NN ._.
+As_IN a_DT result_NN ,_, we_PRP can_MD roughly_RB anticipate_VB that_DT at_IN least_JJS the_DT 2020_CD grid_NN cell_NN partitioning_NN retrieves_VBZ a_DT higher_JJR quality_NN of_IN visible_JJ sets_NNS than_IN the_DT RQ-OP_NN ._.
+6_CD ._.
+#_# Evaluation_NN of_IN Edge_NNP Indexing_NN In_IN this_DT section_NN ,_, we_PRP present_VBP the_DT preliminary_JJ results_NNS of_IN the_DT simulations_NNS that_WDT examine_VBP the_DT applicability_NN of_IN our_PRP$ edge_NN indexing_NN implementation_NN ._.
+To_TO estimate_VB the_DT degree_NN of_IN real-time_JJ support_NN of_IN our_PRP$ indexing_NN method_NN ,_, we_PRP used_VBD the_DT total_JJ elapsed_JJ time_NN of_IN updating_VBG all_DT moving_VBG entities_NNS and_CC computing_VBG visible_JJ sets_NNS for_IN every_DT cell_NN ._.
+We_PRP also_RB experimented_VBD with_IN different_JJ grid_NN partitioning_VBG policies_NNS and_CC compared_VBD them_PRP with_IN exhaustive_JJ search_NN solutions_NNS ._.
+6_CD ._.
+#_# ._.
+#_# Simulation_NNP Setup_NNP We_PRP implemented_VBD edge_NN indexing_NN algorithms_NNS in_IN C_NN and_CC ran_VBD the_DT experiments_NNS on_IN a_DT 64-bit_JJ 900MHz_NNP Itanium_NNP processor_NN with_IN #_# GBs_NNS of_IN memory_NN ._.
+We_PRP implemented_VBD a_DT generalized_VBN hash_NN table_NN mechanism_NN to_TO store_VB node_NN and_CC edge_NN structures_NNS ._.
+6_CD ._.
+#_# ._.
+#_# Experimental_JJ Results_NNS Periodic_JJ Monitoring_NN Cost_NN :_: Tables_NNS #_# and_CC #_# show_VBP the_DT performance_NN numbers_NNS of_IN different_JJ edge_NN indexing_NN methods_NNS by_IN varying_VBG v_LS ._.
+The_DT moving_VBG speed_NN of_IN entities_NNS was_VBD also_RB uniformly_RB assigned_VBN between_IN 0_CD and_CC v_LS ._.
+In_IN a_DT slowly_RB moving_VBG environment_NN -LRB-_-LRB- Table_NNP #_# -RRB-_-RRB- ,_, the_DT incremental_JJ edge_NN indexing_NN method_NN outperforms_VBZ full_JJ update_VBP edge_NN indexing_NN ,_, due_JJ to_TO reduced_VBN index_NN updates_NNS ;_: the_DT two-table_JJ approach_NN surpasses_VBZ the_DT performance_NN of_IN single-table_JJ schemes_NNS ,_, mainly_RB due_JJ to_TO the_DT lack_NN of_IN token_JJ lookup_NN during_IN an_DT update_VBP ._.
+However_RB ,_, the_DT two-table_JJ method_NN showed_VBD a_DT slightly_RB higher_JJR evaluation_NN time_NN than_IN the_DT two_CD single-table_JJ methods_NNS because_IN of_IN its_PRP$ sequential_JJ token_JJ removal_NN ._.
+Table_NNP #_# exemplified_VBD the_DT elapsed_JJ time_NN of_IN index_NN updates_NNS and_CC cell_NN evaluations_NNS in_IN a_DT highly_RB dynamic_JJ environment_NN where_WRB slowly_RB moving_VBG and_CC dynamically_RB moving_VBG objects_NNS co-exist_VBP ._.
+Compared_VBN with_IN the_DT results_NNS shown_VBN in_IN Table_NNP #_# ,_, the_DT two-table_JJ approach_NN produced_VBD similar_JJ performance_NN numbers_NNS regardless_RB of_IN the_DT underlying_VBG moving_VBG environments_NNS ._.
+However_RB ,_, the_DT performance_NN gain_NN obtained_VBN by_IN the_DT incremental_JJ policy_NN of_IN the_DT single-table_JJ is_VBZ decreased_VBN compared_VBN with_IN that_DT in_IN the_DT slowly_RB moving_VBG environment_NN ._.
+Effect_NN of_IN Different_JJ Grid_NNP Size_NN :_: How_WRB many_JJ object_VBP updates_NNS and_CC cell_NN evaluations_NNS can_MD be_VB supported_VBN in_IN a_DT given_VBN time_NN period_NN is_VBZ an_DT important_JJ performance_NN metric_JJ to_TO quantify_VB system_NN throughput_NN ._.
+In_IN this_DT section_NN ,_, we_PRP evaluate_VBP the_DT performance_NN results_NNS of_IN three_CD different_JJ visibility_NN computation_NN models_NNS :_: two_CD computation-driven_JJ exhaustive_JJ search_NN methods_NNS ;_: and_CC one_CD two-table_JJ edge_NN indexing_NN method_NN with_IN different_JJ grid_NN sizes_NNS ._.
+410_CD 0_CD #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# 0_CD 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 1_CD Recall_VB -LRB-_-LRB- R_NN -RRB-_-RRB- Precision_NN -LRB-_-LRB- P_NN -RRB-_-RRB- #_# %_NN Range_NNP Query_NNP 6_CD %_NN Range_NNP Query_NNP 7_CD %_NN Range_NNP Query_NNP 8_CD %_NN Range_NNP Query_NNP 9_CD %_NN Range_NNP Query_NNP 10_CD %_NN Range_NNP Query_NNP 11_CD %_NN Range_NNP Query_NNP 12_CD %_NN Range_NNP Query_NNP 13_CD %_NN Range_NNP Query_NNP 14_CD %_NN Range_NNP Query_NNP Optimality_NNP 0_CD #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# 0_CD 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 1_CD Precision_NN -LRB-_-LRB- P_NN -RRB-_-RRB- Emeasure_NN Optimality_NN RQOP_NN RQOR_NN ACQOR_NN -LRB-_-LRB- 100x100_CD grid_NN cells_NNS -RRB-_-RRB- 10x10_NN 20x20_NN 50x50_NN 100x100_CD 200x200_CD 500x500_CD 1Kx1K_NN RQOP_NN 0_CD 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 1_CD EMeasure_NN Visibility_NN Test_NN Scheme_NNP Median_JJ of_IN RQOP_NN Figure_NN #_# :_: Distribution_NN of_IN P_NN and_CC R_NN measured_VBN by_IN RQ-OP_NN ._.
+Figure_NNP #_# :_: E-measure_NN value_NN as_IN a_DT function_NN of_IN Precision_NN value_NN P_NN when_WRB =_JJ #_# ._.
+Figure_NNP #_# :_: E-measure_NN value_NN as_IN a_DT function_NN of_IN ACQ-QR_NN grid_NN partitioning_VBG scheme_NN when_WRB =_JJ #_# ._.
+10K_CD 50K_CD 100K_CD 10_CD 1_CD 10_CD 0_CD 10_CD 1_CD 10_CD 2_CD #_# of_IN Object_NNP Updates_NNP -LRB-_-LRB- 10K_CD queries_NNS -RRB-_-RRB- TotalElapsedTime_NNP -LRB-_-LRB- seconds_NNS -RRB-_-RRB- Population_NNP Size_NN =_JJ 100K_CD ,_, visible_JJ range_NN =_JJ ###_CD %_NN ,_, mobility_NN =_JJ #_# %_NN Exhaustive_JJ Search_VB -LRB-_-LRB- Intersection_NN Test_NN -RRB-_-RRB- Exhaustive_JJ Search_VB -LRB-_-LRB- Euclidean_JJ Distance_NNP Measure_NN -RRB-_-RRB- 200x200_CD Twotable_JJ Edge_NNP Indexing_NN 100x100_CD Twotable_JJ Edge_NNP Indexing_NN 50x50_NN Twotable_JJ Edge_NNP Indexing_NN Figure_NN ##_CD :_: Total_JJ elapsed_JJ time_NN of_IN different_JJ indexing_NN schemes_NNS ._.
+Exhaustive_JJ search_NN methods_NNS do_VBP not_RB maintain_VB any_DT intermediate_JJ results_NNS ._.
+They_PRP simply_RB compute_VB whether_IN a_DT given_VBN user_NN point_NN is_VBZ inside_IN a_DT given_VBN object_NN AOI_NN ._.
+They_PRP can_MD tolerate_VB unpredictable_JJ behavior_NN of_IN object_NN movement_NN ._.
+In_IN spite_NN of_IN their_PRP$ simple_JJ design_NN and_CC extensibility_NN ,_, they_PRP suffer_VBP from_IN lengthy_JJ computational_JJ delays_NNS to_TO complete_VB the_DT visibility_NN determination_NN ._.
+Figure_NNP ##_NNP reveals_VBZ the_DT performance_NN difference_NN between_IN the_DT exhaustive_JJ solutions_NNS and_CC the_DT two-table_JJ methods_NNS ,_, a_DT difference_NN of_IN up_RB to_TO two_CD orders_NNS of_IN magnitude_NN ._.
+As_IN shown_VBN in_IN Section_NN #_# ,_, the_DT total_JJ elapsed_JJ time_NN of_IN object_NN updates_NNS and_CC cell_NN evaluations_NNS is_VBZ linear_JJ with_IN respect_NN to_TO the_DT average_JJ side_NN length_NN of_IN object_NN AOI_NN ._.
+Because_IN the_DT side_NN length_NN is_VBZ represented_VBN by_IN cell_NN units_NNS ,_, an_DT increase_NN in_IN the_DT number_NN of_IN cells_NNS increases_VBZ the_DT side_NN lengths_NNS proportionally_RB ._.
+Figure_NNP ##_NNP illustrates_VBZ that_IN the_DT measured_VBN simulation_NN results_VBZ roughly_RB match_VB the_DT expected_VBN performance_NN gain_NN computed_VBD from_IN the_DT analysis_NN ._.
+7_CD ._.
+CONCLUSION_NN AND_CC FUTURE_NN WORK_VBP To_TO support_VB dynamic_JJ extensibility_NN and_CC scalability_NN in_IN highly_RB dynamic_JJ environments_NNS ,_, we_PRP proposed_VBD a_DT new_JJ view_NN paradigm_NN ,_, the_DT object-initiated_JJ view_NN model_NN ,_, and_CC its_PRP$ efficient_JJ indexing_NN method_NN ,_, edge_NN indexing_NN ._.
+Compared_VBN with_IN the_DT traditional_JJ view_NN model_NN ,_, our_PRP$ new_JJ view_NN model_NN promises_VBZ to_TO eliminate_VB any_DT object_NN popping_VBG problem_NN that_WDT can_MD easily_RB be_VB observed_VBN in_IN existing_VBG virtual_JJ environments_NNS at_IN the_DT expense_NN of_IN increased_VBN indexing_NN complexity_NN ._.
+Our_PRP$ edge_NN indexing_NN model_NN ,_, however_RB ,_, can_MD overcome_VB such_JJ higher_JJR indexing_NN complexity_NN by_IN indexing_NN spatial_JJ extensions_NNS at_IN edge-level_JJ not_RB at_IN node-level_JJ in_IN a_DT grid_NN partitioned_VBD sub-world_JJ and_CC was_VBD validated_VBN through_IN quantitative_JJ analyses_NNS and_CC simulations_NNS ._.
+However_RB ,_, for_IN now_RB our_PRP$ edge_NN indexing_NN still_RB retains_VBZ a_DT higher_JJR complexity_NN ,_, even_RB in_IN a_DT two-dimensional_JJ domain_NN ._.
+Currently_RB ,_, we_PRP are_VBP developing_VBG another_DT edge_NN indexing_NN method_NN to_TO make_VB the_DT indexing_NN complexity_NN constant_NN ._.
+Once_RB indexing_NN complexity_NN becomes_VBZ constant_JJ ,_, we_PRP plan_VBP to_TO index_NN 3D_NN spatial_JJ extensions_NNS and_CC multi-resolutional_JJ geometry_NN data_NNS ._.
+We_PRP expect_VBP that_IN our_PRP$ edge_NN indexing_NN can_MD contribute_VB to_TO successful_JJ deployment_NN of_IN next-generation_JJ gaming_NN environments_NNS ._.
+8_CD ._.
+REFERENCES_NNS -LSB-_-LRB- #_# -RSB-_-RRB- D_NN ._.
+Marshall_NNP ,_, D_NNP ._.
+Delaney_NNP ,_, S_NN ._.
+McLoone_NNP ,_, and_CC T_NN ._.
+Ward_NNP ,_, Challeges_NNP in_IN modern_JJ distributed_VBN interactive_JJ application_NN design_NN ,_, Tech_NNP ._.
+Rep_NNP ._.
+,_, Department_NNP of_IN Computer_NNP Science_NNP ,_, National_NNP University_NNP of_IN Ireland_NNP ,_, Maynooth_NNP ,_, Maynooth_NNP ,_, Col_NNP ._.
+Kildare_NNP ,_, Ireland_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- Kuan-Ta_NNP Chen_NNP ,_, Polly_NNP Huang_NNP ,_, Chun-Ying_NNP Huang_NNP ,_, and_CC Chin-Laung_NNP Lei_NNP ,_, Game_NNP traffic_NN analysis_NN :_: An_DT MMORPG_NN perspective_NN ,_, in_IN NOSSDAV_NN ''_'' ##_NN ._.
+####_NN ,_, pp_NN ._.
+19-24_CD ,_, ACM_NNP Press_NNP ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- Jaecheol_NNP Kim_NNP ,_, Jaeyoung_NNP Choi_NNP ,_, Dukhyun_NNP Chang_NNP ,_, Taekyoung_NNP Kwon_NNP ,_, and_CC Yanghee_NNP Choi_NNP ,_, Traffic_NNP charateristics_NNS of_IN a_DT massively_RB multiplayer_JJ online_JJ role_NN playing_NN game_NN and_CC its_PRP$ implications_NNS ,_, in_IN NetGames_NNP ''_'' ##_NN ,_, Oct_NN ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- Philip_NNP Rosedale_NNP and_CC Cory_NNP Ondrejka_NNP ,_, Enabling_VBG player-created_JJ online_NN worlds_NNS with_IN grid_NN computing_NN and_CC streaming_NN ,_, Gamastutra_NNP Magazine_NNP ,_, http_NN :_: /_: /_: www_NN ._.
+gamasutra_NN ._.
+com_NN /_: resource_NN guide_NN /_: ########_CD /_: rosedale_NN ##_NN ._.
+shtml_NN ,_, September_NNP ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- Eyal_NNP Teler_NNP and_CC Dani_NNP Lischinski_NNP ,_, Streaming_NNP of_IN complex_JJ 3d_JJ scenes_NNS for_IN remote_JJ walkthroughs_NNS ._.
+,_, Comput_NNP ._.
+Graph_NN ._.
+Forum_NNP ,_, vol_NN ._.
+##_NN ,_, no_DT ._.
+#_# ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- Gerd_NNP Hesina_NNP and_CC Dieter_NNP Schmalstieg_NNP ,_, A_DT network_NN architecture_NN for_IN remote_JJ rendering_NN ,_, in_IN Second_NNP International_NNP Workshop_NNP on_IN Distributed_VBN Interactive_NNP Simulation_NNP and_CC Real-Time_NNP Applications_NNS ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- Thomas_NNP A_NNP ._.
+Funkhouser_NNP and_CC Carlo_NNP H_NNP ._.
+Sequin_NNP ,_, Adaptive_JJ display_NN algorithm_NN for_IN interactive_JJ frame_NN rates_NNS during_IN visualization_NN of_IN complex_JJ virtual_JJ environments_NNS ,_, in_IN SIGGRAPH_NNP ''_'' ##_NN ,_, New_NNP York_NNP ,_, NY_NNP ,_, USA_NNP ,_, ####_CD ,_, pp_NN ._.
+247-254_CD ,_, ACM_NNP Press_NNP ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- Jussi_NNP Myllymaki_NNP and_CC James_NNP Kaufman_NNP ,_, High-performance_JJ spatial_JJ indexing_NN for_IN location-based_JJ services_NNS ,_, in_IN WWW_NNP ''_'' ##_NN ,_, New_NNP York_NNP ,_, NY_NNP ,_, USA_NNP ,_, ####_CD ,_, pp_NN ._.
+112-117_CD ,_, ACM_NNP Press_NNP ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- M_NN ._.
+Lee_NNP ,_, W_NNP ._.
+Hsu_NNP ,_, C_NNP ._.
+Jensen_NNP ,_, B_NN ._.
+Cui_NNP ,_, and_CC K_NN ._.
+Teo_NNP ,_, Supporting_VBG frequent_JJ updates_NNS in_IN r-trees_NNS :_: A_DT bottom-up_JJ approach_NN ,_, in_IN VLDB_NNP ,_, pages_NNS 608-619_CD ,_, ####_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Mohamed_NNP F_NN ._.
+Mokbel_NNP ,_, Xiaopeing_NNP Xiong_NNP ,_, and_CC Walid_NNP G_NNP ._.
+Aref_NNP ,_, Sina_NNP :_: scalable_JJ incremental_JJ processing_NN of_IN continuous_JJ queries_NNS in_IN spatio-temporal_JJ databases_NNS ,_, in_IN ACM_NNP SIGMOD_NNP ''_'' ##_NN ._.
+####_NN ,_, pp_NN ._.
+623-634_CD ,_, ACM_NNP Press_NNP ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Dmitri_NNP V_NNP ._.
+Kalashnikov_NNP ,_, Sunil_NNP Prabhakar_NNP ,_, and_CC Susanne_NNP E_NNP ._.
+Hambrusch_NNP ,_, Main_NNP memory_NN evaluation_NN of_IN monitoring_VBG queries_NNS over_IN moving_VBG objects_NNS ,_, Distrib_NNP ._.
+Parallel_JJ Databases_NNS ,_, vol_NN ._.
+##_NN ,_, no_DT ._.
+#_# ,_, pp_NN ._.
+117-135_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Haibo_NNP Hu_NNP ,_, Jianliang_NNP Xu_NNP ,_, and_CC Dik_NNP Lun_NNP Lee_NNP ,_, A_DT generic_JJ framework_NN for_IN monitoring_VBG continuous_JJ spatial_JJ queries_NNS over_IN moving_VBG objects_NNS ._.
+,_, in_IN SIGMOD_NNP Conference_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- S_NN ._.
+Prabhakar_NNP ,_, Y_NN ._.
+Xia_NNP ,_, D_NNP ._.
+Kalashnikov_NNP ,_, W_NNP ._.
+Aref_NNP ,_, and_CC S_NN ._.
+Hambrusch_NNP ,_, Query_NNP indexing_NN and_CC velocity_NN constrained_VBD indexing_NN :_: Scalable_JJ techniques_NNS for_IN continuous_JJ queries_NNS on_IN moving_VBG objects_NNS ,_, IEEE_NNP Transactions_NNS on_IN Computers_NNS ,_, vol_NN ._.
+51_CD ,_, no_DT ._.
+##_NN ,_, pp_NN ._.
+1124-1140_CD ,_, Oct_NN ._.
+####_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Yuni_NNP Xia_NNP and_CC Sunil_NNP Prabhakar_NNP ,_, Q_NNP +_CC rtree_NN :_: Efficient_JJ indexing_NN for_IN moving_VBG object_NN databases_NNS ,_, in_IN DASFAA_NNP ''_'' ##_NN ,_, Washington_NNP ,_, DC_NNP ,_, USA_NNP ,_, ####_CD ,_, p_NN ._.
+###_NN ,_, IEEE_NNP Computer_NNP Society_NNP ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- C_NN ._.
+J_NN ._.
+Van_NNP Rijsbergen_NNP ,_, Information_NNP Retrieval_NNP ,_, 2nd_JJ edition_NN ,_, Dept_NNP ._.
+of_IN Computer_NNP Science_NNP ,_, University_NNP of_IN Glasgow_NNP ,_, ####_CD ._.
+411_CD

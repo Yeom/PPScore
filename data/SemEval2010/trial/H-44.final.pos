@@ -1,0 +1,769 @@
+A_DT Time_NNP Machine_NN for_IN Text_VB Search_VB Klaus_NNP Berberich_NNP Srikanta_NNP Bedathur_NNP Thomas_NNP Neumann_NNP Gerhard_NNP Weikum_NNP Max-Planck_NNP Institute_NNP for_IN Informatics_NNP Saarbrucken_NNP ,_, Germany_NNP -LCB-_-LRB- kberberi_NNS ,_, bedathur_NN ,_, neumann_NN ,_, weikum_NN -RCB-_-RRB- @_SYM mpi-inf_NN ._.
+mpg_NN ._.
+de_IN ABSTRACT_NN Text_VBP search_NN over_IN temporally_RB versioned_VBN document_NN collections_NNS such_JJ as_IN web_NN archives_NNS has_VBZ received_VBN little_JJ attention_NN as_IN a_DT research_NN problem_NN ._.
+As_IN a_DT consequence_NN ,_, there_EX is_VBZ no_DT scalable_JJ and_CC principled_JJ solution_NN to_TO search_VB such_PDT a_DT collection_NN as_IN of_IN a_DT specified_VBN time_NN t_NN ._.
+In_IN this_DT work_NN ,_, we_PRP address_VBP this_DT shortcoming_NN and_CC propose_VBP an_DT efficient_JJ solution_NN for_IN time-travel_JJ text_NN search_NN by_IN extending_VBG the_DT inverted_JJ file_NN index_NN to_TO make_VB it_PRP ready_JJ for_IN temporal_JJ search_NN ._.
+We_PRP introduce_VBP approximate_JJ temporal_JJ coalescing_NN as_IN a_DT tunable_JJ method_NN to_TO reduce_VB the_DT index_NN size_NN without_IN significantly_RB affecting_VBG the_DT quality_NN of_IN results_NNS ._.
+In_IN order_NN to_TO further_JJ improve_VB the_DT performance_NN of_IN time-travel_JJ queries_NNS ,_, we_PRP introduce_VBP two_CD principled_JJ techniques_NNS to_TO trade_VB off_RP index_NN size_NN for_IN its_PRP$ performance_NN ._.
+These_DT techniques_NNS can_MD be_VB formulated_VBN as_IN optimization_NN problems_NNS that_WDT can_MD be_VB solved_VBN to_TO near-optimality_NN ._.
+Finally_RB ,_, our_PRP$ approach_NN is_VBZ evaluated_VBN in_IN a_DT comprehensive_JJ series_NN of_IN experiments_NNS on_IN two_CD large-scale_JJ real-world_JJ datasets_NNS ._.
+Results_NNS unequivocally_RB show_VBP that_IN our_PRP$ methods_NNS make_VBP it_PRP possible_JJ to_TO build_VB an_DT efficient_JJ time_NN machine_NN scalable_JJ to_TO large_JJ versioned_JJ text_NN collections_NNS ._.
+Categories_NNS and_CC Subject_NNP Descriptors_NNPS H_NN ._.
+#_# ._.
+#_# -LSB-_-LRB- Content_NNP Analysis_NN and_CC Indexing_NN -RSB-_-RRB- :_: Indexing_NN methods_NNS ;_: H_NN ._.
+#_# ._.
+#_# -LSB-_-LRB- Information_NNP Search_VB and_CC Retrieval_NN -RSB-_-RRB- :_: Retrieval_NNP models_NNS ,_, Search_VB process_NN General_NNP Terms_NNS Algorithms_NNS ,_, Experimentation_NN ,_, Performance_NNP 1_CD ._.
+INTRODUCTION_NN In_IN this_DT work_NN we_PRP address_VBP time-travel_JJ text_NN search_NN over_IN temporally_RB versioned_VBN document_NN collections_NNS ._.
+Given_VBN a_DT keyword_NN query_NN q_NN and_CC a_DT time_NN t_NN our_PRP$ goal_NN is_VBZ to_TO identify_VB and_CC rank_VB relevant_JJ documents_NNS as_IN if_IN the_DT collection_NN was_VBD in_IN its_PRP$ state_NN as_IN of_IN time_NN t_NN ._.
+An_DT increasing_VBG number_NN of_IN such_JJ versioned_JJ document_NN collections_NNS is_VBZ available_JJ today_NN including_VBG web_NN archives_NNS ,_, collaborative_JJ authoring_NN environments_NNS like_IN Wikis_NNP ,_, or_CC timestamped_JJ information_NN feeds_VBZ ._.
+Text_VB search_NN on_IN these_DT collections_NNS ,_, however_RB ,_, is_VBZ mostly_RB time-ignorant_JJ :_: while_IN the_DT searched_VBN collection_NN changes_NNS over_IN time_NN ,_, often_RB only_RB the_DT most_RBS recent_JJ version_NN of_IN a_DT documents_NNS is_VBZ indexed_VBN ,_, or_CC ,_, versions_NNS are_VBP indexed_VBN independently_RB and_CC treated_VBN as_IN separate_JJ documents_NNS ._.
+Even_RB worse_JJR ,_, for_IN some_DT collections_NNS ,_, in_IN particular_JJ web_NN archives_NNS like_IN the_DT Internet_NN Archive_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, a_DT comprehensive_JJ text-search_JJ functionality_NN is_VBZ often_RB completely_RB missing_VBG ._.
+Time-travel_JJ text_NN search_NN ,_, as_IN we_PRP develop_VBP it_PRP in_IN this_DT paper_NN ,_, is_VBZ a_DT crucial_JJ tool_NN to_TO explore_VB these_DT collections_NNS and_CC to_TO unfold_VB their_PRP$ full_JJ potential_NN as_IN the_DT following_VBG example_NN demonstrates_VBZ ._.
+For_IN a_DT documentary_NN about_IN a_DT past_JJ political_JJ scandal_NN ,_, a_DT journalist_NN needs_VBZ to_TO research_NN early_JJ opinions_NNS and_CC statements_NNS made_VBN by_IN the_DT involved_VBN politicians_NNS ._.
+Sending_VBG an_DT appropriate_JJ query_NN to_TO a_DT major_JJ web_NN search-engine_NN ,_, the_DT majority_NN of_IN returned_VBN results_NNS contains_VBZ only_RB recent_JJ coverage_NN ,_, since_IN many_JJ of_IN the_DT early_JJ web_NN pages_NNS have_VBP disappeared_VBN and_CC are_VBP only_RB preserved_VBN in_IN web_NN archives_NNS ._.
+If_IN the_DT query_NN could_MD be_VB enriched_VBN with_IN a_DT time_NN point_NN ,_, say_VBP August_NNP 20th_JJ ####_NN as_IN the_DT day_NN after_IN the_DT scandal_NN got_VBD revealed_VBN ,_, and_CC be_VB issued_VBN against_IN a_DT web_NN archive_NN ,_, only_RB pages_NNS that_WDT existed_VBD specifically_RB at_IN that_DT time_NN could_MD be_VB retrieved_VBN thus_RB better_RBR satisfying_VBG the_DT journalist_NN ''_'' s_NNS information_NN need_NN ._.
+Document_NNP collections_NNS like_IN the_DT Web_NN or_CC Wikipedia_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, as_IN we_PRP target_VBP them_PRP here_RB ,_, are_VBP already_RB large_JJ if_IN only_RB a_DT single_JJ snapshot_NN is_VBZ considered_VBN ._.
+Looking_VBG at_IN their_PRP$ evolutionary_JJ history_NN ,_, we_PRP are_VBP faced_VBN with_IN even_RB larger_JJR data_NNS volumes_NNS ._.
+As_IN a_DT consequence_NN ,_, nave_NN approaches_NNS to_TO time-travel_JJ text_NN search_NN fail_VBP ,_, and_CC viable_JJ approaches_NNS must_MD scale-up_RB well_RB to_TO such_JJ large_JJ data_NNS volumes_NNS ._.
+This_DT paper_NN presents_VBZ an_DT efficient_JJ solution_NN to_TO time-travel_JJ text_NN search_NN by_IN making_VBG the_DT following_VBG key_JJ contributions_NNS :_: 1_CD ._.
+The_DT popular_JJ well-studied_JJ inverted_JJ file_NN index_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- is_VBZ transparently_RB extended_VBN to_TO enable_VB time-travel_JJ text_NN search_NN ._.
+2_LS ._.
+Temporal_JJ coalescing_NN is_VBZ introduced_VBN to_TO avoid_VB an_DT indexsize_JJ explosion_NN while_IN keeping_VBG results_NNS highly_RB accurate_JJ ._.
+3_LS ._.
+We_PRP develop_VBP two_CD sublist_JJ materialization_NN techniques_NNS to_TO improve_VB index_NN performance_NN that_WDT allow_VBP trading_NN off_IN space_NN vs_CC ._.
+performance_NN ._.
+4_LS ._.
+In_IN a_DT comprehensive_JJ experimental_JJ evaluation_NN our_PRP$ approach_NN is_VBZ evaluated_VBN on_IN the_DT English_NNP Wikipedia_NNP and_CC parts_NNS of_IN the_DT Internet_NN Archive_NNP as_IN two_CD large-scale_JJ real-world_JJ datasets_NNS with_IN versioned_JJ documents_NNS ._.
+The_DT remainder_NN of_IN this_DT paper_NN is_VBZ organized_VBN as_IN follows_VBZ ._.
+The_DT presented_VBN work_NN is_VBZ put_VBN in_IN context_NN with_IN related_JJ work_NN in_IN Section_NN #_# ._.
+We_PRP delineate_VBP our_PRP$ model_NN of_IN a_DT temporally_RB versioned_VBN document_NN collection_NN in_IN Section_NN #_# ._.
+We_PRP present_VBP our_PRP$ time-travel_JJ inverted_JJ index_NN in_IN Section_NN #_# ._.
+Building_NN on_IN it_PRP ,_, temporal_JJ coalescing_NN is_VBZ described_VBN in_IN Section_NN #_# ._.
+In_IN Section_NN #_# we_PRP describe_VBP principled_JJ techniques_NNS to_TO improve_VB index_NN performance_NN ,_, before_IN presenting_VBG the_DT results_NNS of_IN our_PRP$ experimental_JJ evaluation_NN in_IN Section_NN #_# ._.
+2_LS ._.
+RELATED_JJ WORK_VBP We_PRP can_MD classify_VB the_DT related_JJ work_NN mainly_RB into_IN the_DT following_VBG two_CD categories_NNS :_: -LRB-_-LRB- i_LS -RRB-_-RRB- methods_NNS that_WDT deal_VBP explicitly_RB with_IN collections_NNS of_IN versioned_JJ documents_NNS or_CC temporal_JJ databases_NNS ,_, and_CC -LRB-_-LRB- ii_LS -RRB-_-RRB- methods_NNS for_IN reducing_VBG the_DT index_NN size_NN by_IN exploiting_VBG either_CC the_DT document-content_JJ overlap_VBP or_CC by_IN pruning_NN portions_NNS of_IN the_DT index_NN ._.
+We_PRP briefly_RB review_VBP work_NN under_IN these_DT categories_NNS here_RB ._.
+To_TO the_DT best_JJS of_IN our_PRP$ knowledge_NN ,_, there_EX is_VBZ very_RB little_JJ prior_JJ work_NN dealing_VBG with_IN historical_JJ search_NN over_IN temporally_RB versioned_VBN documents_NNS ._.
+Anick_NNP and_CC Flynn_NNP -LSB-_-LRB- #_# -RSB-_-RRB- ,_, while_IN pioneering_JJ this_DT research_NN ,_, describe_VBP a_DT help-desk_JJ system_NN that_WDT supports_VBZ historical_JJ queries_NNS ._.
+Access_NN costs_NNS are_VBP optimized_VBN for_IN accesses_NNS to_TO the_DT most_RBS recent_JJ versions_NNS and_CC increase_NN as_IN one_CD moves_NNS farther_RB into_IN the_DT past_NN ._.
+Burrows_NNP and_CC Hisgen_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, in_IN a_DT patent_NN description_NN ,_, delineate_VBP a_DT method_NN for_IN indexing_NN range-based_JJ values_NNS and_CC mention_VB its_PRP$ potential_JJ use_NN for_IN searching_VBG based_VBN on_IN dates_NNS associated_VBN with_IN documents_NNS ._.
+Recent_JJ work_NN by_IN Nrvag_NN and_CC Nyb_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- and_CC their_PRP$ earlier_JJR proposals_NNS concentrate_VBP on_IN the_DT relatively_RB simpler_JJR problem_NN of_IN supporting_VBG text-containment_JJ queries_NNS only_RB and_CC neglect_NN the_DT relevance_NN scoring_VBG of_IN results_NNS ._.
+Stack_VB -LSB-_-LRB- ##_CD -RSB-_-RRB- reports_VBZ practical_JJ experiences_NNS made_VBN when_WRB adapting_VBG the_DT open_JJ source_NN search-engine_NN Nutch_NNP to_TO search_VB web_NN archives_NNS ._.
+This_DT adaptation_NN ,_, however_RB ,_, does_VBZ not_RB provide_VB the_DT intended_JJ time-travel_JJ text_NN search_NN functionality_NN ._.
+In_IN contrast_NN ,_, research_NN in_IN temporal_JJ databases_NNS has_VBZ produced_VBN several_JJ index_NN structures_NNS tailored_VBN for_IN time-evolving_JJ databases_NNS ;_: a_DT comprehensive_JJ overview_NN of_IN the_DT state-of-art_NN is_VBZ available_JJ in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ._.
+Unlike_IN the_DT inverted_JJ file_NN index_NN ,_, their_PRP$ applicability_NN to_TO text_NN search_NN is_VBZ not_RB well_RB understood_VBN ._.
+Moving_VBG on_IN to_TO the_DT second_JJ category_NN of_IN related_JJ work_NN ,_, Broder_NNP et_FW al_FW ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- describe_VBP a_DT technique_NN that_WDT exploits_VBZ large_JJ content_NN overlaps_VBZ between_IN documents_NNS to_TO achieve_VB a_DT reduction_NN in_IN index_NN size_NN ._.
+Their_PRP$ technique_NN makes_VBZ strong_JJ assumptions_NNS about_IN the_DT structure_NN of_IN document_NN overlaps_VBZ rendering_VBG it_PRP inapplicable_JJ to_TO our_PRP$ context_NN ._.
+More_RBR recent_JJ approaches_NNS by_IN Hersovici_NNP et_FW al_FW ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- and_CC Zhang_NNP and_CC Suel_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- exploit_VB arbitrary_JJ content_NN overlaps_VBZ between_IN documents_NNS to_TO reduce_VB index_NN size_NN ._.
+None_NN of_IN the_DT approaches_NNS ,_, however_RB ,_, considers_VBZ time_NN explicitly_RB or_CC provides_VBZ the_DT desired_VBN time-travel_JJ text_NN search_NN functionality_NN ._.
+Static_JJ indexpruning_VBG techniques_NNS -LSB-_-LRB- ##_NNS ,_, ##_NN -RSB-_-RRB- aim_NN to_TO reduce_VB the_DT effective_JJ index_NN size_NN ,_, by_IN removing_VBG portions_NNS of_IN the_DT index_NN that_WDT are_VBP expected_VBN to_TO have_VB low_JJ impact_NN on_IN the_DT query_NN result_NN ._.
+They_PRP also_RB do_VBP not_RB consider_VB temporal_JJ aspects_NNS of_IN documents_NNS ,_, and_CC thus_RB are_VBP technically_RB quite_RB different_JJ from_IN our_PRP$ proposal_NN despite_IN having_VBG a_DT shared_JJ goal_NN of_IN index-size_JJ reduction_NN ._.
+It_PRP should_MD be_VB noted_VBN that_IN index-pruning_JJ techniques_NNS can_MD be_VB adapted_VBN to_TO work_VB along_RP with_IN the_DT temporal_JJ text_NN index_NN we_PRP propose_VBP here_RB ._.
+3_LS ._.
+MODEL_NN In_IN the_DT present_JJ work_NN ,_, we_PRP deal_VBP with_IN a_DT temporally_RB versioned_VBN document_NN collection_NN D_NN that_WDT is_VBZ modeled_VBN as_IN described_VBN in_IN the_DT following_VBG ._.
+Each_DT document_NN d_NN D_NN is_VBZ a_DT sequence_NN of_IN its_PRP$ versions_NNS d_NN =_JJ dt1_NN ,_, dt2_NN ,_, ..._: ._.
+Each_DT version_NN dti_NN has_VBZ an_DT associated_JJ timestamp_NN ti_NN reflecting_VBG when_WRB the_DT version_NN was_VBD created_VBN ._.
+Each_DT version_NN is_VBZ a_DT vector_NN of_IN searchable_JJ terms_NNS or_CC features_NNS ._.
+Any_DT modification_NN to_TO a_DT document_NN version_NN results_VBZ in_IN the_DT insertion_NN of_IN a_DT new_JJ version_NN with_IN corresponding_JJ timestamp_NN ._.
+We_PRP employ_VBP a_DT discrete_JJ definition_NN of_IN time_NN ,_, so_RB that_IN timestamps_NNS are_VBP non-negative_JJ integers_NNS ._.
+The_DT deletion_NN of_IN a_DT document_NN at_IN time_NN ti_NNS ,_, i_FW ._.
+e_LS ._.
+,_, its_PRP$ disappearance_NN from_IN the_DT current_JJ state_NN of_IN the_DT collection_NN ,_, is_VBZ modeled_VBN as_IN the_DT insertion_NN of_IN a_DT special_JJ tombstone_NN version_NN ._.
+The_DT validity_NN time-interval_JJ val_NN -LRB-_-LRB- dti_NN -RRB-_-RRB- of_IN a_DT version_NN dti_NN is_VBZ -LSB-_-LRB- ti_NNS ,_, ti_NN +_CC #_# -RRB-_-RRB- ,_, if_IN a_DT newer_JJR version_NN with_IN associated_VBN timestamp_NN ti_NN +_CC #_# exists_VBZ ,_, and_CC -LSB-_-LRB- ti_NNS ,_, now_RB -RRB-_-RRB- otherwise_RB where_WRB now_RB points_VBZ to_TO the_DT greatest_JJS possible_JJ value_NN of_IN a_DT timestamp_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, t_NN :_: t_NN <_JJR now_RB -RRB-_-RRB- ._.
+Putting_VBG all_PDT this_DT together_RB ,_, we_PRP define_VBP the_DT state_NN Dt_NN of_IN the_DT collection_NN at_IN time_NN t_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, the_DT set_NN of_IN versions_NNS valid_JJ at_IN t_NN that_WDT are_VBP not_RB deletions_NNS -RRB-_-RRB- as_IN Dt_NN =_JJ -LSB-_-LRB- dD_NN -LCB-_-LRB- dti_NN d_NN |_CD t_NN val_NN -LRB-_-LRB- dti_NN -RRB-_-RRB- dti_NN =_JJ -RCB-_-RRB- ._.
+As_IN mentioned_VBN earlier_RBR ,_, we_PRP want_VBP to_TO enrich_VB a_DT keyword_NN query_NN q_NN with_IN a_DT timestamp_NN t_NN ,_, so_RB that_IN q_VB be_VB evaluated_VBN over_IN Dt_NNP ,_, i_FW ._.
+e_LS ._.
+,_, the_DT state_NN of_IN the_DT collection_NN at_IN time_NN t_NN ._.
+The_DT enriched_JJ time-travel_JJ query_NN is_VBZ written_VBN as_IN q_NN t_NN for_IN brevity_NN ._.
+As_IN a_DT retrieval_NN model_NN in_IN this_DT work_NN we_PRP adopt_VBP Okapi_NNP BM25_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, but_CC note_VBP that_IN the_DT proposed_VBN techniques_NNS are_VBP not_RB dependent_JJ on_IN this_DT choice_NN and_CC are_VBP applicable_JJ to_TO other_JJ retrieval_NN models_NNS like_IN tf-idf_JJ -LSB-_-LRB- #_# -RSB-_-RRB- or_CC language_NN models_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- as_RB well_RB ._.
+For_IN our_PRP$ considered_VBN setting_NN ,_, we_PRP slightly_RB adapt_VBP Okapi_NN BM25_NN as_IN w_NN -LRB-_-LRB- q_NN t_NN ,_, dti_NN -RRB-_-RRB- =_JJ X_NN vq_NN wtf_NN -LRB-_-LRB- v_LS ,_, dti_NN -RRB-_-RRB- widf_NN -LRB-_-LRB- v_LS ,_, t_NN -RRB-_-RRB- ._.
+In_IN the_DT above_JJ formula_NN ,_, the_DT relevance_NN w_NN -LRB-_-LRB- q_NN t_NN ,_, dti_NN -RRB-_-RRB- of_IN a_DT document_NN version_NN dti_NN to_TO the_DT time-travel_JJ query_NN q_NN t_NN is_VBZ defined_VBN ._.
+We_PRP reiterate_VBP that_IN q_NN t_NN is_VBZ evaluated_VBN over_IN Dt_NNP so_IN that_IN only_RB the_DT version_NN dti_NN valid_JJ at_IN time_NN t_NN is_VBZ considered_VBN ._.
+The_DT first_JJ factor_NN wtf_NN -LRB-_-LRB- v_LS ,_, dti_NN -RRB-_-RRB- in_IN the_DT summation_NN ,_, further_JJ referred_VBN to_TO as_IN the_DT tfscore_NN is_VBZ defined_VBN as_IN wtf_NN -LRB-_-LRB- v_LS ,_, dti_NN -RRB-_-RRB- =_JJ -LRB-_-LRB- k1_NN +_CC #_# -RRB-_-RRB- tf_NN -LRB-_-LRB- v_LS ,_, dti_NN -RRB-_-RRB- k1_NN -LRB-_-LRB- -LRB-_-LRB- #_# b_LS -RRB-_-RRB- +_CC b_NN dl_NN -LRB-_-LRB- d_NN ti_NN -RRB-_-RRB- avdl_NN -LRB-_-LRB- ti_NN -RRB-_-RRB- -RRB-_-RRB- +_CC tf_NN -LRB-_-LRB- v_LS ,_, dti_NN -RRB-_-RRB- ._.
+It_PRP considers_VBZ the_DT plain_JJ term_NN frequency_NN tf_NN -LRB-_-LRB- v_LS ,_, dti_NN -RRB-_-RRB- of_IN term_NN v_LS in_IN version_NN dti_NN normalizing_VBG it_PRP ,_, taking_VBG into_IN account_NN both_CC the_DT length_NN dl_NN -LRB-_-LRB- dti_NN -RRB-_-RRB- of_IN the_DT version_NN and_CC the_DT average_JJ document_NN length_NN avdl_NN -LRB-_-LRB- ti_NN -RRB-_-RRB- in_IN the_DT collection_NN at_IN time_NN ti_NN ._.
+The_DT length-normalization_NN parameter_NN b_NN and_CC the_DT tf-saturation_NN parameter_NN k1_NN are_VBP inherited_VBN from_IN the_DT original_JJ Okapi_NNP BM25_NN and_CC are_VBP commonly_RB set_VBN to_TO values_NNS #_# ._.
+#_# and_CC #_# ._.
+##_NN respectively_RB ._.
+The_DT second_JJ factor_NN widf_NN -LRB-_-LRB- v_LS ,_, t_NN -RRB-_-RRB- ,_, which_WDT we_PRP refer_VBP to_TO as_IN the_DT idf-score_NN in_IN the_DT remainder_NN ,_, conveys_VBZ the_DT inverse_JJ document_NN frequency_NN of_IN term_NN v_LS in_IN the_DT collection_NN at_IN time_NN t_NN and_CC is_VBZ defined_VBN as_IN widf_NN -LRB-_-LRB- v_LS ,_, t_NN -RRB-_-RRB- =_JJ log_NN N_NN -LRB-_-LRB- t_NN -RRB-_-RRB- df_NN -LRB-_-LRB- v_LS ,_, t_NN -RRB-_-RRB- +_CC #_# ._.
+#_# df_NN -LRB-_-LRB- v_LS ,_, t_NN -RRB-_-RRB- +_CC #_# ._.
+#_# where_WRB N_NN -LRB-_-LRB- t_NN -RRB-_-RRB- =_JJ |_CD Dt_NN |_NN is_VBZ the_DT collection_NN size_NN at_IN time_NN t_NN and_CC df_NN -LRB-_-LRB- v_LS ,_, t_NN -RRB-_-RRB- gives_VBZ the_DT number_NN of_IN documents_NNS in_IN the_DT collection_NN that_WDT contain_VBP the_DT term_NN v_LS at_IN time_NN t_NN ._.
+While_IN the_DT idf-score_NN depends_VBZ on_IN the_DT whole_JJ corpus_NN as_IN of_IN the_DT query_NN time_NN t_NN ,_, the_DT tf-score_NN is_VBZ specific_JJ to_TO each_DT version_NN ._.
+4_LS ._.
+TIME-TRAVELINVERTEDFILEINDEX_NN The_DT inverted_JJ file_NN index_NN is_VBZ a_DT standard_JJ technique_NN for_IN text_NN indexing_NN ,_, deployed_VBN in_IN many_JJ systems_NNS ._.
+In_IN this_DT section_NN ,_, we_PRP briefly_RB review_VBP this_DT technique_NN and_CC present_JJ our_PRP$ extensions_NNS to_TO the_DT inverted_JJ file_NN index_NN that_WDT make_VBP it_PRP ready_JJ for_IN time-travel_JJ text_NN search_NN ._.
+4_LS ._.
+#_# Inverted_NNP File_NNP Index_NNP An_DT inverted_JJ file_NN index_NN consists_VBZ of_IN a_DT vocabulary_NN ,_, commonly_RB organized_VBN as_IN a_DT B_NN +_CC -_: Tree_NN ,_, that_WDT maps_VBZ each_DT term_NN to_TO its_PRP$ idfscore_NN and_CC inverted_JJ list_NN ._.
+The_DT index_NN list_NN Lv_NN belonging_VBG to_TO term_VB v_LS contains_VBZ postings_NNS of_IN the_DT form_NN -LRB-_-LRB- d_NN ,_, p_NN -RRB-_-RRB- where_WRB d_NN is_VBZ a_DT document-identifier_NN and_CC p_NN is_VBZ the_DT so-called_JJ payload_NN ._.
+The_DT payload_NN p_NN contains_VBZ information_NN about_IN the_DT term_NN frequency_NN of_IN v_LS in_IN d_NN ,_, but_CC may_MD also_RB include_VB positional_JJ information_NN about_IN where_WRB the_DT term_NN appears_VBZ in_IN the_DT document_NN ._.
+The_DT sort-order_NN of_IN index_NN lists_NNS depends_VBZ on_IN which_WDT queries_NNS are_VBP to_TO be_VB supported_VBN efficiently_RB ._.
+For_IN Boolean_JJ queries_NNS it_PRP is_VBZ favorable_JJ to_TO sort_VB index_NN lists_NNS in_IN document-order_NN ._.
+Frequencyorder_NN and_CC impact-order_NN sorted_VBD index_NN lists_NNS are_VBP beneficial_JJ for_IN ranked_VBD queries_NNS and_CC enable_VB optimized_VBN query_NN processing_NN that_WDT stops_VBZ early_RB after_IN having_VBG identified_VBN the_DT k_NN most_RBS relevant_JJ documents_NNS -LSB-_-LRB- #_# ,_, #_# ,_, #_# ,_, ##_NN ,_, ##_NN -RSB-_-RRB- ._.
+A_DT variety_NN of_IN compression_NN techniques_NNS ,_, such_JJ as_IN encoding_VBG document_NN identifiers_NNS more_RBR compactly_RB ,_, have_VBP been_VBN proposed_VBN -LSB-_-LRB- ##_CD ,_, ##_CD -RSB-_-RRB- to_TO reduce_VB the_DT size_NN of_IN index_NN lists_NNS ._.
+For_IN an_DT excellent_JJ recent_JJ survey_NN about_IN inverted_JJ file_NN indexes_NNS we_PRP refer_VBP to_TO -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+4_LS ._.
+#_# Time-Travel_NNP Inverted_NNP File_NNP Index_NNP In_IN order_NN to_TO prepare_VB an_DT inverted_JJ file_NN index_NN for_IN time_NN travel_NN we_PRP extend_VBP both_DT inverted_JJ lists_NNS and_CC the_DT vocabulary_NN structure_NN by_IN explicitly_RB incorporating_VBG temporal_JJ information_NN ._.
+The_DT main_JJ idea_NN for_IN inverted_JJ lists_NNS is_VBZ that_IN we_PRP include_VBP a_DT validity_NN timeinterval_JJ -LSB-_-LRB- tb_NN ,_, te_NN -RRB-_-RRB- in_IN postings_NNS to_TO denote_VB when_WRB the_DT payload_NN information_NN was_VBD valid_JJ ._.
+The_DT postings_NNS in_IN our_PRP$ time-travel_JJ inverted_JJ file_NN index_NN are_VBP thus_RB of_IN the_DT form_NN -LRB-_-LRB- d_NN ,_, p_NN ,_, -LSB-_-LRB- tb_NN ,_, te_NN -RRB-_-RRB- -RRB-_-RRB- where_WRB d_NN and_CC p_NN are_VBP defined_VBN as_IN in_IN the_DT standard_JJ inverted_JJ file_NN index_NN above_IN and_CC -LSB-_-LRB- tb_NN ,_, te_NN -RRB-_-RRB- is_VBZ the_DT validity_NN time-interval_JJ ._.
+As_IN a_DT concrete_JJ example_NN ,_, in_IN our_PRP$ implementation_NN ,_, for_IN a_DT version_NN dti_NN having_VBG the_DT Okapi_NNP BM25_NN tf-score_JJ wtf_NN -LRB-_-LRB- v_LS ,_, dti_NN -RRB-_-RRB- for_IN term_NN v_LS ,_, the_DT index_NN list_NN Lv_NN contains_VBZ the_DT posting_VBG -LRB-_-LRB- d_NN ,_, wtf_NN -LRB-_-LRB- v_LS ,_, dti_NN -RRB-_-RRB- ,_, -LSB-_-LRB- ti_NNS ,_, ti_NN +_CC #_# -RRB-_-RRB- -RRB-_-RRB- ._.
+Similarly_RB ,_, the_DT extended_JJ vocabulary_NN structure_NN maintains_VBZ for_IN each_DT term_NN a_DT time-series_NNS of_IN idf-scores_NNS organized_VBN as_IN a_DT B_NN +_CC Tree_NN ._.
+Unlike_IN the_DT tf-score_NN ,_, the_DT idf-score_NN of_IN every_DT term_NN could_MD vary_VB with_IN every_DT change_NN in_IN the_DT corpus_NN ._.
+Therefore_RB ,_, we_PRP take_VBP a_DT simplified_VBN approach_NN to_TO idf-score_VB maintenance_NN ,_, by_IN computing_VBG idf-scores_NNS for_IN all_DT terms_NNS in_IN the_DT corpus_NN at_IN specific_JJ -LRB-_-LRB- possibly_RB periodic_JJ -RRB-_-RRB- times_NNS ._.
+4_LS ._.
+#_# Query_NNP Processing_NNP During_IN processing_NN of_IN a_DT time-travel_JJ query_NN q_NN t_NN ,_, for_IN each_DT query_NN term_NN the_DT corresponding_JJ idf-score_NN valid_JJ at_IN time_NN t_NN is_VBZ retrieved_VBN from_IN the_DT extended_VBN vocabulary_NN ._.
+Then_RB ,_, index_NN lists_NNS are_VBP sequentially_RB read_VBN from_IN disk_NN ,_, thereby_RB accumulating_VBG the_DT information_NN contained_VBD in_IN the_DT postings_NNS ._.
+We_PRP transparently_RB extend_VBP the_DT sequential_JJ reading_NN ,_, which_WDT is_VBZ -_: to_TO the_DT best_JJS of_IN our_PRP$ knowledgecommon_NNS to_TO all_DT query_NN processing_NN techniques_NNS on_IN inverted_JJ file_NN indexes_NNS ,_, thus_RB making_VBG them_PRP suitable_JJ for_IN time-travel_JJ queryprocessing_NN ._.
+To_TO this_DT end_NN ,_, sequential_JJ reading_NN is_VBZ extended_VBN by_IN skipping_VBG all_DT postings_NNS whose_WP$ validity_NN time-interval_JJ does_VBZ not_RB contain_VB t_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, t_NN -LSB-_-LRB- tb_NN ,_, te_NN -RRB-_-RRB- -RRB-_-RRB- ._.
+Whether_IN a_DT posting_VBG can_MD be_VB skipped_VBN can_MD only_RB be_VB decided_VBN after_IN the_DT posting_VBG has_VBZ been_VBN transferred_VBN from_IN disk_NN into_IN memory_NN and_CC therefore_RB still_RB incurs_VBZ significant_JJ I_PRP /_: O_NN cost_NN ._.
+As_IN a_DT remedy_NN ,_, we_PRP propose_VBP index_NN organization_NN techniques_NNS in_IN Section_NN #_# that_WDT aim_VBP to_TO reduce_VB the_DT I_PRP /_: O_NN overhead_NN significantly_RB ._.
+We_PRP note_VBP that_IN our_PRP$ proposed_VBN extension_NN of_IN the_DT inverted_JJ file_NN index_NN makes_VBZ no_DT assumptions_NNS about_IN the_DT sort-order_NN of_IN index_NN lists_NNS ._.
+As_IN a_DT consequence_NN ,_, existing_VBG query-processing_JJ techniques_NNS and_CC most_JJS optimizations_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, compression_NN techniques_NNS -RRB-_-RRB- remain_VBP equally_RB applicable_JJ ._.
+5_CD ._.
+TEMPORAL_JJ COALESCING_VBG If_IN we_PRP employ_VBP the_DT time-travel_JJ inverted_JJ index_NN ,_, as_IN described_VBN in_IN the_DT previous_JJ section_NN ,_, to_TO a_DT versioned_JJ document_NN collection_NN ,_, we_PRP obtain_VBP one_CD posting_VBG per_IN term_NN per_IN document_NN version_NN ._.
+For_IN frequent_JJ terms_NNS and_CC large_JJ highly-dynamic_JJ collections_NNS ,_, this_DT time_NN score_NN non-coalesced_JJ coalesced_VBD Figure_NNP #_# :_: Approximate_NNP Temporal_JJ Coalescing_NN leads_VBZ to_TO extremely_RB long_JJ index_NN lists_NNS with_IN very_RB poor_JJ queryprocessing_NN performance_NN ._.
+The_DT approximate_JJ temporal_JJ coalescing_NN technique_NN that_IN we_PRP propose_VBP in_IN this_DT section_NN counters_NNS this_DT blowup_NN in_IN index-list_JJ size_NN ._.
+It_PRP builds_VBZ on_IN the_DT observation_NN that_IN most_JJS changes_NNS in_IN a_DT versioned_JJ document_NN collection_NN are_VBP minor_JJ ,_, leaving_VBG large_JJ parts_NNS of_IN the_DT document_NN untouched_JJ ._.
+As_IN a_DT consequence_NN ,_, the_DT payload_NN of_IN many_JJ postings_NNS belonging_VBG to_TO temporally_RB adjacent_JJ versions_NNS will_MD differ_VB only_RB slightly_RB or_CC not_RB at_IN all_DT ._.
+Approximate_JJ temporal_JJ coalescing_NN reduces_VBZ the_DT number_NN of_IN postings_NNS in_IN an_DT index_NN list_NN by_IN merging_VBG such_PDT a_DT sequence_NN of_IN postings_NNS that_WDT have_VBP almost_RB equal_JJ payloads_NNS ,_, while_IN keeping_VBG the_DT maximal_JJ error_NN bounded_VBD ._.
+This_DT idea_NN is_VBZ illustrated_VBN in_IN Figure_NNP #_# ,_, which_WDT plots_NNS non-coalesced_JJ and_CC coalesced_VBD scores_NNS of_IN postings_NNS belonging_VBG to_TO a_DT single_JJ document_NN ._.
+Approximate_JJ temporal_JJ coalescing_NN is_VBZ greatly_RB effective_JJ given_VBN such_JJ fluctuating_JJ payloads_NNS and_CC reduces_VBZ the_DT number_NN of_IN postings_NNS from_IN #_# to_TO #_# in_IN the_DT example_NN ._.
+The_DT notion_NN of_IN temporal_JJ coalescing_NN was_VBD originally_RB introduced_VBN in_IN temporal_JJ database_NN research_NN by_IN Bohlen_NNP et_FW al_FW ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- ,_, where_WRB the_DT simpler_JJR problem_NN of_IN coalescing_VBG only_RB equal_JJ information_NN was_VBD considered_VBN ._.
+We_PRP next_RB formally_RB state_VBP the_DT problem_NN dealt_VBN with_IN in_IN approximate_JJ temporal_JJ coalescing_NN ,_, and_CC discuss_VBP the_DT computation_NN of_IN optimal_JJ and_CC approximate_JJ solutions_NNS ._.
+Note_VB that_IN the_DT technique_NN is_VBZ applied_VBN to_TO each_DT index_NN list_NN separately_RB ,_, so_IN that_IN the_DT following_VBG explanations_NNS assume_VB a_DT fixed_JJ term_NN v_LS and_CC index_NN list_NN Lv_NN ._.
+As_IN an_DT input_NN we_PRP are_VBP given_VBN a_DT sequence_NN of_IN temporally_RB adjacent_JJ postings_NNS I_NN =_JJ -LRB-_-LRB- d_NN ,_, pi_NN ,_, -LSB-_-LRB- ti_NNS ,_, ti_NN +_CC #_# -RRB-_-RRB- -RRB-_-RRB- ,_, ..._: ,_, -LRB-_-LRB- d_NN ,_, pn1_NN ,_, -LSB-_-LRB- tn1_NN ,_, tn_NN -RRB-_-RRB- -RRB-_-RRB- -RRB-_-RRB- ._.
+Each_DT sequence_NN represents_VBZ a_DT contiguous_JJ time_NN period_NN during_IN which_WDT the_DT term_NN was_VBD present_JJ in_IN a_DT single_JJ document_NN d_NN ._.
+If_IN a_DT term_NN disappears_VBZ from_IN d_NN but_CC reappears_VBZ later_RB ,_, we_PRP obtain_VBP multiple_JJ input_NN sequences_NNS that_WDT are_VBP dealt_VBN with_IN separately_RB ._.
+We_PRP seek_VBP to_TO generate_VB the_DT minimal_JJ length_NN output_NN sequence_NN of_IN postings_NNS O_NN =_JJ -LRB-_-LRB- d_NN ,_, pj_NN ,_, -LSB-_-LRB- tj_NN ,_, tj_NN +_CC #_# -RRB-_-RRB- -RRB-_-RRB- ,_, ..._: ,_, -LRB-_-LRB- d_NN ,_, pm1_NN ,_, -LSB-_-LRB- tm1_NN ,_, tm_NN -RRB-_-RRB- -RRB-_-RRB- -RRB-_-RRB- ,_, that_WDT adheres_VBZ to_TO the_DT following_VBG constraints_NNS :_: First_NNP ,_, O_NNP and_CC I_PRP must_MD cover_VB the_DT same_JJ time-range_NN ,_, i_FW ._.
+e_LS ._.
+,_, ti_NN =_JJ tj_NN and_CC tn_NN =_JJ tm_NN ._.
+Second_RB ,_, when_WRB coalescing_VBG a_DT subsequence_NN of_IN postings_NNS of_IN the_DT input_NN into_IN a_DT single_JJ posting_VBG of_IN the_DT output_NN ,_, we_PRP want_VBP the_DT approximation_NN error_NN to_TO be_VB below_IN a_DT threshold_NN ._.
+In_IN other_JJ words_NNS ,_, if_IN -LRB-_-LRB- d_NN ,_, pi_NN ,_, -LSB-_-LRB- ti_NNS ,_, ti_NN +_CC #_# -RRB-_-RRB- -RRB-_-RRB- and_CC -LRB-_-LRB- d_NN ,_, pj_NN ,_, -LSB-_-LRB- tj_NN ,_, tj_NN +_CC #_# -RRB-_-RRB- -RRB-_-RRB- are_VBP postings_NNS of_IN I_NN and_CC O_NN respectively_RB ,_, then_RB the_DT following_VBG must_MD hold_VB for_IN a_DT chosen_VBN error_NN function_NN and_CC a_DT threshold_NN :_: tj_NN ti_NN ti_NN +_CC #_# tj_NN +_CC #_# error_NN -LRB-_-LRB- pi_NN ,_, pj_NN -RRB-_-RRB- ._.
+In_IN this_DT paper_NN ,_, as_IN an_DT error_NN function_NN we_PRP employ_VBP the_DT relative_JJ error_NN between_IN payloads_NNS -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, tf-scores_NNS -RRB-_-RRB- of_IN a_DT document_NN in_IN I_NN and_CC O_NN ,_, defined_VBN as_IN :_: errrel_NN -LRB-_-LRB- pi_NN ,_, pj_NN -RRB-_-RRB- =_JJ |_CD pi_NN pj_NN |_CD /_: |_CD pi_NN |_NN ._.
+Finding_VBG an_DT optimal_JJ output_NN sequence_NN of_IN postings_NNS can_MD be_VB cast_VBN into_IN finding_VBG a_DT piecewise-constant_JJ representation_NN for_IN the_DT points_NNS -LRB-_-LRB- ti_NNS ,_, pi_NN -RRB-_-RRB- that_WDT uses_VBZ a_DT minimal_JJ number_NN of_IN segments_NNS while_IN retaining_VBG the_DT above_JJ approximation_NN guarantee_NN ._.
+Similar_JJ problems_NNS occur_VBP in_IN time-series_NNS segmentation_NN -LSB-_-LRB- ##_CD ,_, ##_CD -RSB-_-RRB- and_CC histogram_NN construction_NN -LSB-_-LRB- ##_CD ,_, ##_CD -RSB-_-RRB- ._.
+Typically_RB dynamic_JJ programming_NN is_VBZ applied_VBN to_TO obtain_VB an_DT optimal_JJ solution_NN in_IN O_NN -LRB-_-LRB- n2_NN m_NN -RRB-_-RRB- -LSB-_-LRB- ##_CD ,_, ##_CD -RSB-_-RRB- time_NN with_IN m_NN being_VBG the_DT number_NN of_IN segments_NNS in_IN an_DT optimal_JJ sequence_NN ._.
+In_IN our_PRP$ setting_NN ,_, as_IN a_DT key_JJ difference_NN ,_, only_RB a_DT guarantee_NN on_IN the_DT local_JJ error_NN is_VBZ retained_VBN -_: in_IN contrast_NN to_TO a_DT guarantee_NN on_IN the_DT global_JJ error_NN in_IN the_DT aforementioned_JJ settings_NNS ._.
+Exploiting_VBG this_DT fact_NN ,_, an_DT optimal_JJ solution_NN is_VBZ computable_JJ by_IN means_NNS of_IN induction_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- in_IN O_NN -LRB-_-LRB- n2_NN -RRB-_-RRB- time_NN ._.
+Details_NNS of_IN the_DT optimal_JJ algorithm_NN are_VBP omitted_VBN here_RB but_CC can_MD be_VB found_VBN in_IN the_DT accompanying_VBG technical_JJ report_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+The_DT quadratic_JJ complexity_NN of_IN the_DT optimal_JJ algorithm_NN makes_VBZ it_PRP inappropriate_JJ for_IN the_DT large_JJ datasets_NNS encountered_VBN in_IN this_DT work_NN ._.
+As_IN an_DT alternative_NN ,_, we_PRP introduce_VBP a_DT linear-time_JJ approximate_JJ algorithm_NN that_WDT is_VBZ based_VBN on_IN the_DT sliding-window_JJ algorithm_NN given_VBN in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ._.
+This_DT algorithm_NN produces_VBZ nearly-optimal_JJ output_NN sequences_NNS that_WDT retain_VBP the_DT bound_VBN on_IN the_DT relative_JJ error_NN ,_, but_CC possibly_RB require_VB a_DT few_JJ additional_JJ segments_NNS more_RBR than_IN an_DT optimal_JJ solution_NN ._.
+Algorithm_NN #_# Temporal_JJ Coalescing_NN -LRB-_-LRB- Approximate_JJ -RRB-_-RRB- 1_CD :_: I_PRP =_JJ -LRB-_-LRB- d_NN ,_, pi_NN ,_, -LSB-_-LRB- ti_NNS ,_, ti_NN +_CC #_# -RRB-_-RRB- -RRB-_-RRB- ,_, ..._: O_NN =_JJ 2_CD :_: pmin_NN =_JJ pi_NN pmax_NN =_JJ pi_NN p_NN =_JJ pi_NN tb_NN =_JJ ti_NN te_NN =_JJ ti_NN +_CC #_# 3_CD :_: for_IN -LRB-_-LRB- d_NN ,_, pj_NN ,_, -LSB-_-LRB- tj_NN ,_, tj_NN +_CC #_# -RRB-_-RRB- -RRB-_-RRB- I_PRP do_VBP 4_CD :_: pmin_NN =_JJ min_NN -LRB-_-LRB- pmin_NN ,_, pj_NN -RRB-_-RRB- pmax_NN =_JJ max_NN -LRB-_-LRB- pmax_NN ,_, pj_NN -RRB-_-RRB- 5_CD :_: p_NN =_JJ optrep_NN -LRB-_-LRB- pmin_NN ,_, pmax_NN -RRB-_-RRB- 6_CD :_: if_IN errrel_NN -LRB-_-LRB- pmin_NN ,_, p_NN -RRB-_-RRB- errrel_NN -LRB-_-LRB- pmax_NN ,_, p_NN -RRB-_-RRB- then_RB 7_CD :_: pmin_NN =_JJ pmin_NN pmax_NN =_JJ pmax_NN p_NN =_JJ p_NN te_NN =_JJ tj_NN +_CC #_# 8_CD :_: else_RB 9_CD :_: O_NN =_JJ O_NN -LRB-_-LRB- d_NN ,_, p_NN ,_, -LSB-_-LRB- tb_NN ,_, te_NN -RRB-_-RRB- -RRB-_-RRB- 10_CD :_: pmin_NN =_JJ pj_NN pmax_NN =_JJ pj_NN p_NN =_JJ pj_NN tb_NN =_JJ tj_NN te_NN =_JJ tj_NN +_CC #_# 11_CD :_: end_VB if_IN 12_CD :_: end_VB for_IN 13_CD :_: O_NN =_JJ O_NN -LRB-_-LRB- d_NN ,_, p_NN ,_, -LSB-_-LRB- tb_NN ,_, te_NN -RRB-_-RRB- -RRB-_-RRB- Algorithm_NN #_# makes_VBZ one_CD pass_NN over_IN the_DT input_NN sequence_NN I_PRP ._.
+While_IN doing_VBG so_RB ,_, it_PRP coalesces_VBZ sequences_NNS of_IN postings_NNS having_VBG maximal_JJ length_NN ._.
+The_DT optimal_JJ representative_NN for_IN a_DT sequence_NN of_IN postings_NNS depends_VBZ only_RB on_IN their_PRP$ minimal_JJ and_CC maximal_JJ payload_NN -LRB-_-LRB- pmin_NN and_CC pmax_NN -RRB-_-RRB- and_CC can_MD be_VB looked_VBN up_RP using_VBG optrep_NN in_IN O_NN -LRB-_-LRB- #_# -RRB-_-RRB- ._.
+When_WRB reading_VBG the_DT next_JJ posting_VBG ,_, the_DT algorithm_NN tries_VBZ to_TO add_VB it_PRP to_TO the_DT current_JJ sequence_NN of_IN postings_NNS ._.
+It_PRP computes_VBZ the_DT hypothetical_JJ new_JJ representative_JJ p_NN and_CC checks_NNS whether_IN it_PRP would_MD retain_VB the_DT approximation_NN guarantee_NN ._.
+If_IN this_DT test_NN fails_VBZ ,_, a_DT coalesced_JJ posting_VBG bearing_VBG the_DT old_JJ representative_NN is_VBZ added_VBN to_TO the_DT output_NN sequence_NN O_NN and_CC ,_, following_VBG that_IN ,_, the_DT bookkeeping_NN is_VBZ reinitialized_VBN ._.
+The_DT time_NN complexity_NN of_IN the_DT algorithm_NN is_VBZ in_IN O_NN -LRB-_-LRB- n_NN -RRB-_-RRB- ._.
+Note_VB that_IN ,_, since_IN we_PRP make_VBP no_DT assumptions_NNS about_IN the_DT sort_NN order_NN of_IN index_NN lists_NNS ,_, temporal-coalescing_JJ algorithms_NNS have_VBP an_DT additional_JJ preprocessing_NN cost_NN in_IN O_NN -LRB-_-LRB- |_CD Lv_NNP |_CD log_NN |_CD Lv_NNP |_NN -RRB-_-RRB- for_IN sorting_VBG the_DT index_NN list_NN and_CC chopping_VBG it_PRP up_RP into_IN subsequences_NNS for_IN each_DT document_NN ._.
+6_CD ._.
+SUBLIST_NNP MATERIALIZATION_NNP Efficiency_NN of_IN processing_VBG a_DT query_NN q_NN t_NN on_IN our_PRP$ time-travel_JJ inverted_JJ index_NN is_VBZ influenced_VBN adversely_RB by_IN the_DT wasted_VBN I_PRP /_: O_NN due_JJ to_TO read_VB but_CC skipped_VBD postings_NNS ._.
+Temporal_JJ coalescing_VBG implicitly_RB addresses_NNS this_DT problem_NN by_IN reducing_VBG the_DT overall_JJ index_NN list_NN size_NN ,_, but_CC still_RB a_DT significant_JJ overhead_NN remains_VBZ ._.
+In_IN this_DT section_NN ,_, we_PRP tackle_VBP this_DT problem_NN by_IN proposing_VBG the_DT idea_NN of_IN materializing_VBG sublists_NNS each_DT of_IN which_WDT corresponds_VBZ to_TO a_DT contiguous_JJ subinterval_NN of_IN time_NN spanned_VBN by_IN the_DT full_JJ index_NN ._.
+Each_DT of_IN these_DT sublists_NNS contains_VBZ all_DT coalesced_VBD postings_NNS that_WDT overlap_VBP with_IN the_DT corresponding_JJ time_NN interval_NN of_IN the_DT sublist_NN ._.
+Note_VB that_IN all_PDT those_DT postings_NNS whose_WP$ validity_NN time-interval_JJ spans_NNS across_IN the_DT temporal_JJ boundaries_NNS of_IN several_JJ sublists_NNS are_VBP replicated_VBN in_IN each_DT of_IN the_DT spanned_VBN sublists_NNS ._.
+Thus_RB ,_, in_IN order_NN to_TO process_VB the_DT query_NN q_NN t_NN time_NN t1_NN t2_NN t3_NN t4_NN t5_NN t6_NN t7_NN t8_NN t9_NN t10_NN d1_NN d2_NN d3_NN document_NN 1_CD #_# #_# #_# 5_CD #_# #_# 8_CD #_# ##_CD Figure_NNP #_# :_: Sublist_NNP Materialization_NNP it_PRP is_VBZ sufficient_JJ to_TO scan_VB any_DT materialized_VBD sublist_JJ whose_WP$ timeinterval_NN contains_VBZ t_NN ._.
+We_PRP illustrate_VBP the_DT idea_NN of_IN sublist_JJ materialization_NN using_VBG an_DT example_NN shown_VBN in_IN Figure_NNP #_# ._.
+The_DT index_NN list_NN Lv_NN visualized_VBD in_IN the_DT figure_NN contains_VBZ a_DT total_NN of_IN ##_CD postings_NNS from_IN three_CD documents_NNS d1_NN ,_, d2_NN ,_, and_CC d3_NN ._.
+For_IN ease_NN of_IN description_NN ,_, we_PRP have_VBP numbered_VBN boundaries_NNS of_IN validity_NN time-intervals_NNS ,_, in_IN increasing_VBG time-order_NN ,_, as_IN t1_NN ,_, ..._: ,_, t10_NN and_CC numbered_VBD the_DT postings_NNS themselves_PRP as_IN #_# ,_, ..._: ,_, ##_NN ._.
+Now_RB ,_, consider_VB the_DT processing_NN of_IN a_DT query_NN q_NN t_NN with_IN t_NN -LSB-_-LRB- t1_NN ,_, t2_NN -RRB-_-RRB- using_VBG this_DT inverted_JJ list_NN ._.
+Although_IN only_RB three_CD postings_NNS -LRB-_-LRB- postings_NNS #_# ,_, #_# and_CC #_# -RRB-_-RRB- are_VBP valid_JJ at_IN time_NN t_NN ,_, the_DT whole_JJ inverted_JJ list_NN has_VBZ to_TO be_VB read_VBN in_IN the_DT worst_JJS case_NN ._.
+Suppose_VB that_IN we_PRP split_VBD the_DT time_NN axis_NN of_IN the_DT list_NN at_IN time_NN t2_NN ,_, forming_VBG two_CD sublists_NNS with_IN postings_NNS -LCB-_-LRB- #_# ,_, #_# ,_, #_# -RCB-_-RRB- and_CC -LCB-_-LRB- #_# ,_, #_# ,_, #_# ,_, #_# ,_, #_# ,_, #_# ,_, #_# ,_, #_# ,_, 10_CD -RCB-_-RRB- respectively_RB ._.
+Then_RB ,_, we_PRP can_MD process_VB the_DT above_JJ query_NN with_IN optimal_JJ cost_NN by_IN reading_VBG only_RB those_DT postings_NNS that_WDT existed_VBD at_IN this_DT t_NN ._.
+At_IN a_DT first_JJ glance_NN ,_, it_PRP may_MD seem_VB counterintuitive_JJ to_TO reduce_VB index_NN size_NN in_IN the_DT first_JJ step_NN -LRB-_-LRB- using_VBG temporal_JJ coalescing_NN -RRB-_-RRB- ,_, and_CC then_RB to_TO increase_VB it_PRP again_RB using_VBG the_DT sublist_JJ materialization_NN techniques_NNS presented_VBN in_IN this_DT section_NN ._.
+However_RB ,_, we_PRP reiterate_VBP that_IN our_PRP$ main_JJ objective_NN is_VBZ to_TO improve_VB the_DT efficiency_NN of_IN processing_NN queries_NNS ,_, not_RB to_TO reduce_VB the_DT index_NN size_NN alone_RB ._.
+The_DT use_NN of_IN temporal_JJ coalescing_NN improves_VBZ the_DT performance_NN by_IN reducing_VBG the_DT index_NN size_NN ,_, while_IN the_DT sublist_JJ materialization_NN improves_VBZ performance_NN by_IN judiciously_RB replicating_VBG entries_NNS ._.
+Further_RB ,_, the_DT two_CD techniques_NNS ,_, can_MD be_VB applied_VBN separately_RB and_CC are_VBP independent_JJ ._.
+If_IN applied_VBN in_IN conjunction_NN ,_, though_RB ,_, there_EX is_VBZ a_DT synergetic_JJ effect_NN -_: sublists_NNS that_WDT are_VBP materialized_VBN from_IN a_DT temporally_RB coalesced_VBN index_NN are_VBP generally_RB smaller_JJR ._.
+We_PRP employ_VBP the_DT notation_NN Lv_NNP :_: -LSB-_-LRB- ti_NNS ,_, tj_NN -RRB-_-RRB- to_TO refer_VB to_TO the_DT materialized_VBN sublist_NN for_IN the_DT time_NN interval_JJ -LSB-_-LRB- ti_NNS ,_, tj_NN -RRB-_-RRB- ,_, that_WDT is_VBZ formally_RB defined_VBN as_IN ,_, Lv_NNP :_: -LSB-_-LRB- ti_NNS ,_, tj_NN -RRB-_-RRB- =_JJ -LCB-_-LRB- -LRB-_-LRB- d_NN ,_, p_NN ,_, -LSB-_-LRB- tb_NN ,_, te_NN -RRB-_-RRB- -RRB-_-RRB- Lv_NNP |_CD tb_NN ti_NNS -RCB-_-RRB- ._.
+To_TO aid_VB the_DT presentation_NN in_IN the_DT rest_NN of_IN the_DT paper_NN ,_, we_PRP first_RB provide_VBP some_DT definitions_NNS ._.
+Let_VB T_NN =_JJ t1_NN ..._: tn_NN be_VB the_DT sorted_VBN sequence_NN of_IN all_DT unique_JJ time-interval_JJ boundaries_NNS of_IN an_DT inverted_JJ list_NN Lv_NN ._.
+Then_RB we_PRP define_VBP E_NN =_JJ -LCB-_-LRB- -LSB-_-LRB- ti_NNS ,_, ti_NN +_CC #_# -RRB-_-RRB- |_CD #_# i_FW <_JJR n_NN -RCB-_-RRB- to_TO be_VB the_DT set_NN of_IN elementary_JJ time_NN intervals_NNS ._.
+We_PRP refer_VBP to_TO the_DT set_NN of_IN time_NN intervals_NNS for_IN which_WDT sublists_NNS are_VBP materialized_VBN as_IN M_NN -LCB-_-LRB- -LSB-_-LRB- ti_NNS ,_, tj_NN -RRB-_-RRB- |_CD #_# i_FW <_JJR j_NN n_NN -RCB-_-RRB- ,_, and_CC demand_NN t_NN -LSB-_-LRB- t1_NN ,_, tn_NN -RRB-_-RRB- m_NN M_NN :_: t_NN m_NN ,_, i_FW ._.
+e_LS ._.
+,_, the_DT time_NN intervals_NNS in_IN M_NN must_MD completely_RB cover_VB the_DT time_NN interval_JJ -LSB-_-LRB- t1_NN ,_, tn_NN -RRB-_-RRB- ,_, so_RB that_IN time-travel_JJ queries_NNS q_VBP t_NN for_IN all_DT t_NN -LSB-_-LRB- t1_NN ,_, tn_NN -RRB-_-RRB- can_MD be_VB processed_VBN ._.
+We_PRP also_RB assume_VBP that_IN intervals_NNS in_IN M_NN are_VBP disjoint_NN ._.
+We_PRP can_MD make_VB this_DT assumption_NN without_IN ruling_VBG out_RP any_DT optimal_JJ solution_NN with_IN regard_NN to_TO space_NN or_CC performance_NN defined_VBN below_IN ._.
+The_DT space_NN required_VBN for_IN the_DT materialization_NN of_IN sublists_NNS in_IN a_DT set_VBN M_NN is_VBZ defined_VBN as_IN S_NN -LRB-_-LRB- M_NN -RRB-_-RRB- =_JJ X_NN mM_NN |_CD Lv_NNP :_: m_NN |_NN ,_, i_FW ._.
+e_LS ._.
+,_, the_DT total_JJ length_NN of_IN all_DT lists_NNS in_IN M_NN ._.
+Given_VBN a_DT set_NN M_NN ,_, we_PRP let_VBP -LRB-_-LRB- -LSB-_-LRB- ti_NNS ,_, ti_NN +_CC #_# -RRB-_-RRB- -RRB-_-RRB- =_JJ -LSB-_-LRB- tj_NN ,_, tk_NN -RRB-_-RRB- M_NN :_: -LSB-_-LRB- ti_NNS ,_, ti_NN +_CC #_# -RRB-_-RRB- -LSB-_-LRB- tj_NN ,_, tk_NN -RRB-_-RRB- denote_VBP the_DT time_NN interval_NN that_WDT is_VBZ used_VBN to_TO process_VB queries_NNS q_VB t_NN with_IN t_NN -LSB-_-LRB- ti_NN ,_, ti_NN +_CC #_# -RRB-_-RRB- ._.
+The_DT performance_NN of_IN processing_NN queries_NNS q_VBP t_NN for_IN t_NN -LSB-_-LRB- ti_NN ,_, ti_NN +_CC #_# -RRB-_-RRB- inversely_RB depends_VBZ on_IN its_PRP$ processing_NN cost_NN PC_NN -LRB-_-LRB- -LSB-_-LRB- ti_NNS ,_, ti_NN +_CC #_# -RRB-_-RRB- -RRB-_-RRB- =_JJ |_CD Lv_NNP :_: -LRB-_-LRB- -LSB-_-LRB- ti_NNS ,_, ti_NN +_CC #_# -RRB-_-RRB- -RRB-_-RRB- |_RB ,_, which_WDT is_VBZ assumed_VBN to_TO be_VB proportional_JJ to_TO the_DT length_NN of_IN the_DT list_NN Lv_NN :_: -LRB-_-LRB- -LSB-_-LRB- ti_NNS ,_, ti_NN +_CC #_# -RRB-_-RRB- -RRB-_-RRB- ._.
+Thus_RB ,_, in_IN order_NN to_TO optimize_VB the_DT performance_NN of_IN processing_NN queries_NNS we_PRP minimize_VBP their_PRP$ processing_NN costs_NNS ._.
+6_CD ._.
+#_# Performance_NNP /_: Space-Optimal_JJ Approaches_NNS One_CD strategy_NN to_TO eliminate_VB the_DT problem_NN of_IN skipped_VBN postings_NNS is_VBZ to_TO eagerly_RB materialize_VB sublists_NNS for_IN all_DT elementary_JJ time_NN intervals_NNS ,_, i_FW ._.
+e_LS ._.
+,_, to_TO choose_VB M_NN =_JJ E_NN ._.
+In_IN doing_VBG so_RB ,_, for_IN every_DT query_NN q_NN t_NN only_RB postings_NNS valid_JJ at_IN time_NN t_NN are_VBP read_VBN and_CC thus_RB the_DT best_JJS possible_JJ performance_NN is_VBZ achieved_VBN ._.
+Therefore_RB ,_, we_PRP will_MD refer_VB to_TO this_DT approach_NN as_IN Popt_NNP in_IN the_DT remainder_NN ._.
+The_DT initial_JJ approach_NN described_VBD above_IN that_DT keeps_VBZ only_RB the_DT full_JJ list_NN Lv_NN and_CC thus_RB picks_VBZ M_NN =_JJ -LCB-_-LRB- -LSB-_-LRB- t1_NN ,_, tn_NN -RRB-_-RRB- -RCB-_-RRB- is_VBZ referred_VBN to_TO as_IN Sopt_NNP in_IN the_DT remainder_NN ._.
+This_DT approach_NN requires_VBZ minimal_JJ space_NN ,_, since_IN it_PRP keeps_VBZ each_DT posting_VBG exactly_RB once_RB ._.
+Popt_NNP and_CC Sopt_NNP are_VBP extremes_NNS :_: the_DT former_JJ provides_VBZ the_DT best_JJS possible_JJ performance_NN but_CC is_VBZ not_RB space-efficient_JJ ,_, the_DT latter_JJ requires_VBZ minimal_JJ space_NN but_CC does_VBZ not_RB provide_VB good_JJ performance_NN ._.
+The_DT two_CD approaches_NNS presented_VBN in_IN the_DT rest_NN of_IN this_DT section_NN allow_VBP mutually_RB trading_VBG off_RP space_NN and_CC performance_NN and_CC can_MD thus_RB be_VB thought_VBN of_IN as_IN means_NNS to_TO explore_VB the_DT configuration_NN spectrum_NN between_IN the_DT Popt_NNP and_CC the_DT Sopt_JJ approach_NN ._.
+6_CD ._.
+#_# Performance-Guarantee_NNP Approach_NNP The_NNP Popt_NNP approach_NN clearly_RB wastes_VBZ a_DT lot_NN of_IN space_NN materializing_VBG many_JJ nearly-identical_JJ sublists_NNS ._.
+In_IN the_DT example_NN illustrated_VBD in_IN Figure_NNP #_# materialized_VBD sublists_NNS for_IN -LSB-_-LRB- t1_NN ,_, t2_NN -RRB-_-RRB- and_CC -LSB-_-LRB- t2_NN ,_, t3_NN -RRB-_-RRB- differ_VBP only_RB by_IN one_CD posting_VBG ._.
+If_IN the_DT sublist_NN for_IN -LSB-_-LRB- t1_NN ,_, t3_NN -RRB-_-RRB- was_VBD materialized_VBN instead_RB ,_, one_CD could_MD save_VB significant_JJ space_NN while_IN incurring_VBG only_RB an_DT overhead_NN of_IN one_CD skipped_VBD posting_VBG for_IN all_DT t_NN -LSB-_-LRB- t1_NN ,_, t3_NN -RRB-_-RRB- ._.
+The_DT technique_NN presented_VBN next_JJ is_VBZ driven_VBN by_IN the_DT idea_NN that_IN significant_JJ space_NN savings_NNS over_IN Popt_NNP are_VBP achievable_JJ ,_, if_IN an_DT upper-bounded_JJ loss_NN on_IN the_DT performance_NN can_MD be_VB tolerated_VBN ,_, or_CC to_TO put_VB it_PRP differently_RB ,_, if_IN a_DT performance_NN guarantee_NN relative_JJ to_TO the_DT optimum_NN is_VBZ to_TO be_VB retained_VBN ._.
+In_IN detail_NN ,_, the_DT technique_NN ,_, which_WDT we_PRP refer_VBP to_TO as_IN PG_NN -LRB-_-LRB- Performance_NNP Guarantee_NN -RRB-_-RRB- in_IN the_DT remainder_NN ,_, finds_VBZ a_DT set_NN M_NN that_WDT has_VBZ minimal_JJ required_JJ space_NN ,_, but_CC guarantees_NNS for_IN any_DT elementary_JJ time_NN interval_NN -LSB-_-LRB- ti_NN ,_, ti_NN +_CC #_# -RRB-_-RRB- -LRB-_-LRB- and_CC thus_RB for_IN any_DT query_NN q_NN t_NN with_IN t_NN -LSB-_-LRB- ti_NN ,_, ti_NN +_CC #_# -RRB-_-RRB- -RRB-_-RRB- that_WDT performance_NN is_VBZ worse_JJR than_IN optimal_JJ by_IN at_IN most_JJS a_DT factor_NN of_IN #_# ._.
+Formally_RB ,_, this_DT problem_NN can_MD be_VB stated_VBN as_IN argmin_NN M_NN S_NN -LRB-_-LRB- M_NN -RRB-_-RRB- s_NNS ._.
+t_NN ._.
+-LSB-_-LRB- ti_NN ,_, ti_NN +_CC #_# -RRB-_-RRB- E_NN :_: PC_NN -LRB-_-LRB- -LSB-_-LRB- ti_NNS ,_, ti_NN +_CC #_# -RRB-_-RRB- -RRB-_-RRB- |_CD Lv_NNP :_: -LSB-_-LRB- ti_NNS ,_, ti_NN +_CC #_# -RRB-_-RRB- |_RB ._.
+An_DT optimal_JJ solution_NN to_TO the_DT problem_NN can_MD be_VB computed_VBN by_IN means_NNS of_IN induction_NN using_VBG the_DT recurrence_NN C_NN -LRB-_-LRB- -LSB-_-LRB- t1_NN ,_, tk_NN +_CC #_# -RRB-_-RRB- -RRB-_-RRB- =_JJ min_NN -LCB-_-LRB- C_NN -LRB-_-LRB- -LSB-_-LRB- t1_NN ,_, tj_NN -RRB-_-RRB- -RRB-_-RRB- +_CC |_CD Lv_NNP :_: -LSB-_-LRB- tj_NN ,_, tk_NN +_CC #_# -RRB-_-RRB- |_CD |_CD #_# j_FW k_NN condition_NN -RCB-_-RRB- ,_, where_WRB C_NN -LRB-_-LRB- -LSB-_-LRB- t1_NN ,_, tj_NN -RRB-_-RRB- -RRB-_-RRB- is_VBZ the_DT optimal_JJ cost_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, the_DT space_NN required_VBN -RRB-_-RRB- for_IN the_DT prefix_NN subproblem_NN -LCB-_-LRB- -LSB-_-LRB- ti_NNS ,_, ti_NN +_CC #_# -RRB-_-RRB- E_NN |_NN -LSB-_-LRB- ti_NN ,_, ti_NN +_CC #_# -RRB-_-RRB- -LSB-_-LRB- t1_NN ,_, tj_NN -RRB-_-RRB- -RCB-_-RRB- and_CC condition_NN stands_NNS for_IN -LSB-_-LRB- ti_NN ,_, ti_NN +_CC #_# -RRB-_-RRB- E_NN :_: -LSB-_-LRB- ti_NNS ,_, ti_NN +_CC #_# -RRB-_-RRB- -LSB-_-LRB- tj_NN ,_, tk_NN +_CC #_# -RRB-_-RRB- |_CD Lv_NNP :_: -LSB-_-LRB- tj_NN ,_, tk_NN +_CC #_# -RRB-_-RRB- |_CD |_CD Lv_NNP :_: -LSB-_-LRB- ti_NNS ,_, ti_NN +_CC #_# -RRB-_-RRB- |_RB ._.
+Intuitively_RB ,_, the_DT recurrence_NN states_VBZ that_IN an_DT optimal_JJ solution_NN for_IN -LSB-_-LRB- t1_NN ,_, tk_NN +_CC #_# -RRB-_-RRB- be_VB combined_VBN from_IN an_DT optimal_JJ solution_NN to_TO a_DT prefix_NN subproblem_NN C_NN -LRB-_-LRB- -LSB-_-LRB- t1_NN ,_, tj_NN -RRB-_-RRB- -RRB-_-RRB- and_CC a_DT time_NN interval_JJ -LSB-_-LRB- tj_NN ,_, tk_NN +_CC #_# -RRB-_-RRB- that_WDT can_MD be_VB materialized_VBN without_IN violating_VBG the_DT performance_NN guarantee_NN ._.
+Pseudocode_NN of_IN the_DT algorithm_NN is_VBZ omitted_VBN for_IN space_NN reasons_NNS ,_, but_CC can_MD be_VB found_VBN in_IN the_DT accompanying_VBG technical_JJ report_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+The_DT time_NN complexity_NN of_IN the_DT algorithm_NN is_VBZ in_IN O_NN -LRB-_-LRB- n2_NN -RRB-_-RRB- -_: for_IN each_DT prefix_NN subproblem_NN the_DT above_JJ recurrence_NN must_MD be_VB evaluated_VBN ,_, which_WDT is_VBZ possible_JJ in_IN linear_JJ time_NN if_IN list_NN sizes_NNS |_VBP L_NN :_: -LSB-_-LRB- ti_NNS ,_, tj_NN -RRB-_-RRB- |_NN are_VBP precomputed_VBN ._.
+The_DT space_NN complexity_NN is_VBZ in_IN O_NN -LRB-_-LRB- n2_NN -RRB-_-RRB- -_: the_DT cost_NN of_IN keeping_VBG the_DT precomputed_JJ sublist_JJ lengths_NNS and_CC memoizing_VBG optimal_JJ solutions_NNS to_TO prefix_NN subproblems_NNS ._.
+6_CD ._.
+#_# Space-Bound_NNP Approach_NNP So_RB far_RB we_PRP considered_VBD the_DT problem_NN of_IN materializing_VBG sublists_NNS that_WDT give_VBP a_DT guarantee_NN on_IN performance_NN while_IN requiring_VBG minimal_JJ space_NN ._.
+In_IN many_JJ situations_NNS ,_, though_RB ,_, the_DT storage_NN space_NN is_VBZ at_IN a_DT premium_NN and_CC the_DT aim_NN would_MD be_VB to_TO materialize_VB a_DT set_NN of_IN sublists_NNS that_WDT optimizes_VBZ expected_VBN performance_NN while_IN not_RB exceeding_VBG a_DT given_VBN space_NN limit_NN ._.
+The_DT technique_NN presented_VBN next_RB ,_, which_WDT is_VBZ named_VBN SB_NN ,_, tackles_VBZ this_DT very_RB problem_NN ._.
+The_DT space_NN restriction_NN is_VBZ modeled_VBN by_IN means_NNS of_IN a_DT user-specified_JJ parameter_NN #_# that_WDT limits_VBZ the_DT maximum_NN allowed_VBD blowup_NN in_IN index_NN size_NN from_IN the_DT space-optimal_JJ solution_NN provided_VBN by_IN Sopt_NNP ._.
+The_DT SB_NN technique_NN seeks_VBZ to_TO find_VB a_DT set_NN M_NN that_WDT adheres_VBZ to_TO this_DT space_NN limit_NN but_CC minimizes_VBZ the_DT expected_VBN processing_NN cost_NN -LRB-_-LRB- and_CC thus_RB optimizes_VBZ the_DT expected_VBN performance_NN -RRB-_-RRB- ._.
+In_IN the_DT definition_NN of_IN the_DT expected_VBN processing_NN cost_NN ,_, P_NN -LRB-_-LRB- -LSB-_-LRB- ti_NNS ,_, ti_NN +_CC #_# -RRB-_-RRB- -RRB-_-RRB- denotes_VBZ the_DT probability_NN of_IN a_DT query_NN time-point_NN being_VBG in_IN -LSB-_-LRB- ti_NN ,_, ti_NN +_CC #_# -RRB-_-RRB- ._.
+Formally_RB ,_, this_DT space-bound_JJ sublist-materialization_JJ problem_NN can_MD be_VB stated_VBN as_IN argmin_NN M_NN X_NN -LSB-_-LRB- ti_NN ,_, ti_NN +_CC #_# -RRB-_-RRB- E_NN P_NN -LRB-_-LRB- -LSB-_-LRB- ti_NNS ,_, ti_NN +_CC #_# -RRB-_-RRB- -RRB-_-RRB- PC_NN -LRB-_-LRB- -LSB-_-LRB- ti_NNS ,_, ti_NN +_CC #_# -RRB-_-RRB- -RRB-_-RRB- s_NNS ._.
+t_NN ._.
+X_NN mM_NN |_CD Lv_NNP :_: m_NN |_CD |_CD Lv_NNP |_CD ._.
+The_DT problem_NN can_MD be_VB solved_VBN by_IN using_VBG dynamic_JJ programming_NN over_IN an_DT increasing_VBG number_NN of_IN time_NN intervals_NNS :_: At_IN each_DT time_NN interval_NN in_IN E_NN the_DT algorithms_NNS decides_VBZ whether_IN to_TO start_VB a_DT new_JJ materialization_NN time-interval_JJ ,_, using_VBG the_DT known_VBN best_JJS materialization_NN decision_NN from_IN the_DT previous_JJ time_NN intervals_NNS ,_, and_CC keeping_VBG track_NN of_IN the_DT required_JJ space_NN consumption_NN for_IN materialization_NN ._.
+A_DT detailed_JJ description_NN of_IN the_DT algorithm_NN is_VBZ omitted_VBN here_RB ,_, but_CC can_MD be_VB found_VBN in_IN the_DT accompanying_VBG technical_JJ report_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+Unfortunately_RB ,_, the_DT algorithm_NN has_VBZ time_NN complexity_NN in_IN O_NN -LRB-_-LRB- n3_NN |_CD Lv_NNP |_NN -RRB-_-RRB- and_CC its_PRP$ space_NN complexity_NN is_VBZ in_IN O_NN -LRB-_-LRB- n2_NN |_CD Lv_NNP |_NN -RRB-_-RRB- ,_, which_WDT is_VBZ not_RB practical_JJ for_IN large_JJ data_NNS sets_NNS ._.
+We_PRP obtain_VBP an_DT approximate_JJ solution_NN to_TO the_DT problem_NN using_VBG simulated_JJ annealing_NN -LSB-_-LRB- ##_CD ,_, ##_CD -RSB-_-RRB- ._.
+Simulated_JJ annealing_NN takes_VBZ a_DT fixed_JJ number_NN R_NN of_IN rounds_NNS to_TO explore_VB the_DT solution_NN space_NN ._.
+In_IN each_DT round_NN a_DT random_JJ successor_NN of_IN the_DT current_JJ solution_NN is_VBZ looked_VBN at_IN ._.
+If_IN the_DT successor_NN does_VBZ not_RB adhere_VB to_TO the_DT space_NN limit_NN ,_, it_PRP is_VBZ always_RB rejected_VBN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, the_DT current_JJ solution_NN is_VBZ kept_VBN -RRB-_-RRB- ._.
+A_DT successor_NN adhering_JJ to_TO the_DT space_NN limit_NN is_VBZ always_RB accepted_VBN if_IN it_PRP achieves_VBZ lower_JJR expected_VBN processing_NN cost_NN than_IN the_DT current_JJ solution_NN ._.
+If_IN it_PRP achieves_VBZ higher_JJR expected_VBN processing_NN cost_NN ,_, it_PRP is_VBZ randomly_RB accepted_VBN with_IN probability_NN e_SYM /_: r_NN where_WRB is_VBZ the_DT increase_NN in_IN expected_VBN processing_NN cost_NN and_CC R_NN r_NN #_# denotes_VBZ the_DT number_NN of_IN remaining_VBG rounds_NNS ._.
+In_IN addition_NN ,_, throughout_IN all_DT rounds_NNS ,_, the_DT method_NN keeps_VBZ track_NN of_IN the_DT best_JJS solution_NN seen_VBN so_RB far_RB ._.
+The_DT solution_NN space_NN for_IN the_DT problem_NN at_IN hand_NN can_MD be_VB efficiently_RB explored_VBN ._.
+As_IN we_PRP argued_VBD above_RB ,_, we_PRP solely_RB have_VBP to_TO look_VB at_IN sets_NNS M_NN that_WDT completely_RB cover_VBP the_DT time_NN interval_JJ -LSB-_-LRB- t1_NN ,_, tn_NN -RRB-_-RRB- and_CC do_VBP not_RB contain_VB overlapping_VBG time_NN intervals_NNS ._.
+We_PRP represent_VBP such_JJ a_DT set_NN M_NN as_IN an_DT array_NN of_IN n_NN boolean_NN variables_NNS b1_NN ..._: bn_NN that_WDT convey_VBP the_DT boundaries_NNS of_IN time_NN intervals_NNS in_IN the_DT set_NN ._.
+Note_VB that_DT b1_NN and_CC bn_NN are_VBP always_RB set_VBN to_TO true_JJ ._.
+Initially_RB ,_, all_DT n_NN #_# intermediate_JJ variables_NNS assume_VBP false_JJ ,_, which_WDT corresponds_VBZ to_TO the_DT set_NN M_NN =_JJ -LCB-_-LRB- -LSB-_-LRB- t1_NN ,_, tn_NN -RRB-_-RRB- -RCB-_-RRB- ._.
+A_DT random_JJ successor_NN can_MD now_RB be_VB easily_RB generated_VBN by_IN switching_VBG the_DT value_NN of_IN one_CD of_IN the_DT n_NN #_# intermediate_JJ variables_NNS ._.
+The_DT time_NN complexity_NN of_IN the_DT method_NN is_VBZ in_IN O_NN -LRB-_-LRB- n2_NN -RRB-_-RRB- -_: the_DT expected_VBN processing_NN cost_NN must_MD be_VB computed_VBN in_IN each_DT round_NN ._.
+Its_PRP$ space_NN complexity_NN is_VBZ in_IN O_NN -LRB-_-LRB- n_NN -RRB-_-RRB- -_: for_IN keeping_VBG the_DT n_NN boolean_NN variables_NNS ._.
+As_IN a_DT side_NN remark_NN note_NN that_WDT for_IN =_JJ #_# ._.
+#_# the_DT SB_NN method_NN does_VBZ not_RB necessarily_RB produce_VB the_DT solution_NN that_WDT is_VBZ obtained_VBN from_IN Sopt_NNP ,_, but_CC may_MD produce_VB a_DT solution_NN that_WDT requires_VBZ the_DT same_JJ amount_NN of_IN space_NN while_IN achieving_VBG better_JJR expected_VBN performance_NN ._.
+7_CD ._.
+EXPERIMENTAL_JJ EVALUATION_NN We_PRP conducted_VBD a_DT comprehensive_JJ series_NN of_IN experiments_NNS on_IN two_CD real-world_JJ datasets_NNS to_TO evaluate_VB the_DT techniques_NNS proposed_VBN in_IN this_DT paper_NN ._.
+7_CD ._.
+#_# Setup_NN and_CC Datasets_NNS The_DT techniques_NNS described_VBN in_IN this_DT paper_NN were_VBD implemented_VBN in_IN a_DT prototype_NN system_NN using_VBG Java_NNP JDK_NNP #_# ._.
+#_# ._.
+All_DT experiments_NNS described_VBN below_IN were_VBD run_VBN on_IN a_DT single_JJ SUN_NN V40z_NN machine_NN having_VBG four_CD AMD_NNP Opteron_NNP CPUs_NNS ,_, 16GB_NN RAM_NNP ,_, a_DT large_JJ network-attached_JJ RAID-5_NN disk_NN array_NN ,_, and_CC running_VBG Microsoft_NNP Windows_NNP Server_NN ####_CD ._.
+All_DT data_NNS and_CC indexes_NNS are_VBP kept_VBN in_IN an_DT Oracle_NNP 10g_NN database_NN that_WDT runs_VBZ on_IN the_DT same_JJ machine_NN ._.
+For_IN our_PRP$ experiments_NNS we_PRP used_VBD two_CD different_JJ datasets_NNS ._.
+The_DT English_NNP Wikipedia_NNP revision_NN history_NN -LRB-_-LRB- referred_VBN to_TO as_IN WIKI_NN in_IN the_DT remainder_NN -RRB-_-RRB- is_VBZ available_JJ for_IN free_JJ download_NN as_IN a_DT single_JJ XML_NN file_NN ._.
+This_DT large_JJ dataset_NN ,_, totaling_VBG #_# ._.
+#_# TBytes_NNS ,_, contains_VBZ the_DT full_JJ editing_NN history_NN of_IN the_DT English_NNP Wikipedia_NNP from_IN January_NNP ####_CD to_TO December_NNP ####_NN -LRB-_-LRB- the_DT time_NN of_IN our_PRP$ download_NN -RRB-_-RRB- ._.
+We_PRP indexed_VBD all_DT encyclopedia_NN articles_NNS excluding_VBG versions_NNS that_WDT were_VBD marked_VBN as_IN the_DT result_NN of_IN a_DT minor_JJ edit_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, the_DT correction_NN of_IN spelling_NN errors_NNS etc_FW ._. -RRB-_-RRB- ._.
+This_DT yielded_VBD a_DT total_NN of_IN 892_CD ,_, ###_CD documents_NNS with_IN ##_NN ,_, ###_CD ,_, ###_CD versions_NNS having_VBG a_DT mean_NN -LRB-_-LRB- -RRB-_-RRB- of_IN ##_NN ._.
+##_NN versions_NNS per_IN document_NN at_IN standard_JJ deviation_NN -LRB-_-LRB- -RRB-_-RRB- of_IN ##_NN ._.
+##_NN ._.
+We_PRP built_VBD a_DT time-travel_JJ query_NN workload_NN using_VBG the_DT query_NN log_NN temporarily_RB made_VBN available_JJ recently_RB by_IN AOL_NNP Research_NNP as_IN follows_VBZ -_: we_PRP first_RB extracted_VBD the_DT ###_CD most_RBS frequent_JJ keyword_NN queries_NNS that_WDT yielded_VBD a_DT result_NN click_VBP on_IN a_DT Wikipedia_NNP article_NN -LRB-_-LRB- for_IN e_LS ._.
+g_NN ._.
+,_, french_JJ revolution_NN ,_, hurricane_NN season_NN ####_CD ,_, da_NN vinci_NN code_NN etc_NN ._. -RRB-_-RRB- ._.
+The_DT thus_RB extracted_VBN queries_NNS contained_VBD a_DT total_NN of_IN ###_CD distinct_JJ terms_NNS ._.
+For_IN each_DT extracted_VBN query_NN ,_, we_PRP randomly_RB picked_VBD a_DT time_NN point_NN for_IN each_DT month_NN covered_VBN by_IN the_DT dataset_NN ._.
+This_DT resulted_VBD in_IN a_DT total_NN of_IN ##_CD ,_, ###_CD -LRB-_-LRB- =_JJ ###_CD ##_NN -RRB-_-RRB- time-travel_JJ queries_NNS ._.
+The_DT second_JJ dataset_NN used_VBN in_IN our_PRP$ experiments_NNS was_VBD based_VBN on_IN a_DT subset_NN of_IN the_DT European_JJ Archive_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, containing_VBG weekly_JJ crawls_VBZ of_IN ##_NN ._.
+gov_NN ._.
+uk_NN websites_NNS throughout_IN the_DT years_NNS ####_CD and_CC 2005_CD amounting_VBG close_RB to_TO #_# TBytes_NNS of_IN raw_JJ data_NNS ._.
+We_PRP filtered_VBD out_RP documents_NNS not_RB belonging_VBG to_TO MIME-types_JJ text_NN /_: plain_JJ and_CC text_NN /_: html_NN ,_, to_TO obtain_VB a_DT dataset_NN that_WDT totals_VBZ #_# ._.
+#_# TBytes_NNPS and_CC which_WDT we_PRP refer_VBP to_TO as_IN UKGOV_NN in_IN rest_NN of_IN the_DT paper_NN ._.
+This_DT included_VBD a_DT total_NN of_IN ###_CD ,_, ###_CD documents_NNS with_IN #_# ,_, ###_CD ,_, ###_CD versions_NNS -LRB-_-LRB- =_JJ ##_NN ._.
+##_NN and_CC =_JJ ##_NN ._.
+##_NN -RRB-_-RRB- ._.
+We_PRP built_VBD a_DT corresponding_JJ query_NN workload_NN as_IN mentioned_VBN before_RB ,_, this_DT time_NN choosing_VBG keyword_NN queries_NNS that_WDT led_VBD to_TO a_DT site_NN in_IN the_DT ._.
+gov_NN ._.
+uk_NN domain_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, minimum_JJ wage_NN ,_, inheritance_NN tax_NN ,_, citizenship_NN ceremony_NN dates_NNS etc_FW ._. -RRB-_-RRB-
+,_, and_CC randomly_RB sampling_NN a_DT time_NN point_NN for_IN every_DT month_NN within_IN the_DT two_CD year_NN period_NN spanned_VBN by_IN the_DT dataset_NN ._.
+Thus_RB ,_, we_PRP obtained_VBD a_DT total_NN of_IN #_# ,_, ###_CD -LRB-_-LRB- =_JJ ###_CD ##_NN -RRB-_-RRB- time-travel_JJ queries_NNS for_IN the_DT UKGOV_NN dataset_NN ._.
+In_IN total_JJ ###_CD terms_NNS appear_VBP in_IN the_DT extracted_VBN queries_NNS ._.
+The_DT collection_NN statistics_NNS -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, N_NN and_CC avdl_NN -RRB-_-RRB- and_CC term_NN statistics_NNS -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, DF_NN -RRB-_-RRB- were_VBD computed_VBN at_IN monthly_JJ granularity_NN for_IN both_DT datasets_NNS ._.
+7_CD ._.
+#_# Impact_NN of_IN Temporal_JJ Coalescing_VBG Our_PRP$ first_JJ set_NN of_IN experiments_NNS is_VBZ aimed_VBN at_IN evaluating_VBG the_DT approximate_JJ temporal_JJ coalescing_NN technique_NN ,_, described_VBN in_IN Section_NN #_# ,_, in_IN terms_NNS of_IN index-size_JJ reduction_NN and_CC its_PRP$ effect_NN on_IN the_DT result_NN quality_NN ._.
+For_IN both_CC the_DT WIKI_NNP and_CC UKGOV_NNP datasets_NNS ,_, we_PRP compare_VBP temporally_RB coalesced_VBN indexes_NNS for_IN different_JJ values_NNS of_IN the_DT error_NN threshold_NN computed_VBN using_VBG Algorithm_NNP #_# with_IN the_DT non-coalesced_JJ index_NN as_IN a_DT baseline_NN ._.
+WIKI_NNP UKGOV_NNP #_# Postings_NNPS Ratio_NNP #_# Postings_NNPS Ratio_NNP -_: #_# ,_, ###_CD ,_, ###_CD ,_, ###_CD ###_CD ._.
+##_CD %_NN #_# ,_, ###_CD ,_, ###_CD ,_, ###_CD ###_CD ._.
+##_CD %_NN 0_CD ._.
+##_NN #_# ,_, ###_CD ,_, ###_CD ,_, ###_CD ##_NN ._.
+##_CD %_NN #_# ,_, ###_CD ,_, ###_CD ,_, ###_CD ##_NN ._.
+##_CD %_NN 0_CD ._.
+##_NN #_# ,_, ###_CD ,_, ###_CD ,_, ###_CD ##_NN ._.
+##_CD %_NN ###_CD ,_, ###_CD ,_, ###_CD #_# ._.
+##_CD %_NN 0_CD ._.
+##_CD ###_CD ,_, ###_CD ,_, ###_CD #_# ._.
+##_CD %_NN ###_CD ,_, ###_CD ,_, ###_CD #_# ._.
+##_CD %_NN 0_CD ._.
+##_CD ###_CD ,_, ###_CD ,_, ###_CD #_# ._.
+##_CD %_NN ###_CD ,_, ###_CD ,_, ###_CD #_# ._.
+##_CD %_NN 0_CD ._.
+##_CD ###_CD ,_, ###_CD ,_, ###_CD #_# ._.
+##_CD %_NN ###_CD ,_, ###_CD ,_, ###_CD #_# ._.
+##_CD %_NN 0_CD ._.
+##_CD ###_CD ,_, ###_CD ,_, ###_CD #_# ._.
+##_CD %_NN ###_CD ,_, ###_CD ,_, ###_CD #_# ._.
+##_CD %_NN Table_NNP #_# :_: Index_NNP sizes_NNS for_IN non-coalesced_JJ index_NN -LRB-_-LRB- -_: -RRB-_-RRB- and_CC coalesced_VBD indexes_NNS for_IN different_JJ values_NNS of_IN Table_NNP #_# summarizes_VBZ the_DT index_NN sizes_NNS measured_VBN as_IN the_DT total_JJ number_NN of_IN postings_NNS ._.
+As_IN these_DT results_NNS demonstrate_VBP ,_, approximate_JJ temporal_JJ coalescing_NN is_VBZ highly_RB effective_JJ in_IN reducing_VBG index_NN size_NN ._.
+Even_RB a_DT small_JJ threshold_NN value_NN ,_, e_LS ._.
+g_NN ._.
+=_JJ #_# ._.
+##_NN ,_, has_VBZ a_DT considerable_JJ effect_NN by_IN reducing_VBG the_DT index_NN size_NN almost_RB by_IN an_DT order_NN of_IN magnitude_NN ._.
+Note_VB that_DT on_IN the_DT UKGOV_NN dataset_NN ,_, even_RB accurate_JJ coalescing_VBG -LRB-_-LRB- =_JJ #_# -RRB-_-RRB- manages_VBZ to_TO reduce_VB the_DT index_NN size_NN to_TO less_JJR than_IN ##_CD %_NN of_IN the_DT original_JJ size_NN ._.
+Index_NNP size_NN continues_VBZ to_TO reduce_VB on_IN both_DT datasets_NNS ,_, as_IN we_PRP increase_VBP the_DT value_NN of_IN ._.
+How_WRB does_VBZ the_DT reduction_NN in_IN index_NN size_NN affect_VBP the_DT query_NN results_VBZ ?_.
+In_IN order_NN to_TO evaluate_VB this_DT aspect_NN ,_, we_PRP compared_VBD the_DT top-k_JJ results_NNS computed_VBN using_VBG a_DT coalesced_JJ index_NN against_IN the_DT ground-truth_JJ result_NN obtained_VBN from_IN the_DT original_JJ index_NN ,_, for_IN different_JJ cutoff_NN levels_NNS k_NN ._.
+Let_VB Gk_NNP and_CC Ck_NNP be_VB the_DT top-k_JJ documents_NNS from_IN the_DT ground-truth_JJ result_NN and_CC from_IN the_DT coalesced_JJ index_NN respectively_RB ._.
+We_PRP used_VBD the_DT following_VBG two_CD measures_NNS for_IN comparison_NN :_: -LRB-_-LRB- i_LS -RRB-_-RRB- Relative_JJ Recall_VB at_IN cutoff_NN level_NN k_NN -LRB-_-LRB- RR_NN @_IN k_NN -RRB-_-RRB- ,_, that_WDT measures_VBZ the_DT overlap_VBP between_IN Gk_NNP and_CC Ck_NNP ,_, which_WDT ranges_VBZ in_IN -LSB-_-LRB- #_# ,_, #_# -RSB-_-RRB- and_CC is_VBZ defined_VBN as_IN RR_NN @_IN k_NN =_JJ |_CD Gk_NNP Ck_NNP |_CD /_: k_NN ._.
+-LRB-_-LRB- ii_LS -RRB-_-RRB- Kendall_NNP ''_'' s_NNS at_IN cutoff_NN level_NN k_NN -LRB-_-LRB- KT_NN @_IN k_NN -RRB-_-RRB- ,_, measuring_VBG the_DT agreement_NN between_IN two_CD results_NNS in_IN the_DT relative_JJ order_NN of_IN items_NNS in_IN Gk_NNP Ck_NNP ,_, with_IN value_NN 1_CD -LRB-_-LRB- or_CC -_: #_# -RRB-_-RRB- indicating_VBG total_JJ agreement_NN -LRB-_-LRB- or_CC disagreement_NN -RRB-_-RRB- ._.
+Figure_NNP #_# plots_NNS ,_, for_IN cutoff_NN levels_NNS ##_VBP and_CC ###_VBP ,_, the_DT mean_NN of_IN RR_NNP @_IN k_NN and_CC KT_NN @_IN k_NN along_IN with_IN #_# %_NN and_CC ##_CD %_NN percentiles_NNS ,_, for_IN different_JJ values_NNS of_IN the_DT threshold_NN starting_VBG from_IN #_# ._.
+##_NN ._.
+Note_VB that_DT for_IN =_JJ #_# ,_, results_VBZ coincide_VBP with_IN those_DT obtained_VBN by_IN the_DT original_JJ index_NN ,_, and_CC hence_RB are_VBP omitted_VBN from_IN the_DT graph_NN ._.
+It_PRP is_VBZ reassuring_VBG to_TO see_VB from_IN these_DT results_NNS that_WDT approximate_JJ temporal_JJ coalescing_NN induces_VBZ minimal_JJ disruption_NN to_TO the_DT query_NN results_VBZ ,_, since_IN RR_NNP @_IN k_NN and_CC KT_NN @_IN k_NN are_VBP within_IN reasonable_JJ limits_NNS ._.
+For_IN =_JJ #_# ._.
+##_NN ,_, the_DT smallest_JJS value_NN of_IN in_IN our_PRP$ experiments_NNS ,_, RR_NNP @_IN ###_CD for_IN WIKI_NNP is_VBZ #_# ._.
+##_NN indicating_VBG that_IN the_DT results_NNS are_VBP -1_CD -0_CD ._.
+#_# 0_CD 0_CD ._.
+#_# 1_CD 0_CD ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN Relative_JJ Recall_VB @_IN ##_CD -LRB-_-LRB- WIKI_NN -RRB-_-RRB- Kendall_NN '_'' s_NNS @_IN ##_NN -LRB-_-LRB- WIKI_NN -RRB-_-RRB- Relative_JJ Recall_VB @_IN ##_CD -LRB-_-LRB- UKGOV_NN -RRB-_-RRB- Kendall_NN '_'' s_NNS @_IN ##_NN -LRB-_-LRB- UKGOV_NN -RRB-_-RRB- -LRB-_-LRB- a_DT -RRB-_-RRB- @_IN ##_CD -1_CD -0_CD ._.
+#_# 0_CD 0_CD ._.
+#_# 1_CD 0_CD ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN Relative_JJ Recall_VB @_IN ###_CD -LRB-_-LRB- WIKI_NN -RRB-_-RRB- Kendall_NN '_'' s_NNS @_IN ###_CD -LRB-_-LRB- WIKI_NN -RRB-_-RRB- Relative_JJ Recall_VB @_IN ###_CD -LRB-_-LRB- UKGOV_NN -RRB-_-RRB- Kendall_NN '_'' s_NNS @_IN ###_CD -LRB-_-LRB- UKGOV_NN -RRB-_-RRB- -LRB-_-LRB- b_NN -RRB-_-RRB- @_IN ###_CD Figure_NN #_# :_: Relative_JJ recall_NN and_CC Kendall_NNP ''_'' s_VBZ observed_VBN on_IN coalesced_JJ indexes_NNS for_IN different_JJ values_NNS of_IN almost_RB indistinguishable_JJ from_IN those_DT obtained_VBN through_IN the_DT original_JJ index_NN ._.
+Even_RB the_DT relative_JJ order_NN of_IN these_DT common_JJ results_NNS is_VBZ quite_RB high_JJ ,_, as_IN the_DT mean_NN KT_NN @_IN ###_CD is_VBZ close_JJ to_TO #_# ._.
+##_NN ._.
+For_IN the_DT extreme_JJ value_NN of_IN =_JJ #_# ._.
+#_# ,_, which_WDT results_VBZ in_IN an_DT index_NN size_NN of_IN just_RB #_# ._.
+##_CD %_NN of_IN the_DT original_JJ ,_, the_DT RR_NNP @_SYM ###_CD and_CC KT_NNP @_SYM ###_CD are_VBP about_IN #_# ._.
+#_# and_CC #_# ._.
+#_# respectively_RB ._.
+On_IN the_DT relatively_RB less_JJR dynamic_JJ UKGOV_NN dataset_NN -LRB-_-LRB- as_IN can_MD be_VB seen_VBN from_IN the_DT values_NNS above_IN -RRB-_-RRB- ,_, results_NNS were_VBD even_RB better_RBR ,_, with_IN high_JJ values_NNS of_IN RR_NN and_CC KT_NN seen_VBN throughout_IN the_DT spectrum_NN of_IN values_NNS for_IN both_DT cutoff_NN values_NNS ._.
+7_CD ._.
+#_# Sublist_NNP Materialization_NNP We_PRP now_RB turn_VBP our_PRP$ attention_NN towards_IN evaluating_VBG the_DT sublist_JJ materialization_NN techniques_NNS introduced_VBN in_IN Section_NN #_# ._.
+For_IN both_DT datasets_NNS ,_, we_PRP started_VBD with_IN the_DT coalesced_JJ index_NN produced_VBN by_IN a_DT moderate_JJ threshold_NN setting_NN of_IN =_JJ #_# ._.
+##_NN ._.
+In_IN order_NN to_TO reduce_VB the_DT computational_JJ effort_NN ,_, boundaries_NNS of_IN elementary_JJ time_NN intervals_NNS were_VBD rounded_VBN to_TO day_NN granularity_NN before_IN computing_VBG the_DT sublist_JJ materializations_NNS ._.
+However_RB ,_, note_NN that_IN the_DT postings_NNS in_IN the_DT materialized_VBN sublists_NNS still_RB retain_VBP their_PRP$ original_JJ timestamps_NNS ._.
+For_IN a_DT comparative_JJ evaluation_NN of_IN the_DT four_CD approaches_NNS -_: Popt_NNP ,_, Sopt_NNP ,_, PG_NNP ,_, and_CC SB_NN -_: we_PRP measure_VB space_NN and_CC performance_NN as_IN follows_VBZ ._.
+The_DT required_JJ space_NN S_NN -LRB-_-LRB- M_NN -RRB-_-RRB- ,_, as_IN defined_VBN earlier_RBR ,_, is_VBZ equal_JJ to_TO the_DT total_JJ number_NN of_IN postings_NNS in_IN the_DT materialized_VBN sublists_NNS ._.
+To_TO assess_VB performance_NN we_PRP compute_VBP the_DT expected_VBN processing_NN cost_NN -LRB-_-LRB- EPC_NN -RRB-_-RRB- for_IN all_DT terms_NNS in_IN the_DT respective_JJ query_JJ workload_NN assuming_VBG a_DT uniform_JJ probability_NN distribution_NN among_IN query_NN time-points_NNS ._.
+We_PRP report_VBP the_DT mean_NN EPC_NN ,_, as_RB well_RB as_IN the_DT #_# %_NN -_: and_CC ##_CD %_NN -_: percentile_NN ._.
+In_IN other_JJ words_NNS ,_, the_DT mean_NN EPC_NN reflects_VBZ the_DT expected_VBN length_NN of_IN the_DT index_NN list_NN -LRB-_-LRB- in_IN terms_NNS of_IN index_NN postings_NNS -RRB-_-RRB- that_WDT needs_VBZ to_TO be_VB scanned_VBN for_IN a_DT random_JJ time_NN point_NN and_CC a_DT random_JJ term_NN from_IN the_DT query_NN workload_NN ._.
+The_DT Sopt_NNP and_CC Popt_NNP approaches_NNS are_VBP ,_, by_IN their_PRP$ definition_NN ,_, parameter-free_NN ._.
+For_IN the_DT PG_NN approach_NN ,_, we_PRP varied_VBD its_PRP$ parameter_NN ,_, which_WDT limits_VBZ the_DT maximal_JJ performance_NN degradation_NN ,_, between_IN #_# ._.
+#_# and_CC #_# ._.
+#_# ._.
+Analogously_RB ,_, for_IN the_DT SB_NN approach_NN the_DT parameter_NN ,_, as_IN an_DT upper-bound_JJ on_IN the_DT allowed_VBN space_NN blowup_NN ,_, was_VBD varied_VBN between_IN #_# ._.
+#_# and_CC #_# ._.
+#_# ._.
+Solutions_NNPS for_IN the_DT SB_NN approach_NN were_VBD obtained_VBN running_VBG simulated_JJ annealing_NN for_IN R_NN =_JJ ##_CD ,_, ###_CD rounds_NNS ._.
+Table_NNP #_# lists_VBZ the_DT obtained_VBN space_NN and_CC performance_NN figures_NNS ._.
+Note_VB that_DT EPC_NN values_NNS are_VBP smaller_JJR on_IN WIKI_NN than_IN on_IN UKGOV_NNP ,_, since_IN terms_NNS in_IN the_DT query_NN workload_NN employed_VBN for_IN WIKI_NNP are_VBP relatively_RB rarer_JJR in_IN the_DT corpus_NN ._.
+Based_VBN on_IN the_DT depicted_VBN results_NNS ,_, we_PRP make_VBP the_DT following_VBG key_JJ observations_NNS ._.
+i_LS -RRB-_-RRB- As_IN expected_VBN ,_, Popt_NNP achieves_VBZ optimal_JJ performance_NN at_IN the_DT cost_NN of_IN an_DT enormous_JJ space_NN consumption_NN ._.
+Sopt_NNP ,_, to_TO the_DT contrary_NN ,_, while_IN consuming_VBG an_DT optimal_JJ amount_NN of_IN space_NN ,_, provides_VBZ only_RB poor_JJ expected_VBN processing_NN cost_NN ._.
+The_DT PG_NN and_CC SB_NN methods_NNS ,_, for_IN different_JJ values_NNS of_IN their_PRP$ respective_JJ parameter_NN ,_, produce_VBP solutions_NNS whose_WP$ space_NN and_CC performance_NN lie_VBP in_IN between_IN the_DT extremes_NNS that_WDT Popt_NNP and_CC Sopt_NNP represent_VBP ._.
+ii_LS -RRB-_-RRB- For_IN the_DT PG_NN method_NN we_PRP see_VBP that_IN for_IN an_DT acceptable_JJ performance_NN degradation_NN of_IN only_RB ##_CD %_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, =_JJ #_# ._.
+##_NN -RRB-_-RRB- the_DT required_JJ space_NN drops_NNS by_IN more_JJR than_IN one_CD order_NN of_IN magnitude_NN in_IN comparison_NN to_TO Popt_VB on_IN both_DT datasets_NNS ._.
+iii_LS -RRB-_-RRB- The_DT SB_NN approach_NN achieves_VBZ close-to-optimal_JJ performance_NN on_IN both_DT datasets_NNS ,_, if_IN allowed_VBN to_TO consume_VB at_IN most_JJS three_CD times_NNS the_DT optimal_JJ amount_NN of_IN space_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, =_JJ #_# ._.
+#_# -RRB-_-RRB- ,_, which_WDT on_IN our_PRP$ datasets_NNS still_RB corresponds_VBZ to_TO a_DT space_NN reduction_NN over_IN Popt_JJ by_IN more_JJR than_IN one_CD order_NN of_IN magnitude_NN ._.
+We_PRP also_RB measured_VBD wall-clock_JJ times_NNS on_IN a_DT sample_NN of_IN the_DT queries_NNS with_IN results_NNS indicating_VBG improvements_NNS in_IN execution_NN time_NN by_IN up_RB to_TO a_DT factor_NN of_IN ##_NN ._.
+8_CD ._.
+CONCLUSIONS_NNS In_IN this_DT work_NN we_PRP have_VBP developed_VBN an_DT efficient_JJ solution_NN for_IN time-travel_JJ text_NN search_NN over_IN temporally_RB versioned_VBN document_NN collections_NNS ._.
+Experiments_NNS on_IN two_CD real-world_JJ datasets_NNS showed_VBD that_IN a_DT combination_NN of_IN the_DT proposed_VBN techniques_NNS can_MD reduce_VB index_NN size_NN by_IN up_RB to_TO an_DT order_NN of_IN magnitude_NN while_IN achieving_VBG nearly_RB optimal_JJ performance_NN and_CC highly_RB accurate_JJ results_NNS ._.
+The_DT present_JJ work_NN opens_VBZ up_RP many_JJ interesting_JJ questions_NNS for_IN future_JJ research_NN ,_, e_LS ._.
+g_NN ._.
+:_: How_WRB can_MD we_PRP even_RB further_RBR improve_VB performance_NN by_IN applying_VBG -LRB-_-LRB- and_CC possibly_RB extending_VBG -RRB-_-RRB- encoding_NN ,_, compression_NN ,_, and_CC skipping_VBG techniques_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ?_. ._.
+How_WRB can_MD we_PRP extend_VB the_DT approach_NN for_IN queries_NNS q_VBP -LSB-_-LRB- tb_NN ,_, te_NN -RSB-_-RRB- specifying_VBG a_DT time_NN interval_JJ instead_RB of_IN a_DT time_NN point_NN ?_.
+How_WRB can_MD the_DT described_VBN time-travel_JJ text_NN search_NN functionality_NN enable_VBP or_CC speed_VB up_RP text_NN mining_NN along_IN the_DT time_NN axis_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, tracking_VBG sentiment_NN changes_NNS in_IN customer_NN opinions_NNS -RRB-_-RRB- ?_.
+9_CD ._.
+ACKNOWLEDGMENTS_NNS We_PRP are_VBP grateful_JJ to_TO the_DT anonymous_JJ reviewers_NNS for_IN their_PRP$ valuable_JJ comments_NNS -_: in_IN particular_JJ to_TO the_DT reviewer_NN who_WP pointed_VBD out_RP the_DT opportunity_NN for_IN algorithmic_JJ improvements_NNS in_IN Section_NN #_# and_CC Section_NN #_# ._.
+#_# ._.
+10_CD ._.
+REFERENCES_NNS -LSB-_-LRB- #_# -RSB-_-RRB- V_NN ._.
+N_NN ._.
+Anh_NNP and_CC A_NNP ._.
+Moffat_NNP ._.
+Pruned_VBN Query_NNP Evaluation_NN Using_VBG Pre-Computed_JJ Impacts_NNS ._.
+In_IN SIGIR_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- V_NN ._.
+N_NN ._.
+Anh_NNP and_CC A_NNP ._.
+Moffat_NNP ._.
+Pruning_NN Strategies_NNS for_IN Mixed-Mode_NNP Querying_NNP ._.
+In_IN CIKM_NNP ,_, ####_CD ._.
+WIKI_NNP UKGOV_NNP S_NN -LRB-_-LRB- M_NN -RRB-_-RRB- EPC_NN S_NN -LRB-_-LRB- M_NN -RRB-_-RRB- EPC_NN 5_CD %_NN Mean_NN ##_CD %_NN #_# %_NN Mean_NN ##_CD %_NN Popt_JJ ##_NN ,_, ###_CD ,_, ###_CD ,_, ###_CD ##_NN ._.
+##_NN #_# ,_, ###_CD ._.
+##_NN ##_CD ,_, ###_CD ._.
+##_NN ##_CD ,_, ###_CD ,_, ###_CD ,_, ###_CD ##_NN ._.
+##_NN ##_CD ,_, ###_CD ._.
+##_NN ##_CD ,_, ###_CD ._.
+##_SYM Sopt_NNP ###_CD ,_, ###_CD ,_, ###_CD ###_CD ._.
+##_NN ##_CD ,_, ###_CD ._.
+##_CD ###_CD ,_, ###_CD ._.
+#_# ###_CD ,_, ###_CD ,_, ###_CD ##_NN ._.
+##_NN ##_CD ,_, ###_CD ._.
+##_CD ###_CD ,_, ###_CD ._.
+##_NN PG_NN =_JJ #_# ._.
+##_NN #_# ,_, ###_CD ,_, ###_CD ,_, ###_CD ##_NN ._.
+##_NN #_# ,_, ###_CD ._.
+##_NN ##_CD ,_, ###_CD ._.
+##_NN #_# ,_, ###_CD ,_, ###_CD ,_, ###_CD ##_NN ._.
+##_NN ##_CD ,_, ###_CD ._.
+##_NN ##_CD ,_, ###_CD ._.
+##_NN PG_NN =_JJ #_# ._.
+##_NN #_# ,_, ###_CD ,_, ###_CD ,_, ###_CD ##_NN ._.
+##_NN #_# ,_, ###_CD ._.
+##_NN ##_CD ,_, ###_CD ._.
+##_CD ###_CD ,_, ###_CD ,_, ###_CD ##_NN ._.
+##_NN ##_CD ,_, ###_CD ._.
+##_NN ##_CD ,_, ###_CD ._.
+##_NN PG_NN =_JJ #_# ._.
+##_NN #_# ,_, ###_CD ,_, ###_CD ,_, ###_CD ##_NN ._.
+##_NN #_# ,_, ###_CD ._.
+##_NN ##_CD ,_, ###_CD ._.
+##_CD ###_CD ,_, ###_CD ,_, ###_CD ##_NN ._.
+##_NN ##_CD ,_, ###_CD ._.
+##_NN ##_CD ,_, ###_CD ._.
+##_NN PG_NN =_JJ #_# ._.
+##_CD ###_CD ,_, ###_CD ,_, ###_CD ##_NN ._.
+##_NN #_# ,_, ###_CD ._.
+##_NN ##_CD ,_, ###_CD ._.
+##_CD ###_CD ,_, ###_CD ,_, ###_CD ##_NN ._.
+##_NN ##_CD ,_, ###_CD ._.
+##_NN ##_CD ,_, ###_CD ._.
+##_NN PG_NN =_JJ #_# ._.
+##_CD ###_CD ,_, ###_CD ,_, ###_CD ##_NN ._.
+##_NN #_# ,_, ###_CD ._.
+##_NN ##_CD ,_, ###_CD ._.
+##_CD ###_CD ,_, ###_CD ,_, ###_CD ##_NN ._.
+##_NN ##_CD ,_, ###_CD ._.
+##_NN ##_CD ,_, ###_CD ._.
+##_NN PG_NN =_JJ #_# ._.
+##_CD ###_CD ,_, ###_CD ,_, ###_CD ##_NN ._.
+##_NN #_# ,_, ###_CD ._.
+##_NN ##_CD ,_, ###_CD ._.
+##_CD ###_CD ,_, ###_CD ,_, ###_CD ##_NN ._.
+##_NN ##_CD ,_, ###_CD ._.
+##_NN ##_CD ,_, ###_CD ._.
+##_NN PG_NN =_JJ #_# ._.
+##_CD ###_CD ,_, ###_CD ,_, ###_CD ##_NN ._.
+##_NN #_# ,_, ###_CD ._.
+##_NN ##_CD ,_, ###_CD ._.
+##_CD ###_CD ,_, ###_CD ,_, ###_CD ##_NN ._.
+##_NN ##_CD ,_, ###_CD ._.
+##_NN ##_CD ,_, ###_CD ._.
+##_NN SB_NN =_JJ #_# ._.
+##_CD ###_CD ,_, ###_CD ,_, ###_CD ##_NN ._.
+##_NN ##_CD ,_, ###_CD ._.
+##_NN ##_CD ,_, ###_CD ._.
+##_CD ###_CD ,_, ###_CD ,_, ###_CD ##_NN ._.
+##_NN ##_CD ,_, ###_CD ._.
+##_CD ###_CD ,_, ###_CD ._.
+##_NN SB_NN =_JJ #_# ._.
+##_CD ###_CD ,_, ###_CD ,_, ###_CD ##_NN ._.
+##_NN #_# ,_, ###_CD ._.
+##_NN ##_CD ,_, ###_CD ._.
+##_CD ###_CD ,_, ###_CD ,_, ###_CD ##_NN ._.
+##_NN ##_CD ,_, ###_CD ._.
+##_NN ##_CD ,_, ###_CD ._.
+##_NN SB_NN =_JJ #_# ._.
+##_CD ###_CD ,_, ###_CD ,_, ###_CD ##_NN ._.
+##_NN #_# ,_, ###_CD ._.
+##_NN ##_CD ,_, ###_CD ._.
+##_CD ###_CD ,_, ###_CD ,_, ###_CD ##_NN ._.
+##_NN ##_CD ,_, ###_CD ._.
+##_NN ##_CD ,_, ###_CD ._.
+##_NN SB_NN =_JJ #_# ._.
+##_CD ###_CD ,_, ###_CD ,_, ###_CD ##_NN ._.
+##_NN #_# ,_, ###_CD ._.
+##_NN ##_CD ,_, ###_CD ._.
+##_CD ###_CD ,_, ###_CD ,_, ###_CD ##_NN ._.
+##_NN ##_CD ,_, ###_CD ._.
+##_NN ##_CD ,_, ###_CD ._.
+##_NN SB_NN =_JJ #_# ._.
+##_CD ###_CD ,_, ###_CD ,_, ###_CD ##_NN ._.
+##_NN #_# ,_, ###_CD ._.
+##_NN ##_CD ,_, ###_CD ._.
+##_CD ###_CD ,_, ###_CD ,_, ###_CD ##_NN ._.
+##_NN ##_CD ,_, ###_CD ._.
+##_NN ##_CD ,_, ###_CD ._.
+##_NN SB_NN =_JJ #_# ._.
+##_CD ###_CD ,_, ###_CD ,_, ###_CD ##_NN ._.
+##_NN #_# ,_, ###_CD ._.
+##_NN ##_CD ,_, ###_CD ._.
+##_CD ###_CD ,_, ###_CD ,_, ###_CD ##_NN ._.
+##_NN ##_CD ,_, ###_CD ._.
+##_NN ##_CD ,_, ###_CD ._.
+##_NN SB_NN =_JJ #_# ._.
+##_NN #_# ,_, ###_CD ,_, ###_CD ,_, ###_CD ##_NN ._.
+##_NN #_# ,_, ###_CD ._.
+##_NN ##_CD ,_, ###_CD ._.
+##_CD ###_CD ,_, ###_CD ,_, ###_CD ##_NN ._.
+##_NN ##_CD ,_, ###_CD ._.
+##_NN ##_CD ,_, ###_CD ._.
+##_RB Table_NNP #_# :_: Required_VBN space_NN and_CC expected_VBN processing_NN cost_NN -LRB-_-LRB- in_IN #_# postings_NNS -RRB-_-RRB- observed_VBN on_IN coalesced_JJ indexes_NNS -LRB-_-LRB- =_JJ #_# ._.
+##_NN -RRB-_-RRB- -LSB-_-LRB- #_# -RSB-_-RRB- P_NN ._.
+G_NN ._.
+Anick_NN and_CC R_NN ._.
+A_DT ._.
+Flynn_NNP ._.
+Versioning_VBG a_DT Full-Text_NNP Information_NNP Retrieval_NNP System_NNP ._.
+In_IN SIGIR_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- R_NN ._.
+A_DT ._.
+Baeza-Yates_NNS and_CC B_NN ._.
+Ribeiro-Neto_NNP ._.
+Modern_NNP Information_NNP Retrieval_NNP ._.
+Addison-Wesley_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- K_NNP ._.
+Berberich_NNP ,_, S_NN ._.
+Bedathur_NNP ,_, T_NN ._.
+Neumann_NNP ,_, and_CC G_NN ._.
+Weikum_NNP ._.
+A_DT Time_NNP Machine_NN for_IN Text_VB search_NN ._.
+Technical_NNP Report_NNP MPI-I-2007-5-002_NN ,_, Max-Planck_NNP Institute_NNP for_IN Informatics_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- M_NN ._.
+H_NN ._.
+Bohlen_NNP ,_, R_NN ._.
+T_NN ._.
+Snodgrass_NNP ,_, and_CC M_NN ._.
+D_NN ._.
+Soo_NNP ._.
+Coalescing_VBG in_IN Temporal_JJ Databases_NNS ._.
+In_IN VLDB_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- P_NN ._.
+Boldi_NNP ,_, M_NN ._.
+Santini_NNP ,_, and_CC S_NN ._.
+Vigna_NNP ._.
+Do_VB Your_PRP$ Worst_RBS to_TO Make_VB the_DT Best_NN :_: Paradoxical_JJ Effects_NNS in_IN PageRank_NNP Incremental_NNP Computations_NNS ._.
+In_IN WAW_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- A_DT ._.
+Z_NN ._.
+Broder_NNP ,_, N_NNP ._.
+Eiron_NNP ,_, M_NN ._.
+Fontoura_NNP ,_, M_NN ._.
+Herscovici_NNP ,_, R_NN ._.
+Lempel_NNP ,_, J_NNP ._.
+McPherson_NNP ,_, R_NN ._.
+Qi_NNP ,_, and_CC E_NN ._.
+J_NN ._.
+Shekita_NNP ._.
+Indexing_NN Shared_VBN Content_NN in_IN Information_NNP Retrieval_NNP Systems_NNPS ._.
+In_IN EDBT_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- C_NN ._.
+Buckley_NNP and_CC A_NNP ._.
+F_NN ._.
+Lewit_NNP ._.
+Optimization_NN of_IN Inverted_NNP Vector_NNP Searches_NNPS ._.
+In_IN SIGIR_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- M_NN ._.
+Burrows_NNP and_CC A_NNP ._.
+L_NN ._.
+Hisgen_NN ._.
+Method_NN and_CC Apparatus_NN for_IN Generating_NNP and_CC Searching_NN Range-Based_NNP Index_NNP of_IN Word_NNP Locations_NNPS ._.
+U_NNP ._.
+S_NN ._.
+Patent_NN #_# ,_, ###_CD ,_, ###_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- S_NN ._.
+Buttcher_NNP and_CC C_NNP ._.
+L_NN ._.
+A_DT ._.
+Clarke_NNP ._.
+A_DT Document-Centric_NNP Approach_NNP to_TO Static_NNP Index_NNP Pruning_NNP in_IN Text_VB Retrieval_NNP Systems_NNPS ._.
+In_IN CIKM_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- D_NN ._.
+Carmel_NNP ,_, D_NNP ._.
+Cohen_NNP ,_, R_NN ._.
+Fagin_NNP ,_, E_NNP ._.
+Farchi_NNP ,_, M_NN ._.
+Herscovici_NNP ,_, Y_NN ._.
+S_NN ._.
+Maarek_NNP ,_, and_CC A_NN ._.
+Soffer_NNP ._.
+Static_JJ Index_NN Pruning_NN for_IN Information_NN Retrieval_NNP Systems_NNP ._.
+In_IN SIGIR_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- http_NN :_: /_: /_: www_NN ._.
+europarchive_NN ._.
+org_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- R_NN ._.
+Fagin_NNP ,_, R_NN ._.
+Kumar_NNP ,_, and_CC D_NN ._.
+Sivakumar_NNP ._.
+Comparing_VBG Top_JJ k_NN Lists_NNS ._.
+SIAM_NNP J_NNP ._.
+Discrete_JJ Math_NNP ._.
+,_, ##_NN -LRB-_-LRB- #_# -RRB-_-RRB- :_: 134-160_CD ,_, 2003_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- R_NN ._.
+Fagin_NNP ,_, A_NNP ._.
+Lotem_NNP ,_, and_CC M_NN ._.
+Naor_NNP ._.
+Optimal_JJ Aggregation_NN Algorithms_NNS for_IN Middleware_NNP ._.
+J_NN ._.
+Comput_NNP ._.
+Syst_NNP ._.
+Sci_NNP ._.
+,_, ##_NN -LRB-_-LRB- #_# -RRB-_-RRB- :_: 614-656_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- S_NN ._.
+Guha_NNP ,_, K_NNP ._.
+Shim_NNP ,_, and_CC J_NN ._.
+Woo_NNP ._.
+REHIST_NNP :_: Relative_JJ Error_NN Histogram_NNP Construction_NNP Algorithms_NNPS ._.
+In_IN VLDB_NNP ,_, 2004_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- M_NN ._.
+Hersovici_NNP ,_, R_NN ._.
+Lempel_NNP ,_, and_CC S_NN ._.
+Yogev_NNP ._.
+Efficient_JJ Indexing_NN of_IN Versioned_NNP Document_NNP Sequences_NNS ._.
+In_IN ECIR_NN ,_, 2007_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- http_NN :_: /_: /_: www_NN ._.
+archive_NN ._.
+org_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Y_NN ._.
+E_NN ._.
+Ioannidis_NNP and_CC V_NNP ._.
+Poosala_NNP ._.
+Balancing_VBG Histogram_NNP Optimality_NNP and_CC Practicality_NNP for_IN Query_NNP Result_NN Size_NN Estimation_NN ._.
+In_IN SIGMOD_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- H_NN ._.
+V_NN ._.
+Jagadish_NNP ,_, N_NNP ._.
+Koudas_NNP ,_, S_NN ._.
+Muthukrishnan_NNP ,_, V_NNP ._.
+Poosala_NNP ,_, K_NNP ._.
+C_NN ._.
+Sevcik_NNP ,_, and_CC T_NN ._.
+Suel_NNP ._.
+Optimal_JJ Histograms_NNS with_IN Quality_NNP Guarantees_NNPS ._.
+In_IN VLDB_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- E_NN ._.
+J_NN ._.
+Keogh_NNP ,_, S_NN ._.
+Chu_NNP ,_, D_NNP ._.
+Hart_NNP ,_, and_CC M_NN ._.
+J_NN ._.
+Pazzani_NNP ._.
+An_DT Online_NNP Algorithm_NNP for_IN Segmenting_VBG Time_NNP Series_NNP ._.
+In_IN ICDM_NN ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- S_NN ._.
+Kirkpatrick_NNP ,_, D_NNP ._.
+G_NN ._.
+Jr_NNP ._.
+,_, and_CC M_NN ._.
+P_NN ._.
+Vecchi_NNP ._.
+Optimization_NN by_IN Simulated_JJ Annealing_NN ._.
+Science_NNP ,_, 220_CD -LRB-_-LRB- ####_CD -RRB-_-RRB- :_: 671-680_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+Kleinberg_NNP and_CC E_NNP ._.
+Tardos_NNP ._.
+Algorithm_NNP Design_NNP ._.
+Addison-Wesley_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- U_NNP ._.
+Manber_NNP ._.
+Introduction_NN to_TO Algorithms_NNPS :_: A_DT Creative_JJ Approach_NN ._.
+Addison-Wesley_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- K_NN ._.
+Nrvag_NN and_CC A_NN ._.
+O_NN ._.
+N_NN ._.
+Nyb_NN ._.
+DyST_NNP :_: Dynamic_NNP and_CC Scalable_NNP Temporal_JJ Text_VB Indexing_NN ._.
+In_IN TIME_NN ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+M_NN ._.
+Ponte_NNP and_CC W_NNP ._.
+B_NN ._.
+Croft_NNP ._.
+A_DT Language_NN Modeling_NN Approach_NN to_TO Information_NNP Retrieval_NNP ._.
+In_IN SIGIR_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- S_NN ._.
+E_NN ._.
+Robertson_NNP and_CC S_NN ._.
+Walker_NNP ._.
+Okapi_NNP /_: Keenbow_NNP at_IN TREC-8_NN ._.
+In_IN TREC_NN ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- B_NN ._.
+Salzberg_NNP and_CC V_NNP ._.
+J_NN ._.
+Tsotras_FW ._.
+Comparison_NN of_IN Access_NN Methods_NNS for_IN Time-Evolving_NNP Data_NNP ._.
+ACM_NNP Comput_NNP ._.
+Surv_NNP ._.
+,_, ##_NN -LRB-_-LRB- #_# -RRB-_-RRB- :_: 158-221_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- M_NN ._.
+Stack_NN ._.
+Full_JJ Text_VB Search_VB of_IN Web_NN Archive_NNP Collections_NNPS ._.
+In_IN IWAW_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- E_NN ._.
+Terzi_NNP and_CC P_NN ._.
+Tsaparas_FW ._.
+Efficient_JJ Algorithms_NNS for_IN Sequence_NN Segmentation_NN ._.
+In_IN SIAM-DM_NN ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- M_NN ._.
+Theobald_NNP ,_, G_NNP ._.
+Weikum_NNP ,_, and_CC R_NN ._.
+Schenkel_NNP ._.
+Top-k_NNP Query_NNP Evaluation_NN with_IN Probabilistic_NNP Guarantees_NNPS ._.
+In_IN VLDB_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- http_NN :_: /_: /_: www_NN ._.
+wikipedia_NN ._.
+org_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- I_PRP ._.
+H_NN ._.
+Witten_NNP ,_, A_NNP ._.
+Moffat_NNP ,_, and_CC T_NN ._.
+C_NN ._.
+Bell_NNP ._.
+Managing_VBG Gigabytes_NNP :_: Compressing_NNP and_CC Indexing_NN Documents_NNS and_CC Images_NNS ._.
+Morgan_NNP Kaufmann_NNP publishers_NNS Inc_NNP ._.
+,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+Zhang_NNP and_CC T_NN ._.
+Suel_NNP ._.
+Efficient_JJ Search_VB in_IN Large_JJ Textual_JJ Collections_NNS with_IN Redundancy_NN ._.
+In_IN WWW_NNP ,_, 2007_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+Zobel_NNP and_CC A_NNP ._.
+Moffat_NNP ._.
+Inverted_JJ Files_NNS for_IN Text_VB Search_VB Engines_NNS ._.
+ACM_NNP Comput_NNP ._.
+Surv_NNP ._.
+,_, ##_NN -LRB-_-LRB- #_# -RRB-_-RRB- :_: #_# ,_, ####_CD ._.

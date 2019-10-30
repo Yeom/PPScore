@@ -1,0 +1,727 @@
+Downloading_VBG Textual_NNP Hidden_NNP Web_NN Content_NNP Through_IN Keyword_NNP Queries_NNP Alexandros_NNP Ntoulas_NNP UCLA_NNP Computer_NNP Science_NNP ntoulas_NNS @_IN cs_NNS ._.
+ucla_NN ._.
+edu_NN Petros_NNP Zerfos_NNP UCLA_NNP Computer_NNP Science_NNP pzerfos_NNS @_IN cs_NNS ._.
+ucla_NN ._.
+edu_FW Junghoo_FW Cho_FW UCLA_NNP Computer_NNP Science_NNP cho_NN @_IN cs_NNS ._.
+ucla_NN ._.
+edu_NN ABSTRACT_NN An_DT ever-increasing_JJ amount_NN of_IN information_NN on_IN the_DT Web_NN today_NN is_VBZ available_JJ only_RB through_IN search_NN interfaces_NNS :_: the_DT users_NNS have_VBP to_TO type_NN in_IN a_DT set_NN of_IN keywords_NNS in_IN a_DT search_NN form_NN in_IN order_NN to_TO access_VB the_DT pages_NNS from_IN certain_JJ Web_NN sites_NNS ._.
+These_DT pages_NNS are_VBP often_RB referred_VBN to_TO as_IN the_DT Hidden_NNP Web_NN or_CC the_DT Deep_JJ Web_NN ._.
+Since_IN there_EX are_VBP no_DT static_JJ links_NNS to_TO the_DT Hidden_NNP Web_NN pages_NNS ,_, search_NN engines_NNS can_MD not_RB discover_VB and_CC index_NN such_JJ pages_NNS and_CC thus_RB do_VBP not_RB return_VB them_PRP in_IN the_DT results_NNS ._.
+However_RB ,_, according_VBG to_TO recent_JJ studies_NNS ,_, the_DT content_NN provided_VBN by_IN many_JJ Hidden_JJ Web_NN sites_NNS is_VBZ often_RB of_IN very_RB high_JJ quality_NN and_CC can_MD be_VB extremely_RB valuable_JJ to_TO many_JJ users_NNS ._.
+In_IN this_DT paper_NN ,_, we_PRP study_VBD how_WRB we_PRP can_MD build_VB an_DT effective_JJ Hidden_NNP Web_NN crawler_NN that_WDT can_MD autonomously_RB discover_VB and_CC download_VB pages_NNS from_IN the_DT Hidden_NNP Web_NN ._.
+Since_IN the_DT only_JJ entry_NN point_NN to_TO a_DT Hidden_JJ Web_NN site_NN is_VBZ a_DT query_NN interface_NN ,_, the_DT main_JJ challenge_NN that_IN a_DT Hidden_JJ Web_NN crawler_NN has_VBZ to_TO face_VB is_VBZ how_WRB to_TO automatically_RB generate_VB meaningful_JJ queries_NNS to_TO issue_VB to_TO the_DT site_NN ._.
+Here_RB ,_, we_PRP provide_VBP a_DT theoretical_JJ framework_NN to_TO investigate_VB the_DT query_NN generation_NN problem_NN for_IN the_DT Hidden_NNP Web_NN and_CC we_PRP propose_VBP effective_JJ policies_NNS for_IN generating_VBG queries_NNS automatically_RB ._.
+Our_PRP$ policies_NNS proceed_VBP iteratively_RB ,_, issuing_VBG a_DT different_JJ query_NN in_IN every_DT iteration_NN ._.
+We_PRP experimentally_RB evaluate_VBP the_DT effectiveness_NN of_IN these_DT policies_NNS on_IN #_# real_JJ Hidden_JJ Web_NN sites_NNS and_CC our_PRP$ results_NNS are_VBP very_RB promising_JJ ._.
+For_IN instance_NN ,_, in_IN one_CD experiment_NN ,_, one_CD of_IN our_PRP$ policies_NNS downloaded_VBD more_JJR than_IN ##_CD %_NN of_IN a_DT Hidden_JJ Web_NN site_NN -LRB-_-LRB- that_WDT contains_VBZ ##_CD million_CD documents_NNS -RRB-_-RRB- after_IN issuing_VBG fewer_JJR than_IN ###_CD queries_NNS ._.
+Categories_NNS and_CC Subject_NNP Descriptors_NNPS :_: H_NN ._.
+#_# ._.
+#_# -LSB-_-LRB- Information_NNP Systems_NNP -RSB-_-RRB- :_: Digital_NNP Libraries_NNPS ;_: H_NN ._.
+#_# ._.
+#_# -LSB-_-LRB- Information_NNP Systems_NNP -RSB-_-RRB- :_: Content_NNP Analysis_NNP and_CC Indexing_NN ;_: H_NN ._.
+#_# ._.
+#_# -LSB-_-LRB- Information_NNP Systems_NNP -RSB-_-RRB- :_: Information_NNP Search_VB and_CC Retrieval_NNP ._.
+General_NNP Terms_NNS :_: Algorithms_NNS ,_, Performance_NNP ,_, Design_NNP ._.
+1_LS ._.
+INTRODUCTION_NNP Recent_JJ studies_NNS show_VBP that_IN a_DT significant_JJ fraction_NN of_IN Web_NN content_NN can_MD not_RB be_VB reached_VBN by_IN following_VBG links_NNS -LSB-_-LRB- #_# ,_, ##_NN -RSB-_-RRB- ._.
+In_IN particular_JJ ,_, a_DT large_JJ part_NN of_IN the_DT Web_NN is_VBZ hidden_VBN behind_IN search_NN forms_NNS and_CC is_VBZ reachable_JJ only_RB when_WRB users_NNS type_NN in_IN a_DT set_NN of_IN keywords_NNS ,_, or_CC queries_NNS ,_, to_TO the_DT forms_NNS ._.
+These_DT pages_NNS are_VBP often_RB referred_VBN to_TO as_IN the_DT Hidden_NNP Web_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- or_CC the_DT Deep_JJ Web_NN -LSB-_-LRB- #_# -RSB-_-RRB- ,_, because_IN search_NN engines_NNS typically_RB can_MD not_RB index_NN the_DT pages_NNS and_CC do_VBP not_RB return_VB them_PRP in_IN their_PRP$ results_NNS -LRB-_-LRB- thus_RB ,_, the_DT pages_NNS are_VBP essentially_RB hidden_VBN from_IN a_DT typical_JJ Web_NN user_NN -RRB-_-RRB- ._.
+According_VBG to_TO many_JJ studies_NNS ,_, the_DT size_NN of_IN the_DT Hidden_NNP Web_NN increases_VBZ rapidly_RB as_IN more_JJR organizations_NNS put_VBP their_PRP$ valuable_JJ content_NN online_NN through_IN an_DT easy-to-use_JJ Web_NN interface_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+In_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ,_, Chang_NNP et_FW al_FW ._.
+estimate_NN that_WDT well_RB over_IN ###_CD ,_, ###_CD Hidden-Web_JJ sites_NNS currently_RB exist_VBP on_IN the_DT Web_NN ._.
+Moreover_RB ,_, the_DT content_NN provided_VBN by_IN many_JJ Hidden-Web_JJ sites_NNS is_VBZ often_RB of_IN very_RB high_JJ quality_NN and_CC can_MD be_VB extremely_RB valuable_JJ to_TO many_JJ users_NNS -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+For_IN example_NN ,_, PubMed_JJ hosts_NNS many_JJ high-quality_JJ papers_NNS on_IN medical_JJ research_NN that_WDT were_VBD selected_VBN from_IN careful_JJ peerreview_NN processes_NNS ,_, while_IN the_DT site_NN of_IN the_DT US_NNP Patent_NN and_CC Trademarks_NNS Office1_NN makes_VBZ existing_VBG patent_NN documents_NNS available_JJ ,_, helping_VBG potential_JJ inventors_NNS examine_VBP prior_JJ art_NN ._.
+In_IN this_DT paper_NN ,_, we_PRP study_VBD how_WRB we_PRP can_MD build_VB a_DT Hidden-Web_JJ crawler2_NN that_WDT can_MD automatically_RB download_VB pages_NNS from_IN the_DT Hidden_NNP Web_NN ,_, so_RB that_IN search_NN engines_NNS can_MD index_NN them_PRP ._.
+Conventional_JJ crawlers_NNS rely_VBP on_IN the_DT hyperlinks_NNS on_IN the_DT Web_NN to_TO discover_VB pages_NNS ,_, so_RB current_JJ search_NN engines_NNS can_MD not_RB index_NN the_DT Hidden-Web_NNP pages_NNS -LRB-_-LRB- due_JJ to_TO the_DT lack_NN of_IN links_NNS -RRB-_-RRB- ._.
+We_PRP believe_VBP that_IN an_DT effective_JJ Hidden-Web_NNP crawler_NN can_MD have_VB a_DT tremendous_JJ impact_NN on_IN how_WRB users_NNS search_VB information_NN on_IN the_DT Web_NN :_: Tapping_VBG into_IN unexplored_JJ information_NN :_: The_DT Hidden-Web_JJ crawler_NN will_MD allow_VB an_DT average_JJ Web_NN user_NN to_TO easily_RB explore_VB the_DT vast_JJ amount_NN of_IN information_NN that_WDT is_VBZ mostly_RB hidden_VBN at_IN present_JJ ._.
+Since_IN a_DT majority_NN of_IN Web_NN users_NNS rely_VBP on_IN search_NN engines_NNS to_TO discover_VB pages_NNS ,_, when_WRB pages_NNS are_VBP not_RB indexed_VBN by_IN search_NN engines_NNS ,_, they_PRP are_VBP unlikely_JJ to_TO be_VB viewed_VBN by_IN many_JJ Web_NN users_NNS ._.
+Unless_IN users_NNS go_VB directly_RB to_TO Hidden-Web_NNP sites_NNS and_CC issue_NN queries_NNS there_RB ,_, they_PRP can_MD not_RB access_VB the_DT pages_NNS at_IN the_DT sites_NNS ._.
+Improving_NN user_NN experience_NN :_: Even_RB if_IN a_DT user_NN is_VBZ aware_JJ of_IN a_DT number_NN of_IN Hidden-Web_NNP sites_NNS ,_, the_DT user_NN still_RB has_VBZ to_TO waste_VB a_DT significant_JJ amount_NN of_IN time_NN and_CC effort_NN ,_, visiting_VBG all_DT of_IN the_DT potentially_RB relevant_JJ sites_NNS ,_, querying_VBG each_DT of_IN them_PRP and_CC exploring_VBG the_DT result_NN ._.
+By_IN making_VBG the_DT Hidden-Web_NNP pages_NNS searchable_VBP at_IN a_DT central_JJ location_NN ,_, we_PRP can_MD significantly_RB reduce_VB the_DT user_NN ''_'' s_NNS wasted_VBD time_NN and_CC effort_NN in_IN searching_VBG the_DT Hidden_NNP Web_NN ._.
+Reducing_VBG potential_JJ bias_NN :_: Due_JJ to_TO the_DT heavy_JJ reliance_NN of_IN many_JJ Web_NN users_NNS on_IN search_NN engines_NNS for_IN locating_VBG information_NN ,_, search_NN engines_NNS influence_VBP how_WRB the_DT users_NNS perceive_VBP the_DT Web_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Users_NNS do_VBP not_RB necessarily_RB perceive_VB what_WP actually_RB exists_VBZ on_IN the_DT Web_NN ,_, but_CC what_WP is_VBZ indexed_VBN by_IN search_NN engines_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+According_VBG to_TO a_DT recent_JJ article_NN -LSB-_-LRB- #_# -RSB-_-RRB- ,_, several_JJ organizations_NNS have_VBP recognized_VBN the_DT importance_NN of_IN bringing_VBG information_NN of_IN their_PRP$ Hidden_JJ Web_NN sites_NNS onto_IN the_DT surface_NN ,_, and_CC committed_JJ considerable_JJ resources_NNS towards_IN this_DT effort_NN ._.
+Our_PRP$ 1_CD US_NNP Patent_NNP Office_NNP :_: http_NN :_: /_: /_: www_NN ._.
+uspto_NN ._.
+gov_NN 2_CD Crawlers_NNS are_VBP the_DT programs_NNS that_WDT traverse_VBP the_DT Web_NN automatically_RB and_CC download_VB pages_NNS for_IN search_NN engines_NNS ._.
+100_CD Figure_NNP #_# :_: A_DT single-attribute_JJ search_NN interface_NN Hidden-Web_JJ crawler_NN attempts_NNS to_TO automate_VB this_DT process_NN for_IN Hidden_NNP Web_NN sites_NNS with_IN textual_JJ content_NN ,_, thus_RB minimizing_VBG the_DT associated_VBN costs_NNS and_CC effort_NN required_VBN ._.
+Given_VBN that_IN the_DT only_JJ entry_NN to_TO Hidden_NNP Web_NN pages_NNS is_VBZ through_IN querying_VBG a_DT search_NN form_NN ,_, there_EX are_VBP two_CD core_JJ challenges_NNS to_TO implementing_VBG an_DT effective_JJ Hidden_NNP Web_NN crawler_NN :_: -LRB-_-LRB- a_LS -RRB-_-RRB- The_DT crawler_NN has_VBZ to_TO be_VB able_JJ to_TO understand_VB and_CC model_VB a_DT query_NN interface_NN ,_, and_CC -LRB-_-LRB- b_LS -RRB-_-RRB- The_DT crawler_NN has_VBZ to_TO come_VB up_RP with_IN meaningful_JJ queries_NNS to_TO issue_VB to_TO the_DT query_NN interface_NN ._.
+The_DT first_JJ challenge_NN was_VBD addressed_VBN by_IN Raghavan_NNP and_CC Garcia-Molina_NNP in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ,_, where_WRB a_DT method_NN for_IN learning_VBG search_NN interfaces_NNS was_VBD presented_VBN ._.
+Here_RB ,_, we_PRP present_VBP a_DT solution_NN to_TO the_DT second_JJ challenge_NN ,_, i_FW ._.
+e_LS ._.
+how_WRB a_DT crawler_NN can_MD automatically_RB generate_VB queries_NNS so_IN that_IN it_PRP can_MD discover_VB and_CC download_VB the_DT Hidden_NNP Web_NN pages_NNS ._.
+Clearly_RB ,_, when_WRB the_DT search_NN forms_VBZ list_NN all_DT possible_JJ values_NNS for_IN a_DT query_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, through_IN a_DT drop-down_JJ list_NN -RRB-_-RRB- ,_, the_DT solution_NN is_VBZ straightforward_JJ ._.
+We_PRP exhaustively_RB issue_VBP all_DT possible_JJ queries_NNS ,_, one_CD query_NN at_IN a_DT time_NN ._.
+When_WRB the_DT query_NN forms_NNS have_VBP a_DT free_JJ text_NN input_NN ,_, however_RB ,_, an_DT infinite_JJ number_NN of_IN queries_NNS are_VBP possible_JJ ,_, so_IN we_PRP can_MD not_RB exhaustively_RB issue_VB all_DT possible_JJ queries_NNS ._.
+In_IN this_DT case_NN ,_, what_WDT queries_NNS should_MD we_PRP pick_VB ?_.
+Can_MD the_DT crawler_NN automatically_RB come_VB up_RP with_IN meaningful_JJ queries_NNS without_IN understanding_VBG the_DT semantics_NNS of_IN the_DT search_NN form_NN ?_.
+In_IN this_DT paper_NN ,_, we_PRP provide_VBP a_DT theoretical_JJ framework_NN to_TO investigate_VB the_DT Hidden-Web_NNP crawling_NN problem_NN and_CC propose_VBP effective_JJ ways_NNS of_IN generating_VBG queries_NNS automatically_RB ._.
+We_PRP also_RB evaluate_VBP our_PRP$ proposed_VBN solutions_NNS through_IN experiments_NNS conducted_VBN on_IN real_JJ Hidden-Web_JJ sites_NNS ._.
+In_IN summary_NN ,_, this_DT paper_NN makes_VBZ the_DT following_VBG contributions_NNS :_: We_PRP present_VBP a_DT formal_JJ framework_NN to_TO study_VB the_DT problem_NN of_IN HiddenWeb_NNP crawling_VBG ._.
+-LRB-_-LRB- Section_NN #_# -RRB-_-RRB- ._.
+We_PRP investigate_VBP a_DT number_NN of_IN crawling_VBG policies_NNS for_IN the_DT Hidden_NNP Web_NN ,_, including_VBG the_DT optimal_JJ policy_NN that_WDT can_MD potentially_RB download_VB the_DT maximum_NN number_NN of_IN pages_NNS through_IN the_DT minimum_JJ number_NN of_IN interactions_NNS ._.
+Unfortunately_RB ,_, we_PRP show_VBP that_IN the_DT optimal_JJ policy_NN is_VBZ NP-hard_JJ and_CC can_MD not_RB be_VB implemented_VBN in_IN practice_NN -LRB-_-LRB- Section_NN #_# ._.
+#_# -RRB-_-RRB- ._.
+We_PRP propose_VBP a_DT new_JJ adaptive_JJ policy_NN that_WDT approximates_VBZ the_DT optimal_JJ policy_NN ._.
+Our_PRP$ adaptive_JJ policy_NN examines_VBZ the_DT pages_NNS returned_VBD from_IN previous_JJ queries_NNS and_CC adapts_VBZ its_PRP$ query-selection_JJ policy_NN automatically_RB based_VBN on_IN them_PRP -LRB-_-LRB- Section_NN #_# -RRB-_-RRB- ._.
+We_PRP evaluate_VBP various_JJ crawling_VBG policies_NNS through_IN experiments_NNS on_IN real_JJ Web_NN sites_NNS ._.
+Our_PRP$ experiments_NNS will_MD show_VB the_DT relative_JJ advantages_NNS of_IN various_JJ crawling_VBG policies_NNS and_CC demonstrate_VBP their_PRP$ potential_NN ._.
+The_DT results_NNS from_IN our_PRP$ experiments_NNS are_VBP very_RB promising_JJ ._.
+In_IN one_CD experiment_NN ,_, for_IN example_NN ,_, our_PRP$ adaptive_JJ policy_NN downloaded_VBD more_JJR than_IN ##_CD %_NN of_IN the_DT pages_NNS within_IN PubMed_NNP -LRB-_-LRB- that_WDT contains_VBZ ##_CD million_CD documents_NNS -RRB-_-RRB- after_IN it_PRP issued_VBD fewer_JJR than_IN ###_CD queries_NNS ._.
+2_LS ._.
+FRAMEWORK_NN In_IN this_DT section_NN ,_, we_PRP present_VBP a_DT formal_JJ framework_NN for_IN the_DT study_NN of_IN the_DT Hidden-Web_NNP crawling_NN problem_NN ._.
+In_IN Section_NN #_# ._.
+#_# ,_, we_PRP describe_VBP our_PRP$ assumptions_NNS on_IN Hidden-Web_JJ sites_NNS and_CC explain_VB how_WRB users_NNS interact_VBP with_IN the_DT sites_NNS ._.
+Based_VBN on_IN this_DT interaction_NN model_NN ,_, we_PRP present_VBP a_DT highlevel_JJ algorithm_NN for_IN a_DT Hidden-Web_JJ crawler_NN in_IN Section_NN #_# ._.
+#_# ._.
+Finally_RB in_IN Section_NN #_# ._.
+#_# ,_, we_PRP formalize_VBP the_DT Hidden-Web_JJ crawling_NN problem_NN ._.
+2_LS ._.
+#_# Hidden-Web_NN database_NN model_NN There_EX exists_VBZ a_DT variety_NN of_IN Hidden_JJ Web_NN sources_NNS that_WDT provide_VBP information_NN on_IN a_DT multitude_NN of_IN topics_NNS ._.
+Depending_VBG on_IN the_DT type_NN of_IN information_NN ,_, we_PRP may_MD categorize_VB a_DT Hidden-Web_JJ site_NN either_CC as_IN a_DT textual_NN database_NN or_CC a_DT structured_JJ database_NN ._.
+A_DT textual_NN database_NN is_VBZ a_DT site_NN that_WDT Figure_NNP #_# :_: A_DT multi-attribute_JJ search_NN interface_NN mainly_RB contains_VBZ plain-text_JJ documents_NNS ,_, such_JJ as_IN PubMed_NNP and_CC LexisNexis_NNP -LRB-_-LRB- an_DT online_NN database_NN of_IN legal_JJ documents_NNS -LSB-_-LRB- #_# -RSB-_-RRB- -RRB-_-RRB- ._.
+Since_IN plaintext_NN documents_NNS do_VBP not_RB usually_RB have_VBP well-defined_JJ structure_NN ,_, most_JJS textual_JJ databases_NNS provide_VBP a_DT simple_JJ search_NN interface_NN where_WRB users_NNS type_NN a_DT list_NN of_IN keywords_NNS in_IN a_DT single_JJ search_NN box_NN -LRB-_-LRB- Figure_NN #_# -RRB-_-RRB- ._.
+In_IN contrast_NN ,_, a_DT structured_JJ database_NN often_RB contains_VBZ multi-attribute_JJ relational_JJ data_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, a_DT book_NN on_IN the_DT Amazon_NNP Web_NN site_NN may_MD have_VB the_DT fields_NNS title_NN =_JJ Harry_NNP Potter_NNP ''_'' ,_, author_NN =_JJ J_NN ._.
+K_NN ._.
+Rowling_VBG ''_'' and_CC isbn_NN =_JJ ##########_CD ''_'' -RRB-_-RRB- and_CC supports_VBZ multi-attribute_JJ search_NN interfaces_NNS -LRB-_-LRB- Figure_NN #_# -RRB-_-RRB- ._.
+In_IN this_DT paper_NN ,_, we_PRP will_MD mainly_RB focus_VB on_IN textual_JJ databases_NNS that_WDT support_VBP single-attribute_JJ keyword_NN queries_NNS ._.
+We_PRP discuss_VBP how_WRB we_PRP can_MD extend_VB our_PRP$ ideas_NNS for_IN the_DT textual_JJ databases_NNS to_TO multi-attribute_JJ structured_JJ databases_NNS in_IN Section_NN #_# ._.
+#_# ._.
+Typically_RB ,_, the_DT users_NNS need_VBP to_TO take_VB the_DT following_VBG steps_NNS in_IN order_NN to_TO access_NN pages_NNS in_IN a_DT Hidden-Web_NN database_NN :_: 1_CD ._.
+Step_NN #_# ._.
+First_RB ,_, the_DT user_NN issues_NNS a_DT query_NN ,_, say_VBP liver_NN ,_, through_IN the_DT search_NN interface_NN provided_VBN by_IN the_DT Web_NN site_NN -LRB-_-LRB- such_JJ as_IN the_DT one_CD shown_VBN in_IN Figure_NNP #_# -RRB-_-RRB- ._.
+2_LS ._.
+Step_NN #_# ._.
+Shortly_RB after_IN the_DT user_NN issues_NNS the_DT query_NN ,_, she_PRP is_VBZ presented_VBN with_IN a_DT result_NN index_NN page_NN ._.
+That_DT is_VBZ ,_, the_DT Web_NN site_NN returns_VBZ a_DT list_NN of_IN links_NNS to_TO potentially_RB relevant_JJ Web_NN pages_NNS ,_, as_IN shown_VBN in_IN Figure_NNP #_# -LRB-_-LRB- a_DT -RRB-_-RRB- ._.
+3_LS ._.
+Step_NN #_# ._.
+From_IN the_DT list_NN in_IN the_DT result_NN index_NN page_NN ,_, the_DT user_NN identifies_VBZ the_DT pages_NNS that_WDT look_VBP interesting_JJ and_CC follows_VBZ the_DT links_NNS ._.
+Clicking_VBG on_IN a_DT link_NN leads_VBZ the_DT user_NN to_TO the_DT actual_JJ Web_NN page_NN ,_, such_JJ as_IN the_DT one_CD shown_VBN in_IN Figure_NNP #_# -LRB-_-LRB- b_NN -RRB-_-RRB- ,_, that_IN the_DT user_NN wants_VBZ to_TO look_VB at_IN ._.
+2_LS ._.
+#_# A_DT generic_JJ Hidden_JJ Web_NN crawling_VBG algorithm_NN Given_VBN that_IN the_DT only_JJ entry_NN to_TO the_DT pages_NNS in_IN a_DT Hidden-Web_JJ site_NN is_VBZ its_PRP$ search_NN from_IN ,_, a_DT Hidden-Web_JJ crawler_NN should_MD follow_VB the_DT three_CD steps_NNS described_VBN in_IN the_DT previous_JJ section_NN ._.
+That_DT is_VBZ ,_, the_DT crawler_NN has_VBZ to_TO generate_VB a_DT query_NN ,_, issue_NN it_PRP to_TO the_DT Web_NN site_NN ,_, download_VB the_DT result_NN index_NN page_NN ,_, and_CC follow_VB the_DT links_NNS to_TO download_VB the_DT actual_JJ pages_NNS ._.
+In_IN most_JJS cases_NNS ,_, a_DT crawler_NN has_VBZ limited_VBN time_NN and_CC network_NN resources_NNS ,_, so_IN the_DT crawler_NN repeats_NNS these_DT steps_NNS until_IN it_PRP uses_VBZ up_RP its_PRP$ resources_NNS ._.
+In_IN Figure_NNP #_# we_PRP show_VBP the_DT generic_JJ algorithm_NN for_IN a_DT Hidden-Web_JJ crawler_NN ._.
+For_IN simplicity_NN ,_, we_PRP assume_VBP that_IN the_DT Hidden-Web_JJ crawler_NN issues_NNS single-term_JJ queries_NNS only_RB ._.
+#_# The_DT crawler_NN first_RB decides_VBZ which_WDT query_VBP term_NN it_PRP is_VBZ going_VBG to_TO use_VB -LRB-_-LRB- Step_NN -LRB-_-LRB- #_# -RRB-_-RRB- -RRB-_-RRB- ,_, issues_NNS the_DT query_NN ,_, and_CC retrieves_VBZ the_DT result_NN index_NN page_NN -LRB-_-LRB- Step_NN -LRB-_-LRB- #_# -RRB-_-RRB- -RRB-_-RRB- ._.
+Finally_RB ,_, based_VBN on_IN the_DT links_NNS found_VBN on_IN the_DT result_NN index_NN page_NN ,_, it_PRP downloads_NNS the_DT Hidden_JJ Web_NN pages_NNS from_IN the_DT site_NN -LRB-_-LRB- Step_NN -LRB-_-LRB- #_# -RRB-_-RRB- -RRB-_-RRB- ._.
+This_DT same_JJ process_NN is_VBZ repeated_VBN until_IN all_PDT the_DT available_JJ resources_NNS are_VBP used_VBN up_RP -LRB-_-LRB- Step_NN -LRB-_-LRB- #_# -RRB-_-RRB- -RRB-_-RRB- ._.
+Given_VBN this_DT algorithm_NN ,_, we_PRP can_MD see_VB that_IN the_DT most_RBS critical_JJ decision_NN that_IN a_DT crawler_NN has_VBZ to_TO make_VB is_VBZ what_WP query_NN to_TO issue_VB next_JJ ._.
+If_IN the_DT crawler_NN can_MD issue_VB successful_JJ queries_NNS that_WDT will_MD return_VB many_JJ matching_VBG pages_NNS ,_, the_DT crawler_NN can_MD finish_VB its_PRP$ crawling_VBG early_RB on_IN using_VBG minimum_JJ resources_NNS ._.
+In_IN contrast_NN ,_, if_IN the_DT crawler_NN issues_NNS completely_RB irrelevant_JJ queries_NNS that_WDT do_VBP not_RB return_VB any_DT matching_VBG pages_NNS ,_, it_PRP may_MD waste_VB all_DT of_IN its_PRP$ resources_NNS simply_RB issuing_VBG queries_NNS without_IN ever_RB retrieving_VBG actual_JJ pages_NNS ._.
+Therefore_RB ,_, how_WRB the_DT crawler_NN selects_VBZ the_DT next_JJ query_NN can_MD greatly_RB affect_VB its_PRP$ effectiveness_NN ._.
+In_IN the_DT next_JJ section_NN ,_, we_PRP formalize_VBP this_DT query_NN selection_NN problem_NN ._.
+3_CD For_IN most_JJS Web_NN sites_NNS that_WDT assume_VBP AND_CC for_IN multi-keyword_JJ queries_NNS ,_, single-term_JJ queries_NNS return_VBP the_DT maximum_NN number_NN of_IN results_NNS ._.
+Extending_VBG our_PRP$ work_NN to_TO multi-keyword_JJ queries_NNS is_VBZ straightforward_JJ ._.
+101_CD -LRB-_-LRB- a_DT -RRB-_-RRB- List_NN of_IN matching_VBG pages_NNS for_IN query_NN liver_NN ._.
+-LRB-_-LRB- b_NN -RRB-_-RRB- The_DT first_JJ matching_NN page_NN for_IN liver_NN ._.
+Figure_NNP #_# :_: Pages_NNP from_IN the_DT PubMed_NNP Web_NN site_NN ._.
+ALGORITHM_NN #_# ._.
+#_# ._.
+Crawling_VBG a_DT Hidden_JJ Web_NN site_NN Procedure_NN -LRB-_-LRB- #_# -RRB-_-RRB- while_IN -LRB-_-LRB- there_EX are_VBP available_JJ resources_NNS -RRB-_-RRB- do_VBP /_: /_: select_VB a_DT term_NN to_TO send_VB to_TO the_DT site_NN -LRB-_-LRB- #_# -RRB-_-RRB- qi_NN =_JJ SelectTerm_NN -LRB-_-LRB- -RRB-_-RRB- /_: /_: send_VB query_NN and_CC acquire_VB result_NN index_NN page_NN -LRB-_-LRB- #_# -RRB-_-RRB- R_NN -LRB-_-LRB- qi_NN -RRB-_-RRB- =_JJ QueryWebSite_NN -LRB-_-LRB- qi_NN -RRB-_-RRB- /_: /_: download_VB the_DT pages_NNS of_IN interest_NN -LRB-_-LRB- #_# -RRB-_-RRB- Download_VB -LRB-_-LRB- R_NN -LRB-_-LRB- qi_NN -RRB-_-RRB- -RRB-_-RRB- -LRB-_-LRB- #_# -RRB-_-RRB- done_VBN Figure_NNP #_# :_: Algorithm_NN for_IN crawling_VBG a_DT Hidden_JJ Web_NN site_NN ._.
+S_NN q1_NN q_NN qq_NN 2_CD 34_CD Figure_NNP #_# :_: A_DT set-formalization_NN of_IN the_DT optimal_JJ query_NN selection_NN problem_NN ._.
+2_LS ._.
+#_# Problem_NNP formalization_NN Theoretically_RB ,_, the_DT problem_NN of_IN query_NN selection_NN can_MD be_VB formalized_VBN as_IN follows_VBZ :_: We_PRP assume_VBP that_IN the_DT crawler_NN downloads_NNS pages_NNS from_IN a_DT Web_NN site_NN that_WDT has_VBZ a_DT set_NN of_IN pages_NNS S_NN -LRB-_-LRB- the_DT rectangle_NN in_IN Figure_NNP #_# -RRB-_-RRB- ._.
+We_PRP represent_VBP each_DT Web_NN page_NN in_IN S_NN as_IN a_DT point_NN -LRB-_-LRB- dots_NNS in_IN Figure_NNP #_# -RRB-_-RRB- ._.
+Every_DT potential_JJ query_NN qi_NN that_IN we_PRP may_MD issue_VB can_MD be_VB viewed_VBN as_IN a_DT subset_NN of_IN S_NN ,_, containing_VBG all_PDT the_DT points_NNS -LRB-_-LRB- pages_NNS -RRB-_-RRB- that_WDT are_VBP returned_VBN when_WRB we_PRP issue_VBP qi_NN to_TO the_DT site_NN ._.
+Each_DT subset_NN is_VBZ associated_VBN with_IN a_DT weight_NN that_WDT represents_VBZ the_DT cost_NN of_IN issuing_VBG the_DT query_NN ._.
+Under_IN this_DT formalization_NN ,_, our_PRP$ goal_NN is_VBZ to_TO find_VB which_WDT subsets_NNS -LRB-_-LRB- queries_NNS -RRB-_-RRB- cover_VBP the_DT maximum_NN number_NN of_IN points_NNS -LRB-_-LRB- Web_NN pages_NNS -RRB-_-RRB- with_IN the_DT minimum_JJ total_JJ weight_NN -LRB-_-LRB- cost_NN -RRB-_-RRB- ._.
+This_DT problem_NN is_VBZ equivalent_JJ to_TO the_DT set-covering_JJ problem_NN in_IN graph_NN theory_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+There_EX are_VBP two_CD main_JJ difficulties_NNS that_IN we_PRP need_VBP to_TO address_VB in_IN this_DT formalization_NN ._.
+First_RB ,_, in_IN a_DT practical_JJ situation_NN ,_, the_DT crawler_NN does_VBZ not_RB know_VB which_WDT Web_NN pages_NNS will_MD be_VB returned_VBN by_IN which_WDT queries_NNS ,_, so_IN the_DT subsets_NNS of_IN S_NN are_VBP not_RB known_VBN in_IN advance_NN ._.
+Without_IN knowing_VBG these_DT subsets_NNS the_DT crawler_NN can_MD not_RB decide_VB which_WDT queries_NNS to_TO pick_VB to_TO maximize_VB the_DT coverage_NN ._.
+Second_RB ,_, the_DT set-covering_JJ problem_NN is_VBZ known_VBN to_TO be_VB NP-Hard_JJ -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, so_IN an_DT efficient_JJ algorithm_NN to_TO solve_VB this_DT problem_NN optimally_RB in_IN polynomial_JJ time_NN has_VBZ yet_RB to_TO be_VB found_VBN ._.
+In_IN this_DT paper_NN ,_, we_PRP will_MD present_VB an_DT approximation_NN algorithm_NN that_WDT can_MD find_VB a_DT near-optimal_JJ solution_NN at_IN a_DT reasonable_JJ computational_JJ cost_NN ._.
+Our_PRP$ algorithm_NN leverages_VBZ the_DT observation_NN that_IN although_IN we_PRP do_VBP not_RB know_VB which_WDT pages_NNS will_MD be_VB returned_VBN by_IN each_DT query_NN qi_NN that_IN we_PRP issue_VBP ,_, we_PRP can_MD predict_VB how_WRB many_JJ pages_NNS will_MD be_VB returned_VBN ._.
+Based_VBN on_IN this_DT information_NN our_PRP$ query_NN selection_NN algorithm_NN can_MD then_RB select_VB the_DT best_JJS queries_NNS that_WDT cover_VBP the_DT content_NN of_IN the_DT Web_NN site_NN ._.
+We_PRP present_VBP our_PRP$ prediction_NN method_NN and_CC our_PRP$ query_NN selection_NN algorithm_NN in_IN Section_NN #_# ._.
+2_LS ._.
+#_# ._.
+#_# Performance_NNP Metric_NNP Before_IN we_PRP present_VBP our_PRP$ ideas_NNS for_IN the_DT query_NN selection_NN problem_NN ,_, we_PRP briefly_RB discuss_VBP some_DT of_IN our_PRP$ notation_NN and_CC the_DT cost_NN /_: performance_NN metrics_NNS ._.
+Given_VBN a_DT query_NN qi_NN ,_, we_PRP use_VBP P_NN -LRB-_-LRB- qi_NN -RRB-_-RRB- to_TO denote_VB the_DT fraction_NN of_IN pages_NNS that_IN we_PRP will_MD get_VB back_RB if_IN we_PRP issue_VBP query_NN qi_NN to_TO the_DT site_NN ._.
+For_IN example_NN ,_, if_IN a_DT Web_NN site_NN has_VBZ ##_CD ,_, ###_CD pages_NNS in_IN total_NN ,_, and_CC if_IN #_# ,_, ###_CD pages_NNS are_VBP returned_VBN for_IN the_DT query_NN qi_NN =_JJ medicine_NN ,_, then_RB P_NN -LRB-_-LRB- qi_NN -RRB-_-RRB- =_JJ #_# ._.
+#_# ._.
+We_PRP use_VBP P_NN -LRB-_-LRB- q1_NN q2_NN -RRB-_-RRB- to_TO represent_VB the_DT fraction_NN of_IN pages_NNS that_WDT are_VBP returned_VBN from_IN both_DT q1_NN and_CC q2_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, the_DT intersection_NN of_IN P_NN -LRB-_-LRB- q1_NN -RRB-_-RRB- and_CC P_NN -LRB-_-LRB- q2_NN -RRB-_-RRB- -RRB-_-RRB- ._.
+Similarly_RB ,_, we_PRP use_VBP P_NN -LRB-_-LRB- q1_NN q2_NN -RRB-_-RRB- to_TO represent_VB the_DT fraction_NN of_IN pages_NNS that_WDT are_VBP returned_VBN from_IN either_CC q1_NN or_CC q2_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, the_DT union_NN of_IN P_NN -LRB-_-LRB- q1_NN -RRB-_-RRB- and_CC P_NN -LRB-_-LRB- q2_NN -RRB-_-RRB- -RRB-_-RRB- ._.
+We_PRP also_RB use_VBP Cost_NN -LRB-_-LRB- qi_NN -RRB-_-RRB- to_TO represent_VB the_DT cost_NN of_IN issuing_VBG the_DT query_NN qi_NN ._.
+Depending_VBG on_IN the_DT scenario_NN ,_, the_DT cost_NN can_MD be_VB measured_VBN either_CC in_IN time_NN ,_, network_NN bandwidth_NN ,_, the_DT number_NN of_IN interactions_NNS with_IN the_DT site_NN ,_, or_CC it_PRP can_MD be_VB a_DT function_NN of_IN all_DT of_IN these_DT ._.
+As_IN we_PRP will_MD see_VB later_RB ,_, our_PRP$ proposed_VBN algorithms_NNS are_VBP independent_JJ of_IN the_DT exact_JJ cost_NN function_NN ._.
+In_IN the_DT most_RBS common_JJ case_NN ,_, the_DT query_NN cost_NN consists_VBZ of_IN a_DT number_NN of_IN factors_NNS ,_, including_VBG the_DT cost_NN for_IN submitting_VBG the_DT query_NN to_TO the_DT site_NN ,_, retrieving_VBG the_DT result_NN index_NN page_NN -LRB-_-LRB- Figure_NN #_# -LRB-_-LRB- a_DT -RRB-_-RRB- -RRB-_-RRB- and_CC downloading_VBG the_DT actual_JJ pages_NNS -LRB-_-LRB- Figure_NN #_# -LRB-_-LRB- b_NN -RRB-_-RRB- -RRB-_-RRB- ._.
+We_PRP assume_VBP that_IN submitting_VBG a_DT query_NN incurs_VBZ a_DT fixed_JJ cost_NN of_IN cq_NN ._.
+The_DT cost_NN for_IN downloading_VBG the_DT result_NN index_NN page_NN is_VBZ proportional_JJ to_TO the_DT number_NN of_IN matching_VBG documents_NNS to_TO the_DT query_NN ,_, while_IN the_DT cost_NN cd_NN for_IN downloading_VBG a_DT matching_VBG document_NN is_VBZ also_RB fixed_VBN ._.
+Then_RB the_DT overall_JJ cost_NN of_IN query_NN qi_NN is_VBZ Cost_NN -LRB-_-LRB- qi_NN -RRB-_-RRB- =_JJ cq_NN +_CC crP_NN -LRB-_-LRB- qi_NN -RRB-_-RRB- +_CC cdP_NN -LRB-_-LRB- qi_NN -RRB-_-RRB- ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- In_IN certain_JJ cases_NNS ,_, some_DT of_IN the_DT documents_NNS from_IN qi_NN may_MD have_VB already_RB been_VBN downloaded_VBN from_IN previous_JJ queries_NNS ._.
+In_IN this_DT case_NN ,_, the_DT crawler_NN may_MD skip_VB downloading_VBG these_DT documents_NNS and_CC the_DT cost_NN of_IN qi_NN can_MD be_VB Cost_NN -LRB-_-LRB- qi_NN -RRB-_-RRB- =_JJ cq_NN +_CC crP_NN -LRB-_-LRB- qi_NN -RRB-_-RRB- +_CC cdPnew_NN -LRB-_-LRB- qi_NN -RRB-_-RRB- ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- Here_RB ,_, we_PRP use_VBP Pnew_NN -LRB-_-LRB- qi_NN -RRB-_-RRB- to_TO represent_VB the_DT fraction_NN of_IN the_DT new_JJ documents_NNS from_IN qi_NN that_WDT have_VBP not_RB been_VBN retrieved_VBN from_IN previous_JJ queries_NNS ._.
+Later_RB in_IN Section_NN #_# ._.
+#_# we_PRP will_MD study_VB how_WRB we_PRP can_MD estimate_VB P_NN -LRB-_-LRB- qi_NN -RRB-_-RRB- and_CC Pnew_NN -LRB-_-LRB- qi_NN -RRB-_-RRB- to_TO estimate_VB the_DT cost_NN of_IN qi_NN ._.
+Since_IN our_PRP$ algorithms_NNS are_VBP independent_JJ of_IN the_DT exact_JJ cost_NN function_NN ,_, we_PRP will_MD assume_VB a_DT generic_JJ cost_NN function_NN Cost_NN -LRB-_-LRB- qi_NN -RRB-_-RRB- in_IN this_DT paper_NN ._.
+When_WRB we_PRP need_VBP a_DT concrete_JJ cost_NN function_NN ,_, however_RB ,_, we_PRP will_MD use_VB Equation_NN #_# ._.
+Given_VBN the_DT notation_NN ,_, we_PRP can_MD formalize_VB the_DT goal_NN of_IN a_DT Hidden-Web_JJ crawler_NN as_IN follows_VBZ :_: 102_CD PROBLEM_NN #_# ._.
+Find_VB the_DT set_NN of_IN queries_NNS q1_NN ,_, ..._: ,_, qn_NN that_WDT maximizes_VBZ P_NN -LRB-_-LRB- q1_NN qn_NN -RRB-_-RRB- under_IN the_DT constraint_NN n_NN i_FW =_JJ #_# Cost_NN -LRB-_-LRB- qi_NN -RRB-_-RRB- t_NN ._.
+Here_RB ,_, t_NN is_VBZ the_DT maximum_NN download_NN resource_NN that_IN the_DT crawler_NN has_VBZ ._.
+3_LS ._.
+KEYWORD_NNP SELECTION_NNP How_WRB should_MD a_DT crawler_NN select_VB the_DT queries_NNS to_TO issue_VB ?_.
+Given_VBN that_IN the_DT goal_NN is_VBZ to_TO download_VB the_DT maximum_NN number_NN of_IN unique_JJ documents_NNS from_IN a_DT textual_NN database_NN ,_, we_PRP may_MD consider_VB one_CD of_IN the_DT following_VBG options_NNS :_: Random_NNP :_: We_PRP select_VBP random_JJ keywords_NNS from_IN ,_, say_VB ,_, an_DT English_JJ dictionary_NN and_CC issue_VB them_PRP to_TO the_DT database_NN ._.
+The_DT hope_NN is_VBZ that_IN a_DT random_JJ query_NN will_MD return_VB a_DT reasonable_JJ number_NN of_IN matching_VBG documents_NNS ._.
+Generic-frequency_NN :_: We_PRP analyze_VBP a_DT generic_JJ document_NN corpus_NN collected_VBN elsewhere_RB -LRB-_-LRB- say_VB ,_, from_IN the_DT Web_NN -RRB-_-RRB- and_CC obtain_VB the_DT generic_JJ frequency_NN distribution_NN of_IN each_DT keyword_NN ._.
+Based_VBN on_IN this_DT generic_JJ distribution_NN ,_, we_PRP start_VBP with_IN the_DT most_RBS frequent_JJ keyword_NN ,_, issue_NN it_PRP to_TO the_DT Hidden-Web_NN database_NN and_CC retrieve_VB the_DT result_NN ._.
+We_PRP then_RB continue_VBP to_TO the_DT second-most_JJ frequent_JJ keyword_NN and_CC repeat_NN this_DT process_NN until_IN we_PRP exhaust_VBP all_DT download_NN resources_NNS ._.
+The_DT hope_NN is_VBZ that_IN the_DT frequent_JJ keywords_NNS in_IN a_DT generic_JJ corpus_NN will_MD also_RB be_VB frequent_JJ in_IN the_DT Hidden-Web_NN database_NN ,_, returning_VBG many_JJ matching_VBG documents_NNS ._.
+Adaptive_JJ :_: We_PRP analyze_VBP the_DT documents_NNS returned_VBD from_IN the_DT previous_JJ queries_NNS issued_VBN to_TO the_DT Hidden-Web_NN database_NN and_CC estimate_NN which_WDT keyword_NN is_VBZ most_RBS likely_JJ to_TO return_VB the_DT most_RBS documents_NNS ._.
+Based_VBN on_IN this_DT analysis_NN ,_, we_PRP issue_VBP the_DT most_RBS promising_JJ query_NN ,_, and_CC repeat_NN the_DT process_NN ._.
+Among_IN these_DT three_CD general_JJ policies_NNS ,_, we_PRP may_MD consider_VB the_DT random_JJ policy_NN as_IN the_DT base_NN comparison_NN point_NN since_IN it_PRP is_VBZ expected_VBN to_TO perform_VB the_DT worst_JJS ._.
+Between_IN the_DT generic-frequency_NN and_CC the_DT adaptive_JJ policies_NNS ,_, both_DT policies_NNS may_MD show_VB similar_JJ performance_NN if_IN the_DT crawled_VBN database_NN has_VBZ a_DT generic_JJ document_NN collection_NN without_IN a_DT specialized_VBN topic_NN ._.
+The_DT adaptive_JJ policy_NN ,_, however_RB ,_, may_MD perform_VB significantly_RB better_JJR than_IN the_DT generic-frequency_NN policy_NN if_IN the_DT database_NN has_VBZ a_DT very_RB specialized_VBN collection_NN that_WDT is_VBZ different_JJ from_IN the_DT generic_JJ corpus_NN ._.
+We_PRP will_MD experimentally_RB compare_VB these_DT three_CD policies_NNS in_IN Section_NN #_# ._.
+While_IN the_DT first_JJ two_CD policies_NNS -LRB-_-LRB- random_JJ and_CC generic-frequency_NN policies_NNS -RRB-_-RRB- are_VBP easy_JJ to_TO implement_VB ,_, we_PRP need_VBP to_TO understand_VB how_WRB we_PRP can_MD analyze_VB the_DT downloaded_VBN pages_NNS to_TO identify_VB the_DT most_RBS promising_JJ query_NN in_IN order_NN to_TO implement_VB the_DT adaptive_JJ policy_NN ._.
+We_PRP address_VBP this_DT issue_NN in_IN the_DT rest_NN of_IN this_DT section_NN ._.
+3_LS ._.
+#_# Estimating_VBG the_DT number_NN of_IN matching_VBG pages_NNS In_IN order_NN to_TO identify_VB the_DT most_RBS promising_JJ query_NN ,_, we_PRP need_VBP to_TO estimate_VB how_WRB many_JJ new_JJ documents_NNS we_PRP will_MD download_VB if_IN we_PRP issue_VBP the_DT query_NN qi_NN as_IN the_DT next_JJ query_NN ._.
+That_DT is_VBZ ,_, assuming_VBG that_IN we_PRP have_VBP issued_VBN queries_NNS q1_NN ,_, ..._: ,_, qi1_NN we_PRP need_VBP to_TO estimate_VB P_NN -LRB-_-LRB- q1_NN qi1qi_NN -RRB-_-RRB- ,_, for_IN every_DT potential_JJ next_JJ query_NN qi_NN and_CC compare_VB this_DT value_NN ._.
+In_IN estimating_VBG this_DT number_NN ,_, we_PRP note_VBP that_IN we_PRP can_MD rewrite_VB P_NN -LRB-_-LRB- q1_NN qi1_NN qi_NN -RRB-_-RRB- as_IN :_: P_NN -LRB-_-LRB- -LRB-_-LRB- q1_NN qi1_NN -RRB-_-RRB- qi_NN -RRB-_-RRB- =_JJ P_NN -LRB-_-LRB- q1_NN qi1_NN -RRB-_-RRB- +_CC P_NN -LRB-_-LRB- qi_NN -RRB-_-RRB- P_NN -LRB-_-LRB- -LRB-_-LRB- q1_NN qi1_NN -RRB-_-RRB- qi_NN -RRB-_-RRB- =_JJ P_NN -LRB-_-LRB- q1_NN qi1_NN -RRB-_-RRB- +_CC P_NN -LRB-_-LRB- qi_NN -RRB-_-RRB- P_NN -LRB-_-LRB- q1_NN qi1_NN -RRB-_-RRB- P_NN -LRB-_-LRB- qi_NN |_CD q1_NN qi1_NN -RRB-_-RRB- -LRB-_-LRB- #_# -RRB-_-RRB- In_IN the_DT above_JJ formula_NN ,_, note_NN that_IN we_PRP can_MD precisely_RB measure_VB P_NN -LRB-_-LRB- q1_NN qi1_NN -RRB-_-RRB- and_CC P_NN -LRB-_-LRB- qi_NN |_CD q1_NN qi1_NN -RRB-_-RRB- by_IN analyzing_VBG previouslydownloaded_JJ pages_NNS :_: We_PRP know_VBP P_NN -LRB-_-LRB- q1_NN qi1_NN -RRB-_-RRB- ,_, the_DT union_NN of_IN all_DT pages_NNS downloaded_VBN from_IN q1_NN ,_, ..._: ,_, qi1_NN ,_, since_IN we_PRP have_VBP already_RB issued_VBN q1_NN ,_, ..._: ,_, qi1_NN and_CC downloaded_VBD the_DT matching_VBG pages_NNS ._.
+#_# We_PRP can_MD also_RB measure_VB P_NN -LRB-_-LRB- qi_NN |_CD q1_NN qi1_NN -RRB-_-RRB- ,_, the_DT probability_NN that_IN qi_NN appears_VBZ in_IN the_DT pages_NNS from_IN q1_NN ,_, ..._: ,_, qi1_NN ,_, by_IN counting_VBG how_WRB many_JJ times_NNS qi_NN appears_VBZ in_IN the_DT pages_NNS from_IN q1_NN ,_, ..._: ,_, qi1_NN ._.
+Therefore_RB ,_, we_PRP only_RB need_VBP to_TO estimate_VB P_NN -LRB-_-LRB- qi_NN -RRB-_-RRB- to_TO evaluate_VB P_NN -LRB-_-LRB- q1_NN qi_NN -RRB-_-RRB- ._.
+We_PRP may_MD consider_VB a_DT number_NN of_IN different_JJ ways_NNS to_TO estimate_VB P_NN -LRB-_-LRB- qi_NN -RRB-_-RRB- ,_, including_VBG the_DT following_NN :_: 1_CD ._.
+Independence_NN estimator_NN :_: We_PRP assume_VBP that_IN the_DT appearance_NN of_IN the_DT term_NN qi_NN is_VBZ independent_JJ of_IN the_DT terms_NNS q1_NN ,_, ..._: ,_, qi1_NN ._.
+That_DT is_VBZ ,_, we_PRP assume_VBP that_IN P_NN -LRB-_-LRB- qi_NN -RRB-_-RRB- =_JJ P_NN -LRB-_-LRB- qi_NN |_CD q1_NN qi1_NN -RRB-_-RRB- ._.
+2_LS ._.
+Zipf_NNP estimator_NN :_: In_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ,_, Ipeirotis_NNP et_FW al_FW ._.
+proposed_VBN a_DT method_NN to_TO estimate_VB how_WRB many_JJ times_NNS a_DT particular_JJ term_NN occurs_VBZ in_IN the_DT entire_JJ corpus_NN based_VBN on_IN a_DT subset_NN of_IN documents_NNS from_IN the_DT corpus_NN ._.
+Their_PRP$ method_NN exploits_VBZ the_DT fact_NN that_IN the_DT frequency_NN of_IN terms_NNS inside_IN text_NN collections_NNS follows_VBZ a_DT power_NN law_NN distribution_NN -LSB-_-LRB- ##_CD ,_, ##_CD -RSB-_-RRB- ._.
+That_DT is_VBZ ,_, if_IN we_PRP rank_VBP all_DT terms_NNS based_VBN on_IN their_PRP$ occurrence_NN frequency_NN -LRB-_-LRB- with_IN the_DT most_RBS frequent_JJ term_NN having_VBG a_DT rank_NN of_IN #_# ,_, second_JJ most_RBS frequent_JJ a_DT rank_NN of_IN #_# etc_FW ._. -RRB-_-RRB-
+,_, then_RB the_DT frequency_NN f_FW of_IN a_DT term_NN inside_IN the_DT text_NN collection_NN is_VBZ given_VBN by_IN :_: f_LS =_JJ -LRB-_-LRB- r_NN +_CC -RRB-_-RRB- -LRB-_-LRB- #_# -RRB-_-RRB- where_WRB r_NN is_VBZ the_DT rank_NN of_IN the_DT term_NN and_CC ,_, ,_, and_CC are_VBP constants_NNS that_WDT depend_VBP on_IN the_DT text_NN collection_NN ._.
+Their_PRP$ main_JJ idea_NN is_VBZ -LRB-_-LRB- #_# -RRB-_-RRB- to_TO estimate_VB the_DT three_CD parameters_NNS ,_, ,_, and_CC ,_, based_VBN on_IN the_DT subset_NN of_IN documents_NNS that_IN we_PRP have_VBP downloaded_VBN from_IN previous_JJ queries_NNS ,_, and_CC -LRB-_-LRB- #_# -RRB-_-RRB- use_VBP the_DT estimated_VBN parameters_NNS to_TO predict_VB f_FW given_VBN the_DT ranking_JJ r_NN of_IN a_DT term_NN within_IN the_DT subset_NN ._.
+For_IN a_DT more_RBR detailed_JJ description_NN on_IN how_WRB we_PRP can_MD use_VB this_DT method_NN to_TO estimate_VB P_NN -LRB-_-LRB- qi_NN -RRB-_-RRB- ,_, we_PRP refer_VBP the_DT reader_NN to_TO the_DT extended_VBN version_NN of_IN this_DT paper_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+After_IN we_PRP estimate_VBP P_NN -LRB-_-LRB- qi_NN -RRB-_-RRB- and_CC P_NN -LRB-_-LRB- qi_NN |_CD q1_NN qi1_NN -RRB-_-RRB- values_NNS ,_, we_PRP can_MD calculate_VB P_NN -LRB-_-LRB- q1_NN qi_NN -RRB-_-RRB- ._.
+In_IN Section_NN #_# ._.
+#_# ,_, we_PRP explain_VBP how_WRB we_PRP can_MD efficiently_RB compute_VB P_NN -LRB-_-LRB- qi_NN |_CD q1_NN qi1_NN -RRB-_-RRB- by_IN maintaining_VBG a_DT succinct_JJ summary_NN table_NN ._.
+In_IN the_DT next_JJ section_NN ,_, we_PRP first_RB examine_VB how_WRB we_PRP can_MD use_VB this_DT value_NN to_TO decide_VB which_WDT query_NN we_PRP should_MD issue_VB next_JJ to_TO the_DT Hidden_NNP Web_NN site_NN ._.
+3_LS ._.
+#_# Query_NNP selection_NN algorithm_NN The_DT goal_NN of_IN the_DT Hidden-Web_JJ crawler_NN is_VBZ to_TO download_VB the_DT maximum_NN number_NN of_IN unique_JJ documents_NNS from_IN a_DT database_NN using_VBG its_PRP$ limited_JJ download_NN resources_NNS ._.
+Given_VBN this_DT goal_NN ,_, the_DT Hidden-Web_NNP crawler_NN has_VBZ to_TO take_VB two_CD factors_NNS into_IN account_NN ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- the_DT number_NN of_IN new_JJ documents_NNS that_WDT can_MD be_VB obtained_VBN from_IN the_DT query_NN qi_NN and_CC -LRB-_-LRB- #_# -RRB-_-RRB- the_DT cost_NN of_IN issuing_VBG the_DT query_NN qi_NN ._.
+For_IN example_NN ,_, if_IN two_CD queries_NNS ,_, qi_NN and_CC qj_NN ,_, incur_VBP the_DT same_JJ cost_NN ,_, but_CC qi_NN returns_NNS more_RBR new_JJ pages_NNS than_IN qj_NN ,_, qi_NN is_VBZ more_RBR desirable_JJ than_IN qj_NN ._.
+Similarly_RB ,_, if_IN qi_NN and_CC qj_NN return_VBP the_DT same_JJ number_NN of_IN new_JJ documents_NNS ,_, but_CC qi_NNP incurs_VBZ less_JJR cost_NN then_RB qj_RB ,_, qi_NN is_VBZ more_RBR desirable_JJ ._.
+Based_VBN on_IN this_DT observation_NN ,_, the_DT Hidden-Web_NNP crawler_NN may_MD use_VB the_DT following_VBG efficiency_NN metric_JJ to_TO quantify_VB the_DT desirability_NN of_IN the_DT query_NN qi_NN :_: Efficiency_NN -LRB-_-LRB- qi_NN -RRB-_-RRB- =_JJ Pnew_NN -LRB-_-LRB- qi_NN -RRB-_-RRB- Cost_NN -LRB-_-LRB- qi_NN -RRB-_-RRB- Here_RB ,_, Pnew_NN -LRB-_-LRB- qi_NN -RRB-_-RRB- represents_VBZ the_DT amount_NN of_IN new_JJ documents_NNS returned_VBD for_IN qi_NN -LRB-_-LRB- the_DT pages_NNS that_WDT have_VBP not_RB been_VBN returned_VBN for_IN previous_JJ queries_NNS -RRB-_-RRB- ._.
+Cost_NN -LRB-_-LRB- qi_NN -RRB-_-RRB- represents_VBZ the_DT cost_NN of_IN issuing_VBG the_DT query_NN qi_NN ._.
+Intuitively_RB ,_, the_DT efficiency_NN of_IN qi_NN measures_NNS how_WRB many_JJ new_JJ documents_NNS are_VBP retrieved_VBN per_IN unit_NN cost_NN ,_, and_CC can_MD be_VB used_VBN as_IN an_DT indicator_NN of_IN 4_CD For_IN exact_JJ estimation_NN ,_, we_PRP need_VBP to_TO know_VB the_DT total_JJ number_NN of_IN pages_NNS in_IN the_DT site_NN ._.
+However_RB ,_, in_IN order_NN to_TO compare_VB only_RB relative_JJ values_NNS among_IN queries_NNS ,_, this_DT information_NN is_VBZ not_RB actually_RB needed_VBN ._.
+103_CD ALGORITHM_NN #_# ._.
+#_# ._.
+Greedy_JJ SelectTerm_NN -LRB-_-LRB- -RRB-_-RRB- Parameters_NNPS :_: T_NN :_: The_DT list_NN of_IN potential_JJ query_NN keywords_NNS Procedure_NNP -LRB-_-LRB- #_# -RRB-_-RRB- Foreach_NNP tk_NN in_IN T_NN do_VBP -LRB-_-LRB- #_# -RRB-_-RRB- Estimate_NNP Efficiency_NNP -LRB-_-LRB- tk_NN -RRB-_-RRB- =_JJ Pnew_NN -LRB-_-LRB- tk_NN -RRB-_-RRB- Cost_NN -LRB-_-LRB- tk_NN -RRB-_-RRB- -LRB-_-LRB- #_# -RRB-_-RRB- done_VBN -LRB-_-LRB- #_# -RRB-_-RRB- return_NN tk_NN with_IN maximum_NN Efficiency_NN -LRB-_-LRB- tk_NN -RRB-_-RRB- Figure_NN #_# :_: Algorithm_NN for_IN selecting_VBG the_DT next_JJ query_NN term_NN ._.
+how_WRB well_RB our_PRP$ resources_NNS are_VBP spent_VBN when_WRB issuing_VBG qi_NN ._.
+Thus_RB ,_, the_DT Hidden_NNP Web_NN crawler_NN can_MD estimate_VB the_DT efficiency_NN of_IN every_DT candidate_NN qi_NN ,_, and_CC select_VB the_DT one_CD with_IN the_DT highest_JJS value_NN ._.
+By_IN using_VBG its_PRP$ resources_NNS more_RBR efficiently_RB ,_, the_DT crawler_NN may_MD eventually_RB download_VB the_DT maximum_NN number_NN of_IN unique_JJ documents_NNS ._.
+In_IN Figure_NNP #_# ,_, we_PRP show_VBP the_DT query_NN selection_NN function_NN that_WDT uses_VBZ the_DT concept_NN of_IN efficiency_NN ._.
+In_IN principle_NN ,_, this_DT algorithm_NN takes_VBZ a_DT greedy_JJ approach_NN and_CC tries_VBZ to_TO maximize_VB the_DT potential_JJ gain_NN in_IN every_DT step_NN ._.
+We_PRP can_MD estimate_VB the_DT efficiency_NN of_IN every_DT query_NN using_VBG the_DT estimation_NN method_NN described_VBN in_IN Section_NN #_# ._.
+#_# ._.
+That_DT is_VBZ ,_, the_DT size_NN of_IN the_DT new_JJ documents_NNS from_IN the_DT query_NN qi_NN ,_, Pnew_NN -LRB-_-LRB- qi_NN -RRB-_-RRB- ,_, is_VBZ Pnew_NN -LRB-_-LRB- qi_NN -RRB-_-RRB- =_JJ P_NN -LRB-_-LRB- q1_NN qi1_NN qi_NN -RRB-_-RRB- P_NN -LRB-_-LRB- q1_NN qi1_NN -RRB-_-RRB- =_JJ P_NN -LRB-_-LRB- qi_NN -RRB-_-RRB- P_NN -LRB-_-LRB- q1_NN qi1_NN -RRB-_-RRB- P_NN -LRB-_-LRB- qi_NN |_CD q1_NN qi1_NN -RRB-_-RRB- from_IN Equation_NN #_# ,_, where_WRB P_NN -LRB-_-LRB- qi_NN -RRB-_-RRB- can_MD be_VB estimated_VBN using_VBG one_CD of_IN the_DT methods_NNS described_VBN in_IN section_NN #_# ._.
+We_PRP can_MD also_RB estimate_VB Cost_NN -LRB-_-LRB- qi_NN -RRB-_-RRB- similarly_RB ._.
+For_IN example_NN ,_, if_IN Cost_NN -LRB-_-LRB- qi_NN -RRB-_-RRB- is_VBZ Cost_NN -LRB-_-LRB- qi_NN -RRB-_-RRB- =_JJ cq_NN +_CC crP_NN -LRB-_-LRB- qi_NN -RRB-_-RRB- +_CC cdPnew_NN -LRB-_-LRB- qi_NN -RRB-_-RRB- -LRB-_-LRB- Equation_NN #_# -RRB-_-RRB- ,_, we_PRP can_MD estimate_VB Cost_NN -LRB-_-LRB- qi_NN -RRB-_-RRB- by_IN estimating_VBG P_NN -LRB-_-LRB- qi_NN -RRB-_-RRB- and_CC Pnew_NN -LRB-_-LRB- qi_NN -RRB-_-RRB- ._.
+3_LS ._.
+#_# Efficient_JJ calculation_NN of_IN query_NN statistics_NNS In_IN estimating_VBG the_DT efficiency_NN of_IN queries_NNS ,_, we_PRP found_VBD that_IN we_PRP need_VBP to_TO measure_VB P_NN -LRB-_-LRB- qi_NN |_CD q1_NN qi1_NN -RRB-_-RRB- for_IN every_DT potential_JJ query_NN qi_NN ._.
+This_DT calculation_NN can_MD be_VB very_RB time-consuming_JJ if_IN we_PRP repeat_VBP it_PRP from_IN scratch_NN for_IN every_DT query_NN qi_NN in_IN every_DT iteration_NN of_IN our_PRP$ algorithm_NN ._.
+In_IN this_DT section_NN ,_, we_PRP explain_VBP how_WRB we_PRP can_MD compute_VB P_NN -LRB-_-LRB- qi_NN |_CD q1_NN qi1_NN -RRB-_-RRB- efficiently_RB by_IN maintaining_VBG a_DT small_JJ table_NN that_IN we_PRP call_VBP a_DT query_NN statistics_NNS table_NN ._.
+The_DT main_JJ idea_NN for_IN the_DT query_NN statistics_NNS table_NN is_VBZ that_IN P_NN -LRB-_-LRB- qi_NN |_CD q1_NN qi1_NN -RRB-_-RRB- can_MD be_VB measured_VBN by_IN counting_VBG how_WRB many_JJ times_NNS the_DT keyword_NN qi_NN appears_VBZ within_IN the_DT documents_NNS downloaded_VBN from_IN q1_NN ,_, ..._: ,_, qi1_NN ._.
+We_PRP record_VBP these_DT counts_NNS in_IN a_DT table_NN ,_, as_IN shown_VBN in_IN Figure_NNP #_# -LRB-_-LRB- a_DT -RRB-_-RRB- ._.
+The_DT left_JJ column_NN of_IN the_DT table_NN contains_VBZ all_DT potential_JJ query_NN terms_NNS and_CC the_DT right_JJ column_NN contains_VBZ the_DT number_NN of_IN previously-downloaded_JJ documents_NNS containing_VBG the_DT respective_JJ term_NN ._.
+For_IN example_NN ,_, the_DT table_NN in_IN Figure_NNP #_# -LRB-_-LRB- a_DT -RRB-_-RRB- shows_VBZ that_IN we_PRP have_VBP downloaded_VBN ##_CD documents_NNS so_IN far_RB ,_, and_CC the_DT term_NN model_NN appears_VBZ in_IN ##_NN of_IN these_DT documents_NNS ._.
+Given_VBN this_DT number_NN ,_, we_PRP can_MD compute_VB that_DT P_NN -LRB-_-LRB- model_NN |_CD q1_NN qi1_NN -RRB-_-RRB- =_JJ ##_CD 50_CD =_JJ #_# ._.
+#_# ._.
+We_PRP note_VBP that_IN the_DT query_NN statistics_NNS table_NN needs_VBZ to_TO be_VB updated_VBN whenever_WRB we_PRP issue_VBP a_DT new_JJ query_NN qi_NN and_CC download_VB more_JJR documents_NNS ._.
+This_DT update_VBP can_MD be_VB done_VBN efficiently_RB as_IN we_PRP illustrate_VBP in_IN the_DT following_VBG example_NN ._.
+EXAMPLE_NN #_# ._.
+After_IN examining_VBG the_DT query_NN statistics_NNS table_NN of_IN Figure_NNP #_# -LRB-_-LRB- a_DT -RRB-_-RRB- ,_, we_PRP have_VBP decided_VBN to_TO use_VB the_DT term_NN computer_NN as_IN our_PRP$ next_JJ query_NN qi_NN ._.
+From_IN the_DT new_JJ query_NN qi_NN =_JJ computer_NN ,_, we_PRP downloaded_VBD 20_CD more_JJR new_JJ pages_NNS ._.
+Out_IN of_IN these_DT ,_, ##_CD contain_VBP the_DT keyword_JJ model_NN Term_NN tk_NN N_NN -LRB-_-LRB- tk_NN -RRB-_-RRB- model_NN ##_CD computer_NN ##_CD digital_JJ ##_NN Term_NN tk_NN N_NN -LRB-_-LRB- tk_NN -RRB-_-RRB- model_NN ##_CD computer_NN ##_CD disk_NN ##_CD Total_JJ pages_NNS :_: ##_CD New_NNP pages_NNS :_: ##_NN -LRB-_-LRB- a_DT -RRB-_-RRB- After_IN q1_NN ,_, ..._: ,_, qi1_NN -LRB-_-LRB- b_NN -RRB-_-RRB- New_NN from_IN qi_NN =_JJ computer_NN Term_NN tk_NN N_NN -LRB-_-LRB- tk_NN -RRB-_-RRB- model_NN ##_NN +_CC ##_NN =_JJ ##_CD computer_NN ##_NN +_CC ##_NN =_JJ ##_CD disk_NN #_# +_CC ##_NN =_JJ ##_CD digital_JJ ##_NN +_CC #_# =_SYM ##_CD Total_JJ pages_NNS :_: ##_NN +_CC ##_NN =_JJ ##_NN -LRB-_-LRB- c_NN -RRB-_-RRB- After_IN q1_NN ,_, ..._: ,_, qi_NN Figure_NN #_# :_: Updating_VBG the_DT query_NN statistics_NNS table_NN ._.
+q_VB i1_NN i1_NN q_VBD \_CD /_: ..._: \_CD /_: q_FW q_FW i_FW /_: S_NN Figure_NN #_# :_: A_DT Web_NN site_NN that_WDT does_VBZ not_RB return_VB all_PDT the_DT results_NNS ._.
+and_CC ##_VB the_DT keyword_JJ disk_NN ._.
+The_DT table_NN in_IN Figure_NNP #_# -LRB-_-LRB- b_NN -RRB-_-RRB- shows_VBZ the_DT frequency_NN of_IN each_DT term_NN in_IN the_DT newly-downloaded_JJ pages_NNS ._.
+We_PRP can_MD update_VB the_DT old_JJ table_NN -LRB-_-LRB- Figure_NN #_# -LRB-_-LRB- a_DT -RRB-_-RRB- -RRB-_-RRB- to_TO include_VB this_DT new_JJ information_NN by_IN simply_RB adding_VBG corresponding_JJ entries_NNS in_IN Figures_NNS #_# -LRB-_-LRB- a_DT -RRB-_-RRB- and_CC -LRB-_-LRB- b_LS -RRB-_-RRB- ._.
+The_DT result_NN is_VBZ shown_VBN on_IN Figure_NNP #_# -LRB-_-LRB- c_NN -RRB-_-RRB- ._.
+For_IN example_NN ,_, keyword_NN model_NN exists_VBZ in_IN ##_NN +_CC ##_NN =_JJ ##_CD pages_NNS within_IN the_DT pages_NNS retrieved_VBN from_IN q1_NN ,_, ..._: ,_, qi_NN ._.
+According_VBG to_TO this_DT new_JJ table_NN ,_, P_NN -LRB-_-LRB- model_NN |_CD q1_NN qi_NN -RRB-_-RRB- is_VBZ now_RB ##_RB 70_CD =_JJ #_# ._.
+#_# ._.
+3_LS ._.
+#_# Crawling_VBG sites_NNS that_WDT limit_VBP the_DT number_NN of_IN results_NNS In_IN certain_JJ cases_NNS ,_, when_WRB a_DT query_NN matches_VBZ a_DT large_JJ number_NN of_IN pages_NNS ,_, the_DT Hidden_NNP Web_NN site_NN returns_NNS only_RB a_DT portion_NN of_IN those_DT pages_NNS ._.
+For_IN example_NN ,_, the_DT Open_NNP Directory_NNP Project_NNP -LSB-_-LRB- #_# -RSB-_-RRB- allows_VBZ the_DT users_NNS to_TO see_VB only_RB up_RB to_TO ##_CD ,_, ###_CD results_NNS after_IN they_PRP issue_VBP a_DT query_NN ._.
+Obviously_RB ,_, this_DT kind_NN of_IN limitation_NN has_VBZ an_DT immediate_JJ effect_NN on_IN our_PRP$ Hidden_NNP Web_NN crawler_NN ._.
+First_RB ,_, since_IN we_PRP can_MD only_RB retrieve_VB up_RP to_TO a_DT specific_JJ number_NN of_IN pages_NNS per_IN query_NN ,_, our_PRP$ crawler_NN will_MD need_VB to_TO issue_VB more_JJR queries_NNS -LRB-_-LRB- and_CC potentially_RB will_MD use_VB up_RP more_RBR resources_NNS -RRB-_-RRB- in_IN order_NN to_TO download_VB all_PDT the_DT pages_NNS ._.
+Second_RB ,_, the_DT query_NN selection_NN method_NN that_IN we_PRP presented_VBD in_IN Section_NN #_# ._.
+#_# assumes_VBZ that_IN for_IN every_DT potential_JJ query_NN qi_NN ,_, we_PRP can_MD find_VB P_NN -LRB-_-LRB- qi_NN |_CD q1_NN qi1_NN -RRB-_-RRB- ._.
+That_DT is_VBZ ,_, for_IN every_DT query_NN qi_NN we_PRP can_MD find_VB the_DT fraction_NN of_IN documents_NNS in_IN the_DT whole_JJ text_NN database_NN that_WDT contains_VBZ qi_NN with_IN at_IN least_JJS one_CD of_IN q1_NN ,_, ..._: ,_, qi1_NN ._.
+However_RB ,_, if_IN the_DT text_NN database_NN returned_VBD only_RB a_DT portion_NN of_IN the_DT results_NNS for_IN any_DT of_IN the_DT q1_NN ,_, ..._: ,_, qi1_NN then_RB the_DT value_NN P_NN -LRB-_-LRB- qi_NN |_CD q1_NN qi1_NN -RRB-_-RRB- is_VBZ not_RB accurate_JJ and_CC may_MD affect_VB our_PRP$ decision_NN for_IN the_DT next_JJ query_NN qi_NN ,_, and_CC potentially_RB the_DT performance_NN of_IN our_PRP$ crawler_NN ._.
+Since_IN we_PRP can_MD not_RB retrieve_VB more_JJR results_NNS per_IN query_NN than_IN the_DT maximum_NN number_NN the_DT Web_NN site_NN allows_VBZ ,_, our_PRP$ crawler_NN has_VBZ no_DT other_JJ choice_NN besides_IN submitting_VBG more_JJR queries_NNS ._.
+However_RB ,_, there_EX is_VBZ a_DT way_NN to_TO estimate_VB the_DT correct_JJ value_NN for_IN P_NN -LRB-_-LRB- qi_NN |_CD q1_NN qi1_NN -RRB-_-RRB- in_IN the_DT case_NN where_WRB the_DT Web_NN site_NN returns_NNS only_RB a_DT portion_NN of_IN the_DT results_NNS ._.
+104_CD Again_RB ,_, assume_VB that_IN the_DT Hidden_NNP Web_NN site_NN we_PRP are_VBP currently_RB crawling_VBG is_VBZ represented_VBN as_IN the_DT rectangle_NN on_IN Figure_NNP #_# and_CC its_PRP$ pages_NNS as_IN points_NNS in_IN the_DT figure_NN ._.
+Assume_VB that_IN we_PRP have_VBP already_RB issued_VBN queries_NNS q1_NN ,_, ..._: ,_, qi1_NN which_WDT returned_VBD a_DT number_NN of_IN results_NNS less_JJR than_IN the_DT maximum_NN number_NN than_IN the_DT site_NN allows_VBZ ,_, and_CC therefore_RB we_PRP have_VBP downloaded_VBN all_PDT the_DT pages_NNS for_IN these_DT queries_NNS -LRB-_-LRB- big_JJ circle_NN in_IN Figure_NNP #_# -RRB-_-RRB- ._.
+That_DT is_VBZ ,_, at_IN this_DT point_NN ,_, our_PRP$ estimation_NN for_IN P_NN -LRB-_-LRB- qi_NN |_CD q1_NN qi1_NN -RRB-_-RRB- is_VBZ accurate_JJ ._.
+Now_RB assume_VB that_IN we_PRP submit_VBP query_JJ qi_NN to_TO the_DT Web_NN site_NN ,_, but_CC due_JJ to_TO a_DT limitation_NN in_IN the_DT number_NN of_IN results_NNS that_IN we_PRP get_VBP back_RB ,_, we_PRP retrieve_VBP the_DT set_VBN qi_NNS -LRB-_-LRB- small_JJ circle_NN in_IN Figure_NNP #_# -RRB-_-RRB- instead_RB of_IN the_DT set_VBN qi_NNS -LRB-_-LRB- dashed_VBN circle_NN in_IN Figure_NNP #_# -RRB-_-RRB- ._.
+Now_RB we_PRP need_VBP to_TO update_VB our_PRP$ query_NN statistics_NNS table_NN so_IN that_IN it_PRP has_VBZ accurate_JJ information_NN for_IN the_DT next_JJ step_NN ._.
+That_DT is_VBZ ,_, although_IN we_PRP got_VBD the_DT set_VBN qi_NNS back_RB ,_, for_IN every_DT potential_JJ query_NN qi_NN +_CC #_# we_PRP need_VBP to_TO find_VB P_NN -LRB-_-LRB- qi_NN +_CC #_# |_CD q1_NN qi_NN -RRB-_-RRB- :_: P_NN -LRB-_-LRB- qi_NN +_CC #_# |_CD q1_NN qi_NN -RRB-_-RRB- =_JJ 1_CD P_NN -LRB-_-LRB- q1_NN qi_NN -RRB-_-RRB- -LSB-_-LRB- P_NN -LRB-_-LRB- qi_NN +_CC #_# -LRB-_-LRB- q1_NN qi1_NN -RRB-_-RRB- -RRB-_-RRB- +_CC P_NN -LRB-_-LRB- qi_NN +_CC #_# qi_FW -RRB-_-RRB- P_NN -LRB-_-LRB- qi_NN +_CC #_# qi_FW -LRB-_-LRB- q1_NN qi1_NN -RRB-_-RRB- -RRB-_-RRB- -RSB-_-RRB- -LRB-_-LRB- #_# -RRB-_-RRB- In_IN the_DT previous_JJ equation_NN ,_, we_PRP can_MD find_VB P_NN -LRB-_-LRB- q1_NN qi_NN -RRB-_-RRB- by_IN estimating_VBG P_NN -LRB-_-LRB- qi_NN -RRB-_-RRB- with_IN the_DT method_NN shown_VBN in_IN Section_NN #_# ._.
+Additionally_RB ,_, we_PRP can_MD calculate_VB P_NN -LRB-_-LRB- qi_NN +_CC #_# -LRB-_-LRB- q1_NN qi1_NN -RRB-_-RRB- -RRB-_-RRB- and_CC P_NN -LRB-_-LRB- qi_NN +_CC #_# qi_FW -LRB-_-LRB- q1_NN qi1_NN -RRB-_-RRB- -RRB-_-RRB- by_IN directly_RB examining_VBG the_DT documents_NNS that_IN we_PRP have_VBP downloaded_VBN from_IN queries_NNS q1_NN ,_, ..._: ,_, qi1_NN ._.
+The_DT term_NN P_NN -LRB-_-LRB- qi_NN +_CC #_# qi_FW -RRB-_-RRB- however_RB is_VBZ unknown_JJ and_CC we_PRP need_VBP to_TO estimate_VB it_PRP ._.
+Assuming_VBG that_DT qi_NN is_VBZ a_DT random_JJ sample_NN of_IN qi_NN ,_, then_RB :_: P_NN -LRB-_-LRB- qi_NN +_CC #_# qi_FW -RRB-_-RRB- P_NN -LRB-_-LRB- qi_NN +_CC #_# qi_FW -RRB-_-RRB- =_JJ P_NN -LRB-_-LRB- qi_NN -RRB-_-RRB- P_NN -LRB-_-LRB- qi_NN -RRB-_-RRB- -LRB-_-LRB- #_# -RRB-_-RRB- From_IN Equation_NN #_# we_PRP can_MD calculate_VB P_NN -LRB-_-LRB- qi_NN +_CC #_# qi_FW -RRB-_-RRB- and_CC after_IN we_PRP replace_VBP this_DT value_NN to_TO Equation_NN #_# we_PRP can_MD find_VB P_NN -LRB-_-LRB- qi_NN +_CC #_# |_CD q1_NN qi_NN -RRB-_-RRB- ._.
+4_LS ._.
+EXPERIMENTAL_JJ EVALUATION_NN In_IN this_DT section_NN we_PRP experimentally_RB evaluate_VBP the_DT performance_NN of_IN the_DT various_JJ algorithms_NNS for_IN Hidden_JJ Web_NN crawling_VBG presented_VBN in_IN this_DT paper_NN ._.
+Our_PRP$ goal_NN is_VBZ to_TO validate_VB our_PRP$ theoretical_JJ analysis_NN through_IN realworld_NN experiments_NNS ,_, by_IN crawling_VBG popular_JJ Hidden_JJ Web_NN sites_NNS of_IN textual_JJ databases_NNS ._.
+Since_IN the_DT number_NN of_IN documents_NNS that_WDT are_VBP discovered_VBN and_CC downloaded_VBN from_IN a_DT textual_NN database_NN depends_VBZ on_IN the_DT selection_NN of_IN the_DT words_NNS that_WDT will_MD be_VB issued_VBN as_IN queries5_NN to_TO the_DT search_NN interface_NN of_IN each_DT site_NN ,_, we_PRP compare_VBP the_DT various_JJ selection_NN policies_NNS that_WDT were_VBD described_VBN in_IN section_NN #_# ,_, namely_RB the_DT random_JJ ,_, generic-frequency_NN ,_, and_CC adaptive_JJ algorithms_NNS ._.
+The_DT adaptive_JJ algorithm_NN learns_VBZ new_JJ keywords_NNS and_CC terms_NNS from_IN the_DT documents_NNS that_IN it_PRP downloads_NNS ,_, and_CC its_PRP$ selection_NN process_NN is_VBZ driven_VBN by_IN a_DT cost_NN model_NN as_IN described_VBN in_IN Section_NN #_# ._.
+#_# ._.
+To_TO keep_VB our_PRP$ experiment_NN and_CC its_PRP$ analysis_NN simple_NN at_IN this_DT point_NN ,_, we_PRP will_MD assume_VB that_IN the_DT cost_NN for_IN every_DT query_NN is_VBZ constant_JJ ._.
+That_DT is_VBZ ,_, our_PRP$ goal_NN is_VBZ to_TO maximize_VB the_DT number_NN of_IN downloaded_VBN pages_NNS by_IN issuing_VBG the_DT least_JJS number_NN of_IN queries_NNS ._.
+Later_RB ,_, in_IN Section_NN #_# ._.
+#_# we_PRP will_MD present_VB a_DT comparison_NN of_IN our_PRP$ policies_NNS based_VBN on_IN a_DT more_RBR elaborate_JJ cost_NN model_NN ._.
+In_IN addition_NN ,_, we_PRP use_VBP the_DT independence_NN estimator_NN -LRB-_-LRB- Section_NN #_# ._.
+#_# -RRB-_-RRB- to_TO estimate_VB P_NN -LRB-_-LRB- qi_NN -RRB-_-RRB- from_IN downloaded_VBN pages_NNS ._.
+Although_IN the_DT independence_NN estimator_NN is_VBZ a_DT simple_JJ estimator_NN ,_, our_PRP$ experiments_NNS will_MD show_VB that_IN it_PRP can_MD work_VB very_RB well_RB in_IN practice_NN ._.
+#_# For_IN the_DT generic-frequency_NN policy_NN ,_, we_PRP compute_VBP the_DT frequency_NN distribution_NN of_IN words_NNS that_WDT appear_VBP in_IN a_DT #_# ._.
+5-million-Web-page_NN corpus_NN 5_CD Throughout_IN our_PRP$ experiments_NNS ,_, once_RB an_DT algorithm_NN has_VBZ submitted_VBN a_DT query_NN to_TO a_DT database_NN ,_, we_PRP exclude_VBP the_DT query_NN from_IN subsequent_JJ submissions_NNS to_TO the_DT same_JJ database_NN from_IN the_DT same_JJ algorithm_NN ._.
+6_CD We_PRP defer_VBP the_DT reporting_NN of_IN results_NNS based_VBN on_IN the_DT Zipf_NNP estimation_NN to_TO a_DT future_JJ work_NN ._.
+downloaded_VBN from_IN ###_CD Web_NN sites_NNS of_IN various_JJ topics_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Keywords_NNS are_VBP selected_VBN based_VBN on_IN their_PRP$ decreasing_VBG frequency_NN with_IN which_WDT they_PRP appear_VBP in_IN this_DT document_NN set_NN ,_, with_IN the_DT most_RBS frequent_JJ one_CD being_VBG selected_VBN first_RB ,_, followed_VBN by_IN the_DT second-most_JJ frequent_JJ keyword_NN ,_, etc_FW ._.
+#_# Regarding_VBG the_DT random_JJ policy_NN ,_, we_PRP use_VBP the_DT same_JJ set_NN of_IN words_NNS collected_VBN from_IN the_DT Web_NN corpus_NN ,_, but_CC in_IN this_DT case_NN ,_, instead_RB of_IN selecting_VBG keywords_NNS based_VBN on_IN their_PRP$ relative_JJ frequency_NN ,_, we_PRP choose_VBP them_PRP randomly_RB -LRB-_-LRB- uniform_JJ distribution_NN -RRB-_-RRB- ._.
+In_IN order_NN to_TO further_RB investigate_VB how_WRB the_DT quality_NN of_IN the_DT potential_JJ query-term_JJ list_NN affects_VBZ the_DT random-based_JJ algorithm_NN ,_, we_PRP construct_VBP two_CD sets_NNS :_: one_CD with_IN the_DT ##_NN ,_, ###_CD most_RBS frequent_JJ words_NNS of_IN the_DT term_NN collection_NN used_VBN in_IN the_DT generic-frequency_NN policy_NN -LRB-_-LRB- hereafter_RB ,_, the_DT random_JJ policy_NN with_IN the_DT set_NN of_IN ##_NN ,_, ###_CD words_NNS will_MD be_VB referred_VBN to_TO as_IN random-16K_NN -RRB-_-RRB- ,_, and_CC another_DT set_VBN with_IN the_DT #_# million_CD most_RBS frequent_JJ words_NNS of_IN the_DT same_JJ collection_NN as_IN above_JJ -LRB-_-LRB- hereafter_RB ,_, referred_VBN to_TO as_IN random-1M_NN -RRB-_-RRB- ._.
+The_DT former_JJ set_NN has_VBZ frequent_JJ words_NNS that_WDT appear_VBP in_IN a_DT large_JJ number_NN of_IN documents_NNS -LRB-_-LRB- at_IN least_JJS ##_CD ,_, ###_CD in_IN our_PRP$ collection_NN -RRB-_-RRB- ,_, and_CC therefore_RB can_MD be_VB considered_VBN of_IN high-quality_JJ terms_NNS ._.
+The_DT latter_JJ set_NN though_IN contains_VBZ a_DT much_RB larger_JJR collection_NN of_IN words_NNS ,_, among_IN which_WDT some_DT might_MD be_VB bogus_JJ ,_, and_CC meaningless_JJ ._.
+The_DT experiments_NNS were_VBD conducted_VBN by_IN employing_VBG each_DT one_CD of_IN the_DT aforementioned_JJ algorithms_NNS -LRB-_-LRB- adaptive_JJ ,_, generic-frequency_NN ,_, random16K_NN ,_, and_CC random-1M_NN -RRB-_-RRB- to_TO crawl_VB and_CC download_VB contents_NNS from_IN three_CD Hidden_JJ Web_NN sites_NNS :_: The_DT PubMed_NNP Medical_NNP Library_NNP ,_, #_# Amazon_NNP ,_, #_# and_CC the_DT Open_NNP Directory_NNP Project_NNP -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+According_VBG to_TO the_DT information_NN on_IN PubMed_NNP ''_'' s_VBZ Web_NN site_NN ,_, its_PRP$ collection_NN contains_VBZ approximately_RB ##_CD million_CD abstracts_NNS of_IN biomedical_JJ articles_NNS ._.
+We_PRP consider_VBP these_DT abstracts_NNS as_IN the_DT documents_NNS in_IN the_DT site_NN ,_, and_CC in_IN each_DT iteration_NN of_IN the_DT adaptive_JJ policy_NN ,_, we_PRP use_VBP these_DT abstracts_NNS as_IN input_NN to_TO the_DT algorithm_NN ._.
+Thus_RB our_PRP$ goal_NN is_VBZ to_TO discover_VB as_RB many_JJ unique_JJ abstracts_NNS as_IN possible_JJ by_IN repeatedly_RB querying_VBG the_DT Web_NN query_NN interface_NN provided_VBN by_IN PubMed_NNP ._.
+The_DT Hidden_JJ Web_NN crawling_VBG on_IN the_DT PubMed_NNP Web_NN site_NN can_MD be_VB considered_VBN as_IN topic-specific_JJ ,_, due_JJ to_TO the_DT fact_NN that_IN all_DT abstracts_NNS within_IN PubMed_NNP are_VBP related_JJ to_TO the_DT fields_NNS of_IN medicine_NN and_CC biology_NN ._.
+In_IN the_DT case_NN of_IN the_DT Amazon_NNP Web_NN site_NN ,_, we_PRP are_VBP interested_JJ in_IN downloading_VBG all_PDT the_DT hidden_JJ pages_NNS that_WDT contain_VBP information_NN on_IN books_NNS ._.
+The_DT querying_VBG to_TO Amazon_NNP is_VBZ performed_VBN through_IN the_DT Software_NNP Developer_NNP ''_'' s_NNS Kit_NN that_WDT Amazon_NNP provides_VBZ for_IN interfacing_VBG to_TO its_PRP$ Web_NN site_NN ,_, and_CC which_WDT returns_VBZ results_NNS in_IN XML_NN form_NN ._.
+The_DT generic_JJ keyword_JJ field_NN is_VBZ used_VBN for_IN searching_VBG ,_, and_CC as_IN input_NN to_TO the_DT adaptive_JJ policy_NN we_PRP extract_VBP the_DT product_NN description_NN and_CC the_DT text_NN of_IN customer_NN reviews_NNS when_WRB present_JJ in_IN the_DT XML_NN reply_NN ._.
+Since_IN Amazon_NNP does_VBZ not_RB provide_VB any_DT information_NN on_IN how_WRB many_JJ books_NNS it_PRP has_VBZ in_IN its_PRP$ catalogue_NN ,_, we_PRP use_VBP random_JJ sampling_NN on_IN the_DT 10-digit_JJ ISBN_NNP number_NN of_IN the_DT books_NNS to_TO estimate_VB the_DT size_NN of_IN the_DT collection_NN ._.
+Out_IN of_IN the_DT ##_NN ,_, ###_CD random_JJ ISBN_NNP numbers_NNS queried_VBD ,_, ##_NN are_VBP found_VBN in_IN the_DT Amazon_NNP catalogue_NN ,_, therefore_RB the_DT size_NN of_IN its_PRP$ book_NN collection_NN is_VBZ estimated_VBN to_TO be_VB ##_JJ 10000_CD ####_NN =_JJ #_# ._.
+#_# million_CD books_NNS ._.
+It_PRP ''_'' s_NNS also_RB worth_JJ noting_VBG here_RB that_IN Amazon_NNP poses_VBZ an_DT upper_JJ limit_NN on_IN the_DT number_NN of_IN results_NNS -LRB-_-LRB- books_NNS in_IN our_PRP$ case_NN -RRB-_-RRB- returned_VBN by_IN each_DT query_NN ,_, which_WDT is_VBZ set_VBN to_TO ##_VB ,_, ###_CD ._.
+As_IN for_IN the_DT third_JJ Hidden_NNP Web_NN site_NN ,_, the_DT Open_NNP Directory_NNP Project_NNP -LRB-_-LRB- hereafter_RB also_RB referred_VBN to_TO as_IN dmoz_NN -RRB-_-RRB- ,_, the_DT site_NN maintains_VBZ the_DT links_NNS to_TO 3_CD ._.
+#_# million_CD sites_NNS together_RB with_IN a_DT brief_JJ summary_NN of_IN each_DT listed_VBN site_NN ._.
+The_DT links_NNS are_VBP searchable_JJ through_IN a_DT keyword-search_JJ interface_NN ._.
+We_PRP consider_VBP each_DT indexed_VBN link_NN together_RB with_IN its_PRP$ brief_JJ summary_NN as_IN the_DT document_NN of_IN the_DT dmoz_NN site_NN ,_, and_CC we_PRP provide_VBP the_DT short_JJ summaries_NNS to_TO the_DT adaptive_JJ algorithm_NN to_TO drive_VB the_DT selection_NN of_IN new_JJ keywords_NNS for_IN querying_VBG ._.
+On_IN the_DT dmoz_NN Web_NN site_NN ,_, we_PRP perform_VBP two_CD Hidden_JJ Web_NN crawls_VBZ :_: the_DT first_JJ is_VBZ on_IN its_PRP$ generic_JJ collection_NN of_IN #_# ._.
+8-million_NN indexed_VBD 7_CD We_PRP did_VBD not_RB manually_RB exclude_VB stop_VB words_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, the_DT ,_, is_VBZ ,_, of_IN ,_, etc_FW ._. -RRB-_-RRB-
+from_IN the_DT keyword_JJ list_NN ._.
+As_IN it_PRP turns_VBZ out_RP ,_, all_DT Web_NN sites_NNS except_IN PubMed_JJ return_NN matching_VBG documents_NNS for_IN the_DT stop_NN words_NNS ,_, such_JJ as_IN the_DT ._.
+8_CD PubMed_NNP Medical_NNP Library_NNP :_: http_NN :_: /_: /_: www_NN ._.
+pubmed_VBN ._.
+org_NN 9_CD Amazon_NNP Inc_NNP ._.
+:_: http_NN :_: /_: /_: www_NN ._.
+amazon_NN ._.
+com_NN 105_CD 0_CD 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 1_CD 0_CD ##_CD ###_CD ###_CD ###_CD fractionofdocuments_NNS query_JJ number_NN Cumulative_JJ fraction_NN of_IN unique_JJ documents_NNS -_: PubMed_JJ website_NN adaptive_JJ generic-frequency_NN random-16K_NN random-1M_NN Figure_NN #_# :_: Coverage_NNP of_IN policies_NNS for_IN Pubmed_NNP 0_CD 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 1_CD 0_CD ###_CD ###_CD ###_CD ###_CD ###_CD ###_CD ###_CD fractionofdocuments_NNS query_JJ number_NN Cumulative_JJ fraction_NN of_IN unique_JJ documents_NNS -_: Amazon_NNP website_NN adaptive_JJ generic-frequency_NN random-16K_NN random-1M_NN Figure_NN ##_CD :_: Coverage_NNP of_IN policies_NNS for_IN Amazon_NNP sites_NNS ,_, regardless_RB of_IN the_DT category_NN that_IN they_PRP fall_VBP into_IN ._.
+The_DT other_JJ crawl_NN is_VBZ performed_VBN specifically_RB on_IN the_DT Arts_NNS section_NN of_IN dmoz_NN -LRB-_-LRB- http_NN :_: /_: /_: dmoz_NN ._.
+org_NN /_: Arts_NNS -RRB-_-RRB- ,_, which_WDT comprises_VBZ of_IN approximately_RB ###_RB ,_, ###_CD indexed_VBD sites_NNS that_WDT are_VBP relevant_JJ to_TO Arts_NNS ,_, making_VBG this_DT crawl_NN topicspecific_JJ ,_, as_IN in_IN PubMed_NNP ._.
+Like_IN Amazon_NNP ,_, dmoz_NN also_RB enforces_VBZ an_DT upper_JJ limit_NN on_IN the_DT number_NN of_IN returned_VBN results_NNS ,_, which_WDT is_VBZ ##_CD ,_, ###_CD links_NNS with_IN their_PRP$ summaries_NNS ._.
+4_LS ._.
+#_# Comparison_NN of_IN policies_NNS The_DT first_JJ question_NN that_IN we_PRP seek_VBP to_TO answer_VB is_VBZ the_DT evolution_NN of_IN the_DT coverage_NN metric_JJ as_IN we_PRP submit_VBP queries_NNS to_TO the_DT sites_NNS ._.
+That_DT is_VBZ ,_, what_WDT fraction_NN of_IN the_DT collection_NN of_IN documents_NNS stored_VBN in_IN the_DT Hidden_NNP Web_NN site_NN can_MD we_PRP download_VB as_IN we_PRP continuously_RB query_VBP for_IN new_JJ words_NNS selected_VBN using_VBG the_DT policies_NNS described_VBN above_IN ?_.
+More_RBR formally_RB ,_, we_PRP are_VBP interested_JJ in_IN the_DT value_NN of_IN P_NN -LRB-_-LRB- q1_NN qi1_NN qi_NN -RRB-_-RRB- ,_, after_IN we_PRP submit_VBP q1_NN ,_, ..._: ,_, qi_NN queries_NNS ,_, and_CC as_IN i_FW increases_NNS ._.
+In_IN Figures_NNS #_# ,_, ##_NN ,_, ##_NN ,_, and_CC ##_NN we_PRP present_VBP the_DT coverage_NN metric_JJ for_IN each_DT policy_NN ,_, as_IN a_DT function_NN of_IN the_DT query_NN number_NN ,_, for_IN the_DT Web_NN sites_NNS of_IN PubMed_NNP ,_, Amazon_NNP ,_, general_JJ dmoz_NN and_CC the_DT art-specific_JJ dmoz_NN ,_, respectively_RB ._.
+On_IN the_DT y-axis_NN the_DT fraction_NN of_IN the_DT total_JJ documents_NNS downloaded_VBN from_IN the_DT website_NN is_VBZ plotted_VBN ,_, while_IN the_DT x-axis_NN represents_VBZ the_DT query_NN number_NN ._.
+A_DT first_JJ observation_NN from_IN these_DT graphs_NNS is_VBZ that_IN in_IN general_JJ ,_, the_DT generic-frequency_NN and_CC the_DT adaptive_JJ policies_NNS perform_VBP much_RB better_JJR than_IN the_DT random-based_JJ algorithms_NNS ._.
+In_IN all_DT of_IN the_DT figures_NNS ,_, the_DT graphs_NNS for_IN the_DT random-1M_NN and_CC the_DT random-16K_NN are_VBP significantly_RB below_IN those_DT of_IN other_JJ policies_NNS ._.
+Between_IN the_DT generic-frequency_NN and_CC the_DT adaptive_JJ policies_NNS ,_, we_PRP can_MD see_VB that_IN the_DT latter_JJ outperforms_VBZ the_DT former_JJ when_WRB the_DT site_NN is_VBZ topic_NN spe0_NN 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 1_CD 0_CD ###_CD ###_CD ###_CD ###_CD ###_CD ###_CD ###_CD fractionofdocuments_NNS query_JJ number_NN Cumulative_JJ fraction_NN of_IN unique_JJ documents_NNS -_: dmoz_NN website_NN adaptive_JJ generic-frequency_NN random-16K_NN random-1M_NN Figure_NN ##_CD :_: Coverage_NNP of_IN policies_NNS for_IN general_JJ dmoz_NN 0_CD 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 1_CD 0_CD ##_CD ###_CD ###_CD ###_CD ###_CD ###_CD ###_CD ###_CD ###_CD fractionofdocuments_NNS query_JJ number_NN Cumulative_JJ fraction_NN of_IN unique_JJ documents_NNS -_: dmoz_NN /_: Arts_NNS website_NN adaptive_JJ generic-frequency_NN random-16K_NN random-1M_NN Figure_NN ##_CD :_: Coverage_NNP of_IN policies_NNS for_IN the_DT Arts_NNS section_NN of_IN dmoz_NN cific_NN ._.
+For_IN example_NN ,_, for_IN the_DT PubMed_JJ site_NN -LRB-_-LRB- Figure_NN #_# -RRB-_-RRB- ,_, the_DT adaptive_JJ algorithm_NN issues_NNS only_RB ##_VBP queries_NNS to_TO download_VB almost_RB ##_CD %_NN of_IN the_DT documents_NNS stored_VBN in_IN PubMed_NNP ,_, but_CC the_DT generic-frequency_NN algorithm_NN requires_VBZ ###_CD queries_NNS for_IN the_DT same_JJ coverage_NN ,_, ._.
+For_IN the_DT dmoz_NN /_: Arts_NNS crawl_VBP -LRB-_-LRB- Figure_NN ##_NN -RRB-_-RRB- ,_, the_DT difference_NN is_VBZ even_RB more_RBR substantial_JJ :_: the_DT adaptive_JJ policy_NN is_VBZ able_JJ to_TO download_VB ##_NN ._.
+##_CD %_NN of_IN the_DT total_JJ sites_NNS indexed_VBN in_IN the_DT Directory_NNP by_IN issuing_VBG ###_CD queries_NNS ,_, while_IN the_DT frequency-based_JJ algorithm_NN is_VBZ much_RB less_RBR effective_JJ using_VBG the_DT same_JJ number_NN of_IN queries_NNS ,_, and_CC discovers_VBZ only_RB ##_CD %_NN of_IN the_DT total_JJ number_NN of_IN indexed_VBN sites_NNS ._.
+The_DT adaptive_JJ algorithm_NN ,_, by_IN examining_VBG the_DT contents_NNS of_IN the_DT pages_NNS that_IN it_PRP downloads_NNS at_IN each_DT iteration_NN ,_, is_VBZ able_JJ to_TO identify_VB the_DT topic_NN of_IN the_DT site_NN as_RB expressed_VBN by_IN the_DT words_NNS that_WDT appear_VBP most_RBS frequently_RB in_IN the_DT result-set_NN ._.
+Consequently_RB ,_, it_PRP is_VBZ able_JJ to_TO select_JJ words_NNS for_IN subsequent_JJ queries_NNS that_WDT are_VBP more_RBR relevant_JJ to_TO the_DT site_NN ,_, than_IN those_DT preferred_VBN by_IN the_DT genericfrequency_NN policy_NN ,_, which_WDT are_VBP drawn_VBN from_IN a_DT large_JJ ,_, generic_JJ collection_NN ._.
+Table_NNP #_# shows_VBZ a_DT sample_NN of_IN ##_CD keywords_NNS out_IN of_IN ###_CD chosen_VBN and_CC submitted_VBN to_TO the_DT PubMed_NNP Web_NN site_NN by_IN the_DT adaptive_JJ algorithm_NN ,_, but_CC not_RB by_IN the_DT other_JJ policies_NNS ._.
+For_IN each_DT keyword_NN ,_, we_PRP present_VBP the_DT number_NN of_IN the_DT iteration_NN ,_, along_IN with_IN the_DT number_NN of_IN results_NNS that_IN it_PRP returned_VBD ._.
+As_IN one_PRP can_MD see_VB from_IN the_DT table_NN ,_, these_DT keywords_NNS are_VBP highly_RB relevant_JJ to_TO the_DT topics_NNS of_IN medicine_NN and_CC biology_NN of_IN the_DT Public_NNP Medical_NNP Library_NNP ,_, and_CC match_NN against_IN numerous_JJ articles_NNS stored_VBN in_IN its_PRP$ Web_NN site_NN ._.
+In_IN both_DT cases_NNS examined_VBN in_IN Figures_NNS #_# ,_, and_CC ##_NN ,_, the_DT random-based_JJ policies_NNS perform_VBP much_RB worse_JJR than_IN the_DT adaptive_JJ algorithm_NN ,_, and_CC the_DT generic-frequency_NN ._.
+It_PRP is_VBZ worthy_JJ noting_VBG however_RB ,_, that_IN the_DT randombased_JJ policy_NN with_IN the_DT small_JJ ,_, carefully_RB selected_VBN set_NN of_IN ##_NN ,_, ###_CD quality_NN words_NNS manages_VBZ to_TO download_VB a_DT considerable_JJ fraction_NN of_IN ##_NN ._.
+#_# %_NN 106_CD Iteration_NNP Keyword_NNP Number_NNP of_IN Results_NNS 23_CD department_NN #_# ,_, ###_CD ,_, ###_CD 34_CD patients_NNS #_# ,_, ###_CD ,_, ###_CD 53_CD clinical_JJ #_# ,_, ###_CD ,_, ###_CD 67_CD treatment_NN #_# ,_, ###_CD ,_, ###_CD 69_CD medical_JJ #_# ,_, ###_CD ,_, ###_CD 70_CD hospital_NN ###_CD ,_, ###_CD 146_CD disease_NN #_# ,_, ###_CD ,_, ###_CD 172_CD protein_NN #_# ,_, ###_CD ,_, ###_CD Table_NNP #_# :_: Sample_NN of_IN keywords_NNS queried_VBD to_TO PubMed_NNP exclusively_RB by_IN the_DT adaptive_JJ policy_NN from_IN the_DT PubMed_NNP Web_NN site_NN after_IN ###_CD queries_NNS ,_, while_IN the_DT coverage_NN for_IN the_DT Arts_NNS section_NN of_IN dmoz_NN reaches_VBZ ##_CD ._.
+#_# %_NN ,_, after_IN ###_CD queried_VBD keywords_NNS ._.
+On_IN the_DT other_JJ hand_NN ,_, the_DT random-based_JJ approach_NN that_WDT makes_VBZ use_NN of_IN the_DT vast_JJ collection_NN of_IN #_# million_CD words_NNS ,_, among_IN which_WDT a_DT large_JJ number_NN is_VBZ bogus_JJ keywords_NNS ,_, fails_VBZ to_TO download_VB even_RB a_DT mere_JJ #_# %_NN of_IN the_DT total_JJ collection_NN ,_, after_IN submitting_VBG the_DT same_JJ number_NN of_IN query_NN words_NNS ._.
+For_IN the_DT generic_JJ collections_NNS of_IN Amazon_NNP and_CC the_DT dmoz_NN sites_NNS ,_, shown_VBN in_IN Figures_NNS ##_CD and_CC ##_CD respectively_RB ,_, we_PRP get_VBP mixed_JJ results_NNS :_: The_DT genericfrequency_NN policy_NN shows_VBZ slightly_RB better_JJR performance_NN than_IN the_DT adaptive_JJ policy_NN for_IN the_DT Amazon_NNP site_NN -LRB-_-LRB- Figure_NN ##_NN -RRB-_-RRB- ,_, and_CC the_DT adaptive_JJ method_NN clearly_RB outperforms_VBZ the_DT generic-frequency_NN for_IN the_DT general_JJ dmoz_NN site_NN -LRB-_-LRB- Figure_NN ##_NN -RRB-_-RRB- ._.
+A_DT closer_JJR look_NN at_IN the_DT log_NN files_NNS of_IN the_DT two_CD Hidden_JJ Web_NN crawlers_NNS reveals_VBZ the_DT main_JJ reason_NN :_: Amazon_NNP was_VBD functioning_VBG in_IN a_DT very_RB flaky_JJ way_NN when_WRB the_DT adaptive_JJ crawler_NN visited_VBD it_PRP ,_, resulting_VBG in_IN a_DT large_JJ number_NN of_IN lost_VBN results_NNS ._.
+Thus_RB ,_, we_PRP suspect_VBP that_IN the_DT slightly_RB poor_JJ performance_NN of_IN the_DT adaptive_JJ policy_NN is_VBZ due_JJ to_TO this_DT experimental_JJ variance_NN ._.
+We_PRP are_VBP currently_RB running_VBG another_DT experiment_NN to_TO verify_VB whether_IN this_DT is_VBZ indeed_RB the_DT case_NN ._.
+Aside_RB from_IN this_DT experimental_JJ variance_NN ,_, the_DT Amazon_NNP result_NN indicates_VBZ that_IN if_IN the_DT collection_NN and_CC the_DT words_NNS that_IN a_DT Hidden_JJ Web_NN site_NN contains_VBZ are_VBP generic_JJ enough_RB ,_, then_RB the_DT generic-frequency_NN approach_NN may_MD be_VB a_DT good_JJ candidate_NN algorithm_NN for_IN effective_JJ crawling_VBG ._.
+As_IN in_IN the_DT case_NN of_IN topic-specific_JJ Hidden_NNP Web_NN sites_NNS ,_, the_DT randombased_JJ policies_NNS also_RB exhibit_VBP poor_JJ performance_NN compared_VBN to_TO the_DT other_JJ two_CD algorithms_NNS when_WRB crawling_VBG generic_JJ sites_NNS :_: for_IN the_DT Amazon_NNP Web_NN site_NN ,_, random-16K_NN succeeds_VBZ in_IN downloading_VBG almost_RB ##_CD ._.
+#_# %_NN after_IN issuing_VBG ###_CD queries_NNS ,_, alas_UH for_IN the_DT generic_JJ collection_NN of_IN dmoz_NN ,_, the_DT fraction_NN of_IN the_DT collection_NN of_IN links_NNS downloaded_VBN is_VBZ ##_CD ._.
+#_# %_NN after_IN the_DT 770th_JJ query_NN ._.
+Finally_RB ,_, as_IN expected_VBN ,_, random-1M_NN is_VBZ even_RB worse_JJR than_IN random16K_NN ,_, downloading_VBG only_RB ##_RB ._.
+#_# %_NN of_IN Amazon_NNP and_CC #_# ._.
+#_# %_NN of_IN the_DT generic_JJ dmoz_NN ._.
+In_IN summary_NN ,_, the_DT adaptive_JJ algorithm_NN performs_VBZ remarkably_RB well_RB in_IN all_DT cases_NNS :_: it_PRP is_VBZ able_JJ to_TO discover_VB and_CC download_VB most_JJS of_IN the_DT documents_NNS stored_VBN in_IN Hidden_NNP Web_NN sites_NNS by_IN issuing_VBG the_DT least_JJS number_NN of_IN queries_NNS ._.
+When_WRB the_DT collection_NN refers_VBZ to_TO a_DT specific_JJ topic_NN ,_, it_PRP is_VBZ able_JJ to_TO identify_VB the_DT keywords_NNS most_RBS relevant_JJ to_TO the_DT topic_NN of_IN the_DT site_NN and_CC consequently_RB ask_VB for_IN terms_NNS that_WDT is_VBZ most_RBS likely_JJ that_WDT will_MD return_VB a_DT large_JJ number_NN of_IN results_NNS ._.
+On_IN the_DT other_JJ hand_NN ,_, the_DT generic-frequency_NN policy_NN proves_VBZ to_TO be_VB quite_RB effective_JJ too_RB ,_, though_IN less_JJR than_IN the_DT adaptive_JJ :_: it_PRP is_VBZ able_JJ to_TO retrieve_VB relatively_RB fast_RB a_DT large_JJ portion_NN of_IN the_DT collection_NN ,_, and_CC when_WRB the_DT site_NN is_VBZ not_RB topic-specific_JJ ,_, its_PRP$ effectiveness_NN can_MD reach_VB that_DT of_IN adaptive_JJ -LRB-_-LRB- e_LS ._.
+g_NN ._.
+Amazon_NNP -RRB-_-RRB- ._.
+Finally_RB ,_, the_DT random_JJ policy_NN performs_VBZ poorly_RB in_IN general_JJ ,_, and_CC should_MD not_RB be_VB preferred_VBN ._.
+4_LS ._.
+#_# Impact_NN of_IN the_DT initial_JJ query_NN An_DT interesting_JJ issue_NN that_WDT deserves_VBZ further_JJ examination_NN is_VBZ whether_IN the_DT initial_JJ choice_NN of_IN the_DT keyword_NN used_VBN as_IN the_DT first_JJ query_NN issued_VBN by_IN the_DT adaptive_JJ algorithm_NN affects_VBZ its_PRP$ effectiveness_NN in_IN subsequent_JJ iterations_NNS ._.
+The_DT choice_NN of_IN this_DT keyword_NN is_VBZ not_RB done_VBN by_IN the_DT selection_NN of_IN the_DT 0_CD 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 1_CD 0_CD ##_CD ##_CD ##_CD ##_CD ##_CD ##_NN fractionofdocuments_NNS query_NN number_NN Convergence_NN of_IN adaptive_JJ under_IN different_JJ initial_JJ queries_NNS -_: PubMed_JJ website_NN pubmed_VBD data_NNS information_NN return_NN Figure_NN ##_CD :_: Convergence_NN of_IN the_DT adaptive_JJ algorithm_NN using_VBG different_JJ initial_JJ queries_NNS for_IN crawling_VBG the_DT PubMed_NNP Web_NN site_NN adaptive_JJ algorithm_NN itself_PRP and_CC has_VBZ to_TO be_VB manually_RB set_VBN ,_, since_IN its_PRP$ query_NN statistics_NNS tables_NNS have_VBP not_RB been_VBN populated_VBN yet_RB ._.
+Thus_RB ,_, the_DT selection_NN is_VBZ generally_RB arbitrary_JJ ,_, so_RB for_IN purposes_NNS of_IN fully_RB automating_VBG the_DT whole_JJ process_NN ,_, some_DT additional_JJ investigation_NN seems_VBZ necessary_JJ ._.
+For_IN this_DT reason_NN ,_, we_PRP initiated_VBD three_CD adaptive_JJ Hidden_JJ Web_NN crawlers_NNS targeting_VBG the_DT PubMed_NNP Web_NN site_NN with_IN different_JJ seed-words_NNS :_: the_DT word_NN data_NNS ,_, which_WDT returns_VBZ #_# ,_, ###_CD ,_, ###_CD results_NNS ,_, the_DT word_NN information_NN that_WDT reports_VBZ ###_NN ,_, ###_CD documents_NNS ,_, and_CC the_DT word_NN return_NN that_WDT retrieves_VBZ ##_NN ,_, ###_CD pages_NNS ,_, out_IN of_IN ##_CD million_CD ._.
+These_DT keywords_NNS represent_VBP varying_VBG degrees_NNS of_IN term_NN popularity_NN in_IN PubMed_NNP ,_, with_IN the_DT first_JJ one_CD being_NN of_IN high_JJ popularity_NN ,_, the_DT second_NN of_IN medium_NN ,_, and_CC the_DT third_JJ of_IN low_JJ ._.
+We_PRP also_RB show_VBP results_NNS for_IN the_DT keyword_NN pubmed_VBD ,_, used_VBN in_IN the_DT experiments_NNS for_IN coverage_NN of_IN Section_NN #_# ._.
+#_# ,_, and_CC which_WDT returns_VBZ ###_RB articles_NNS ._.
+As_IN we_PRP can_MD see_VB from_IN Figure_NNP ##_NNP ,_, after_IN a_DT small_JJ number_NN of_IN queries_NNS ,_, all_DT four_CD crawlers_NNS roughly_RB download_VBP the_DT same_JJ fraction_NN of_IN the_DT collection_NN ,_, regardless_RB of_IN their_PRP$ starting_VBG point_NN :_: Their_PRP$ coverages_NNS are_VBP roughly_RB equivalent_JJ from_IN the_DT 25th_JJ query_NN ._.
+Eventually_RB ,_, all_DT four_CD crawlers_NNS use_VBP the_DT same_JJ set_NN of_IN terms_NNS for_IN their_PRP$ queries_NNS ,_, regardless_RB of_IN the_DT initial_JJ query_NN ._.
+In_IN the_DT specific_JJ experiment_NN ,_, from_IN the_DT 36th_JJ query_NN onward_RB ,_, all_DT four_CD crawlers_NNS use_VBP the_DT same_JJ terms_NNS for_IN their_PRP$ queries_NNS in_IN each_DT iteration_NN ,_, or_CC the_DT same_JJ terms_NNS are_VBP used_VBN off_RP by_IN one_CD or_CC two_CD query_JJ numbers_NNS ._.
+Our_PRP$ result_VBP confirms_VBZ the_DT observation_NN of_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- that_IN the_DT choice_NN of_IN the_DT initial_JJ query_NN has_VBZ minimal_JJ effect_NN on_IN the_DT final_JJ performance_NN ._.
+We_PRP can_MD explain_VB this_DT intuitively_RB as_IN follows_VBZ :_: Our_PRP$ algorithm_NN approximates_VBZ the_DT optimal_JJ set_NN of_IN queries_NNS to_TO use_VB for_IN a_DT particular_JJ Web_NN site_NN ._.
+Once_RB the_DT algorithm_NN has_VBZ issued_VBN a_DT significant_JJ number_NN of_IN queries_NNS ,_, it_PRP has_VBZ an_DT accurate_JJ estimation_NN of_IN the_DT content_NN of_IN the_DT Web_NN site_NN ,_, regardless_RB of_IN the_DT initial_JJ query_NN ._.
+Since_IN this_DT estimation_NN is_VBZ similar_JJ for_IN all_DT runs_NNS of_IN the_DT algorithm_NN ,_, the_DT crawlers_NNS will_MD use_VB roughly_RB the_DT same_JJ queries_NNS ._.
+4_LS ._.
+#_# Impact_NN of_IN the_DT limit_NN in_IN the_DT number_NN of_IN results_NNS While_IN the_DT Amazon_NNP and_CC dmoz_NN sites_NNS have_VBP the_DT respective_JJ limit_NN of_IN 32_CD ,_, ###_CD and_CC ##_CD ,_, ###_CD in_IN their_PRP$ result_NN sizes_NNS ,_, these_DT limits_NNS may_MD be_VB larger_JJR than_IN those_DT imposed_VBN by_IN other_JJ Hidden_JJ Web_NN sites_NNS ._.
+In_IN order_NN to_TO investigate_VB how_WRB a_DT tighter_JJR limit_NN in_IN the_DT result_NN size_NN affects_VBZ the_DT performance_NN of_IN our_PRP$ algorithms_NNS ,_, we_PRP performed_VBD two_CD additional_JJ crawls_VBZ to_TO the_DT generic-dmoz_NN site_NN :_: we_PRP ran_VBD the_DT generic-frequency_NN and_CC adaptive_JJ policies_NNS but_CC we_PRP retrieved_VBD only_RB up_RB to_TO the_DT top_JJ #_# ,_, ###_CD results_NNS for_IN every_DT query_NN ._.
+In_IN Figure_NNP ##_CD we_PRP plot_VBP the_DT coverage_NN for_IN the_DT two_CD policies_NNS as_IN a_DT function_NN of_IN the_DT number_NN of_IN queries_NNS ._.
+As_IN one_NN might_MD expect_VB ,_, by_IN comparing_VBG the_DT new_JJ result_NN in_IN Figure_NNP ##_CD to_TO that_DT of_IN Figure_NNP ##_CD where_WRB the_DT result_NN limit_NN was_VBD ##_CD ,_, ###_CD ,_, we_PRP conclude_VBP that_IN the_DT tighter_JJR limit_NN requires_VBZ a_DT higher_JJR number_NN of_IN queries_NNS to_TO achieve_VB the_DT same_JJ coverage_NN ._.
+For_IN example_NN ,_, when_WRB the_DT result_NN limit_NN was_VBD ##_CD ,_, ###_CD ,_, the_DT adaptive_JJ pol107_NN 0_CD 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 1_CD 0_CD ###_CD ####_CD ####_CD ####_CD ####_CD ####_CD ####_CD FractionofUniquePages_NNP Query_NNP Number_NNP Cumulative_NNP fraction_NN of_IN unique_JJ pages_NNS downloaded_VBD per_IN query_NN -_: Dmoz_NNP Web_NN site_NN -LRB-_-LRB- cap_NN limit_NN ####_CD -RRB-_-RRB- adaptive_JJ generic-frequency_NN Figure_NN ##_CD :_: Coverage_NNP of_IN general_JJ dmoz_NN after_IN limiting_VBG the_DT number_NN of_IN results_NNS to_TO #_# ,_, ###_CD icy_NN could_MD download_VB ##_CD %_NN of_IN the_DT site_NN after_IN issuing_VBG ###_CD queries_NNS ,_, while_IN it_PRP had_VBD to_TO issue_VB #_# ,_, ###_CD queries_NNS to_TO download_VB ##_CD %_NN of_IN the_DT site_NN when_WRB the_DT limit_NN was_VBD #_# ,_, ###_CD ._.
+On_IN the_DT other_JJ hand_NN ,_, our_PRP$ new_JJ result_NN shows_VBZ that_IN even_RB with_IN a_DT tight_JJ result_NN limit_NN ,_, it_PRP is_VBZ still_RB possible_JJ to_TO download_VB most_JJS of_IN a_DT Hidden_JJ Web_NN site_NN after_IN issuing_VBG a_DT reasonable_JJ number_NN of_IN queries_NNS ._.
+The_DT adaptive_JJ policy_NN could_MD download_VB more_JJR than_IN ##_CD %_NN of_IN the_DT site_NN after_IN issuing_VBG #_# ,_, ###_CD queries_NNS when_WRB the_DT limit_NN was_VBD #_# ,_, ###_CD ._.
+Finally_RB ,_, our_PRP$ result_NN shows_VBZ that_IN our_PRP$ adaptive_JJ policy_NN consistently_RB outperforms_VBZ the_DT generic-frequency_NN policy_NN regardless_RB of_IN the_DT result_NN limit_NN ._.
+In_IN both_DT Figure_NNP ##_NN and_CC Figure_NN ##_NN ,_, our_PRP$ adaptive_JJ policy_NN shows_VBZ significantly_RB larger_JJR coverage_NN than_IN the_DT generic-frequency_NN policy_NN for_IN the_DT same_JJ number_NN of_IN queries_NNS ._.
+4_LS ._.
+#_# Incorporating_VBG the_DT document_NN download_NN cost_NN For_IN brevity_NN of_IN presentation_NN ,_, the_DT performance_NN evaluation_NN results_VBZ provided_VBN so_RB far_RB assumed_VBN a_DT simplified_VBN cost-model_NN where_WRB every_DT query_NN involved_VBD a_DT constant_JJ cost_NN ._.
+In_IN this_DT section_NN we_PRP present_VBP results_NNS regarding_VBG the_DT performance_NN of_IN the_DT adaptive_JJ and_CC generic-frequency_NN algorithms_NNS using_VBG Equation_NN #_# to_TO drive_VB our_PRP$ query_NN selection_NN process_NN ._.
+As_IN we_PRP discussed_VBD in_IN Section_NN #_# ._.
+#_# ._.
+#_# ,_, this_DT query_NN cost_NN model_NN includes_VBZ the_DT cost_NN for_IN submitting_VBG the_DT query_NN to_TO the_DT site_NN ,_, retrieving_VBG the_DT result_NN index_NN page_NN ,_, and_CC also_RB downloading_VBG the_DT actual_JJ pages_NNS ._.
+For_IN these_DT costs_NNS ,_, we_PRP examined_VBD the_DT size_NN of_IN every_DT result_NN in_IN the_DT index_NN page_NN and_CC the_DT sizes_NNS of_IN the_DT documents_NNS ,_, and_CC we_PRP chose_VBD cq_NN =_JJ ###_CD ,_, cr_NN =_JJ ###_CD ,_, and_CC cd_NN =_JJ #####_CD ,_, as_IN values_NNS for_IN the_DT parameters_NNS of_IN Equation_NN #_# ,_, and_CC for_IN the_DT particular_JJ experiment_NN that_IN we_PRP ran_VBD on_IN the_DT PubMed_NNP website_NN ._.
+The_DT values_NNS that_IN we_PRP selected_VBD imply_VBP that_IN the_DT cost_NN for_IN issuing_VBG one_CD query_NN and_CC retrieving_VBG one_CD result_NN from_IN the_DT result_NN index_NN page_NN are_VBP roughly_RB the_DT same_JJ ,_, while_IN the_DT cost_NN for_IN downloading_VBG an_DT actual_JJ page_NN is_VBZ ###_CD times_NNS larger_JJR ._.
+We_PRP believe_VBP that_IN these_DT values_NNS are_VBP reasonable_JJ for_IN the_DT PubMed_NNP Web_NN site_NN ._.
+Figure_NNP ##_NN shows_VBZ the_DT coverage_NN of_IN the_DT adaptive_JJ and_CC genericfrequency_NN algorithms_NNS as_IN a_DT function_NN of_IN the_DT resource_NN units_NNS used_VBN during_IN the_DT download_NN process_NN ._.
+The_DT horizontal_JJ axis_NN is_VBZ the_DT amount_NN of_IN resources_NNS used_VBN ,_, and_CC the_DT vertical_JJ axis_NN is_VBZ the_DT coverage_NN ._.
+As_IN it_PRP is_VBZ evident_JJ from_IN the_DT graph_NN ,_, the_DT adaptive_JJ policy_NN makes_VBZ more_RBR efficient_JJ use_NN of_IN the_DT available_JJ resources_NNS ,_, as_IN it_PRP is_VBZ able_JJ to_TO download_VB more_JJR articles_NNS than_IN the_DT generic-frequency_NN ,_, using_VBG the_DT same_JJ amount_NN of_IN resource_NN units_NNS ._.
+However_RB ,_, the_DT difference_NN in_IN coverage_NN is_VBZ less_RBR dramatic_JJ in_IN this_DT case_NN ,_, compared_VBN to_TO the_DT graph_NN of_IN Figure_NNP #_# ._.
+The_DT smaller_JJR difference_NN is_VBZ due_JJ to_TO the_DT fact_NN that_IN under_IN the_DT current_JJ cost_NN metric_JJ ,_, the_DT download_NN cost_NN of_IN documents_NNS constitutes_VBZ a_DT significant_JJ portion_NN of_IN the_DT cost_NN ._.
+Therefore_RB ,_, when_WRB both_CC policies_NNS downloaded_VBD the_DT same_JJ number_NN of_IN documents_NNS ,_, the_DT saving_NN of_IN the_DT adaptive_JJ policy_NN is_VBZ not_RB as_IN dramatic_JJ as_IN before_RB ._.
+That_DT 0_CD 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 1_CD 0_CD ####_CD #####_CD #####_CD #####_CD #####_CD #####_CD FractionofUniquePages_NNS Total_JJ Cost_NN -LRB-_-LRB- cq_NN =_JJ ###_CD ,_, cr_NN =_JJ ###_CD ,_, cd_NN =_JJ #####_CD -RRB-_-RRB- Cumulative_JJ fraction_NN of_IN unique_JJ pages_NNS downloaded_VBD per_IN cost_NN unit_NN -_: PubMed_NNP Web_NN site_NN adaptive_JJ frequency_NN Figure_NN ##_CD :_: Coverage_NNP of_IN PubMed_NNP after_IN incorporating_VBG the_DT document_NN download_NN cost_NN is_VBZ ,_, the_DT savings_NNS in_IN the_DT query_NN cost_NN and_CC the_DT result_NN index_NN download_NN cost_NN is_VBZ only_RB a_DT relatively_RB small_JJ portion_NN of_IN the_DT overall_JJ cost_NN ._.
+Still_RB ,_, we_PRP observe_VBP noticeable_JJ savings_NNS from_IN the_DT adaptive_JJ policy_NN ._.
+At_IN the_DT total_JJ cost_NN of_IN ####_CD ,_, for_IN example_NN ,_, the_DT coverage_NN of_IN the_DT adaptive_JJ policy_NN is_VBZ roughly_RB 0_CD ._.
+#_# while_IN the_DT coverage_NN of_IN the_DT frequency_NN policy_NN is_VBZ only_RB #_# ._.
+#_# ._.
+5_CD ._.
+RELATED_JJ WORK_VBP In_IN a_DT recent_JJ study_NN ,_, Raghavan_NNP and_CC Garcia-Molina_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- present_JJ an_DT architectural_JJ model_NN for_IN a_DT Hidden_JJ Web_NN crawler_NN ._.
+The_DT main_JJ focus_NN of_IN this_DT work_NN is_VBZ to_TO learn_VB Hidden-Web_JJ query_NN interfaces_NNS ,_, not_RB to_TO generate_VB queries_NNS automatically_RB ._.
+The_DT potential_JJ queries_NNS are_VBP either_RB provided_VBN manually_RB by_IN users_NNS or_CC collected_VBN from_IN the_DT query_NN interfaces_NNS ._.
+In_IN contrast_NN ,_, our_PRP$ main_JJ focus_NN is_VBZ to_TO generate_VB queries_NNS automatically_RB without_IN any_DT human_JJ intervention_NN ._.
+The_DT idea_NN of_IN automatically_RB issuing_VBG queries_NNS to_TO a_DT database_NN and_CC examining_VBG the_DT results_NNS has_VBZ been_VBN previously_RB used_VBN in_IN different_JJ contexts_NNS ._.
+For_IN example_NN ,_, in_IN -LSB-_-LRB- ##_NN ,_, ##_NN -RSB-_-RRB- ,_, Callan_NN and_CC Connel_NNP try_VBP to_TO acquire_VB an_DT accurate_JJ language_NN model_NN by_IN collecting_VBG a_DT uniform_JJ random_JJ sample_NN from_IN the_DT database_NN ._.
+In_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- Lawrence_NNP and_CC Giles_NNP issue_NN random_JJ queries_NNS to_TO a_DT number_NN of_IN Web_NN Search_VB Engines_NNS in_IN order_NN to_TO estimate_VB the_DT fraction_NN of_IN the_DT Web_NN that_WDT has_VBZ been_VBN indexed_VBN by_IN each_DT of_IN them_PRP ._.
+In_IN a_DT similar_JJ fashion_NN ,_, Bharat_NN and_CC Broder_NNP -LSB-_-LRB- #_# -RSB-_-RRB- issue_NN random_JJ queries_NNS to_TO a_DT set_NN of_IN Search_VB Engines_NNS in_IN order_NN to_TO estimate_VB the_DT relative_JJ size_NN and_CC overlap_VBP of_IN their_PRP$ indexes_NNS ._.
+In_IN -LSB-_-LRB- #_# -RSB-_-RRB- ,_, Barbosa_NNP and_CC Freire_NNP experimentally_RB evaluate_VB methods_NNS for_IN building_VBG multi-keyword_JJ queries_NNS that_WDT can_MD return_VB a_DT large_JJ fraction_NN of_IN a_DT document_NN collection_NN ._.
+Our_PRP$ work_NN differs_VBZ from_IN the_DT previous_JJ studies_NNS in_IN two_CD ways_NNS ._.
+First_RB ,_, it_PRP provides_VBZ a_DT theoretical_JJ framework_NN for_IN analyzing_VBG the_DT process_NN of_IN generating_VBG queries_NNS for_IN a_DT database_NN and_CC examining_VBG the_DT results_NNS ,_, which_WDT can_MD help_VB us_PRP better_RBR understand_VB the_DT effectiveness_NN of_IN the_DT methods_NNS presented_VBN in_IN the_DT previous_JJ work_NN ._.
+Second_RB ,_, we_PRP apply_VBP our_PRP$ framework_NN to_TO the_DT problem_NN of_IN Hidden_JJ Web_NN crawling_VBG and_CC demonstrate_VBP the_DT efficiency_NN of_IN our_PRP$ algorithms_NNS ._.
+Cope_VB et_FW al_FW ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- propose_VBP a_DT method_NN to_TO automatically_RB detect_VB whether_IN a_DT particular_JJ Web_NN page_NN contains_VBZ a_DT search_NN form_NN ._.
+This_DT work_NN is_VBZ complementary_JJ to_TO ours_JJ ;_: once_RB we_PRP detect_VBP search_NN interfaces_NNS on_IN the_DT Web_NN using_VBG the_DT method_NN in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ,_, we_PRP may_MD use_VB our_PRP$ proposed_VBN algorithms_NNS to_TO download_VB pages_NNS automatically_RB from_IN those_DT Web_NN sites_NNS ._.
+Reference_NNP -LSB-_-LRB- #_# -RSB-_-RRB- reports_VBZ methods_NNS to_TO estimate_VB what_WP fraction_NN of_IN a_DT text_NN database_NN can_MD be_VB eventually_RB acquired_VBN by_IN issuing_VBG queries_NNS to_TO the_DT database_NN ._.
+In_IN -LSB-_-LRB- #_# -RSB-_-RRB- the_DT authors_NNS study_NN query-based_JJ techniques_NNS that_WDT can_MD extract_VB relational_JJ data_NNS from_IN large_JJ text_NN databases_NNS ._.
+Again_RB ,_, these_DT works_NNS study_NN orthogonal_JJ issues_NNS and_CC are_VBP complementary_JJ to_TO our_PRP$ work_NN ._.
+In_IN order_NN to_TO make_VB documents_NNS in_IN multiple_JJ textual_JJ databases_NNS searchable_VBP at_IN a_DT central_JJ place_NN ,_, a_DT number_NN of_IN harvesting_VBG approaches_NNS have_VBP 108_CD been_VBN proposed_VBN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, OAI_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, DP9_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- -RRB-_-RRB- ._.
+These_DT approaches_NNS essentially_RB assume_VBP cooperative_JJ document_NN databases_NNS that_WDT willingly_RB share_VBP some_DT of_IN their_PRP$ metadata_NN and_CC /_: or_CC documents_NNS to_TO help_VB a_DT third-party_JJ search_NN engine_NN to_TO index_NN the_DT documents_NNS ._.
+Our_PRP$ approach_NN assumes_VBZ uncooperative_JJ databases_NNS that_WDT do_VBP not_RB share_VB their_PRP$ data_NNS publicly_RB and_CC whose_WP$ documents_NNS are_VBP accessible_JJ only_RB through_IN search_NN interfaces_NNS ._.
+There_EX exists_VBZ a_DT large_JJ body_NN of_IN work_NN studying_VBG how_WRB to_TO identify_VB the_DT most_RBS relevant_JJ database_NN given_VBN a_DT user_NN query_NN -LSB-_-LRB- ##_CD ,_, ##_CD ,_, ##_CD ,_, ##_CD ,_, ##_CD -RSB-_-RRB- ._.
+This_DT body_NN of_IN work_NN is_VBZ often_RB referred_VBN to_TO as_IN meta-searching_NN or_CC database_NN selection_NN problem_NN over_IN the_DT Hidden_NNP Web_NN ._.
+For_IN example_NN ,_, -LSB-_-LRB- ##_CD -RSB-_-RRB- suggests_VBZ the_DT use_NN of_IN focused_JJ probing_VBG to_TO classify_VB databases_NNS into_IN a_DT topical_JJ category_NN ,_, so_RB that_IN given_VBN a_DT query_NN ,_, a_DT relevant_JJ database_NN can_MD be_VB selected_VBN based_VBN on_IN its_PRP$ topical_JJ category_NN ._.
+Our_PRP$ vision_NN is_VBZ different_JJ from_IN this_DT body_NN of_IN work_NN in_IN that_IN we_PRP intend_VBP to_TO download_VB and_CC index_NN the_DT Hidden_NNP pages_NNS at_IN a_DT central_JJ location_NN in_IN advance_NN ,_, so_RB that_IN users_NNS can_MD access_VB all_PDT the_DT information_NN at_IN their_PRP$ convenience_NN from_IN one_CD single_JJ location_NN ._.
+6_CD ._.
+CONCLUSION_NN AND_CC FUTURE_NN WORK_VBP Traditional_JJ crawlers_NNS normally_RB follow_VBP links_NNS on_IN the_DT Web_NN to_TO discover_VB and_CC download_VB pages_NNS ._.
+Therefore_RB they_PRP can_MD not_RB get_VB to_TO the_DT Hidden_NNP Web_NN pages_NNS which_WDT are_VBP only_RB accessible_JJ through_IN query_NN interfaces_NNS ._.
+In_IN this_DT paper_NN ,_, we_PRP studied_VBD how_WRB we_PRP can_MD build_VB a_DT Hidden_JJ Web_NN crawler_NN that_WDT can_MD automatically_RB query_VB a_DT Hidden_JJ Web_NN site_NN and_CC download_VB pages_NNS from_IN it_PRP ._.
+We_PRP proposed_VBD three_CD different_JJ query_NN generation_NN policies_NNS for_IN the_DT Hidden_NNP Web_NN :_: a_DT policy_NN that_WDT picks_VBZ queries_NNS at_IN random_JJ from_IN a_DT list_NN of_IN keywords_NNS ,_, a_DT policy_NN that_WDT picks_VBZ queries_NNS based_VBN on_IN their_PRP$ frequency_NN in_IN a_DT generic_JJ text_NN collection_NN ,_, and_CC a_DT policy_NN which_WDT adaptively_RB picks_VBZ a_DT good_JJ query_NN based_VBN on_IN the_DT content_NN of_IN the_DT pages_NNS downloaded_VBN from_IN the_DT Hidden_NNP Web_NN site_NN ._.
+Experimental_JJ evaluation_NN on_IN #_# real_JJ Hidden_JJ Web_NN sites_NNS shows_VBZ that_IN our_PRP$ policies_NNS have_VBP a_DT great_JJ potential_NN ._.
+In_IN particular_JJ ,_, in_IN certain_JJ cases_NNS the_DT adaptive_JJ policy_NN can_MD download_VB more_JJR than_IN ##_CD %_NN of_IN a_DT Hidden_JJ Web_NN site_NN after_IN issuing_VBG approximately_RB ###_RB queries_NNS ._.
+Given_VBN these_DT results_NNS ,_, we_PRP believe_VBP that_IN our_PRP$ work_NN provides_VBZ a_DT potential_JJ mechanism_NN to_TO improve_VB the_DT search-engine_JJ coverage_NN of_IN the_DT Web_NN and_CC the_DT user_NN experience_NN of_IN Web_NN search_NN ._.
+6_CD ._.
+#_# Future_JJ Work_NN We_PRP briefly_RB discuss_VBP some_DT future-research_JJ avenues_NNS ._.
+Multi-attribute_JJ Databases_NNS We_PRP are_VBP currently_RB investigating_VBG how_WRB to_TO extend_VB our_PRP$ ideas_NNS to_TO structured_JJ multi-attribute_JJ databases_NNS ._.
+While_IN generating_VBG queries_NNS for_IN multi-attribute_JJ databases_NNS is_VBZ clearly_RB a_DT more_RBR difficult_JJ problem_NN ,_, we_PRP may_MD exploit_VB the_DT following_VBG observation_NN to_TO address_VB this_DT problem_NN :_: When_WRB a_DT site_NN supports_VBZ multi-attribute_JJ queries_NNS ,_, the_DT site_NN often_RB returns_VBZ pages_NNS that_WDT contain_VBP values_NNS for_IN each_DT of_IN the_DT query_NN attributes_VBZ ._.
+For_IN example_NN ,_, when_WRB an_DT online_JJ bookstore_NN supports_VBZ queries_NNS on_IN title_NN ,_, author_NN and_CC isbn_NN ,_, the_DT pages_NNS returned_VBD from_IN a_DT query_NN typically_RB contain_VBP the_DT title_NN ,_, author_NN and_CC ISBN_NN of_IN corresponding_JJ books_NNS ._.
+Thus_RB ,_, if_IN we_PRP can_MD analyze_VB the_DT returned_VBN pages_NNS and_CC extract_VB the_DT values_NNS for_IN each_DT field_NN -LRB-_-LRB- e_LS ._.
+g_NN ,_, title_NN =_JJ Harry_NNP Potter_NNP ''_'' ,_, author_NN =_JJ J_NN ._.
+K_NN ._.
+Rowling_VBG ''_'' ,_, etc_NN -RRB-_-RRB- ,_, we_PRP can_MD apply_VB the_DT same_JJ idea_NN that_IN we_PRP used_VBD for_IN the_DT textual_NN database_NN :_: estimate_VB the_DT frequency_NN of_IN each_DT attribute_NN value_NN and_CC pick_VB the_DT most_RBS promising_JJ one_CD ._.
+The_DT main_JJ challenge_NN is_VBZ to_TO automatically_RB segment_NN the_DT returned_VBN pages_NNS so_IN that_IN we_PRP can_MD identify_VB the_DT sections_NNS of_IN the_DT pages_NNS that_WDT present_VBP the_DT values_NNS corresponding_VBG to_TO each_DT attribute_NN ._.
+Since_IN many_JJ Web_NN sites_NNS follow_VBP limited_JJ formatting_NN styles_NNS in_IN presenting_VBG multiple_JJ attributes_NNS -_: for_IN example_NN ,_, most_JJS book_NN titles_NNS are_VBP preceded_VBN by_IN the_DT label_NN Title_NN :_: -_: we_PRP believe_VBP we_PRP may_MD learn_VB page-segmentation_JJ rules_NNS automatically_RB from_IN a_DT small_JJ set_NN of_IN training_NN examples_NNS ._.
+Other_JJ Practical_NNP Issues_NNPS In_IN addition_NN to_TO the_DT automatic_JJ query_NN generation_NN problem_NN ,_, there_EX are_VBP many_JJ practical_JJ issues_NNS to_TO be_VB addressed_VBN to_TO build_VB a_DT fully_RB automatic_JJ Hidden-Web_JJ crawler_NN ._.
+For_IN example_NN ,_, in_IN this_DT paper_NN we_PRP assumed_VBD that_IN the_DT crawler_NN already_RB knows_VBZ all_DT query_JJ interfaces_NNS for_IN Hidden-Web_JJ sites_NNS ._.
+But_CC how_WRB can_MD the_DT crawler_NN discover_VBP the_DT query_NN interfaces_NNS ?_.
+The_DT method_NN proposed_VBN in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- may_MD be_VB a_DT good_JJ starting_VBG point_NN ._.
+In_IN addition_NN ,_, some_DT Hidden-Web_JJ sites_NNS return_VBP their_PRP$ results_NNS in_IN batches_NNS of_IN ,_, say_VB ,_, ##_CD pages_NNS ,_, so_IN the_DT user_NN has_VBZ to_TO click_VB on_IN a_DT next_JJ button_NN in_IN order_NN to_TO see_VB more_JJR results_NNS ._.
+In_IN this_DT case_NN ,_, a_DT fully_RB automatic_JJ Hidden-Web_JJ crawler_NN should_MD know_VB that_IN the_DT first_JJ result_NN index_NN page_NN contains_VBZ only_RB a_DT partial_JJ result_NN and_CC press_NN the_DT next_JJ button_NN automatically_RB ._.
+Finally_RB ,_, some_DT Hidden_JJ Web_NN sites_NNS may_MD contain_VB an_DT infinite_JJ number_NN of_IN Hidden_JJ Web_NN pages_NNS which_WDT do_VBP not_RB contribute_VB much_JJ significant_JJ content_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+a_DT calendar_NN with_IN links_NNS for_IN every_DT day_NN -RRB-_-RRB- ._.
+In_IN this_DT case_NN the_DT Hidden-Web_NNP crawler_NN should_MD be_VB able_JJ to_TO detect_VB that_IN the_DT site_NN does_VBZ not_RB have_VB much_RB more_RBR new_JJ content_NN and_CC stop_VB downloading_VBG pages_NNS from_IN the_DT site_NN ._.
+Page_NNP similarity_NN detection_NN algorithms_NNS may_MD be_VB useful_JJ for_IN this_DT purpose_NN -LSB-_-LRB- #_# ,_, ##_NN -RSB-_-RRB- ._.
+7_CD ._.
+REFERENCES_NNS -LSB-_-LRB- #_# -RSB-_-RRB- Lexisnexis_NNP http_NN :_: /_: /_: www_NN ._.
+lexisnexis_NN ._.
+com_NN ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- The_DT Open_NNP Directory_NNP Project_NNP ,_, http_NN :_: /_: /_: www_NN ._.
+dmoz_NN ._.
+org_NN ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- E_NN ._.
+Agichtein_NN and_CC L_NN ._.
+Gravano_NNP ._.
+Querying_VBG text_NN databases_NNS for_IN efficient_JJ information_NN extraction_NN ._.
+In_IN ICDE_NN ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- E_NN ._.
+Agichtein_NNP ,_, P_NN ._.
+Ipeirotis_NNP ,_, and_CC L_NN ._.
+Gravano_NNP ._.
+Modeling_VBG query-based_JJ access_NN to_TO text_NN databases_NNS ._.
+In_IN WebDB_NN ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- Article_NNP on_IN New_NNP York_NNP Times_NNP ._.
+Old_JJ Search_VB Engine_NNP ,_, the_DT Library_NNP ,_, Tries_VBZ to_TO Fit_VB Into_NNP a_DT Google_NNP World_NNP ._.
+Available_JJ at_IN :_: http_NN :_: /_: /_: www_NN ._.
+nytimes_NNS ._.
+com_NN /_: ####_CD /_: ##_CD /_: ##_CD /_: technology_NN /_: 21LIBR_NN ._.
+html_NN ,_, June_NNP ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- L_NN ._.
+Barbosa_NNP and_CC J_NNP ._.
+Freire_NNP ._.
+Siphoning_VBG hidden-web_JJ data_NNS through_IN keyword-based_JJ interfaces_NNS ._.
+In_IN SBBD_NN ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- M_NN ._.
+K_NN ._.
+Bergman_NNP ._.
+The_DT deep_JJ web_NN :_: Surfacing_VBG hidden_JJ value_NN ,_, http_NN :_: /_: /_: www_NN ._.
+press_NN ._.
+umich_NN ._.
+edu_FW /_: jep_NN /_: 07-01_CD /_: bergman_NN ._.
+html_NN ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- K_NNP ._.
+Bharat_NNP and_CC A_NNP ._.
+Broder_NNP ._.
+A_DT technique_NN for_IN measuring_VBG the_DT relative_JJ size_NN and_CC overlap_VBP of_IN public_JJ web_NN search_NN engines_NNS ._.
+In_IN WWW_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- A_DT ._.
+Z_NN ._.
+Broder_NNP ,_, S_NN ._.
+C_NN ._.
+Glassman_NNP ,_, M_NN ._.
+S_NN ._.
+Manasse_NNP ,_, and_CC G_NN ._.
+Zweig_NNP ._.
+Syntactic_JJ clustering_NN of_IN the_DT web_NN ._.
+In_IN WWW_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+Callan_NNP ,_, M_NN ._.
+Connell_NNP ,_, and_CC A_NN ._.
+Du_NNP ._.
+Automatic_NNP discovery_NN of_IN language_NN models_NNS for_IN text_NN databases_NNS ._.
+In_IN SIGMOD_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+P_NN ._.
+Callan_NN and_CC M_NN ._.
+E_NN ._.
+Connell_NNP ._.
+Query-based_JJ sampling_NN of_IN text_NN databases_NNS ._.
+Information_NNP Systems_NNP ,_, ##_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 97-130_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- K_NN ._.
+C_NN ._.
+-_: C_NN ._.
+Chang_NNP ,_, B_NN ._.
+He_PRP ,_, C_NN ._.
+Li_NNP ,_, and_CC Z_NN ._.
+Zhang_NNP ._.
+Structured_VBN databases_NNS on_IN the_DT web_NN :_: Observations_NNS and_CC implications_NNS ._.
+Technical_NNP report_NN ,_, UIUC_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+Cho_NNP ,_, N_NNP ._.
+Shivakumar_NNP ,_, and_CC H_NN ._.
+Garcia-Molina_NNP ._.
+Finding_VBG replicated_VBN web_NN collections_NNS ._.
+In_IN SIGMOD_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- W_NN ._.
+Cohen_NNP and_CC Y_NN ._.
+Singer_NNP ._.
+Learning_VBG to_TO query_VB the_DT web_NN ._.
+In_IN AAAI_NNP Workshop_NNP on_IN Internet-Based_NNP Information_NNP Systems_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+Cope_VB ,_, N_NN ._.
+Craswell_NNP ,_, and_CC D_NN ._.
+Hawking_VBG ._.
+Automated_VBN discovery_NN of_IN search_NN interfaces_NNS on_IN the_DT web_NN ._.
+In_IN 14th_JJ Australasian_JJ conference_NN on_IN Database_NN technologies_NNS ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- T_NN ._.
+H_NN ._.
+Cormen_NNP ,_, C_NNP ._.
+E_NN ._.
+Leiserson_NNP ,_, and_CC R_NN ._.
+L_NN ._.
+Rivest_NNP ._.
+Introduction_NN to_TO Algorithms_NNP ,_, 2nd_JJ Edition_NN ._.
+MIT_NNP Press_NNP /_: McGraw_NNP Hill_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- D_NN ._.
+Florescu_NNP ,_, A_NNP ._.
+Y_NN ._.
+Levy_NNP ,_, and_CC A_NN ._.
+O_NN ._.
+Mendelzon_NNP ._.
+Database_NN techniques_NNS for_IN the_DT world-wide_JJ web_NN :_: A_DT survey_NN ._.
+SIGMOD_NNP Record_NNP ,_, ##_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 59-74_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- B_NN ._.
+He_PRP and_CC K_NN ._.
+C_NN ._.
+-_: C_NN ._.
+Chang_NNP ._.
+Statistical_JJ schema_NN matching_VBG across_IN web_NN query_NN interfaces_NNS ._.
+In_IN SIGMOD_NNP Conference_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- P_NN ._.
+Ipeirotis_NN and_CC L_NN ._.
+Gravano_NNP ._.
+Distributed_VBN search_NN over_IN the_DT hidden_JJ web_NN :_: Hierarchical_JJ database_NN sampling_NN and_CC selection_NN ._.
+In_IN VLDB_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- P_NN ._.
+G_NN ._.
+Ipeirotis_NNP ,_, L_NNP ._.
+Gravano_NNP ,_, and_CC M_NN ._.
+Sahami_NNP ._.
+Probe_NN ,_, count_NN ,_, and_CC classify_VB :_: Categorizing_VBG hidden_JJ web_NN databases_NNS ._.
+In_IN SIGMOD_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- C_NN ._.
+Lagoze_NN and_CC H_NN ._.
+V_NN ._.
+Sompel_NN ._.
+The_DT Open_NNP Archives_NNPS Initiative_NNP :_: Building_NNP a_DT low-barrier_JJ interoperability_NN framework_NN In_IN JCDL_NN ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- S_NN ._.
+Lawrence_NNP and_CC C_NNP ._.
+L_NN ._.
+Giles_NNP ._.
+Searching_NN the_DT World_NNP Wide_NN Web_NN ._.
+Science_NNP ,_, 280_CD -LRB-_-LRB- ####_CD -RRB-_-RRB- :_: 98-100_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- V_NN ._.
+Z_NN ._.
+Liu_NNP ,_, J_NNP ._.
+C_NN ._.
+Richard_NNP C_NNP ._.
+Luo_NNP and_CC ,_, and_CC W_NN ._.
+W_NN ._.
+Chu_NNP ._.
+Dpro_NNP :_: A_NNP probabilistic_JJ approach_NN for_IN hidden_JJ web_NN database_NN selection_NN using_VBG dynamic_JJ probing_VBG ._.
+In_IN ICDE_NN ,_, 2004_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- X_NN ._.
+Liu_NNP ,_, K_NNP ._.
+Maly_RB ,_, M_NN ._.
+Zubair_NNP and_CC M_NN ._.
+L_NN ._.
+Nelson_NNP ._.
+DP9-An_JJ OAI_NNP Gateway_NNP Service_NNP for_IN Web_NN Crawlers_NNS ._.
+In_IN JCDL_NN ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- B_NN ._.
+B_NN ._.
+Mandelbrot_NNP ._.
+Fractal_JJ Geometry_NN of_IN Nature_NNP ._.
+W_NN ._.
+H_NN ._.
+Freeman_NNP &_CC Co_NNP ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- A_DT ._.
+Ntoulas_NNP ,_, J_NNP ._.
+Cho_NNP ,_, and_CC C_NN ._.
+Olston_NNP ._.
+What_WDT ''_'' s_VBZ new_JJ on_IN the_DT web_NN ?_.
+the_DT evolution_NN of_IN the_DT web_NN from_IN a_DT search_NN engine_NN perspective_NN ._.
+In_IN WWW_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- A_DT ._.
+Ntoulas_NNP ,_, P_NN ._.
+Zerfos_NNP ,_, and_CC J_NN ._.
+Cho_NNP ._.
+Downloading_VBG hidden_JJ web_NN content_NN ._.
+Technical_NNP report_NN ,_, UCLA_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- S_NN ._.
+Olsen_NNP ._.
+Does_VBZ search_NN engine_NN ''_'' s_NNS power_NN threaten_VBP web_NN ''_'' s_NNS independence_NN ?_.
+http_NN :_: /_: /_: news_NN ._.
+com_NN ._.
+com_NN /_: 2009-1023-963618_CD ._.
+html_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- S_NN ._.
+Raghavan_NNP and_CC H_NNP ._.
+Garcia-Molina_NNP ._.
+Crawling_VBG the_DT hidden_JJ web_NN ._.
+In_IN VLDB_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- G_NN ._.
+K_NN ._.
+Zipf_NNP ._.
+Human_JJ Behavior_NN and_CC the_DT Principle_NNP of_IN Least-Effort_NNP ._.
+Addison-Wesley_NNP ,_, Cambridge_NNP ,_, MA_NNP ,_, ####_CD ._.
+109_CD

@@ -1,0 +1,705 @@
+TSAR_NN :_: A_DT Two_CD Tier_NNP Sensor_NNP Storage_NNP Architecture_NNP Using_VBG Interval_NNP Skip_VB Graphs_NNP Peter_NNP Desnoyers_NNP ,_, Deepak_NNP Ganesan_NNP ,_, and_CC Prashant_NNP Shenoy_NNP Department_NNP of_IN Computer_NNP Science_NNP University_NNP of_IN Massachusetts_NNP Amherst_NNP ,_, MA_NNP #####_CD pjd_NN @_IN cs_NNS ._.
+umass_NN ._.
+edu_NN ,_, dganesan_JJ @_IN cs_NNS ._.
+umass_NN ._.
+edu_NN ,_, shenoy_NN @_IN cs_NNS ._.
+umass_NN ._.
+edu_NN ABSTRACT_NN Archival_JJ storage_NN of_IN sensor_NN data_NNS is_VBZ necessary_JJ for_IN applications_NNS that_WDT query_VBP ,_, mine_JJ ,_, and_CC analyze_VB such_JJ data_NNS for_IN interesting_JJ features_NNS and_CC trends_NNS ._.
+We_PRP argue_VBP that_IN existing_VBG storage_NN systems_NNS are_VBP designed_VBN primarily_RB for_IN flat_JJ hierarchies_NNS of_IN homogeneous_JJ sensor_NN nodes_NNS and_CC do_VBP not_RB fully_RB exploit_VB the_DT multi-tier_JJ nature_NN of_IN emerging_VBG sensor_NN networks_NNS ,_, where_WRB an_DT application_NN can_MD comprise_VB tens_NNS of_IN tethered_JJ proxies_NNS ,_, each_DT managing_VBG tens_NNS to_TO hundreds_NNS of_IN untethered_JJ sensors_NNS ._.
+We_PRP present_VBP TSAR_NN ,_, a_DT fundamentally_RB different_JJ storage_NN architecture_NN that_WDT envisions_VBZ separation_NN of_IN data_NNS from_IN metadata_NN by_IN employing_VBG local_JJ archiving_NN at_IN the_DT sensors_NNS and_CC distributed_VBN indexing_NN at_IN the_DT proxies_NNS ._.
+At_IN the_DT proxy_NN tier_NN ,_, TSAR_NN employs_VBZ a_DT novel_JJ multi-resolution_JJ ordered_VBN distributed_VBN index_NN structure_NN ,_, the_DT Interval_NNP Skip_VB Graph_NN ,_, for_IN efficiently_RB supporting_VBG spatio-temporal_JJ and_CC value_NN queries_NNS ._.
+At_IN the_DT sensor_NN tier_NN ,_, TSAR_NN supports_VBZ energy-aware_JJ adaptive_JJ summarization_NN that_WDT can_MD trade_VB off_RP the_DT cost_NN of_IN transmitting_VBG metadata_NN to_TO the_DT proxies_NNS against_IN the_DT overhead_NN of_IN false_JJ hits_NNS resulting_VBG from_IN querying_VBG a_DT coarse-grain_JJ index_NN ._.
+We_PRP implement_VBP TSAR_NN in_IN a_DT two-tier_JJ sensor_NN testbed_VBD comprising_VBG Stargatebased_JJ proxies_NNS and_CC Mote-based_JJ sensors_NNS ._.
+Our_PRP$ experiments_NNS demonstrate_VBP the_DT benefits_NNS and_CC feasibility_NN of_IN using_VBG our_PRP$ energy-efficient_JJ storage_NN architecture_NN in_IN multi-tier_JJ sensor_NN networks_NNS ._.
+Categories_NNS and_CC Subject_NNP Descriptors_NNPS :_: C_NN ._.
+#_# ._.
+#_# -LSB-_-LRB- Computer_NN -_: Communication_NNP Networks_NNP -RSB-_-RRB- :_: Distributed_VBN Systems_NNP General_NNP Terms_NNS :_: Algorithms_NNS ,_, performance_NN ,_, experimentation_NN ._.
+1_LS ._.
+Introduction_NN 1_CD ._.
+#_# Motivation_NN Many_JJ different_JJ kinds_NNS of_IN networked_JJ data-centric_JJ sensor_NN applications_NNS have_VBP emerged_VBN in_IN recent_JJ years_NNS ._.
+Sensors_NNS in_IN these_DT applications_NNS sense_VBP the_DT environment_NN and_CC generate_VBP data_NNS that_WDT must_MD be_VB processed_VBN ,_, filtered_VBN ,_, interpreted_VBN ,_, and_CC archived_VBN in_IN order_NN to_TO provide_VB a_DT useful_JJ infrastructure_NN to_TO its_PRP$ users_NNS ._.
+To_TO achieve_VB its_PRP$ goals_NNS ,_, a_DT typical_JJ sensor_NN application_NN needs_VBZ access_NN to_TO both_DT live_JJ and_CC past_JJ sensor_NN data_NNS ._.
+Whereas_IN access_NN to_TO live_VB data_NNS is_VBZ necessary_JJ in_IN monitoring_NN and_CC surveillance_NN applications_NNS ,_, access_NN to_TO past_JJ data_NNS is_VBZ necessary_JJ for_IN applications_NNS such_JJ as_IN mining_NN of_IN sensor_NN logs_NNS to_TO detect_VB unusual_JJ patterns_NNS ,_, analysis_NN of_IN historical_JJ trends_NNS ,_, and_CC post-mortem_NN analysis_NN of_IN particular_JJ events_NNS ._.
+Archival_JJ storage_NN of_IN past_JJ sensor_NN data_NNS requires_VBZ a_DT storage_NN system_NN ,_, the_DT key_JJ attributes_NNS of_IN which_WDT are_VBP :_: where_WRB the_DT data_NNS is_VBZ stored_VBN ,_, whether_IN it_PRP is_VBZ indexed_VBN ,_, and_CC how_WRB the_DT application_NN can_MD access_VB this_DT data_NNS in_IN an_DT energy-efficient_JJ manner_NN with_IN low_JJ latency_NN ._.
+There_EX have_VBP been_VBN a_DT spectrum_NN of_IN approaches_NNS for_IN constructing_VBG sensor_NN storage_NN systems_NNS ._.
+In_IN the_DT simplest_JJS ,_, sensors_NNS stream_NN data_NNS or_CC events_NNS to_TO a_DT server_NN for_IN long-term_JJ archival_JJ storage_NN -LSB-_-LRB- #_# -RSB-_-RRB- ,_, where_WRB the_DT server_NN often_RB indexes_NNS the_DT data_NNS to_TO permit_VB efficient_JJ access_NN at_IN a_DT later_JJ time_NN ._.
+Since_IN sensors_NNS may_MD be_VB several_JJ hops_VBZ from_IN the_DT nearest_JJS base_NN station_NN ,_, network_NN costs_NNS are_VBP incurred_VBN ;_: however_RB ,_, once_RB data_NNS is_VBZ indexed_VBN and_CC archived_VBN ,_, subsequent_JJ data_NNS accesses_NNS can_MD be_VB handled_VBN locally_RB at_IN the_DT server_NN without_IN incurring_VBG network_NN overhead_NN ._.
+In_IN this_DT approach_NN ,_, the_DT storage_NN is_VBZ centralized_VBN ,_, reads_VBZ are_VBP efficient_JJ and_CC cheap_JJ ,_, while_IN writes_VBZ are_VBP expensive_JJ ._.
+Further_RB ,_, all_DT data_NNS is_VBZ propagated_VBN to_TO the_DT server_NN ,_, regardless_RB of_IN whether_IN it_PRP is_VBZ ever_RB used_VBN by_IN the_DT application_NN ._.
+An_DT alternate_JJ approach_NN is_VBZ to_TO have_VB each_DT sensor_NN store_NN data_NNS or_CC events_NNS locally_RB -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, in_IN flash_NN memory_NN -RRB-_-RRB- ,_, so_RB that_IN all_DT writes_VBZ are_VBP local_JJ and_CC incur_VB no_DT communication_NN overheads_NNS ._.
+A_DT read_NN request_NN ,_, such_JJ as_IN whether_IN an_DT event_NN was_VBD detected_VBN by_IN a_DT particular_JJ sensor_NN ,_, requires_VBZ a_DT message_NN to_TO be_VB sent_VBN to_TO the_DT sensor_NN for_IN processing_NN ._.
+More_RBR complex_JJ read_NN requests_NNS are_VBP handled_VBN by_IN flooding_NN ._.
+For_IN instance_NN ,_, determining_VBG if_IN an_DT intruder_NN was_VBD detected_VBN over_IN a_DT particular_JJ time_NN interval_NN requires_VBZ the_DT request_NN to_TO be_VB flooded_VBN to_TO all_DT sensors_NNS in_IN the_DT system_NN ._.
+Thus_RB ,_, in_IN this_DT approach_NN ,_, the_DT storage_NN is_VBZ distributed_VBN ,_, writes_VBZ are_VBP local_JJ and_CC inexpensive_JJ ,_, while_IN reads_VBZ incur_VB significant_JJ network_NN overheads_NNS ._.
+Requests_NNS that_WDT require_VBP flooding_NN ,_, due_JJ to_TO the_DT lack_NN of_IN an_DT index_NN ,_, are_VBP expensive_JJ and_CC may_MD waste_VB precious_JJ sensor_NN resources_NNS ,_, even_RB if_IN no_DT matching_NN data_NNS is_VBZ stored_VBN at_IN those_DT sensors_NNS ._.
+Research_NNP efforts_NNS such_JJ as_IN Directed_NNP Diffusion_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- have_VBP attempted_VBN to_TO reduce_VB these_DT read_VBN costs_NNS ,_, however_RB ,_, by_IN intelligent_JJ message_NN routing_VBG ._.
+Between_IN these_DT two_CD extremes_NNS lie_VBP a_DT number_NN of_IN other_JJ sensor_NN storage_NN systems_NNS with_IN different_JJ trade-offs_NNS ,_, summarized_VBN in_IN Table_NNP #_# ._.
+The_DT geographic_JJ hash_NN table_NN -LRB-_-LRB- GHT_NN -RRB-_-RRB- approach_NN -LSB-_-LRB- ##_CD ,_, ##_CD -RSB-_-RRB- advocates_VBZ the_DT use_NN of_IN an_DT in-network_JJ index_NN to_TO augment_VB the_DT fully_RB distributed_VBN nature_NN of_IN sensor_NN storage_NN ._.
+In_IN this_DT approach_NN ,_, each_DT data_NNS item_NN has_VBZ a_DT key_NN associated_VBN with_IN it_PRP ,_, and_CC a_DT distributed_VBN or_CC geographic_JJ hash_NN table_NN is_VBZ used_VBN to_TO map_VB keys_NNS to_TO nodes_NNS that_WDT store_VBP the_DT corresponding_JJ data_NNS items_NNS ._.
+Thus_RB ,_, writes_VBZ cause_NN data_NNS items_NNS to_TO be_VB sent_VBN to_TO the_DT hashed_VBN nodes_NNS and_CC also_RB trigger_VB updates_NNS to_TO the_DT in-network_JJ hash_NN table_NN ._.
+A_DT read_NN request_NN requires_VBZ a_DT lookup_NN in_IN the_DT in-network_JJ hash_NN table_NN to_TO locate_VB the_DT node_NN that_WDT stores_VBZ the_DT data_NNS 39_CD item_NN ;_: observe_VB that_IN the_DT presence_NN of_IN an_DT index_NN eliminates_VBZ the_DT need_NN for_IN flooding_NN in_IN this_DT approach_NN ._.
+Most_JJS of_IN these_DT approaches_NNS assume_VBP a_DT flat_JJ ,_, homogeneous_JJ architecture_NN in_IN which_WDT every_DT sensor_NN node_NN is_VBZ energy-constrained_JJ ._.
+In_IN this_DT paper_NN ,_, we_PRP propose_VBP a_DT novel_JJ storage_NN architecture_NN called_VBN TSAR1_NN that_WDT reflects_VBZ and_CC exploits_VBZ the_DT multi-tier_JJ nature_NN of_IN emerging_VBG sensor_NN networks_NNS ,_, where_WRB the_DT application_NN is_VBZ comprised_VBN of_IN tens_NNS of_IN tethered_JJ sensor_NN proxies_NNS -LRB-_-LRB- or_CC more_JJR -RRB-_-RRB- ,_, each_DT controlling_VBG tens_NNS or_CC hundreds_NNS of_IN untethered_JJ sensors_NNS ._.
+TSAR_NN is_VBZ a_DT component_NN of_IN our_PRP$ PRESTO_NN -LSB-_-LRB- #_# -RSB-_-RRB- predictive_JJ storage_NN architecture_NN ,_, which_WDT combines_VBZ archival_JJ storage_NN with_IN caching_NN and_CC prediction_NN ._.
+We_PRP believe_VBP that_IN a_DT fundamentally_RB different_JJ storage_NN architecture_NN is_VBZ necessary_JJ to_TO address_VB the_DT multi-tier_JJ nature_NN of_IN future_JJ sensor_NN networks_NNS ._.
+Specifically_RB ,_, the_DT storage_NN architecture_NN needs_VBZ to_TO exploit_VB the_DT resource-rich_JJ nature_NN of_IN proxies_NNS ,_, while_IN respecting_VBG resource_NN constraints_NNS at_IN the_DT remote_JJ sensors_NNS ._.
+No_DT existing_VBG sensor_NN storage_NN architecture_NN explicitly_RB addresses_VBZ this_DT dichotomy_NN in_IN the_DT resource_NN capabilities_NNS of_IN different_JJ tiers_NNS ._.
+Any_DT sensor_NN storage_NN system_NN should_MD also_RB carefully_RB exploit_VB current_JJ technology_NN trends_NNS ,_, which_WDT indicate_VBP that_IN the_DT capacities_NNS of_IN flash_NN memories_NNS continue_VBP to_TO rise_VB as_IN per_IN Moore_NNP ''_'' s_VBZ Law_NNP ,_, while_IN their_PRP$ costs_NNS continue_VBP to_TO plummet_VB ._.
+Thus_RB it_PRP will_MD soon_RB be_VB feasible_JJ to_TO equip_VB each_DT sensor_NN with_IN 1_CD GB_NN of_IN flash_NN storage_NN for_IN a_DT few_JJ tens_NNS of_IN dollars_NNS ._.
+An_DT even_RB more_RBR compelling_JJ argument_NN is_VBZ the_DT energy_NN cost_NN of_IN flash_NN storage_NN ,_, which_WDT can_MD be_VB as_RB much_JJ as_IN two_CD orders_NNS of_IN magnitude_NN lower_JJR than_IN that_DT for_IN communication_NN ._.
+Newer_NNP NAND_NNP flash_NN memories_NNS offer_VBP very_RB low_JJ write_VB and_CC erase_VB energy_NN costs_NNS -_: our_PRP$ comparison_NN of_IN a_DT 1GB_NN Samsung_NNP NAND_NNP flash_VBP storage_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- and_CC the_DT Chipcon_NNP CC2420_NN ###_CD ._.
+##_NN ._.
+#_# wireless_JJ radio_NN -LSB-_-LRB- #_# -RSB-_-RRB- in_IN Section_NN #_# ._.
+#_# indicates_VBZ a_DT #_# :_: ###_CD ratio_NN in_IN per-byte_JJ energy_NN cost_NN between_IN the_DT two_CD devices_NNS ,_, even_RB before_IN accounting_VBG for_IN network_NN protocol_NN overheads_NNS ._.
+These_DT trends_NNS ,_, together_RB with_IN the_DT energy-constrained_JJ nature_NN of_IN untethered_JJ sensors_NNS ,_, indicate_VBP that_IN local_JJ storage_NN offers_VBZ a_DT viable_JJ ,_, energy-efficient_JJ alternative_NN to_TO communication_NN in_IN sensor_NN networks_NNS ._.
+TSAR_NN exploits_VBZ these_DT trends_NNS by_IN storing_VBG data_NNS or_CC events_NNS locally_RB on_IN the_DT energy-efficient_JJ flash_NN storage_NN at_IN each_DT sensor_NN ._.
+Sensors_NNS send_VBP concise_JJ identifying_VBG information_NN ,_, which_WDT we_PRP term_VBP metadata_NN ,_, to_TO a_DT nearby_JJ proxy_NN ;_: depending_VBG on_IN the_DT representation_NN used_VBN ,_, this_DT metadata_NN may_MD be_VB an_DT order_NN of_IN magnitude_NN or_CC more_JJR smaller_JJR than_IN the_DT data_NNS itself_PRP ,_, imposing_VBG much_RB lower_JJR communication_NN costs_NNS ._.
+The_DT resource-rich_JJ proxies_NNS interact_VBP with_IN one_CD another_DT to_TO construct_VB a_DT distributed_VBN index_NN of_IN the_DT metadata_NN reported_VBN from_IN all_DT sensors_NNS ,_, and_CC thus_RB an_DT index_NN of_IN the_DT associated_VBN data_NNS stored_VBD at_IN the_DT sensors_NNS ._.
+This_DT index_NN provides_VBZ a_DT unified_VBN ,_, logical_JJ view_NN of_IN the_DT distributed_VBN data_NNS ,_, and_CC enables_VBZ an_DT application_NN to_TO query_VB and_CC read_VB past_JJ data_NNS efficiently_RB -_: the_DT index_NN is_VBZ used_VBN to_TO pinpoint_VB all_DT data_NNS that_WDT match_VBP a_DT read_NN request_NN ,_, followed_VBN by_IN messages_NNS to_TO retrieve_VB that_DT data_NNS from_IN the_DT corresponding_JJ sensors_NNS ._.
+In-network_JJ index_NN lookups_NNS are_VBP eliminated_VBN ,_, reducing_VBG network_NN overheads_NNS for_IN read_NN requests_NNS ._.
+This_DT separation_NN of_IN data_NNS ,_, which_WDT is_VBZ stored_VBN at_IN the_DT sensors_NNS ,_, and_CC the_DT metadata_NN ,_, which_WDT is_VBZ stored_VBN at_IN the_DT proxies_NNS ,_, enables_VBZ TSAR_NN to_TO reduce_VB energy_NN overheads_NNS at_IN the_DT sensors_NNS ,_, by_IN leveraging_VBG resources_NNS at_IN tethered_JJ proxies_NNS ._.
+1_LS ._.
+#_# Contributions_NNPS This_DT paper_NN presents_VBZ TSAR_NN ,_, a_DT novel_JJ two-tier_JJ storage_NN architecture_NN for_IN sensor_NN networks_NNS ._.
+To_TO the_DT best_JJS of_IN our_PRP$ knowledge_NN ,_, this_DT is_VBZ the_DT first_JJ sensor_NN storage_NN system_NN that_WDT is_VBZ explicitly_RB tailored_VBN for_IN emerging_VBG multitier_JJ sensor_NN networks_NNS ._.
+Our_PRP$ design_NN and_CC implementation_NN of_IN TSAR_NN has_VBZ resulted_VBN in_IN four_CD contributions_NNS ._.
+At_IN the_DT core_NN of_IN the_DT TSAR_NN architecture_NN is_VBZ a_DT novel_JJ distributed_VBN index_NN structure_NN based_VBN on_IN interval_NN skip_VBP graphs_NNS that_IN we_PRP introduce_VBP in_IN this_DT paper_NN ._.
+This_DT index_NN structure_NN can_MD store_VB coarse_JJ summaries_NNS of_IN sensor_NN data_NNS and_CC organize_VB them_PRP in_IN an_DT ordered_VBN manner_NN to_TO be_VB easily_RB search1_CD TSAR_NN :_: Tiered_NNP Storage_NNP ARchitecture_NN for_IN sensor_NN networks_NNS ._.
+able_JJ ._.
+This_DT data_NNS structure_NN has_VBZ O_NN -LRB-_-LRB- log_NN n_NN -RRB-_-RRB- expected_VBD search_NN and_CC update_VB complexity_NN ._.
+Further_RB ,_, the_DT index_NN provides_VBZ a_DT logically_RB unified_VBN view_NN of_IN all_DT data_NNS in_IN the_DT system_NN ._.
+Second_RB ,_, at_IN the_DT sensor_NN level_NN ,_, each_DT sensor_NN maintains_VBZ a_DT local_JJ archive_NN that_WDT stores_NNS data_NNS on_IN flash_NN memory_NN ._.
+Our_PRP$ storage_NN architecture_NN is_VBZ fully_RB stateless_JJ at_IN each_DT sensor_NN from_IN the_DT perspective_NN of_IN the_DT metadata_JJ index_NN ;_: all_DT index_NN structures_NNS are_VBP maintained_VBN at_IN the_DT resource-rich_JJ proxies_NNS ,_, and_CC only_RB direct_JJ requests_NNS or_CC simple_JJ queries_NNS on_IN explicitly_RB identified_VBN storage_NN locations_NNS are_VBP sent_VBN to_TO the_DT sensors_NNS ._.
+Storage_NNP at_IN the_DT remote_JJ sensor_NN is_VBZ in_IN effect_NN treated_VBN as_IN appendage_NN of_IN the_DT proxy_NN ,_, resulting_VBG in_IN low_JJ implementation_NN complexity_NN ,_, which_WDT makes_VBZ it_PRP ideal_JJ for_IN small_JJ ,_, resourceconstrained_JJ sensor_NN platforms_NNS ._.
+Further_RB ,_, the_DT local_JJ store_NN is_VBZ optimized_VBN for_IN time-series_NNS access_NN to_TO archived_JJ data_NNS ,_, as_RB is_VBZ typical_JJ in_IN many_JJ applications_NNS ._.
+Each_DT sensor_NN periodically_RB sends_VBZ a_DT summary_NN of_IN its_PRP$ data_NNS to_TO a_DT proxy_NN ._.
+TSAR_NN employs_VBZ a_DT novel_JJ adaptive_JJ summarization_NN technique_NN that_WDT adapts_VBZ the_DT granularity_NN of_IN the_DT data_NNS reported_VBN in_IN each_DT summary_NN to_TO the_DT ratio_NN of_IN false_JJ hits_NNS for_IN application_NN queries_NNS ._.
+More_RBR fine_JJ grain_NN summaries_NNS are_VBP sent_VBN whenever_WRB more_RBR false_JJ positives_NNS are_VBP observed_VBN ,_, thereby_RB balancing_VBG the_DT energy_NN cost_NN of_IN metadata_NN updates_NNS and_CC false_JJ positives_NNS ._.
+Third_NNP ,_, we_PRP have_VBP implemented_VBN a_DT prototype_NN of_IN TSAR_NN on_IN a_DT multi-tier_JJ testbed_JJ comprising_VBG Stargate-based_JJ proxies_NNS and_CC Mote-based_JJ sensors_NNS ._.
+Our_PRP$ implementation_NN supports_VBZ spatio-temporal_JJ ,_, value_NN ,_, and_CC rangebased_JJ queries_NNS on_IN sensor_NN data_NNS ._.
+Fourth_JJ ,_, we_PRP conduct_VBP a_DT detailed_JJ experimental_JJ evaluation_NN of_IN TSAR_NN using_VBG a_DT combination_NN of_IN EmStar_NNP /_: EmTOS_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- and_CC our_PRP$ prototype_NN ._.
+While_IN our_PRP$ EmStar_NNP /_: EmTOS_NN experiments_NNS focus_VBP on_IN the_DT scalability_NN of_IN TSAR_NN in_IN larger_JJR settings_NNS ,_, our_PRP$ prototype_NN evaluation_NN involves_VBZ latency_NN and_CC energy_NN measurements_NNS in_IN a_DT real_JJ setting_NN ._.
+Our_PRP$ results_NNS demonstrate_VBP the_DT logarithmic_JJ scaling_NN property_NN of_IN the_DT sparse_JJ skip_VB graph_NN and_CC the_DT low_JJ latency_NN of_IN end-to-end_JJ queries_NNS in_IN a_DT duty-cycled_JJ multi-hop_JJ network_NN ._.
+The_DT remainder_NN of_IN this_DT paper_NN is_VBZ structured_VBN as_IN follows_VBZ ._.
+Section_NN #_# presents_VBZ key_JJ design_NN issues_NNS that_WDT guide_VBP our_PRP$ work_NN ._.
+Section_NN #_# and_CC #_# present_VB the_DT proxy-level_JJ index_NN and_CC the_DT local_JJ archive_NN and_CC summarization_NN at_IN a_DT sensor_NN ,_, respectively_RB ._.
+Section_NN #_# discusses_VBZ our_PRP$ prototype_NN implementation_NN ,_, and_CC Section_NN #_# presents_VBZ our_PRP$ experimental_JJ results_NNS ._.
+We_PRP present_VBP related_JJ work_NN in_IN Section_NN #_# and_CC our_PRP$ conclusions_NNS in_IN Section_NN #_# ._.
+2_LS ._.
+Design_NN Considerations_NNS In_IN this_DT section_NN ,_, we_PRP first_RB describe_VBP the_DT various_JJ components_NNS of_IN a_DT multi-tier_JJ sensor_NN network_NN assumed_VBD in_IN our_PRP$ work_NN ._.
+We_PRP then_RB present_VBP a_DT description_NN of_IN the_DT expected_VBN usage_NN models_NNS for_IN this_DT system_NN ,_, followed_VBN by_IN several_JJ principles_NNS addressing_VBG these_DT factors_NNS which_WDT guide_VBP the_DT design_NN of_IN our_PRP$ storage_NN system_NN ._.
+2_LS ._.
+#_# System_NNP Model_NNP We_PRP envision_VBP a_DT multi-tier_JJ sensor_NN network_NN comprising_VBG multiple_JJ tiers_NNS -_: a_DT bottom_JJ tier_NN of_IN untethered_JJ remote_JJ sensor_NN nodes_NNS ,_, a_DT middle_JJ tier_NN of_IN tethered_JJ sensor_NN proxies_NNS ,_, and_CC an_DT upper_JJ tier_NN of_IN applications_NNS and_CC user_NN terminals_NNS ._.
+The_DT lowest_JJS tier_NN is_VBZ assumed_VBN to_TO form_VB a_DT dense_JJ deployment_NN of_IN lowpower_NN sensors_NNS ._.
+A_DT canonical_JJ sensor_NN node_NN at_IN this_DT tier_NN is_VBZ equipped_VBN with_IN low-power_JJ sensors_NNS ,_, a_DT micro-controller_NN ,_, and_CC a_DT radio_NN as_RB well_RB as_IN a_DT significant_JJ amount_NN of_IN flash_NN memory_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, 1GB_NN -RRB-_-RRB- ._.
+The_DT common_JJ constraint_NN for_IN this_DT tier_NN is_VBZ energy_NN ,_, and_CC the_DT need_NN for_IN a_DT long_JJ lifetime_NN in_IN spite_NN of_IN a_DT finite_JJ energy_NN constraint_NN ._.
+The_DT use_NN of_IN radio_NN ,_, processor_NN ,_, RAM_NNP ,_, and_CC the_DT flash_NN memory_NN all_DT consume_VBP energy_NN ,_, which_WDT needs_VBZ to_TO be_VB limited_VBN ._.
+In_IN general_JJ ,_, we_PRP assume_VBP radio_NN communication_NN to_TO be_VB substantially_RB more_RBR expensive_JJ than_IN accesses_NNS to_TO flash_VB memory_NN ._.
+The_DT middle_JJ tier_NN consists_VBZ of_IN power-rich_JJ sensor_NN proxies_NNS that_WDT have_VBP significant_JJ computation_NN ,_, memory_NN and_CC storage_NN resources_NNS and_CC can_MD use_VB 40_CD Table_NNP #_# :_: Characteristics_NNS of_IN sensor_NN storage_NN systems_NNS System_NNP Data_NNP Index_NNP Reads_VBZ Writes_VBZ Order_NNP preserving_VBG Centralized_JJ store_NN Centralized_NNP Centralized_NNP index_NN Handled_VBD at_IN store_NN Send_VB to_TO store_VB Yes_NNP Local_NNP sensor_NN store_NN Fully_RB distributed_VBN No_DT index_NN Flooding_NN ,_, diffusion_NN Local_JJ No_DT GHT_NN /_: DCS_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- Fully_RB distributed_VBN In-network_JJ index_NN Hash_VBP to_TO node_NN Send_VB to_TO hashed_VBN node_NN No_DT TSAR_NN /_: PRESTO_NNP Fully_RB distributed_VBD Distributed_VBN index_NN at_IN proxies_NNS Proxy_NNP lookup_NN +_CC sensor_NN query_NN Local_JJ plus_CC index_NN update_VBP Yes_UH User_NN Unified_NNP Logical_NNP Store_NNP Queries_NNPS -LRB-_-LRB- time_NN ,_, space_NN ,_, value_NN -RRB-_-RRB- Query_NNP Response_NNP Cache_NNP Query_NNP forwarding_NN Proxy_NNP Remote_NNP Sensors_NNP Local_NNP Data_NNP Archive_NNP on_IN Flash_NNP Memory_NN Interval_NNP Skip_VB Graph_NNP Query_NNP forwarding_NN summaries_NNS start_VBP index_NN end_NN index_NN linear_JJ traversal_NN Query_NNP Response_NNP Cache-miss_NN triggered_VBD query_NN forwarding_NN summaries_NNS Figure_NNP #_# :_: Architecture_NNP of_IN a_DT multi-tier_JJ sensor_NN network_NN ._.
+these_DT resources_NNS continuously_RB ._.
+In_IN urban_JJ environments_NNS ,_, the_DT proxy_NN tier_NN would_MD comprise_VB a_DT tethered_JJ base-station_NN class_NN nodes_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, Crossbow_NNP Stargate_NNP -RRB-_-RRB- ,_, each_DT with_IN with_IN multiple_JJ radios-an_JJ ###_NN ._.
+##_NN radio_NN that_WDT connects_VBZ it_PRP to_TO a_DT wireless_JJ mesh_NN network_NN and_CC a_DT low-power_JJ radio_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+802_CD ._.
+##_NN ._.
+#_# -RRB-_-RRB- that_WDT connects_VBZ it_PRP to_TO the_DT sensor_NN nodes_NNS ._.
+In_IN remote_JJ sensing_VBG applications_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, this_DT tier_NN could_MD comprise_VB a_DT similar_JJ Stargate_NNP node_NN with_IN a_DT solar_JJ power_NN cell_NN ._.
+Each_DT proxy_NN is_VBZ assumed_VBN to_TO manage_VB several_JJ tens_NNS to_TO hundreds_NNS of_IN lower-tier_JJ sensors_NNS in_IN its_PRP$ vicinity_NN ._.
+A_DT typical_JJ sensor_NN network_NN deployment_NN will_MD contain_VB multiple_JJ geographically_RB distributed_VBN proxies_NNS ._.
+For_IN instance_NN ,_, in_IN a_DT building_NN monitoring_NN application_NN ,_, one_CD sensor_NN proxy_NN might_MD be_VB placed_VBN per_IN floor_NN or_CC hallway_NN to_TO monitor_VB temperature_NN ,_, heat_NN and_CC light_JJ sensors_NNS in_IN their_PRP$ vicinity_NN ._.
+At_IN the_DT highest_JJS tier_NN of_IN our_PRP$ infrastructure_NN are_VBP applications_NNS that_WDT query_VBP the_DT sensor_NN network_NN through_IN a_DT query_NN interface_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+In_IN this_DT work_NN ,_, we_PRP focus_VBP on_IN applications_NNS that_WDT require_VBP access_NN to_TO past_JJ sensor_NN data_NNS ._.
+To_TO support_VB such_JJ queries_NNS ,_, the_DT system_NN needs_VBZ to_TO archive_NN data_NNS on_IN a_DT persistent_JJ store_NN ._.
+Our_PRP$ goal_NN is_VBZ to_TO design_VB a_DT storage_NN system_NN that_WDT exploits_VBZ the_DT relative_JJ abundance_NN of_IN resources_NNS at_IN proxies_NNS to_TO mask_NN the_DT scarcity_NN of_IN resources_NNS at_IN the_DT sensors_NNS ._.
+2_LS ._.
+#_# Usage_NNP Models_NNS The_DT design_NN of_IN a_DT storage_NN system_NN such_JJ as_IN TSAR_NN is_VBZ affected_VBN by_IN the_DT queries_NNS that_WDT are_VBP likely_JJ to_TO be_VB posed_VBN to_TO it_PRP ._.
+A_DT large_JJ fraction_NN of_IN queries_NNS on_IN sensor_NN data_NNS can_MD be_VB expected_VBN to_TO be_VB spatio-temporal_JJ in_IN nature_NN ._.
+Sensors_NNS provide_VBP information_NN about_IN the_DT physical_JJ world_NN ;_: two_CD key_JJ attributes_NNS of_IN this_DT information_NN are_VBP when_WRB a_DT particular_JJ event_NN or_CC activity_NN occurred_VBD and_CC where_WRB it_PRP occurred_VBD ._.
+Some_DT instances_NNS of_IN such_JJ queries_NNS include_VBP the_DT time_NN and_CC location_NN of_IN target_NN or_CC intruder_NN detections_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, security_NN and_CC monitoring_NN applications_NNS -RRB-_-RRB- ,_, notifications_NNS of_IN specific_JJ types_NNS of_IN events_NNS such_JJ as_IN pressure_NN and_CC humidity_NN values_NNS exceeding_VBG a_DT threshold_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, industrial_JJ applications_NNS -RRB-_-RRB- ,_, or_CC simple_JJ data_NNS collection_NN queries_NNS which_WDT request_VBP data_NNS from_IN a_DT particular_JJ time_NN or_CC location_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, weather_NN or_CC environment_NN monitoring_NN -RRB-_-RRB- ._.
+Expected_VBN queries_NNS of_IN such_JJ data_NNS include_VBP those_DT requesting_VBG ranges_NNS of_IN one_CD or_CC more_JJR attributes_NNS ;_: for_IN instance_NN ,_, a_DT query_NN for_IN all_DT image_NN data_NNS from_IN cameras_NNS within_IN a_DT specified_VBN geographic_JJ area_NN for_IN a_DT certain_JJ period_NN of_IN time_NN ._.
+In_IN addition_NN ,_, it_PRP is_VBZ often_RB desirable_JJ to_TO support_VB efficient_JJ access_NN to_TO data_NNS in_IN a_DT way_NN that_IN maintains_VBZ spatial_JJ and_CC temporal_JJ ordering_VBG ._.
+There_EX are_VBP several_JJ ways_NNS of_IN supporting_VBG range_NN queries_NNS ,_, such_JJ as_IN locality-preserving_JJ hashes_NNS such_JJ as_IN are_VBP used_VBN in_IN DIMS_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+However_RB ,_, the_DT most_RBS straightforward_JJ mechanism_NN ,_, and_CC one_CD which_WDT naturally_RB provides_VBZ efficient_JJ ordered_VBD access_NN ,_, is_VBZ via_IN the_DT use_NN of_IN order-preserving_JJ data_NNS structures_NNS ._.
+Order-preserving_JJ structures_NNS such_JJ as_IN the_DT well-known_JJ B-Tree_NN maintain_VBP relationships_NNS between_IN indexed_VBN values_NNS and_CC thus_RB allow_VBP natural_JJ access_NN to_TO ranges_NNS ,_, as_RB well_RB as_IN predecessor_NN and_CC successor_NN operations_NNS on_IN their_PRP$ key_JJ values_NNS ._.
+Applications_NNS may_MD also_RB pose_VB value-based_JJ queries_NNS that_WDT involve_VBP determining_VBG if_IN a_DT value_NN v_LS was_VBD observed_VBN at_IN any_DT sensor_NN ;_: the_DT query_NN returns_VBZ a_DT list_NN of_IN sensors_NNS and_CC the_DT times_NNS at_IN which_WDT they_PRP observed_VBD this_DT value_NN ._.
+Variants_NNS of_IN value_NN queries_NNS involve_VBP restricting_VBG the_DT query_NN to_TO a_DT geographical_JJ region_NN ,_, or_CC specifying_VBG a_DT range_NN -LRB-_-LRB- v1_NN ,_, v2_NN -RRB-_-RRB- rather_RB than_IN a_DT single_JJ value_NN v_LS ._.
+Value_NNP queries_NNS can_MD be_VB handled_VBN by_IN indexing_NN on_IN the_DT values_NNS reported_VBN in_IN the_DT summaries_NNS ._.
+Specifically_RB ,_, if_IN a_DT sensor_NN reports_VBZ a_DT numerical_JJ value_NN ,_, then_RB the_DT index_NN is_VBZ constructed_VBN on_IN these_DT values_NNS ._.
+A_DT search_NN involves_VBZ finding_VBG matching_VBG values_NNS that_WDT are_VBP either_RB contained_VBN in_IN the_DT search_NN range_NN -LRB-_-LRB- v1_NN ,_, v2_NN -RRB-_-RRB- or_CC match_VB the_DT search_NN value_NN v_LS exactly_RB ._.
+Hybrid_NN value_NN and_CC spatio-temporal_JJ queries_NNS are_VBP also_RB possible_JJ ._.
+Such_JJ queries_NNS specify_VBP a_DT time_NN interval_NN ,_, a_DT value_NN range_NN and_CC a_DT spatial_JJ region_NN and_CC request_NN all_DT records_NNS that_WDT match_VBP these_DT attributes_NNS -_: find_VB all_DT instances_NNS where_WRB the_DT temperature_NN exceeded_VBD 100o_CD F_NN at_IN location_NN R_NN during_IN the_DT month_NN of_IN August_NNP ._.
+These_DT queries_NNS require_VBP an_DT index_NN on_IN both_DT time_NN and_CC value_NN ._.
+In_IN TSAR_NN our_PRP$ focus_NN is_VBZ on_IN range_NN queries_NNS on_IN value_NN or_CC time_NN ,_, with_IN planned_VBN extensions_NNS to_TO include_VB spatial_JJ scoping_NN ._.
+2_LS ._.
+#_# Design_NNP Principles_NNS Our_PRP$ design_NN of_IN a_DT sensor_NN storage_NN system_NN for_IN multi-tier_JJ networks_NNS is_VBZ based_VBN on_IN the_DT following_VBG set_NN of_IN principles_NNS ,_, which_WDT address_VBP the_DT issues_NNS arising_VBG from_IN the_DT system_NN and_CC usage_NN models_NNS above_IN ._.
+Principle_NN #_# :_: Store_NNP locally_RB ,_, access_NN globally_RB :_: Current_JJ technology_NN allows_VBZ local_JJ storage_NN to_TO be_VB significantly_RB more_RBR energyefficient_JJ than_IN network_NN communication_NN ,_, while_IN technology_NN trends_NNS show_VBP no_DT signs_NNS of_IN erasing_VBG this_DT gap_NN in_IN the_DT near_JJ future_NN ._.
+For_IN maximum_JJ network_NN life_NN a_DT sensor_NN storage_NN system_NN should_MD leverage_NN the_DT flash_NN memory_NN on_IN sensors_NNS to_TO archive_NN data_NNS locally_RB ,_, substituting_VBG cheap_JJ memory_NN operations_NNS for_IN expensive_JJ radio_NN transmission_NN ._.
+But_CC without_IN efficient_JJ mechanisms_NNS for_IN retrieval_NN ,_, the_DT energy_NN gains_NNS of_IN local_JJ storage_NN may_MD be_VB outweighed_VBN by_IN communication_NN costs_NNS incurred_VBN by_IN the_DT application_NN in_IN searching_VBG for_IN data_NNS ._.
+We_PRP believe_VBP that_IN if_IN the_DT data_NNS storage_NN system_NN provides_VBZ the_DT abstraction_NN of_IN a_DT single_JJ logical_JJ store_NN to_TO applications_NNS ,_, as_IN 41_CD does_VBZ TSAR_NNP ,_, then_RB it_PRP will_MD have_VB additional_JJ flexibility_NN to_TO optimize_VB communication_NN and_CC storage_NN costs_NNS ._.
+Principle_NN #_# :_: Distinguish_VB data_NNS from_IN metadata_NN :_: Data_NNS must_MD be_VB identified_VBN so_RB that_IN it_PRP may_MD be_VB retrieved_VBN by_IN the_DT application_NN without_IN exhaustive_JJ search_NN ._.
+To_TO do_VB this_DT ,_, we_PRP associate_VBP metadata_RB with_IN each_DT data_NNS record_NN -_: data_NNS fields_NNS of_IN known_JJ syntax_NN which_WDT serve_VBP as_IN identifiers_NNS and_CC may_MD be_VB queried_VBN by_IN the_DT storage_NN system_NN ._.
+Examples_NNS of_IN this_DT metadata_NN are_VBP data_NNS attributes_NNS such_JJ as_IN location_NN and_CC time_NN ,_, or_CC selected_VBN or_CC summarized_VBN data_NNS values_NNS ._.
+We_PRP leverage_NN the_DT presence_NN of_IN resource-rich_JJ proxies_NNS to_TO index_NN metadata_NN for_IN resource-constrained_JJ sensors_NNS ._.
+The_DT proxies_NNS share_VBP this_DT metadata_JJ index_NN to_TO provide_VB a_DT unified_VBN logical_JJ view_NN of_IN all_DT data_NNS in_IN the_DT system_NN ,_, thereby_RB enabling_VBG efficient_JJ ,_, low-latency_JJ lookups_NNS ._.
+Such_PDT a_DT tier-specific_JJ separation_NN of_IN data_NNS storage_NN from_IN metadata_JJ indexing_NN enables_VBZ the_DT system_NN to_TO exploit_VB the_DT idiosyncrasies_NNS of_IN multi-tier_JJ networks_NNS ,_, while_IN improving_VBG performance_NN and_CC functionality_NN ._.
+Principle_NN #_# :_: Provide_VB data-centric_JJ query_NN support_NN :_: In_IN a_DT sensor_NN application_NN the_DT specific_JJ location_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+offset_VBN -RRB-_-RRB- of_IN a_DT record_NN in_IN a_DT stream_NN is_VBZ unlikely_JJ to_TO be_VB of_IN significance_NN ,_, except_IN if_IN it_PRP conveys_VBZ information_NN concerning_VBG the_DT location_NN and_CC /_: or_CC time_NN at_IN which_WDT the_DT information_NN was_VBD generated_VBN ._.
+We_PRP thus_RB expect_VBP that_DT applications_NNS will_MD be_VB best_JJS served_VBN by_IN a_DT query_NN interface_NN which_WDT allows_VBZ them_PRP to_TO locate_VB data_NNS by_IN value_NN or_CC attribute_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+location_NN and_CC time_NN -RRB-_-RRB- ,_, rather_RB than_IN a_DT read_NN interface_NN for_IN unstructured_JJ data_NNS ._.
+This_DT in_IN turn_NN implies_VBZ the_DT need_NN to_TO maintain_VB metadata_NN in_IN the_DT form_NN of_IN an_DT index_NN that_WDT provides_VBZ low_JJ cost_NN lookups_NNS ._.
+2_LS ._.
+#_# System_NNP Design_NNP TSAR_NNP embodies_VBZ these_DT design_NN principles_NNS by_IN employing_VBG local_JJ storage_NN at_IN sensors_NNS and_CC a_DT distributed_VBN index_NN at_IN the_DT proxies_NNS ._.
+The_DT key_JJ features_NNS of_IN the_DT system_NN design_NN are_VBP as_IN follows_VBZ :_: In_IN TSAR_NN ,_, writes_VBZ occur_VB at_IN sensor_NN nodes_NNS ,_, and_CC are_VBP assumed_VBN to_TO consist_VB of_IN both_DT opaque_JJ data_NNS as_RB well_RB as_IN application-specific_JJ metadata_NN ._.
+This_DT metadata_NN is_VBZ a_DT tuple_NN of_IN known_JJ types_NNS ,_, which_WDT may_MD be_VB used_VBN by_IN the_DT application_NN to_TO locate_VB and_CC identify_VB data_NNS records_NNS ,_, and_CC which_WDT may_MD be_VB searched_VBN on_IN and_CC compared_VBN by_IN TSAR_NN in_IN the_DT course_NN of_IN locating_VBG data_NNS for_IN the_DT application_NN ._.
+In_IN a_DT camera-based_JJ sensing_VBG application_NN ,_, for_IN instance_NN ,_, this_DT metadata_NN might_MD include_VB coordinates_VBZ describing_VBG the_DT field_NN of_IN view_NN ,_, average_JJ luminance_NN ,_, and_CC motion_NN values_NNS ,_, in_IN addition_NN to_TO basic_JJ information_NN such_JJ as_IN time_NN and_CC sensor_NN location_NN ._.
+Depending_VBG on_IN the_DT application_NN ,_, this_DT metadata_NN may_MD be_VB two_CD or_CC three_CD orders_NNS of_IN magnitude_NN smaller_JJR than_IN the_DT data_NNS itself_PRP ,_, for_IN instance_NN if_IN the_DT metadata_NN consists_VBZ of_IN features_NNS extracted_VBN from_IN image_NN or_CC acoustic_JJ data_NNS ._.
+In_IN addition_NN to_TO storing_VBG data_NNS locally_RB ,_, each_DT sensor_NN periodically_RB sends_VBZ a_DT summary_NN of_IN reported_VBN metadata_NN to_TO a_DT nearby_JJ proxy_NN ._.
+The_DT summary_NN contains_VBZ information_NN such_JJ as_IN the_DT sensor_NN ID_NN ,_, the_DT interval_NN -LRB-_-LRB- t1_NN ,_, t2_NN -RRB-_-RRB- over_IN which_WDT the_DT summary_NN was_VBD generated_VBN ,_, a_DT handle_VB identifying_VBG the_DT corresponding_JJ data_NNS record_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+its_PRP$ location_NN in_IN flash_NN memory_NN -RRB-_-RRB- ,_, and_CC a_DT coarse-grain_NN representation_NN of_IN the_DT metadata_NN associated_VBN with_IN the_DT record_NN ._.
+The_DT precise_JJ data_NNS representation_NN used_VBN in_IN the_DT summary_NN is_VBZ application-specific_JJ ;_: for_IN instance_NN ,_, a_DT temperature_NN sensor_NN might_MD choose_VB to_TO report_VB the_DT maximum_NN and_CC minimum_NN temperature_NN values_NNS observed_VBN in_IN an_DT interval_NN as_IN a_DT coarse-grain_NN representation_NN of_IN the_DT actual_JJ time_NN series_NN ._.
+The_DT proxy_NN uses_VBZ the_DT summary_NN to_TO construct_VB an_DT index_NN ;_: the_DT index_NN is_VBZ global_JJ in_IN that_IN it_PRP stores_NNS information_NN from_IN all_DT sensors_NNS in_IN the_DT system_NN and_CC it_PRP is_VBZ distributed_VBN across_IN the_DT various_JJ proxies_NNS in_IN the_DT system_NN ._.
+Thus_RB ,_, applications_NNS see_VBP a_DT unified_JJ view_NN of_IN distributed_VBN data_NNS ,_, and_CC can_MD query_VB the_DT index_NN at_IN any_DT proxy_NN to_TO get_VB access_NN to_TO data_NNS stored_VBN at_IN any_DT sensor_NN ._.
+Specifically_RB ,_, each_DT query_NN triggers_VBZ lookups_NNS in_IN this_DT distributed_VBN index_NN and_CC the_DT list_NN of_IN matches_NNS is_VBZ then_RB used_VBN to_TO retrieve_VB the_DT corresponding_JJ data_NNS from_IN the_DT sensors_NNS ._.
+There_EX are_VBP several_JJ distributed_VBN index_NN and_CC lookup_NN methods_NNS which_WDT might_MD be_VB used_VBN in_IN this_DT system_NN ;_: however_RB ,_, the_DT index_NN structure_NN described_VBN in_IN Section_NN #_# is_VBZ highly_RB suited_VBN for_IN the_DT task_NN ._.
+Since_IN the_DT index_NN is_VBZ constructed_VBN using_VBG a_DT coarse-grain_NN summary_NN ,_, instead_RB of_IN the_DT actual_JJ data_NNS ,_, index_NN lookups_NNS will_MD yield_VB approximate_JJ matches_NNS ._.
+The_DT TSAR_NN summarization_NN mechanism_NN guarantees_NNS that_WDT index_NN lookups_NNS will_MD never_RB yield_VB false_JJ negatives_NNS -_: i_LS ._.
+e_LS ._.
+it_PRP will_MD never_RB miss_VB summaries_NNS which_WDT include_VBP the_DT value_NN being_VBG searched_VBN for_IN ._.
+However_RB ,_, index_NN lookups_NNS may_MD yield_VB false_JJ positives_NNS ,_, where_WRB a_DT summary_NN matches_VBZ the_DT query_NN but_CC when_WRB queried_VBD the_DT remote_JJ sensor_NN finds_VBZ no_DT matching_JJ value_NN ,_, wasting_VBG network_NN resources_NNS ._.
+The_DT more_JJR coarse-grained_JJ the_DT summary_NN ,_, the_DT lower_JJR the_DT update_VBP overhead_NN and_CC the_DT greater_JJR the_DT fraction_NN of_IN false_JJ positives_NNS ,_, while_IN finer_NN summaries_NNS incur_VBP update_VB overhead_NN while_IN reducing_VBG query_NN overhead_NN due_JJ to_TO false_JJ positives_NNS ._.
+Remote_JJ sensors_NNS may_MD easily_RB distinguish_VB false_JJ positives_NNS from_IN queries_NNS which_WDT result_VBP in_IN search_NN hits_NNS ,_, and_CC calculate_VB the_DT ratio_NN between_IN the_DT two_CD ;_: based_VBN on_IN this_DT ratio_NN ,_, TSAR_NN employs_VBZ a_DT novel_JJ adaptive_JJ technique_NN that_WDT dynamically_RB varies_VBZ the_DT granularity_NN of_IN sensor_NN summaries_NNS to_TO balance_VB the_DT metadata_NN overhead_NN and_CC the_DT overhead_NN of_IN false_JJ positives_NNS ._.
+3_LS ._.
+Data_NNS Structures_NNS At_IN the_DT proxy_NN tier_NN ,_, TSAR_NN employs_VBZ a_DT novel_JJ index_NN structure_NN called_VBD the_DT Interval_NNP Skip_VB Graph_NN ,_, which_WDT is_VBZ an_DT ordered_VBN ,_, distributed_VBN data_NNS structure_NN for_IN finding_VBG all_DT intervals_NNS that_WDT contain_VBP a_DT particular_JJ point_NN or_CC range_NN of_IN values_NNS ._.
+Interval_NNP skip_VB graphs_NNS combine_VBP Interval_NNP Trees_NNP -LSB-_-LRB- #_# -RSB-_-RRB- ,_, an_DT interval-based_JJ binary_JJ search_NN tree_NN ,_, with_IN Skip_VB Graphs_NNS -LSB-_-LRB- #_# -RSB-_-RRB- ,_, a_DT ordered_VBN ,_, distributed_VBN data_NNS structure_NN for_IN peer-to-peer_JJ systems_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+The_DT resulting_VBG data_NNS structure_NN has_VBZ two_CD properties_NNS that_WDT make_VBP it_PRP ideal_JJ for_IN sensor_NN networks_NNS ._.
+First_RB ,_, it_PRP has_VBZ O_NN -LRB-_-LRB- log_NN n_NN -RRB-_-RRB- search_NN complexity_NN for_IN accessing_VBG the_DT first_JJ interval_NN that_WDT matches_VBZ a_DT particular_JJ value_NN or_CC range_NN ,_, and_CC constant_JJ complexity_NN for_IN accessing_VBG each_DT successive_JJ interval_NN ._.
+Second_RB ,_, indexing_NN of_IN intervals_NNS rather_RB than_IN individual_JJ values_NNS makes_VBZ the_DT data_NNS structure_NN ideal_NN for_IN indexing_NN summaries_NNS over_IN time_NN or_CC value_NN ._.
+Such_JJ summary-based_JJ indexing_NN is_VBZ a_DT more_RBR natural_JJ fit_NN for_IN energyconstrained_JJ sensor_NN nodes_NNS ,_, since_IN transmitting_VBG summaries_NNS incurs_VBZ less_JJR energy_NN overhead_NN than_IN transmitting_VBG all_DT sensor_NN data_NNS ._.
+Definitions_NNS :_: We_PRP assume_VBP that_IN there_EX are_VBP Np_NN proxies_NNS and_CC Ns_NNS sensors_NNS in_IN a_DT two-tier_JJ sensor_NN network_NN ._.
+Each_DT proxy_NN is_VBZ responsible_JJ for_IN multiple_JJ sensor_NN nodes_NNS ,_, and_CC no_DT assumption_NN is_VBZ made_VBN about_IN the_DT number_NN of_IN sensors_NNS per_IN proxy_NN ._.
+Each_DT sensor_NN transmits_VBZ interval_JJ summaries_NNS of_IN data_NNS or_CC events_NNS regularly_RB to_TO one_CD or_CC more_JJR proxies_NNS that_IN it_PRP is_VBZ associated_VBN with_IN ,_, where_WRB interval_JJ i_FW is_VBZ represented_VBN as_IN -LSB-_-LRB- lowi_NN ,_, highi_NN -RSB-_-RRB- ._.
+These_DT intervals_NNS can_MD correspond_VB to_TO time_NN or_CC value_NN ranges_NNS that_WDT are_VBP used_VBN for_IN indexing_NN sensor_NN data_NNS ._.
+No_DT assumption_NN is_VBZ made_VBN about_IN the_DT size_NN of_IN an_DT interval_NN or_CC about_IN the_DT amount_NN of_IN overlap_VBP between_IN intervals_NNS ._.
+Range_NNP queries_NNS on_IN the_DT intervals_NNS are_VBP posed_VBN by_IN users_NNS to_TO the_DT network_NN of_IN proxies_NNS and_CC sensors_NNS ;_: each_DT query_NN q_NN needs_VBZ to_TO determine_VB all_DT index_NN values_NNS that_WDT overlap_VBP the_DT interval_NN -LSB-_-LRB- lowq_NN ,_, highq_NN -RSB-_-RRB- ._.
+The_DT goal_NN of_IN the_DT interval_NN skip_VB graph_NN is_VBZ to_TO index_NN all_DT intervals_NNS such_JJ that_IN the_DT set_NN that_WDT overlaps_VBZ a_DT query_NN interval_NN can_MD be_VB located_JJ efficiently_RB ._.
+In_IN the_DT rest_NN of_IN this_DT section_NN ,_, we_PRP describe_VBP the_DT interval_NN skip_VB graph_NN in_IN greater_JJR detail_NN ._.
+3_LS ._.
+#_# Skip_VB Graph_NNP Overview_NNP In_IN order_NN to_TO inform_VB the_DT description_NN of_IN the_DT Interval_NNP Skip_VB Graph_NN ,_, we_PRP first_RB provide_VBP a_DT brief_JJ overview_NN of_IN the_DT Skip_VB Graph_NNP data_NNS structure_NN ;_: for_IN a_DT more_RBR extensive_JJ description_NN the_DT reader_NN is_VBZ referred_VBN to_TO -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+Figure_NNP #_# shows_VBZ a_DT skip_VB graph_NN which_WDT indexes_NNS #_# keys_NNS ;_: the_DT keys_NNS may_MD be_VB seen_VBN along_IN the_DT bottom_NN ,_, and_CC above_IN each_DT key_NN are_VBP the_DT pointers_NNS associated_VBN with_IN that_DT key_NN ._.
+Each_DT data_NNS element_NN ,_, consisting_VBG of_IN a_DT key_JJ and_CC its_PRP$ associated_VBN pointers_NNS ,_, may_MD reside_VB on_IN a_DT different_JJ node_NN in_IN the_DT network_NN ,_, 42_CD 7_CD #_# ##_CD ##_CD ##_CD ##_CD ###_NN level_NN #_# level_NN #_# level_NN #_# key_JJ single_JJ skip_VB graph_NN element_NN -LRB-_-LRB- each_DT may_MD be_VB on_IN different_JJ node_NN -RRB-_-RRB- find_VBP -LRB-_-LRB- ##_CD -RRB-_-RRB- node-to-node_JJ messages_NNS Figure_NN #_# :_: Skip_VB Graph_NN of_IN #_# Elements_NNS -LSB-_-LRB- #_# ,_, ##_NN -RSB-_-RRB- -LSB-_-LRB- #_# ,_, ##_NN -RSB-_-RRB- -LSB-_-LRB- ##_CD ,_, ##_CD -RSB-_-RRB- -LSB-_-LRB- ##_CD ,_, ##_CD -RSB-_-RRB- -LSB-_-LRB- ##_CD ,_, ##_CD -RSB-_-RRB- -LSB-_-LRB- ##_CD ,_, ##_CD -RSB-_-RRB- -LSB-_-LRB- ##_CD ,_, ##_CD -RSB-_-RRB- -LSB-_-LRB- #_# ,_, #_# -RSB-_-RRB- 5_CD ##_CD ##_CD ##_CD ##_CD ##_CD ##_CD ##_NN -LSB-_-LRB- low_JJ ,_, high_JJ -RSB-_-RRB- max_NN contains_VBZ -LRB-_-LRB- ##_NN -RRB-_-RRB- match_NN no_DT match_NN halt_NN Figure_NN #_# :_: Interval_NNP Skip_VB Graph_NN -LSB-_-LRB- #_# ,_, ##_NN -RSB-_-RRB- -LSB-_-LRB- #_# ,_, ##_NN -RSB-_-RRB- -LSB-_-LRB- ##_CD ,_, ##_CD -RSB-_-RRB- -LSB-_-LRB- ##_CD ,_, ##_CD -RSB-_-RRB- -LSB-_-LRB- ##_CD ,_, ##_CD -RSB-_-RRB- -LSB-_-LRB- ##_CD ,_, ##_CD -RSB-_-RRB- -LSB-_-LRB- ##_CD ,_, ##_CD -RSB-_-RRB- -LSB-_-LRB- #_# ,_, #_# -RSB-_-RRB- Node_NNP #_# Node_NNP #_# Node_NNP #_# level_NN #_# level_NN #_# level_NN #_# Figure_NNP #_# :_: Distributed_VBN Interval_NNP Skip_VB Graph_NN and_CC pointers_NNS therefore_RB identify_VBP both_CC a_DT remote_JJ node_NN as_RB well_RB as_IN a_DT data_NN element_NN on_IN that_DT node_NN ._.
+In_IN this_DT figure_NN we_PRP may_MD see_VB the_DT following_VBG properties_NNS of_IN a_DT skip_VBP graph_NN :_: Ordered_VBN index_NN :_: The_DT keys_NNS are_VBP members_NNS of_IN an_DT ordered_VBN data_NNS type_NN ,_, for_IN instance_NN integers_NNS ._.
+Lookups_NNS make_VBP use_NN of_IN ordered_VBN comparisons_NNS between_IN the_DT search_NN key_NN and_CC existing_VBG index_NN entries_NNS ._.
+In_IN addition_NN ,_, the_DT pointers_NNS at_IN the_DT lowest_JJS level_NN point_NN directly_RB to_TO the_DT successor_NN of_IN each_DT item_NN in_IN the_DT index_NN ._.
+In-place_JJ indexing_NN :_: Data_NNP elements_NNS remain_VBP on_IN the_DT nodes_NNS where_WRB they_PRP were_VBD inserted_VBN ,_, and_CC messages_NNS are_VBP sent_VBN between_IN nodes_NNS to_TO establish_VB links_NNS between_IN those_DT elements_NNS and_CC others_NNS in_IN the_DT index_NN ._.
+Log_VB n_NN height_NN :_: There_EX are_VBP log2_NN n_NN pointers_NNS associated_VBN with_IN each_DT element_NN ,_, where_WRB n_NN is_VBZ the_DT number_NN of_IN data_NNS elements_NNS indexed_VBN ._.
+Each_DT pointer_NN belongs_VBZ to_TO a_DT level_NN l_NN in_IN -LSB-_-LRB- #_# ..._: log2_NN n_NN #_# -RSB-_-RRB- ,_, and_CC together_RB with_IN some_DT other_JJ pointers_NNS at_IN that_DT level_NN forms_VBZ a_DT chain_NN of_IN n_NN /_: 2l_JJ elements_NNS ._.
+Probabilistic_JJ balance_NN :_: Rather_RB than_IN relying_VBG on_IN re-balancing_NN operations_NNS which_WDT may_MD be_VB triggered_VBN at_IN insert_NN or_CC delete_VB ,_, skip_VB graphs_NNS implement_VB a_DT simple_JJ random_JJ balancing_NN mechanism_NN which_WDT maintains_VBZ close_RB to_TO perfect_JJ balance_NN on_IN average_NN ,_, with_IN an_DT extremely_RB low_JJ probability_NN of_IN significant_JJ imbalance_NN ._.
+Redundancy_NN and_CC resiliency_NN :_: Each_DT data_NNS element_NN forms_VBZ an_DT independent_JJ search_NN tree_NN root_NN ,_, so_RB searches_NNS may_MD begin_VB at_IN any_DT node_NN in_IN the_DT network_NN ,_, eliminating_VBG hot_JJ spots_NNS at_IN a_DT single_JJ search_NN root_NN ._.
+In_IN addition_NN the_DT index_NN is_VBZ resilient_JJ against_IN node_NN failure_NN ;_: data_NNS on_IN the_DT failed_VBN node_NN will_MD not_RB be_VB accessible_JJ ,_, but_CC remaining_VBG data_NNS elements_NNS will_MD be_VB accessible_JJ through_IN search_NN trees_NNS rooted_VBN on_IN other_JJ nodes_NNS ._.
+In_IN Figure_NNP #_# we_PRP see_VBP the_DT process_NN of_IN searching_VBG for_IN a_DT particular_JJ value_NN in_IN a_DT skip_VBP graph_NN ._.
+The_DT pointers_NNS reachable_JJ from_IN a_DT single_JJ data_NN element_NN form_VBP a_DT binary_JJ tree_NN :_: a_DT pointer_NN traversal_NN at_IN the_DT highest_JJS level_NN skips_VBZ over_IN n_NN /_: #_# elements_NNS ,_, n_NN /_: #_# at_IN the_DT next_JJ level_NN ,_, and_CC so_RB on_IN ._.
+Search_VB consists_VBZ of_IN descending_VBG the_DT tree_NN from_IN the_DT highest_JJS level_NN to_TO level_NN #_# ,_, at_IN each_DT level_NN comparing_VBG the_DT target_NN key_NN with_IN the_DT next_JJ element_NN at_IN that_DT level_NN and_CC deciding_VBG whether_IN or_CC not_RB to_TO traverse_VB ._.
+In_IN the_DT perfectly_RB balanced_JJ case_NN shown_VBN here_RB there_EX are_VBP log2_NN n_NN levels_NNS of_IN pointers_NNS ,_, and_CC search_NN will_MD traverse_VB #_# or_CC #_# pointers_NNS at_IN each_DT level_NN ._.
+We_PRP assume_VBP that_IN each_DT data_NNS element_NN resides_VBZ on_IN a_DT different_JJ node_NN ,_, and_CC measure_NN search_NN cost_NN by_IN the_DT number_NN messages_NNS sent_VBN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+the_DT number_NN of_IN pointers_NNS traversed_VBN -RRB-_-RRB- ;_: this_DT will_MD clearly_RB be_VB O_NN -LRB-_-LRB- log_NN n_NN -RRB-_-RRB- ._.
+Tree_NN update_VBP proceeds_NNS from_IN the_DT bottom_NN ,_, as_IN in_IN a_DT B-Tree_NNP ,_, with_IN the_DT root_NN -LRB-_-LRB- s_NNS -RRB-_-RRB- being_VBG promoted_VBN in_IN level_NN as_IN the_DT tree_NN grows_VBZ ._.
+In_IN this_DT way_NN ,_, for_IN instance_NN ,_, the_DT two_CD chains_NNS at_IN level_NN #_# always_RB contain_VBP n_NN /_: #_# entries_NNS each_DT ,_, and_CC there_EX is_VBZ never_RB a_DT need_NN to_TO split_VB chains_NNS as_IN the_DT structure_NN grows_VBZ ._.
+The_DT update_VBP process_NN then_RB consists_VBZ of_IN choosing_VBG which_WDT of_IN the_DT 2l_JJ chains_NNS to_TO insert_VB an_DT element_NN into_IN at_IN each_DT level_NN l_NN ,_, and_CC inserting_VBG it_PRP in_IN the_DT proper_JJ place_NN in_IN each_DT chain_NN ._.
+Maintaining_VBG a_DT perfectly_RB balanced_JJ skip_VBP graph_NN as_IN shown_VBN in_IN Figure_NNP #_# would_MD be_VB quite_RB complex_JJ ;_: instead_RB ,_, the_DT probabilistic_JJ balancing_NN method_NN introduced_VBN in_IN Skip_VB Lists_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- is_VBZ used_VBN ,_, which_WDT trades_VBZ off_RP a_DT small_JJ amount_NN of_IN overhead_NN in_IN the_DT expected_VBN case_NN in_IN return_NN for_IN simple_JJ update_VBP and_CC deletion_NN ._.
+The_DT basis_NN for_IN this_DT method_NN is_VBZ the_DT observation_NN that_IN any_DT element_NN which_WDT belongs_VBZ to_TO a_DT particular_JJ chain_NN at_IN level_NN l_NN can_MD only_RB belong_VB to_TO one_CD of_IN two_CD chains_NNS at_IN level_NN l_NN +_CC #_# ._.
+To_TO insert_VB an_DT element_NN we_PRP ascend_VBD levels_NNS starting_VBG at_IN #_# ,_, randomly_RB choosing_VBG one_CD of_IN the_DT two_CD possible_JJ chains_NNS at_IN each_DT level_NN ,_, an_DT stopping_VBG when_WRB we_PRP reach_VBP an_DT empty_JJ chain_NN ._.
+One_CD means_NNS of_IN implementation_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+as_IN described_VBN in_IN -LSB-_-LRB- #_# -RSB-_-RRB- -RRB-_-RRB- is_VBZ to_TO assign_VB each_DT element_NN an_DT arbitrarily_RB long_JJ random_JJ bit_NN string_NN ._.
+Each_DT chain_NN at_IN level_NN l_NN is_VBZ then_RB constructed_VBN from_IN those_DT elements_NNS whose_WP$ bit_NN strings_NNS match_VBP in_IN the_DT first_JJ l_NN bits_NNS ,_, thus_RB creating_VBG 2l_JJ possible_JJ chains_NNS at_IN each_DT level_NN and_CC ensuring_VBG that_IN each_DT chain_NN splits_VBZ into_IN exactly_RB two_CD chains_NNS at_IN the_DT next_JJ level_NN ._.
+Although_IN the_DT resulting_VBG structure_NN is_VBZ not_RB perfectly_RB balanced_JJ ,_, following_VBG the_DT analysis_NN in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- we_PRP can_MD show_VB that_IN the_DT probability_NN of_IN it_PRP being_VBG significantly_RB out_IN of_IN balance_NN is_VBZ extremely_RB small_JJ ;_: in_IN addition_NN ,_, since_IN the_DT structure_NN is_VBZ determined_VBN by_IN the_DT random_JJ number_NN stream_NN ,_, input_NN data_NNS patterns_NNS can_MD not_RB cause_VB the_DT tree_NN to_TO become_VB imbalanced_JJ ._.
+3_LS ._.
+#_# Interval_NNP Skip_VB Graph_NN A_DT skip_VB graph_NN is_VBZ designed_VBN to_TO store_VB single-valued_JJ entries_NNS ._.
+In_IN this_DT section_NN ,_, we_PRP introduce_VBP a_DT novel_JJ data_NNS structure_NN that_WDT extends_VBZ skip_VB graphs_NNS to_TO store_VB intervals_NNS -LSB-_-LRB- lowi_NNS ,_, highi_NN -RSB-_-RRB- and_CC allows_VBZ efficient_JJ searches_NNS for_IN all_DT intervals_NNS covering_VBG a_DT value_NN v_LS ,_, i_FW ._.
+e_LS ._.
+-LCB-_-LRB- i_LS :_: lowi_NNS v_LS highi_NNS -RCB-_-RRB- ._.
+Our_PRP$ data_NNS structure_NN can_MD be_VB extended_VBN to_TO range_VB searches_NNS in_IN a_DT straightforward_JJ manner_NN ._.
+The_DT interval_JJ skip_VB graph_NN is_VBZ constructed_VBN by_IN applying_VBG the_DT method_NN of_IN augmented_JJ search_NN trees_NNS ,_, as_IN described_VBN by_IN Cormen_NNP ,_, Leiserson_NNP ,_, and_CC Rivest_NNP -LSB-_-LRB- #_# -RSB-_-RRB- and_CC applied_VBN to_TO binary_JJ search_NN trees_NNS to_TO create_VB an_DT Interval_NNP Tree_NNP ._.
+The_DT method_NN is_VBZ based_VBN on_IN the_DT observation_NN that_IN a_DT search_NN structure_NN based_VBN on_IN comparison_NN of_IN ordered_VBN keys_NNS ,_, such_JJ as_IN a_DT binary_JJ tree_NN ,_, may_MD also_RB be_VB used_VBN to_TO search_VB on_IN a_DT secondary_JJ key_NN which_WDT is_VBZ non-decreasing_JJ in_IN the_DT first_JJ key_NN ._.
+Given_VBN a_DT set_NN of_IN intervals_NNS sorted_VBN by_IN lower_JJR bound_VBD -_: lowi_NN lowi_NN +_CC #_# -_: we_PRP define_VBP the_DT secondary_JJ key_NN as_IN the_DT cumulative_JJ maximum_NN ,_, maxi_NN =_JJ maxk_NN =_JJ #_# ..._: i_FW -LRB-_-LRB- highk_NN -RRB-_-RRB- ._.
+The_DT set_NN of_IN intervals_NNS intersecting_VBG a_DT value_NN v_LS may_MD then_RB be_VB found_VBN by_IN searching_VBG for_IN the_DT first_JJ interval_NN -LRB-_-LRB- and_CC thus_RB the_DT interval_NN with_IN least_JJS lowi_NNS -RRB-_-RRB- such_JJ that_IN maxi_NN v_LS ._.
+We_PRP then_RB 43_CD traverse_NN intervals_NNS in_IN increasing_VBG order_NN lower_JJR bound_VBN ,_, until_IN we_PRP find_VBP the_DT first_JJ interval_NN with_IN lowi_NN >_JJR v_LS ,_, selecting_VBG those_DT intervals_NNS which_WDT intersect_VBP v_LS ._.
+Using_VBG this_DT approach_NN we_PRP augment_VBP the_DT skip_VB graph_NN data_NNS structure_NN ,_, as_IN shown_VBN in_IN Figure_NNP #_# ,_, so_RB that_IN each_DT entry_NN stores_NNS a_DT range_NN -LRB-_-LRB- lower_JJR bound_VBN and_CC upper_JJ bound_VBN -RRB-_-RRB- and_CC a_DT secondary_JJ key_NN -LRB-_-LRB- cumulative_JJ maximum_NN of_IN upper_JJ bound_VBN -RRB-_-RRB- ._.
+To_TO efficiently_RB calculate_VB the_DT secondary_JJ key_JJ maxi_NNS for_IN an_DT entry_NN i_FW ,_, we_PRP take_VBP the_DT greatest_JJS of_IN highi_NNS and_CC the_DT maximum_NN values_NNS reported_VBN by_IN each_DT of_IN i_FW ''_'' s_VBZ left-hand_JJ neighbors_NNS ._.
+To_TO search_VB for_IN those_DT intervals_NNS containing_VBG the_DT value_NN v_LS ,_, we_PRP first_RB search_VB for_IN v_LS on_IN the_DT secondary_JJ index_NN ,_, maxi_NN ,_, and_CC locate_VB the_DT first_JJ entry_NN with_IN maxi_NN v_LS ._.
+-LRB-_-LRB- by_IN the_DT definition_NN of_IN maxi_NN ,_, for_IN this_DT data_NN element_NN maxi_NN =_JJ highi_NNS ._. -RRB-_-RRB-
+If_IN lowi_JJ >_JJR v_LS ,_, then_RB this_DT interval_NN does_VBZ not_RB contain_VB v_LS ,_, and_CC no_DT other_JJ intervals_NNS will_MD ,_, either_RB ,_, so_IN we_PRP are_VBP done_VBN ._.
+Otherwise_RB we_PRP traverse_VBP the_DT index_NN in_IN increasing_VBG order_NN of_IN mini_NNS ,_, returning_VBG matching_JJ intervals_NNS ,_, until_IN we_PRP reach_VBP an_DT entry_NN with_IN mini_JJ >_JJR v_LS and_CC we_PRP are_VBP done_VBN ._.
+Searches_NNS for_IN all_DT intervals_NNS which_WDT overlap_VBP a_DT query_NN range_NN ,_, or_CC which_WDT completely_RB contain_VBP a_DT query_NN range_NN ,_, are_VBP straightforward_JJ extensions_NNS of_IN this_DT mechanism_NN ._.
+Lookup_NNP Complexity_NNP :_: Lookup_NNP for_IN the_DT first_JJ interval_NN that_WDT matches_VBZ a_DT given_VBN value_NN is_VBZ performed_VBN in_IN a_DT manner_NN very_RB similar_JJ to_TO an_DT interval_JJ tree_NN ._.
+The_DT complexity_NN of_IN search_NN is_VBZ O_NN -LRB-_-LRB- log_NN n_NN -RRB-_-RRB- ._.
+The_DT number_NN of_IN intervals_NNS that_WDT match_VBP a_DT range_NN query_NN can_MD vary_VB depending_VBG on_IN the_DT amount_NN of_IN overlap_VBP in_IN the_DT intervals_NNS being_VBG indexed_VBN ,_, as_RB well_RB as_IN the_DT range_NN specified_VBN in_IN the_DT query_NN ._.
+Insert_VB Complexity_NNP :_: In_IN an_DT interval_JJ tree_NN or_CC interval_NN skip_VBP list_NN ,_, the_DT maximum_NN value_NN for_IN an_DT entry_NN need_NN only_RB be_VB calculated_VBN over_IN the_DT subtree_NN rooted_VBN at_IN that_DT entry_NN ,_, as_IN this_DT value_NN will_MD be_VB examined_VBN only_RB when_WRB searching_VBG within_IN the_DT subtree_NN rooted_VBN at_IN that_DT entry_NN ._.
+For_IN a_DT simple_JJ interval_NN skip_VB graph_NN ,_, however_RB ,_, this_DT maximum_NN value_NN for_IN an_DT entry_NN must_MD be_VB computed_VBN over_IN all_DT entries_NNS preceding_VBG it_PRP in_IN the_DT index_NN ,_, as_IN searches_NNS may_MD begin_VB anywhere_RB in_IN the_DT data_NNS structure_NN ,_, rather_RB than_IN at_IN a_DT distinguished_JJ root_NN element_NN ._.
+It_PRP may_MD be_VB easily_RB seen_VBN that_IN in_IN the_DT worse_JJR case_NN the_DT insertion_NN of_IN a_DT single_JJ interval_NN -LRB-_-LRB- one_CD that_WDT covers_VBZ all_DT existing_VBG intervals_NNS in_IN the_DT index_NN -RRB-_-RRB- will_MD trigger_VB the_DT update_VB of_IN all_DT entries_NNS in_IN the_DT index_NN ,_, for_IN a_DT worst-case_JJ insertion_NN cost_NN of_IN O_NN -LRB-_-LRB- n_NN -RRB-_-RRB- ._.
+3_LS ._.
+#_# Sparse_JJ Interval_NNP Skip_VB Graph_NNP The_DT final_JJ extensions_NNS we_PRP propose_VBP take_VB advantage_NN of_IN the_DT difference_NN between_IN the_DT number_NN of_IN items_NNS indexed_VBN in_IN a_DT skip_VBP graph_NN and_CC the_DT number_NN of_IN systems_NNS on_IN which_WDT these_DT items_NNS are_VBP distributed_VBN ._.
+The_DT cost_NN in_IN network_NN messages_NNS of_IN an_DT operation_NN may_MD be_VB reduced_VBN by_IN arranging_VBG the_DT data_NNS structure_NN so_IN that_IN most_JJS structure_NN traversals_NNS occur_VBP locally_RB on_IN a_DT single_JJ node_NN ,_, and_CC thus_RB incur_VBP zero_CD network_NN cost_NN ._.
+In_IN addition_NN ,_, since_IN both_DT congestion_NN and_CC failure_NN occur_VBP on_IN a_DT per-node_JJ basis_NN ,_, we_PRP may_MD eliminate_VB links_NNS without_IN adverse_JJ consequences_NNS if_IN those_DT links_NNS only_RB contribute_VBP to_TO load_VB distribution_NN and_CC /_: or_CC resiliency_NN within_IN a_DT single_JJ node_NN ._.
+These_DT two_CD modifications_NNS allow_VBP us_PRP to_TO achieve_VB reductions_NNS in_IN asymptotic_JJ complexity_NN of_IN both_CC update_VB and_CC search_VB ._.
+As_IN may_MD be_VB in_IN Section_NN #_# ._.
+#_# ,_, insert_NN and_CC delete_VB cost_NN on_IN an_DT interval_JJ skip_VB graph_NN has_VBZ a_DT worst_JJS case_NN complexity_NN of_IN O_NN -LRB-_-LRB- n_NN -RRB-_-RRB- ,_, compared_VBN to_TO O_NN -LRB-_-LRB- log_NN n_NN -RRB-_-RRB- for_IN an_DT interval_JJ tree_NN ._.
+The_DT main_JJ reason_NN for_IN the_DT difference_NN is_VBZ that_IN skip_VB graphs_NNS have_VBP a_DT full_JJ search_NN structure_NN rooted_VBN at_IN each_DT element_NN ,_, in_IN order_NN to_TO distribute_VB load_NN and_CC provide_VB resilience_NN to_TO system_NN failures_NNS in_IN a_DT distributed_VBN setting_NN ._.
+However_RB ,_, in_IN order_NN to_TO provide_VB load_NN distribution_NN and_CC failure_NN resilience_NN it_PRP is_VBZ only_RB necessary_JJ to_TO provide_VB a_DT full_JJ search_NN structure_NN for_IN each_DT system_NN ._.
+If_IN as_RB in_IN TSAR_NN the_DT number_NN of_IN nodes_NNS -LRB-_-LRB- proxies_NNS -RRB-_-RRB- is_VBZ much_RB smaller_JJR than_IN the_DT number_NN of_IN data_NNS elements_NNS -LRB-_-LRB- data_NNS summaries_NNS indexed_VBN -RRB-_-RRB- ,_, then_RB this_DT will_MD result_VB in_IN significant_JJ savings_NNS ._.
+Implementation_NN :_: To_TO construct_VB a_DT sparse_JJ interval_NN skip_VB graph_NN ,_, we_PRP ensure_VBP that_IN there_EX is_VBZ a_DT single_JJ distinguished_JJ element_NN on_IN each_DT system_NN ,_, the_DT root_NN element_NN for_IN that_DT system_NN ;_: all_DT searches_NNS will_MD start_VB at_IN one_CD of_IN these_DT root_NN elements_NNS ._.
+When_WRB adding_VBG a_DT new_JJ element_NN ,_, rather_RB than_IN splitting_NN lists_NNS at_IN increasing_VBG levels_NNS l_NN until_IN the_DT element_NN is_VBZ in_IN a_DT list_NN with_IN no_DT others_NNS ,_, we_PRP stop_VBP when_WRB we_PRP find_VBP that_IN the_DT element_NN would_MD be_VB in_IN a_DT list_NN containing_VBG no_DT root_NN elements_NNS ,_, thus_RB ensuring_VBG that_IN the_DT element_NN is_VBZ reachable_JJ from_IN all_DT root_NN elements_NNS ._.
+An_DT example_NN of_IN applying_VBG this_DT optimization_NN may_MD be_VB seen_VBN in_IN Figure_NNP #_# ._.
+-LRB-_-LRB- In_IN practice_NN ,_, rather_RB than_IN designating_VBG existing_VBG data_NNS elements_NNS as_IN roots_NNS ,_, as_IN shown_VBN ,_, it_PRP may_MD be_VB preferable_JJ to_TO insert_VB null_JJ values_NNS at_IN startup_NN ._. -RRB-_-RRB-
+When_WRB using_VBG the_DT technique_NN of_IN membership_NN vectors_NNS as_IN in_IN -LSB-_-LRB- #_# -RSB-_-RRB- ,_, this_DT may_MD be_VB done_VBN by_IN broadcasting_VBG the_DT membership_NN vectors_NNS of_IN each_DT root_NN element_NN to_TO all_DT other_JJ systems_NNS ,_, and_CC stopping_VBG insertion_NN of_IN an_DT element_NN at_IN level_NN l_NN when_WRB it_PRP does_VBZ not_RB share_VB an_DT l-bit_NN prefix_NN with_IN any_DT of_IN the_DT Np_NN root_NN elements_NNS ._.
+The_DT expected_VBN number_NN of_IN roots_NNS sharing_VBG a_DT log2Np-bit_NN prefix_NN is_VBZ #_# ,_, giving_VBG an_DT expected_VBN expected_VBN height_NN for_IN each_DT element_NN of_IN log2Np_NN +_CC O_NN -LRB-_-LRB- #_# -RRB-_-RRB- ._.
+An_DT alternate_JJ implementation_NN ,_, which_WDT distributes_VBZ information_NN concerning_VBG root_NN elements_NNS at_IN pointer_NN establishment_NN time_NN ,_, is_VBZ omitted_VBN due_JJ to_TO space_NN constraints_NNS ;_: this_DT method_NN eliminates_VBZ the_DT need_NN for_IN additional_JJ messages_NNS ._.
+Performance_NNP :_: In_IN a_DT -LRB-_-LRB- non-interval_JJ -RRB-_-RRB- sparse_JJ skip_VB graph_NN ,_, since_IN the_DT expected_VBN height_NN of_IN an_DT inserted_VBN element_NN is_VBZ now_RB log2_JJ Np_NN +_CC O_NN -LRB-_-LRB- #_# -RRB-_-RRB- ,_, expected_VBN insertion_NN complexity_NN is_VBZ O_NN -LRB-_-LRB- log_NN Np_NN -RRB-_-RRB- ,_, rather_RB than_IN O_NN -LRB-_-LRB- log_NN n_NN -RRB-_-RRB- ,_, where_WRB Np_NN is_VBZ the_DT number_NN of_IN root_NN elements_NNS and_CC thus_RB the_DT number_NN of_IN separate_JJ systems_NNS in_IN the_DT network_NN ._.
+-LRB-_-LRB- In_IN the_DT degenerate_JJ case_NN of_IN a_DT single_JJ system_NN we_PRP have_VBP a_DT skip_VB list_NN ;_: with_IN splitting_NN probability_NN #_# ._.
+#_# the_DT expected_VBN height_NN of_IN an_DT individual_JJ element_NN is_VBZ #_# ._. -RRB-_-RRB-
+Note_VB that_DT since_IN searches_NNS are_VBP started_VBN at_IN root_NN elements_NNS of_IN expected_VBN height_NN log2_NN n_NN ,_, search_NN complexity_NN is_VBZ not_RB improved_VBN ._.
+For_IN an_DT interval_JJ sparse_JJ skip_VB graph_NN ,_, update_VBP performance_NN is_VBZ improved_VBN considerably_RB compared_VBN to_TO the_DT O_NN -LRB-_-LRB- n_NN -RRB-_-RRB- worst_JJS case_NN for_IN the_DT nonsparse_JJ case_NN ._.
+In_IN an_DT augmented_JJ search_NN structure_NN such_JJ as_IN this_DT ,_, an_DT element_NN only_RB stores_NNS information_NN for_IN nodes_NNS which_WDT may_MD be_VB reached_VBN from_IN that_DT element-e_NN ._.
+g_NN ._.
+the_DT subtree_NN rooted_VBN at_IN that_DT element_NN ,_, in_IN the_DT case_NN of_IN a_DT tree_NN ._.
+Thus_RB ,_, when_WRB updating_VBG the_DT maximum_NN value_NN in_IN an_DT interval_JJ tree_NN ,_, the_DT update_VBP is_VBZ only_RB propagated_VBN towards_IN the_DT root_NN ._.
+In_IN a_DT sparse_JJ interval_NN skip_VB graph_NN ,_, updates_NNS to_TO a_DT node_NN only_RB propagate_VB towards_IN the_DT Np_NN root_NN elements_NNS ,_, for_IN a_DT worst-case_JJ cost_NN of_IN Np_NN log2_NN n_NN ._.
+Shortcut_NN search_NN :_: When_WRB beginning_VBG a_DT search_NN for_IN a_DT value_NN v_LS ,_, rather_RB than_IN beginning_VBG at_IN the_DT root_NN on_IN that_DT proxy_NN ,_, we_PRP can_MD find_VB the_DT element_NN that_WDT is_VBZ closest_JJS to_TO v_LS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+using_VBG a_DT secondary_JJ local_JJ index_NN -RRB-_-RRB- ,_, and_CC then_RB begin_VB the_DT search_NN at_IN that_DT element_NN ._.
+The_DT expected_VBN distance_NN between_IN this_DT element_NN and_CC the_DT search_NN terminus_NN is_VBZ log2_NN Np_NN ,_, and_CC the_DT search_NN will_MD now_RB take_VB on_RP average_JJ log2_NN Np_NN +_CC O_NN -LRB-_-LRB- #_# -RRB-_-RRB- steps_NNS ._.
+To_TO illustrate_VB this_DT optimization_NN ,_, in_IN Figure_NNP #_# depending_VBG on_IN the_DT choice_NN of_IN search_NN root_NN ,_, a_DT search_NN for_IN -LSB-_-LRB- ##_CD ,_, ##_CD -RSB-_-RRB- beginning_VBG at_IN node_NN #_# may_MD take_VB #_# network_NN hops_VBZ ,_, traversing_VBG to_TO node_NN #_# ,_, then_RB back_RB to_TO node_NN #_# ,_, and_CC finally_RB to_TO node_NN #_# where_WRB the_DT destination_NN is_VBZ located_JJ ,_, for_IN a_DT cost_NN of_IN #_# messages_NNS ._.
+The_DT shortcut_NN search_NN ,_, however_RB ,_, locates_VBZ the_DT intermediate_JJ data_NN element_NN on_IN node_NN #_# ,_, and_CC then_RB proceeds_VBZ directly_RB to_TO node_NN #_# for_IN a_DT cost_NN of_IN #_# message_NN ._.
+Performance_NNP :_: This_DT technique_NN may_MD be_VB applied_VBN to_TO the_DT primary_JJ key_JJ search_NN which_WDT is_VBZ the_DT first_JJ of_IN two_CD insertion_NN steps_NNS in_IN an_DT interval_JJ skip_VB graph_NN ._.
+By_IN combining_VBG the_DT short-cut_NN optimization_NN with_IN sparse_JJ interval_NN skip_VB graphs_NNS ,_, the_DT expected_VBN cost_NN of_IN insertion_NN is_VBZ now_RB O_NN -LRB-_-LRB- log_NN Np_NN -RRB-_-RRB- ,_, independent_JJ of_IN the_DT size_NN of_IN the_DT index_NN or_CC the_DT degree_NN of_IN overlap_VBP of_IN the_DT inserted_VBN intervals_NNS ._.
+3_LS ._.
+#_# Alternative_NNP Data_NNP Structures_VBZ Thus_RB far_RB we_PRP have_VBP only_RB compared_VBN the_DT sparse_JJ interval_NN skip_VB graph_NN with_IN similar_JJ structures_NNS from_IN which_WDT it_PRP is_VBZ derived_VBN ._.
+A_DT comparison_NN with_IN several_JJ other_JJ data_NNS structures_NNS which_WDT meet_VBP at_IN least_JJS some_DT of_IN the_DT requirements_NNS for_IN the_DT TSAR_NN index_NN is_VBZ shown_VBN in_IN Table_NNP #_# ._.
+44_CD Table_NNP #_# :_: Comparison_NN of_IN Distributed_VBN Index_NN Structures_NNS Range_NNP Query_NNP Support_NN Interval_NNP Representation_NNP Re-balancing_NN Resilience_NN Small_JJ Networks_NNP Large_JJ Networks_NNP DHT_NNP ,_, GHT_NNP no_DT no_DT no_DT yes_RB good_JJ good_JJ Local_JJ index_NN ,_, flood_NN query_NN yes_RB yes_RB no_DT yes_RB good_JJ bad_JJ P-tree_NN ,_, RP_NN *_NN -LRB-_-LRB- distributed_VBN B-Trees_NNS -RRB-_-RRB- yes_UH possible_JJ yes_UH no_DT good_JJ good_JJ DIMS_NN yes_RB no_DT yes_UH yes_UH yes_UH yes_UH Interval_NNP Skipgraph_NNP yes_UH yes_UH no_DT yes_RB good_JJ good_JJ -LSB-_-LRB- #_# ,_, ##_NN -RSB-_-RRB- -LSB-_-LRB- #_# ,_, ##_NN -RSB-_-RRB- -LSB-_-LRB- ##_CD ,_, ##_CD -RSB-_-RRB- -LSB-_-LRB- ##_CD ,_, ##_CD -RSB-_-RRB- -LSB-_-LRB- ##_CD ,_, ##_CD -RSB-_-RRB- -LSB-_-LRB- ##_CD ,_, ##_CD -RSB-_-RRB- -LSB-_-LRB- ##_CD ,_, ##_CD -RSB-_-RRB- -LSB-_-LRB- #_# ,_, #_# -RSB-_-RRB- Roots_NNS Node_VBP #_# Node_NNP #_# Figure_NNP #_# :_: Sparse_JJ Interval_NNP Skip_VB Graph_NNP The_DT hash-based_JJ systems_NNS ,_, DHT_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- and_CC GHT_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, lack_VBP the_DT ability_NN to_TO perform_VB range_NN queries_NNS and_CC are_VBP thus_RB not_RB well-suited_JJ to_TO indexing_NN spatio-temporal_JJ data_NNS ._.
+Indexing_NN locally_RB using_VBG an_DT appropriate_JJ singlenode_NN structure_NN and_CC then_RB flooding_VBG queries_NNS to_TO all_DT proxies_NNS is_VBZ a_DT competitive_JJ alternative_NN for_IN small_JJ networks_NNS ;_: for_IN large_JJ networks_NNS the_DT linear_JJ dependence_NN on_IN the_DT number_NN of_IN proxies_NNS becomes_VBZ an_DT issue_NN ._.
+Two_CD distributed_VBN B-Trees_NNS were_VBD examined_VBN -_: P-Trees_JJ -LSB-_-LRB- #_# -RSB-_-RRB- and_CC RP_NN *_SYM -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Each_DT of_IN these_DT supports_NNS range_VBP queries_NNS ,_, and_CC in_IN theory_NN could_MD be_VB modified_VBN to_TO support_VB indexing_NN of_IN intervals_NNS ;_: however_RB ,_, they_PRP both_DT require_VBP complex_JJ re-balancing_NN ,_, and_CC do_VBP not_RB provide_VB the_DT resilience_NN characteristics_NNS of_IN the_DT other_JJ structures_NNS ._.
+DIMS_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- provides_VBZ the_DT ability_NN to_TO perform_VB spatio-temporal_JJ range_NN queries_NNS ,_, and_CC has_VBZ the_DT necessary_JJ resilience_NN to_TO failures_NNS ;_: however_RB ,_, it_PRP can_MD not_RB be_VB used_VBN index_NN intervals_NNS ,_, which_WDT are_VBP used_VBN by_IN TSAR_NN ''_'' s_NNS data_NNS summarization_NN algorithm_NN ._.
+4_LS ._.
+Data_NNS Storage_NNP and_CC Summarization_NNP Having_VBG described_VBN the_DT proxy-level_JJ index_NN structure_NN ,_, we_PRP turn_VBP to_TO the_DT mechanisms_NNS at_IN the_DT sensor_NN tier_NN ._.
+TSAR_NN implements_VBZ two_CD key_JJ mechanisms_NNS at_IN the_DT sensor_NN tier_NN ._.
+The_DT first_JJ is_VBZ a_DT local_JJ archival_JJ store_NN at_IN each_DT sensor_NN node_NN that_WDT is_VBZ optimized_VBN for_IN resource-constrained_JJ devices_NNS ._.
+The_DT second_JJ is_VBZ an_DT adaptive_JJ summarization_NN technique_NN that_WDT enables_VBZ each_DT sensor_NN to_TO adapt_VB to_TO changing_VBG data_NNS and_CC query_NN characteristics_NNS ._.
+The_DT rest_NN of_IN this_DT section_NN describes_VBZ these_DT mechanisms_NNS in_IN detail_NN ._.
+4_LS ._.
+#_# Local_JJ Storage_NN at_IN Sensors_NNP Interval_NNP skip_VB graphs_NNS provide_VBP an_DT efficient_JJ mechanism_NN to_TO lookup_VB sensor_NN nodes_NNS containing_VBG data_NNS relevant_JJ to_TO a_DT query_NN ._.
+These_DT queries_NNS are_VBP then_RB routed_VBN to_TO the_DT sensors_NNS ,_, which_WDT locate_VBP the_DT relevant_JJ data_NN records_NNS in_IN the_DT local_JJ archive_NN and_CC respond_VB back_RB to_TO the_DT proxy_NN ._.
+To_TO enable_VB such_JJ lookups_NNS ,_, each_DT sensor_NN node_NN in_IN TSAR_NN maintains_VBZ an_DT archival_JJ store_NN of_IN sensor_NN data_NNS ._.
+While_IN the_DT implementation_NN of_IN such_PDT an_DT archival_JJ store_NN is_VBZ straightforward_JJ on_IN resource-rich_JJ devices_NNS that_WDT can_MD run_VB a_DT database_NN ,_, sensors_NNS are_VBP often_RB power_NN and_CC resource-constrained_JJ ._.
+Consequently_RB ,_, the_DT sensor_NN archiving_NN subsystem_NN in_IN TSAR_NN is_VBZ explicitly_RB designed_VBN to_TO exploit_VB characteristics_NNS of_IN sensor_NN data_NNS in_IN a_DT resource-constrained_JJ setting_NN ._.
+Timestamp_NNP Calibration_NNP Parameters_NNPS Opaque_NNP DataData_NNP /_: Event_NNP Attributes_NNPS size_NN Figure_NN #_# :_: Single_JJ storage_NN record_NN Sensor_NNP data_NNS has_VBZ very_RB distinct_JJ characteristics_NNS that_WDT inform_VBP our_PRP$ design_NN of_IN the_DT TSAR_NN archival_JJ store_NN ._.
+Sensors_NNS produce_VBP time-series_NNS data_NNS streams_NNS ,_, and_CC therefore_RB ,_, temporal_JJ ordering_VBG of_IN data_NNS is_VBZ a_DT natural_JJ and_CC simple_JJ way_NN of_IN storing_VBG archived_JJ sensor_NN data_NNS ._.
+In_IN addition_NN to_TO simplicity_NN ,_, a_DT temporally_RB ordered_VBN store_NN is_VBZ often_RB suitable_JJ for_IN many_JJ sensor_NN data_NNS processing_NN tasks_NNS since_IN they_PRP involve_VBP time-series_NNS data_NNS processing_NN ._.
+Examples_NNS include_VBP signal_NN processing_NN operations_NNS such_JJ as_IN FFT_NN ,_, wavelet_NN transforms_VBZ ,_, clustering_NN ,_, similarity_NN matching_NN ,_, and_CC target_NN detection_NN ._.
+Consequently_RB ,_, the_DT local_JJ archival_JJ store_NN is_VBZ a_DT collection_NN of_IN records_NNS ,_, designed_VBN as_IN an_DT append-only_JJ circular_JJ buffer_NN ,_, where_WRB new_JJ records_NNS are_VBP appended_VBN to_TO the_DT tail_NN of_IN the_DT buffer_NN ._.
+The_DT format_NN of_IN each_DT data_NNS record_NN is_VBZ shown_VBN in_IN Figure_NNP #_# ._.
+Each_DT record_NN has_VBZ a_DT metadata_JJ field_NN which_WDT includes_VBZ a_DT timestamp_NN ,_, sensor_NN settings_NNS ,_, calibration_NN parameters_NNS ,_, etc_FW ._.
+Raw_NN sensor_NN data_NNS is_VBZ stored_VBN in_IN the_DT data_NNS field_NN of_IN the_DT record_NN ._.
+The_DT data_NNS field_NN is_VBZ opaque_JJ and_CC application-specific-the_JJ storage_NN system_NN does_VBZ not_RB know_VB or_CC care_VB about_IN interpreting_VBG this_DT field_NN ._.
+A_DT camera-based_JJ sensor_NN ,_, for_IN instance_NN ,_, may_MD store_VB binary_JJ images_NNS in_IN this_DT data_NNS field_NN ._.
+In_IN order_NN to_TO support_VB a_DT variety_NN of_IN applications_NNS ,_, TSAR_NN supports_VBZ variable-length_JJ data_NNS fields_NNS ;_: as_IN a_DT result_NN ,_, record_NN sizes_NNS can_MD vary_VB from_IN one_CD record_NN to_TO another_DT ._.
+Our_PRP$ archival_JJ store_NN supports_VBZ three_CD operations_NNS on_IN records_NNS :_: create_VB ,_, read_VB ,_, and_CC delete_VB ._.
+Due_JJ to_TO the_DT append-only_JJ nature_NN of_IN the_DT store_NN ,_, creation_NN of_IN records_NNS is_VBZ simple_JJ and_CC efficient_JJ ._.
+The_DT create_VBP operation_NN simply_RB creates_VBZ a_DT new_JJ record_NN and_CC appends_VBZ it_PRP to_TO the_DT tail_NN of_IN the_DT store_NN ._.
+Since_IN records_NNS are_VBP always_RB written_VBN at_IN the_DT tail_NN ,_, the_DT store_NN need_MD not_RB maintain_VB a_DT free_JJ space_NN list_NN ._.
+All_DT fields_NNS of_IN the_DT record_NN need_NN to_TO be_VB specified_VBN at_IN creation_NN time_NN ;_: thus_RB ,_, the_DT size_NN of_IN the_DT record_NN is_VBZ known_VBN a_DT priori_FW and_CC the_DT store_NN simply_RB allocates_VBZ the_DT the_DT corresponding_JJ number_NN of_IN bytes_NNS at_IN the_DT tail_NN to_TO store_VB the_DT record_NN ._.
+Since_IN writes_VBZ are_VBP immutable_JJ ,_, the_DT size_NN of_IN a_DT record_NN does_VBZ not_RB change_VB once_RB it_PRP is_VBZ created_VBN ._.
+proxy_NN proxy_NN proxy_NN record_NN 3_CD record_NN summary_NN local_JJ archive_NN in_IN flash_NN memory_NN data_NNS summary_NN start_NN ,_, end_NN offset_VBD time_NN interval_JJ sensor_NN summary_NN sent_VBD to_TO proxy_NN Insert_NNP summaries_NNS into_IN interval_JJ skip_VBP graph_NN Figure_NN #_# :_: Sensor_NNP Summarization_NNP 45_CD The_DT read_NN operation_NN enables_VBZ stored_VBN records_NNS to_TO be_VB retrieved_VBN in_IN order_NN to_TO answer_VB queries_NNS ._.
+In_IN a_DT traditional_JJ database_NN system_NN ,_, efficient_JJ lookups_NNS are_VBP enabled_VBN by_IN maintaining_VBG a_DT structure_NN such_JJ as_IN a_DT B-tree_NN that_WDT indexes_NNS certain_JJ keys_NNS of_IN the_DT records_NNS ._.
+However_RB ,_, this_DT can_MD be_VB quite_RB complex_JJ for_IN a_DT small_JJ sensor_NN node_NN with_IN limited_JJ resources_NNS ._.
+Consequently_RB ,_, TSAR_NN sensors_NNS do_VBP not_RB maintain_VB any_DT index_NN for_IN the_DT data_NNS stored_VBN in_IN their_PRP$ archive_NN ._.
+Instead_RB ,_, they_PRP rely_VBP on_IN the_DT proxies_NNS to_TO maintain_VB this_DT metadata_NN index-sensors_NNS periodically_RB send_VBP the_DT proxy_NN information_NN summarizing_VBG the_DT data_NNS contained_VBD in_IN a_DT contiguous_JJ sequence_NN of_IN records_NNS ,_, as_RB well_RB as_IN a_DT handle_VBP indicating_VBG the_DT location_NN of_IN these_DT records_NNS in_IN flash_NN memory_NN ._.
+The_DT mechanism_NN works_VBZ as_IN follows_VBZ :_: In_IN addition_NN to_TO the_DT summary_NN of_IN sensor_NN data_NNS ,_, each_DT node_NN sends_VBZ metadata_NN to_TO the_DT proxy_NN containing_VBG the_DT time_NN interval_JJ corresponding_VBG to_TO the_DT summary_NN ,_, as_RB well_RB as_IN the_DT start_NN and_CC end_NN offsets_NNS of_IN the_DT flash_NN memory_NN location_NN where_WRB the_DT raw_JJ data_NNS corresponding_VBG is_VBZ stored_VBN -LRB-_-LRB- as_IN shown_VBN in_IN Figure_NNP #_# -RRB-_-RRB- ._.
+Thus_RB ,_, random_JJ access_NN is_VBZ enabled_VBN at_IN granularity_NN of_IN a_DT summary-the_JJ start_NN offset_VBN of_IN each_DT chunk_NN of_IN records_NNS represented_VBN by_IN a_DT summary_NN is_VBZ known_VBN to_TO the_DT proxy_NN ._.
+Within_IN this_DT collection_NN ,_, records_NNS are_VBP accessed_VBN sequentially_RB ._.
+When_WRB a_DT query_NN matches_VBZ a_DT summary_NN in_IN the_DT index_NN ,_, the_DT sensor_NN uses_VBZ these_DT offsets_NNS to_TO access_VB the_DT relevant_JJ records_NNS on_IN its_PRP$ local_JJ flash_NN by_IN sequentially_RB reading_VBG data_NNS from_IN the_DT start_NN address_NN until_IN the_DT end_NN address_NN ._.
+Any_DT queryspecific_JJ operation_NN can_MD then_RB be_VB performed_VBN on_IN this_DT data_NNS ._.
+Thus_RB ,_, no_DT index_NN needs_VBZ to_TO be_VB maintained_VBN at_IN the_DT sensor_NN ,_, in_IN line_NN with_IN our_PRP$ goal_NN of_IN simplifying_VBG sensor_NN state_NN management_NN ._.
+The_DT state_NN of_IN the_DT archive_NN is_VBZ captured_VBN in_IN the_DT metadata_NN associated_VBN with_IN the_DT summaries_NNS ,_, and_CC is_VBZ stored_VBN and_CC maintained_VBN at_IN the_DT proxy_NN ._.
+While_IN we_PRP anticipate_VBP local_JJ storage_NN capacity_NN to_TO be_VB large_JJ ,_, eventually_RB there_EX might_MD be_VB a_DT need_NN to_TO overwrite_VB older_JJR data_NNS ,_, especially_RB in_IN high_JJ data_NNS rate_NN applications_NNS ._.
+This_DT may_MD be_VB done_VBN via_IN techniques_NNS such_JJ as_IN multi-resolution_JJ storage_NN of_IN data_NNS -LSB-_-LRB- #_# -RSB-_-RRB- ,_, or_CC just_RB simply_RB by_IN overwriting_VBG older_JJR data_NNS ._.
+When_WRB older_JJR data_NNS is_VBZ overwritten_JJ ,_, a_DT delete_VB operation_NN is_VBZ performed_VBN ,_, where_WRB an_DT index_NN entry_NN is_VBZ deleted_VBN from_IN the_DT interval_NN skip_VB graph_NN at_IN the_DT proxy_NN and_CC the_DT corresponding_JJ storage_NN space_NN in_IN flash_NN memory_NN at_IN the_DT sensor_NN is_VBZ freed_VBN ._.
+4_LS ._.
+#_# Adaptive_JJ Summarization_NN The_DT data_NNS summaries_NNS serve_VBP as_IN glue_NN between_IN the_DT storage_NN at_IN the_DT remote_JJ sensor_NN and_CC the_DT index_NN at_IN the_DT proxy_NN ._.
+Each_DT update_VBP from_IN a_DT sensor_NN to_TO the_DT proxy_NN includes_VBZ three_CD pieces_NNS of_IN information_NN :_: the_DT summary_NN ,_, a_DT time_NN period_NN corresponding_VBG to_TO the_DT summary_NN ,_, and_CC the_DT start_NN and_CC end_NN offsets_NNS for_IN the_DT flash_NN archive_NN ._.
+In_IN general_JJ ,_, the_DT proxy_NN can_MD index_NN the_DT time_NN interval_JJ representing_VBG a_DT summary_NN or_CC the_DT value_NN range_NN reported_VBN in_IN the_DT summary_NN -LRB-_-LRB- or_CC both_DT -RRB-_-RRB- ._.
+The_DT former_JJ index_NN enables_VBZ quick_JJ lookups_NNS on_IN all_DT records_NNS seen_VBN during_IN a_DT certain_JJ interval_NN ,_, while_IN the_DT latter_JJ index_NN enables_VBZ quick_JJ lookups_NNS on_IN all_DT records_NNS matching_VBG a_DT certain_JJ value_NN ._.
+As_IN described_VBN in_IN Section_NN #_# ._.
+#_# ,_, there_EX is_VBZ a_DT trade-off_NN between_IN the_DT energy_NN used_VBN in_IN sending_VBG summaries_NNS -LRB-_-LRB- and_CC thus_RB the_DT frequency_NN and_CC resolution_NN of_IN those_DT summaries_NNS -RRB-_-RRB- and_CC the_DT cost_NN of_IN false_JJ hits_NNS during_IN queries_NNS ._.
+The_DT coarser_JJR and_CC less_JJR frequent_JJ the_DT summary_NN information_NN ,_, the_DT less_JJR energy_NN required_VBN ,_, while_IN false_JJ query_NN hits_NNS in_IN turn_NN waste_NN energy_NN on_IN requests_NNS for_IN non-existent_JJ data_NNS ._.
+TSAR_NN employs_VBZ an_DT adaptive_JJ summarization_NN technique_NN that_WDT balances_VBZ the_DT cost_NN of_IN sending_VBG updates_NNS against_IN the_DT cost_NN of_IN false_JJ positives_NNS ._.
+The_DT key_JJ intuition_NN is_VBZ that_IN each_DT sensor_NN can_MD independently_RB identify_VB the_DT fraction_NN of_IN false_JJ hits_NNS and_CC true_JJ hits_NNS for_IN queries_NNS that_WDT access_VBP its_PRP$ local_JJ archive_NN ._.
+If_IN most_JJS queries_NNS result_VBP in_IN true_JJ hits_NNS ,_, then_RB the_DT sensor_NN determines_VBZ that_IN the_DT summary_NN can_MD be_VB coarsened_VBN further_RB to_TO reduce_VB update_VB costs_NNS without_IN adversely_RB impacting_VBG the_DT hit_NN ratio_NN ._.
+If_IN many_JJ queries_NNS result_VBP in_IN false_JJ hits_NNS ,_, then_RB the_DT sensor_NN makes_VBZ the_DT granularity_NN of_IN each_DT summary_NN finer_NN to_TO reduce_VB the_DT number_NN and_CC overhead_NN of_IN false_JJ hits_NNS ._.
+The_DT resolution_NN of_IN the_DT summary_NN depends_VBZ on_IN two_CD parametersthe_JJ interval_NN over_IN which_WDT summaries_NNS of_IN the_DT data_NNS are_VBP constructed_VBN and_CC transmitted_VBN to_TO the_DT proxy_NN ,_, as_RB well_RB as_IN the_DT size_NN of_IN the_DT applicationspecific_JJ summary_NN ._.
+Our_PRP$ focus_NN in_IN this_DT paper_NN is_VBZ on_IN the_DT interval_NN over_IN which_WDT the_DT summary_NN is_VBZ constructed_VBN ._.
+Changing_VBG the_DT size_NN of_IN the_DT data_NNS summary_NN can_MD be_VB performed_VBN in_IN an_DT application-specific_JJ manner_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+using_VBG wavelet_NN compression_NN techniques_NNS as_IN in_IN -LSB-_-LRB- #_# -RSB-_-RRB- -RRB-_-RRB- and_CC is_VBZ beyond_IN the_DT scope_NN of_IN this_DT paper_NN ._.
+Currently_RB ,_, TSAR_NN employs_VBZ a_DT simple_JJ summarization_NN scheme_NN that_WDT computes_VBZ the_DT ratio_NN of_IN false_JJ and_CC true_JJ hits_NNS and_CC decreases_NNS -LRB-_-LRB- increases_NNS -RRB-_-RRB- the_DT interval_NN between_IN summaries_NNS whenever_WRB this_DT ratio_NN increases_NNS -LRB-_-LRB- decreases_NNS -RRB-_-RRB- beyond_IN a_DT threshold_NN ._.
+5_CD ._.
+TSAR_NN Implementation_NN We_PRP have_VBP implemented_VBN a_DT prototype_NN of_IN TSAR_NN on_IN a_DT multi-tier_JJ sensor_NN network_NN testbed_VBD ._.
+Our_PRP$ prototype_NN employs_VBZ Crossbow_NNP Stargate_NNP nodes_NNS to_TO implement_VB the_DT proxy_NN tier_NN ._.
+Each_DT Stargate_NNP node_NN employs_VBZ a_DT 400MHz_NNP Intel_NNP XScale_NNP processor_NN with_IN 64MB_NN RAM_NNP and_CC runs_VBZ the_DT Linux_NNP #_# ._.
+#_# ._.
+##_NN kernel_NN and_CC EmStar_NN release_NN #_# ._.
+#_# ._.
+The_DT proxy_NN nodes_NNS are_VBP equipped_VBN with_IN two_CD wireless_JJ radios_NNS ,_, a_DT Cisco_NNP Aironet_NNP 340-based_JJ 802_CD ._.
+11b_JJ radio_NN and_CC a_DT hostmote_JJ bridge_NN to_TO the_DT Mica2_NN sensor_NN nodes_NNS using_VBG the_DT EmStar_NNP transceiver_NN ._.
+The_DT ###_CD ._.
+11b_JJ wireless_JJ network_NN is_VBZ used_VBN for_IN inter-proxy_JJ communication_NN within_IN the_DT proxy_NN tier_NN ,_, while_IN the_DT wireless_JJ bridge_NN enables_VBZ sensor-proxy_NN communication_NN ._.
+The_DT sensor_NN tier_NN consists_VBZ of_IN Crossbow_NNP Mica2s_NNPS and_CC Mica2dots_NNPS ,_, each_DT consisting_VBG of_IN a_DT 915MHz_NN CC1000_NN radio_NN ,_, a_DT BMAC_NN protocol_NN stack_VBP ,_, a_DT #_# Mb_NNP on-board_JJ flash_NN memory_NN and_CC an_DT ATMega_NN 128L_NN processor_NN ._.
+The_DT sensor_NN nodes_NNS run_VBP TinyOS_NN #_# ._.
+#_# ._.
+#_# ._.
+In_IN addition_NN to_TO the_DT on-board_JJ flash_NN ,_, the_DT sensor_NN nodes_NNS can_MD be_VB equipped_VBN with_IN external_JJ MMC_NN /_: SD_NN flash_NN cards_NNS using_VBG a_DT custom_NN connector_NN ._.
+The_DT proxy_NN nodes_NNS can_MD be_VB equipped_VBN with_IN external_JJ storage_NN such_JJ as_IN high-capacity_JJ compact_JJ flash_NN -LRB-_-LRB- up_RB to_TO 4GB_NN -RRB-_-RRB- ,_, 6GB_NN micro-drives_NNS ,_, or_CC up_RB to_TO 60GB_NN #_# ._.
+8inch_JJ mobile_JJ disk_NN drives_NNS ._.
+Since_IN sensor_NN nodes_NNS may_MD be_VB several_JJ hops_VBZ away_RB from_IN the_DT nearest_JJS proxy_NN ,_, the_DT sensor_NN tier_NN employs_VBZ multi-hop_JJ routing_VBG to_TO communicate_VB with_IN the_DT proxy_NN tier_NN ._.
+In_IN addition_NN ,_, to_TO reduce_VB the_DT power_NN consumption_NN of_IN the_DT radio_NN while_IN still_RB making_VBG the_DT sensor_NN node_NN available_JJ for_IN queries_NNS ,_, low_JJ power_NN listening_NN is_VBZ enabled_VBN ,_, in_IN which_WDT the_DT radio_NN receiver_NN is_VBZ periodically_RB powered_VBN up_RP for_IN a_DT short_JJ interval_NN to_TO sense_VB the_DT channel_NN for_IN transmissions_NNS ,_, and_CC the_DT packet_NN preamble_NN is_VBZ extended_VBN to_TO account_VB for_IN the_DT latency_NN until_IN the_DT next_JJ interval_NN when_WRB the_DT receiving_VBG radio_NN wakes_VBZ up_RP ._.
+Our_PRP$ prototype_NN employs_VBZ the_DT MultiHopLEPSM_NN routing_VBG protocol_NN with_IN the_DT BMAC_NNP layer_NN configured_VBN in_IN the_DT low-power_JJ mode_NN with_IN a_DT 11_CD %_NN duty_NN cycle_NN -LRB-_-LRB- one_CD of_IN the_DT default_NN BMAC_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- parameters_NNS -RRB-_-RRB- Our_PRP$ TSAR_NN implementation_NN on_IN the_DT Mote_NNP involves_VBZ a_DT data_NN gathering_NN task_NN that_WDT periodically_RB obtains_VBZ sensor_NN readings_NNS and_CC logs_NNS these_DT reading_NN to_TO flash_VB memory_NN ._.
+The_DT flash_NN memory_NN is_VBZ assumed_VBN to_TO be_VB a_DT circular_JJ append-only_JJ store_NN and_CC the_DT format_NN of_IN the_DT logged_VBN data_NNS is_VBZ depicted_VBN in_IN Figure_NNP #_# ._.
+The_DT Mote_NNP sends_VBZ a_DT report_NN to_TO the_DT proxy_NN every_DT N_NN readings_NNS ,_, summarizing_VBG the_DT observed_VBN data_NNS ._.
+The_DT report_NN contains_VBZ :_: -LRB-_-LRB- i_LS -RRB-_-RRB- the_DT address_NN of_IN the_DT Mote_NNP ,_, -LRB-_-LRB- ii_LS -RRB-_-RRB- a_DT handle_VBP that_IN contains_VBZ an_DT offset_VBN and_CC the_DT length_NN of_IN the_DT region_NN in_IN flash_NN memory_NN containing_VBG data_NNS referred_VBN to_TO by_IN the_DT summary_NN ,_, -LRB-_-LRB- iii_LS -RRB-_-RRB- an_DT interval_NN -LRB-_-LRB- t1_NN ,_, t2_NN -RRB-_-RRB- over_IN which_WDT this_DT report_NN is_VBZ generated_VBN ,_, -LRB-_-LRB- iv_LS -RRB-_-RRB- a_DT tuple_NN -LRB-_-LRB- low_JJ ,_, high_JJ -RRB-_-RRB- representing_VBG the_DT minimum_NN and_CC the_DT maximum_NN values_NNS observed_VBN at_IN the_DT sensor_NN in_IN the_DT interval_NN ,_, and_CC -LRB-_-LRB- v_LS -RRB-_-RRB- a_DT sequence_NN number_NN ._.
+The_DT sensor_NN updates_NNS are_VBP used_VBN to_TO construct_VB a_DT sparse_JJ interval_NN skip_VB graph_NN that_WDT is_VBZ distributed_VBN across_IN proxies_NNS ,_, via_IN network_NN messages_NNS between_IN proxies_NNS over_IN the_DT ###_CD ._.
+11b_JJ wireless_JJ network_NN ._.
+Our_PRP$ current_JJ implementation_NN supports_VBZ queries_NNS that_WDT request_VBP records_NNS matching_VBG a_DT time_NN interval_NN -LRB-_-LRB- t1_NN ,_, t2_NN -RRB-_-RRB- or_CC a_DT value_NN range_NN -LRB-_-LRB- v1_NN ,_, v2_NN -RRB-_-RRB- ._.
+Spatial_JJ constraints_NNS are_VBP specified_VBN using_VBG sensor_NN IDs_NNS ._.
+Given_VBN a_DT list_NN of_IN matching_VBG intervals_NNS from_IN the_DT skip_VBP graph_NN ,_, TSAR_NN supports_VBZ two_CD types_NNS of_IN messages_NNS to_TO query_VB the_DT sensor_NN :_: lookup_NN and_CC fetch_VB ._.
+A_DT lookup_NN message_NN triggers_VBZ a_DT search_NN within_IN the_DT corresponding_JJ region_NN in_IN flash_NN memory_NN and_CC returns_VBZ the_DT number_NN of_IN matching_VBG records_NNS in_IN that_DT memory_NN region_NN -LRB-_-LRB- but_CC does_VBZ not_RB retrieve_VB data_NNS -RRB-_-RRB- ._.
+In_IN contrast_NN ,_, a_DT fetch_VB message_NN not_RB only_RB 46_CD 0_CD 10_CD 20_CD 30_CD 40_CD 50_CD 60_CD 70_CD 80_CD 128512_CD ####_CD ####_CD ####_CD NumberofMessages_NNP Index_NNP size_NN -LRB-_-LRB- entries_NNS -RRB-_-RRB- Insert_NNP -LRB-_-LRB- skipgraph_NN -RRB-_-RRB- Insert_NN -LRB-_-LRB- sparse_JJ skipgraph_NN -RRB-_-RRB- Initial_JJ lookup_NN -LRB-_-LRB- a_DT -RRB-_-RRB- James_NNP Reserve_NNP Data_NNP 0_CD 10_CD 20_CD 30_CD 40_CD 50_CD 60_CD 70_CD 80_CD 512_CD ####_CD ####_CD ####_CD NumberofMessages_NNP Index_NNP size_NN -LRB-_-LRB- entries_NNS -RRB-_-RRB- Insert_NNP -LRB-_-LRB- skipgraph_NN -RRB-_-RRB- Insert_NN -LRB-_-LRB- sparse_JJ skipgraph_NN -RRB-_-RRB- Initial_JJ lookup_NN -LRB-_-LRB- b_NN -RRB-_-RRB- Synthetic_NNP Data_NNP Figure_NNP #_# :_: Skip_VB Graph_NNP Insert_NNP Performance_NNP triggers_VBZ a_DT search_NN but_CC also_RB returns_VBZ all_DT matching_VBG data_NN records_NNS to_TO the_DT proxy_NN ._.
+Lookup_NN messages_NNS are_VBP useful_JJ for_IN polling_NN a_DT sensor_NN ,_, for_IN instance_NN ,_, to_TO determine_VB if_IN a_DT query_NN matches_VBZ too_RB many_JJ records_NNS ._.
+6_CD ._.
+Experimental_JJ Evaluation_NN In_IN this_DT section_NN ,_, we_PRP evaluate_VBP the_DT efficacy_NN of_IN TSAR_NN using_VBG our_PRP$ prototype_NN and_CC simulations_NNS ._.
+The_DT testbed_VBN for_IN our_PRP$ experiments_NNS consists_VBZ of_IN four_CD Stargate_NNP proxies_NNS and_CC twelve_CD Mica2_NN and_CC Mica2dot_NN sensors_NNS ;_: three_CD sensors_NNS each_DT are_VBP assigned_VBN to_TO each_DT proxy_NN ._.
+Given_VBN the_DT limited_JJ size_NN of_IN our_PRP$ testbed_VBN ,_, we_PRP employ_VBP simulations_NNS to_TO evaluate_VB the_DT behavior_NN of_IN TSAR_NN in_IN larger_JJR settings_NNS ._.
+Our_PRP$ simulation_NN employs_VBZ the_DT EmTOS_JJ emulator_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, which_WDT enables_VBZ us_PRP to_TO run_VB the_DT same_JJ code_NN in_IN simulation_NN and_CC the_DT hardware_NN platform_NN ._.
+Rather_RB than_IN using_VBG live_JJ data_NNS from_IN a_DT real_JJ sensor_NN ,_, to_TO ensure_VB repeatable_JJ experiments_NNS ,_, we_PRP seed_NN each_DT sensor_NN node_NN with_IN a_DT dataset_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, a_DT trace_NN -RRB-_-RRB- that_WDT dictates_VBZ the_DT values_NNS reported_VBN by_IN that_DT node_NN to_TO the_DT proxy_NN ._.
+One_CD section_NN of_IN the_DT flash_NN memory_NN on_IN each_DT sensor_NN node_NN is_VBZ programmed_VBN with_IN data_NNS points_NNS from_IN the_DT trace_NN ;_: these_DT observations_NNS are_VBP then_RB replayed_VBN during_IN an_DT experiment_NN ,_, logged_VBD to_TO the_DT local_JJ archive_NN -LRB-_-LRB- located_JJ in_IN flash_NN memory_NN ,_, as_RB well_RB -RRB-_-RRB- ,_, and_CC reported_VBD to_TO the_DT proxy_NN ._.
+The_DT first_JJ dataset_NN used_VBN to_TO evaluate_VB TSAR_NN is_VBZ a_DT temperature_NN dataset_NN from_IN James_NNP Reserve_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- that_WDT includes_VBZ data_NNS from_IN eleven_NNS temperature_NN sensor_NN nodes_NNS over_IN a_DT period_NN of_IN ##_CD days_NNS ._.
+The_DT second_JJ dataset_NN is_VBZ synthetically_RB generated_VBN ;_: the_DT trace_NN for_IN each_DT sensor_NN is_VBZ generated_VBN using_VBG a_DT uniformly_RB distributed_VBN random_JJ walk_NN though_IN the_DT value_NN space_NN ._.
+Our_PRP$ experimental_JJ evaluation_NN has_VBZ four_CD parts_NNS ._.
+First_RB ,_, we_PRP run_VBP EmTOS_JJ simulations_NNS to_TO evaluate_VB the_DT lookup_NN ,_, update_VB and_CC delete_VB overhead_NN for_IN sparse_JJ interval_NN skip_VB graphs_NNS using_VBG the_DT real_JJ and_CC synthetic_JJ datasets_NNS ._.
+Second_RB ,_, we_PRP provide_VBP summary_NN results_NNS from_IN micro-benchmarks_NNS of_IN the_DT storage_NN component_NN of_IN TSAR_NN ,_, which_WDT include_VBP empirical_JJ characterization_NN of_IN the_DT energy_NN costs_NNS and_CC latency_NN of_IN reads_VBZ and_CC writes_VBZ for_IN the_DT flash_NN memory_NN chip_NN as_RB well_RB as_IN the_DT whole_JJ mote_NN platform_NN ,_, and_CC comparisons_NNS to_TO published_VBN numbers_NNS for_IN other_JJ storage_NN and_CC communication_NN technologies_NNS ._.
+These_DT micro-benchmarks_NNS form_VBP the_DT basis_NN for_IN our_PRP$ full-scale_JJ evaluation_NN of_IN TSAR_NN on_IN a_DT testbed_NN of_IN four_CD Stargate_NNP proxies_NNS and_CC twelve_CD Motes_NNS ._.
+We_PRP measure_VBP the_DT end-to-end_JJ query_NN latency_NN in_IN our_PRP$ multi-hop_JJ testbed_VBN as_RB well_RB as_IN the_DT query_NN processing_NN overhead_NN at_IN the_DT mote_NN tier_NN ._.
+Finally_RB ,_, we_PRP demonstrate_VBP the_DT adaptive_JJ summarization_NN capability_NN at_IN each_DT sensor_NN node_NN ._.
+The_DT remainder_NN of_IN this_DT section_NN presents_VBZ our_PRP$ experimental_JJ results_NNS ._.
+6_CD ._.
+#_# Sparse_JJ Interval_NNP Skip_VB Graph_NNP Performance_NNP This_DT section_NN evaluates_VBZ the_DT performance_NN of_IN sparse_JJ interval_NN skip_VB graphs_NNS by_IN quantifying_VBG insert_NN ,_, lookup_NN and_CC delete_VB overheads_NNS ._.
+We_PRP assume_VBP a_DT proxy_NN tier_NN with_IN ##_NN proxies_NNS and_CC construct_NN sparse_JJ interval_NN skip_VB graphs_NNS of_IN various_JJ sizes_NNS using_VBG our_PRP$ datasets_NNS ._.
+For_IN each_DT skip_VBP 0_CD 5_CD 10_CD 15_CD 20_CD 25_CD 30_CD 35_CD 409620481024512_CD NumberofMessages_NNP Index_NNP size_NN -LRB-_-LRB- entries_NNS -RRB-_-RRB- Initial_JJ lookup_NN Traversal_NN -LRB-_-LRB- a_DT -RRB-_-RRB- James_NNP Reserve_NNP Data_NNP 0_CD 2_CD 4_CD 6_CD 8_CD 10_CD 12_CD 14_CD 409620481024512_CD NumberofMessages_NNP Index_NNP size_NN -LRB-_-LRB- entries_NNS -RRB-_-RRB- Initial_JJ lookup_NN Traversal_NN -LRB-_-LRB- b_NN -RRB-_-RRB- Synthetic_NNP Data_NNP Figure_NNP #_# :_: Skip_VB Graph_NN Lookup_NNP Performance_NNP 0_CD 10_CD 20_CD 30_CD 40_CD 50_CD 60_CD 70_CD 1_CD #_# #_# ##_CD ##_CD ##_CD ##_CD Numberofmessages_NNS Number_NN of_IN proxies_NNS Skipgraph_JJ insert_NN Sparse_JJ skipgraph_JJ insert_NN Initial_JJ lookup_NN -LRB-_-LRB- a_DT -RRB-_-RRB- Impact_NN of_IN Number_NN of_IN Proxies_NNS 0_CD 20_CD 40_CD 60_CD 80_CD 100_CD 120_CD 512_CD ####_CD ####_CD ####_CD NumberofMessages_NNP Index_NNP size_NN -LRB-_-LRB- entries_NNS -RRB-_-RRB- Insert_NNP -LRB-_-LRB- redundant_JJ -RRB-_-RRB- Insert_NN -LRB-_-LRB- non-redundant_JJ -RRB-_-RRB- Lookup_NN -LRB-_-LRB- redundant_JJ -RRB-_-RRB- Lookup_NN -LRB-_-LRB- non-redundant_JJ -RRB-_-RRB- -LRB-_-LRB- b_NN -RRB-_-RRB- Impact_NN of_IN Redundant_JJ Summaries_NNS Figure_NN ##_CD :_: Skip_VB Graph_NNP Overheads_NNPS graph_NN ,_, we_PRP evaluate_VBP the_DT cost_NN of_IN inserting_VBG a_DT new_JJ value_NN into_IN the_DT index_NN ._.
+Each_DT entry_NN was_VBD deleted_VBN after_IN its_PRP$ insertion_NN ,_, enabling_VBG us_PRP to_TO quantify_VB the_DT delete_VB overhead_RB as_RB well_RB ._.
+Figure_NNP #_# -LRB-_-LRB- a_DT -RRB-_-RRB- and_CC -LRB-_-LRB- b_LS -RRB-_-RRB- quantify_VB the_DT insert_NN overhead_NN for_IN our_PRP$ two_CD datasets_NNS :_: each_DT insert_NN entails_VBZ an_DT initial_JJ traversal_NN that_WDT incurs_VBZ log_NN n_NN messages_NNS ,_, followed_VBN by_IN neighbor_NN pointer_NN update_VBP at_IN increasing_VBG levels_NNS ,_, incurring_VBG a_DT cost_NN of_IN #_# log_NN n_NN messages_NNS ._.
+Our_PRP$ results_NNS demonstrate_VBP this_DT behavior_NN ,_, and_CC show_VBP as_RB well_RB that_IN performance_NN of_IN delete-which_NN also_RB involves_VBZ an_DT initial_JJ traversal_NN followed_VBN by_IN pointer_NN updates_NNS at_IN each_DT level-incurs_NNS a_DT similar_JJ cost_NN ._.
+Next_RB ,_, we_PRP evaluate_VBP the_DT lookup_NN performance_NN of_IN the_DT index_NN structure_NN ._.
+Again_RB ,_, we_PRP construct_VBP skip_VB graphs_NNS of_IN various_JJ sizes_NNS using_VBG our_PRP$ datasets_NNS and_CC evaluate_VB the_DT cost_NN of_IN a_DT lookup_NN on_IN the_DT index_NN structure_NN ._.
+Figures_NNS #_# -LRB-_-LRB- a_DT -RRB-_-RRB- and_CC -LRB-_-LRB- b_LS -RRB-_-RRB- depict_VB our_PRP$ results_NNS ._.
+There_EX are_VBP two_CD components_NNS for_IN each_DT lookup-the_JJ lookup_NN of_IN the_DT first_JJ interval_NN that_WDT matches_VBZ the_DT query_NN and_CC ,_, in_IN the_DT case_NN of_IN overlapping_VBG intervals_NNS ,_, the_DT subsequent_JJ linear_JJ traversal_NN to_TO identify_VB all_DT matching_VBG intervals_NNS ._.
+The_DT initial_JJ lookup_NN can_MD be_VB seen_VBN to_TO takes_VBZ log_NN n_NN messages_NNS ,_, as_IN expected_VBN ._.
+The_DT costs_NNS of_IN the_DT subsequent_JJ linear_JJ traversal_NN ,_, however_RB ,_, are_VBP highly_RB data_NN dependent_JJ ._.
+For_IN instance_NN ,_, temperature_NN values_NNS for_IN the_DT James_NNP Reserve_NNP data_NNS exhibit_VBP significant_JJ spatial_JJ correlations_NNS ,_, resulting_VBG in_IN significant_JJ overlap_VBP between_IN different_JJ intervals_NNS and_CC variable_JJ ,_, high_JJ traversal_NN cost_NN -LRB-_-LRB- see_VB Figure_NNP #_# -LRB-_-LRB- a_DT -RRB-_-RRB- -RRB-_-RRB- ._.
+The_DT synthetic_JJ data_NNS ,_, however_RB ,_, has_VBZ less_RBR overlap_VB and_CC incurs_VBZ lower_JJR traversal_NN overhead_NN as_IN shown_VBN in_IN Figure_NNP #_# -LRB-_-LRB- b_NN -RRB-_-RRB- ._.
+Since_IN the_DT previous_JJ experiments_NNS assumed_VBD ##_RB proxies_NNS ,_, we_PRP evaluate_VBP the_DT impact_NN of_IN the_DT number_NN of_IN proxies_NNS on_IN skip_VBP graph_NN performance_NN ._.
+We_PRP vary_VBP the_DT number_NN of_IN proxies_NNS from_IN ##_CD to_TO ##_CD and_CC distribute_VB a_DT skip_VB graph_NN with_IN ####_CD entries_NNS among_IN these_DT proxies_NNS ._.
+We_PRP construct_VBP regular_JJ interval_JJ skip_VB graphs_NNS as_RB well_RB as_IN sparse_JJ interval_NN skip_VB graphs_NNS using_VBG these_DT entries_NNS and_CC measure_VB the_DT overhead_NN of_IN inserts_NNS and_CC lookups_NNS ._.
+Thus_RB ,_, the_DT experiment_NN also_RB seeks_VBZ to_TO demonstrate_VB the_DT benefits_NNS of_IN sparse_JJ skip_VBP graphs_NNS over_IN regular_JJ skip_VBP graphs_NNS ._.
+Figure_NNP ##_NN -LRB-_-LRB- a_DT -RRB-_-RRB- depicts_VBZ our_PRP$ results_NNS ._.
+In_IN regular_JJ skip_VBP graphs_NNS ,_, the_DT complexity_NN of_IN insert_NN is_VBZ O_NN -LRB-_-LRB- log2n_NN -RRB-_-RRB- in_IN the_DT 47_CD expected_VBN case_NN -LRB-_-LRB- and_CC O_NN -LRB-_-LRB- n_NN -RRB-_-RRB- in_IN the_DT worst_JJS case_NN -RRB-_-RRB- where_WRB n_NN is_VBZ the_DT number_NN of_IN elements_NNS ._.
+This_DT complexity_NN is_VBZ unaffected_JJ by_IN changing_VBG the_DT number_NN of_IN proxies_NNS ,_, as_IN indicated_VBN by_IN the_DT flat_JJ line_NN in_IN the_DT figure_NN ._.
+Sparse_JJ skip_VBP graphs_NNS require_VB fewer_JJR pointer_NN updates_NNS ;_: however_RB ,_, their_PRP$ overhead_NN is_VBZ dependent_JJ on_IN the_DT number_NN of_IN proxies_NNS ,_, and_CC is_VBZ O_NN -LRB-_-LRB- log2Np_NN -RRB-_-RRB- in_IN the_DT expected_VBN case_NN ,_, independent_JJ of_IN n_NN ._.
+This_DT can_MD be_VB seen_VBN to_TO result_VB in_IN significant_JJ reduction_NN in_IN overhead_NN when_WRB the_DT number_NN of_IN proxies_NNS is_VBZ small_JJ ,_, which_WDT decreases_VBZ as_IN the_DT number_NN of_IN proxies_NNS increases_NNS ._.
+Failure_NN handling_NN is_VBZ an_DT important_JJ issue_NN in_IN a_DT multi-tier_JJ sensor_NN architecture_NN since_IN it_PRP relies_VBZ on_IN many_JJ components-proxies_NNS ,_, sensor_NN nodes_NNS and_CC routing_VBG nodes_NNS can_MD fail_VB ,_, and_CC wireless_JJ links_NNS can_MD fade_VB ._.
+Handling_NN of_IN many_JJ of_IN these_DT failure_NN modes_NNS is_VBZ outside_IN the_DT scope_NN of_IN this_DT paper_NN ;_: however_RB ,_, we_PRP consider_VBP the_DT case_NN of_IN resilience_NN of_IN skip_VB graphs_NNS to_TO proxy_NN failures_NNS ._.
+In_IN this_DT case_NN ,_, skip_VB graph_NN search_NN -LRB-_-LRB- and_CC subsequent_JJ repair_NN operations_NNS -RRB-_-RRB- can_MD follow_VB any_DT one_CD of_IN the_DT other_JJ links_NNS from_IN a_DT root_NN element_NN ._.
+Since_IN a_DT sparse_JJ skip_VB graph_NN has_VBZ search_NN trees_NNS rooted_VBN at_IN each_DT node_NN ,_, searching_VBG can_MD then_RB resume_VB once_RB the_DT lookup_NN request_NN has_VBZ routed_VBN around_IN the_DT failure_NN ._.
+Together_RB ,_, these_DT two_CD properties_NNS ensure_VB that_IN even_RB if_IN a_DT proxy_NN fails_VBZ ,_, the_DT remaining_VBG entries_NNS in_IN the_DT skip_VBP graph_NN will_MD be_VB reachable_JJ with_IN high_JJ probability-only_JJ the_DT entries_NNS on_IN the_DT failed_VBN proxy_NN and_CC the_DT corresponding_JJ data_NNS at_IN the_DT sensors_NNS becomes_VBZ inaccessible_JJ ._.
+To_TO ensure_VB that_IN all_DT data_NNS on_IN sensors_NNS remains_VBZ accessible_JJ ,_, even_RB in_IN the_DT event_NN of_IN failure_NN of_IN a_DT proxy_NN holding_VBG index_NN entries_NNS for_IN that_DT data_NNS ,_, we_PRP incorporate_VBP redundant_JJ index_NN entries_NNS ._.
+TSAR_NN employs_VBZ a_DT simple_JJ redundancy_NN scheme_NN where_WRB additional_JJ coarse-grain_NN summaries_NNS are_VBP used_VBN to_TO protect_VB regular_JJ summaries_NNS ._.
+Each_DT sensor_NN sends_VBZ summary_NN data_NNS periodically_RB to_TO its_PRP$ local_JJ proxy_NN ,_, but_CC less_RBR frequently_RB sends_VBZ a_DT lowerresolution_JJ summary_NN to_TO a_DT backup_NN proxy-the_NN backup_NN summary_NN represents_VBZ all_DT of_IN the_DT data_NNS represented_VBN by_IN the_DT finer-grained_JJ summaries_NNS ,_, but_CC in_IN a_DT lossier_JJ fashion_NN ,_, thus_RB resulting_VBG in_IN higher_JJR read_NN overhead_NN -LRB-_-LRB- due_JJ to_TO false_JJ hits_NNS -RRB-_-RRB- if_IN the_DT backup_NN summary_NN is_VBZ used_VBN ._.
+The_DT cost_NN of_IN implementing_VBG this_DT in_IN our_PRP$ system_NN is_VBZ low_JJ -_: Figure_NN ##_NN -LRB-_-LRB- b_NN -RRB-_-RRB- shows_VBZ the_DT overhead_NN of_IN such_PDT a_DT redundancy_NN scheme_NN ,_, where_WRB a_DT single_JJ coarse_JJ summary_NN is_VBZ send_VB to_TO a_DT backup_NN for_IN every_DT two_CD summaries_NNS sent_VBN to_TO the_DT primary_JJ proxy_NN ._.
+Since_IN a_DT redundant_JJ summary_NN is_VBZ sent_VBN for_IN every_DT two_CD summaries_NNS ,_, the_DT insert_NN cost_NN is_VBZ #_# ._.
+#_# times_NNS the_DT cost_NN in_IN the_DT normal_JJ case_NN ._.
+However_RB ,_, these_DT redundant_JJ entries_NNS result_VBP in_IN only_RB a_DT negligible_JJ increase_NN in_IN lookup_NN overhead_NN ,_, due_JJ the_DT logarithmic_JJ dependence_NN of_IN lookup_NN cost_NN on_IN the_DT index_NN size_NN ,_, while_IN providing_VBG full_JJ resilience_NN to_TO any_DT single_JJ proxy_NN failure_NN ._.
+6_CD ._.
+#_# Storage_NNP Microbenchmarks_NNPS Since_IN sensors_NNS are_VBP resource-constrained_JJ ,_, the_DT energy_NN consumption_NN and_CC the_DT latency_NN at_IN this_DT tier_NN are_VBP important_JJ measures_NNS for_IN evaluating_VBG the_DT performance_NN of_IN a_DT storage_NN architecture_NN ._.
+Before_IN performing_VBG an_DT endto-end_JJ evaluation_NN of_IN our_PRP$ system_NN ,_, we_PRP provide_VBP more_JJR detailed_JJ information_NN on_IN the_DT energy_NN consumption_NN of_IN the_DT storage_NN component_NN used_VBN to_TO implement_VB the_DT TSAR_NN local_JJ archive_NN ,_, based_VBN on_IN empirical_JJ measurements_NNS ._.
+In_IN addition_NN we_PRP compare_VBP these_DT figures_NNS to_TO those_DT for_IN other_JJ local_JJ storage_NN technologies_NNS ,_, as_RB well_RB as_IN to_TO the_DT energy_NN consumption_NN of_IN wireless_JJ communication_NN ,_, using_VBG information_NN from_IN the_DT literature_NN ._.
+For_IN empirical_JJ measurements_NNS we_PRP measure_VB energy_NN usage_NN for_IN the_DT storage_NN component_NN itself_PRP -LRB-_-LRB- i_FW ._.
+e_LS ._.
+current_JJ drawn_VBN by_IN the_DT flash_NN chip_NN -RRB-_-RRB- ,_, as_RB well_RB as_IN for_IN the_DT entire_JJ Mica2_NN mote_NN ._.
+The_DT power_NN measurements_NNS in_IN Table_NNP #_# were_VBD performed_VBN for_IN the_DT AT45DB041_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- flash_NN memory_NN on_IN a_DT Mica2_NN mote_NN ,_, which_WDT is_VBZ an_DT older_JJR NOR_NN flash_NN device_NN ._.
+The_DT most_RBS promising_JJ technology_NN for_IN low-energy_JJ storage_NN on_IN sensing_VBG devices_NNS is_VBZ NAND_NNP flash_NN ,_, such_JJ as_IN the_DT Samsung_NNP K9K4G08U0M_NN device_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ;_: published_VBN power_NN numbers_NNS for_IN this_DT device_NN are_VBP provided_VBN in_IN the_DT table_NN ._.
+Published_VBN energy_NN requirements_NNS for_IN wireless_JJ transmission_NN using_VBG the_DT Chipcon_NNP -LSB-_-LRB- #_# -RSB-_-RRB- CC2420_NN radio_NN -LRB-_-LRB- used_VBN in_IN MicaZ_NN and_CC Telos_NNP motes_NNS -RRB-_-RRB- are_VBP provided_VBN for_IN comparison_NN ,_, assuming_VBG Energy_NNP Energy_NNP /_: byte_NN Mote_NN flash_NN Read_VB ###_CD byte_JJ page_NN 58J_NN *_SYM /_: 136J_NN *_SYM total_JJ 0_CD ._.
+23J_NN *_SYM Write_VB ###_CD byte_JJ page_NN 926J_NN *_SYM /_: 1042J_NN *_SYM total_JJ 3_CD ._.
+6J_NN *_SYM NAND_NNP Flash_NNP Read_NNP ###_CD byte_NN page_NN #_# ._.
+7J_NN #_# ._.
+8nJ_NN Write_VB ###_CD byte_JJ page_NN #_# ._.
+8J_NN 15nJ_NN Erase_VB 16K_CD byte_NN sector_NN 60J_NN #_# ._.
+7nJ_NN CC2420_NN radio_NN Transmit_NNP #_# bits_NNS -LRB-_-LRB- -25_CD dBm_NN -RRB-_-RRB- 0_CD ._.
+8J_NN #_# ._.
+8J_NN Receive_VB #_# bits_NNS #_# ._.
+9J_NN #_# ._.
+9J_NN Mote_NNP AVR_NNP processor_NN In-memory_JJ search_NN ,_, 256_CD bytes_NNS 1_CD ._.
+8J_NN #_# ._.
+9nJ_NN Table_NNP #_# :_: Storage_NNP and_CC Communication_NNP Energy_NNP Costs_NNS -LRB-_-LRB- *_SYM measured_VBN values_NNS -RRB-_-RRB- 0_CD 200_CD 400_CD 600_CD 800_CD 1000_CD 1_CD #_# #_# Latency_NN -LRB-_-LRB- ms_NN -RRB-_-RRB- Number_NN of_IN hops_VBZ -LRB-_-LRB- a_DT -RRB-_-RRB- Multi-hop_JJ query_NN performance_NN 0_CD 100_CD 200_CD 300_CD 400_CD 500_CD 1_CD #######_CD ####_CD ####_CD Latency_NN -LRB-_-LRB- ms_NN -RRB-_-RRB- Index_NN size_NN -LRB-_-LRB- entries_NNS -RRB-_-RRB- Sensor_NN communication_NN Proxy_NNP communication_NN Sensor_NN lookup_NN ,_, processing_NN -LRB-_-LRB- b_NN -RRB-_-RRB- Query_NNP Performance_NNP Figure_NNP ##_NNP :_: Query_NNP Processing_NNP Latency_NN zero_CD network_NN and_CC protocol_NN overhead_NN ._.
+Comparing_VBG the_DT total_JJ energy_NN cost_NN for_IN writing_VBG flash_NN -LRB-_-LRB- erase_VB +_CC write_VB -RRB-_-RRB- to_TO the_DT total_JJ cost_NN for_IN communication_NN -LRB-_-LRB- transmit_VB +_CC receive_VB -RRB-_-RRB- ,_, we_PRP find_VBP that_IN the_DT NAND_NNP flash_NN is_VBZ almost_RB 150_CD times_NNS more_RBR efficient_JJ than_IN radio_NN communication_NN ,_, even_RB assuming_VBG perfect_JJ network_NN protocols_NNS ._.
+6_CD ._.
+#_# Prototype_NNP Evaluation_NN This_DT section_NN reports_NNS results_VBZ from_IN an_DT end-to-end_JJ evaluation_NN of_IN the_DT TSAR_NN prototype_NN involving_VBG both_CC tiers_NNS ._.
+In_IN our_PRP$ setup_NN ,_, there_EX are_VBP four_CD proxies_NNS connected_VBN via_IN ###_CD ._.
+##_NN links_NNS and_CC three_CD sensors_NNS per_IN proxy_NN ._.
+The_DT multi-hop_JJ topology_NN was_VBD preconfigured_JJ such_JJ that_IN sensor_NN nodes_NNS were_VBD connected_VBN in_IN a_DT line_NN to_TO each_DT proxy_NN ,_, forming_VBG a_DT minimal_JJ tree_NN of_IN depth_NN 0_CD 400_CD 800_CD 1200_CD 1600_CD 0_CD ##_CD ##_CD ##_CD ##_CD ###_CD ###_CD ###_CD ###_CD Retrievallatency_NN -LRB-_-LRB- ms_NN -RRB-_-RRB- Archived_JJ data_NNS retrieved_VBN -LRB-_-LRB- bytes_NNS -RRB-_-RRB- -LRB-_-LRB- a_DT -RRB-_-RRB- Data_NNS Query_NNP and_CC Fetch_NNP Time_NNP 0_CD 2_CD 4_CD 6_CD 8_CD 10_CD 12_CD #_# #_# ##_CD ##_CD Latency_NN -LRB-_-LRB- ms_NN -RRB-_-RRB- Number_NN of_IN 34-byte_JJ records_NNS searched_VBD -LRB-_-LRB- b_NN -RRB-_-RRB- Sensor_NN query_NN processing_NN delay_NN Figure_NN ##_CD :_: Query_NNP Latency_NN Components_NNP 48_CD 3_CD ._.
+Due_JJ to_TO resource_NN constraints_NNS we_PRP were_VBD unable_JJ to_TO perform_VB experiments_NNS with_IN dozens_NNS of_IN sensor_NN nodes_NNS ,_, however_RB this_DT topology_NN ensured_VBD that_IN the_DT network_NN diameter_NN was_VBD as_RB large_JJ as_IN for_IN a_DT typical_JJ network_NN of_IN significantly_RB larger_JJR size_NN ._.
+Our_PRP$ evaluation_NN metric_NN is_VBZ the_DT end-to-end_JJ latency_NN of_IN query_NN processing_NN ._.
+A_DT query_NN posed_VBD on_IN TSAR_NN first_JJ incurs_VBZ the_DT latency_NN of_IN a_DT sparse_JJ skip_VB graph_NN lookup_NN ,_, followed_VBN by_IN routing_VBG to_TO the_DT appropriate_JJ sensor_NN node_NN -LRB-_-LRB- s_NNS -RRB-_-RRB- ._.
+The_DT sensor_NN node_NN reads_VBZ the_DT required_VBN page_NN -LRB-_-LRB- s_NNS -RRB-_-RRB- from_IN its_PRP$ local_JJ archive_NN ,_, processes_VBZ the_DT query_NN on_IN the_DT page_NN that_WDT is_VBZ read_VBN ,_, and_CC transmits_VBZ the_DT response_NN to_TO the_DT proxy_NN ,_, which_WDT then_RB forwards_RB it_PRP to_TO the_DT user_NN ._.
+We_PRP first_RB measure_VB query_JJ latency_NN for_IN different_JJ sensors_NNS in_IN our_PRP$ multi-hop_JJ topology_NN ._.
+Depending_VBG on_IN which_WDT of_IN the_DT sensors_NNS is_VBZ queried_VBN ,_, the_DT total_JJ latency_NN increases_VBZ almost_RB linearly_RB from_IN about_IN 400ms_NNS to_TO #_# second_RB ,_, as_IN the_DT number_NN of_IN hops_VBZ increases_NNS from_IN #_# to_TO #_# -RRB-_-RRB- ._.
+Figure_NNP ##_NN -LRB-_-LRB- b_NN -RRB-_-RRB- provides_VBZ a_DT breakdown_NN of_IN the_DT various_JJ components_NNS of_IN the_DT end-to-end_JJ latency_NN ._.
+The_DT dominant_JJ component_NN of_IN the_DT total_JJ latency_NN is_VBZ the_DT communication_NN over_IN one_CD or_CC more_JJR hops_VBZ ._.
+The_DT typical_JJ time_NN to_TO communicate_VB over_IN one_CD hop_NN is_VBZ approximately_RB 300ms_NNS ._.
+This_DT large_JJ latency_NN is_VBZ primarily_RB due_JJ to_TO the_DT use_NN of_IN a_DT duty-cycled_JJ MAC_NNP layer_NN ;_: the_DT latency_NN will_MD be_VB larger_JJR if_IN the_DT duty_NN cycle_NN is_VBZ reduced_VBN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+the_DT #_# %_NN setting_NN as_IN opposed_VBN to_TO the_DT ##_NN ._.
+#_# %_NN setting_NN used_VBN in_IN this_DT experiment_NN -RRB-_-RRB- ,_, and_CC will_MD conversely_RB decrease_VB if_IN the_DT duty_NN cycle_NN is_VBZ increased_VBN ._.
+The_DT figure_NN also_RB shows_VBZ the_DT latency_NN for_IN varying_VBG index_NN sizes_NNS ;_: as_IN expected_VBN ,_, the_DT latency_NN of_IN inter-proxy_JJ communication_NN and_CC skip_VB graph_NN lookups_NNS increases_VBZ logarithmically_RB with_IN index_NN size_NN ._.
+Not_RB surprisingly_RB ,_, the_DT overhead_JJ seen_VBN at_IN the_DT sensor_NN is_VBZ independent_JJ of_IN the_DT index_NN size_NN ._.
+The_DT latency_NN also_RB depends_VBZ on_IN the_DT number_NN of_IN packets_NNS transmitted_VBN in_IN response_NN to_TO a_DT query-the_NN larger_JJR the_DT amount_NN of_IN data_NNS retrieved_VBN by_IN a_DT query_NN ,_, the_DT greater_JJR the_DT latency_NN ._.
+This_DT result_NN is_VBZ shown_VBN in_IN Figure_NNP ##_NN -LRB-_-LRB- a_DT -RRB-_-RRB- ._.
+The_DT step_NN function_NN is_VBZ due_JJ to_TO packetization_NN in_IN TinyOS_NN ;_: TinyOS_NN sends_VBZ one_CD packet_NN so_RB long_RB as_IN the_DT payload_NN is_VBZ smaller_JJR than_IN ##_CD bytes_NNS and_CC splits_VBZ the_DT response_NN into_IN multiple_JJ packets_NNS for_IN larger_JJR payloads_NNS ._.
+As_IN the_DT data_NNS retrieved_VBN by_IN a_DT query_NN is_VBZ increased_VBN ,_, the_DT latency_NN increases_VBZ in_IN steps_NNS ,_, where_WRB each_DT step_NN denotes_VBZ the_DT overhead_NN of_IN an_DT additional_JJ packet_NN ._.
+Finally_RB ,_, Figure_NNP ##_NN -LRB-_-LRB- b_NN -RRB-_-RRB- shows_VBZ the_DT impact_NN of_IN searching_VBG and_CC processing_VBG flash_NN memory_NN regions_NNS of_IN increasing_VBG sizes_NNS on_IN a_DT sensor_NN ._.
+Each_DT summary_NN represents_VBZ a_DT collection_NN of_IN records_NNS in_IN flash_NN memory_NN ,_, and_CC all_DT of_IN these_DT records_NNS need_VBP to_TO be_VB retrieved_VBN and_CC processed_VBN if_IN that_DT summary_NN matches_VBZ a_DT query_NN ._.
+The_DT coarser_JJR the_DT summary_NN ,_, the_DT larger_JJR the_DT memory_NN region_NN that_WDT needs_VBZ to_TO be_VB accessed_VBN ._.
+For_IN the_DT search_NN sizes_NNS examined_VBN ,_, amortization_NN of_IN overhead_NN when_WRB searching_VBG multiple_JJ flash_NN pages_NNS and_CC archival_JJ records_NNS ,_, as_RB well_RB as_IN within_IN the_DT flash_NN chip_NN and_CC its_PRP$ associated_VBN driver_NN ,_, results_VBZ in_IN the_DT appearance_NN of_IN sub-linear_JJ increase_NN in_IN latency_NN with_IN search_NN size_NN ._.
+In_IN addition_NN ,_, the_DT operation_NN can_MD be_VB seen_VBN to_TO have_VB very_RB low_JJ latency_NN ,_, in_IN part_NN due_JJ to_TO the_DT simplicity_NN of_IN our_PRP$ query_NN processing_NN ,_, requiring_VBG only_RB a_DT compare_VB operation_NN with_IN each_DT stored_VBN element_NN ._.
+More_RBR complex_JJ operations_NNS ,_, however_RB ,_, will_MD of_IN course_NN incur_VBP greater_JJR latency_NN ._.
+6_CD ._.
+#_# Adaptive_JJ Summarization_NN When_WRB data_NNS is_VBZ summarized_VBN by_IN the_DT sensor_NN before_IN being_VBG reported_VBN to_TO the_DT proxy_NN ,_, information_NN is_VBZ lost_VBN ._.
+With_IN the_DT interval_JJ summarization_NN method_NN we_PRP are_VBP using_VBG ,_, this_DT information_NN loss_NN will_MD never_RB cause_VB the_DT proxy_NN to_TO believe_VB that_IN a_DT sensor_NN node_NN does_VBZ not_RB hold_VB a_DT value_NN which_WDT it_PRP in_IN fact_NN does_VBZ ,_, as_IN all_DT archived_JJ values_NNS will_MD be_VB contained_VBN within_IN the_DT interval_NN reported_VBD ._.
+However_RB ,_, it_PRP does_VBZ cause_VB the_DT proxy_NN to_TO believe_VB that_IN the_DT sensor_NN may_MD hold_VB values_NNS which_WDT it_PRP does_VBZ not_RB ,_, and_CC forward_RB query_JJ messages_NNS to_TO the_DT sensor_NN for_IN these_DT values_NNS ._.
+These_DT false_JJ positives_NNS constitute_VBP the_DT cost_NN of_IN the_DT summarization_NN mechanism_NN ,_, and_CC need_VB to_TO be_VB balanced_VBN against_IN the_DT savings_NNS achieved_VBN by_IN reducing_VBG the_DT number_NN of_IN reports_NNS ._.
+The_DT goal_NN of_IN adaptive_JJ summarization_NN is_VBZ to_TO dynamically_RB vary_VB the_DT summary_NN size_NN so_IN that_IN these_DT two_CD costs_NNS are_VBP balanced_JJ ._.
+0_CD 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD #_# ##_CD ##_CD ##_CD ##_CD ##_CD Fractionoftruehits_NNP Summary_NNP size_NN -LRB-_-LRB- number_NN of_IN records_NNS -RRB-_-RRB- -LRB-_-LRB- a_DT -RRB-_-RRB- Impact_NN of_IN summary_NN size_NN 0_CD 5_CD 10_CD 15_CD 20_CD 25_CD 30_CD 35_CD 0_CD ####_CD #####_CD #####_CD #####_CD #####_CD #####_CD Summarizationsize_NN -LRB-_-LRB- num_NN ._.
+records_NNS -RRB-_-RRB- Normalized_VBN time_NN -LRB-_-LRB- units_NNS -RRB-_-RRB- query_JJ rate_NN #_# ._.
+#_# query_NN rate_NN #_# ._.
+##_NN query_NN rate_NN #_# ._.
+#_# -LRB-_-LRB- b_NN -RRB-_-RRB- Adaptation_NN to_TO query_VB rate_NN Figure_NN ##_CD :_: Impact_NN of_IN Summarization_NN Granularity_NN Figure_NN ##_NN -LRB-_-LRB- a_DT -RRB-_-RRB- demonstrates_VBZ the_DT impact_NN of_IN summary_NN granularity_NN on_IN false_JJ hits_NNS ._.
+As_IN the_DT number_NN of_IN records_NNS included_VBN in_IN a_DT summary_NN is_VBZ increased_VBN ,_, the_DT fraction_NN of_IN queries_NNS forwarded_VBN to_TO the_DT sensor_NN which_WDT match_VBP data_NNS held_VBN on_IN that_DT sensor_NN -LRB-_-LRB- true_JJ positives_NNS -RRB-_-RRB- decreases_VBZ ._.
+Next_RB ,_, in_IN Figure_NNP ##_NN -LRB-_-LRB- b_NN -RRB-_-RRB- we_PRP run_VBP the_DT a_DT EmTOS_NNP simulation_NN with_IN our_PRP$ adaptive_JJ summarization_NN algorithm_NN enabled_VBD ._.
+The_DT adaptive_JJ algorithm_NN increases_VBZ the_DT summary_NN granularity_NN -LRB-_-LRB- defined_VBN as_IN the_DT number_NN of_IN records_NNS per_IN summary_NN -RRB-_-RRB- when_WRB Cost_NN -LRB-_-LRB- updates_NNS -RRB-_-RRB- Cost_NN -LRB-_-LRB- falsehits_NNS -RRB-_-RRB- >_JJR #_# +_CC and_CC reduces_VBZ it_PRP if_IN Cost_NN -LRB-_-LRB- updates_NNS -RRB-_-RRB- Cost_NN -LRB-_-LRB- falsehits_NNS -RRB-_-RRB- >_JJR #_# ,_, where_WRB is_VBZ a_DT small_JJ constant_JJ ._.
+To_TO demonstrate_VB the_DT adaptive_JJ nature_NN of_IN our_PRP$ technique_NN ,_, we_PRP plot_VBP a_DT time_NN series_NN of_IN the_DT summarization_NN granularity_NN ._.
+We_PRP begin_VBP with_IN a_DT query_NN rate_NN of_IN #_# query_NN per_IN #_# samples_NNS ,_, decrease_VB it_PRP to_TO #_# every_DT ##_NN samples_NNS ,_, and_CC then_RB increase_VB it_PRP again_RB to_TO #_# query_VB every_DT ##_NN samples_NNS ._.
+As_IN shown_VBN in_IN Figure_NNP ##_NN -LRB-_-LRB- b_NN -RRB-_-RRB- ,_, the_DT adaptive_JJ technique_NN adjusts_VBZ accordingly_RB by_IN sending_VBG more_RBR fine-grain_JJ summaries_NNS at_IN higher_JJR query_NN rates_NNS -LRB-_-LRB- in_IN response_NN to_TO the_DT higher_JJR false_JJ hit_NN rate_NN -RRB-_-RRB- ,_, and_CC fewer_JJR ,_, coarse-grain_JJ summaries_NNS at_IN lower_JJR query_NN rates_NNS ._.
+7_CD ._.
+Related_JJ Work_NN In_IN this_DT section_NN ,_, we_PRP review_VBP prior_JJ work_NN on_IN storage_NN and_CC indexing_NN techniques_NNS for_IN sensor_NN networks_NNS ._.
+While_IN our_PRP$ work_NN addresses_NNS both_CC problems_NNS jointly_RB ,_, much_JJ prior_JJ work_NN has_VBZ considered_VBN them_PRP in_IN isolation_NN ._.
+The_DT problem_NN of_IN archival_JJ storage_NN of_IN sensor_NN data_NNS has_VBZ received_VBN limited_JJ attention_NN in_IN sensor_NN network_NN literature_NN ._.
+ELF_NN -LSB-_-LRB- #_# -RSB-_-RRB- is_VBZ a_DT logstructured_JJ file_NN system_NN for_IN local_JJ storage_NN on_IN flash_NN memory_NN that_WDT provides_VBZ load_NN leveling_NN and_CC Matchbox_NN is_VBZ a_DT simple_JJ file_NN system_NN that_WDT is_VBZ packaged_VBN with_IN the_DT TinyOS_JJ distribution_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Both_DT these_DT systems_NNS focus_VBP on_IN local_JJ storage_NN ,_, whereas_IN our_PRP$ focus_NN is_VBZ both_DT on_IN storage_NN at_IN the_DT remote_JJ sensors_NNS as_RB well_RB as_IN providing_VBG a_DT unified_VBN view_NN of_IN distributed_VBN data_NNS across_IN all_DT such_JJ local_JJ archives_NNS ._.
+Multi-resolution_JJ storage_NN -LSB-_-LRB- #_# -RSB-_-RRB- is_VBZ intended_VBN for_IN in-network_JJ storage_NN and_CC search_NN in_IN systems_NNS where_WRB there_EX is_VBZ significant_JJ data_NNS in_IN comparison_NN to_TO storage_NN resources_NNS ._.
+In_IN contrast_NN ,_, TSAR_NN addresses_NNS the_DT problem_NN of_IN archival_JJ storage_NN in_IN two-tier_JJ systems_NNS where_WRB sufficient_JJ resources_NNS can_MD be_VB placed_VBN at_IN the_DT edge_NN sensors_NNS ._.
+The_DT RISE_NN platform_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- being_VBG developed_VBN as_IN part_NN of_IN the_DT NODE_NN project_NN at_IN UCR_NN addresses_NNS the_DT issues_NNS of_IN hardware_NN platform_NN support_NN for_IN large_JJ amounts_NNS of_IN storage_NN in_IN remote_JJ sensor_NN nodes_NNS ,_, but_CC not_RB the_DT indexing_NN and_CC querying_VBG of_IN this_DT data_NNS ._.
+In_IN order_NN to_TO efficiently_RB access_VB a_DT distributed_VBN sensor_NN store_NN ,_, an_DT index_NN needs_VBZ to_TO be_VB constructed_VBN of_IN the_DT data_NNS ._.
+Early_JJ work_NN on_IN sensor_NN networks_NNS such_JJ as_IN Directed_NNP Diffusion_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- assumes_VBZ a_DT system_NN where_WRB all_DT useful_JJ sensor_NN data_NNS was_VBD stored_VBN locally_RB at_IN each_DT sensor_NN ,_, and_CC spatially_RB scoped_VBD queries_NNS are_VBP routed_VBN using_VBG geographic_JJ co-ordinates_VBZ to_TO locations_NNS where_WRB the_DT data_NNS is_VBZ stored_VBN ._.
+Sources_NNS publish_VB the_DT events_NNS that_IN they_PRP detect_VBP ,_, and_CC sinks_VBZ with_IN interest_NN in_IN specific_JJ events_NNS can_MD subscribe_VB to_TO these_DT events_NNS ._.
+The_DT Directed_NNP Diffusion_NNP substrate_NN routes_NNS queries_NNS to_TO specific_JJ locations_NNS 49_CD if_IN the_DT query_NN has_VBZ geographic_JJ information_NN embedded_VBN in_IN it_PRP -LRB-_-LRB- e_LS ._.
+g_NN ._.
+:_: find_VB temperature_NN in_IN the_DT south-west_JJ quadrant_NN -RRB-_-RRB- ,_, and_CC if_IN not_RB ,_, the_DT query_NN is_VBZ flooded_VBN throughout_IN the_DT network_NN ._.
+These_DT schemes_NNS had_VBD the_DT drawback_NN that_IN for_IN queries_NNS that_WDT are_VBP not_RB geographically_RB scoped_VBD ,_, search_NN cost_NN -LRB-_-LRB- O_NN -LRB-_-LRB- n_NN -RRB-_-RRB- for_IN a_DT network_NN of_IN n_NN nodes_NNS -RRB-_-RRB- may_MD be_VB prohibitive_JJ in_IN large_JJ networks_NNS with_IN frequent_JJ queries_NNS ._.
+Local_JJ storage_NN with_IN in-network_JJ indexing_NN approaches_NNS address_VBP this_DT issue_NN by_IN constructing_VBG indexes_NNS using_VBG frameworks_NNS such_JJ as_IN Geographic_JJ Hash_NNP Tables_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- and_CC Quad_NNP Trees_NNP -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+Recent_JJ research_NN has_VBZ seen_VBN a_DT growing_VBG body_NN of_IN work_NN on_IN data_NNS indexing_NN schemes_NNS for_IN sensor_NN networks_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- -LSB-_-LRB- ##_CD -RSB-_-RRB- -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+One_CD such_JJ scheme_NN is_VBZ DCS_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, which_WDT provides_VBZ a_DT hash_JJ function_NN for_IN mapping_VBG from_IN event_NN name_NN to_TO location_NN ._.
+DCS_NN constructs_NNS a_DT distributed_VBN structure_NN that_WDT groups_NNS events_NNS together_RB spatially_RB by_IN their_PRP$ named_VBN type_NN ._.
+Distributed_VBN Index_NN of_IN Features_NNS in_IN Sensornets_NNS -LRB-_-LRB- DIFS_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- -RRB-_-RRB- and_CC Multi-dimensional_JJ Range_NNP Queries_NNPS in_IN Sensor_NNP Networks_NNP -LRB-_-LRB- DIM_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- -RRB-_-RRB- extend_VBP the_DT data-centric_JJ storage_NN approach_NN to_TO provide_VB spatially_RB distributed_VBN hierarchies_NNS of_IN indexes_NNS to_TO data_NNS ._.
+While_IN these_DT approaches_NNS advocate_VBP in-network_JJ indexing_NN for_IN sensor_NN networks_NNS ,_, we_PRP believe_VBP that_IN indexing_NN is_VBZ a_DT task_NN that_WDT is_VBZ far_RB too_RB complicated_VBN to_TO be_VB performed_VBN at_IN the_DT remote_JJ sensor_NN nodes_NNS since_IN it_PRP involves_VBZ maintaining_VBG significant_JJ state_NN and_CC large_JJ tables_NNS ._.
+TSAR_NN provides_VBZ a_DT better_JJR match_NN between_IN resource_NN requirements_NNS of_IN storage_NN and_CC indexing_NN and_CC the_DT availability_NN of_IN resources_NNS at_IN different_JJ tiers_NNS ._.
+Thus_RB complex_JJ operations_NNS such_JJ as_IN indexing_NN and_CC managing_NN metadata_NN are_VBP performed_VBN at_IN the_DT proxies_NNS ,_, while_IN storage_NN at_IN the_DT sensor_NN remains_VBZ simple_JJ ._.
+In_IN addition_NN to_TO storage_NN and_CC indexing_NN techniques_NNS specific_JJ to_TO sensor_NN networks_NNS ,_, many_JJ distributed_VBN ,_, peer-to-peer_NN and_CC spatio-temporal_JJ index_NN structures_NNS are_VBP relevant_JJ to_TO our_PRP$ work_NN ._.
+DHTs_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- can_MD be_VB used_VBN for_IN indexing_NN events_NNS based_VBN on_IN their_PRP$ type_NN ,_, quad-tree_JJ variants_NNS such_JJ as_IN Rtrees_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- can_MD be_VB used_VBN for_IN optimizing_VBG spatial_JJ searches_NNS ,_, and_CC K-D_NN trees_NNS -LSB-_-LRB- #_# -RSB-_-RRB- can_MD be_VB used_VBN for_IN multi-attribute_JJ search_NN ._.
+While_IN this_DT paper_NN focuses_VBZ on_IN building_VBG an_DT ordered_VBN index_NN structure_NN for_IN range_NN queries_NNS ,_, we_PRP will_MD explore_VB the_DT use_NN of_IN other_JJ index_NN structures_NNS for_IN alternate_JJ queries_NNS over_IN sensor_NN data_NNS ._.
+8_CD ._.
+Conclusions_NNS In_IN this_DT paper_NN ,_, we_PRP argued_VBD that_IN existing_VBG sensor_NN storage_NN systems_NNS are_VBP designed_VBN primarily_RB for_IN flat_JJ hierarchies_NNS of_IN homogeneous_JJ sensor_NN nodes_NNS and_CC do_VBP not_RB fully_RB exploit_VB the_DT multi-tier_JJ nature_NN of_IN emerging_VBG sensor_NN networks_NNS ._.
+We_PRP presented_VBD the_DT design_NN of_IN TSAR_NN ,_, a_DT fundamentally_RB different_JJ storage_NN architecture_NN that_WDT envisions_VBZ separation_NN of_IN data_NNS from_IN metadata_NN by_IN employing_VBG local_JJ storage_NN at_IN the_DT sensors_NNS and_CC distributed_VBN indexing_NN at_IN the_DT proxies_NNS ._.
+At_IN the_DT proxy_NN tier_NN ,_, TSAR_NN employs_VBZ a_DT novel_JJ multi-resolution_JJ ordered_VBN distributed_VBN index_NN structure_NN ,_, the_DT Sparse_NNP Interval_NNP Skip_VB Graph_NN ,_, for_IN efficiently_RB supporting_VBG spatio-temporal_JJ and_CC range_NN queries_NNS ._.
+At_IN the_DT sensor_NN tier_NN ,_, TSAR_NN supports_VBZ energy-aware_JJ adaptive_JJ summarization_NN that_WDT can_MD trade-off_NN the_DT energy_NN cost_NN of_IN transmitting_VBG metadata_NN to_TO the_DT proxies_NNS against_IN the_DT overhead_NN of_IN false_JJ hits_NNS resulting_VBG from_IN querying_VBG a_DT coarser_JJR resolution_NN index_NN structure_NN ._.
+We_PRP implemented_VBD TSAR_NN in_IN a_DT two-tier_JJ sensor_NN testbed_VBD comprising_VBG Stargatebased_JJ proxies_NNS and_CC Mote-based_JJ sensors_NNS ._.
+Our_PRP$ experimental_JJ evaluation_NN of_IN TSAR_NN demonstrated_VBD the_DT benefits_NNS and_CC feasibility_NN of_IN employing_VBG our_PRP$ energy-efficient_JJ low-latency_NN distributed_VBN storage_NN architecture_NN in_IN multi-tier_JJ sensor_NN networks_NNS ._.
+9_CD ._.
+REFERENCES_NNS -LSB-_-LRB- #_# -RSB-_-RRB- James_NNP Aspnes_NNP and_CC Gauri_NNP Shah_NNP ._.
+Skip_VB graphs_NNS ._.
+In_IN Fourteenth_JJ Annual_JJ ACM-SIAM_NN Symposium_NN on_IN Discrete_NNP Algorithms_NNP ,_, pages_NNS 384-393_CD ,_, Baltimore_NNP ,_, MD_NNP ,_, USA_NNP ,_, 12-14_CD January_NNP ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- Jon_NNP Louis_NNP Bentley_NNP ._.
+Multidimensional_JJ binary_JJ search_NN trees_NNS used_VBN for_IN associative_JJ searching_VBG ._.
+Commun_NNP ._.
+ACM_NNP ,_, ##_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 509-517_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- Philippe_NNP Bonnet_NNP ,_, J_NNP ._.
+E_NN ._.
+Gehrke_NNP ,_, and_CC Praveen_NNP Seshadri_NNP ._.
+Towards_IN sensor_NN database_NN systems_NNS ._.
+In_IN Proceedings_NNP of_IN the_DT Second_NNP International_NNP Conference_NNP on_IN Mobile_NNP Data_NNP Management_NNP ._.
+,_, January_NNP ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- Chipcon_NNP ._.
+CC2420_NN #_# ._.
+#_# GHz_NNP IEEE_NNP ###_CD ._.
+##_NN ._.
+#_# /_: ZigBee-ready_NNP RF_NNP transceiver_NN ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- Thomas_NNP H_NNP ._.
+Cormen_NNP ,_, Charles_NNP E_NNP ._.
+Leiserson_NNP ,_, Ronald_NNP L_NNP ._.
+Rivest_NNP ,_, and_CC Clifford_NNP Stein_NNP ._.
+Introduction_NN to_TO Algorithms_NNS ._.
+The_DT MIT_NNP Press_NNP and_CC McGraw-Hill_NNP ,_, second_JJ edition_NN edition_NN ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- Adina_NNP Crainiceanu_NNP ,_, Prakash_NNP Linga_NNP ,_, Johannes_NNP Gehrke_NNP ,_, and_CC Jayavel_NNP Shanmugasundaram_NNP ._.
+Querying_VBG Peer-to-Peer_NNP Networks_NNP Using_VBG P-Trees_NNS ._.
+Technical_NNP Report_NNP TR2004-1926_NN ,_, Cornell_NNP University_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- Hui_NNP Dai_NNP ,_, Michael_NNP Neufeld_NNP ,_, and_CC Richard_NNP Han_NNP ._.
+ELF_NNP :_: an_DT efficient_JJ log-structured_JJ flash_NN file_NN system_NN for_IN micro_JJ sensor_NN nodes_NNS ._.
+In_IN SenSys_NNS ''_'' ##_CD :_: Proceedings_NNP of_IN the_DT 2nd_JJ international_JJ conference_NN on_IN Embedded_VBN networked_JJ sensor_NN systems_NNS ,_, pages_NNS 176-187_CD ,_, New_NNP York_NNP ,_, NY_NNP ,_, USA_NNP ,_, ####_CD ._.
+ACM_NNP Press_NNP ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- Peter_NNP Desnoyers_NNP ,_, Deepak_NNP Ganesan_NNP ,_, Huan_NNP Li_NNP ,_, and_CC Prashant_NNP Shenoy_NNP ._.
+PRESTO_NNP :_: A_NNP predictive_JJ storage_NN architecture_NN for_IN sensor_NN networks_NNS ._.
+In_IN Tenth_NNP Workshop_NNP on_IN Hot_NNP Topics_NNPS in_IN Operating_NNP Systems_NNPS -LRB-_-LRB- HotOS_NN X_NN -RRB-_-RRB- ._.
+,_, June_NNP ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- Deepak_NNP Ganesan_NNP ,_, Ben_NNP Greenstein_NNP ,_, Denis_NNP Perelyubskiy_NNP ,_, Deborah_NNP Estrin_NNP ,_, and_CC John_NNP Heidemann_NNP ._.
+An_DT evaluation_NN of_IN multi-resolution_JJ storage_NN in_IN sensor_NN networks_NNS ._.
+In_IN Proceedings_NNP of_IN the_DT First_NNP ACM_NNP Conference_NNP on_IN Embedded_VBN Networked_NNP Sensor_NNP Systems_NNP -LRB-_-LRB- SenSys_NNP -RRB-_-RRB- ._.
+,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- L_NN ._.
+Girod_NNP ,_, T_NN ._.
+Stathopoulos_NNP ,_, N_NNP ._.
+Ramanathan_NNP ,_, J_NNP ._.
+Elson_NNP ,_, D_NNP ._.
+Estrin_NNP ,_, E_NNP ._.
+Osterweil_NNP ,_, and_CC T_NN ._.
+Schoellhammer_NN ._.
+A_DT system_NN for_IN simulation_NN ,_, emulation_NN ,_, and_CC deployment_NN of_IN heterogeneous_JJ sensor_NN networks_NNS ._.
+In_IN Proceedings_NNP of_IN the_DT Second_JJ ACM_NNP Conference_NN on_IN Embedded_VBN Networked_NNP Sensor_NNP Systems_NNPS ,_, Baltimore_NNP ,_, MD_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- B_NN ._.
+Greenstein_NNP ,_, D_NNP ._.
+Estrin_NNP ,_, R_NN ._.
+Govindan_NNP ,_, S_NN ._.
+Ratnasamy_NNP ,_, and_CC S_NN ._.
+Shenker_NNP ._.
+DIFS_NNP :_: A_DT distributed_VBN index_NN for_IN features_NNS in_IN sensor_NN networks_NNS ._.
+Elsevier_NNP Journal_NNP of_IN ad-hoc_JJ Networks_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Antonin_NNP Guttman_NNP ._.
+R-trees_NNS :_: a_DT dynamic_JJ index_NN structure_NN for_IN spatial_JJ searching_VBG ._.
+In_IN SIGMOD_NN ''_'' ##_NN :_: Proceedings_NNP of_IN the_DT ####_CD ACM_NNP SIGMOD_NNP international_JJ conference_NN on_IN Management_NN of_IN data_NNS ,_, pages_NNS 47-57_CD ,_, New_NNP York_NNP ,_, NY_NNP ,_, USA_NNP ,_, ####_CD ._.
+ACM_NNP Press_NNP ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Nicholas_NNP Harvey_NNP ,_, Michael_NNP B_NNP ._.
+Jones_NNP ,_, Stefan_NNP Saroiu_NNP ,_, Marvin_NNP Theimer_NNP ,_, and_CC Alec_NNP Wolman_NNP ._.
+Skipnet_NNP :_: A_NNP scalable_JJ overlay_NN network_NN with_IN practical_JJ locality_NN properties_NNS ._.
+In_IN In_IN proceedings_NNS of_IN the_DT 4th_JJ USENIX_NNP Symposium_NNP on_IN Internet_NNP Technologies_NNPS and_CC Systems_NNPS -LRB-_-LRB- USITS_NN ''_'' ##_NN -RRB-_-RRB- ,_, Seattle_NNP ,_, WA_NNP ,_, March_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Jason_NNP Hill_NNP ,_, Robert_NNP Szewczyk_NNP ,_, Alec_NNP Woo_NNP ,_, Seth_NNP Hollar_NNP ,_, David_NNP Culler_NNP ,_, and_CC Kristofer_NNP Pister_NNP ._.
+System_NNP architecture_NN directions_NNS for_IN networked_JJ sensors_NNS ._.
+In_IN Proceedings_NNP of_IN the_DT Ninth_NNP International_NNP Conference_NNP on_IN Architectural_NNP Support_NN for_IN Programming_NNP Languages_NNPS and_CC Operating_NNP Systems_NNPS -LRB-_-LRB- ASPLOS-IX_NN -RRB-_-RRB- ,_, pages_NNS 93-104_CD ,_, Cambridge_NNP ,_, MA_NNP ,_, USA_NNP ,_, November_NNP ####_CD ._.
+ACM_NNP ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Atmel_NNP Inc_NNP ._.
+4-megabit_NN #_# ._.
+5-volt_NN or_CC #_# ._.
+7-volt_JJ DataFlash_NN AT45DB041B_NN ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Samsung_NNP Semiconductor_NNP Inc_NNP ._.
+K9W8G08U1M_NN ,_, K9K4G08U0M_NN :_: 512M_NN x_CC #_# bit_RB /_: 1G_NN x_CC #_# bit_RB NAND_JJ flash_NN memory_NN ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Chalermek_NNP Intanagonwiwat_NNP ,_, Ramesh_NNP Govindan_NNP ,_, and_CC Deborah_NNP Estrin_NNP ._.
+Directed_NNP diffusion_NN :_: A_DT scalable_JJ and_CC robust_JJ communication_NN paradigm_NN for_IN sensor_NN networks_NNS ._.
+In_IN Proceedings_NNP of_IN the_DT Sixth_NNP Annual_JJ International_NNP Conference_NN on_IN Mobile_NNP Computing_NNP and_CC Networking_NNP ,_, pages_NNS 56-67_CD ,_, Boston_NNP ,_, MA_NNP ,_, August_NNP ####_CD ._.
+ACM_NNP Press_NNP ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Xin_NNP Li_NNP ,_, Young-Jin_NNP Kim_NNP ,_, Ramesh_NNP Govindan_NNP ,_, and_CC Wei_NNP Hong_NNP ._.
+Multi-dimensional_JJ range_NN queries_NNS in_IN sensor_NN networks_NNS ._.
+In_IN Proceedings_NNP of_IN the_DT First_NNP ACM_NNP Conference_NNP on_IN Embedded_VBN Networked_NNP Sensor_NNP Systems_NNP -LRB-_-LRB- SenSys_NNP -RRB-_-RRB- ._.
+,_, ####_CD ._.
+to_TO appear_VB ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Witold_NNP Litwin_NNP ,_, Marie-Anne_NNP Neimat_NNP ,_, and_CC Donovan_NNP A_NNP ._.
+Schneider_NNP ._.
+RP_NN *_SYM :_: A_DT family_NN of_IN order_NN preserving_NN scalable_JJ distributed_VBN data_NNS structures_NNS ._.
+In_IN VLDB_NN ''_'' ##_NN :_: Proceedings_NNP of_IN the_DT 20th_JJ International_NNP Conference_NN on_IN Very_RB Large_JJ Data_NNS Bases_NNS ,_, pages_NNS 342-353_CD ,_, San_NNP Francisco_NNP ,_, CA_NNP ,_, USA_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Samuel_NNP Madden_NNP ,_, Michael_NNP Franklin_NNP ,_, Joseph_NNP Hellerstein_NNP ,_, and_CC Wei_NNP Hong_NNP ._.
+TAG_NN :_: a_DT tiny_JJ aggregation_NN service_NN for_IN ad-hoc_JJ sensor_NN networks_NNS ._.
+In_IN OSDI_NNP ,_, Boston_NNP ,_, MA_NNP ,_, 2002_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- A_DT ._.
+Mitra_NNP ,_, A_NNP ._.
+Banerjee_NNP ,_, W_NNP ._.
+Najjar_NNP ,_, D_NNP ._.
+Zeinalipour-Yazti_NNP ,_, D_NNP ._.
+Gunopulos_NNP ,_, and_CC V_NN ._.
+Kalogeraki_NNP ._.
+High_JJ performance_NN ,_, low_JJ power_NN sensor_NN platforms_NNS featuring_VBG gigabyte_NN scale_NN storage_NN ._.
+In_IN SenMetrics_NNS ####_CD :_: Third_NNP International_NNP Workshop_NNP on_IN Measurement_NNP ,_, Modeling_NNP ,_, and_CC Performance_NNP Analysis_NN of_IN Wireless_NNP Sensor_NNP Networks_NNP ,_, July_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+Polastre_NNP ,_, J_NNP ._.
+Hill_NNP ,_, and_CC D_NN ._.
+Culler_NNP ._.
+Versatile_JJ low_JJ power_NN media_NNS access_NN for_IN wireless_JJ sensor_NN networks_NNS ._.
+In_IN Proceedings_NNP of_IN the_DT Second_JJ ACM_NNP Conference_NN on_IN Embedded_VBN Networked_NNP Sensor_NNP Systems_NNP -LRB-_-LRB- SenSys_NNP -RRB-_-RRB- ,_, November_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- William_NNP Pugh_NNP ._.
+Skip_VB lists_NNS :_: a_DT probabilistic_JJ alternative_NN to_TO balanced_JJ trees_NNS ._.
+Commun_NNP ._.
+ACM_NNP ,_, ##_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 668-676_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- S_NN ._.
+Ratnasamy_NNP ,_, D_NNP ._.
+Estrin_NNP ,_, R_NN ._.
+Govindan_NNP ,_, B_NN ._.
+Karp_NNP ,_, L_NNP ._.
+Yin_NNP S_NN ._.
+Shenker_NNP ,_, and_CC F_NN ._.
+Yu_NNP ._.
+Data-centric_JJ storage_NN in_IN sensornets_NNS ._.
+In_IN ACM_NNP First_NNP Workshop_NNP on_IN Hot_NNP Topics_NNPS in_IN Networks_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- S_NN ._.
+Ratnasamy_NNP ,_, P_NN ._.
+Francis_NNP ,_, M_NN ._.
+Handley_NNP ,_, R_NN ._.
+Karp_NNP ,_, and_CC S_NN ._.
+Shenker_NNP ._.
+A_DT scalable_JJ content_NN addressable_JJ network_NN ._.
+In_IN Proceedings_NNP of_IN the_DT ####_CD ACM_NNP SIGCOMM_NNP Conference_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- S_NN ._.
+Ratnasamy_NNP ,_, B_NN ._.
+Karp_NNP ,_, L_NNP ._.
+Yin_NNP ,_, F_NN ._.
+Yu_NNP ,_, D_NNP ._.
+Estrin_NNP ,_, R_NN ._.
+Govindan_NNP ,_, and_CC S_NN ._.
+Shenker_NNP ._.
+GHT_SYM -_: a_DT geographic_JJ hash-table_JJ for_IN data-centric_JJ storage_NN ._.
+In_IN First_NNP ACM_NNP International_NNP Workshop_NNP on_IN Wireless_NNP Sensor_NNP Networks_NNP and_CC their_PRP$ Applications_NNS ,_, 2002_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- N_NN ._.
+Xu_NNP ,_, E_NNP ._.
+Osterweil_NNP ,_, M_NN ._.
+Hamilton_NNP ,_, and_CC D_NN ._.
+Estrin_NNP ._.
+http_NN :_: /_: /_: www_NN ._.
+lecs_NNS ._.
+cs_NNS ._.
+ucla_NN ._.
+edu_FW /_: nxu_FW /_: ess_NN /_: ._.
+James_NNP Reserve_NNP Data_NNP ._.
+50_CD

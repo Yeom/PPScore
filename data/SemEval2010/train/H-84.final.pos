@@ -1,0 +1,636 @@
+Event_NN Threading_NN within_IN News_NNP Topics_NNP Ramesh_NNP Nallapati_NNP ,_, Ao_NNP Feng_NNP ,_, Fuchun_NNP Peng_NNP ,_, James_NNP Allan_NNP Center_NNP for_IN Intelligent_NNP Information_NNP Retrieval_NNP Department_NNP of_IN Computer_NNP Science_NNP University_NNP of_IN Massachusetts_NNP Amherst_NNP ,_, MA_NNP #####_CD nmramesh_NN ,_, aofeng_NN ,_, fuchun_NN ,_, allan_JJ @_IN cs_NNS ._.
+umass_NN ._.
+edu_NN ABSTRACT_NN With_IN the_DT overwhelming_JJ volume_NN of_IN online_JJ news_NN available_JJ today_NN ,_, there_EX is_VBZ an_DT increasing_VBG need_NN for_IN automatic_JJ techniques_NNS to_TO analyze_VB and_CC present_JJ news_NN to_TO the_DT user_NN in_IN a_DT meaningful_JJ and_CC efficient_JJ manner_NN ._.
+Previous_JJ research_NN focused_VBD only_RB on_IN organizing_VBG news_NN stories_NNS by_IN their_PRP$ topics_NNS into_IN a_DT flat_JJ hierarchy_NN ._.
+We_PRP believe_VBP viewing_VBG a_DT news_NN topic_NN as_IN a_DT flat_JJ collection_NN of_IN stories_NNS is_VBZ too_RB restrictive_JJ and_CC inefficient_JJ for_IN a_DT user_NN to_TO understand_VB the_DT topic_NN quickly_RB ._.
+In_IN this_DT work_NN ,_, we_PRP attempt_VBP to_TO capture_VB the_DT rich_JJ structure_NN of_IN events_NNS and_CC their_PRP$ dependencies_NNS in_IN a_DT news_NN topic_NN through_IN our_PRP$ event_NN models_NNS ._.
+We_PRP call_VBP the_DT process_NN of_IN recognizing_VBG events_NNS and_CC their_PRP$ dependencies_NNS event_NN threading_NN ._.
+We_PRP believe_VBP our_PRP$ perspective_NN of_IN modeling_NN the_DT structure_NN of_IN a_DT topic_NN is_VBZ more_RBR effective_JJ in_IN capturing_VBG its_PRP$ semantics_NNS than_IN a_DT flat_JJ list_NN of_IN on-topic_JJ stories_NNS ._.
+We_PRP formally_RB define_VBP the_DT novel_JJ problem_NN ,_, suggest_VBP evaluation_NN metrics_NNS and_CC present_VB a_DT few_JJ techniques_NNS for_IN solving_VBG the_DT problem_NN ._.
+Besides_IN the_DT standard_JJ word_NN based_VBN features_NNS ,_, our_PRP$ approaches_NNS take_VBP into_IN account_NN novel_JJ features_NNS such_JJ as_IN temporal_JJ locality_NN of_IN stories_NNS for_IN event_NN recognition_NN and_CC time-ordering_NN for_IN capturing_VBG dependencies_NNS ._.
+Our_PRP$ experiments_NNS on_IN a_DT manually_RB labeled_VBN data_NNS sets_NNS show_VBP that_IN our_PRP$ models_NNS effectively_RB identify_VBP the_DT events_NNS and_CC capture_NN dependencies_NNS among_IN them_PRP ._.
+Categories_NNS and_CC Subject_NNP Descriptors_NNPS H_NN ._.
+#_# ._.
+#_# -LSB-_-LRB- Information_NNP Search_VB and_CC Retrieval_NN -RSB-_-RRB- :_: Clustering_NNP General_NNP Terms_NNS Algorithms_NNS ,_, Experimentation_NN ,_, Measurement_NN 1_CD ._.
+INTRODUCTION_NNP News_NNP forms_VBZ a_DT major_JJ portion_NN of_IN information_NN disseminated_VBN in_IN the_DT world_NN everyday_NN ._.
+Common_JJ people_NNS and_CC news_NN analysts_NNS alike_RB are_VBP very_RB interested_JJ in_IN keeping_VBG abreast_NN of_IN new_JJ things_NNS that_WDT happen_VB in_IN the_DT news_NN ,_, but_CC it_PRP is_VBZ becoming_VBG very_RB difficult_JJ to_TO cope_VB with_IN the_DT huge_JJ volumes_NNS of_IN information_NN that_IN arrives_VBZ each_DT day_NN ._.
+Hence_RB there_EX is_VBZ an_DT increasing_VBG need_NN for_IN automatic_JJ techniques_NNS to_TO organize_VB news_NN stories_NNS in_IN a_DT way_NN that_IN helps_VBZ users_NNS interpret_VB and_CC analyze_VB them_PRP quickly_RB ._.
+This_DT problem_NN is_VBZ addressed_VBN by_IN a_DT research_NN program_NN called_VBN Topic_NNP Detection_NN and_CC Tracking_VBG -LRB-_-LRB- TDT_NN -RRB-_-RRB- -LSB-_-LRB- #_# -RSB-_-RRB- that_WDT runs_VBZ an_DT open_JJ annual_JJ competition_NN on_IN standardized_JJ tasks_NNS of_IN news_NN organization_NN ._.
+One_CD of_IN the_DT shortcomings_NNS of_IN current_JJ TDT_NN evaluation_NN is_VBZ its_PRP$ view_NN of_IN news_NN topics_NNS as_IN flat_JJ collection_NN of_IN stories_NNS ._.
+For_IN example_NN ,_, the_DT detection_NN task_NN of_IN TDT_NN is_VBZ to_TO arrange_VB a_DT collection_NN of_IN news_NN stories_NNS into_IN clusters_NNS of_IN topics_NNS ._.
+However_RB ,_, a_DT topic_NN in_IN news_NN is_VBZ more_JJR than_IN a_DT mere_JJ collection_NN of_IN stories_NNS :_: it_PRP is_VBZ characterized_VBN by_IN a_DT definite_JJ structure_NN of_IN inter-related_JJ events_NNS ._.
+This_DT is_VBZ indeed_RB recognized_VBN by_IN TDT_NN which_WDT defines_VBZ a_DT topic_NN as_IN a_DT set_NN of_IN news_NN stories_NNS that_WDT are_VBP strongly_RB related_VBN by_IN some_DT seminal_JJ realworld_NN event_NN ''_'' where_WRB an_DT event_NN is_VBZ defined_VBN as_IN something_NN that_WDT happens_VBZ at_IN a_DT specific_JJ time_NN and_CC location_NN ''_'' -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+For_IN example_NN ,_, when_WRB a_DT bomb_NN explodes_VBZ in_IN a_DT building_NN ,_, that_WDT is_VBZ the_DT seminal_JJ event_NN that_WDT triggers_VBZ the_DT topic_NN ._.
+Other_JJ events_NNS in_IN the_DT topic_NN may_MD include_VB the_DT rescue_NN attempts_NNS ,_, the_DT search_NN for_IN perpetrators_NNS ,_, arrests_NNS and_CC trials_NNS and_CC so_RB on_IN ._.
+We_PRP see_VBP that_IN there_EX is_VBZ a_DT pattern_NN of_IN dependencies_NNS between_IN pairs_NNS of_IN events_NNS in_IN the_DT topic_NN ._.
+In_IN the_DT above_JJ example_NN ,_, the_DT event_NN of_IN rescue_NN attempts_NNS is_VBZ influenced_VBN ''_'' by_IN the_DT event_NN of_IN bombing_NN and_CC so_RB is_VBZ the_DT event_NN of_IN search_NN for_IN perpetrators_NNS ._.
+In_IN this_DT work_NN we_PRP investigate_VBP methods_NNS for_IN modeling_NN the_DT structure_NN of_IN a_DT topic_NN in_IN terms_NNS of_IN its_PRP$ events_NNS ._.
+By_IN structure_NN ,_, we_PRP mean_VBP not_RB only_RB identifying_VBG the_DT events_NNS that_WDT make_VBP up_RP a_DT topic_NN ,_, but_CC also_RB establishing_VBG dependencies-generally_RB causal-among_JJ them_PRP ._.
+We_PRP call_VBP the_DT process_NN of_IN recognizing_VBG events_NNS and_CC identifying_VBG dependencies_NNS among_IN them_PRP event_NN threading_NN ,_, an_DT analogy_NN to_TO email_VB threading_VBG that_DT shows_VBZ connections_NNS between_IN related_JJ email_NN messages_NNS ._.
+We_PRP refer_VBP to_TO the_DT resulting_VBG interconnected_JJ structure_NN of_IN events_NNS as_IN the_DT event_NN model_NN of_IN the_DT topic_NN ._.
+Although_IN this_DT paper_NN focuses_VBZ on_IN threading_VBG events_NNS within_IN an_DT existing_VBG news_NN topic_NN ,_, we_PRP expect_VBP that_IN such_JJ event_NN based_VBN dependency_NN structure_NN more_RBR accurately_RB reflects_VBZ the_DT structure_NN of_IN news_NN than_IN strictly_RB bounded_VBN topics_NNS do_VBP ._.
+From_IN a_DT user_NN ''_'' s_NNS perspective_NN ,_, we_PRP believe_VBP that_IN our_PRP$ view_NN of_IN a_DT news_NN topic_NN as_IN a_DT set_NN of_IN interconnected_JJ events_NNS helps_VBZ him_PRP /_: her_PRP$ get_VB a_DT quick_JJ overview_NN of_IN the_DT topic_NN and_CC also_RB allows_VBZ him_PRP /_: her_PRP$ navigate_VB through_IN the_DT topic_NN faster_RBR ._.
+The_DT rest_NN of_IN the_DT paper_NN is_VBZ organized_VBN as_IN follows_VBZ ._.
+In_IN section_NN #_# ,_, we_PRP discuss_VBP related_JJ work_NN ._.
+In_IN section_NN #_# ,_, we_PRP define_VBP the_DT problem_NN and_CC use_VB an_DT example_NN to_TO illustrate_VB threading_NN of_IN events_NNS within_IN a_DT news_NN topic_NN ._.
+In_IN section_NN #_# ,_, we_PRP describe_VBP how_WRB we_PRP built_VBD the_DT corpus_NN for_IN our_PRP$ problem_NN ._.
+Section_NN #_# presents_VBZ our_PRP$ evaluation_NN techniques_NNS while_IN section_NN #_# describes_VBZ the_DT techniques_NNS we_PRP use_VBP for_IN modeling_NN event_NN structure_NN ._.
+In_IN section_NN #_# we_PRP present_VBP our_PRP$ experiments_NNS and_CC results_NNS ._.
+Section_NN #_# concludes_VBZ the_DT paper_NN with_IN a_DT few_JJ observations_NNS on_IN our_PRP$ results_NNS and_CC comments_NNS on_IN future_JJ work_NN ._.
+446_CD 2_CD ._.
+RELATED_JJ WORK_VBP The_DT process_NN of_IN threading_VBG events_NNS together_RB is_VBZ related_JJ to_TO threading_NN of_IN electronic_JJ mail_NN only_RB by_IN name_NN for_IN the_DT most_JJS part_NN ._.
+Email_VB usually_RB incorporates_VBZ a_DT strong_JJ structure_NN of_IN referenced_VBN messages_NNS and_CC consistently_RB formatted_VBN subject_JJ headings-though_JJ information_NN retrieval_NN techniques_NNS are_VBP useful_JJ when_WRB the_DT structure_NN breaks_NNS down_IN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+Email_VB threading_VBG captures_NNS reference_NN dependencies_NNS between_IN messages_NNS and_CC does_VBZ not_RB attempt_VB to_TO reflect_VB any_DT underlying_VBG real-world_JJ structure_NN of_IN the_DT matter_NN under_IN discussion_NN ._.
+Another_DT area_NN of_IN research_NN that_WDT looks_VBZ at_IN the_DT structure_NN within_IN a_DT topic_NN is_VBZ hierarchical_JJ text_NN classification_NN of_IN topics_NNS -LSB-_-LRB- #_# ,_, #_# -RSB-_-RRB- ._.
+The_DT hierarchy_NN within_IN a_DT topic_NN does_VBZ impose_VB a_DT structure_NN on_IN the_DT topic_NN ,_, but_CC we_PRP do_VBP not_RB know_VB of_IN an_DT effort_NN to_TO explore_VB the_DT extent_NN to_TO which_WDT that_WDT structure_NN reflects_VBZ the_DT underlying_VBG event_NN relationships_NNS ._.
+Barzilay_NNP and_CC Lee_NNP -LSB-_-LRB- #_# -RSB-_-RRB- proposed_VBD a_DT content_JJ structure_NN modeling_NN technique_NN where_WRB topics_NNS within_IN text_NN are_VBP learnt_VBN using_VBG unsupervised_JJ methods_NNS ,_, and_CC a_DT linear_JJ order_NN of_IN these_DT topics_NNS is_VBZ modeled_VBN using_VBG hidden_JJ Markov_NNP models_NNS ._.
+Our_PRP$ work_NN differs_VBZ from_IN theirs_PRP in_IN that_IN we_PRP do_VBP not_RB constrain_VB the_DT dependency_NN to_TO be_VB linear_JJ ._.
+Also_RB their_PRP$ algorithms_NNS are_VBP tuned_VBN to_TO work_VB on_IN specific_JJ genres_NNS of_IN topics_NNS such_JJ as_IN earthquakes_NNS ,_, accidents_NNS ,_, etc_FW ._.
+,_, while_IN we_PRP expect_VBP our_PRP$ algorithms_NNS to_TO generalize_VB over_RP any_DT topic_NN ._.
+In_IN TDT_NNP ,_, researchers_NNS have_VBP traditionally_RB considered_VBN topics_NNS as_IN flatclusters_NNS -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+However_RB ,_, in_IN TDT-2003_NN ,_, a_DT hierarchical_JJ structure_NN of_IN topic_NN detection_NN has_VBZ been_VBN proposed_VBN and_CC -LSB-_-LRB- #_# -RSB-_-RRB- made_VBD useful_JJ attempts_NNS to_TO adopt_VB the_DT new_JJ structure_NN ._.
+However_RB this_DT structure_NN still_RB did_VBD not_RB explicitly_RB model_VB any_DT dependencies_NNS between_IN events_NNS ._.
+In_IN a_DT work_NN closest_JJS to_TO ours_JJ ,_, Makkonen_JJ -LSB-_-LRB- #_# -RSB-_-RRB- suggested_VBD modeling_NN news_NN topics_NNS in_IN terms_NNS of_IN its_PRP$ evolving_VBG events_NNS ._.
+However_RB ,_, the_DT paper_NN stopped_VBD short_RB of_IN proposing_VBG any_DT models_NNS to_TO the_DT problem_NN ._.
+Other_JJ related_JJ work_NN that_WDT dealt_VBD with_IN analysis_NN within_IN a_DT news_NN topic_NN includes_VBZ temporal_JJ summarization_NN of_IN news_NN topics_NNS -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+3_LS ._.
+PROBLEM_NN DEFINITION_NNS AND_CC NOTATION_NN In_IN this_DT work_NN ,_, we_PRP have_VBP adhered_VBN to_TO the_DT definition_NN of_IN event_NN and_CC topic_NN as_IN defined_VBN in_IN TDT_NNP ._.
+We_PRP present_VBP some_DT definitions_NNS -LRB-_-LRB- in_IN italics_NNS -RRB-_-RRB- and_CC our_PRP$ interpretations_NNS -LRB-_-LRB- regular-faced_JJ -RRB-_-RRB- below_IN for_IN clarity_NN ._.
+1_LS ._.
+Story_NNP :_: A_NNP story_NN is_VBZ a_DT news_NN article_NN delivering_VBG some_DT information_NN to_TO users_NNS ._.
+In_IN TDT_NNP ,_, a_DT story_NN is_VBZ assumed_VBN to_TO refer_VB to_TO only_RB a_DT single_JJ topic_NN ._.
+In_IN this_DT work_NN ,_, we_PRP also_RB assume_VBP that_IN each_DT story_NN discusses_VBZ a_DT single_JJ event_NN ._.
+In_IN other_JJ words_NNS ,_, a_DT story_NN is_VBZ the_DT smallest_JJS atomic_JJ unit_NN in_IN the_DT hierarchy_NN -LRB-_-LRB- topic_NN event_NN story_NN -RRB-_-RRB- ._.
+Clearly_RB ,_, both_CC the_DT assumptions_NNS are_VBP not_RB necessarily_RB true_JJ in_IN reality_NN ,_, but_CC we_PRP accept_VBP them_PRP for_IN simplicity_NN in_IN modeling_NN ._.
+2_LS ._.
+Event_NN :_: An_DT event_NN is_VBZ something_NN that_WDT happens_VBZ at_IN some_DT specific_JJ time_NN and_CC place_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+In_IN our_PRP$ work_NN ,_, we_PRP represent_VBP an_DT event_NN by_IN a_DT set_NN of_IN stories_NNS that_WDT discuss_VBP it_PRP ._.
+Following_VBG the_DT assumption_NN of_IN atomicity_NN of_IN a_DT story_NN ,_, this_DT means_VBZ that_IN any_DT set_NN of_IN distinct_JJ events_NNS can_MD be_VB represented_VBN by_IN a_DT set_NN of_IN non-overlapping_JJ clusters_NNS of_IN news_NN stories_NNS ._.
+3_LS ._.
+Topic_NN :_: A_DT set_NN of_IN news_NN stories_NNS strongly_RB connected_VBN by_IN a_DT seminal_JJ event_NN ._.
+We_PRP expand_VBP on_IN this_DT definition_NN and_CC interpret_VB a_DT topic_NN as_IN a_DT series_NN of_IN related_JJ events_NNS ._.
+Thus_RB a_DT topic_NN can_MD be_VB represented_VBN by_IN clusters_NNS of_IN stories_NNS each_DT representing_VBG an_DT event_NN and_CC a_DT set_NN of_IN -LRB-_-LRB- directed_VBN or_CC undirected_JJ -RRB-_-RRB- edges_VBZ between_IN pairs_NNS of_IN these_DT clusters_NNS representing_VBG the_DT dependencies_NNS between_IN these_DT events_NNS ._.
+We_PRP will_MD describe_VB this_DT representation_NN of_IN a_DT topic_NN in_IN more_RBR detail_NN in_IN the_DT next_JJ section_NN ._.
+4_LS ._.
+Topic_NN detection_NN and_CC tracking_NN -LRB-_-LRB- TDT_NN -RRB-_-RRB- :_: Topic_NN detection_NN detects_VBZ clusters_NNS of_IN stories_NNS that_WDT discuss_VBP the_DT same_JJ topic_NN ;_: Topic_NNP tracking_VBG detects_VBZ stories_NNS that_WDT discuss_VBP a_DT previously_RB known_VBN topic_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+Thus_RB TDT_NN concerns_NNS itself_PRP mainly_RB with_IN clustering_NN stories_NNS into_IN topics_NNS that_WDT discuss_VBP them_PRP ._.
+5_CD ._.
+Event_NN threading_NN :_: Event_NN threading_NN detects_VBZ events_NNS within_IN in_IN a_DT topic_NN ,_, and_CC also_RB captures_VBZ the_DT dependencies_NNS among_IN the_DT events_NNS ._.
+Thus_RB the_DT main_JJ difference_NN between_IN event_NN threading_NN and_CC TDT_NN is_VBZ that_IN we_PRP focus_VBP our_PRP$ modeling_NN effort_NN on_IN microscopic_JJ events_NNS rather_RB than_IN larger_JJR topics_NNS ._.
+Additionally_RB event_NN threading_VBG models_NNS the_DT relatedness_NN or_CC dependencies_NNS between_IN pairs_NNS of_IN events_NNS in_IN a_DT topic_NN while_IN TDT_NN models_NNS topics_NNS as_IN unrelated_JJ clusters_NNS of_IN stories_NNS ._.
+We_PRP first_RB define_VB our_PRP$ problem_NN and_CC representation_NN of_IN our_PRP$ model_NN formally_RB and_CC then_RB illustrate_VBP with_IN the_DT help_NN of_IN an_DT example_NN ._.
+We_PRP are_VBP given_VBN a_DT set_NN of_IN news_NN stories_NNS on_IN a_DT given_VBN topic_NN and_CC their_PRP$ time_NN of_IN publication_NN ._.
+We_PRP define_VBP a_DT set_NN of_IN events_NNS with_IN the_DT following_VBG constraints_NNS :_: -LRB-_-LRB- #_# -RRB-_-RRB- -LRB-_-LRB- #_# -RRB-_-RRB- -LRB-_-LRB- #_# -RRB-_-RRB- While_IN the_DT first_JJ constraint_NN says_VBZ that_IN each_DT event_NN is_VBZ an_DT element_NN in_IN the_DT power_NN set_NN of_IN S_NN ,_, the_DT second_JJ constraint_NN ensures_VBZ that_IN each_DT story_NN can_MD belong_VB to_TO at_IN most_JJS one_CD event_NN ._.
+The_DT last_JJ constraint_NN tells_VBZ us_PRP that_IN every_DT story_NN belongs_VBZ to_TO one_CD of_IN the_DT events_NNS in_IN ._.
+In_IN fact_NN this_DT allows_VBZ us_PRP to_TO define_VB a_DT mapping_NN function_NN from_IN stories_NNS to_TO events_NNS as_IN follows_VBZ :_: iff_NN -LRB-_-LRB- #_# -RRB-_-RRB- Further_RB ,_, we_PRP also_RB define_VBP a_DT set_NN of_IN directed_VBN edges_NNS which_WDT denote_VBP dependencies_NNS between_IN events_NNS ._.
+It_PRP is_VBZ important_JJ to_TO explain_VB what_WP we_PRP mean_VBP by_IN this_DT directional_JJ dependency_NN :_: While_IN the_DT existence_NN of_IN an_DT edge_NN itself_PRP represents_VBZ relatedness_NN of_IN two_CD events_NNS ,_, the_DT direction_NN could_MD imply_VB causality_NN or_CC temporal-ordering_NN ._.
+By_IN causal_JJ dependency_NN we_PRP mean_VBP that_IN the_DT occurrence_NN of_IN event_NN B_NN is_VBZ related_VBN to_TO and_CC is_VBZ a_DT consequence_NN of_IN the_DT occurrence_NN of_IN event_NN A_NN ._.
+By_IN temporal_JJ ordering_VBG ,_, we_PRP mean_VBP that_IN event_NN B_NN happened_VBD after_IN event_NN A_NN and_CC is_VBZ related_JJ to_TO A_DT but_CC is_VBZ not_RB necessarily_RB a_DT consequence_NN of_IN A_NN ._.
+For_IN example_NN ,_, consider_VB the_DT following_VBG two_CD events_NNS :_: plane_NN crash_NN ''_'' -LRB-_-LRB- event_NN A_NN -RRB-_-RRB- and_CC subsequent_JJ investigations_NNS ''_'' -LRB-_-LRB- event_NN B_NN -RRB-_-RRB- in_IN a_DT topic_NN on_IN a_DT plane_NN crash_NN incident_NN ._.
+Clearly_RB ,_, the_DT investigations_NNS are_VBP a_DT result_NN of_IN the_DT crash_NN ._.
+Hence_RB an_DT arrow_NN from_IN A_DT to_TO B_NN falls_VBZ under_IN the_DT category_NN of_IN causal_JJ dependency_NN ._.
+Now_RB consider_VB the_DT pair_NN of_IN events_NNS Pope_NNP arrives_VBZ in_IN Cuba_NNP ''_'' -LRB-_-LRB- event_NN A_NN -RRB-_-RRB- and_CC Pope_NNP meets_VBZ Castro_NNP ''_'' -LRB-_-LRB- event_NN B_NN -RRB-_-RRB- in_IN a_DT topic_NN that_WDT discusses_VBZ Pope_NNP ''_'' s_VBZ visit_NN to_TO Cuba_NNP ._.
+Now_RB events_NNS A_DT and_CC B_NN are_VBP closely_RB related_VBN through_IN their_PRP$ association_NN with_IN the_DT Pope_NNP and_CC Cuba_NNP but_CC event_NN B_NN is_VBZ not_RB necessarily_RB a_DT consequence_NN of_IN the_DT occurrence_NN of_IN event_NN A_NN ._.
+An_DT arrow_NN in_IN such_JJ scenario_NN captures_VBZ what_WP we_PRP call_VBP time_NN ordering_VBG ._.
+In_IN this_DT work_NN ,_, we_PRP do_VBP not_RB make_VB an_DT attempt_NN to_TO distinguish_VB between_IN these_DT two_CD kinds_NNS of_IN dependencies_NNS and_CC our_PRP$ models_NNS treats_VBZ them_PRP as_IN identical_JJ ._.
+A_DT simpler_JJR -LRB-_-LRB- and_CC hence_RB less_JJR controversial_JJ -RRB-_-RRB- choice_NN would_MD be_VB to_TO ignore_VB direction_NN in_IN the_DT dependencies_NNS altogether_RB and_CC consider_VB only_RB undirected_JJ edges_NNS ._.
+This_DT choice_NN definitely_RB makes_VBZ sense_NN as_IN a_DT first_JJ step_NN but_CC we_PRP chose_VBD the_DT former_JJ since_IN we_PRP believe_VBP directional_JJ edges_NNS make_VBP more_JJR sense_NN to_TO the_DT user_NN as_IN they_PRP provide_VBP a_DT more_RBR illustrative_JJ flow-chart_JJ perspective_NN to_TO the_DT topic_NN ._.
+To_TO make_VB the_DT idea_NN of_IN event_NN threading_VBG more_RBR concrete_JJ ,_, consider_VB the_DT example_NN of_IN TDT3_NN topic_NN #####_CD ,_, titled_VBN Osama_NNP bin_NNP Laden_NNP ''_'' s_VBZ Indictment_NNP ''_'' -LRB-_-LRB- in_IN the_DT ####_CD news_NN -RRB-_-RRB- ._.
+This_DT topic_NN has_VBZ ##_CD stories_NNS which_WDT form_VBP #_# events_NNS ._.
+An_DT event_NN model_NN of_IN this_DT topic_NN can_MD be_VB represented_VBN as_IN in_IN figure_NN 1_CD ._.
+Each_DT box_NN in_IN the_DT figure_NN indicates_VBZ an_DT event_NN in_IN the_DT topic_NN of_IN Osama_NNP ''_'' s_VBZ indictment_NN ._.
+The_DT occurrence_NN of_IN event_NN #_# ,_, namely_RB Trial_NNP and_CC Indictment_NNP of_IN Osama_NNP ''_'' is_VBZ dependent_JJ on_IN the_DT event_NN of_IN evidence_NN gathered_VBN by_IN CIA_NNP ''_'' ,_, i_FW ._.
+e_LS ._.
+,_, event_NN #_# ._.
+Similarly_RB ,_, event_NN #_# influences_VBZ the_DT occurrences_NNS of_IN events_NNS #_# ,_, #_# and_CC #_# ,_, namely_RB Threats_NNS from_IN Militants_NNPS ''_'' ,_, Reactions_NNS 447_CD from_IN Muslim_JJ World_NN ''_'' and_CC announcement_NN of_IN reward_NN ''_'' ._.
+Thus_RB all_PDT the_DT dependencies_NNS in_IN the_DT example_NN are_VBP causal_JJ ._.
+Extending_VBG our_PRP$ notation_NN further_RB ,_, we_PRP call_VBP an_DT event_NN A_NN a_DT parent_NN of_IN B_NN and_CC B_NN the_DT child_NN of_IN A_NN ,_, if_IN ._.
+We_PRP define_VBP an_DT event_NN model_NN to_TO be_VB a_DT tuple_NN of_IN the_DT set_NN of_IN events_NNS and_CC set_NN of_IN dependencies_NNS ._.
+Trial_NN and_CC -LRB-_-LRB- #_# -RRB-_-RRB- -LRB-_-LRB- #_# -RRB-_-RRB- -LRB-_-LRB- #_# -RRB-_-RRB- CIA_NNP announces_VBZ reward_NN Muslim_JJ world_NN Reactions_NNS from_IN Islamic_JJ militants_NNS Threats_NNS from_IN -LRB-_-LRB- #_# -RRB-_-RRB- -LRB-_-LRB- #_# -RRB-_-RRB- Osama_NNP Indictment_NNP of_IN CIA_NNP gathered_VBN by_IN Evidence_NN Figure_NN #_# :_: An_DT event_NN model_NN of_IN TDT_NN topic_NN Osama_NNP bin_NNP Laden_NNP ''_'' s_VBZ indictment_NN ''_'' ._.
+Event_NN threading_NN is_VBZ strongly_RB related_JJ to_TO topic_NN detection_NN and_CC tracking_NN ,_, but_CC also_RB different_JJ from_IN it_PRP significantly_RB ._.
+It_PRP goes_VBZ beyond_IN topics_NNS ,_, and_CC models_NNS the_DT relationships_NNS between_IN events_NNS ._.
+Thus_RB ,_, event_NN threading_NN can_MD be_VB considered_VBN as_IN a_DT further_JJ extension_NN of_IN topic_NN detection_NN and_CC tracking_NN and_CC is_VBZ more_RBR challenging_JJ due_JJ to_TO at_IN least_JJS the_DT following_VBG difficulties_NNS ._.
+1_LS ._.
+The_DT number_NN of_IN events_NNS is_VBZ unknown_JJ ._.
+2_LS ._.
+The_DT granularity_NN of_IN events_NNS is_VBZ hard_JJ to_TO define_VB ._.
+3_LS ._.
+The_DT dependencies_NNS among_IN events_NNS are_VBP hard_JJ to_TO model_NN ._.
+4_LS ._.
+Since_IN it_PRP is_VBZ a_DT brand_NN new_JJ research_NN area_NN ,_, no_DT standard_JJ evaluation_NN metrics_NNS and_CC benchmark_JJ data_NNS is_VBZ available_JJ ._.
+In_IN the_DT next_JJ few_JJ sections_NNS ,_, we_PRP will_MD describe_VB our_PRP$ attempts_NNS to_TO tackle_VB these_DT problems_NNS ._.
+4_LS ._.
+LABELED_VBN DATA_NNP We_PRP picked_VBD ##_CD topics_NNS from_IN the_DT TDT2_NN corpus_NN and_CC ##_NN topics_NNS from_IN the_DT TDT3_NN corpus_NN ._.
+The_DT criterion_NN we_PRP used_VBD for_IN selecting_VBG a_DT topic_NN is_VBZ that_IN it_PRP should_MD contain_VB at_IN least_JJS ##_CD on-topic_JJ stories_NNS from_IN CNN_NNP headline_NN news_NN ._.
+If_IN the_DT topic_NN contained_VBD more_JJR than_IN ##_CD CNN_NNP stories_NNS ,_, we_PRP picked_VBD only_RB the_DT first_JJ ##_NN stories_NNS to_TO keep_VB the_DT topic_NN short_RB enough_RB for_IN annotators_NNS ._.
+The_DT reason_NN for_IN choosing_VBG only_RB CNN_NNP as_IN the_DT source_NN is_VBZ that_IN the_DT stories_NNS from_IN this_DT source_NN tend_VB to_TO be_VB short_JJ and_CC precise_JJ and_CC do_VBP not_RB tend_VB to_TO digress_VB or_CC drift_VB too_RB far_RB away_RB from_IN the_DT central_JJ theme_NN ._.
+We_PRP believe_VBP modeling_NN such_JJ stories_NNS would_MD be_VB a_DT useful_JJ first_JJ step_NN before_IN dealing_VBG with_IN more_JJR complex_NN data_NNS sets_NNS ._.
+We_PRP hired_VBD an_DT annotator_NN to_TO create_VB truth_NN data_NNS ._.
+Annotation_NN includes_VBZ defining_VBG the_DT event_NN membership_NN for_IN each_DT story_NN and_CC also_RB the_DT dependencies_NNS ._.
+We_PRP supervised_VBD the_DT annotator_NN on_IN a_DT set_NN of_IN three_CD topics_NNS that_IN we_PRP did_VBD our_PRP$ own_JJ annotations_NNS on_IN and_CC then_RB asked_VBD her_PRP to_TO annotate_VB the_DT 28_CD topics_NNS from_IN TDT2_NN and_CC ##_NN topics_NNS from_IN TDT3_NN ._.
+In_IN identifying_VBG events_NNS in_IN a_DT topic_NN ,_, the_DT annotator_NN was_VBD asked_VBN to_TO broadly_RB follow_VB the_DT TDT_NNP definition_NN of_IN an_DT event_NN ,_, i_FW ._.
+e_LS ._.
+,_, something_NN that_WDT happens_VBZ at_IN a_DT specific_JJ time_NN and_CC location_NN ''_'' ._.
+The_DT annotator_NN was_VBD encouraged_VBN to_TO merge_VB two_CD events_NNS A_DT and_CC B_NN into_IN a_DT single_JJ event_NN C_NN if_IN any_DT of_IN the_DT stories_NNS discusses_VBZ both_CC A_DT and_CC B_NN ._.
+This_DT is_VBZ to_TO satisfy_VB our_PRP$ assumption_NN that_IN each_DT story_NN corresponds_VBZ to_TO a_DT unique_JJ event_NN ._.
+The_DT annotator_NN was_VBD also_RB encouraged_VBN to_TO avoid_VB singleton_JJ events_NNS ,_, events_NNS that_WDT contain_VBP a_DT single_JJ news_NN story_NN ,_, if_IN possible_JJ ._.
+We_PRP realized_VBD from_IN our_PRP$ own_JJ experience_NN that_IN people_NNS differ_VBP in_IN their_PRP$ perception_NN of_IN an_DT event_NN especially_RB when_WRB the_DT number_NN of_IN stories_NNS in_IN that_DT event_NN is_VBZ small_JJ ._.
+As_IN part_NN of_IN the_DT guidelines_NNS ,_, we_PRP instructed_VBD the_DT annotator_NN to_TO assign_VB titles_NNS to_TO all_PDT the_DT events_NNS in_IN each_DT topic_NN ._.
+We_PRP believe_VBP that_IN this_DT would_MD help_VB make_VB her_PRP$ understanding_NN of_IN the_DT events_NNS more_RBR concrete_JJ ._.
+We_PRP however_RB ,_, do_VBP not_RB use_VB or_CC model_VB these_DT titles_NNS in_IN our_PRP$ algorithms_NNS ._.
+In_IN defining_VBG dependencies_NNS between_IN events_NNS ,_, we_PRP imposed_VBD no_DT restrictions_NNS on_IN the_DT graph_NN structure_NN ._.
+Each_DT event_NN could_MD have_VB single_JJ ,_, multiple_JJ or_CC no_DT parents_NNS ._.
+Further_RB ,_, the_DT graph_NN could_MD have_VB cycles_NNS or_CC orphannodes_NNS ._.
+The_DT annotator_NN was_VBD however_RB instructed_VBN to_TO assign_VB a_DT dependency_NN from_IN event_NN A_NN to_TO event_NN B_NN if_IN and_CC only_RB if_IN the_DT occurrence_NN of_IN B_NN is_VBZ either_CC causally_RB influenced_VBN by_IN A_DT or_CC is_VBZ closely_RB related_JJ to_TO A_DT and_CC follows_VBZ A_NN in_IN time_NN ''_'' ._.
+From_IN the_DT annotated_JJ topics_NNS ,_, we_PRP created_VBD a_DT training_NN set_NN of_IN ##_CD topics_NNS and_CC a_DT test_NN set_NN of_IN ##_CD topics_NNS by_IN merging_VBG the_DT ##_NN topics_NNS from_IN TDT2_NN and_CC 25_CD from_IN TDT3_NN and_CC splitting_NN them_PRP randomly_RB ._.
+Table_NNP #_# shows_VBZ that_IN the_DT training_NN and_CC test_NN sets_NNS have_VBP fairly_RB similar_JJ statistics_NNS ._.
+Feature_NN Training_NN set_VBD Test_NN set_NN Num_NN ._.
+topics_NNS ##_VBP ##_CD Avg_NNP ._.
+Num_NN ._.
+Stories_NNP /_: Topic_NNP ##_NNP ._.
+##_NN ##_CD ._.
+##_NN Avg_NN ._.
+Doc_NNP ._.
+Len_NNP ._.
+##_NN ._.
+##_NN ##_CD ._.
+##_NN Avg_NN ._.
+Num_NN ._.
+Stories_NNP /_: Event_NNP #_# ._.
+##_NN #_# ._.
+##_NN Avg_NN ._.
+Num_NN ._.
+Events_NNS /_: Topic_NNP #_# ._.
+##_NN #_# ._.
+##_NN Avg_NN ._.
+Num_NN ._.
+Dependencies_NNS /_: Topic_NNP #_# ._.
+##_NN #_# ._.
+##_NN Avg_NN ._.
+Num_NN ._.
+Dependencies_NNS /_: Event_NN #_# ._.
+##_NN #_# ._.
+##_NN Avg_NN ._.
+Num_NN ._.
+Days_NNS /_: Topic_NNP ##_NNP ._.
+##_NN ##_CD ._.
+##_RB Table_NNP #_# :_: Statistics_NNS of_IN annotated_JJ data_NNS 5_CD ._.
+EVALUATION_NN A_NN system_NN can_MD generate_VB some_DT event_NN model_NN using_VBG certain_JJ algorithms_NNS ,_, which_WDT is_VBZ usually_RB different_JJ from_IN the_DT truth_NN model_NN -LRB-_-LRB- we_PRP assume_VBP the_DT annotator_NN did_VBD not_RB make_VB any_DT mistake_NN -RRB-_-RRB- ._.
+Comparing_VBG a_DT system_NN event_NN model_NN with_IN the_DT true_JJ model_NN requires_VBZ comparing_VBG the_DT entire_JJ event_NN models_NNS including_VBG their_PRP$ dependency_NN structure_NN ._.
+And_CC different_JJ event_NN granularities_NNS may_MD bring_VB huge_JJ discrepancy_NN between_IN and_CC ._.
+This_DT is_VBZ certainly_RB non-trivial_JJ as_IN even_RB testing_VBG whether_IN two_CD graphs_NNS are_VBP isomorphic_JJ has_VBZ no_DT known_JJ polynomial_JJ time_NN solution_NN ._.
+Hence_RB instead_RB of_IN comparing_VBG the_DT actual_JJ structure_NN we_PRP examine_VBP a_DT pair_NN of_IN stories_NNS at_IN a_DT time_NN and_CC verify_VB if_IN the_DT system_NN and_CC true_JJ labels_NNS agree_VBP on_IN their_PRP$ event-memberships_NNS and_CC dependencies_NNS ._.
+Specifically_RB ,_, we_PRP compare_VBP two_CD kinds_NNS of_IN story_NN pairs_NNS :_: Cluster_NN pairs_NNS -LRB-_-LRB- -RRB-_-RRB- :_: These_DT are_VBP the_DT complete_JJ set_NN of_IN unordered_JJ pairs_NNS of_IN stories_NNS and_CC that_IN fall_NN within_IN the_DT same_JJ event_NN given_VBN a_DT model_NN ._.
+Formally_RB ,_, -LRB-_-LRB- #_# -RRB-_-RRB- where_WRB is_VBZ the_DT function_NN in_IN that_DT maps_NNS stories_NNS to_TO events_NNS as_IN defined_VBN in_IN equation_NN #_# ._.
+Dependency_NN pairs_NNS -LRB-_-LRB- -RRB-_-RRB- :_: These_DT are_VBP the_DT set_NN of_IN all_DT ordered_VBN pairs_NNS of_IN stories_NNS such_JJ that_IN there_EX is_VBZ a_DT dependency_NN from_IN the_DT event_NN of_IN to_TO the_DT event_NN of_IN in_IN the_DT model_NN ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- Note_VBP the_DT story_NN pair_NN is_VBZ ordered_VBN here_RB ,_, so_RB is_VBZ not_RB equivalent_JJ to_TO ._.
+In_IN our_PRP$ evaluation_NN ,_, a_DT correct_JJ pair_NN with_IN wrong_JJ 448_CD -LRB-_-LRB- B_NN -_: >_JJR D_NN -RRB-_-RRB- Cluster_NN pairs_NNS -LRB-_-LRB- A_NN ,_, C_NN -RRB-_-RRB- Dependency_NN pairs_NNS -LRB-_-LRB- A_NN -_: >_JJR B_NN -RRB-_-RRB- -LRB-_-LRB- C_NN -_: >_JJR B_NN -RRB-_-RRB- -LRB-_-LRB- B_NN -_: >_JJR D_NN -RRB-_-RRB- D_NN ,_, E_NN D_NN ,_, E_NN -LRB-_-LRB- D_NN ,_, E_NN -RRB-_-RRB- -LRB-_-LRB- D_NN ,_, E_NN -RRB-_-RRB- -LRB-_-LRB- A_NN -_: >_JJR C_NN -RRB-_-RRB- -LRB-_-LRB- A_NN -_: >_JJR E_NN -RRB-_-RRB- -LRB-_-LRB- B_NN -_: >_JJR C_NN -RRB-_-RRB- -LRB-_-LRB- B_NN -_: >_JJR E_NN -RRB-_-RRB- -LRB-_-LRB- B_NN -_: >_JJR E_NN -RRB-_-RRB- Cluster_NN precision_NN :_: #_# /_: #_# Cluster_NNP Recall_VB :_: #_# /_: #_# Dependency_NNP Recall_VB :_: #_# /_: #_# Dependency_NNP Precision_NNP :_: #_# /_: #_# -LRB-_-LRB- A_NN -_: >_JJR D_NN -RRB-_-RRB- True_JJ event_NN model_NN System_NNP event_NN model_NN A_NN ,_, B_NN C_NN A_NN ,_, C_NN B_NN Cluster_NN pairs_NNS -LRB-_-LRB- A_NN ,_, B_NN -RRB-_-RRB- Dependency_NN pairs_NNS Figure_NNP #_# :_: Evaluation_NN measures_NNS direction_NN will_MD be_VB considered_VBN a_DT mistake_NN ._.
+As_IN we_PRP mentioned_VBD earlier_RBR in_IN section_NN #_# ,_, ignoring_VBG the_DT direction_NN may_MD make_VB the_DT problem_NN simpler_JJR ,_, but_CC we_PRP will_MD lose_VB the_DT expressiveness_NN of_IN our_PRP$ representation_NN ._.
+Given_VBN these_DT two_CD sets_NNS of_IN story_NN pairs_NNS corresponding_VBG to_TO the_DT true_JJ event_NN model_NN and_CC the_DT system_NN event_NN model_NN ,_, we_PRP define_VBP recall_NN and_CC precision_NN for_IN each_DT category_NN as_IN follows_VBZ ._.
+Cluster_NN Precision_NN -LRB-_-LRB- CP_NN -RRB-_-RRB- :_: It_PRP is_VBZ the_DT probability_NN that_WDT two_CD randomly_RB selected_VBN stories_NNS and_CC are_VBP in_IN the_DT same_JJ true-event_JJ given_VBN that_IN they_PRP are_VBP in_IN the_DT same_JJ system_NN event_NN ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- where_WRB is_VBZ the_DT story-event_JJ mapping_NN function_NN corresponding_VBG to_TO the_DT model_NN ._.
+Cluster_NN Recall_VB -LRB-_-LRB- CR_NN -RRB-_-RRB- :_: It_PRP is_VBZ the_DT probability_NN that_WDT two_CD randomly_RB selected_VBN stories_NNS and_CC are_VBP in_IN the_DT same_JJ system-event_JJ given_VBN that_IN they_PRP are_VBP in_IN the_DT same_JJ true_JJ event_NN ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- Dependency_NNP Precision_NNP -LRB-_-LRB- DP_NN -RRB-_-RRB- :_: It_PRP is_VBZ the_DT probability_NN that_IN there_EX is_VBZ a_DT dependency_NN between_IN the_DT events_NNS of_IN two_CD randomly_RB selected_VBN stories_NNS and_CC in_IN the_DT true_JJ model_NN given_VBN that_IN they_PRP have_VBP a_DT dependency_NN in_IN the_DT system_NN model_NN ._.
+Note_VB that_IN the_DT direction_NN of_IN dependency_NN is_VBZ important_JJ in_IN comparison_NN ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- Dependency_NNP Recall_VB -LRB-_-LRB- DR_NN -RRB-_-RRB- :_: It_PRP is_VBZ the_DT probability_NN that_IN there_EX is_VBZ a_DT dependency_NN between_IN the_DT events_NNS of_IN two_CD randomly_RB selected_VBN stories_NNS and_CC in_IN the_DT system_NN model_NN given_VBN that_IN they_PRP have_VBP a_DT dependency_NN in_IN the_DT true_JJ model_NN ._.
+Again_RB ,_, the_DT direction_NN of_IN dependency_NN is_VBZ taken_VBN into_IN consideration_NN ._.
+-LRB-_-LRB- ##_NN -RRB-_-RRB- The_DT measures_NNS are_VBP illustrated_VBN by_IN an_DT example_NN in_IN figure_NN #_# ._.
+We_PRP also_RB combine_VBP these_DT measures_NNS using_VBG the_DT well_RB known_VBN F1-measure_NN commonly_RB used_VBN in_IN text_NN classification_NN and_CC other_JJ research_NN areas_NNS as_IN shown_VBN below_IN ._.
+-LRB-_-LRB- ##_NN -RRB-_-RRB- where_WRB and_CC are_VBP the_DT cluster_NN and_CC dependency_NN F1-measures_NNS respectively_RB and_CC is_VBZ the_DT Joint_NNP F1-measure_NN -LRB-_-LRB- -RRB-_-RRB- that_IN we_PRP use_VBP to_TO measure_VB the_DT overall_JJ performance_NN ._.
+6_CD ._.
+TECHNIQUES_NNS The_DT task_NN of_IN event_NN modeling_NN can_MD be_VB split_VBN into_IN two_CD parts_NNS :_: clustering_VBG the_DT stories_NNS into_IN unique_JJ events_NNS in_IN the_DT topic_NN and_CC constructing_VBG dependencies_NNS among_IN them_PRP ._.
+In_IN the_DT following_VBG subsections_NNS ,_, we_PRP describe_VBP techniques_NNS we_PRP developed_VBD for_IN each_DT of_IN these_DT sub-tasks_NNS ._.
+6_CD ._.
+#_# Clustering_VBG Each_DT topic_NN is_VBZ composed_VBN of_IN multiple_JJ events_NNS ,_, so_RB stories_NNS must_MD be_VB clustered_VBN into_IN events_NNS before_IN we_PRP can_MD model_VB the_DT dependencies_NNS among_IN them_PRP ._.
+For_IN simplicity_NN ,_, all_DT stories_NNS in_IN the_DT same_JJ topic_NN are_VBP assumed_VBN to_TO be_VB available_JJ at_IN one_CD time_NN ,_, rather_RB than_IN coming_VBG in_IN a_DT text_NN stream_NN ._.
+This_DT task_NN is_VBZ similar_JJ to_TO traditional_JJ clustering_NN but_CC features_VBZ other_JJ than_IN word_NN distributions_NNS may_MD also_RB be_VB critical_JJ in_IN our_PRP$ application_NN ._.
+In_IN many_JJ text_NN clustering_NN systems_NNS ,_, the_DT similarity_NN between_IN two_CD stories_NNS is_VBZ the_DT inner_JJ product_NN of_IN their_PRP$ tf-idf_JJ vectors_NNS ,_, hence_RB we_PRP use_VBP it_PRP as_IN one_CD of_IN our_PRP$ features_NNS ._.
+Stories_NNP in_IN the_DT same_JJ event_NN tend_VB to_TO follow_VB temporal_JJ locality_NN ,_, so_IN the_DT time_NN stamp_NN of_IN each_DT story_NN can_MD be_VB a_DT useful_JJ feature_NN ._.
+Additionally_RB ,_, named-entities_NNS such_JJ as_IN person_NN and_CC location_NN names_NNS are_VBP another_DT obvious_JJ feature_NN when_WRB forming_VBG events_NNS ._.
+Stories_NNP in_IN the_DT same_JJ event_NN tend_VB to_TO be_VB related_VBN to_TO the_DT same_JJ person_NN -LRB-_-LRB- s_NNS -RRB-_-RRB- and_CC locations_NNS -LRB-_-LRB- s_NNS -RRB-_-RRB- ._.
+In_IN this_DT subsection_NN ,_, we_PRP present_VBP an_DT agglomerative_JJ clustering_NN algorithm_NN that_WDT combines_VBZ all_PDT these_DT features_NNS ._.
+In_IN our_PRP$ experiments_NNS ,_, however_RB ,_, we_PRP study_VBP the_DT effect_NN of_IN each_DT feature_NN on_IN the_DT performance_NN separately_RB using_VBG modified_VBN versions_NNS of_IN this_DT algorithm_NN ._.
+6_CD ._.
+#_# ._.
+#_# Agglomerative_JJ clustering_NN with_IN time_NN decay_NN -LRB-_-LRB- ACDT_NN -RRB-_-RRB- We_PRP initialize_VBP our_PRP$ events_NNS to_TO singleton_JJ events_NNS -LRB-_-LRB- clusters_NNS -RRB-_-RRB- ,_, i_FW ._.
+e_LS ._.
+,_, each_DT cluster_NN contains_VBZ exactly_RB one_CD story_NN ._.
+So_IN the_DT similarity_NN between_IN two_CD events_NNS ,_, to_TO start_VB with_IN ,_, is_VBZ exactly_RB the_DT similarity_NN between_IN the_DT corresponding_JJ stories_NNS ._.
+The_DT similarity_NN between_IN two_CD stories_NNS and_CC is_VBZ given_VBN by_IN the_DT following_VBG formula_NN :_: -LRB-_-LRB- ##_CD -RRB-_-RRB- Here_RB ,_, ,_, are_VBP the_DT weights_NNS on_IN different_JJ features_NNS ._.
+In_IN this_DT work_NN ,_, we_PRP determined_VBD them_PRP empirically_RB ,_, but_CC in_IN the_DT future_NN ,_, one_PRP can_MD consider_VB more_RBR sophisticated_JJ learning_NN techniques_NNS to_TO determine_VB them_PRP ._.
+is_VBZ the_DT cosine_NN similarity_NN of_IN the_DT term_NN vectors_NNS ._.
+is_VBZ #_# if_IN there_EX is_VBZ some_DT location_NN that_WDT appears_VBZ in_IN both_CC stories_NNS ,_, otherwise_RB it_PRP is_VBZ #_# ._.
+is_VBZ similarly_RB defined_VBN for_IN person_NN name_NN ._.
+We_PRP use_VBP time_NN decay_NN when_WRB calculating_VBG similarity_NN of_IN story_NN pairs_NNS ,_, i_FW ._.
+e_LS ._.
+,_, the_DT larger_JJR time_NN difference_NN between_IN two_CD stories_NNS ,_, the_DT smaller_JJR their_PRP$ similarities_NNS ._.
+The_DT time_NN period_NN of_IN each_DT topic_NN differs_VBZ a_DT lot_NN ,_, from_IN a_DT few_JJ days_NNS to_TO a_DT few_JJ months_NNS ._.
+So_IN we_PRP normalize_VBP the_DT time_NN difference_NN using_VBG the_DT whole_JJ duration_NN of_IN that_DT topic_NN ._.
+The_DT time_NN decay_NN adjusted_VBN similarity_NN 449_CD is_VBZ given_VBN by_IN -LRB-_-LRB- ##_NN -RRB-_-RRB- where_WRB and_CC are_VBP the_DT time_NN stamps_NNS for_IN story_NN #_# and_CC #_# respectively_RB ._.
+T_NN is_VBZ the_DT time_NN difference_NN between_IN the_DT earliest_JJS and_CC the_DT latest_JJS story_NN in_IN the_DT given_VBN topic_NN ._.
+is_VBZ the_DT time_NN decay_NN factor_NN ._.
+In_IN each_DT iteration_NN ,_, we_PRP find_VBP the_DT most_RBS similar_JJ event_NN pair_NN and_CC merge_VBP them_PRP ._.
+We_PRP have_VBP three_CD different_JJ ways_NNS to_TO compute_VB the_DT similarity_NN between_IN two_CD events_NNS and_CC :_: Average_JJ link_NN :_: In_IN this_DT case_NN the_DT similarity_NN is_VBZ the_DT average_NN of_IN the_DT similarities_NNS of_IN all_DT pairs_NNS of_IN stories_NNS between_IN and_CC as_IN shown_VBN below_IN :_: -LRB-_-LRB- ##_CD -RRB-_-RRB- Complete_JJ link_NN :_: The_DT similarity_NN between_IN two_CD events_NNS is_VBZ given_VBN by_IN the_DT smallest_JJS of_IN the_DT pair-wise_JJ similarities_NNS ._.
+-LRB-_-LRB- ##_NN -RRB-_-RRB- Single_JJ link_NN :_: Here_RB the_DT similarity_NN is_VBZ given_VBN by_IN the_DT best_JJS similarity_NN between_IN all_DT pairs_NNS of_IN stories_NNS ._.
+-LRB-_-LRB- ##_NN -RRB-_-RRB- This_DT process_NN continues_VBZ until_IN the_DT maximum_NN similarity_NN falls_VBZ below_IN the_DT threshold_NN or_CC the_DT number_NN of_IN clusters_NNS is_VBZ smaller_JJR than_IN a_DT given_VBN number_NN ._.
+6_CD ._.
+#_# Dependency_NN modeling_NN Capturing_VBG dependencies_NNS is_VBZ an_DT extremely_RB hard_JJ problem_NN because_IN it_PRP may_MD require_VB a_DT deeper_JJR understanding_NN ''_'' of_IN the_DT events_NNS in_IN question_NN ._.
+A_DT human_JJ annotator_NN decides_VBZ on_IN dependencies_NNS not_RB just_RB based_VBN on_IN the_DT information_NN in_IN the_DT events_NNS but_CC also_RB based_VBN on_IN his_PRP$ /_: her_PRP$ vast_JJ repertoire_NN of_IN domain-knowledge_NN and_CC general_JJ understanding_NN of_IN how_WRB things_NNS operate_VBP in_IN the_DT world_NN ._.
+For_IN example_NN ,_, in_IN Figure_NNP #_# a_DT human_JJ knows_VBZ Trial_NNP and_CC indictment_NN of_IN Osama_NNP ''_'' is_VBZ influenced_VBN by_IN Evidence_NN gathered_VBN by_IN CIA_NNP ''_'' because_IN he_PRP /_: she_PRP understands_VBZ the_DT process_NN of_IN law_NN in_IN general_JJ ._.
+We_PRP believe_VBP a_DT robust_JJ model_NN should_MD incorporate_VB such_JJ domain_NN knowledge_NN in_IN capturing_VBG dependencies_NNS ,_, but_CC in_IN this_DT work_NN ,_, as_IN a_DT first_JJ step_NN ,_, we_PRP will_MD rely_VB on_IN surface-features_NNS such_JJ as_IN time-ordering_NN of_IN news_NN stories_NNS and_CC word_NN distributions_NNS to_TO model_VB them_PRP ._.
+Our_PRP$ experiments_NNS in_IN later_JJ sections_NNS demonstrate_VBP that_IN such_JJ features_NNS are_VBP indeed_RB useful_JJ in_IN capturing_VBG dependencies_NNS to_TO a_DT large_JJ extent_NN ._.
+In_IN this_DT subsection_NN ,_, we_PRP describe_VBP the_DT models_NNS we_PRP considered_VBD for_IN capturing_VBG dependencies_NNS ._.
+In_IN the_DT rest_NN of_IN the_DT discussion_NN in_IN this_DT subsection_NN ,_, we_PRP assume_VBP that_IN we_PRP are_VBP already_RB given_VBN the_DT mapping_NN and_CC we_PRP focus_VBP only_RB on_IN modeling_NN the_DT edges_NNS ._.
+First_RB we_PRP define_VBP a_DT couple_NN of_IN features_NNS that_IN the_DT following_VBG models_NNS will_MD employ_VB ._.
+First_RB we_PRP define_VBP a_DT 1-1_CD time-ordering_JJ function_NN that_IN sorts_NNS stories_NNS in_IN ascending_VBG order_NN by_IN their_PRP$ time_NN of_IN publication_NN ._.
+Now_RB ,_, the_DT event-time-ordering_JJ function_NN is_VBZ defined_VBN as_IN follows_VBZ ._.
+-LRB-_-LRB- ##_NN -RRB-_-RRB- In_IN other_JJ words_NNS ,_, time-orders_JJ events_NNS based_VBN on_IN the_DT time-ordering_NN of_IN their_PRP$ respective_JJ first_JJ stories_NNS ._.
+We_PRP will_MD also_RB use_VB average_JJ cosine_NN similarity_NN between_IN two_CD events_NNS as_IN a_DT feature_NN and_CC it_PRP is_VBZ defined_VBN as_IN follows_VBZ ._.
+-LRB-_-LRB- ##_NN -RRB-_-RRB- 6_CD ._.
+#_# ._.
+#_# Complete-Link_NNP model_NN In_IN this_DT model_NN ,_, we_PRP assume_VBP that_IN there_EX are_VBP dependencies_NNS between_IN all_DT pairs_NNS of_IN events_NNS ._.
+The_DT direction_NN of_IN dependency_NN is_VBZ determined_VBN by_IN the_DT time-ordering_NN of_IN the_DT first_JJ stories_NNS in_IN the_DT respective_JJ events_NNS ._.
+Formally_RB ,_, the_DT system_NN edges_NNS are_VBP defined_VBN as_IN follows_VBZ ._.
+-LRB-_-LRB- ##_NN -RRB-_-RRB- where_WRB is_VBZ the_DT event-time-ordering_JJ function_NN ._.
+In_IN other_JJ words_NNS ,_, the_DT dependency_NN edge_NN is_VBZ directed_VBN from_IN event_NN to_TO event_NN ,_, if_IN the_DT first_JJ story_NN in_IN event_NN is_VBZ earlier_JJR than_IN the_DT first_JJ story_NN in_IN event_NN ._.
+We_PRP point_VBP out_RP that_IN this_DT is_VBZ not_RB to_TO be_VB confused_VBN with_IN the_DT complete-link_JJ algorithm_NN in_IN clustering_NN ._.
+Although_IN we_PRP use_VBP the_DT same_JJ names_NNS ,_, it_PRP will_MD be_VB clear_JJ from_IN the_DT context_NN which_WDT one_CD we_PRP refer_VBP to_TO ._.
+6_CD ._.
+#_# ._.
+#_# Simple_JJ Thresholding_NN This_DT model_NN is_VBZ an_DT extension_NN of_IN the_DT complete_JJ link_NN model_NN with_IN an_DT additional_JJ constraint_NN that_IN there_EX is_VBZ a_DT dependency_NN between_IN any_DT two_CD events_NNS and_CC only_RB if_IN the_DT average_JJ cosine_NN similarity_NN between_IN event_NN and_CC event_NN is_VBZ greater_JJR than_IN a_DT threshold_NN ._.
+Formally_RB ,_, -LRB-_-LRB- ##_CD -RRB-_-RRB- 6_CD ._.
+#_# ._.
+#_# Nearest_JJS Parent_NNP Model_NNP In_IN this_DT model_NN ,_, we_PRP assume_VBP that_IN each_DT event_NN can_MD have_VB at_IN most_JJS one_CD parent_NN ._.
+We_PRP define_VBP the_DT set_NN of_IN dependencies_NNS as_IN follows_VBZ ._.
+-LRB-_-LRB- ##_NN -RRB-_-RRB- Thus_RB ,_, for_IN each_DT event_NN ,_, the_DT nearest_JJS parent_NN model_NN considers_VBZ only_RB the_DT event_NN preceding_VBG it_PRP as_IN defined_VBN by_IN as_IN a_DT potential_JJ candidate_NN ._.
+The_DT candidate_NN is_VBZ assigned_VBN as_IN the_DT parent_NN only_RB if_IN the_DT average_JJ similarity_NN exceeds_VBZ a_DT pre-defined_JJ threshold_NN ._.
+6_CD ._.
+#_# ._.
+#_# Best_JJS Similarity_NN Model_NNP This_DT model_NN also_RB assumes_VBZ that_IN each_DT event_NN can_MD have_VB at_IN most_JJS one_CD parent_NN ._.
+An_DT event_NN is_VBZ assigned_VBN a_DT parent_NN if_IN and_CC only_RB if_IN is_VBZ the_DT most_RBS similar_JJ earlier_JJR event_NN to_TO and_CC the_DT similarity_NN exceeds_VBZ a_DT threshold_NN ._.
+Mathematically_RB ,_, this_DT can_MD be_VB expressed_VBN as_IN :_: -LRB-_-LRB- ##_CD -RRB-_-RRB- 6_CD ._.
+#_# ._.
+#_# Maximum_NNP Spanning_NNP Tree_NNP model_NN In_IN this_DT model_NN ,_, we_PRP first_RB build_VB a_DT maximum_NN spanning_VBG tree_NN -LRB-_-LRB- MST_NN -RRB-_-RRB- using_VBG a_DT greedy_JJ algorithm_NN on_IN the_DT following_VBG fully_RB connected_VBN weighted_JJ ,_, undirected_JJ graph_NN whose_WP$ vertices_NNS are_VBP the_DT events_NNS and_CC whose_WP$ edges_NNS are_VBP defined_VBN as_IN follows_VBZ :_: -LRB-_-LRB- ##_CD -RRB-_-RRB- Let_VB be_VB the_DT set_NN of_IN edges_NNS in_IN the_DT maximum_NN spanning_VBG tree_NN of_IN ._.
+Now_RB our_PRP$ directed_VBN dependency_NN edges_NNS are_VBP defined_VBN as_IN follows_VBZ ._.
+-LRB-_-LRB- ##_NN -RRB-_-RRB- 450_CD Thus_RB in_IN this_DT model_NN ,_, we_PRP assign_VBP dependencies_NNS between_IN the_DT most_RBS similar_JJ events_NNS in_IN the_DT topic_NN ._.
+7_CD ._.
+EXPERIMENTS_NNS Our_PRP$ experiments_NNS consists_VBZ of_IN three_CD parts_NNS ._.
+First_RB we_PRP modeled_VBD only_RB the_DT event_NN clustering_NN part_NN -LRB-_-LRB- defining_VBG the_DT mapping_NN function_NN -RRB-_-RRB- using_VBG clustering_NN algorithms_NNS described_VBN in_IN section_NN #_# ._.
+#_# ._.
+Then_RB we_PRP modeled_VBD only_RB the_DT dependencies_NNS by_IN providing_VBG to_TO the_DT system_NN the_DT true_JJ clusters_NNS and_CC running_VBG only_RB the_DT dependency_NN algorithms_NNS of_IN section_NN #_# ._.
+#_# ._.
+Finally_RB ,_, we_PRP experimented_VBD with_IN combinations_NNS of_IN clustering_NN and_CC dependency_NN algorithms_NNS to_TO produce_VB the_DT complete_JJ event_NN model_NN ._.
+This_DT way_NN of_IN experimentation_NN allows_VBZ us_PRP to_TO compare_VB the_DT performance_NN of_IN our_PRP$ algorithms_NNS in_IN isolation_NN and_CC in_IN association_NN with_IN other_JJ components_NNS ._.
+The_DT following_VBG subsections_NNS present_VBP the_DT three_CD parts_NNS of_IN our_PRP$ experimentation_NN ._.
+7_CD ._.
+#_# Clustering_VBG We_PRP have_VBP tried_VBN several_JJ variations_NNS of_IN the_DT algorithm_NN to_TO study_VB the_DT effects_NNS of_IN various_JJ features_NNS on_IN the_DT clustering_NN performance_NN ._.
+All_PDT the_DT parameters_NNS are_VBP learned_VBN by_IN tuning_NN on_IN the_DT training_NN set_NN ._.
+We_PRP also_RB tested_VBD the_DT algorithms_NNS on_IN the_DT test_NN set_VBN with_IN parameters_NNS fixed_VBN at_IN their_PRP$ optimal_JJ values_NNS learned_VBD from_IN training_NN ._.
+We_PRP used_VBD agglomerative_JJ clusModel_NN best_JJS T_NN CP_NN CR_NN CF_NN P-value_JJ cos_NNS +_CC 1-lnk_JJ #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN 0_CD ._.
+43cos_NNS +_CC all-lnk_JJ #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN 0_CD ._.
+45cos_NNS +_CC Loc_NN +_CC avg-lnk_JJ #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN 0_CD ._.
+45cos_NNS +_CC Per_IN +_CC avg-lnk_JJ #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN 0_CD ._.
+46cos_NNS +_CC TD_NN +_CC avg-lnk_JJ #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+9e-4_JJ *_SYM cos_NNS +_CC N_NN -LRB-_-LRB- T_NN -RRB-_-RRB- +_CC avg-lnk_JJ -_: #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+5e-2_JJ cos_NNS +_CC N_NN -LRB-_-LRB- T_NN -RRB-_-RRB- +_CC T_NN +_CC avg-lnk_JJ #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+4e-2_JJ *_SYM cos_NNS +_CC TD_NN +_CC N_NN -LRB-_-LRB- T_NN -RRB-_-RRB- +_CC avg-lnk_JJ -_: #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+0e-3_NN *_SYM cos_NNS +_CC TD_NN +_CC N_NN -LRB-_-LRB- T_NN -RRB-_-RRB- +_CC T_NN +_CC avg-lnk_JJ #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+1e-3_JJ *_SYM Baseline_NN -LRB-_-LRB- cos_NN +_CC avg-lnk_JJ -RRB-_-RRB- #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN 0_CD ._.
+46Table_JJ #_# :_: Comparison_NN of_IN agglomerative_JJ clustering_NN algorithms_NNS -LRB-_-LRB- training_NN set_VBN -RRB-_-RRB- tering_VBG based_VBN on_IN only_JJ cosine_NN similarity_NN as_IN our_PRP$ clustering_NN baseline_NN ._.
+The_DT results_NNS on_IN the_DT training_NN and_CC test_NN sets_NNS are_VBP in_IN Table_NNP #_# and_CC #_# respectively_RB ._.
+We_PRP use_VBP the_DT Cluster_NNP F1-measure_NN -LRB-_-LRB- CF_NN -RRB-_-RRB- averaged_VBD over_IN all_DT topics_NNS as_IN our_PRP$ evaluation_NN criterion_NN ._.
+Model_NNP CP_NNP CR_JJ CF_NN P-value_JJ cos_NNS +_CC 1-lnk_JJ #_# ._.
+##_NN #_# ._.
+##_NN 0_CD ._.
+39cos_NNS +_CC all-lnk_JJ #_# ._.
+##_NN #_# ._.
+##_NN 0_CD ._.
+47cos_NNS +_CC Loc_NN +_CC avg-lnk_JJ #_# ._.
+##_NN #_# ._.
+##_NN 0_CD ._.
+45cos_NNS +_CC Per_IN +_CC avg-lnk_JJ #_# ._.
+##_NN #_# ._.
+##_NN 0_CD ._.
+45cos_NNS +_CC TD_NN +_CC avg-lnk_JJ #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+###_CD *_SYM cos_NNS +_CC N_NN -LRB-_-LRB- T_NN -RRB-_-RRB- +_CC avg-lnk_JJ #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN cos_NNS +_CC N_NN -LRB-_-LRB- T_NN -RRB-_-RRB- +_CC T_NN +_CC avg-lnk_JJ #_# ._.
+##_NN #_# ._.
+##_NN *_SYM #_# ._.
+##_NN #_# ._.
+##_NN cos_NNS +_CC TD_NN +_CC N_NN -LRB-_-LRB- T_NN -RRB-_-RRB- +_CC avg-lnk_JJ #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+###_CD *_SYM cos_NNS +_CC TD_NN +_CC N_NN -LRB-_-LRB- T_NN -RRB-_-RRB- +_CC T_NN +_CC avg-lnk_JJ #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+####_CD *_SYM Baseline_NN -LRB-_-LRB- cos_NN +_CC avg-lnk_JJ -RRB-_-RRB- #_# ._.
+##_NN #_# ._.
+##_NN 0_CD ._.
+50Table_JJ #_# :_: Comparison_NN of_IN agglomerative_JJ clustering_NN algorithms_NNS -LRB-_-LRB- test_NN set_VBN -RRB-_-RRB- P-value_JJ marked_JJ with_IN a_DT means_NN that_IN it_PRP is_VBZ a_DT statistically_RB significant_JJ improvement_NN over_IN the_DT baseline_NN -LRB-_-LRB- ##_CD %_NN confidence_NN level_NN ,_, one_CD tailed_VBD T-test_NN -RRB-_-RRB- ._.
+The_DT methods_NNS shown_VBN in_IN table_NN #_# and_CC #_# are_VBP :_: Baseline_NN :_: tf-idf_NN vector_NN weight_NN ,_, cosine_NN similarity_NN ,_, average_JJ link_NN in_IN clustering_NN ._.
+In_IN equation_NN ##_CD ,_, ,_, ._.
+And_CC in_IN equation_NN ##_CD ._.
+This_DT F-value_NN is_VBZ the_DT maximum_NN obtained_VBN by_IN tuning_NN the_DT threshold_NN ._.
+cos_NN +_CC 1-lnk_NN :_: Single_JJ link_NN comparison_NN is_VBZ used_VBN where_WRB similarity_NN of_IN two_CD clusters_NNS is_VBZ the_DT maximum_NN of_IN all_DT story_NN pairs_NNS ,_, other_JJ configurations_NNS are_VBP the_DT same_JJ as_IN the_DT baseline_NN run_NN ._.
+cos_NN +_CC all-lnk_NN :_: Complete_JJ link_NN algorithm_NN of_IN equation_NN ##_CD is_VBZ used_VBN ._.
+Similar_JJ to_TO single_JJ link_NN but_CC it_PRP takes_VBZ the_DT minimum_JJ similarity_NN of_IN all_DT story_NN pairs_NNS ._.
+cos_NN +_CC Loc_NN +_CC avg-lnk_NN :_: Location_NNP names_NNS are_VBP used_VBN when_WRB calculating_VBG similarity_NN ._.
+in_IN equation_NN ##_CD ._.
+All_DT algorithms_NNS starting_VBG from_IN this_DT one_CD use_NN average_JJ link_NN -LRB-_-LRB- equation_NN ##_CD -RRB-_-RRB- ,_, since_IN single_JJ link_NN and_CC complete_JJ link_NN do_VBP not_RB show_VB any_DT improvement_NN of_IN performance_NN ._.
+cos_NN +_CC Per_IN +_CC avg-lnk_JJ :_: in_IN equation_NN ##_CD ,_, i_FW ._.
+e_LS ._.
+,_, we_PRP put_VBD some_DT weight_NN on_IN person_NN names_NNS in_IN the_DT similarity_NN ._.
+cos_NN +_CC TD_NN +_CC avg-lnk_NN :_: Time_NNP Decay_NNP coefficient_NN in_IN equation_NN 13_CD ,_, which_WDT means_VBZ the_DT similarity_NN between_IN two_CD stories_NNS will_MD be_VB decayed_VBN to_TO if_IN they_PRP are_VBP at_IN different_JJ ends_NNS of_IN the_DT topic_NN ._.
+cos_NN +_CC N_NN -LRB-_-LRB- T_NN -RRB-_-RRB- +_CC avg-lnk_NN :_: Use_VB the_DT number_NN of_IN true_JJ events_NNS to_TO control_VB the_DT agglomerative_JJ clustering_NN algorithm_NN ._.
+When_WRB the_DT number_NN of_IN clusters_NNS is_VBZ fewer_JJR than_IN that_DT of_IN truth_NN events_NNS ,_, stop_VB merging_VBG clusters_NNS ._.
+cos_NN +_CC N_NN -LRB-_-LRB- T_NN -RRB-_-RRB- +_CC T_NN +_CC avg-lnk_NN :_: similar_JJ to_TO N_NN -LRB-_-LRB- T_NN -RRB-_-RRB- but_CC also_RB stop_VB agglomeration_NN if_IN the_DT maximal_JJ similarity_NN is_VBZ below_IN the_DT threshold_NN ._.
+cos_NN +_CC TD_NN :_: +_CC N_NN -LRB-_-LRB- T_NN -RRB-_-RRB- +_CC avg-lnk_NN :_: similar_JJ to_TO N_NN -LRB-_-LRB- T_NN -RRB-_-RRB- but_CC the_DT similarities_NNS are_VBP decayed_VBN ,_, in_IN equation_NN ##_CD ._.
+cos_NN +_CC TD_NN +_CC N_NN -LRB-_-LRB- T_NN -RRB-_-RRB- +_CC T_NN +_CC avg-lnk_NN :_: similar_JJ to_TO TD_NN +_CC N_NN -LRB-_-LRB- Truth_NN -RRB-_-RRB- but_CC calculation_NN halts_NNS when_WRB the_DT maximal_JJ similarity_NN is_VBZ smaller_JJR than_IN the_DT threshold_NN ._.
+Our_PRP$ experiments_NNS demonstrate_VBP that_IN single_JJ link_NN and_CC complete_JJ link_NN similarities_NNS perform_VBP worse_JJR than_IN average_JJ link_NN ,_, which_WDT is_VBZ reasonable_JJ since_IN average_JJ link_NN is_VBZ less_RBR sensitive_JJ to_TO one_CD or_CC two_CD story_NN pairs_NNS ._.
+We_PRP had_VBD expected_VBN locations_NNS and_CC person_NN names_NNS to_TO improve_VB the_DT result_NN ,_, but_CC it_PRP is_VBZ not_RB the_DT case_NN ._.
+Analysis_NN of_IN topics_NNS shows_VBZ that_IN many_JJ on-topic_JJ stories_NNS share_VBP the_DT same_JJ locations_NNS or_CC persons_NNS irrespective_RB of_IN the_DT event_NN they_PRP belong_VBP to_TO ,_, so_RB these_DT features_NNS may_MD be_VB more_RBR useful_JJ in_IN identifying_VBG topics_NNS rather_RB than_IN events_NNS ._.
+Time_NNP decay_NN is_VBZ successful_JJ because_IN events_NNS are_VBP temporally_RB localized_JJ ,_, i_FW ._.
+e_LS ._.
+,_, stories_NNS discussing_VBG the_DT same_JJ event_NN tend_VB to_TO be_VB adjacent_JJ to_TO each_DT other_JJ in_IN terms_NNS of_IN time_NN ._.
+Also_RB we_PRP noticed_VBD that_IN providing_VBG the_DT number_NN of_IN true_JJ events_NNS improves_VBZ the_DT performance_NN since_IN it_PRP guides_NNS the_DT clustering_NN algorithm_NN to_TO get_VB correct_JJ granularity_NN ._.
+However_RB ,_, for_IN most_JJS applications_NNS ,_, it_PRP is_VBZ not_RB available_JJ ._.
+We_PRP used_VBD it_PRP only_RB as_IN a_DT cheat_VBP experiment_NN for_IN comparison_NN with_IN other_JJ algorithms_NNS ._.
+On_IN the_DT whole_NN ,_, time_NN decay_NN proved_VBD to_TO the_DT most_RBS powerful_JJ feature_NN besides_IN cosine_NN similarity_NN on_IN both_DT training_NN and_CC test_NN sets_NNS ._.
+7_CD ._.
+#_# Dependencies_NNPS In_IN this_DT subsection_NN ,_, our_PRP$ goal_NN is_VBZ to_TO model_VB only_RB dependencies_NNS ._.
+We_PRP use_VBP the_DT true_JJ mapping_NN function_NN and_CC by_IN implication_NN the_DT true_JJ events_NNS ._.
+We_PRP build_VBP our_PRP$ dependency_NN structure_NN using_VBG all_PDT the_DT five_CD models_NNS described_VBN in_IN section_NN #_# ._.
+#_# ._.
+We_PRP first_RB train_VB our_PRP$ models_NNS on_IN the_DT ##_NN training_NN topics_NNS ._.
+Training_NN involves_VBZ learning_VBG the_DT best_JJS threshold_NN for_IN each_DT of_IN the_DT models_NNS ._.
+We_PRP then_RB test_VBP the_DT performances_NNS of_IN all_PDT the_DT trained_JJ models_NNS on_IN the_DT ##_CD test_NN topics_NNS ._.
+We_PRP evaluate_VBP our_PRP$ performance_NN 451_CD using_VBG the_DT average_JJ values_NNS of_IN Dependency_NNP Precision_NNP -LRB-_-LRB- DP_NN -RRB-_-RRB- ,_, Dependency_NNP Recall_VB -LRB-_-LRB- DR_NN -RRB-_-RRB- and_CC Dependency_NN F-measure_NN -LRB-_-LRB- DF_NN -RRB-_-RRB- ._.
+We_PRP consider_VBP the_DT complete-link_JJ model_NN to_TO be_VB our_PRP$ baseline_NN since_IN for_IN each_DT event_NN ,_, it_PRP trivially_RB considers_VBZ all_DT earlier_JJR events_NNS to_TO be_VB parents_NNS ._.
+Table_NNP #_# lists_VBZ the_DT results_NNS on_IN the_DT training_NN set_NN ._.
+We_PRP see_VBP that_IN while_IN all_PDT the_DT algorithms_NNS except_IN MST_NN outperform_VBP the_DT baseline_NN complete-link_JJ algorithm_NN ,_, the_DT nearest_JJS Parent_NNP algorithm_NN is_VBZ statistically_RB significant_JJ from_IN the_DT baseline_NN in_IN terms_NNS of_IN its_PRP$ DF-value_NN using_VBG a_DT one-tailed_JJ paired_JJ T-test_NN at_IN ##_CD %_NN confidence_NN level_NN ._.
+Model_NNP best_JJS DP_NN DR_NN DF_NN P-value_JJ Nearest_JJS Parent_NNP #_# ._.
+###_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN *_SYM Best_JJS Similarity_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN MST_NN #_# ._.
+#_# #_# ._.
+##_NN #_# ._.
+##_NN 0_CD ._.
+48Simple_NNP Thresh_NNP ._.
+#_# ._.
+###_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_SYM Complete-link_SYM -_: #_# ._.
+##_NN #_# ._.
+##_NN 0_CD ._.
+48Table_JJ #_# :_: Results_NNS on_IN the_DT training_NN set_NN :_: Best_JJS is_VBZ the_DT optimal_JJ value_NN of_IN the_DT threshold_NN ._.
+*_SYM indicates_VBZ the_DT corresponding_JJ model_NN is_VBZ statistically_RB significant_JJ compared_VBN to_TO the_DT baseline_NN using_VBG a_DT one-tailed_JJ ,_, paired_JJ T-test_NN at_IN ##_CD %_NN confidence_NN level_NN ._.
+In_IN table_NN #_# we_PRP present_VBP the_DT comparison_NN of_IN the_DT models_NNS on_IN the_DT test_NN set_NN ._.
+Here_RB ,_, we_PRP do_VBP not_RB use_VB any_DT tuning_NN but_CC set_VBD the_DT threshold_NN to_TO the_DT corresponding_JJ optimal_JJ values_NNS learned_VBD from_IN the_DT training_NN set_NN ._.
+The_DT results_NNS throw_VBP some_DT surprises_NNS :_: The_DT nearest_JJS parent_NN model_NN ,_, which_WDT was_VBD significantly_RB better_JJR than_IN the_DT baseline_NN on_IN training_NN set_NN ,_, turns_VBZ out_RP to_TO be_VB worse_JJR than_IN the_DT baseline_NN on_IN the_DT test_NN set_NN ._.
+However_RB all_PDT the_DT other_JJ models_NNS are_VBP better_JJR than_IN the_DT baseline_NN including_VBG the_DT best_JJS similarity_NN which_WDT is_VBZ statistically_RB significant_JJ ._.
+Notice_NNP that_IN all_PDT the_DT models_NNS that_WDT perform_VBP better_JJR than_IN the_DT baseline_NN in_IN terms_NNS of_IN DF_NN ,_, actually_RB sacrifice_VBP their_PRP$ recall_NN performance_NN compared_VBN to_TO the_DT baseline_NN ,_, but_CC improve_VB on_IN their_PRP$ precision_NN substantially_RB thereby_RB improving_VBG their_PRP$ performance_NN on_IN the_DT DF-measure_NN ._.
+We_PRP notice_VBP that_IN both_CC simple-thresholding_NN and_CC best_JJS similarity_NN are_VBP better_JJR than_IN the_DT baseline_NN on_IN both_DT training_NN and_CC test_NN sets_NNS although_IN the_DT improvement_NN is_VBZ not_RB significant_JJ ._.
+On_IN the_DT whole_NN ,_, we_PRP observe_VBP that_IN the_DT surface-level_JJ features_NNS we_PRP used_VBD capture_NN the_DT dependencies_NNS to_TO a_DT reasonable_JJ level_NN achieving_VBG a_DT best_JJS value_NN of_IN #_# ._.
+##_NN DF_NN on_IN the_DT test_NN set_NN ._.
+Although_IN there_EX is_VBZ a_DT lot_NN of_IN room_NN for_IN improvement_NN ,_, we_PRP believe_VBP this_DT is_VBZ a_DT good_JJ first_JJ step_NN ._.
+Model_NNP DP_NN DR_NN DF_NN P-value_JJ Nearest_JJS Parent_NNP #_# ._.
+##_NN #_# ._.
+##_NN 0_CD ._.
+60Best_JJS Similarity_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN *_SYM MST_NNP #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_RB Simple_JJ Thresh_NNP ._.
+#_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_RB Baseline_NN -LRB-_-LRB- Complete-link_JJ -RRB-_-RRB- #_# ._.
+##_NN #_# ._.
+##_NN 0_CD ._.
+63Table_JJ #_# :_: Results_NNS on_IN the_DT test_NN set_NN 7_CD ._.
+#_# Combining_VBG Clustering_NN and_CC Dependencies_NNS Now_RB that_IN we_PRP have_VBP studied_VBN the_DT clustering_NN and_CC dependency_NN algorithms_NNS in_IN isolation_NN ,_, we_PRP combine_VBP the_DT best_JJS performing_VBG algorithms_NNS and_CC build_VB the_DT entire_JJ event_NN model_NN ._.
+Since_IN none_NN of_IN the_DT dependency_NN algorithms_NNS has_VBZ been_VBN shown_VBN to_TO be_VB consistently_RB and_CC significantly_RB better_JJR than_IN the_DT others_NNS ,_, we_PRP use_VBP all_DT of_IN them_PRP in_IN our_PRP$ experimentation_NN ._.
+From_IN the_DT clustering_NN techniques_NNS ,_, we_PRP choose_VBP the_DT best_JJS performing_VBG Cos_NNP +_CC TD_NNP ._.
+As_IN a_DT baseline_NN ,_, we_PRP use_VBP a_DT combination_NN of_IN the_DT baselines_NNS in_IN each_DT components_NNS ,_, i_FW ._.
+e_LS ._.
+,_, cos_NNS for_IN clustering_NN and_CC complete-link_NN for_IN dependencies_NNS ._.
+Note_VB that_IN we_PRP need_VBP to_TO retrain_VB all_PDT the_DT algorithms_NNS on_IN the_DT training_NN set_NN because_IN our_PRP$ objective_JJ function_NN to_TO optimize_VB is_VBZ now_RB JF_NNP ,_, the_DT joint_JJ F-measure_NN ._.
+For_IN each_DT algorithm_NN ,_, we_PRP need_VBP to_TO optimize_VB both_CC the_DT clustering_NN threshold_NN and_CC the_DT dependency_NN threshold_NN ._.
+We_PRP did_VBD this_DT empirically_RB on_IN the_DT training_NN set_NN and_CC the_DT optimal_JJ values_NNS are_VBP listed_VBN in_IN table_NN 6_CD ._.
+The_DT results_NNS on_IN the_DT training_NN set_NN ,_, also_RB presented_VBN in_IN table_NN #_# ,_, indicate_VBP that_IN cos_NN +_CC TD_NN +_CC Simple-Thresholding_NN is_VBZ significantly_RB better_JJR than_IN the_DT baseline_NN in_IN terms_NNS of_IN the_DT joint_JJ F-value_JJ JF_NN ,_, using_VBG a_DT one-tailed_JJ paired_JJ Ttest_NN at_IN ##_CD %_NN confidence_NN level_NN ._.
+On_IN the_DT whole_NN ,_, we_PRP notice_VBP that_IN while_IN the_DT clustering_NN performance_NN is_VBZ comparable_JJ to_TO the_DT experiments_NNS in_IN section_NN 7_CD ._.
+#_# ,_, the_DT overall_JJ performance_NN is_VBZ undermined_VBN by_IN the_DT low_JJ dependency_NN performance_NN ._.
+Unlike_IN our_PRP$ experiments_NNS in_IN section_NN #_# ._.
+#_# where_WRB we_PRP had_VBD provided_VBN the_DT true_JJ clusters_NNS to_TO the_DT system_NN ,_, in_IN this_DT case_NN ,_, the_DT system_NN has_VBZ to_TO deal_VB with_IN deterioration_NN in_IN the_DT cluster_NN quality_NN ._.
+Hence_RB the_DT performance_NN of_IN the_DT dependency_NN algorithms_NNS has_VBZ suffered_VBN substantially_RB thereby_RB lowering_VBG the_DT overall_JJ performance_NN ._.
+The_DT results_NNS on_IN the_DT test_NN set_VBD present_JJ a_DT very_RB similar_JJ story_NN as_IN shown_VBN in_IN table_NN #_# ._.
+We_PRP also_RB notice_VBP a_DT fair_JJ amount_NN of_IN consistency_NN in_IN the_DT performance_NN of_IN the_DT combination_NN algorithms_NNS ._.
+cos_NN +_CC TD_NN +_CC Simple-Thresholding_NN outperforms_VBZ the_DT baseline_NN significantly_RB ._.
+The_DT test_NN set_VBN results_NNS also_RB point_VBP to_TO the_DT fact_NN that_IN the_DT clustering_NN component_NN remains_VBZ a_DT bottleneck_NN in_IN achieving_VBG an_DT overall_JJ good_JJ performance_NN ._.
+8_CD ._.
+DISCUSSION_NN AND_CC CONCLUSIONS_NNS In_IN this_DT paper_NN ,_, we_PRP have_VBP presented_VBN a_DT new_JJ perspective_NN of_IN modeling_NN news_NN topics_NNS ._.
+Contrary_JJ to_TO the_DT TDT_NN view_NN of_IN topics_NNS as_IN flat_JJ collection_NN of_IN news_NN stories_NNS ,_, we_PRP view_VBP a_DT news_NN topic_NN as_IN a_DT relational_JJ structure_NN of_IN events_NNS interconnected_VBN by_IN dependencies_NNS ._.
+In_IN this_DT paper_NN ,_, we_PRP also_RB proposed_VBD a_DT few_JJ approaches_NNS for_IN both_DT clustering_NN stories_NNS into_IN events_NNS and_CC constructing_VBG dependencies_NNS among_IN them_PRP ._.
+We_PRP developed_VBD a_DT timedecay_NN based_VBN clustering_NN approach_NN that_WDT takes_VBZ advantage_NN of_IN temporallocalization_NN of_IN news_NN stories_NNS on_IN the_DT same_JJ event_NN and_CC showed_VBD that_IN it_PRP performs_VBZ significantly_RB better_JJR than_IN the_DT baseline_NN approach_NN based_VBN on_IN cosine_NN similarity_NN ._.
+Our_PRP$ experiments_NNS also_RB show_VBP that_IN we_PRP can_MD do_VB fairly_RB well_RB on_IN dependencies_NNS using_VBG only_RB surface-features_NNS such_JJ as_IN cosinesimilarity_NN and_CC time-stamps_NNS of_IN news_NN stories_NNS as_RB long_RB as_IN true_JJ events_NNS are_VBP provided_VBN to_TO the_DT system_NN ._.
+However_RB ,_, the_DT performance_NN deteriorates_VBZ rapidly_RB if_IN the_DT system_NN has_VBZ to_TO discover_VB the_DT events_NNS by_IN itself_PRP ._.
+Despite_IN that_DT discouraging_JJ result_NN ,_, we_PRP have_VBP shown_VBN that_IN our_PRP$ combined_JJ algorithms_NNS perform_VBP significantly_RB better_JJR than_IN the_DT baselines_NNS ._.
+Our_PRP$ results_NNS indicate_VBP modeling_NN dependencies_NNS can_MD be_VB a_DT very_RB hard_JJ problem_NN especially_RB when_WRB the_DT clustering_NN performance_NN is_VBZ below_IN ideal_JJ level_NN ._.
+Errors_NNS in_IN clustering_NN have_VBP a_DT magnifying_JJ effect_NN on_IN errors_NNS in_IN dependencies_NNS as_IN we_PRP have_VBP seen_VBN in_IN our_PRP$ experiments_NNS ._.
+Hence_RB ,_, we_PRP should_MD focus_VB not_RB only_RB on_IN improving_VBG dependencies_NNS but_CC also_RB on_IN clustering_NN at_IN the_DT same_JJ time_NN ._.
+As_IN part_NN of_IN our_PRP$ future_JJ work_NN ,_, we_PRP plan_VBP to_TO investigate_VB further_RB into_IN the_DT data_NNS and_CC discover_VBP new_JJ features_NNS that_WDT influence_VBP clustering_NN as_RB well_RB as_IN dependencies_NNS ._.
+And_CC for_IN modeling_NN dependencies_NNS ,_, a_DT probabilistic_JJ framework_NN should_MD be_VB a_DT better_JJR choice_NN since_IN there_EX is_VBZ no_DT definite_JJ answer_NN of_IN yes_RB /_: no_DT for_IN the_DT causal_JJ relations_NNS among_IN some_DT events_NNS ._.
+We_PRP also_RB hope_VBP to_TO devise_VB an_DT iterative_JJ algorithm_NN which_WDT can_MD improve_VB clustering_NN and_CC dependency_NN performance_NN alternately_RB as_IN suggested_VBN by_IN one_CD of_IN the_DT reviewers_NNS ._.
+We_PRP also_RB hope_VBP to_TO expand_VB our_PRP$ labeled_VBN corpus_NN further_RB to_TO include_VB more_JJR diverse_JJ news_NN sources_NNS and_CC larger_JJR and_CC more_RBR complex_JJ event_NN structures_NNS ._.
+Acknowledgments_NNS We_PRP would_MD like_VB to_TO thank_VB the_DT three_CD anonymous_JJ reviewers_NNS for_IN their_PRP$ valuable_JJ comments_NNS ._.
+This_DT work_NN was_VBD supported_VBN in_IN part_NN by_IN the_DT Center_NNP 452_CD Model_NNP Cluster_NNP T_NN Dep_NN ._.
+T_NN CP_NN CR_NN CF_NN DP_NN DR_NN DF_NN JF_NN P-value_JJ cos_NN +_CC TD_NN +_CC Nearest-Parent_JJ #_# ._.
+###_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN 0_CD ._.
+27cos_NN +_CC TD_NN +_CC Best-Similarity_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN 0_CD ._.
+32cos_NNS +_CC TD_NN +_CC MST_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN 0_CD ._.
+33cos_NNS +_CC TD_NN +_CC Simple-Thresholding_NN #_# ._.
+###_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+####_CD *_SYM Baseline_NN -LRB-_-LRB- cos_NN +_CC Complete-link_JJ -RRB-_-RRB- #_# ._.
+##_SYM -_: #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN 0_CD ._.
+33Table_JJ #_# :_: Combined_VBN results_NNS on_IN the_DT training_NN set_VBN Model_NNP CP_NNP CR_JJ CF_NN DP_NN DR_NN DF_NN JF_NN P-value_JJ cos_NN +_CC TD_NN +_CC Nearest_JJS Parent_NNP #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN 0_CD ._.
+30cos_NNS +_CC TD_NN +_CC Best_JJS Similarity_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN 0_CD ._.
+35cos_NNS +_CC TD_NN +_CC MST_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN 0_CD ._.
+37cos_NNS +_CC TD_NN +_CC Simple_NN Thresholding_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+####_CD *_SYM Baseline_NN -LRB-_-LRB- cos_NN +_CC Complete-link_JJ -RRB-_-RRB- #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN 0_CD ._.
+39Table_JJ #_# :_: Combined_VBN results_NNS on_IN the_DT test_NN set_VBN for_IN Intelligent_NNP Information_NNP Retrieval_NNP and_CC in_IN part_NN by_IN SPAWARSYSCENSD_NNP grant_NN number_NN N66001-02-1-8903_NN ._.
+Any_DT opinions_NNS ,_, findings_NNS and_CC conclusions_NNS or_CC recommendations_NNS expressed_VBN in_IN this_DT material_NN are_VBP the_DT authors_NNS ''_'' and_CC do_VB not_RB necessarily_RB reflect_VB those_DT of_IN the_DT sponsor_NN ._.
+9_CD ._.
+REFERENCES_NNS -LSB-_-LRB- #_# -RSB-_-RRB- J_NN ._.
+Allan_NNP ,_, J_NNP ._.
+Carbonell_NNP ,_, G_NNP ._.
+Doddington_NNP ,_, J_NNP ._.
+Yamron_NNP ,_, and_CC Y_NN ._.
+Yang_NNP ._.
+Topic_NN detection_NN and_CC tracking_NN pilot_NN study_NN :_: Final_JJ report_NN ._.
+In_IN Proceedings_NNP of_IN the_DT DARPA_NNP Broadcast_NNP News_NNP Transcription_NN and_CC Understanding_VBG Workshop_NNP ,_, pages_NNS 194-218_CD ,_, 1998_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- J_NN ._.
+Allan_NNP ,_, A_NNP ._.
+Feng_NNP ,_, and_CC A_NN ._.
+Bolivar_NNP ._.
+Flexible_JJ intrinsic_JJ evaluation_NN of_IN hierarchical_JJ clustering_NN for_IN tdt_NN ._.
+volume_NN In_IN the_DT Proc_NNP ._.
+of_IN the_DT ACM_NNP Twelfth_NNP International_NNP Conference_NNP on_IN Information_NNP and_CC Knowledge_NNP Management_NNP ,_, pages_NNS 263-270_CD ,_, Nov_NNP ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- James_NNP Allan_NNP ,_, editor_NN ._.
+Topic_NN Detection_NN and_CC Tracking_NNP :_: Event_NN based_VBN Information_NNP Organization_NNP ._.
+Kluwer_NNP Academic_NNP Publishers_NNPS ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- James_NNP Allan_NNP ,_, Rahul_NNP Gupta_NNP ,_, and_CC Vikas_NNP Khandelwal_NNP ._.
+Temporal_JJ summaries_NNS of_IN new_JJ topics_NNS ._.
+In_IN Proceedings_NNP of_IN the_DT 24th_JJ annual_JJ international_JJ ACM_NNP SIGIR_NNP conference_NN on_IN Research_NNP and_CC development_NN in_IN information_NN retrieval_NN ,_, pages_NNS 10-18_CD ._.
+ACM_NNP Press_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- Regina_NNP Barzilay_NNP and_CC Lillian_NNP Lee_NNP ._.
+Catching_VBG the_DT drift_NN :_: Probabilistic_NNP content_NN models_NNS ,_, with_IN applications_NNS to_TO generation_NN and_CC summarization_NN ._.
+In_IN Proceedings_NNP of_IN Human_JJ Language_NNP Technology_NNP Conference_NNP and_CC North_NNP American_NNP Chapter_NNP of_IN the_DT Association_NNP for_IN Computational_NNP Linguistics_NNP -LRB-_-LRB- HLT-NAACL_NN -RRB-_-RRB- ,_, pages_NNS 113-120_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- D_NN ._.
+Lawrie_NNP and_CC W_NNP ._.
+B_NN ._.
+Croft_NNP ._.
+Discovering_VBG and_CC comparing_VBG topic_NN hierarchies_NNS ._.
+In_IN Proceedings_NNP of_IN RIAO_NNP ####_CD Conference_NN ,_, pages_NNS 314-330_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- David_NNP D_NNP ._.
+Lewis_NNP and_CC Kimberly_NNP A_NNP ._.
+Knowles_NNP ._.
+Threading_VBG electronic_JJ mail_NN :_: a_DT preliminary_JJ study_NN ._.
+Inf_NNP ._.
+Process_VB ._.
+Manage_VB ._.
+,_, 33_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 209-217_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- Juha_NNP Makkonen_NNP ._.
+Investigations_NNS on_IN event_NN evolution_NN in_IN tdt_NN ._.
+In_IN Proceedings_NNP of_IN HLT-NAACL_NNP ####_NNP Student_NNP Workshop_NNP ,_, pages_NNS 43-48_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- Aixin_NNP Sun_NNP and_CC Ee-Peng_NNP Lim_NNP ._.
+Hierarchical_JJ text_NN classification_NN and_CC evaluation_NN ._.
+In_IN Proceedings_NNP of_IN the_DT ####_CD IEEE_NNP International_NNP Conference_NNP on_IN Data_NNP Mining_NNP ,_, pages_NNS 521-528_CD ._.
+IEEE_NNP Computer_NNP Society_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Yiming_NNP Yang_NNP ,_, Jaime_NNP Carbonell_NNP ,_, Ralf_NNP Brown_NNP ,_, Thomas_NNP Pierce_NNP ,_, Brian_NNP T_NN ._.
+Archibald_NNP ,_, and_CC Xin_NNP Liu_NNP ._.
+Learning_NNP approaches_VBZ for_IN detecting_VBG and_CC tracking_VBG news_NN events_NNS ._.
+In_IN IEEE_NNP Intelligent_NNP Systems_NNPS Special_JJ Issue_NN on_IN Applications_NNS of_IN Intelligent_NNP Information_NNP Retrieval_NNP ,_, volume_NN ##_NN -LRB-_-LRB- #_# -RRB-_-RRB- ,_, pages_NNS 32-43_CD ,_, ####_CD ._.
+453_CD

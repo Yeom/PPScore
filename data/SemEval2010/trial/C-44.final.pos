@@ -1,0 +1,908 @@
+MSP_NNP :_: Multi-Sequence_NNP Positioning_NNP of_IN Wireless_NNP Sensor_NNP Nodes_NNP Ziguo_NNP Zhong_NNP Computer_NNP Science_NNP and_CC Engineering_NNP University_NNP of_IN Minnesota_NNP zhong_NNP @_IN cs_NNS ._.
+umn_NN ._.
+edu_NN Tian_NNP He_PRP Computer_NNP Science_NNP and_CC Engineering_NNP University_NNP of_IN Minnesota_NNP tianhe_JJ @_IN cs_NNS ._.
+umn_NN ._.
+edu_FW Abstract_JJ Wireless_NNP Sensor_NNP Networks_NNP have_VBP been_VBN proposed_VBN for_IN use_NN in_IN many_JJ location-dependent_JJ applications_NNS ._.
+Most_JJS of_IN these_DT need_NN to_TO identify_VB the_DT locations_NNS of_IN wireless_JJ sensor_NN nodes_NNS ,_, a_DT challenging_JJ task_NN because_IN of_IN the_DT severe_JJ constraints_NNS on_IN cost_NN ,_, energy_NN and_CC effective_JJ range_NN of_IN sensor_NN devices_NNS ._.
+To_TO overcome_VB limitations_NNS in_IN existing_VBG solutions_NNS ,_, we_PRP present_VBP a_DT Multi-Sequence_JJ Positioning_NN -LRB-_-LRB- MSP_NN -RRB-_-RRB- method_NN for_IN large-scale_JJ stationary_JJ sensor_NN node_NN localization_NN in_IN outdoor_JJ environments_NNS ._.
+The_DT novel_JJ idea_NN behind_IN MSP_NNP is_VBZ to_TO reconstruct_VB and_CC estimate_VB two-dimensional_JJ location_NN information_NN for_IN each_DT sensor_NN node_NN by_IN processing_VBG multiple_JJ one-dimensional_JJ node_NN sequences_NNS ,_, easily_RB obtained_VBN through_IN loosely_RB guided_VBN event_NN distribution_NN ._.
+Starting_VBG from_IN a_DT basic_JJ MSP_NNP design_NN ,_, we_PRP propose_VBP four_CD optimizations_NNS ,_, which_WDT work_VBP together_RB to_TO increase_VB the_DT localization_NN accuracy_NN ._.
+We_PRP address_VBP several_JJ interesting_JJ issues_NNS ,_, such_JJ as_IN incomplete_JJ -LRB-_-LRB- partial_JJ -RRB-_-RRB- node_NN sequences_NNS and_CC sequence_NN flip_VBP ,_, found_VBN in_IN the_DT Mirage_NNP test-bed_NN we_PRP built_VBD ._.
+We_PRP have_VBP evaluated_VBN the_DT MSP_NN system_NN through_IN theoretical_JJ analysis_NN ,_, extensive_JJ simulation_NN as_RB well_RB as_IN two_CD physical_JJ systems_NNS -LRB-_-LRB- an_DT indoor_JJ version_NN with_IN ##_VBN MICAz_NNP motes_NNS and_CC an_DT outdoor_JJ version_NN with_IN ##_VBN MICAz_NNP motes_NNS -RRB-_-RRB- ._.
+This_DT evaluation_NN demonstrates_VBZ that_IN MSP_NNP can_MD achieve_VB an_DT accuracy_NN within_IN one_CD foot_NN ,_, requiring_VBG neither_CC additional_JJ costly_JJ hardware_NN on_IN sensor_NN nodes_NNS nor_CC precise_JJ event_NN distribution_NN ._.
+It_PRP also_RB provides_VBZ a_DT nice_JJ tradeoff_NN between_IN physical_JJ cost_NN -LRB-_-LRB- anchors_NNS -RRB-_-RRB- and_CC soft_JJ cost_NN -LRB-_-LRB- events_NNS -RRB-_-RRB- ,_, while_IN maintaining_VBG localization_NN accuracy_NN ._.
+Categories_NNS and_CC Subject_NNP Descriptors_NNPS C_NNP ._.
+#_# ._.
+#_# -LSB-_-LRB- Computer_NNP Communications_NNPS Networks_NNP -RSB-_-RRB- :_: Distributed_VBN Systems_NNP General_NNP Terms_NNS Algorithms_NNS ,_, Measurement_NNP ,_, Design_NNP ,_, Performance_NNP ,_, Experimentation_NN 1_CD Introduction_NN Although_IN Wireless_NNP Sensor_NNP Networks_NNP -LRB-_-LRB- WSN_NNP -RRB-_-RRB- have_VBP shown_VBN promising_JJ prospects_NNS in_IN various_JJ applications_NNS -LSB-_-LRB- #_# -RSB-_-RRB- ,_, researchers_NNS still_RB face_VBP several_JJ challenges_NNS for_IN massive_JJ deployment_NN of_IN such_JJ networks_NNS ._.
+One_CD of_IN these_DT is_VBZ to_TO identify_VB the_DT location_NN of_IN individual_JJ sensor_NN nodes_NNS in_IN outdoor_JJ environments_NNS ._.
+Because_IN of_IN unpredictable_JJ flow_NN dynamics_NNS in_IN airborne_JJ scenarios_NNS ,_, it_PRP is_VBZ not_RB currently_RB feasible_JJ to_TO localize_VB sensor_NN nodes_NNS during_IN massive_JJ UVA-based_JJ deployment_NN ._.
+On_IN the_DT other_JJ hand_NN ,_, geometric_JJ information_NN is_VBZ indispensable_JJ in_IN these_DT networks_NNS ,_, since_IN users_NNS need_VBP to_TO know_VB where_WRB events_NNS of_IN interest_NN occur_VBP -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, the_DT location_NN of_IN intruders_NNS or_CC of_IN a_DT bomb_NN explosion_NN -RRB-_-RRB- ._.
+Previous_JJ research_NN on_IN node_NN localization_NN falls_VBZ into_IN two_CD categories_NNS :_: range-based_JJ approaches_NNS and_CC range-free_JJ approaches_NNS ._.
+Range-based_JJ approaches_NNS -LSB-_-LRB- ##_CD ,_, ##_CD ,_, ##_CD ,_, ##_CD -RSB-_-RRB- compute_VBP per-node_JJ location_NN information_NN iteratively_RB or_CC recursively_RB based_VBN on_IN measured_VBN distances_NNS among_IN target_NN nodes_NNS and_CC a_DT few_JJ anchors_NNS which_WDT precisely_RB know_VBP their_PRP$ locations_NNS ._.
+These_DT approaches_NNS generally_RB require_VBP costly_JJ hardware_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, GPS_NN -RRB-_-RRB- and_CC have_VBP limited_VBN effective_JJ range_NN due_JJ to_TO energy_NN constraints_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, ultrasound-based_JJ TDOA_NN -LSB-_-LRB- #_# ,_, ##_NN -RSB-_-RRB- -RRB-_-RRB- ._.
+Although_IN range-based_JJ solutions_NNS can_MD be_VB suitably_RB used_VBN in_IN small-scale_JJ indoor_JJ environments_NNS ,_, they_PRP are_VBP considered_VBN less_RBR cost-effective_JJ for_IN large-scale_JJ deployments_NNS ._.
+On_IN the_DT other_JJ hand_NN ,_, range-free_JJ approaches_NNS -LSB-_-LRB- #_# ,_, #_# ,_, ##_CD ,_, ##_CD ,_, ##_CD ,_, ##_CD -RSB-_-RRB- do_VBP not_RB require_VB accurate_JJ distance_NN measurements_NNS ,_, but_CC localize_VB the_DT node_NN based_VBN on_IN network_NN connectivity_NN -LRB-_-LRB- proximity_NN -RRB-_-RRB- information_NN ._.
+Unfortunately_RB ,_, since_IN wireless_JJ connectivity_NN is_VBZ highly_RB influenced_VBN by_IN the_DT environment_NN and_CC hardware_NN calibration_NN ,_, existing_VBG solutions_NNS fail_VBP to_TO deliver_VB encouraging_JJ empirical_JJ results_NNS ,_, or_CC require_VB substantial_JJ survey_NN -LSB-_-LRB- #_# -RSB-_-RRB- and_CC calibration_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- on_IN a_DT case-by-case_JJ basis_NN ._.
+Realizing_VBG the_DT impracticality_NN of_IN existing_VBG solutions_NNS for_IN the_DT large-scale_JJ outdoor_JJ environment_NN ,_, researchers_NNS have_VBP recently_RB proposed_VBN solutions_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, Spotlight_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- and_CC Lighthouse_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- -RRB-_-RRB- for_IN sensor_NN node_NN localization_NN using_VBG the_DT spatiotemporal_JJ correlation_NN of_IN controlled_JJ events_NNS -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, inferring_VBG nodes_NNS ''_'' locations_NNS based_VBN on_IN the_DT detection_NN time_NN of_IN controlled_JJ events_NNS -RRB-_-RRB- ._.
+These_DT solutions_NNS demonstrate_VBP that_IN long_JJ range_NN and_CC high_JJ accuracy_NN localization_NN can_MD be_VB achieved_VBN simultaneously_RB with_IN little_JJ additional_JJ cost_NN at_IN sensor_NN nodes_NNS ._.
+These_DT benefits_NNS ,_, however_RB ,_, come_VBN along_IN with_IN an_DT implicit_JJ assumption_NN that_IN the_DT controlled_JJ events_NNS can_MD be_VB precisely_RB distributed_VBN to_TO a_DT specified_VBN location_NN at_IN a_DT specified_VBN time_NN ._.
+We_PRP argue_VBP that_IN precise_JJ event_NN distribution_NN is_VBZ difficult_JJ to_TO achieve_VB ,_, especially_RB at_IN large_JJ scale_NN when_WRB terrain_NN is_VBZ uneven_JJ ,_, the_DT event_NN distribution_NN device_NN is_VBZ not_RB well_RB calibrated_VBN and_CC its_PRP$ position_NN is_VBZ difficult_JJ to_TO maintain_VB -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, the_DT helicopter-mounted_JJ scenario_NN in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- -RRB-_-RRB- ._.
+To_TO address_VB these_DT limitations_NNS in_IN current_JJ approaches_NNS ,_, in_IN this_DT paper_NN we_PRP present_VBP a_DT multi-sequence_JJ positioning_NN -LRB-_-LRB- MSP_NN -RRB-_-RRB- method_NN 15_CD for_IN large-scale_JJ stationary_JJ sensor_NN node_NN localization_NN ,_, in_IN deployments_NNS where_WRB an_DT event_NN source_NN has_VBZ line-of-sight_NN to_TO all_DT sensors_NNS ._.
+The_DT novel_JJ idea_NN behind_IN MSP_NNP is_VBZ to_TO estimate_VB each_DT sensor_NN node_NN ''_'' s_NNS two-dimensional_JJ location_NN by_IN processing_VBG multiple_JJ easy-to-get_JJ one-dimensional_JJ node_NN sequences_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, event_NN detection_NN order_NN -RRB-_-RRB- obtained_VBN through_IN loosely-guided_JJ event_NN distribution_NN ._.
+This_DT design_NN offers_VBZ several_JJ benefits_NNS ._.
+First_RB ,_, compared_VBN to_TO a_DT range-based_JJ approach_NN ,_, MSP_NN does_VBZ not_RB require_VB additional_JJ costly_JJ hardware_NN ._.
+It_PRP works_VBZ using_VBG sensors_NNS typically_RB used_VBN by_IN sensor_NN network_NN applications_NNS ,_, such_JJ as_IN light_JJ and_CC acoustic_JJ sensors_NNS ,_, both_DT of_IN which_WDT we_PRP specifically_RB consider_VBP in_IN this_DT work_NN ._.
+Second_RB ,_, compared_VBN to_TO a_DT range-free_JJ approach_NN ,_, MSP_NNP needs_VBZ only_RB a_DT small_JJ number_NN of_IN anchors_NNS -LRB-_-LRB- theoretically_RB ,_, as_IN few_JJ as_IN two_CD -RRB-_-RRB- ,_, so_RB high_JJ accuracy_NN can_MD be_VB achieved_VBN economically_RB by_IN introducing_VBG more_JJR events_NNS instead_RB of_IN more_JJR anchors_NNS ._.
+And_CC third_JJ ,_, compared_VBN to_TO Spotlight_NN ,_, MSP_NN does_VBZ not_RB require_VB precise_JJ and_CC sophisticated_JJ event_NN distribution_NN ,_, an_DT advantage_NN that_WDT significantly_RB simplifies_VBZ the_DT system_NN design_NN and_CC reduces_VBZ calibration_NN cost_NN ._.
+This_DT paper_NN offers_VBZ the_DT following_VBG additional_JJ intellectual_JJ contributions_NNS :_: We_PRP are_VBP the_DT first_JJ to_TO localize_VB sensor_NN nodes_NNS using_VBG the_DT concept_NN of_IN node_NN sequence_NN ,_, an_DT ordered_VBN list_NN of_IN sensor_NN nodes_NNS ,_, sorted_VBN by_IN the_DT detection_NN time_NN of_IN a_DT disseminated_VBN event_NN ._.
+We_PRP demonstrate_VBP that_IN making_VBG full_JJ use_NN of_IN the_DT information_NN embedded_VBN in_IN one-dimensional_JJ node_NN sequences_NNS can_MD significantly_RB improve_VB localization_NN accuracy_NN ._.
+Interestingly_RB ,_, we_PRP discover_VBP that_IN repeated_VBN reprocessing_NN of_IN one-dimensional_JJ node_NN sequences_NNS can_MD further_RB increase_VB localization_NN accuracy_NN ._.
+We_PRP propose_VBP a_DT distribution-based_JJ location_NN estimation_NN strategy_NN that_WDT obtains_VBZ the_DT final_JJ location_NN of_IN sensor_NN nodes_NNS using_VBG the_DT marginal_JJ probability_NN of_IN joint_JJ distribution_NN among_IN adjacent_JJ nodes_NNS within_IN the_DT sequence_NN ._.
+This_DT new_JJ algorithm_NN outperforms_VBZ the_DT widely_RB adopted_VBN Centroid_JJ estimation_NN -LSB-_-LRB- #_# ,_, #_# -RSB-_-RRB- ._.
+To_TO the_DT best_JJS of_IN our_PRP$ knowledge_NN ,_, this_DT is_VBZ the_DT first_JJ work_NN to_TO improve_VB the_DT localization_NN accuracy_NN of_IN nodes_NNS by_IN adaptive_JJ events_NNS ._.
+The_DT generation_NN of_IN later_JJ events_NNS is_VBZ guided_VBN by_IN localization_NN results_VBZ from_IN previous_JJ events_NNS ._.
+We_PRP evaluate_VBP line-based_JJ MSP_NN on_IN our_PRP$ new_JJ Mirage_NNP test-bed_NN ,_, and_CC wave-based_JJ MSP_NN in_IN outdoor_JJ environments_NNS ._.
+Through_IN system_NN implementation_NN ,_, we_PRP discover_VBP and_CC address_VBP several_JJ interesting_JJ issues_NNS such_JJ as_IN partial_JJ sequence_NN and_CC sequence_NN flips_VBZ ._.
+To_TO reveal_VB MSP_NNP performance_NN at_IN scale_NN ,_, we_PRP provide_VBP analytic_JJ results_NNS as_RB well_RB as_IN a_DT complete_JJ simulation_NN study_NN ._.
+All_PDT the_DT simulation_NN and_CC implementation_NN code_NN is_VBZ available_JJ online_NN at_IN http_NN :_: /_: /_: www_NN ._.
+cs_NNS ._.
+umn_NN ._.
+edu_FW /_: zhong_FW /_: MSP_NNP ._.
+The_DT rest_NN of_IN the_DT paper_NN is_VBZ organized_VBN as_IN follows_VBZ ._.
+Section_NN #_# briefly_RB surveys_VBZ the_DT related_JJ work_NN ._.
+Section_NN #_# presents_VBZ an_DT overview_NN of_IN the_DT MSP_NNP localization_NN system_NN ._.
+In_IN sections_NNS #_# and_CC #_# ,_, basic_JJ MSP_NNP and_CC four_CD advanced_JJ processing_NN methods_NNS are_VBP introduced_VBN ._.
+Section_NN #_# describes_VBZ how_WRB MSP_NNP can_MD be_VB applied_VBN in_IN a_DT wave_NN propagation_NN scenario_NN ._.
+Section_NN #_# discusses_VBZ several_JJ implementation_NN issues_NNS ._.
+Section_NN #_# presents_VBZ simulation_NN results_NNS ,_, and_CC Section_NN #_# reports_VBZ an_DT evaluation_NN of_IN MSP_NNP on_IN the_DT Mirage_NNP test-bed_NN and_CC an_DT outdoor_JJ test-bed_NN ._.
+Section_NN ##_NN concludes_VBZ the_DT paper_NN ._.
+2_CD Related_JJ Work_NN Many_JJ methods_NNS have_VBP been_VBN proposed_VBN to_TO localize_VB wireless_JJ sensor_NN devices_NNS in_IN the_DT open_JJ air_NN ._.
+Most_JJS of_IN these_DT can_MD be_VB classified_VBN into_IN two_CD categories_NNS :_: range-based_JJ and_CC range-free_JJ localization_NN ._.
+Range-based_JJ localization_NN systems_NNS ,_, such_JJ as_IN GPS_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, Cricket_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, AHLoS_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, AOA_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, Robust_JJ Quadrilaterals_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- and_CC Sweeps_VBZ -LSB-_-LRB- #_# -RSB-_-RRB- ,_, are_VBP based_VBN on_IN fine-grained_JJ point-topoint_JJ distance_NN estimation_NN or_CC angle_NN estimation_NN to_TO identify_VB pernode_NN location_NN ._.
+Constraints_NNS on_IN the_DT cost_NN ,_, energy_NN and_CC hardware_NN footprint_NN of_IN each_DT sensor_NN node_NN make_VBP these_DT range-based_JJ methods_NNS undesirable_JJ for_IN massive_JJ outdoor_JJ deployment_NN ._.
+In_IN addition_NN ,_, ranging_VBG signals_NNS generated_VBN by_IN sensor_NN nodes_NNS have_VBP a_DT very_RB limited_JJ effective_JJ range_NN because_IN of_IN energy_NN and_CC form_NN factor_NN concerns_NNS ._.
+For_IN example_NN ,_, ultrasound_NN signals_NNS usually_RB effectively_RB propagate_VB 20-30_CD feet_NNS using_VBG an_DT on-board_JJ transmitter_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Consequently_RB ,_, these_DT range-based_JJ solutions_NNS require_VBP an_DT undesirably_RB high_JJ deployment_NN density_NN ._.
+Although_IN the_DT received_VBN signal_NN strength_NN indicator_NN -LRB-_-LRB- RSSI_NN -RRB-_-RRB- related_JJ -LSB-_-LRB- #_# ,_, ##_NN -RSB-_-RRB- methods_NNS were_VBD once_RB considered_VBN an_DT ideal_JJ low-cost_JJ solution_NN ,_, the_DT irregularity_NN of_IN radio_NN propagation_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- seriously_RB limits_VBZ the_DT accuracy_NN of_IN such_JJ systems_NNS ._.
+The_DT recently_RB proposed_VBN RIPS_NNS localization_NN system_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- superimposes_VBZ two_CD RF_NN waves_NNS together_RB ,_, creating_VBG a_DT low-frequency_NN envelope_NN that_WDT can_MD be_VB accurately_RB measured_VBN ._.
+This_DT ranging_VBG technique_NN performs_VBZ very_RB well_RB as_IN long_JJ as_IN antennas_NNS are_VBP well_RB oriented_VBN and_CC environmental_JJ factors_NNS such_JJ as_IN multi-path_JJ effects_NNS and_CC background_NN noise_NN are_VBP sufficiently_RB addressed_VBN ._.
+Range-free_JJ methods_NNS don_VBP ''_'' t_NN need_NN to_TO estimate_VB or_CC measure_VB accurate_JJ distances_NNS or_CC angles_NNS ._.
+Instead_RB ,_, anchors_NNS or_CC controlled-event_JJ distributions_NNS are_VBP used_VBN for_IN node_NN localization_NN ._.
+Range-free_JJ methods_NNS can_MD be_VB generally_RB classified_VBN into_IN two_CD types_NNS :_: anchor-based_JJ and_CC anchor-free_JJ solutions_NNS ._.
+For_IN anchor-based_JJ solutions_NNS such_JJ as_IN Centroid_JJ -LSB-_-LRB- #_# -RSB-_-RRB- ,_, APIT_NN -LSB-_-LRB- #_# -RSB-_-RRB- ,_, SeRLoc_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, Gradient_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, and_CC APS_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, the_DT main_JJ idea_NN is_VBZ that_IN the_DT location_NN of_IN each_DT node_NN is_VBZ estimated_VBN based_VBN on_IN the_DT known_JJ locations_NNS of_IN the_DT anchor_NN nodes_NNS ._.
+Different_JJ anchor_NN combinations_NNS narrow_VBP the_DT areas_NNS in_IN which_WDT the_DT target_NN nodes_NNS can_MD possibly_RB be_VB located_JJ ._.
+Anchor-based_JJ solutions_NNS normally_RB require_VBP a_DT high_JJ density_NN of_IN anchor_NN nodes_NNS so_RB as_IN to_TO achieve_VB good_JJ accuracy_NN ._.
+In_IN practice_NN ,_, it_PRP is_VBZ desirable_JJ to_TO have_VB as_IN few_JJ anchor_NN nodes_NNS as_IN possible_JJ so_RB as_IN to_TO lower_VB the_DT system_NN cost_NN ._.
+Anchor-free_JJ solutions_NNS require_VBP no_DT anchor_NN nodes_NNS ._.
+Instead_RB ,_, external_JJ event_NN generators_NNS and_CC data_NNS processing_NN platforms_NNS are_VBP used_VBN ._.
+The_DT main_JJ idea_NN is_VBZ to_TO correlate_VB the_DT event_NN detection_NN time_NN at_IN a_DT sensor_NN node_NN with_IN the_DT known_JJ space-time_NN relationship_NN of_IN controlled_JJ events_NNS at_IN the_DT generator_NN so_IN that_IN detection_NN time-stamps_NNS can_MD be_VB mapped_VBN into_IN the_DT locations_NNS of_IN sensors_NNS ._.
+Spotlight_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- and_CC Lighthouse_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- work_NN in_IN this_DT fashion_NN ._.
+In_IN Spotlight_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, the_DT event_NN distribution_NN needs_VBZ to_TO be_VB precise_JJ in_IN both_DT time_NN and_CC space_NN ._.
+Precise_JJ event_NN distribution_NN is_VBZ difficult_JJ to_TO achieve_VB without_IN careful_JJ calibration_NN ,_, especially_RB when_WRB the_DT event-generating_JJ devices_NNS require_VBP certain_JJ mechanical_JJ maneuvers_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, the_DT telescope_NN mount_VBP used_VBN in_IN Spotlight_NN -RRB-_-RRB- ._.
+All_PDT these_DT increase_NN system_NN cost_NN and_CC reduce_VB localization_NN speed_NN ._.
+StarDust_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, which_WDT works_VBZ much_JJ faster_RBR ,_, uses_VBZ label_NN relaxation_NN algorithms_NNS to_TO match_VB light_JJ spots_NNS reflected_VBN by_IN corner-cube_JJ retro-reflectors_NNS -LRB-_-LRB- CCR_NN -RRB-_-RRB- with_IN sensor_NN nodes_NNS using_VBG various_JJ constraints_NNS ._.
+Label_NN relaxation_NN algorithms_NNS converge_VBP only_RB when_WRB a_DT sufficient_JJ number_NN of_IN robust_JJ constraints_NNS are_VBP obtained_VBN ._.
+Due_JJ to_TO the_DT environmental_JJ impact_NN on_IN RF_NN connectivity_NN constraints_NNS ,_, however_RB ,_, StarDust_NNP is_VBZ less_RBR accurate_JJ than_IN Spotlight_NN ._.
+In_IN this_DT paper_NN ,_, we_PRP propose_VBP a_DT balanced_JJ solution_NN that_WDT avoids_VBZ the_DT limitations_NNS of_IN both_DT anchor-based_JJ and_CC anchor-free_JJ solutions_NNS ._.
+Unlike_IN anchor-based_JJ solutions_NNS -LSB-_-LRB- #_# ,_, #_# -RSB-_-RRB- ,_, MSP_NN allows_VBZ a_DT flexible_JJ tradeoff_NN between_IN the_DT physical_JJ cost_NN -LRB-_-LRB- anchor_NN nodes_NNS -RRB-_-RRB- with_IN the_DT soft_JJ 16_CD 1_CD A_DT B_NN 2_CD 3_CD 4_CD 5_CD Target_NN nodeAnchor_NN node_NN 1A_NN #_# #_# B2_NN #_# 1_CD B2_NN 5A_NN ##_CD 1A25B4_NN #_# 1_CD ##_CD AB_NNP #_# #_# 1_CD 2_CD 3_CD 5_CD 4_CD -LRB-_-LRB- b_NN -RRB-_-RRB- -LRB-_-LRB- c_NN -RRB-_-RRB- -LRB-_-LRB- d_NN -RRB-_-RRB- -LRB-_-LRB- a_DT -RRB-_-RRB- Event_NN #_# Node_NNP Sequence_NN generated_VBN by_IN event_NN #_# Event_NNP #_# Node_NNP Sequence_NN generated_VBN by_IN event_NN #_# Node_NNP Sequence_NN generated_VBN by_IN event_NN #_# Node_NNP Sequence_NN generated_VBN by_IN event_NN #_# Event_NNP #_# Event_NNP #_# Figure_NNP #_# ._.
+The_DT MSP_NNP System_NNP Overview_NNP cost_NN -LRB-_-LRB- localization_NN events_NNS -RRB-_-RRB- ._.
+MSP_NNP uses_VBZ only_RB a_DT small_JJ number_NN of_IN anchors_NNS -LRB-_-LRB- theoretically_RB ,_, as_IN few_JJ as_IN two_CD -RRB-_-RRB- ._.
+Unlike_IN anchor-free_JJ solutions_NNS ,_, MSP_NNP doesn_NN ''_'' t_NN need_NN to_TO maintain_VB rigid_JJ time-space_JJ relationships_NNS while_IN distributing_VBG events_NNS ,_, which_WDT makes_VBZ system_NN design_NN simpler_JJR ,_, more_RBR flexible_JJ and_CC more_RBR robust_JJ to_TO calibration_NN errors_NNS ._.
+3_CD System_NNP Overview_NNP MSP_NNP works_VBZ by_IN extracting_VBG relative_JJ location_NN information_NN from_IN multiple_JJ simple_JJ one-dimensional_JJ orderings_NNS of_IN nodes_NNS ._.
+Figure_NNP #_# -LRB-_-LRB- a_DT -RRB-_-RRB- shows_VBZ a_DT layout_NN of_IN a_DT sensor_NN network_NN with_IN anchor_NN nodes_NNS and_CC target_NN nodes_NNS ._.
+Target_NN nodes_NNS are_VBP defined_VBN as_IN the_DT nodes_NNS to_TO be_VB localized_JJ ._.
+Briefly_RB ,_, the_DT MSP_NNP system_NN works_VBZ as_IN follows_VBZ ._.
+First_RB ,_, events_NNS are_VBP generated_VBN one_CD at_IN a_DT time_NN in_IN the_DT network_NN area_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, ultrasound_NN propagations_NNS from_IN different_JJ locations_NNS ,_, laser_NN scans_NNS with_IN diverse_JJ angles_NNS -RRB-_-RRB- ._.
+As_IN each_DT event_NN propagates_VBZ ,_, as_IN shown_VBN in_IN Figure_NNP #_# -LRB-_-LRB- a_DT -RRB-_-RRB- ,_, each_DT node_NN detects_VBZ it_PRP at_IN some_DT particular_JJ time_NN instance_NN ._.
+For_IN a_DT single_JJ event_NN ,_, we_PRP call_VBP the_DT ordering_VBG of_IN nodes_NNS ,_, which_WDT is_VBZ based_VBN on_IN the_DT sequential_JJ detection_NN of_IN the_DT event_NN ,_, a_DT node_NN sequence_NN ._.
+Each_DT node_NN sequence_NN includes_VBZ both_CC the_DT targets_NNS and_CC the_DT anchors_NNS as_IN shown_VBN in_IN Figure_NNP #_# -LRB-_-LRB- b_NN -RRB-_-RRB- ._.
+Second_RB ,_, a_DT multi-sequence_JJ processing_NN algorithm_NN helps_VBZ to_TO narrow_VB the_DT possible_JJ location_NN of_IN each_DT node_NN to_TO a_DT small_JJ area_NN -LRB-_-LRB- Figure_NN #_# -LRB-_-LRB- c_NN -RRB-_-RRB- -RRB-_-RRB- ._.
+Finally_RB ,_, a_DT distributionbased_JJ estimation_NN method_NN estimates_VBZ the_DT exact_JJ location_NN of_IN each_DT sensor_NN node_NN ,_, as_IN shown_VBN in_IN Figure_NNP #_# -LRB-_-LRB- d_NN -RRB-_-RRB- ._.
+Figure_NNP #_# shows_VBZ that_IN the_DT node_NN sequences_NNS can_MD be_VB obtained_VBN much_RB more_RBR economically_RB than_IN accurate_JJ pair-wise_JJ distance_NN measurements_NNS between_IN target_NN nodes_NNS and_CC anchor_NN nodes_NNS via_IN ranging_VBG methods_NNS ._.
+In_IN addition_NN ,_, this_DT system_NN does_VBZ not_RB require_VB a_DT rigid_JJ time-space_JJ relationship_NN for_IN the_DT localization_NN events_NNS ,_, which_WDT is_VBZ critical_JJ but_CC hard_JJ to_TO achieve_VB in_IN controlled_JJ event_NN distribution_NN scenarios_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, Spotlight_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- -RRB-_-RRB- ._.
+For_IN the_DT sake_NN of_IN clarity_NN in_IN presentation_NN ,_, we_PRP present_VBP our_PRP$ system_NN in_IN two_CD cases_NNS :_: Ideal_NNP Case_NNP ,_, in_IN which_WDT all_PDT the_DT node_NN sequences_NNS obtained_VBN from_IN the_DT network_NN are_VBP complete_JJ and_CC correct_JJ ,_, and_CC nodes_NNS are_VBP time-synchronized_JJ -LSB-_-LRB- ##_CD ,_, #_# -RSB-_-RRB- ._.
+Realistic_JJ Deployment_NN ,_, in_IN which_WDT -LRB-_-LRB- i_LS -RRB-_-RRB- node_NN sequences_NNS can_MD be_VB partial_JJ -LRB-_-LRB- incomplete_JJ -RRB-_-RRB- ,_, -LRB-_-LRB- ii_LS -RRB-_-RRB- elements_NNS in_IN sequences_NNS could_MD flip_VB -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, the_DT order_NN obtained_VBN is_VBZ reversed_VBN from_IN reality_NN -RRB-_-RRB- ,_, and_CC -LRB-_-LRB- iii_LS -RRB-_-RRB- nodes_NNS are_VBP not_RB time-synchronized_JJ ._.
+To_TO introduce_VB the_DT MSP_NNP algorithm_NN ,_, we_PRP first_RB consider_VB a_DT simple_JJ straight-line_JJ scan_VB scenario_NN ._.
+Then_RB ,_, we_PRP describe_VBP how_WRB to_TO implement_VB straight-line_JJ scans_NNS as_RB well_RB as_IN other_JJ event_NN types_NNS ,_, such_JJ as_IN sound_JJ wave_NN propagation_NN ._.
+1_LS A_DT 2_CD 3_CD 4_CD 5_CD B_NN C_NN 6_CD 7_CD 8_CD 9_CD Straight-line_NN Scan_VB #_# Straight-lineScan2_NN 8_CD 1_CD 5_CD A_DT 6_CD C_NN 4_CD 3_CD 7_CD 2_CD B_NN 9_CD 3_CD 1_CD C_NN #_# 9_CD 2_CD A_DT #_# #_# B_NN 7_CD #_# Target_NN node_NN Anchor_NNP node_NN Figure_NN #_# ._.
+Obtaining_VBG Multiple_JJ Node_NNP Sequences_NNS 4_CD Basic_JJ MSP_NNP Let_VB us_PRP consider_VB a_DT sensor_NN network_NN with_IN N_NN target_NN nodes_NNS and_CC M_NN anchor_NN nodes_NNS randomly_RB deployed_VBN in_IN an_DT area_NN of_IN size_NN S_NN ._.
+The_DT top-level_JJ idea_NN for_IN basic_JJ MSP_NNP is_VBZ to_TO split_VB the_DT whole_JJ sensor_NN network_NN area_NN into_IN small_JJ pieces_NNS by_IN processing_VBG node_NN sequences_NNS ._.
+Because_IN the_DT exact_JJ locations_NNS of_IN all_PDT the_DT anchors_NNS in_IN a_DT node_NN sequence_NN are_VBP known_VBN ,_, all_PDT the_DT nodes_NNS in_IN this_DT sequence_NN can_MD be_VB divided_VBN into_IN O_NN -LRB-_-LRB- M_NN +_CC #_# -RRB-_-RRB- parts_NNS in_IN the_DT area_NN ._.
+In_IN Figure_NNP #_# ,_, we_PRP use_VBP numbered_VBD circles_NNS to_TO denote_VB target_NN nodes_NNS and_CC numbered_VBD hexagons_NNS to_TO denote_VB anchor_NN nodes_NNS ._.
+Basic_JJ MSP_NN uses_VBZ two_CD straight_JJ lines_NNS to_TO scan_VB the_DT area_NN from_IN different_JJ directions_NNS ,_, treating_VBG each_DT scan_VB as_IN an_DT event_NN ._.
+All_PDT the_DT nodes_NNS react_VBP to_TO the_DT event_NN sequentially_RB generating_VBG two_CD node_NN sequences_NNS ._.
+For_IN vertical_JJ scan_VBP 1_CD ,_, the_DT node_NN sequence_NN is_VBZ -LRB-_-LRB- #_# ,_, #_# ,_, #_# ,_, A_DT ,_, #_# ,_, C_NN ,_, #_# ,_, #_# ,_, #_# ,_, #_# ,_, B_NN ,_, #_# -RRB-_-RRB- ,_, as_IN shown_VBN outside_IN the_DT right_JJ boundary_NN of_IN the_DT area_NN in_IN Figure_NNP #_# ;_: for_IN horizontal_JJ scan_VB #_# ,_, the_DT node_NN sequence_NN is_VBZ -LRB-_-LRB- #_# ,_, #_# ,_, C_NN ,_, #_# ,_, #_# ,_, #_# ,_, A_DT ,_, #_# ,_, #_# ,_, B_NN ,_, #_# ,_, #_# -RRB-_-RRB- ,_, as_IN shown_VBN under_IN the_DT bottom_JJ boundary_NN of_IN the_DT area_NN in_IN Figure_NNP #_# ._.
+Since_IN the_DT locations_NNS of_IN the_DT anchor_NN nodes_NNS are_VBP available_JJ ,_, the_DT anchor_NN nodes_NNS in_IN the_DT two_CD node_NN sequences_NNS actually_RB split_VBD the_DT area_NN vertically_RB and_CC horizontally_RB into_IN ##_NN parts_NNS ,_, as_IN shown_VBN in_IN Figure_NNP #_# ._.
+To_TO extend_VB this_DT process_NN ,_, suppose_VBP we_PRP have_VBP M_NN anchor_NN nodes_NNS and_CC perform_VB d_NN scans_NNS from_IN different_JJ angles_NNS ,_, obtaining_VBG d_NN node_NN sequences_NNS and_CC dividing_VBG the_DT area_NN into_IN many_JJ small_JJ parts_NNS ._.
+Obviously_RB ,_, the_DT number_NN of_IN parts_NNS is_VBZ a_DT function_NN of_IN the_DT number_NN of_IN anchors_NNS M_NN ,_, the_DT number_NN of_IN scans_NNS d_NN ,_, the_DT anchors_NNS ''_'' location_NN as_RB well_RB as_IN the_DT slop_NN k_NN for_IN each_DT scan_VB line_NN ._.
+According_VBG to_TO the_DT pie-cutting_NN theorem_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, the_DT area_NN can_MD be_VB divided_VBN into_IN O_NN -LRB-_-LRB- M2d2_NN -RRB-_-RRB- parts_NNS ._.
+When_WRB M_NN and_CC d_NN are_VBP appropriately_RB large_JJ ,_, the_DT polygon_NNP for_IN each_DT target_NN node_NN may_MD become_VB sufficiently_RB small_JJ so_IN that_IN accurate_JJ estimation_NN can_MD be_VB achieved_VBN ._.
+We_PRP emphasize_VBP that_IN accuracy_NN is_VBZ affected_VBN not_RB only_RB by_IN the_DT number_NN of_IN anchors_NNS M_NN ,_, but_CC also_RB by_IN the_DT number_NN of_IN events_NNS d_NN ._.
+In_IN other_JJ words_NNS ,_, MSP_NNP provides_VBZ a_DT tradeoff_NN between_IN the_DT physical_JJ cost_NN of_IN anchors_NNS and_CC the_DT soft_JJ cost_NN of_IN events_NNS ._.
+Algorithm_NN #_# depicts_VBZ the_DT computing_NN architecture_NN of_IN basic_JJ MSP_NNP ._.
+Each_DT node_NN sequence_NN is_VBZ processed_VBN within_IN line_NN #_# to_TO #_# ._.
+For_IN each_DT node_NN ,_, GetBoundaries_NNP -LRB-_-LRB- -RRB-_-RRB- in_IN line_NN #_# searches_NNS for_IN the_DT predecessor_NN and_CC successor_NN anchors_NNS in_IN the_DT sequence_NN so_RB as_IN to_TO determine_VB the_DT boundaries_NNS of_IN this_DT node_NN ._.
+Then_RB in_IN line_NN #_# UpdateMap_NNP -LRB-_-LRB- -RRB-_-RRB- shrinks_VBZ the_DT location_NN area_NN of_IN this_DT node_NN according_VBG to_TO the_DT newly_RB obtained_VBN boundaries_NNS ._.
+After_IN processing_VBG all_DT sequences_NNS ,_, Centroid_NNP Estimation_NN -LRB-_-LRB- line_NN ##_NN -RRB-_-RRB- set_VBD the_DT center_NN of_IN gravity_NN of_IN the_DT final_JJ polygon_NN as_IN the_DT estimated_VBN location_NN of_IN the_DT target_NN node_NN ._.
+Basic_JJ MSP_NN only_RB makes_VBZ use_NN of_IN the_DT order_NN information_NN between_IN a_DT target_NN node_NN and_CC the_DT anchor_NN nodes_NNS in_IN each_DT sequence_NN ._.
+Actually_RB ,_, we_PRP can_MD extract_VB much_RB more_RBR location_NN information_NN from_IN 17_CD Algorithm_NN #_# Basic_JJ MSP_NNP Process_VB Output_NN :_: The_DT estimated_VBN location_NN of_IN each_DT node_NN ._.
+1_CD :_: repeat_NN 2_CD :_: GetOneUnprocessedSeqence_NN -LRB-_-LRB- -RRB-_-RRB- ;_: 3_CD :_: repeat_NN 4_CD :_: GetOneNodeFromSequenceInOrder_NN -LRB-_-LRB- -RRB-_-RRB- ;_: 5_CD :_: GetBoundaries_NNS -LRB-_-LRB- -RRB-_-RRB- ;_: 6_CD :_: UpdateMap_NNP -LRB-_-LRB- -RRB-_-RRB- ;_: 7_CD :_: until_IN All_PDT the_DT target_NN nodes_NNS are_VBP updated_VBN ;_: 8_CD :_: until_IN All_PDT the_DT node_NN sequences_NNS are_VBP processed_VBN ;_: 9_CD :_: repeat_NN 10_CD :_: GetOneUnestimatedNode_NNP -LRB-_-LRB- -RRB-_-RRB- ;_: 11_CD :_: CentroidEstimation_NN -LRB-_-LRB- -RRB-_-RRB- ;_: 12_CD :_: until_IN All_PDT the_DT target_NN nodes_NNS are_VBP estimated_VBN ;_: each_DT sequence_NN ._.
+Section_NN #_# will_MD introduce_VB advanced_JJ MSP_NNP ,_, in_IN which_WDT four_CD novel_JJ optimizations_NNS are_VBP proposed_VBN to_TO improve_VB the_DT performance_NN of_IN MSP_NNP significantly_RB ._.
+5_CD Advanced_NNP MSP_NNP Four_CD improvements_NNS to_TO basic_JJ MSP_NNP are_VBP proposed_VBN in_IN this_DT section_NN ._.
+The_DT first_JJ three_CD improvements_NNS do_VBP not_RB need_VB additional_JJ sensing_VBG and_CC communication_NN in_IN the_DT networks_NNS but_CC require_VBP only_RB slightly_RB more_RBR off-line_JJ computation_NN ._.
+The_DT objective_NN of_IN all_PDT these_DT improvements_NNS is_VBZ to_TO make_VB full_JJ use_NN of_IN the_DT information_NN embedded_VBN in_IN the_DT node_NN sequences_NNS ._.
+The_DT results_NNS we_PRP have_VBP obtained_VBN empirically_RB indicate_VBP that_IN the_DT implementation_NN of_IN the_DT first_JJ two_CD methods_NNS can_MD dramatically_RB reduce_VB the_DT localization_NN error_NN ,_, and_CC that_IN the_DT third_JJ and_CC fourth_JJ methods_NNS are_VBP helpful_JJ for_IN some_DT system_NN deployments_NNS ._.
+5_CD ._.
+#_# Sequence-Based_JJ MSP_NNP As_IN shown_VBN in_IN Figure_NNP #_# ,_, each_DT scan_VB line_NN and_CC M_NN anchors_NNS ,_, splits_VBZ the_DT whole_JJ area_NN into_IN M_NN +_CC #_# parts_NNS ._.
+Each_DT target_NN node_NN falls_VBZ into_IN one_CD polygon_NN shaped_VBN by_IN scan_VB lines_NNS ._.
+We_PRP noted_VBD that_IN in_IN basic_JJ MSP_NNP ,_, only_RB the_DT anchors_NNS are_VBP used_VBN to_TO narrow_VB down_RP the_DT polygon_NN of_IN each_DT target_NN node_NN ,_, but_CC actually_RB there_EX is_VBZ more_JJR information_NN in_IN the_DT node_NN sequence_NN that_IN we_PRP can_MD made_VBD use_NN of_IN ._.
+Let_VB ''_'' s_VBZ first_JJ look_NN at_IN a_DT simple_JJ example_NN shown_VBN in_IN Figure_NNP #_# ._.
+The_DT previous_JJ scans_NNS narrow_VBP the_DT locations_NNS of_IN target_NN node_NN #_# and_CC node_NN 2_CD into_IN two_CD dashed_VBD rectangles_NNS shown_VBN in_IN the_DT left_JJ part_NN of_IN Figure_NNP #_# ._.
+Then_RB a_DT new_JJ scan_VB generates_VBZ a_DT new_JJ sequence_NN -LRB-_-LRB- #_# ,_, #_# -RRB-_-RRB- ._.
+With_IN knowledge_NN of_IN the_DT scan_VB ''_'' s_VBZ direction_NN ,_, it_PRP is_VBZ easy_JJ to_TO tell_VB that_IN node_NN #_# is_VBZ located_JJ to_TO the_DT left_NN of_IN node_NN #_# ._.
+Thus_RB ,_, we_PRP can_MD further_RB narrow_VB the_DT location_NN area_NN of_IN node_NN #_# by_IN eliminating_VBG the_DT shaded_JJ part_NN of_IN node_NN 2_CD ''_'' s_VBZ rectangle_NN ._.
+This_DT is_VBZ because_IN node_NN #_# is_VBZ located_VBN on_IN the_DT right_NN of_IN node_NN #_# while_IN the_DT shaded_JJ area_NN is_VBZ outside_IN the_DT lower_JJR boundary_NN of_IN node_NN #_# ._.
+Similarly_RB ,_, the_DT location_NN area_NN of_IN node_NN #_# can_MD be_VB narrowed_VBN by_IN eliminating_VBG the_DT shaded_JJ part_NN out_IN of_IN node_NN #_# ''_'' s_NNS right_JJ boundary_NN ._.
+We_PRP call_VBP this_DT procedure_NN sequence-based_JJ MSP_NN which_WDT means_VBZ that_IN the_DT whole_JJ node_NN sequence_NN needs_VBZ to_TO be_VB processed_VBN node_NN by_IN node_NN in_IN order_NN ._.
+Specifically_RB ,_, sequence-based_JJ MSP_NN follows_VBZ this_DT exact_JJ processing_NN rule_NN :_: 1_CD 2_CD 1_CD #_# 1_CD 2_CD Lower_JJR boundary_NN of_IN #_# Upper_NNP boundary_NN of_IN #_# Lower_JJR boundary_NN of_IN #_# Upper_NNP boundary_NN of_IN #_# New_NNP sequence_NN New_NNP upper_JJ boundary_NN of_IN #_# New_NNP Lower_NNP boundary_NN of_IN #_# EventPropagation_NNP Figure_NNP #_# ._.
+Rule_NN Illustration_NN in_IN Sequence_NN Based_VBD MSP_NNP Algorithm_NNP #_# Sequence-Based_JJ MSP_NNP Process_VB Output_NN :_: The_DT estimated_VBN location_NN of_IN each_DT node_NN ._.
+1_CD :_: repeat_NN 2_CD :_: GetOneUnprocessedSeqence_NN -LRB-_-LRB- -RRB-_-RRB- ;_: 3_CD :_: repeat_NN 4_CD :_: GetOneNodeByIncreasingOrder_NN -LRB-_-LRB- -RRB-_-RRB- ;_: 5_CD :_: ComputeLowbound_NNP -LRB-_-LRB- -RRB-_-RRB- ;_: 6_CD :_: UpdateMap_NNP -LRB-_-LRB- -RRB-_-RRB- ;_: 7_CD :_: until_IN The_DT last_JJ target_NN node_NN in_IN the_DT sequence_NN ;_: 8_CD :_: repeat_NN 9_CD :_: GetOneNodeByDecreasingOrder_NN -LRB-_-LRB- -RRB-_-RRB- ;_: 10_CD :_: ComputeUpbound_NNP -LRB-_-LRB- -RRB-_-RRB- ;_: 11_CD :_: UpdateMap_NNP -LRB-_-LRB- -RRB-_-RRB- ;_: 12_CD :_: until_IN The_DT last_JJ target_NN node_NN in_IN the_DT sequence_NN ;_: 13_CD :_: until_IN All_PDT the_DT node_NN sequences_NNS are_VBP processed_VBN ;_: 14_CD :_: repeat_NN 15_CD :_: GetOneUnestimatedNode_NNP -LRB-_-LRB- -RRB-_-RRB- ;_: 16_CD :_: CentroidEstimation_NN -LRB-_-LRB- -RRB-_-RRB- ;_: 17_CD :_: until_IN All_PDT the_DT target_NN nodes_NNS are_VBP estimated_VBN ;_: Elimination_NNP Rule_NNP :_: Along_IN a_DT scanning_NN direction_NN ,_, the_DT lower_JJR boundary_NN of_IN the_DT successor_NN ''_'' s_NNS area_NN must_MD be_VB equal_JJ to_TO or_CC larger_JJR than_IN the_DT lower_JJR boundary_NN of_IN the_DT predecessor_NN ''_'' s_NNS area_NN ,_, and_CC the_DT upper_JJ boundary_NN of_IN the_DT predecessor_NN ''_'' s_NNS area_NN must_MD be_VB equal_JJ to_TO or_CC smaller_JJR than_IN the_DT upper_JJ boundary_NN of_IN the_DT successor_NN ''_'' s_NNS area_NN ._.
+In_IN the_DT case_NN of_IN Figure_NNP #_# ,_, node_NN #_# is_VBZ the_DT successor_NN of_IN node_NN #_# ,_, and_CC node_NN #_# is_VBZ the_DT predecessor_NN of_IN node_NN #_# ._.
+According_VBG to_TO the_DT elimination_NN rule_NN ,_, node_NN #_# ''_'' s_VBZ lower_JJR boundary_NN can_MD not_RB be_VB smaller_JJR than_IN that_DT of_IN node_NN #_# and_CC node_NN #_# ''_'' s_VBZ upper_JJ boundary_NN can_MD not_RB exceed_VB node_NN #_# ''_'' s_VBZ upper_JJ boundary_NN ._.
+Algorithm_NN #_# illustrates_VBZ the_DT pseudo_NN code_NN of_IN sequence-based_JJ MSP_NNP ._.
+Each_DT node_NN sequence_NN is_VBZ processed_VBN within_IN line_NN #_# to_TO ##_CD ._.
+The_DT sequence_NN processing_NN contains_VBZ two_CD steps_NNS :_: Step_VB #_# -LRB-_-LRB- line_NN #_# to_TO #_# -RRB-_-RRB- :_: Compute_VB and_CC modify_VB the_DT lower_JJR boundary_NN for_IN each_DT target_NN node_NN by_IN increasing_VBG order_NN in_IN the_DT node_NN sequence_NN ._.
+Each_DT node_NN ''_'' s_NNS lower_JJR boundary_NN is_VBZ determined_VBN by_IN the_DT lower_JJR boundary_NN of_IN its_PRP$ predecessor_NN node_NN in_IN the_DT sequence_NN ,_, thus_RB the_DT processing_NN must_MD start_VB from_IN the_DT first_JJ node_NN in_IN the_DT sequence_NN and_CC by_IN increasing_VBG order_NN ._.
+Then_RB update_VBP the_DT map_NN according_VBG to_TO the_DT new_JJ lower_JJR boundary_NN ._.
+Step_NN #_# -LRB-_-LRB- line_NN #_# to_TO ##_CD -RRB-_-RRB- :_: Compute_VB and_CC modify_VB the_DT upper_JJ boundary_NN for_IN each_DT node_NN by_IN decreasing_VBG order_NN in_IN the_DT node_NN sequence_NN ._.
+Each_DT node_NN ''_'' s_NNS upper_JJ boundary_NN is_VBZ determined_VBN by_IN the_DT upper_JJ boundary_NN of_IN its_PRP$ successor_NN node_NN in_IN the_DT sequence_NN ,_, thus_RB the_DT processing_NN must_MD start_VB from_IN the_DT last_JJ node_NN in_IN the_DT sequence_NN and_CC by_IN decreasing_VBG order_NN ._.
+Then_RB update_VBP the_DT map_NN according_VBG to_TO the_DT new_JJ upper_JJ boundary_NN ._.
+After_IN processing_VBG all_PDT the_DT sequences_NNS ,_, for_IN each_DT node_NN ,_, a_DT polygon_NN bounding_VBG its_PRP$ possible_JJ location_NN has_VBZ been_VBN found_VBN ._.
+Then_RB ,_, center-ofgravity-based_JJ estimation_NN is_VBZ applied_VBN to_TO compute_VB the_DT exact_JJ location_NN of_IN each_DT node_NN -LRB-_-LRB- line_NN ##_CD to_TO ##_CD -RRB-_-RRB- ._.
+An_DT example_NN of_IN this_DT process_NN is_VBZ shown_VBN in_IN Figure_NNP #_# ._.
+The_DT third_JJ scan_VB generates_VBZ the_DT node_NN sequence_NN -LRB-_-LRB- B_NN ,_, #_# ,_, #_# ,_, #_# ,_, #_# ,_, #_# ,_, #_# ,_, #_# ,_, C_NN ,_, A_NN ,_, #_# ,_, #_# -RRB-_-RRB- ._.
+In_IN addition_NN to_TO the_DT anchor_NN split_NN lines_NNS ,_, because_IN nodes_NNS #_# and_CC #_# come_VBN after_IN node_NN #_# in_IN the_DT sequence_NN ,_, node_NN #_# and_CC #_# ''_'' s_VBZ polygons_NNS could_MD be_VB narrowed_VBN according_VBG to_TO node_NN #_# ''_'' s_VBZ lower_JJR boundary_NN -LRB-_-LRB- the_DT lower_JJR right-shaded_JJ area_NN -RRB-_-RRB- ;_: similarly_RB ,_, the_DT shaded_JJ area_NN in_IN node_NN #_# ''_'' s_VBZ rectangle_NN could_MD be_VB eliminated_VBN since_IN this_DT part_NN is_VBZ beyond_IN node_NN #_# ''_'' s_VBZ upper_JJ boundary_NN indicated_VBN by_IN the_DT dotted_VBN line_NN ._.
+Similar_JJ eliminating_VBG can_MD be_VB performed_VBN for_IN node_NN #_# as_IN shown_VBN in_IN the_DT figure_NN ._.
+18_CD 1_CD A_DT 2_CD 3_CD 4_CD 5_CD B_NN C_NN 6_CD 7_CD 8_CD 9_CD Straight-line_NN Scan_VB #_# Straight-lineScan2_NN Straight-line_NN Scan_VB #_# Target_NN node_NN Anchor_NNP node_NN Figure_NN #_# ._.
+Sequence-Based_JJ MSP_NNP Example_NNP 1_CD A_DT 2_CD 3_CD 4_CD 5_CD B_NN C_NN 6_CD 7_CD 8_CD 9_CD Straight-line_NN Scan_VB #_# Straight-lineScan2_NN Straight-line_NN Scan_VB #_# Reprocessing_VBG Scan_VB #_# Target_NN node_NN Anchor_NNP node_NN Figure_NN #_# ._.
+Iterative_JJ MSP_NNP :_: Reprocessing_VBG Scan_VB #_# From_IN above_RB ,_, we_PRP can_MD see_VB that_IN the_DT sequence-based_JJ MSP_NNP makes_VBZ use_NN of_IN the_DT information_NN embedded_VBN in_IN every_DT sequential_JJ node_NN pair_NN in_IN the_DT node_NN sequence_NN ._.
+The_DT polygon_NN boundaries_NNS of_IN the_DT target_NN nodes_NNS obtained_VBN in_IN prior_JJ could_MD be_VB used_VBN to_TO further_JJ split_NN other_JJ target_NN nodes_NNS ''_'' areas_NNS ._.
+Our_PRP$ evaluation_NN in_IN Sections_NNS #_# and_CC #_# shows_VBZ that_IN sequence-based_JJ MSP_NNP considerably_RB enhances_VBZ system_NN accuracy_NN ._.
+5_CD ._.
+#_# Iterative_JJ MSP_NN Sequence-based_JJ MSP_NN is_VBZ preferable_JJ to_TO basic_JJ MSP_NN because_IN it_PRP extracts_VBZ more_JJR information_NN from_IN the_DT node_NN sequence_NN ._.
+In_IN fact_NN ,_, further_JJ useful_JJ information_NN still_RB remains_VBZ !_.
+In_IN sequence-based_JJ MSP_NNP ,_, a_DT sequence_NN processed_VBN later_RB benefits_NNS from_IN information_NN produced_VBN by_IN previously_RB processed_VBN sequences_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, the_DT third_JJ scan_VB in_IN Figure_NNP #_# -RRB-_-RRB- ._.
+However_RB ,_, the_DT first_JJ several_JJ sequences_NNS can_MD hardly_RB benefit_VB from_IN other_JJ scans_NNS in_IN this_DT way_NN ._.
+Inspired_VBN by_IN this_DT phenomenon_NN ,_, we_PRP propose_VBP iterative_JJ MSP_NNP ._.
+The_DT basic_JJ idea_NN of_IN iterative_JJ MSP_NNP is_VBZ to_TO process_VB all_PDT the_DT sequences_NNS iteratively_RB several_JJ times_NNS so_IN that_IN the_DT processing_NN of_IN each_DT single_JJ sequence_NN can_MD benefit_VB from_IN the_DT results_NNS of_IN other_JJ sequences_NNS ._.
+To_TO illustrate_VB the_DT idea_NN more_RBR clearly_RB ,_, Figure_NNP #_# shows_VBZ the_DT results_NNS of_IN three_CD scans_NNS that_WDT have_VBP provided_VBN three_CD sequences_NNS ._.
+Now_RB if_IN we_PRP process_VBP the_DT sequence_NN -LRB-_-LRB- #_# ,_, #_# ,_, #_# ,_, A_DT ,_, #_# ,_, C_NN ,_, #_# ,_, #_# ,_, #_# ,_, #_# ,_, B_NN ,_, #_# -RRB-_-RRB- obtained_VBN from_IN scan_VB #_# again_RB ,_, we_PRP can_MD make_VB progress_NN ,_, as_IN shown_VBN in_IN Figure_NNP #_# ._.
+The_DT reprocessing_NN of_IN the_DT node_NN sequence_NN #_# provides_VBZ information_NN in_IN the_DT way_NN an_DT additional_JJ vertical_JJ scan_VB would_MD ._.
+From_IN sequencebased_JJ MSP_NNP ,_, we_PRP know_VBP that_IN the_DT upper_JJ boundaries_NNS of_IN nodes_NNS #_# and_CC 4_CD along_IN the_DT scan_VB direction_NN must_MD not_RB extend_VB beyond_IN the_DT upper_JJ boundary_NN of_IN node_NN #_# ,_, therefore_RB the_DT grid_NN parts_NNS can_MD be_VB eliminated_VBN -LRB-_-LRB- a_DT -RRB-_-RRB- Central_NNP of_IN Gravity_NN -LRB-_-LRB- b_NN -RRB-_-RRB- Joint_NNP Distribution_NN 1_CD #_# 2_CD 1_CD #_# 2_CD 1_CD 2_CD #_# 1_CD 1_CD #_# 2_CD 1_CD #_# 2_CD Figure_NNP #_# ._.
+Example_NN of_IN Joint_NNP Distribution_NN Estimation_NN ..._: vm_NN ap_NN -LSB-_-LRB- #_# -RSB-_-RRB- vm_NN ap_NN -LSB-_-LRB- #_# -RSB-_-RRB- vm_NN ap_NN -LSB-_-LRB- #_# -RSB-_-RRB- vm_NN ap_NN -LSB-_-LRB- #_# -RSB-_-RRB- Combine_VB m_NN ap_NN Figure_NN #_# ._.
+Idea_NN of_IN DBE_NNP MSP_NNP for_IN Each_DT Node_NN for_IN the_DT nodes_NNS #_# and_CC node_NN #_# ,_, respectively_RB ,_, as_IN shown_VBN in_IN Figure_NNP #_# ._.
+From_IN this_DT example_NN ,_, we_PRP can_MD see_VB that_IN iterative_JJ processing_NN of_IN the_DT sequence_NN could_MD help_VB further_RB shrink_VB the_DT polygon_NN of_IN each_DT target_NN node_NN ,_, and_CC thus_RB enhance_VBP the_DT accuracy_NN of_IN the_DT system_NN ._.
+The_DT implementation_NN of_IN iterative_JJ MSP_NNP is_VBZ straightforward_JJ :_: process_NN all_PDT the_DT sequences_NNS multiple_JJ times_NNS using_VBG sequence-based_JJ MSP_NNP ._.
+Like_IN sequence-based_JJ MSP_NNP ,_, iterative_JJ MSP_NNP introduces_VBZ no_DT additional_JJ event_NN cost_NN ._.
+In_IN other_JJ words_NNS ,_, reprocessing_NN does_VBZ not_RB actually_RB repeat_VB the_DT scan_VB physically_RB ._.
+Evaluation_NN results_VBZ in_IN Section_NN #_# will_MD show_VB that_IN iterative_JJ MSP_NNP contributes_VBZ noticeably_RB to_TO a_DT lower_JJR localization_NN error_NN ._.
+Empirical_JJ results_NNS show_VBP that_IN after_IN #_# iterations_NNS ,_, improvements_NNS become_VBP less_RBR significant_JJ ._.
+In_IN summary_NN ,_, iterative_JJ processing_NN can_MD achieve_VB better_JJR performance_NN with_IN only_RB a_DT small_JJ computation_NN overhead_NN ._.
+5_CD ._.
+#_# Distribution-Based_JJ Estimation_NN After_IN determining_VBG the_DT location_NN area_NN polygon_NN for_IN each_DT node_NN ,_, estimation_NN is_VBZ needed_VBN for_IN a_DT final_JJ decision_NN ._.
+Previous_JJ research_NN mostly_RB applied_VBD the_DT Center_NNP of_IN Gravity_NN -LRB-_-LRB- COG_NN -RRB-_-RRB- method_NN -LSB-_-LRB- #_# -RSB-_-RRB- -LSB-_-LRB- #_# -RSB-_-RRB- -LSB-_-LRB- ##_CD -RSB-_-RRB- which_WDT minimizes_VBZ average_JJ error_NN ._.
+If_IN every_DT node_NN is_VBZ independent_JJ of_IN all_DT others_NNS ,_, COG_NN is_VBZ the_DT statistically_RB best_JJS solution_NN ._.
+In_IN MSP_NNP ,_, however_RB ,_, each_DT node_NN may_MD not_RB be_VB independent_JJ ._.
+For_IN example_NN ,_, two_CD neighboring_VBG nodes_NNS in_IN a_DT certain_JJ sequence_NN could_MD have_VB overlapping_VBG polygon_NN areas_NNS ._.
+In_IN this_DT case_NN ,_, if_IN the_DT marginal_JJ probability_NN of_IN joint_JJ distribution_NN is_VBZ used_VBN for_IN estimation_NN ,_, better_JJR statistical_JJ results_NNS are_VBP achieved_VBN ._.
+Figure_NNP #_# shows_VBZ an_DT example_NN in_IN which_WDT node_NN #_# and_CC node_NN #_# are_VBP located_JJ in_IN the_DT same_JJ polygon_NN ._.
+If_IN COG_NN is_VBZ used_VBN ,_, both_DT nodes_NNS are_VBP localized_JJ at_IN the_DT same_JJ position_NN -LRB-_-LRB- Figure_NN #_# -LRB-_-LRB- a_DT -RRB-_-RRB- -RRB-_-RRB- ._.
+However_RB ,_, the_DT node_NN sequences_NNS obtained_VBN from_IN two_CD scans_NNS indicate_VBP that_IN node_NN #_# should_MD be_VB to_TO the_DT left_NN of_IN and_CC above_IN node_NN #_# ,_, as_IN shown_VBN in_IN Figure_NNP #_# -LRB-_-LRB- b_NN -RRB-_-RRB- ._.
+The_DT high-level_JJ idea_NN of_IN distribution-based_JJ estimation_NN proposed_VBN for_IN MSP_NNP ,_, which_WDT we_PRP call_VBP DBE_NNP MSP_NNP ,_, is_VBZ illustrated_VBN in_IN Figure_NNP #_# ._.
+The_DT distributions_NNS of_IN each_DT node_NN under_IN the_DT ith_NN scan_VB -LRB-_-LRB- for_IN the_DT ith_NN node_NN sequence_NN -RRB-_-RRB- are_VBP estimated_VBN in_IN node_NN ._.
+vmap_NN -LSB-_-LRB- i_FW -RSB-_-RRB- ,_, which_WDT is_VBZ a_DT data_NN structure_NN for_IN remembering_VBG the_DT marginal_JJ distribution_NN over_IN scan_VB i_LS ._.
+Then_RB all_PDT the_DT vmaps_NNS are_VBP combined_VBN to_TO get_VB a_DT single_JJ map_NN and_CC weighted_JJ estimation_NN is_VBZ used_VBN to_TO obtain_VB the_DT final_JJ location_NN ._.
+For_IN each_DT scan_VB ,_, all_PDT the_DT nodes_NNS are_VBP sorted_VBN according_VBG to_TO the_DT gap_NN ,_, which_WDT is_VBZ the_DT diameter_NN of_IN the_DT polygon_NN along_IN the_DT direction_NN of_IN the_DT scan_VB ,_, to_TO produce_VB a_DT second_JJ ,_, gap-based_JJ node_NN sequence_NN ._.
+Then_RB ,_, the_DT estimation_NN starts_VBZ from_IN the_DT node_NN with_IN the_DT smallest_JJS gap_NN ._.
+This_DT is_VBZ because_IN it_PRP is_VBZ statistically_RB more_RBR accurate_JJ to_TO assume_VB a_DT uniform_JJ distribution_NN of_IN the_DT node_NN with_IN smaller_JJR gap_NN ._.
+For_IN each_DT node_NN processed_VBN in_IN order_NN from_IN the_DT gap-based_JJ node_NN sequence_NN ,_, either_CC if_IN 19_CD Pred_VBN ._.
+node_NN ''_'' s_NNS area_NN Predecessor_NNP node_NN exists_VBZ :_: conditional_JJ distribution_NN based_VBN on_IN pred_VBN ._.
+node_NN ''_'' s_NNS area_NN Alone_RB :_: Uniformly_RB Distributed_VBD Succ_NNP ._.
+node_NN ''_'' s_NNS area_NN Successor_NN node_NN exists_VBZ :_: conditional_JJ distribution_NN based_VBN on_IN succ_NN ._.
+node_NN ''_'' s_NNS area_NN Succ_NNP ._.
+node_NN ''_'' s_NNS area_NN Both_CC predecessor_NN and_CC successor_NN nodes_NNS exist_VBP :_: conditional_JJ distribution_NN based_VBN on_IN both_DT of_IN them_PRP Pred_VBD ._.
+node_NN ''_'' s_NNS area_NN Figure_NN #_# ._.
+Four_CD Cases_NNS in_IN DBE_NNP Process_VB no_DT neighbor_NN node_NN in_IN the_DT original_JJ event-based_JJ node_NN sequence_NN shares_NNS an_DT overlapping_VBG area_NN ,_, or_CC if_IN the_DT neighbors_NNS have_VBP not_RB been_VBN processed_VBN due_JJ to_TO bigger_JJR gaps_NNS ,_, a_DT uniform_JJ distribution_NN Uniform_NN -LRB-_-LRB- -RRB-_-RRB- is_VBZ applied_VBN to_TO this_DT isolated_VBN node_NN -LRB-_-LRB- the_DT Alone_RB case_NN in_IN Figure_NNP #_# -RRB-_-RRB- ._.
+If_IN the_DT distribution_NN of_IN its_PRP$ neighbors_NNS sharing_VBG overlapped_VBD areas_NNS has_VBZ been_VBN processed_VBN ,_, we_PRP calculate_VBP the_DT joint_JJ distribution_NN for_IN the_DT node_NN ._.
+As_IN shown_VBN in_IN Figure_NNP #_# ,_, there_EX are_VBP three_CD possible_JJ cases_NNS depending_VBG on_IN whether_IN the_DT distribution_NN of_IN the_DT overlapping_VBG predecessor_NN and_CC /_: or_CC successor_NN nodes_NNS have_VBP /_: has_VBZ already_RB been_VBN estimated_VBN ._.
+The_DT estimation_NN ''_'' s_NNS strategy_NN of_IN starting_VBG from_IN the_DT most_RBS accurate_JJ node_NN -LRB-_-LRB- smallest_JJS gap_NN node_NN -RRB-_-RRB- reduces_VBZ the_DT problem_NN of_IN estimation_NN error_NN propagation_NN ._.
+The_DT results_NNS in_IN the_DT evaluation_NN section_NN indicate_VBP that_IN applying_VBG distribution-based_JJ estimation_NN could_MD give_VB statistically_RB better_JJR results_NNS ._.
+5_CD ._.
+#_# Adaptive_JJ MSP_NNP So_RB far_RB ,_, all_PDT the_DT enhancements_NNS to_TO basic_JJ MSP_NN focus_NN on_IN improving_VBG the_DT multi-sequence_JJ processing_NN algorithm_NN given_VBN a_DT fixed_VBN set_NN of_IN scan_VB directions_NNS ._.
+All_PDT these_DT enhancements_NNS require_VBP only_RB more_JJR computing_NN time_NN without_IN any_DT overhead_NN to_TO the_DT sensor_NN nodes_NNS ._.
+Obviously_RB ,_, it_PRP is_VBZ possible_JJ to_TO have_VB some_DT choice_NN and_CC optimization_NN on_IN how_WRB events_NNS are_VBP generated_VBN ._.
+For_IN example_NN ,_, in_IN military_JJ situations_NNS ,_, artillery_NN or_CC rocket-launched_JJ mini-ultrasound_JJ bombs_NNS can_MD be_VB used_VBN for_IN event_NN generation_NN at_IN some_DT selected_VBN locations_NNS ._.
+In_IN adaptive_JJ MSP_NNP ,_, we_PRP carefully_RB generate_VBP each_DT new_JJ localization_NN event_NN so_RB as_IN to_TO maximize_VB the_DT contribution_NN of_IN the_DT new_JJ event_NN to_TO the_DT refinement_NN of_IN localization_NN ,_, based_VBN on_IN feedback_NN from_IN previous_JJ events_NNS ._.
+Figure_NNP #_# depicts_VBZ the_DT basic_JJ architecture_NN of_IN adaptive_JJ MSP_NNP ._.
+Through_IN previous_JJ localization_NN events_NNS ,_, the_DT whole_JJ map_NN has_VBZ been_VBN partitioned_VBN into_IN many_JJ small_JJ location_NN areas_NNS ._.
+The_DT idea_NN of_IN adaptive_JJ MSP_NNP is_VBZ to_TO generate_VB the_DT next_JJ localization_NN event_NN to_TO achieve_VB best-effort_JJ elimination_NN ,_, which_WDT ideally_RB could_MD shrink_VB the_DT location_NN area_NN of_IN individual_JJ node_NN as_RB much_RB as_IN possible_JJ ._.
+We_PRP use_VBP a_DT weighted_JJ voting_NN mechanism_NN to_TO evaluate_VB candidate_NN localization_NN events_NNS ._.
+Every_DT node_NN wants_VBZ the_DT next_JJ event_NN to_TO split_VB its_PRP$ area_NN evenly_RB ,_, which_WDT would_MD shrink_VB the_DT area_NN fast_RB ._.
+Therefore_RB ,_, every_DT node_NN votes_NNS for_IN the_DT parameters_NNS of_IN the_DT next_JJ event_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, the_DT scan_VB angle_NN k_NN of_IN the_DT straight-line_JJ scan_VB -RRB-_-RRB- ._.
+Since_IN the_DT area_NN map_NN is_VBZ maintained_VBN centrally_RB ,_, the_DT vote_NN is_VBZ virtually_RB done_VBN and_CC there_EX is_VBZ no_DT need_NN for_IN the_DT real_JJ sensor_NN nodes_NNS to_TO participate_VB in_IN it_PRP ._.
+After_IN gathering_VBG all_PDT the_DT voting_NN results_VBZ ,_, the_DT event_NN parameters_NNS with_IN the_DT most_RBS votes_NNS win_VBP the_DT election_NN ._.
+There_EX are_VBP two_CD factors_NNS that_WDT determine_VBP the_DT weight_NN of_IN each_DT vote_NN :_: The_DT vote_NN for_IN each_DT candidate_NN event_NN is_VBZ weighted_JJ according_VBG to_TO the_DT diameter_NN D_NN of_IN the_DT node_NN ''_'' s_NNS location_NN area_NN ._.
+Nodes_NNS with_IN bigger_JJR location_NN areas_NNS speak_VBP louder_RBR in_IN the_DT voting_NN ,_, because_IN Map_NNP Partitioned_VBN by_IN the_DT Localization_NN Events_NNS Diameter_NN of_IN Each_DT Area_NN Candidate_NN Localization_NN Events_NNS Evaluation_NN Trigger_NN Next_JJ Localization_NN Evet_NNP Figure_NNP #_# ._.
+Basic_JJ Architecture_NNP of_IN Adaptive_NNP MSP_NNP 2_CD 3_CD Diameter_NN D3_NN 1_CD 1_CD 3k_NN 2_CD 3k_NN 3_CD 3k_NN 4_CD 3k_NN 5_CD 3k_NN 6_CD 3k_NN 1_CD 3k_NN #_# 3k_CD #_# 3k_CD 6_CD 3k4_NN 3k_NN #_# 3k_CD Weight_NNP el_FW small_JJ i_FW opt_VB i_FW j_FW ii_LS j_FW i_FW S_NN S_NN DkkDfkWeight_NN arg_NN -RRB-_-RRB- ,_, -LRB-_-LRB- ,_, -LRB-_-LRB- -RRB-_-RRB- -LRB-_-LRB- =_JJ =_JJ 1_CD 3_CD opt_VB k_NN Target_NN node_NN Anchor_NNP node_NN Center_NN of_IN Gravity_NN Node_NN #_# '_'' s_VBZ area_NN Figure_NN ##_NN ._.
+Candidate_NN Slops_VBZ for_IN Node_NNP #_# at_IN Anchor_NNP #_# overall_JJ system_NN error_NN is_VBZ reduced_VBN mostly_RB by_IN splitting_NN the_DT larger_JJR areas_NNS ._.
+The_DT vote_NN for_IN each_DT candidate_NN event_NN is_VBZ also_RB weighted_JJ according_VBG to_TO its_PRP$ elimination_NN efficiency_NN for_IN a_DT location_NN area_NN ,_, which_WDT is_VBZ defined_VBN as_IN how_WRB equally_RB in_IN size_NN -LRB-_-LRB- or_CC in_IN diameter_NN -RRB-_-RRB- an_DT event_NN can_MD cut_VB an_DT area_NN ._.
+In_IN other_JJ words_NNS ,_, an_DT optimal_JJ scan_VB event_NN cuts_NNS an_DT area_NN in_IN the_DT middle_NN ,_, since_IN this_DT cut_NN shrinks_VBZ the_DT area_NN quickly_RB and_CC thus_RB reduces_VBZ localization_NN uncertainty_NN quickly_RB ._.
+Combining_VBG the_DT above_JJ two_CD aspects_NNS ,_, the_DT weight_NN for_IN each_DT vote_NN is_VBZ computed_VBN according_VBG to_TO the_DT following_JJ equation_NN -LRB-_-LRB- #_# -RRB-_-RRB- :_: Weight_NNP -LRB-_-LRB- k_NN j_NN i_LS -RRB-_-RRB- =_JJ f_FW -LRB-_-LRB- Di_NNP ,_, -LRB-_-LRB- k_NN j_NN i_FW ,_, k_NN opt_VB i_LS -RRB-_-RRB- -RRB-_-RRB- -LRB-_-LRB- #_# -RRB-_-RRB- k_NN j_NN i_FW is_VBZ node_NN i_FW ''_'' s_VBZ jth_NN supporting_VBG parameter_NN for_IN next_JJ event_NN generation_NN ;_: Di_NNP is_VBZ diameter_NN of_IN node_NN i_FW ''_'' s_VBZ location_NN area_NN ;_: -LRB-_-LRB- k_NN j_NN i_FW ,_, k_NN opt_VB i_LS -RRB-_-RRB- is_VBZ the_DT distance_NN between_IN k_NN j_NN i_FW and_CC the_DT optimal_JJ parameter_NN k_NN opt_VB i_FW for_IN node_NN i_FW ,_, which_WDT should_MD be_VB defined_VBN to_TO fit_VB the_DT specific_JJ application_NN ._.
+Figure_NNP ##_NNP presents_VBZ an_DT example_NN for_IN node_NN #_# ''_'' s_NNS voting_VBG for_IN the_DT slopes_NNS of_IN the_DT next_JJ straight-line_NN scan_VB ._.
+In_IN the_DT system_NN ,_, there_EX are_VBP a_DT fixed_JJ number_NN of_IN candidate_NN slopes_NNS for_IN each_DT scan_VB -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, k1_NN ,_, k2_NN ,_, k3_NN ,_, k4_NN ..._: -RRB-_-RRB- ._.
+The_DT location_NN area_NN of_IN target_NN node_NN #_# is_VBZ shown_VBN in_IN the_DT figure_NN ._.
+The_DT candidate_NN events_NNS k1_VBP 3_CD ,_, k2_NN 3_CD ,_, k3_NN 3_CD ,_, k4_NN 3_CD ,_, k5_NN 3_CD ,_, k6_NN 3_CD are_VBP evaluated_VBN according_VBG to_TO their_PRP$ effectiveness_NN compared_VBN to_TO the_DT optimal_JJ ideal_JJ event_NN which_WDT is_VBZ shown_VBN as_IN a_DT dotted_VBN line_NN with_IN appropriate_JJ weights_NNS computed_VBD according_VBG to_TO equation_NN -LRB-_-LRB- #_# -RRB-_-RRB- ._.
+For_IN this_DT specific_JJ example_NN ,_, as_IN is_VBZ illustrated_VBN in_IN the_DT right_JJ part_NN of_IN Figure_NNP ##_NNP ,_, f_FW -LRB-_-LRB- Di_NNP ,_, -LRB-_-LRB- k_NN j_NN i_FW ,_, kopt_JJ i_LS -RRB-_-RRB- -RRB-_-RRB- is_VBZ defined_VBN as_IN the_DT following_JJ equation_NN -LRB-_-LRB- #_# -RRB-_-RRB- :_: Weight_NNP -LRB-_-LRB- kj_NNP i_LS -RRB-_-RRB- =_JJ f_FW -LRB-_-LRB- Di_NNP ,_, -LRB-_-LRB- kj_NN i_FW ,_, kopt_JJ i_LS -RRB-_-RRB- -RRB-_-RRB- =_JJ Di_NNP Ssmall_NNP Slarge_NNP -LRB-_-LRB- #_# -RRB-_-RRB- Ssmall_NNP and_CC Slarge_NNP are_VBP the_DT sizes_NNS of_IN the_DT smaller_JJR part_NN and_CC larger_JJR part_NN of_IN the_DT area_NN cut_VBN by_IN the_DT candidate_NN line_NN respectively_RB ._.
+In_IN this_DT case_NN ,_, node_NN #_# votes_NNS #_# for_IN the_DT candidate_NN lines_NNS that_WDT do_VBP not_RB cross_VB its_PRP$ area_NN since_IN Ssmall_NN =_JJ #_# ._.
+We_PRP show_VBP later_RB that_IN adaptive_JJ MSP_NNP improves_VBZ localization_NN accuracy_NN in_IN WSNs_NNS with_IN irregularly_JJ shaped_JJ deployment_NN areas_NNS ._.
+20_CD 5_CD ._.
+#_# Overhead_NN and_CC MSP_NNP Complexity_NNP Analysis_NN This_DT section_NN provides_VBZ a_DT complexity_NN analysis_NN of_IN the_DT MSP_NNP design_NN ._.
+We_PRP emphasize_VBP that_IN MSP_NNP adopts_VBZ an_DT asymmetric_JJ design_NN in_IN which_WDT sensor_NN nodes_NNS need_VBP only_RB to_TO detect_VB and_CC report_VB the_DT events_NNS ._.
+They_PRP are_VBP blissfully_RB oblivious_JJ to_TO the_DT processing_NN methods_NNS proposed_VBN in_IN previous_JJ sections_NNS ._.
+In_IN this_DT section_NN ,_, we_PRP analyze_VBP the_DT computational_JJ cost_NN on_IN the_DT node_NN sequence_NN processing_NN side_NN ,_, where_WRB resources_NNS are_VBP plentiful_JJ ._.
+According_VBG to_TO Algorithm_NNP #_# ,_, the_DT computational_JJ complexity_NN of_IN Basic_JJ MSP_NN is_VBZ O_NN -LRB-_-LRB- d_NN N_NN S_NN -RRB-_-RRB- ,_, and_CC the_DT storage_NN space_NN required_VBN is_VBZ O_NN -LRB-_-LRB- N_NN S_NN -RRB-_-RRB- ,_, where_WRB d_NN is_VBZ the_DT number_NN of_IN events_NNS ,_, N_NN is_VBZ the_DT number_NN of_IN target_NN nodes_NNS ,_, and_CC S_NN is_VBZ the_DT area_NN size_NN ._.
+According_VBG to_TO Algorithm_NNP #_# ,_, the_DT computational_JJ complexity_NN of_IN both_CC sequence-based_JJ MSP_NN and_CC iterative_JJ MSP_NN is_VBZ O_NN -LRB-_-LRB- cd_NN N_NN S_NN -RRB-_-RRB- ,_, where_WRB c_NN is_VBZ the_DT number_NN of_IN iterations_NNS and_CC c_NN =_JJ #_# for_IN sequencebased_JJ MSP_NNP ,_, and_CC the_DT storage_NN space_NN required_VBN is_VBZ O_NN -LRB-_-LRB- N_NN S_NN -RRB-_-RRB- ._.
+Both_CC the_DT computational_JJ complexity_NN and_CC storage_NN space_NN are_VBP equal_JJ within_IN a_DT constant_JJ factor_NN to_TO those_DT of_IN basic_JJ MSP_NNP ._.
+The_DT computational_JJ complexity_NN of_IN the_DT distribution-based_JJ estimation_NN -LRB-_-LRB- DBE_NN MSP_NN -RRB-_-RRB- is_VBZ greater_JJR ._.
+The_DT major_JJ overhead_NN comes_VBZ from_IN the_DT computation_NN of_IN joint_JJ distributions_NNS when_WRB both_DT predecessor_NN and_CC successor_NN nodes_NNS exit_NN ._.
+In_IN order_NN to_TO compute_VB the_DT marginal_JJ probability_NN ,_, MSP_NNP needs_VBZ to_TO enumerate_VB the_DT locations_NNS of_IN the_DT predecessor_NN node_NN and_CC the_DT successor_NN node_NN ._.
+For_IN example_NN ,_, if_IN node_NN A_NN has_VBZ predecessor_NN node_NN B_NN and_CC successor_NN node_NN C_NN ,_, then_RB the_DT marginal_JJ probability_NN PA_NN -LRB-_-LRB- x_NN ,_, y_NN -RRB-_-RRB- of_IN node_NN A_NN ''_'' s_NNS being_VBG at_IN location_NN -LRB-_-LRB- x_NN ,_, y_NN -RRB-_-RRB- is_VBZ :_: PA_NN -LRB-_-LRB- x_NN ,_, y_NN -RRB-_-RRB- =_JJ i_FW j_FW m_NN n_NN 1_CD NB_NN ,_, A_NN ,_, C_NN PB_NN -LRB-_-LRB- i_FW ,_, j_NN -RRB-_-RRB- PC_NN -LRB-_-LRB- m_NN ,_, n_NN -RRB-_-RRB- -LRB-_-LRB- #_# -RRB-_-RRB- NB_NN ,_, A_NN ,_, C_NN is_VBZ the_DT number_NN of_IN valid_JJ locations_NNS for_IN A_DT satisfying_VBG the_DT sequence_NN -LRB-_-LRB- B_NN ,_, A_NN ,_, C_NN -RRB-_-RRB- when_WRB B_NN is_VBZ at_IN -LRB-_-LRB- i_FW ,_, j_NN -RRB-_-RRB- and_CC C_NN is_VBZ at_IN -LRB-_-LRB- m_NN ,_, n_NN -RRB-_-RRB- ;_: PB_NN -LRB-_-LRB- i_FW ,_, j_NN -RRB-_-RRB- is_VBZ the_DT available_JJ probability_NN of_IN node_NN B_NN ''_'' s_NNS being_VBG located_VBN at_IN -LRB-_-LRB- i_FW ,_, j_NN -RRB-_-RRB- ;_: PC_NN -LRB-_-LRB- m_NN ,_, n_NN -RRB-_-RRB- is_VBZ the_DT available_JJ probability_NN of_IN node_NN C_NN ''_'' s_NNS being_VBG located_VBN at_IN -LRB-_-LRB- m_NN ,_, n_NN -RRB-_-RRB- ._.
+A_DT naive_JJ algorithm_NN to_TO compute_VB equation_NN -LRB-_-LRB- #_# -RRB-_-RRB- has_VBZ complexity_NN O_NN -LRB-_-LRB- d_NN N_NN S3_NN -RRB-_-RRB- ._.
+However_RB ,_, since_IN the_DT marginal_JJ probability_NN indeed_RB comes_VBZ from_IN only_RB one_CD dimension_NN along_IN the_DT scanning_NN direction_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, a_DT line_NN -RRB-_-RRB- ,_, the_DT complexity_NN can_MD be_VB reduced_VBN to_TO O_NN -LRB-_-LRB- d_NN N_NN S1_NN ._.
+#_# -RRB-_-RRB- after_IN algorithm_NN optimization_NN ._.
+In_IN addition_NN ,_, the_DT final_JJ location_NN areas_NNS for_IN every_DT node_NN are_VBP much_RB smaller_JJR than_IN the_DT original_JJ field_NN S_NN ;_: therefore_RB ,_, in_IN practice_NN ,_, DBE_NNP MSP_NNP can_MD be_VB computed_VBN much_JJ faster_JJR than_IN O_NN -LRB-_-LRB- d_NN N_NN S1_NN ._.
+#_# -RRB-_-RRB- ._.
+6_CD Wave_NNP Propagation_NN Example_NN So_RB far_RB ,_, the_DT description_NN of_IN MSP_NNP has_VBZ been_VBN solely_RB in_IN the_DT context_NN of_IN straight-line_JJ scan_VB ._.
+However_RB ,_, we_PRP note_VBP that_IN MSP_NNP is_VBZ conceptually_RB independent_JJ of_IN how_WRB the_DT event_NN is_VBZ propagated_VBN as_RB long_RB as_IN node_NN sequences_NNS can_MD be_VB obtained_VBN ._.
+Clearly_RB ,_, we_PRP can_MD also_RB support_VB wave-propagation-based_JJ events_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, ultrasound_NN propagation_NN ,_, air_NN blast_NN propagation_NN -RRB-_-RRB- ,_, which_WDT are_VBP polar_JJ coordinate_JJ equivalences_NNS of_IN the_DT line_NN scans_VBZ in_IN the_DT Cartesian_JJ coordinate_JJ system_NN ._.
+This_DT section_NN illustrates_VBZ the_DT effects_NNS of_IN MSP_NNP ''_'' s_VBZ implementation_NN in_IN the_DT wave_NN propagation-based_JJ situation_NN ._.
+For_IN easy_JJ modelling_NN ,_, we_PRP have_VBP made_VBN the_DT following_VBG assumptions_NNS :_: The_DT wave_NN propagates_VBZ uniformly_RB in_IN all_DT directions_NNS ,_, therefore_RB the_DT propagation_NN has_VBZ a_DT circle_NN frontier_NN surface_NN ._.
+Since_IN MSP_NN does_VBZ not_RB rely_VB on_IN an_DT accurate_JJ space-time_NN relationship_NN ,_, a_DT certain_JJ distortion_NN in_IN wave_NN propagation_NN is_VBZ tolerable_JJ ._.
+If_IN any_DT directional_JJ wave_NN is_VBZ used_VBN ,_, the_DT propagation_NN frontier_NN surface_NN can_MD be_VB modified_VBN accordingly_RB ._.
+1_CD 3_CD 5_CD 9_CD Target_NN node_NN Anchor_NNP node_NN Previous_JJ Event_NN location_NN A_NN 2_CD Center_NNP of_IN Gravity_NN 4_CD 8_CD 7_CD B_NN 6_CD C_NN A_DT line_NN of_IN preferred_JJ locations_NNS for_IN next_JJ event_NN Figure_NN ##_NN ._.
+Example_NN of_IN Wave_NNP Propagation_NN Situation_NN Under_IN the_DT situation_NN of_IN line-of-sight_NN ,_, we_PRP allow_VBP obstacles_NNS to_TO reflect_VB or_CC deflect_VB the_DT wave_NN ._.
+Reflection_NN and_CC deflection_NN are_VBP not_RB problems_NNS because_IN each_DT node_NN reacts_VBZ only_RB to_TO the_DT first_JJ detected_VBN event_NN ._.
+Those_DT reflected_VBN or_CC deflected_VBN waves_NNS come_VBP later_RB than_IN the_DT line-of-sight_JJ waves_NNS ._.
+The_DT only_JJ thing_NN the_DT system_NN needs_VBZ to_TO maintain_VB is_VBZ an_DT appropriate_JJ time_NN interval_NN between_IN two_CD successive_JJ localization_NN events_NNS ._.
+We_PRP assume_VBP that_IN background_NN noise_NN exists_VBZ ,_, and_CC therefore_RB we_PRP run_VBP a_DT band-pass_NN filter_NN to_TO listen_VB to_TO a_DT particular_JJ wave_NN frequency_NN ._.
+This_DT reduces_VBZ the_DT chances_NNS of_IN false_JJ detection_NN ._.
+The_DT parameter_NN that_WDT affects_VBZ the_DT localization_NN event_NN generation_NN here_RB is_VBZ the_DT source_NN location_NN of_IN the_DT event_NN ._.
+The_DT different_JJ distances_NNS between_IN each_DT node_NN and_CC the_DT event_NN source_NN determine_VB the_DT rank_NN of_IN each_DT node_NN in_IN the_DT node_NN sequence_NN ._.
+Using_VBG the_DT node_NN sequences_NNS ,_, the_DT MSP_NNP algorithm_NN divides_VBZ the_DT whole_JJ area_NN into_IN many_JJ non-rectangular_JJ areas_NNS as_IN shown_VBN in_IN Figure_NNP ##_NNP ._.
+In_IN this_DT figure_NN ,_, the_DT stars_NNS represent_VBP two_CD previous_JJ event_NN sources_NNS ._.
+The_DT previous_JJ two_CD propagations_NNS split_VBD the_DT whole_JJ map_NN into_IN many_JJ areas_NNS by_IN those_DT dashed_VBN circles_NNS that_WDT pass_VBP one_CD of_IN the_DT anchors_NNS ._.
+Each_DT node_NN is_VBZ located_JJ in_IN one_CD of_IN the_DT small_JJ areas_NNS ._.
+Since_IN sequence-based_JJ MSP_NNP ,_, iterative_JJ MSP_NNP and_CC DBE_NNP MSP_NNP make_VB no_DT assumptions_NNS about_IN the_DT type_NN of_IN localization_NN events_NNS and_CC the_DT shape_NN of_IN the_DT area_NN ,_, all_DT three_CD optimization_NN algorithms_NNS can_MD be_VB applied_VBN for_IN the_DT wave_NN propagation_NN scenario_NN ._.
+However_RB ,_, adaptive_JJ MSP_NNP needs_VBZ more_RBR explanation_NN ._.
+Figure_NNP ##_NNP illustrates_VBZ an_DT example_NN of_IN nodes_NNS ''_'' voting_VBG for_IN next_JJ event_NN source_NN locations_NNS ._.
+Unlike_IN the_DT straight-line_JJ scan_VB ,_, the_DT critical_JJ parameter_NN now_RB is_VBZ the_DT location_NN of_IN the_DT event_NN source_NN ,_, because_IN the_DT distance_NN between_IN each_DT node_NN and_CC the_DT event_NN source_NN determines_VBZ the_DT rank_NN of_IN the_DT node_NN in_IN the_DT sequence_NN ._.
+In_IN Figure_NNP ##_NNP ,_, if_IN the_DT next_JJ event_NN breaks_NNS out_IN along_IN /_: near_IN the_DT solid_JJ thick_JJ gray_JJ line_NN ,_, which_WDT perpendicularly_RB bisects_VBZ the_DT solid_JJ dark_JJ line_NN between_IN anchor_NN C_NN and_CC the_DT center_NN of_IN gravity_NN of_IN node_NN #_# ''_'' s_VBZ area_NN -LRB-_-LRB- the_DT gray_JJ area_NN -RRB-_-RRB- ,_, the_DT wave_NN would_MD reach_VB anchor_NN C_NN and_CC the_DT center_NN of_IN gravity_NN of_IN node_NN #_# ''_'' s_VBZ area_NN at_IN roughly_RB the_DT same_JJ time_NN ,_, which_WDT would_MD relatively_RB equally_RB divide_VB node_NN #_# ''_'' s_VBZ area_NN ._.
+Therefore_RB ,_, node_NN #_# prefers_VBZ to_TO vote_VB for_IN the_DT positions_NNS around_IN the_DT thick_JJ gray_JJ line_NN ._.
+7_CD Practical_NNP Deployment_NNP Issues_NNP For_IN the_DT sake_NN of_IN presentation_NN ,_, until_IN now_RB we_PRP have_VBP described_VBN MSP_NNP in_IN an_DT ideal_JJ case_NN where_WRB a_DT complete_JJ node_NN sequence_NN can_MD be_VB obtained_VBN with_IN accurate_JJ time_NN synchronization_NN ._.
+In_IN this_DT section_NN we_PRP describe_VBP how_WRB to_TO make_VB MSP_NNP work_VB well_RB under_IN more_JJR realistic_JJ conditions_NNS ._.
+21_CD 7_CD ._.
+#_# Incomplete_JJ Node_NNP Sequence_NN For_IN diverse_JJ reasons_NNS ,_, such_JJ as_IN sensor_NN malfunction_NN or_CC natural_JJ obstacles_NNS ,_, the_DT nodes_NNS in_IN the_DT network_NN could_MD fail_VB to_TO detect_VB localization_NN events_NNS ._.
+In_IN such_JJ cases_NNS ,_, the_DT node_NN sequence_NN will_MD not_RB be_VB complete_JJ ._.
+This_DT problem_NN has_VBZ two_CD versions_NNS :_: Anchor_NNP nodes_NNS are_VBP missing_VBG in_IN the_DT node_NN sequence_NN If_IN some_DT anchor_NN nodes_NNS fail_VBP to_TO respond_VB to_TO the_DT localization_NN events_NNS ,_, then_RB the_DT system_NN has_VBZ fewer_JJR anchors_NNS ._.
+In_IN this_DT case_NN ,_, the_DT solution_NN is_VBZ to_TO generate_VB more_JJR events_NNS to_TO compensate_VB for_IN the_DT loss_NN of_IN anchors_NNS so_RB as_IN to_TO achieve_VB the_DT desired_VBN accuracy_NN requirements_NNS ._.
+Target_NN nodes_NNS are_VBP missing_VBG in_IN the_DT node_NN sequence_NN There_EX are_VBP two_CD consequences_NNS when_WRB target_NN nodes_NNS are_VBP missing_VBG ._.
+First_RB ,_, if_IN these_DT nodes_NNS are_VBP still_RB be_VB useful_JJ to_TO sensing_VBG applications_NNS ,_, they_PRP need_VBP to_TO use_VB other_JJ backup_NN localization_NN approaches_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, Centroid_NN -RRB-_-RRB- to_TO localize_VB themselves_PRP with_IN help_NN from_IN their_PRP$ neighbors_NNS who_WP have_VBP already_RB learned_VBN their_PRP$ own_JJ locations_NNS from_IN MSP_NNP ._.
+Secondly_RB ,_, since_IN in_IN advanced_JJ MSP_NNP each_DT node_NN in_IN the_DT sequence_NN may_MD contribute_VB to_TO the_DT overall_JJ system_NN accuracy_NN ,_, dropping_VBG of_IN target_NN nodes_NNS from_IN sequences_NNS could_MD also_RB reduce_VB the_DT accuracy_NN of_IN the_DT localization_NN ._.
+Thus_RB ,_, proper_JJ compensation_NN procedures_NNS such_JJ as_IN adding_VBG more_JJR localization_NN events_NNS need_VBP to_TO be_VB launched_VBN ._.
+7_CD ._.
+#_# Localization_NN without_IN Time_NNP Synchronization_NNP In_IN a_DT sensor_NN network_NN without_IN time_NN synchronization_NN support_NN ,_, nodes_NNS can_MD not_RB be_VB ordered_VBN into_IN a_DT sequence_NN using_VBG timestamps_NNS ._.
+For_IN such_JJ cases_NNS ,_, we_PRP propose_VBP a_DT listen-detect-assemble-report_NN protocol_NN ,_, which_WDT is_VBZ able_JJ to_TO function_VB independently_RB without_IN time_NN synchronization_NN ._.
+listen-detect-assemble-report_NN requires_VBZ that_IN every_DT node_NN listens_VBZ to_TO the_DT channel_NN for_IN the_DT node_NN sequence_NN transmitted_VBN from_IN its_PRP$ neighbors_NNS ._.
+Then_RB ,_, when_WRB the_DT node_NN detects_VBZ the_DT localization_NN event_NN ,_, it_PRP assembles_VBZ itself_PRP into_IN the_DT newest_JJS node_NN sequence_NN it_PRP has_VBZ heard_VBN and_CC reports_VBZ the_DT updated_VBN sequence_NN to_TO other_JJ nodes_NNS ._.
+Figure_NNP ##_NN -LRB-_-LRB- a_DT -RRB-_-RRB- illustrates_VBZ an_DT example_NN for_IN the_DT listen-detect-assemble-report_JJ protocol_NN ._.
+For_IN simplicity_NN ,_, in_IN this_DT figure_NN we_PRP did_VBD not_RB differentiate_VB the_DT target_NN nodes_NNS from_IN anchor_NN nodes_NNS ._.
+A_DT solid_JJ line_NN between_IN two_CD nodes_NNS stands_VBZ for_IN a_DT communication_NN link_NN ._.
+Suppose_VB a_DT straight_JJ line_NN scans_VBZ from_IN left_VBN to_TO right_NN ._.
+Node_NN #_# detects_VBZ the_DT event_NN ,_, and_CC then_RB it_PRP broadcasts_VBZ the_DT sequence_NN -LRB-_-LRB- #_# -RRB-_-RRB- into_IN the_DT network_NN ._.
+Node_NN #_# and_CC node_NN 3_CD receive_VBP this_DT sequence_NN ._.
+When_WRB node_NN #_# detects_VBZ the_DT event_NN ,_, node_NN 2_CD adds_VBZ itself_PRP into_IN the_DT sequence_NN and_CC broadcasts_NNS -LRB-_-LRB- #_# ,_, #_# -RRB-_-RRB- ._.
+The_DT sequence_NN propagates_VBZ in_IN the_DT same_JJ direction_NN with_IN the_DT scan_VB as_IN shown_VBN in_IN Figure_NNP ##_NN -LRB-_-LRB- a_DT -RRB-_-RRB- ._.
+Finally_RB ,_, node_NN #_# obtains_VBZ a_DT complete_JJ sequence_NN -LRB-_-LRB- #_# ,_, #_# ,_, #_# ,_, #_# ,_, #_# ,_, #_# ,_, #_# -RRB-_-RRB- ._.
+In_IN the_DT case_NN of_IN ultrasound_NN propagation_NN ,_, because_IN the_DT event_NN propagation_NN speed_NN is_VBZ much_RB slower_JJR than_IN that_DT of_IN radio_NN ,_, the_DT listendetect-assemble-report_JJ protocol_NN can_MD work_VB well_RB in_IN a_DT situation_NN where_WRB the_DT node_NN density_NN is_VBZ not_RB very_RB high_JJ ._.
+For_IN instance_NN ,_, if_IN the_DT distance_NN between_IN two_CD nodes_NNS along_IN one_CD direction_NN is_VBZ ##_CD meters_NNS ,_, the_DT 340m_NN /_: s_NNS sound_JJ needs_NNS ##_VBP ._.
+4ms_NNS to_TO propagate_VB from_IN one_CD node_NN to_TO the_DT other_JJ ._.
+While_IN normally_RB the_DT communication_NN data_NN rate_NN is_VBZ 250Kbps_NN in_IN the_DT WSN_NNP -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, CC2420_NN -LSB-_-LRB- #_# -RSB-_-RRB- -RRB-_-RRB- ,_, it_PRP takes_VBZ only_RB about_RB 2_CD #_# ms_NNS to_TO transmit_VB an_DT assembled_VBN packet_NN for_IN one_CD hop_NN ._.
+One_CD problem_NN that_WDT may_MD occur_VB using_VBG the_DT listen-detectassemble-report_NN protocol_NN is_VBZ multiple_JJ partial_JJ sequences_NNS as_IN shown_VBN in_IN Figure_NNP ##_NN -LRB-_-LRB- b_NN -RRB-_-RRB- ._.
+Two_CD separate_JJ paths_NNS in_IN the_DT network_NN may_MD result_VB in_IN two_CD sequences_NNS that_WDT could_MD not_RB be_VB further_JJ combined_VBN ._.
+In_IN this_DT case_NN ,_, since_IN the_DT two_CD sequences_NNS can_MD only_RB be_VB processed_VBN as_IN separate_JJ sequences_NNS ,_, some_DT order_NN information_NN is_VBZ lost_VBN ._.
+Therefore_RB the_DT 1_CD ,_, #_# ,_, #_# ,_, #_# 1_CD ,_, #_# ,_, #_# ,_, #_# 1_CD ,_, #_# ,_, #_# ,_, #_# #_# ,_, #_# ,_, #_# ,_, #_# ,_, #_# ,_, #_# 1_CD ,_, #_# ,_, #_# ,_, #_# ,_, #_# 1_CD ,_, #_# ,_, #_# ,_, #_# 1_CD ,_, #_# 1_CD ,_, #_# 1_CD 2_CD 3_CD 5_CD 7_CD 4_CD 6_CD 1_CD 1_CD 1_CD ,_, #_# #_# ,_, #_# ,_, #_# ,_, #_# ,_, #_# ,_, #_# ,_, #_# 1_CD ,_, #_# ,_, #_# 1_CD ,_, #_# ,_, #_# 1_CD ,_, #_# 1_CD ,_, #_# 1_CD 2_CD 3_CD 5_CD 7_CD 4_CD 6_CD 1_CD 1_CD 1_CD ,_, #_# ,_, #_# ,_, #_# ,_, #_# 1_CD ,_, #_# ,_, #_# ,_, #_# ,_, #_# -LRB-_-LRB- a_DT -RRB-_-RRB- -LRB-_-LRB- b_NN -RRB-_-RRB- -LRB-_-LRB- c_NN -RRB-_-RRB- 1_CD ,_, #_# ,_, #_# ,_, #_# #_# ,_, #_# ,_, #_# ,_, #_# ,_, #_# ,_, #_# 1_CD ,_, #_# ,_, #_# ,_, #_# ,_, #_# 1_CD ,_, #_# ,_, #_# ,_, #_# 1_CD ,_, #_# 1_CD ,_, #_# 1_CD 2_CD 3_CD 5_CD 7_CD 4_CD 6_CD 1_CD 1_CD 1_CD ,_, #_# #_# ,_, #_# ,_, #_# ,_, #_# ,_, #_# ,_, #_# ,_, #_# Event_NNP Propagation_NN Event_NN Propagation_NN Event_NN Propagation_NN Figure_NN ##_NN ._.
+Node_NNP Sequence_NN without_IN Time_NNP Synchronization_NN accuracy_NN of_IN the_DT system_NN would_MD decrease_VB ._.
+The_DT other_JJ problem_NN is_VBZ the_DT sequence_NN flip_JJ problem_NN ._.
+As_IN shown_VBN in_IN Figure_NNP ##_NN -LRB-_-LRB- c_NN -RRB-_-RRB- ,_, because_IN node_NN #_# and_CC node_NN #_# are_VBP too_RB close_JJ to_TO each_DT other_JJ along_IN the_DT scan_VB direction_NN ,_, they_PRP detect_VBP the_DT scan_VB almost_RB simultaneously_RB ._.
+Due_JJ to_TO the_DT uncertainty_NN such_JJ as_IN media_NNS access_NN delay_NN ,_, two_CD messages_NNS could_MD be_VB transmitted_VBN out_IN of_IN order_NN ._.
+For_IN example_NN ,_, if_IN node_NN #_# sends_VBZ out_RP its_PRP$ report_NN first_RB ,_, then_RB the_DT order_NN of_IN node_NN #_# and_CC node_NN #_# gets_VBZ flipped_VBN in_IN the_DT final_JJ node_NN sequence_NN ._.
+The_DT sequence_NN flip_JJ problem_NN would_MD appear_VB even_RB in_IN an_DT accurately_RB synchronized_VBN system_NN due_JJ to_TO random_JJ jitter_NN in_IN node_NN detection_NN if_IN an_DT event_NN arrives_VBZ at_IN multiple_JJ nodes_NNS almost_RB simultaneously_RB ._.
+A_DT method_NN addressing_VBG the_DT sequence_NN flip_JJ is_VBZ presented_VBN in_IN the_DT next_JJ section_NN ._.
+7_CD ._.
+#_# Sequence_NN Flip_NN and_CC Protection_NN Band_NN Sequence_NN flip_JJ problems_NNS can_MD be_VB solved_VBN with_IN and_CC without_IN time_NN synchronization_NN ._.
+We_PRP firstly_RB start_VBP with_IN a_DT scenario_NN applying_VBG time_NN synchronization_NN ._.
+Existing_VBG solutions_NNS for_IN time_NN synchronization_NN -LSB-_-LRB- ##_CD ,_, #_# -RSB-_-RRB- can_MD easily_RB achieve_VB sub-millisecond-level_JJ accuracy_NN ._.
+For_IN example_NN ,_, FTSP_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- achieves_VBZ ##_CD ._.
+9s_NNS -LRB-_-LRB- microsecond_NN -RRB-_-RRB- average_JJ error_NN for_IN a_DT two-node_JJ single-hop_JJ case_NN ._.
+Therefore_RB ,_, we_PRP can_MD comfortably_RB assume_VB that_IN the_DT network_NN is_VBZ synchronized_VBN with_IN maximum_NN error_NN of_IN 1000s_CD ._.
+However_RB ,_, when_WRB multiple_JJ nodes_NNS are_VBP located_JJ very_RB near_IN to_TO each_DT other_JJ along_IN the_DT event_NN propagation_NN direction_NN ,_, even_RB when_WRB time_NN synchronization_NN with_IN less_JJR than_IN 1ms_CD error_NN is_VBZ achieved_VBN in_IN the_DT network_NN ,_, sequence_NN flip_VBP may_MD still_RB occur_VB ._.
+For_IN example_NN ,_, in_IN the_DT sound_JJ wave_NN propagation_NN case_NN ,_, if_IN two_CD nodes_NNS are_VBP less_JJR than_IN #_# ._.
+##_NN meters_NNS apart_RB ,_, the_DT difference_NN between_IN their_PRP$ detection_NN timestamp_NN would_MD be_VB smaller_JJR than_IN #_# millisecond_NN ._.
+We_PRP find_VBP that_IN sequence_NN flip_JJ could_MD not_RB only_RB damage_NN system_NN accuracy_NN ,_, but_CC also_RB might_MD cause_VB a_DT fatal_JJ error_NN in_IN the_DT MSP_NNP algorithm_NN ._.
+Figure_NNP ##_NNP illustrates_VBZ both_DT detrimental_JJ results_NNS ._.
+In_IN the_DT left_JJ side_NN of_IN Figure_NNP ##_NN -LRB-_-LRB- a_DT -RRB-_-RRB- ,_, suppose_VB node_NN #_# and_CC node_NN #_# are_VBP so_RB close_JJ to_TO each_DT other_JJ that_IN it_PRP takes_VBZ less_JJR than_IN #_# ._.
+5ms_NNS for_IN the_DT localization_NN event_NN to_TO propagate_VB from_IN node_NN #_# to_TO node_NN #_# ._.
+Now_RB unfortunately_RB ,_, the_DT node_NN sequence_NN is_VBZ mistaken_VBN to_TO be_VB -LRB-_-LRB- #_# ,_, #_# -RRB-_-RRB- ._.
+So_RB node_NN #_# is_VBZ expected_VBN to_TO be_VB located_JJ to_TO the_DT right_NN of_IN node_NN #_# ,_, such_JJ as_IN at_IN the_DT position_NN of_IN the_DT dashed_VBN node_NN #_# ._.
+According_VBG to_TO the_DT elimination_NN rule_NN in_IN sequencebased_JJ MSP_NNP ,_, the_DT left_JJ part_NN of_IN node_NN #_# ''_'' s_VBZ area_NN is_VBZ cut_VBN off_RP as_IN shown_VBN in_IN the_DT right_JJ part_NN of_IN Figure_NNP ##_NN -LRB-_-LRB- a_DT -RRB-_-RRB- ._.
+This_DT is_VBZ a_DT potentially_RB fatal_JJ error_NN ,_, because_IN node_NN #_# is_VBZ actually_RB located_JJ in_IN the_DT dashed_VBN area_NN which_WDT has_VBZ been_VBN eliminated_VBN by_IN mistake_NN ._.
+During_IN the_DT subsequent_JJ eliminations_NNS introduced_VBN by_IN other_JJ events_NNS ,_, node_NN #_# ''_'' s_VBZ area_NN might_MD be_VB cut_VBN off_RP completely_RB ,_, thus_RB node_NN #_# could_MD consequently_RB be_VB erased_VBN from_IN the_DT map_NN !_.
+Even_RB in_IN cases_NNS where_WRB node_NN #_# still_RB survives_VBZ ,_, its_PRP$ area_NN actually_RB does_VBZ not_RB cover_VB its_PRP$ real_JJ location_NN ._.
+22_CD 1_CD 2_CD 12_CD 2_CD Lower_JJR boundary_NN of_IN #_# Upper_NNP boundary_NN of_IN #_# Flipped_VBD Sequence_NN Fatal_JJ Elimination_NN Error_NN EventPropagation_NN 1_CD #_# Fatal_JJ Error_NN 1_CD 1_CD 2_CD 12_CD 2_CD Lower_JJR boundary_NN of_IN #_# Upper_NNP boundary_NN of_IN #_# Flipped_VBD Sequence_NN Safe_NN Elimination_NN EventPropagation_NN 1_CD #_# New_NNP lower_JJR boundary_NN of_IN #_# 1_CD B_NN -LRB-_-LRB- a_DT -RRB-_-RRB- -LRB-_-LRB- b_NN -RRB-_-RRB- B_NN :_: Protection_NNP band_NN Figure_NNP ##_NNP ._.
+Sequence_NN Flip_NN and_CC Protection_NN Band_NN Another_DT problem_NN is_VBZ not_RB fatal_JJ but_CC lowers_VBZ the_DT localization_NN accuracy_NN ._.
+If_IN we_PRP get_VBP the_DT right_JJ node_NN sequence_NN -LRB-_-LRB- #_# ,_, #_# -RRB-_-RRB- ,_, node_NN #_# has_VBZ a_DT new_JJ upper_JJ boundary_NN which_WDT can_MD narrow_VB the_DT area_NN of_IN node_NN #_# as_IN in_IN Figure_NNP #_# ._.
+Due_JJ to_TO the_DT sequence_NN flip_JJ ,_, node_NN #_# loses_VBZ this_DT new_JJ upper_JJ boundary_NN ._.
+In_IN order_NN to_TO address_VB the_DT sequence_NN flip_JJ problem_NN ,_, especially_RB to_TO prevent_VB nodes_NNS from_IN being_VBG erased_VBN from_IN the_DT map_NN ,_, we_PRP propose_VBP a_DT protection_NN band_NN compensation_NN approach_NN ._.
+The_DT basic_JJ idea_NN of_IN protection_NN band_NN is_VBZ to_TO extend_VB the_DT boundary_NN of_IN the_DT location_NN area_NN a_DT little_JJ bit_NN so_RB as_IN to_TO make_VB sure_JJ that_IN the_DT node_NN will_MD never_RB be_VB erased_VBN from_IN the_DT map_NN ._.
+This_DT solution_NN is_VBZ based_VBN on_IN the_DT fact_NN that_IN nodes_NNS have_VBP a_DT high_JJ probability_NN of_IN flipping_VBG in_IN the_DT sequence_NN if_IN they_PRP are_VBP near_IN to_TO each_DT other_JJ along_IN the_DT event_NN propagation_NN direction_NN ._.
+If_IN two_CD nodes_NNS are_VBP apart_RB from_IN each_DT other_JJ more_JJR than_IN some_DT distance_NN ,_, say_VBP ,_, B_NN ,_, they_PRP rarely_RB flip_VBP unless_IN the_DT nodes_NNS are_VBP faulty_JJ ._.
+The_DT width_NN of_IN a_DT protection_NN band_NN B_NN ,_, is_VBZ largely_RB determined_VBN by_IN the_DT maximum_NN error_NN in_IN system_NN time_NN synchronization_NN and_CC the_DT localization_NN event_NN propagation_NN speed_NN ._.
+Figure_NNP ##_NN -LRB-_-LRB- b_NN -RRB-_-RRB- presents_VBZ the_DT application_NN of_IN the_DT protection_NN band_NN ._.
+Instead_RB of_IN eliminating_VBG the_DT dashed_VBN part_NN in_IN Figure_NNP ##_NN -LRB-_-LRB- a_DT -RRB-_-RRB- for_IN node_NN 1_CD ,_, the_DT new_JJ lower_JJR boundary_NN of_IN node_NN #_# is_VBZ set_VBN by_IN shifting_VBG the_DT original_JJ lower_JJR boundary_NN of_IN node_NN #_# to_TO the_DT left_VBN by_IN distance_NN B_NN ._.
+In_IN this_DT case_NN ,_, the_DT location_NN area_NN still_RB covers_VBZ node_NN #_# and_CC protects_VBZ it_PRP from_IN being_VBG erased_VBN ._.
+In_IN a_DT practical_JJ implementation_NN ,_, supposing_VBG that_IN the_DT ultrasound_NN event_NN is_VBZ used_VBN ,_, if_IN the_DT maximum_NN error_NN of_IN system_NN time_NN synchronization_NN is_VBZ 1ms_JJ ,_, two_CD nodes_NNS might_MD flip_VB with_IN high_JJ probability_NN if_IN the_DT timestamp_NN difference_NN between_IN the_DT two_CD nodes_NNS is_VBZ smaller_JJR than_IN or_CC equal_JJ to_TO 1ms_NNS ._.
+Accordingly_RB ,_, we_PRP set_VBD the_DT protection_NN band_NN B_NN as_IN #_# ._.
+34m_NN -LRB-_-LRB- the_DT distance_NN sound_NN can_MD propagate_VB within_IN 1_CD millisecond_NN -RRB-_-RRB- ._.
+By_IN adding_VBG the_DT protection_NN band_NN ,_, we_PRP reduce_VBP the_DT chances_NNS of_IN fatal_JJ errors_NNS ,_, although_IN at_IN the_DT cost_NN of_IN localization_NN accuracy_NN ._.
+Empirical_JJ results_NNS obtained_VBN from_IN our_PRP$ physical_JJ test-bed_JJ verified_VBN this_DT conclusion_NN ._.
+In_IN the_DT case_NN of_IN using_VBG the_DT listen-detect-assemble-report_NN protocol_NN ,_, the_DT only_JJ change_NN we_PRP need_VBP to_TO make_VB is_VBZ to_TO select_VB the_DT protection_NN band_NN according_VBG to_TO the_DT maximum_NN delay_NN uncertainty_NN introduced_VBN by_IN the_DT MAC_NNP operation_NN and_CC the_DT event_NN propagation_NN speed_NN ._.
+To_TO bound_VBN MAC_NNP delay_NN at_IN the_DT node_NN side_NN ,_, a_DT node_NN can_MD drop_VB its_PRP$ report_NN message_NN if_IN it_PRP experiences_VBZ excessive_JJ MAC_NNP delay_NN ._.
+This_DT converts_VBZ the_DT sequence_NN flip_JJ problem_NN to_TO the_DT incomplete_JJ sequence_NN problem_NN ,_, which_WDT can_MD be_VB more_RBR easily_RB addressed_VBN by_IN the_DT method_NN proposed_VBN in_IN Section_NN #_# ._.
+#_# ._.
+8_CD Simulation_NN Evaluation_NN Our_PRP$ evaluation_NN of_IN MSP_NNP was_VBD conducted_VBN on_IN three_CD platforms_NNS :_: -LRB-_-LRB- i_LS -RRB-_-RRB- an_DT indoor_JJ system_NN with_IN ##_VBN MICAz_NNP motes_NNS using_VBG straight-line_JJ scan_VB ,_, -LRB-_-LRB- ii_LS -RRB-_-RRB- an_DT outdoor_JJ system_NN with_IN ##_VBN MICAz_NNP motes_NNS using_VBG sound_JJ wave_NN propagation_NN ,_, and_CC -LRB-_-LRB- iii_LS -RRB-_-RRB- an_DT extensive_JJ simulation_NN under_IN various_JJ kinds_NNS of_IN physical_JJ settings_NNS ._.
+In_IN order_NN to_TO understand_VB the_DT behavior_NN of_IN MSP_NNP under_IN numerous_JJ settings_NNS ,_, we_PRP start_VBP our_PRP$ evaluation_NN with_IN simulations_NNS ._.
+Then_RB ,_, we_PRP implemented_VBD basic_JJ MSP_NNP and_CC all_PDT the_DT advanced_JJ MSP_NNP methods_NNS for_IN the_DT case_NN where_WRB time_NN synchronization_NN is_VBZ available_JJ in_IN the_DT network_NN ._.
+The_DT simulation_NN and_CC implementation_NN details_NNS are_VBP omitted_VBN in_IN this_DT paper_NN due_JJ to_TO space_NN constraints_NNS ,_, but_CC related_JJ documents_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- are_VBP provided_VBN online_NN at_IN http_NN :_: /_: /_: www_NN ._.
+cs_NNS ._.
+umn_NN ._.
+edu_FW /_: zhong_FW /_: MSP_NNP ._.
+Full_JJ implementation_NN and_CC evaluation_NN of_IN system_NN without_IN time_NN synchronization_NN are_VBP yet_RB to_TO be_VB completed_VBN in_IN the_DT near_JJ future_NN ._.
+In_IN simulation_NN ,_, we_PRP assume_VBP all_PDT the_DT node_NN sequences_NNS are_VBP perfect_JJ so_RB as_IN to_TO reveal_VB the_DT performance_NN of_IN MSP_NNP achievable_JJ in_IN the_DT absence_NN of_IN incomplete_JJ node_NN sequences_NNS or_CC sequence_NN flips_VBZ ._.
+In_IN our_PRP$ simulations_NNS ,_, all_PDT the_DT anchor_NN nodes_NNS and_CC target_NN nodes_NNS are_VBP assumed_VBN to_TO be_VB deployed_VBN uniformly_RB ._.
+The_DT mean_NN and_CC maximum_JJ errors_NNS are_VBP averaged_VBN over_IN ##_CD runs_NNS to_TO obtain_VB high_JJ confidence_NN ._.
+For_IN legibility_NN reasons_NNS ,_, we_PRP do_VBP not_RB plot_VB the_DT confidence_NN intervals_NNS in_IN this_DT paper_NN ._.
+All_PDT the_DT simulations_NNS are_VBP based_VBN on_IN the_DT straight-line_JJ scan_VB example_NN ._.
+We_PRP implement_VBP three_CD scan_VB strategies_NNS :_: Random_NNP Scan_VB :_: The_DT slope_NN of_IN the_DT scan_VB line_NN is_VBZ randomly_RB chosen_VBN at_IN each_DT time_NN ._.
+Regular_JJ Scan_VB :_: The_DT slope_NN is_VBZ predetermined_VBN to_TO rotate_VB uniformly_RB from_IN #_# degree_NN to_TO ###_CD degrees_NNS ._.
+For_IN example_NN ,_, if_IN the_DT system_NN scans_VBZ #_# times_NNS ,_, then_RB the_DT scan_VB angles_NNS would_MD be_VB :_: #_# ,_, 30_CD ,_, ##_CD ,_, ##_CD ,_, ###_CD ,_, and_CC ###_NN ._.
+Adaptive_JJ Scan_VB :_: The_DT slope_NN of_IN each_DT scan_VB is_VBZ determined_VBN based_VBN on_IN the_DT localization_NN results_VBZ from_IN previous_JJ scans_NNS ._.
+We_PRP start_VBP with_IN basic_JJ MSP_NNP and_CC then_RB demonstrate_VBP the_DT performance_NN improvements_NNS one_CD step_NN at_IN a_DT time_NN by_IN adding_VBG -LRB-_-LRB- i_LS -RRB-_-RRB- sequencebased_JJ MSP_NNP ,_, -LRB-_-LRB- ii_LS -RRB-_-RRB- iterative_JJ MSP_NNP ,_, -LRB-_-LRB- iii_LS -RRB-_-RRB- DBE_NNP MSP_NNP and_CC -LRB-_-LRB- iv_LS -RRB-_-RRB- adaptive_JJ MSP_NNP ._.
+8_CD ._.
+#_# Performance_NNP of_IN Basic_JJ MSP_NNP The_DT evaluation_NN starts_VBZ with_IN basic_JJ MSP_NNP ,_, where_WRB we_PRP compare_VBP the_DT performance_NN of_IN random_JJ scan_VB and_CC regular_JJ scan_VB under_IN different_JJ configurations_NNS ._.
+We_PRP intend_VBP to_TO illustrate_VB the_DT impact_NN of_IN the_DT number_NN of_IN anchors_NNS M_NN ,_, the_DT number_NN of_IN scans_NNS d_NN ,_, and_CC target_NN node_NN density_NN -LRB-_-LRB- number_NN of_IN target_NN nodes_NNS N_NN in_IN a_DT fixed-size_JJ region_NN -RRB-_-RRB- on_IN the_DT localization_NN error_NN ._.
+Table_NNP #_# shows_VBZ the_DT default_NN simulation_NN parameters_NNS ._.
+The_DT error_NN of_IN each_DT node_NN is_VBZ defined_VBN as_IN the_DT distance_NN between_IN the_DT estimated_VBN location_NN and_CC the_DT real_JJ position_NN ._.
+We_PRP note_VBP that_IN by_IN default_NN we_PRP only_RB use_VBP three_CD anchors_NNS ,_, which_WDT is_VBZ considerably_RB fewer_JJR than_IN existing_VBG range-free_JJ solutions_NNS -LSB-_-LRB- #_# ,_, #_# -RSB-_-RRB- ._.
+Impact_NN of_IN the_DT Number_NNP of_IN Scans_NNPS :_: In_IN this_DT experiment_NN ,_, we_PRP compare_VBP regular_JJ scan_VB with_IN random_JJ scan_VB under_IN a_DT different_JJ number_NN of_IN scans_NNS from_IN #_# to_TO ##_VB in_IN steps_NNS of_IN #_# ._.
+The_DT number_NN of_IN anchors_NNS Table_NNP #_# ._.
+Default_NNP Configuration_NNP Parameters_NNP Parameter_NNP Description_NN Field_NN Area_NN ######_NN -LRB-_-LRB- Grid_NNP Unit_NNP -RRB-_-RRB- Scan_VB Type_NN Regular_JJ -LRB-_-LRB- Default_NNP -RRB-_-RRB- /_: Random_NNP Scan_VB Anchor_NNP Number_NNP #_# -LRB-_-LRB- Default_NNP -RRB-_-RRB- Scan_VB Times_NNP #_# -LRB-_-LRB- Default_NNP -RRB-_-RRB- Target_NN Node_NNP Number_NNP ###_NN -LRB-_-LRB- Default_NNP -RRB-_-RRB- Statistics_NNPS Error_NNP Mean_NN /_: Max_NNP Random_NNP Seeds_NNPS ##_NNP runs_VBZ 23_CD 0_CD #_# ##_CD ##_CD ##_CD ##_CD ##_NN 0_CD 10_CD 20_CD 30_CD 40_CD 50_CD 60_CD 70_CD 80_CD 90_CD Mean_NN Error_NN and_CC Max_NN Error_NN VS_NNS Scan_VB Time_NNP Scan_VB Time_NNP Error_NNP Max_NNP Error_NNP of_IN Random_NNP Scan_VB Max_NNP Error_NNP of_IN Regular_JJ Scan_VB Mean_NN Error_NN of_IN Random_NNP Scan_VB Mean_NN Error_NN of_IN Regular_JJ Scan_VB -LRB-_-LRB- a_DT -RRB-_-RRB- Error_NN vs_CC ._.
+Number_NN of_IN Scans_NNS 0_CD #_# ##_CD ##_CD ##_CD ##_CD ##_NN 0_CD 10_CD 20_CD 30_CD 40_CD 50_CD 60_CD Mean_NN Error_NN and_CC Max_NNP Error_NNP VS_NNP Anchor_NNP Number_NNP Anchor_NNP Number_NNP Error_NNP Max_NNP Error_NNP of_IN Random_NNP Scan_VB Max_NNP Error_NNP of_IN Regular_JJ Scan_VB Mean_NN Error_NN of_IN Random_NNP Scan_VB Mean_NN Error_NN of_IN Regular_JJ Scan_VB -LRB-_-LRB- b_NN -RRB-_-RRB- Error_NN vs_CC ._.
+Anchor_NNP Number_NNP 0_CD ##_CD ###_CD ###_CD ###_CD 10_CD 20_CD 30_CD 40_CD 50_CD 60_CD 70_CD Mean_NN Error_NN and_CC Max_NNP Error_NNP VS_NNP Target_NN Node_NNP Number_NNP Target_NN Node_NNP Number_NNP Error_NNP Max_NNP Error_NNP of_IN Random_NNP Scan_VB Max_NNP Error_NNP of_IN Regular_JJ Scan_VB Mean_NN Error_NN of_IN Random_NNP Scan_VB Mean_NN Error_NN of_IN Regular_JJ Scan_VB -LRB-_-LRB- c_NN -RRB-_-RRB- Error_NN vs_CC ._.
+Number_NN of_IN Target_NN Nodes_VBZ Figure_NNP ##_NNP ._.
+Evaluation_NN of_IN Basic_JJ MSP_NN under_IN Random_NNP and_CC Regular_JJ Scans_NNS 0_CD #_# ##_CD ##_CD ##_CD ##_CD ##_NN 0_CD 10_CD 20_CD 30_CD 40_CD 50_CD 60_CD 70_CD Basic_JJ MSP_NNP VS_NNP Sequence_NN Based_VBD MSP_NNP II_NNP Scan_VB Time_NNP Error_NNP Max_NNP Error_NNP of_IN Basic_JJ MSP_NNP Max_NNP Error_NNP of_IN Seq_NNP MSP_NNP Mean_NN Error_NN of_IN Basic_JJ MSP_NNP Mean_NN Error_NN of_IN Seq_NNP MSP_NNP -LRB-_-LRB- a_DT -RRB-_-RRB- Error_NN vs_CC ._.
+Number_NN of_IN Scans_NNS 0_CD #_# ##_CD ##_CD ##_CD ##_CD ##_NN 0_CD 5_CD 10_CD 15_CD 20_CD 25_CD 30_CD 35_CD 40_CD 45_CD 50_CD Basic_JJ MSP_NNP VS_NNP Sequence_NN Based_VBD MSP_NNP I_PRP Anchor_NNP Number_NNP Error_NNP Max_NNP Error_NNP of_IN Basic_JJ MSP_NNP Max_NNP Error_NNP of_IN Seq_NNP MSP_NNP Mean_NN Error_NN of_IN Basic_JJ MSP_NNP Mean_NN Error_NN of_IN Seq_NNP MSP_NNP -LRB-_-LRB- b_NN -RRB-_-RRB- Error_NN vs_CC ._.
+Anchor_NNP Number_NNP 0_CD ##_CD ###_CD ###_CD ###_CD 5_CD 10_CD 15_CD 20_CD 25_CD 30_CD 35_CD 40_CD 45_CD 50_CD 55_CD Basic_JJ MSP_NNP VS_NNP Sequence_NN Based_VBD MSP_NNP III_NNP Target_NN Node_NNP Number_NNP Error_NNP Max_NNP Error_NNP of_IN Basic_JJ MSP_NNP Max_NNP Error_NNP of_IN Seq_NNP MSP_NNP Mean_NN Error_NN of_IN Basic_JJ MSP_NNP Mean_NN Error_NN of_IN Seq_NNP MSP_NNP -LRB-_-LRB- c_NN -RRB-_-RRB- Error_NN vs_CC ._.
+Number_NN of_IN Target_NN Nodes_VBZ Figure_NNP ##_NNP ._.
+Improvements_NNP of_IN Sequence-Based_NNP MSP_NNP over_IN Basic_JJ MSP_NN is_VBZ #_# by_IN default_NN ._.
+Figure_NNP ##_NN -LRB-_-LRB- a_DT -RRB-_-RRB- indicates_VBZ the_DT following_NN :_: -LRB-_-LRB- i_LS -RRB-_-RRB- as_IN the_DT number_NN of_IN scans_NNS increases_NNS ,_, the_DT localization_NN error_NN decreases_VBZ significantly_RB ;_: for_IN example_NN ,_, localization_NN errors_NNS drop_VBP more_JJR than_IN 60_CD %_NN from_IN #_# scans_VBZ to_TO ##_VB scans_NNS ;_: -LRB-_-LRB- ii_LS -RRB-_-RRB- statistically_RB ,_, regular_JJ scan_VB achieves_VBZ better_JJR performance_NN than_IN random_JJ scan_VB under_IN identical_JJ number_NN of_IN scans_NNS ._.
+However_RB ,_, the_DT performance_NN gap_NN reduces_VBZ as_IN the_DT number_NN of_IN scans_NNS increases_NNS ._.
+This_DT is_VBZ expected_VBN since_IN a_DT large_JJ number_NN of_IN random_JJ numbers_NNS converges_VBZ to_TO a_DT uniform_JJ distribution_NN ._.
+Figure_NNP ##_NN -LRB-_-LRB- a_DT -RRB-_-RRB- also_RB demonstrates_VBZ that_IN MSP_NN requires_VBZ only_RB a_DT small_JJ number_NN of_IN anchors_NNS to_TO perform_VB very_RB well_RB ,_, compared_VBN to_TO existing_VBG range-free_JJ solutions_NNS -LSB-_-LRB- #_# ,_, #_# -RSB-_-RRB- ._.
+Impact_NN of_IN the_DT Number_NNP of_IN Anchors_NNP :_: In_IN this_DT experiment_NN ,_, we_PRP compare_VBP regular_JJ scan_VB with_IN random_JJ scan_VB under_IN different_JJ number_NN of_IN anchors_NNS from_IN #_# to_TO ##_VB in_IN steps_NNS of_IN #_# ._.
+The_DT results_NNS shown_VBN in_IN Figure_NNP ##_NN -LRB-_-LRB- b_NN -RRB-_-RRB- indicate_VBP that_IN -LRB-_-LRB- i_LS -RRB-_-RRB- as_IN the_DT number_NN of_IN anchor_NN nodes_NNS increases_VBZ ,_, the_DT localization_NN error_NN decreases_VBZ ,_, and_CC -LRB-_-LRB- ii_LS -RRB-_-RRB- statistically_RB ,_, regular_JJ scan_VB obtains_NNS better_JJR results_NNS than_IN random_JJ scan_VB with_IN identical_JJ number_NN of_IN anchors_NNS ._.
+By_IN combining_VBG Figures_NNS ##_CD -LRB-_-LRB- a_DT -RRB-_-RRB- and_CC ##_NN -LRB-_-LRB- b_NN -RRB-_-RRB- ,_, we_PRP can_MD conclude_VB that_IN MSP_NNP allows_VBZ a_DT flexible_JJ tradeoff_NN between_IN physical_JJ cost_NN -LRB-_-LRB- anchor_NN nodes_NNS -RRB-_-RRB- and_CC soft_JJ cost_NN -LRB-_-LRB- localization_NN events_NNS -RRB-_-RRB- ._.
+Impact_NN of_IN the_DT Target_NN Node_NNP Density_NNP :_: In_IN this_DT experiment_NN ,_, we_PRP confirm_VBP that_IN the_DT density_NN of_IN target_NN nodes_NNS has_VBZ no_DT impact_NN on_IN the_DT accuracy_NN ,_, which_WDT motivated_VBD the_DT design_NN of_IN sequence-based_JJ MSP_NNP ._.
+In_IN this_DT experiment_NN ,_, we_PRP compare_VBP regular_JJ scan_VB with_IN random_JJ scan_VB under_IN different_JJ number_NN of_IN target_NN nodes_NNS from_IN ##_CD to_TO ###_CD in_IN steps_NNS of_IN ##_NN ._.
+Results_NNS in_IN Figure_NNP ##_NN -LRB-_-LRB- c_NN -RRB-_-RRB- show_VBP that_IN mean_JJ localization_NN errors_NNS remain_VBP constant_JJ across_IN different_JJ node_NN densities_NNS ._.
+However_RB ,_, when_WRB the_DT number_NN of_IN target_NN nodes_NNS increases_VBZ ,_, the_DT average_JJ maximum_NN error_NN increases_VBZ ._.
+Summary_NNP :_: From_IN the_DT above_JJ experiments_NNS ,_, we_PRP can_MD conclude_VB that_IN in_IN basic_JJ MSP_NNP ,_, regular_JJ scan_VB are_VBP better_JJR than_IN random_JJ scan_VB under_IN different_JJ numbers_NNS of_IN anchors_NNS and_CC scan_VB events_NNS ._.
+This_DT is_VBZ because_IN regular_JJ scans_NNS uniformly_RB eliminate_VB the_DT map_NN from_IN different_JJ directions_NNS ,_, while_IN random_JJ scans_NNS would_MD obtain_VB sequences_NNS with_IN redundant_JJ overlapping_VBG information_NN ,_, if_IN two_CD scans_NNS choose_VB two_CD similar_JJ scanning_NN slopes_NNS ._.
+8_CD ._.
+#_# Improvements_NNP of_IN Sequence-Based_NNP MSP_NNP This_DT section_NN evaluates_VBZ the_DT benefits_NNS of_IN exploiting_VBG the_DT order_NN information_NN among_IN target_NN nodes_NNS by_IN comparing_VBG sequence-based_JJ MSP_NN with_IN basic_JJ MSP_NNP ._.
+In_IN this_DT and_CC the_DT following_VBG sections_NNS ,_, regular_JJ scan_VB is_VBZ used_VBN for_IN straight-line_JJ scan_VB event_NN generation_NN ._.
+The_DT purpose_NN of_IN using_VBG regular_JJ scan_VB is_VBZ to_TO keep_VB the_DT scan_VB events_NNS and_CC the_DT node_NN sequences_NNS identical_JJ for_IN both_DT sequence-based_JJ MSP_NN and_CC basic_JJ MSP_NNP ,_, so_RB that_IN the_DT only_JJ difference_NN between_IN them_PRP is_VBZ the_DT sequence_NN processing_NN procedure_NN ._.
+Impact_NN of_IN the_DT Number_NNP of_IN Scans_NNPS :_: In_IN this_DT experiment_NN ,_, we_PRP compare_VBP sequence-based_JJ MSP_NN with_IN basic_JJ MSP_NN under_IN different_JJ number_NN of_IN scans_NNS from_IN #_# to_TO ##_VB in_IN steps_NNS of_IN #_# ._.
+Figure_NNP ##_NN -LRB-_-LRB- a_DT -RRB-_-RRB- indicates_VBZ significant_JJ performance_NN improvement_NN in_IN sequence-based_JJ MSP_NN over_IN basic_JJ MSP_NNP across_IN all_DT scan_VB settings_NNS ,_, especially_RB when_WRB the_DT number_NN of_IN scans_NNS is_VBZ large_JJ ._.
+For_IN example_NN ,_, when_WRB the_DT number_NN of_IN scans_NNS is_VBZ ##_CD ,_, errors_NNS in_IN sequence-based_JJ MSP_NNP are_VBP about_IN ##_CD %_NN of_IN that_DT of_IN basic_JJ MSP_NNP ._.
+We_PRP conclude_VBP that_IN sequence-based_JJ MSP_NNP performs_VBZ extremely_RB well_RB when_WRB there_EX are_VBP many_JJ scan_VBP events_NNS ._.
+Impact_NN of_IN the_DT Number_NNP of_IN Anchors_NNP :_: In_IN this_DT experiment_NN ,_, we_PRP use_VBP different_JJ number_NN of_IN anchors_NNS from_IN #_# to_TO ##_VB in_IN steps_NNS of_IN #_# ._.
+As_IN seen_VBN in_IN Figure_NNP ##_NN -LRB-_-LRB- b_NN -RRB-_-RRB- ,_, the_DT mean_NN error_NN and_CC maximum_NN error_NN of_IN sequence-based_JJ MSP_NNP is_VBZ much_RB smaller_JJR than_IN that_DT of_IN basic_JJ MSP_NNP ._.
+Especially_RB when_WRB there_EX is_VBZ limited_JJ number_NN of_IN anchors_NNS in_IN the_DT system_NN ,_, e_LS ._.
+g_NN ._.
+,_, #_# anchors_NNS ,_, the_DT error_NN rate_NN was_VBD almost_RB halved_VBN by_IN using_VBG sequence-based_JJ MSP_NNP ._.
+This_DT phenomenon_NN has_VBZ an_DT interesting_JJ explanation_NN :_: the_DT cutting_NN lines_NNS created_VBN by_IN anchor_NN nodes_NNS are_VBP exploited_VBN by_IN both_CC basic_JJ MSP_NN and_CC sequence-based_JJ MSP_NNP ,_, so_RB as_IN the_DT 24_CD 0_CD #_# #_# #_# #_# ##_CD 0_CD 5_CD 10_CD 15_CD 20_CD 25_CD 30_CD 35_CD 40_CD 45_CD 50_CD Basic_JJ MSP_NNP VS_NNP Iterative_NNP MSP_NNP Iterative_NNP Times_NNP Error_NNP Max_NNP Error_NNP of_IN Iterative_NNP Seq_NNP MSP_NNP Mean_NN Error_NN of_IN Iterative_JJ Seq_NN MSP_NNP Max_NNP Error_NNP of_IN Basic_JJ MSP_NNP Mean_NN Error_NN of_IN Basic_JJ MSP_NNP Figure_NNP ##_NN ._.
+Improvements_NNP of_IN Iterative_NNP MSP_NNP 0_CD #_# #_# #_# #_# ##_CD ##_CD ##_CD ##_NN 0_CD 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 1_CD DBE_NN VS_NNS NonDBE_VBP Error_NN CumulativeDistrubutioinFunctions_NNS -LRB-_-LRB- CDF_NN -RRB-_-RRB- Mean_NN Error_NN CDF_NN of_IN DBE_NNP MSP_NNP Mean_NN Error_NN CDF_NN of_IN NonDBE_NNP MSP_NNP Max_NNP Error_NNP CDF_NNP of_IN DBE_NNP MSP_NNP Max_NNP Error_NNP CDF_NNP of_IN NonDBE_NNP MSP_NNP Figure_NNP ##_NN ._.
+Improvements_NNP of_IN DBE_NNP MSP_NNP 0_CD ##_CD ##_CD ##_CD ##_CD ###_CD 0_CD 10_CD 20_CD 30_CD 40_CD 50_CD 60_CD 70_CD Adaptive_JJ MSP_NN for_IN 500by80_CD Target_NN Node_NNP Number_NNP Error_NNP Max_NNP Error_NNP of_IN Regualr_NNP Scan_VB Max_NNP Error_NNP of_IN Adaptive_NNP Scan_VB Mean_NN Error_NN of_IN Regualr_NNP Scan_VB Mean_NN Error_NN of_IN Adaptive_JJ Scan_VB -LRB-_-LRB- a_DT -RRB-_-RRB- Adaptive_JJ MSP_NN for_IN ###_CD by_IN ##_CD field_NN 0_CD ##_CD ##_CD ##_CD ##_CD ##_NN 0_CD 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 1_CD Mean_NN Error_NN CDF_NN at_IN Different_JJ Angle_NNP Steps_NNS in_IN Adaptive_JJ Scan_VB Mean_NN Error_NN CumulativeDistrubutioinFunctions_NNS -LRB-_-LRB- CDF_NN -RRB-_-RRB- 5_CD Degree_NNP Angle_NNP Step_VB Adaptive_JJ 10_CD Degree_NNP Angle_NNP Step_VB Adaptive_JJ 20_CD Degree_NNP Angle_NNP Step_VB Adaptive_JJ 30_CD Degree_NN Step_NN Regular_JJ Scan_VB -LRB-_-LRB- b_NN -RRB-_-RRB- Impact_NN of_IN the_DT Number_NNP of_IN Candidate_NNP Events_NNS Figure_NNP ##_CD ._.
+The_DT Improvements_NNP of_IN Adaptive_NNP MSP_NNP number_NN of_IN anchor_NN nodes_NNS increases_VBZ ,_, anchors_NNS tend_VBP to_TO dominate_VB the_DT contribution_NN ._.
+Therefore_RB the_DT performance_NN gaps_NNS lessens_VBZ ._.
+Impact_NN of_IN the_DT Target_NN Node_NNP Density_NNP :_: Figure_NNP ##_NN -LRB-_-LRB- c_NN -RRB-_-RRB- demonstrates_VBZ the_DT benefits_NNS of_IN exploiting_VBG order_NN information_NN among_IN target_NN nodes_NNS ._.
+Since_IN sequence-based_JJ MSP_NNP makes_VBZ use_NN of_IN the_DT information_NN among_IN the_DT target_NN nodes_NNS ,_, having_VBG more_JJR target_NN nodes_NNS contributes_VBZ to_TO the_DT overall_JJ system_NN accuracy_NN ._.
+As_IN the_DT number_NN of_IN target_NN nodes_NNS increases_VBZ ,_, the_DT mean_NN error_NN and_CC maximum_NN error_NN of_IN sequence-based_JJ MSP_NN decreases_VBZ ._.
+Clearly_RB the_DT mean_NN error_NN in_IN basic_JJ MSP_NNP is_VBZ not_RB affected_VBN by_IN the_DT number_NN of_IN target_NN nodes_NNS ,_, as_IN shown_VBN in_IN Figure_NNP ##_NN -LRB-_-LRB- c_NN -RRB-_-RRB- ._.
+Summary_NNP :_: From_IN the_DT above_JJ experiments_NNS ,_, we_PRP can_MD conclude_VB that_IN exploiting_VBG order_NN information_NN among_IN target_NN nodes_NNS can_MD improve_VB accuracy_NN significantly_RB ,_, especially_RB when_WRB the_DT number_NN of_IN events_NNS is_VBZ large_JJ but_CC with_IN few_JJ anchors_NNS ._.
+8_CD ._.
+#_# Iterative_JJ MSP_NN over_IN Sequence-Based_JJ MSP_NNP In_IN this_DT experiment_NN ,_, the_DT same_JJ node_NN sequences_NNS were_VBD processed_VBN iteratively_RB multiple_JJ times_NNS ._.
+In_IN Figure_NNP ##_NNP ,_, the_DT two_CD single_JJ marks_NNS are_VBP results_NNS from_IN basic_JJ MSP_NNP ,_, since_IN basic_JJ MSP_NNP doesn_NN ''_'' t_NN perform_VB iterations_NNS ._.
+The_DT two_CD curves_NNS present_VBP the_DT performance_NN of_IN iterative_JJ MSP_NN under_IN different_JJ numbers_NNS of_IN iterations_NNS c_NN ._.
+We_PRP note_VBP that_IN when_WRB only_RB a_DT single_JJ iteration_NN is_VBZ used_VBN ,_, this_DT method_NN degrades_VBZ to_TO sequence-based_JJ MSP_NNP ._.
+Therefore_RB ,_, Figure_NNP ##_CD compares_VBZ the_DT three_CD methods_NNS to_TO one_CD another_DT ._.
+Figure_NNP ##_NN shows_VBZ that_IN the_DT second_JJ iteration_NN can_MD reduce_VB the_DT mean_NN error_NN and_CC maximum_NN error_NN dramatically_RB ._.
+After_IN that_DT ,_, the_DT performance_NN gain_NN gradually_RB reduces_VBZ ,_, especially_RB when_WRB c_NN >_JJR #_# ._.
+This_DT is_VBZ because_IN the_DT second_JJ iteration_NN allows_VBZ earlier_JJR scans_NNS to_TO exploit_VB the_DT new_JJ boundaries_NNS created_VBN by_IN later_JJ scans_NNS in_IN the_DT first_JJ iteration_NN ._.
+Such_JJ exploitation_NN decays_VBZ quickly_RB over_IN iterations_NNS ._.
+8_CD ._.
+#_# DBE_NNP MSP_NNP over_IN Iterative_NNP MSP_NNP Figure_NNP ##_NNP ,_, in_IN which_WDT we_PRP augment_VBP iterative_JJ MSP_NN with_IN distribution-based_JJ estimation_NN -LRB-_-LRB- DBE_NN MSP_NN -RRB-_-RRB- ,_, shows_VBZ that_IN DBE_NNP MSP_NNP could_MD bring_VB about_RB statistically_RB better_JJR performance_NN ._.
+Figure_NNP ##_NNP presents_VBZ cumulative_JJ distribution_NN localization_NN errors_NNS ._.
+In_IN general_JJ ,_, the_DT two_CD curves_NNS of_IN the_DT DBE_NNP MSP_NNP lay_VBD slightly_RB to_TO the_DT left_NN of_IN that_DT of_IN non-DBE_JJ MSP_NN ,_, which_WDT indicates_VBZ that_IN DBE_NNP MSP_NNP has_VBZ a_DT smaller_JJR statistical_JJ mean_NN error_NN and_CC averaged_VBD maximum_NN error_NN than_IN non-DBE_JJ MSP_NN ._.
+We_PRP note_VBP that_IN because_IN DBE_NNP is_VBZ augmented_VBN on_IN top_NN of_IN the_DT best_JJS solution_NN so_RB far_RB ,_, the_DT performance_NN improvement_NN is_VBZ not_RB significant_JJ ._.
+When_WRB we_PRP apply_VBP DBE_NN on_IN basic_JJ MSP_NNP methods_NNS ,_, the_DT improvement_NN is_VBZ much_RB more_RBR significant_JJ ._.
+We_PRP omit_VBP these_DT results_NNS because_IN of_IN space_NN constraints_NNS ._.
+8_CD ._.
+#_# Improvements_NNP of_IN Adaptive_NNP MSP_NNP This_DT section_NN illustrates_VBZ the_DT performance_NN of_IN adaptive_JJ MSP_NN over_IN non-adaptive_JJ MSP_NNP ._.
+We_PRP note_VBP that_IN feedback-based_JJ adaptation_NN can_MD be_VB applied_VBN to_TO all_DT MSP_NNP methods_NNS ,_, since_IN it_PRP affects_VBZ only_RB the_DT scanning_NN angles_NNS but_CC not_RB the_DT sequence_NN processing_NN ._.
+In_IN this_DT experiment_NN ,_, we_PRP evaluated_VBD how_WRB adaptive_JJ MSP_NNP can_MD improve_VB the_DT best_JJS solution_NN so_RB far_RB ._.
+The_DT default_NN angle_NN granularity_NN -LRB-_-LRB- step_NN -RRB-_-RRB- for_IN adaptive_JJ searching_VBG is_VBZ #_# degrees_NNS ._.
+Impact_NN of_IN Area_NNP Shape_VBG :_: First_NNP ,_, if_IN system_NN settings_NNS are_VBP regular_JJ ,_, the_DT adaptive_JJ method_NN hardly_RB contributes_VBZ to_TO the_DT results_NNS ._.
+For_IN a_DT square_JJ area_NN -LRB-_-LRB- regular_JJ -RRB-_-RRB- ,_, the_DT performance_NN of_IN adaptive_JJ MSP_NNP and_CC regular_JJ scans_NNS are_VBP very_RB close_RB ._.
+However_RB ,_, if_IN the_DT shape_NN of_IN the_DT area_NN is_VBZ not_RB regular_JJ ,_, adaptive_JJ MSP_NN helps_VBZ to_TO choose_VB the_DT appropriate_JJ localization_NN events_NNS to_TO compensate_VB ._.
+Therefore_RB ,_, adaptive_JJ MSP_NNP can_MD achieve_VB a_DT better_JJR mean_NN error_NN and_CC maximum_NN error_NN as_IN shown_VBN in_IN Figure_NNP ##_NN -LRB-_-LRB- a_DT -RRB-_-RRB- ._.
+For_IN example_NN ,_, adaptive_JJ MSP_NNP improves_VBZ localization_NN accuracy_NN by_IN ##_CD %_NN when_WRB the_DT number_NN of_IN target_NN nodes_NNS is_VBZ 10_CD ._.
+Impact_NN of_IN the_DT Target_NN Node_NNP Density_NNP :_: Figure_NNP ##_NNP -LRB-_-LRB- a_DT -RRB-_-RRB- shows_VBZ that_IN when_WRB the_DT node_NN density_NN is_VBZ low_JJ ,_, adaptive_JJ MSP_NNP brings_VBZ more_RBR benefit_NN than_IN when_WRB node_NN density_NN is_VBZ high_JJ ._.
+This_DT phenomenon_NN makes_VBZ statistical_JJ sense_NN ,_, because_IN the_DT law_NN of_IN large_JJ numbers_NNS tells_VBZ us_PRP that_IN node_NN placement_NN approaches_VBZ a_DT truly_RB uniform_JJ distribution_NN when_WRB the_DT number_NN of_IN nodes_NNS is_VBZ increased_VBN ._.
+Adaptive_JJ MSP_NN has_VBZ an_DT edge_NN 25_CD Figure_NN ##_NN ._.
+The_DT Mirage_NNP Test-bed_NN -LRB-_-LRB- Line_NN Scan_VB -RRB-_-RRB- Figure_NN ##_NN ._.
+The_DT 20-node_JJ Outdoor_NNP Experiments_NNS -LRB-_-LRB- Wave_NN -RRB-_-RRB- when_WRB layout_NN is_VBZ not_RB uniform_JJ ._.
+Impact_NN of_IN Candidate_NNP Angle_NNP Density_NNP :_: Figure_NNP ##_NN -LRB-_-LRB- b_NN -RRB-_-RRB- shows_VBZ that_IN the_DT smaller_JJR the_DT candidate_NN scan_VB angle_NN step_NN ,_, the_DT better_JJR the_DT statistical_JJ performance_NN in_IN terms_NNS of_IN mean_NN error_NN ._.
+The_DT rationale_NN is_VBZ clear_JJ ,_, as_IN wider_JJR candidate_NN scan_VB angles_NNS provide_VBP adaptive_JJ MSP_NNP more_RBR opportunity_NN to_TO choose_VB the_DT one_CD approaching_VBG the_DT optimal_JJ angle_NN ._.
+8_CD ._.
+#_# Simulation_NNP Summary_NNP Starting_VBG from_IN basic_JJ MSP_NNP ,_, we_PRP have_VBP demonstrated_VBN step-bystep_JJ how_WRB four_CD optimizations_NNS can_MD be_VB applied_VBN on_IN top_NN of_IN each_DT other_JJ to_TO improve_VB localization_NN performance_NN ._.
+In_IN other_JJ words_NNS ,_, these_DT optimizations_NNS are_VBP compatible_JJ with_IN each_DT other_JJ and_CC can_MD jointly_RB improve_VB the_DT overall_JJ performance_NN ._.
+We_PRP note_VBP that_IN our_PRP$ simulations_NNS were_VBD done_VBN under_IN assumption_NN that_IN the_DT complete_JJ node_NN sequence_NN can_MD be_VB obtained_VBN without_IN sequence_NN flips_VBZ ._.
+In_IN the_DT next_JJ section_NN ,_, we_PRP present_VBP two_CD real-system_JJ implementations_NNS that_WDT reveal_VBP and_CC address_VBP these_DT practical_JJ issues_NNS ._.
+9_CD System_NNP Evaluation_NN In_IN this_DT section_NN ,_, we_PRP present_VBP a_DT system_NN implementation_NN of_IN MSP_NNP on_IN two_CD physical_JJ test-beds_NNS ._.
+The_DT first_JJ one_CD is_VBZ called_VBN Mirage_NNP ,_, a_DT large_JJ indoor_JJ test-bed_NN composed_VBN of_IN six_CD 4-foot_JJ by_IN 8-foot_JJ boards_NNS ,_, illustrated_VBD in_IN Figure_NNP ##_NNP ._.
+Each_DT board_NN in_IN the_DT system_NN can_MD be_VB used_VBN as_IN an_DT individual_JJ sub-system_NN ,_, which_WDT is_VBZ powered_VBN ,_, controlled_VBN and_CC metered_VBN separately_RB ._.
+Three_CD Hitachi_NNP CP-X1250_NNP projectors_NNS ,_, connected_VBN through_IN a_DT Matorx_NNP Triplehead2go_NN graphics_NNS expansion_NN box_NN ,_, are_VBP used_VBN to_TO create_VB an_DT ultra-wide_JJ integrated_JJ display_NN on_IN six_CD boards_NNS ._.
+Figure_NNP ##_NN shows_VBZ that_IN a_DT long_JJ tilted_JJ line_NN is_VBZ generated_VBN by_IN the_DT projectors_NNS ._.
+We_PRP have_VBP implemented_VBN all_DT five_CD versions_NNS of_IN MSP_NNP on_IN the_DT Mirage_NNP test-bed_NN ,_, running_VBG ##_CD MICAz_NNP motes_NNS ._.
+Unless_IN mentioned_VBN otherwise_RB ,_, the_DT default_NN setting_NN is_VBZ #_# anchors_NNS and_CC #_# scans_VBZ at_IN the_DT scanning_NN line_NN speed_NN of_IN #_# ._.
+#_# feet_NNS /_: s_NNS ._.
+In_IN all_DT of_IN our_PRP$ graphs_NNS ,_, each_DT data_NNS point_NN represents_VBZ the_DT average_JJ value_NN of_IN ##_NN trials_NNS ._.
+In_IN the_DT outdoor_JJ system_NN ,_, a_DT Dell_NNP A525_NN speaker_NN is_VBZ used_VBN to_TO generate_VB #_# ._.
+7KHz_NN sound_NN as_IN shown_VBN in_IN Figure_NNP ##_NNP ._.
+We_PRP place_VBP ##_RB MICAz_JJ motes_NNS in_IN the_DT backyard_NN of_IN a_DT house_NN ._.
+Since_IN the_DT location_NN is_VBZ not_RB completely_RB open_JJ ,_, sound_JJ waves_NNS are_VBP reflected_VBN ,_, scattered_VBN and_CC absorbed_VBN by_IN various_JJ objects_NNS in_IN the_DT vicinity_NN ,_, causing_VBG a_DT multi-path_JJ effect_NN ._.
+In_IN the_DT system_NN evaluation_NN ,_, simple_JJ time_NN synchronization_NN mechanisms_NNS are_VBP applied_VBN on_IN each_DT node_NN ._.
+9_CD ._.
+#_# Indoor_NNP System_NNP Evaluation_NN During_IN indoor_JJ experiments_NNS ,_, we_PRP encountered_VBD several_JJ realworld_NN problems_NNS that_WDT are_VBP not_RB revealed_VBN in_IN the_DT simulation_NN ._.
+First_RB ,_, sequences_NNS obtained_VBN were_VBD partial_JJ due_JJ to_TO misdetection_NN and_CC message_NN losses_NNS ._.
+Second_RB ,_, elements_NNS in_IN the_DT sequences_NNS could_MD flip_VB due_JJ to_TO detection_NN delay_NN ,_, uncertainty_NN in_IN media_NNS access_NN ,_, or_CC error_NN in_IN time_NN synchronization_NN ._.
+We_PRP show_VBP that_IN these_DT issues_NNS can_MD be_VB addressed_VBN by_IN using_VBG the_DT protection_NN band_NN method_NN described_VBN in_IN Section_NN #_# ._.
+#_# ._.
+9_CD ._.
+#_# ._.
+#_# On_IN Scanning_VBG Speed_NN and_CC Protection_NN Band_NN In_IN this_DT experiment_NN ,_, we_PRP studied_VBD the_DT impact_NN of_IN the_DT scanning_NN speed_NN and_CC the_DT length_NN of_IN protection_NN band_NN on_IN the_DT performance_NN of_IN the_DT system_NN ._.
+In_IN general_JJ ,_, with_IN increasing_VBG scanning_NN speed_NN ,_, nodes_NNS have_VBP less_JJR time_NN to_TO respond_VB to_TO the_DT event_NN and_CC the_DT time_NN gap_NN between_IN two_CD adjacent_JJ nodes_NNS shrinks_VBZ ,_, leading_VBG to_TO an_DT increasing_VBG number_NN of_IN partial_JJ sequences_NNS and_CC sequence_NN flips_VBZ ._.
+Figure_NNP ##_NN shows_VBZ the_DT node_NN flip_JJ situations_NNS for_IN six_CD scans_NNS with_IN distinct_JJ angles_NNS under_IN different_JJ scan_VB speeds_NNS ._.
+The_DT x-axis_NN shows_VBZ the_DT distance_NN between_IN the_DT flipped_VBN nodes_NNS in_IN the_DT correct_JJ node_NN sequence_NN ._.
+y-axis_NN shows_VBZ the_DT total_JJ number_NN of_IN flips_VBZ in_IN the_DT six_CD scans_NNS ._.
+This_DT figure_NN tells_VBZ us_PRP that_IN faster_JJR scan_VB brings_VBZ in_IN not_RB only_RB increasing_VBG number_NN of_IN flips_VBZ ,_, but_CC also_RB longer-distance_JJ flips_VBZ that_IN require_VBP wider_JJR protection_NN band_NN to_TO prevent_VB from_IN fatal_JJ errors_NNS ._.
+Figure_NNP ##_NN -LRB-_-LRB- a_DT -RRB-_-RRB- shows_VBZ the_DT effectiveness_NN of_IN the_DT protection_NN band_NN in_IN terms_NNS of_IN reducing_VBG the_DT number_NN of_IN unlocalized_JJ nodes_NNS ._.
+When_WRB we_PRP use_VBP a_DT moderate_JJ scan_VB speed_NN -LRB-_-LRB- #_# ._.
+3feet_JJ /_: s_NNS -RRB-_-RRB- ,_, the_DT chance_NN of_IN flipping_VBG is_VBZ rare_JJ ,_, therefore_RB we_PRP can_MD achieve_VB #_# ._.
+##_JJ feet_NNS mean_VBP accuracy_NN -LRB-_-LRB- Figure_NN ##_NN -LRB-_-LRB- b_NN -RRB-_-RRB- -RRB-_-RRB- with_IN #_# ._.
+#_# feet_NNS maximum_JJ error_NN -LRB-_-LRB- Figure_NN ##_NN -LRB-_-LRB- c_NN -RRB-_-RRB- -RRB-_-RRB- ._.
+With_IN increasing_VBG speeds_NNS ,_, the_DT protection_NN band_NN needs_VBZ to_TO be_VB set_VBN to_TO a_DT larger_JJR value_NN to_TO deal_VB with_IN flipping_VBG ._.
+Interesting_JJ phenomena_NNS can_MD be_VB observed_VBN in_IN Figures_NNS ##_CD :_: on_IN one_CD hand_NN ,_, the_DT protection_NN band_NN can_MD sharply_RB reduce_VB the_DT number_NN of_IN unlocalized_JJ nodes_NNS ;_: on_IN the_DT other_JJ hand_NN ,_, protection_NN bands_NNS enlarge_VB the_DT area_NN in_IN which_WDT a_DT target_NN would_MD potentially_RB reside_VB ,_, introducing_VBG more_JJR uncertainty_NN ._.
+Thus_RB there_EX is_VBZ a_DT concave_NN curve_NN for_IN both_DT mean_NN and_CC maximum_NN error_NN when_WRB the_DT scan_VB speed_NN is_VBZ at_IN #_# ._.
+#_# feet_NNS /_: s_NNS ._.
+9_CD ._.
+#_# ._.
+#_# On_IN MSP_NNP Methods_NNS and_CC Protection_NN Band_NN In_IN this_DT experiment_NN ,_, we_PRP show_VBP the_DT improvements_NNS resulting_VBG from_IN three_CD different_JJ methods_NNS ._.
+Figure_NNP ##_NN -LRB-_-LRB- a_DT -RRB-_-RRB- shows_VBZ that_IN a_DT protection_NN band_NN of_IN #_# ._.
+##_JJ feet_NNS is_VBZ sufficient_JJ for_IN the_DT scan_VB speed_NN of_IN 8_CD ._.
+57feet_JJ /_: s_NNS ._.
+Figures_NNS ##_CD -LRB-_-LRB- b_NN -RRB-_-RRB- and_CC ##_NN -LRB-_-LRB- c_NN -RRB-_-RRB- show_VBP clearly_RB that_IN iterative_JJ MSP_NN -LRB-_-LRB- with_IN adaptation_NN -RRB-_-RRB- achieves_VBZ best_JJS performance_NN ._.
+For_IN example_NN ,_, Figures_NNS ##_VBP -LRB-_-LRB- b_NN -RRB-_-RRB- shows_VBZ that_IN when_WRB we_PRP set_VBD the_DT protection_NN band_NN at_IN #_# ._.
+##_JJ feet_NNS ,_, iterative_JJ MSP_NNP achieves_VBZ #_# ._.
+#_# feet_NNS accuracy_NN ,_, which_WDT is_VBZ ##_CD %_NN more_JJR accurate_JJ than_IN the_DT basic_JJ design_NN ._.
+Similarly_RB ,_, Figures_NNS ##_VBP -LRB-_-LRB- b_NN -RRB-_-RRB- and_CC ##_NN -LRB-_-LRB- c_NN -RRB-_-RRB- show_VBP the_DT double-edged_JJ effects_NNS of_IN protection_NN band_NN on_IN the_DT localization_NN accuracy_NN ._.
+0_CD #_# ##_CD ##_CD ##_NN 0_CD 20_CD 40_CD -LRB-_-LRB- #_# -RRB-_-RRB- Flip_NNP Distribution_NN for_IN #_# Scans_VBZ at_IN Line_NNP Speed_NN of_IN ##_NN ._.
+6feet_JJ /_: s_NNS Flips_VBZ Node_NNP Distance_NNP in_IN the_DT Ideal_NNP Node_NNP Sequence_NN 0_CD #_# ##_CD ##_CD ##_NN 0_CD 20_CD 40_CD -LRB-_-LRB- #_# -RRB-_-RRB- Flip_NNP Distribution_NN for_IN #_# Scans_VBZ at_IN Line_NNP Speed_NN of_IN #_# ._.
+6feet_JJ /_: s_NNS Flips_VBZ 0_CD #_# ##_CD ##_CD ##_NN 0_CD 20_CD 40_CD -LRB-_-LRB- #_# -RRB-_-RRB- Flip_NNP Distribution_NN for_IN #_# Scans_VBZ at_IN Line_NNP Speed_NN of_IN #_# ._.
+3feet_JJ /_: s_NNS Flips_VBZ Figure_NNP ##_NNP ._.
+Number_NN of_IN Flips_NNP for_IN Different_JJ Scan_VB Speeds_NNS 26_CD 0_CD #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# 0_CD 2_CD 4_CD 6_CD 8_CD 10_CD 12_CD 14_CD 16_CD 18_CD 20_CD Unlocalized_NNP Node_NNP Number_NNP -LRB-_-LRB- Line_NNP Scan_VB at_IN Different_JJ Speed_NN -RRB-_-RRB- Protection_NN Band_NN -LRB-_-LRB- in_IN feet_NNS -RRB-_-RRB- UnlocalizedNodeNumber_NNP Scan_VB Line_NNP Speed_NN :_: ##_CD ._.
+6feet_JJ /_: s_NNS Scan_VB Line_NNP Speed_NN :_: #_# ._.
+6feet_JJ /_: s_NNS Scan_VB Line_NNP Speed_NN :_: #_# ._.
+3feet_JJ /_: s_NNS -LRB-_-LRB- a_DT -RRB-_-RRB- Number_NN of_IN Unlocalized_NNP Nodes_NNP 0_CD #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 1_CD 1_CD ._.
+#_# Mean_NN Error_NN -LRB-_-LRB- Line_NN Scan_VB at_IN Different_JJ Speed_NN -RRB-_-RRB- Protection_NN Band_NN -LRB-_-LRB- in_IN feet_NNS -RRB-_-RRB- Error_NN -LRB-_-LRB- infeet_NN -RRB-_-RRB- Scan_VB Line_NNP Speed_NN :_: ##_CD ._.
+6feet_JJ /_: s_NNS Scan_VB Line_NNP Speed_NN :_: #_# ._.
+6feet_JJ /_: s_NNS Scan_VB Line_NNP Speed_NN :_: #_# ._.
+3feet_JJ /_: s_NNS -LRB-_-LRB- b_NN -RRB-_-RRB- Mean_NN Localization_NN Error_NN 0_CD #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# 1_CD ._.
+#_# 2_CD 2_CD ._.
+#_# 3_CD 3_CD ._.
+#_# 4_CD Max_NNP Error_NNP -LRB-_-LRB- Line_NNP Scan_VB at_IN Different_JJ Speed_NN -RRB-_-RRB- Protection_NN Band_NN -LRB-_-LRB- in_IN feet_NNS -RRB-_-RRB- Error_NN -LRB-_-LRB- infeet_NN -RRB-_-RRB- Scan_VB Line_NNP Speed_NN :_: ##_CD ._.
+6feet_JJ /_: s_NNS Scan_VB Line_NNP Speed_NN :_: #_# ._.
+6feet_JJ /_: s_NNS Scan_VB Line_NNP Speed_NN :_: #_# ._.
+3feet_JJ /_: s_NNS -LRB-_-LRB- c_NN -RRB-_-RRB- Max_NN Localization_NN Error_NN Figure_NN ##_NN ._.
+Impact_NN of_IN Protection_NNP Band_NNP and_CC Scanning_NNP Speed_NN 0_CD #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# 0_CD 2_CD 4_CD 6_CD 8_CD 10_CD 12_CD 14_CD 16_CD 18_CD 20_CD Unlocalized_NNP Node_NNP Number_NNP -LRB-_-LRB- Scan_VB Line_NNP Speed_NN #_# ._.
+57feet_JJ /_: s_NNS -RRB-_-RRB- Protection_NNP Band_NNP -LRB-_-LRB- in_IN feet_NNS -RRB-_-RRB- Numberofunlocalizednodeoutof46_NN Unlocalized_JJ node_NN of_IN Basic_JJ MSP_NNP Unlocalized_NNP node_NN of_IN Sequence_NN Based_VBD MSP_NNP Unlocalized_NNP node_NN of_IN Iterative_JJ MSP_NN -LRB-_-LRB- a_DT -RRB-_-RRB- Number_NN of_IN Unlocalized_NNP Nodes_NNP 0_CD #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 1_CD 1_CD ._.
+#_# 1_CD ._.
+#_# 1_CD ._.
+#_# 1_CD ._.
+#_# Mean_NN Error_NN -LRB-_-LRB- Scan_VB Line_NNP Speed_NN #_# ._.
+57feet_JJ /_: s_NNS -RRB-_-RRB- Protection_NNP Band_NNP -LRB-_-LRB- in_IN feet_NNS -RRB-_-RRB- Error_NN -LRB-_-LRB- infeet_NN -RRB-_-RRB- Mean_NN Error_NN of_IN Basic_JJ MSP_NNP Mean_NN Error_NN of_IN Sequence_NN Based_VBD MSP_NNP Mean_NN Error_NN of_IN Iterative_JJ MSP_NN -LRB-_-LRB- b_NN -RRB-_-RRB- Mean_NN Localization_NN Error_NN 0_CD #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# 1_CD ._.
+#_# 2_CD 2_CD ._.
+#_# 3_CD 3_CD ._.
+#_# 4_CD Max_NNP Error_NNP -LRB-_-LRB- Scan_VB Line_NNP Speed_NN #_# ._.
+57feet_JJ /_: s_NNS -RRB-_-RRB- Protection_NNP Band_NNP -LRB-_-LRB- in_IN feet_NNS -RRB-_-RRB- Error_NN -LRB-_-LRB- infeet_NN -RRB-_-RRB- Max_NN Error_NN of_IN Basic_JJ MSP_NNP Max_NNP Error_NNP of_IN Sequence_NN Based_VBD MSP_NNP Max_NNP Error_NNP of_IN Iterative_NNP MSP_NNP -LRB-_-LRB- c_NN -RRB-_-RRB- Max_NN Localization_NN Error_NN Figure_NN ##_NN ._.
+Impact_NN of_IN Protection_NNP Band_NNP under_IN Different_NNP MSP_NNP Methods_NNS 3_CD #_# #_# #_# #_# #_# #_# ##_CD ##_NN 0_CD 0_CD ._.
+#_# 1_CD 1_CD ._.
+#_# 2_CD 2_CD ._.
+#_# Unlocalized_NNP Node_NNP Number_NNP -LRB-_-LRB- Protection_NNP Band_NNP :_: #_# ._.
+##_JJ feet_NNS -RRB-_-RRB- Anchor_NNP Number_NNP UnlocalizedNodeNumber_NNP 4_CD Scan_VB Events_NNS at_IN Speed_NN #_# ._.
+75feet_JJ /_: s_NNS 6_CD Scan_VB Events_NNS at_IN Speed_NN #_# ._.
+75feet_JJ /_: s_NNS 8_CD Scan_VB Events_NNS at_IN Speed_NN #_# ._.
+75feet_JJ /_: s_NNS -LRB-_-LRB- a_DT -RRB-_-RRB- Number_NN of_IN Unlocalized_NNP Nodes_NNP 3_CD #_# #_# #_# #_# #_# #_# ##_CD ##_CD 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 1_CD Mean_NN Error_NN -LRB-_-LRB- Protection_NN Band_NN :_: #_# ._.
+##_JJ feet_NNS -RRB-_-RRB- Anchor_NNP Number_NNP Error_NN -LRB-_-LRB- infeet_NN -RRB-_-RRB- Mean_NN Error_NN of_IN #_# Scan_VB Events_NNS at_IN Speed_NN #_# ._.
+75feet_JJ /_: s_NNS Mean_NN Error_NN of_IN #_# Scan_VB Events_NNS at_IN Speed_NN #_# ._.
+75feet_JJ /_: s_NNS Mean_NN Error_NN of_IN #_# Scan_VB Events_NNS at_IN Speed_NN #_# ._.
+75feet_JJ /_: s_NNS -LRB-_-LRB- b_NN -RRB-_-RRB- Mean_NN Localization_NN Error_NN 3_CD #_# #_# #_# #_# #_# #_# ##_CD ##_CD 0_CD ._.
+#_# 1_CD 1_CD ._.
+#_# 1_CD ._.
+#_# 1_CD ._.
+#_# 1_CD ._.
+#_# 2_CD 2_CD ._.
+#_# 2_CD ._.
+#_# 2_CD ._.
+#_# 2_CD ._.
+#_# Max_NNP Error_NNP -LRB-_-LRB- Protection_NNP Band_NNP :_: #_# ._.
+##_JJ feet_NNS -RRB-_-RRB- Anchor_NNP Number_NNP Error_NN -LRB-_-LRB- infeet_NN -RRB-_-RRB- Max_NN Error_NN of_IN #_# Scan_VB Events_NNS at_IN Speed_NN #_# ._.
+75feet_JJ /_: s_NNS Max_NNP Error_NNP of_IN #_# Scan_VB Events_NNS at_IN Speed_NN #_# ._.
+75feet_JJ /_: s_NNS Max_NNP Error_NNP of_IN #_# Scan_VB Events_NNS at_IN Speed_NN #_# ._.
+75feet_JJ /_: s_NNS -LRB-_-LRB- c_NN -RRB-_-RRB- Max_NN Localization_NN Error_NN Figure_NN ##_NN ._.
+Impact_NN of_IN the_DT Number_NNP of_IN Anchors_NNP and_CC Scans_VBZ 9_CD ._.
+#_# ._.
+#_# On_IN Number_NN of_IN Anchors_NNS and_CC Scans_VBZ In_IN this_DT experiment_NN ,_, we_PRP show_VBP a_DT tradeoff_NN between_IN hardware_NN cost_NN -LRB-_-LRB- anchors_NNS -RRB-_-RRB- with_IN soft_JJ cost_NN -LRB-_-LRB- events_NNS -RRB-_-RRB- ._.
+Figure_NNP ##_NN -LRB-_-LRB- a_DT -RRB-_-RRB- shows_VBZ that_IN with_IN more_JJR cutting_NN lines_NNS created_VBN by_IN anchors_NNS ,_, the_DT chance_NN of_IN unlocalized_JJ nodes_NNS increases_VBZ slightly_RB ._.
+We_PRP note_VBP that_IN with_IN a_DT #_# ._.
+##_JJ feet_NNS protection_NN band_NN ,_, the_DT percentage_NN of_IN unlocalized_JJ nodes_NNS is_VBZ very_RB small_JJ ,_, e_LS ._.
+g_NN ._.
+,_, in_IN the_DT worst-case_JJ with_IN ##_CD anchors_NNS ,_, only_RB #_# out_IN of_IN ##_CD nodes_NNS are_VBP not_RB localized_JJ due_JJ to_TO flipping_VBG ._.
+Figures_NNS ##_CD -LRB-_-LRB- b_NN -RRB-_-RRB- and_CC ##_NN -LRB-_-LRB- c_NN -RRB-_-RRB- show_VBP the_DT tradeoff_NN between_IN number_NN of_IN anchors_NNS and_CC the_DT number_NN of_IN scans_NNS ._.
+Obviously_RB ,_, with_IN the_DT number_NN of_IN anchors_NNS increases_NNS ,_, the_DT error_NN drops_VBZ significantly_RB ._.
+With_IN ##_CD anchors_NNS we_PRP can_MD achieve_VB a_DT localization_NN accuracy_NN as_RB low_JJ as_IN #_# ._.
+##_NN #_# ._.
+##_JJ feet_NNS ,_, which_WDT is_VBZ nearly_RB a_DT 60_CD %_NN improvement_NN ._.
+Similarly_RB ,_, with_IN increasing_VBG number_NN of_IN scans_NNS ,_, the_DT accuracy_NN drops_VBZ significantly_RB as_RB well_RB ._.
+We_PRP can_MD observe_VB about_IN 30_CD %_NN across_IN all_DT anchor_NN settings_NNS when_WRB we_PRP increase_VBP the_DT number_NN of_IN scans_NNS from_IN #_# to_TO #_# ._.
+For_IN example_NN ,_, with_IN only_RB #_# anchors_NNS ,_, we_PRP can_MD achieve_VB #_# ._.
+6-foot_JJ accuracy_NN with_IN #_# scans_NNS ._.
+9_CD ._.
+#_# Outdoor_NNP System_NNP Evaluation_NN The_DT outdoor_JJ system_NN evaluation_NN contains_VBZ two_CD parts_NNS :_: -LRB-_-LRB- i_LS -RRB-_-RRB- effective_JJ detection_NN distance_NN evaluation_NN ,_, which_WDT shows_VBZ that_IN the_DT node_NN sequence_NN can_MD be_VB readily_RB obtained_VBN ,_, and_CC -LRB-_-LRB- ii_LS -RRB-_-RRB- sound_VB propagation_NN based_VBN localization_NN ,_, which_WDT shows_VBZ the_DT results_NNS of_IN wavepropagation-based_JJ localization_NN ._.
+9_CD ._.
+#_# ._.
+#_# Effective_JJ Detection_NN Distance_NNP Evaluation_NN We_PRP firstly_RB evaluate_VBP the_DT sequence_NN flip_JJ phenomenon_NN in_IN wave_NN propagation_NN ._.
+As_IN shown_VBN in_IN Figure_NNP ##_NNP ,_, ##_CD motes_NNS were_VBD placed_VBN as_IN five_CD groups_NNS in_IN front_NN of_IN the_DT speaker_NN ,_, four_CD nodes_NNS in_IN each_DT group_NN at_IN roughly_RB the_DT same_JJ distances_NNS to_TO the_DT speaker_NN ._.
+The_DT gap_NN between_IN each_DT group_NN is_VBZ set_VBN to_TO be_VB #_# ,_, #_# ,_, #_# and_CC #_# feet_NNS respectively_RB in_IN four_CD experiments_NNS ._.
+Figure_NNP ##_NN shows_VBZ the_DT results_NNS ._.
+The_DT x-axis_NN in_IN each_DT subgraph_NN indicates_VBZ the_DT group_NN index_NN ._.
+There_EX are_VBP four_CD nodes_NNS in_IN each_DT group_NN -LRB-_-LRB- #_# bars_NNS -RRB-_-RRB- ._.
+The_DT y-axis_NN shows_VBZ the_DT detection_NN rank_NN -LRB-_-LRB- order_NN -RRB-_-RRB- of_IN each_DT node_NN in_IN the_DT node_NN sequence_NN ._.
+As_IN distance_NN between_IN each_DT group_NN increases_VBZ ,_, number_NN of_IN flips_VBZ in_IN the_DT resulting_VBG node_NN sequence_NN 27_CD Figure_NN ##_NN ._.
+Wave_VB Detection_NN 1_CD #_# #_# #_# #_# 0_CD 5_CD 10_CD 15_CD 20_CD 2_CD feet_NNS group_NN distance_NN Rank_NNP Group_NNP Index_NNP 1_CD #_# #_# #_# #_# 0_CD 5_CD 10_CD 15_CD 20_CD 3_CD feet_NNS group_NN distance_NN Rank_NNP Group_NNP Index_NNP 1_CD #_# #_# #_# #_# 0_CD 5_CD 10_CD 15_CD 20_CD 4_CD feet_NNS group_NN distance_NN Rank_NNP Group_NNP Index_NNP 1_CD #_# #_# #_# #_# 0_CD 5_CD 10_CD 15_CD 20_CD 5_CD feet_NNS group_NN distance_NN Rank_NNP Group_NNP Index_NNP Figure_NNP ##_NN ._.
+Ranks_NNS vs_CC ._.
+Distances_NNS 0_CD 2_CD 4_CD 6_CD 8_CD 10_CD 12_CD 14_CD 16_CD 18_CD 20_CD 22_CD 24_CD 0_CD #_# #_# #_# #_# ##_CD ##_CD ##_CD Y-Dimension_NN -LRB-_-LRB- feet_NNS -RRB-_-RRB- X-Dimension_NN -LRB-_-LRB- feet_NNS -RRB-_-RRB- Node_VBP 0_CD 2_CD 4_CD 6_CD 8_CD 10_CD 12_CD 14_CD 16_CD 18_CD 20_CD 22_CD 24_CD 0_CD #_# #_# #_# #_# ##_CD ##_CD ##_CD Y-Dimension_NN -LRB-_-LRB- feet_NNS -RRB-_-RRB- X-Dimension_NN -LRB-_-LRB- feet_NNS -RRB-_-RRB- Anchor_NNP Figure_NNP ##_NN ._.
+Localization_NN Error_NN -LRB-_-LRB- Sound_NN -RRB-_-RRB- decreases_VBZ ._.
+For_IN example_NN ,_, in_IN the_DT 2-foot_JJ distance_NN subgraph_NN ,_, there_EX are_VBP quite_RB a_DT few_JJ flips_VBZ between_IN nodes_NNS in_IN adjacent_JJ and_CC even_RB nonadjacent_JJ groups_NNS ,_, while_IN in_IN the_DT 5-foot_JJ subgraph_NN ,_, flips_VBZ between_IN different_JJ groups_NNS disappeared_VBD in_IN the_DT test_NN ._.
+9_CD ._.
+#_# ._.
+#_# Sound_NNP Propagation_NN Based_VBD Localization_NN As_IN shown_VBN in_IN Figure_NNP ##_NNP ,_, ##_CD motes_NNS are_VBP placed_VBN as_IN a_DT grid_NN including_VBG #_# rows_NNS with_IN #_# feet_NNS between_IN each_DT row_NN and_CC #_# columns_NNS with_IN 4_CD feet_NNS between_IN each_DT column_NN ._.
+Six_CD 4KHz_NN acoustic_JJ wave_NN propagation_NN events_NNS are_VBP generated_VBN around_IN the_DT mote_NN grid_NN by_IN a_DT speaker_NN ._.
+Figure_NNP ##_NN shows_VBZ the_DT localization_NN results_VBZ using_VBG iterative_JJ MSP_NN -LRB-_-LRB- #_# times_NNS iterative_JJ processing_NN -RRB-_-RRB- with_IN a_DT protection_NN band_NN of_IN #_# feet_NNS ._.
+The_DT average_JJ error_NN of_IN the_DT localization_NN results_VBZ is_VBZ #_# feet_NNS and_CC the_DT maximum_NN error_NN is_VBZ #_# feet_NNS with_IN one_CD un-localized_JJ node_NN ._.
+We_PRP found_VBD that_IN sequence_NN flip_VBP in_IN wave_NN propagation_NN is_VBZ more_RBR severe_JJ than_IN that_DT in_IN the_DT indoor_JJ ,_, line-based_JJ test_NN ._.
+This_DT is_VBZ expected_VBN due_JJ to_TO the_DT high_JJ propagation_NN speed_NN of_IN sound_NN ._.
+Currently_RB we_PRP use_VBP MICAz_NNP mote_NN ,_, which_WDT is_VBZ equipped_VBN with_IN a_DT low_JJ quality_NN microphone_NN ._.
+We_PRP believe_VBP that_IN using_VBG a_DT better_JJR speaker_NN and_CC more_JJR events_NNS ,_, the_DT system_NN can_MD yield_VB better_JJR accuracy_NN ._.
+Despite_IN the_DT hardware_NN constrains_VBZ ,_, the_DT MSP_NNP algorithm_NN still_RB successfully_RB localized_JJ most_JJS of_IN the_DT nodes_NNS with_IN good_JJ accuracy_NN ._.
+10_CD Conclusions_NNS In_IN this_DT paper_NN ,_, we_PRP present_VBP the_DT first_JJ work_NN that_WDT exploits_VBZ the_DT concept_NN of_IN node_NN sequence_NN processing_NN to_TO localize_VB sensor_NN nodes_NNS ._.
+We_PRP demonstrated_VBD that_IN we_PRP could_MD significantly_RB improve_VB localization_NN accuracy_NN by_IN making_VBG full_JJ use_NN of_IN the_DT information_NN embedded_VBN in_IN multiple_JJ easy-to-get_JJ one-dimensional_JJ node_NN sequences_NNS ._.
+We_PRP proposed_VBD four_CD novel_JJ optimization_NN methods_NNS ,_, exploiting_VBG order_NN and_CC marginal_JJ distribution_NN among_IN non-anchor_JJ nodes_NNS as_RB well_RB as_IN the_DT feedback_NN information_NN from_IN early_JJ localization_NN results_NNS ._.
+Importantly_RB ,_, these_DT optimization_NN methods_NNS can_MD be_VB used_VBN together_RB ,_, and_CC improve_VB accuracy_NN additively_RB ._.
+The_DT practical_JJ issues_NNS of_IN partial_JJ node_NN sequence_NN and_CC sequence_NN flip_JJ were_VBD identified_VBN and_CC addressed_VBN in_IN two_CD physical_JJ system_NN test-beds_NNS ._.
+We_PRP also_RB evaluated_VBD performance_NN at_IN scale_NN through_IN analysis_NN as_RB well_RB as_IN extensive_JJ simulations_NNS ._.
+Results_NNS demonstrate_VBP that_IN requiring_VBG neither_CC costly_JJ hardware_NN on_IN sensor_NN nodes_NNS nor_CC precise_JJ event_NN distribution_NN ,_, MSP_NNP can_MD achieve_VB a_DT sub-foot_JJ accuracy_NN with_IN very_RB few_JJ anchor_NN nodes_NNS provided_VBN sufficient_JJ events_NNS ._.
+11_CD References_NNS -LSB-_-LRB- #_# -RSB-_-RRB- CC2420_NNP Data_NNP Sheet_NNP ._.
+Avaiable_JJ at_IN http_NN :_: /_: /_: www_NN ._.
+chipcon_NN ._.
+com_NN /_: ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- P_NN ._.
+Bahl_NNP and_CC V_NNP ._.
+N_NN ._.
+Padmanabhan_NNP ._.
+Radar_NN :_: An_DT In-Building_JJ RF-Based_JJ User_NN Location_NNP and_CC Tracking_NNP System_NNP ._.
+In_IN IEEE_NNP Infocom_NNP ''_'' ##_NN ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- M_NN ._.
+Broxton_NNP ,_, J_NNP ._.
+Lifton_NNP ,_, and_CC J_NN ._.
+Paradiso_NNP ._.
+Localizing_VBG A_DT Sensor_NNP Network_NNP via_IN Collaborative_NNP Processing_NNP of_IN Global_NNP Stimuli_NNP ._.
+In_IN EWSN_NN ''_'' ##_NN ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- N_NN ._.
+Bulusu_NNP ,_, J_NNP ._.
+Heidemann_NNP ,_, and_CC D_NN ._.
+Estrin_NNP ._.
+GPS-Less_JJ Low_JJ Cost_NN Outdoor_JJ Localization_NN for_IN Very_RB Small_JJ Devices_NNPS ._.
+IEEE_NNP Personal_NNP Communications_NNP Magazine_NNP ,_, #_# -LRB-_-LRB- #_# -RRB-_-RRB- ,_, ####_NN ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- D_NN ._.
+Culler_NNP ,_, D_NNP ._.
+Estrin_NNP ,_, and_CC M_NN ._.
+Srivastava_NNP ._.
+Overview_NN of_IN Sensor_NNP Networks_NNP ._.
+IEEE_NNP Computer_NNP Magazine_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- J_NN ._.
+Elson_NNP ,_, L_NNP ._.
+Girod_NNP ,_, and_CC D_NN ._.
+Estrin_NNP ._.
+Fine-Grained_NNP Network_NNP Time_NNP Synchronization_NNP Using_VBG Reference_NNP Broadcasts_NNS ._.
+In_IN OSDI_NN ''_'' ##_NN ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- D_NN ._.
+K_NN ._.
+Goldenberg_NNP ,_, P_NN ._.
+Bihler_NNP ,_, M_NN ._.
+Gao_NNP ,_, J_NNP ._.
+Fang_NNP ,_, B_NN ._.
+D_NN ._.
+Anderson_NNP ,_, A_NNP ._.
+Morse_NNP ,_, and_CC Y_NN ._.
+Yang_NNP ._.
+Localization_NN in_IN Sparse_NNP Networks_NNP Using_VBG Sweeps_NNS ._.
+In_IN MobiCom_NNP ''_'' ##_NN ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- T_NN ._.
+He_PRP ,_, C_NN ._.
+Huang_NNP ,_, B_NN ._.
+M_NN ._.
+Blum_NNP ,_, J_NNP ._.
+A_DT ._.
+Stankovic_NNP ,_, and_CC T_NN ._.
+Abdelzaher_NNP ._.
+RangeFree_NNP Localization_NNP Schemes_NNS in_IN Large-Scale_NNP Sensor_NNP Networks_NNP ._.
+In_IN MobiCom_NNP ''_'' ##_NN ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- B_NN ._.
+Kusy_NNP ,_, P_NN ._.
+Dutta_NNP ,_, P_NN ._.
+Levis_NNP ,_, M_NN ._.
+Mar_NNP ,_, A_NNP ._.
+Ledeczi_NNP ,_, and_CC D_NN ._.
+Culler_NNP ._.
+Elapsed_NNP Time_NNP on_IN Arrival_NNP :_: A_NNP Simple_NN and_CC Versatile_NNP Primitive_NNP for_IN Canonical_NNP Time_NNP Synchronization_NNP Services_NNPS ._.
+International_NNP Journal_NNP of_IN ad-hoc_JJ and_CC Ubiquitous_JJ Computing_NNP ,_, #_# -LRB-_-LRB- #_# -RRB-_-RRB- ,_, ####_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- L_NN ._.
+Lazos_NNP and_CC R_NN ._.
+Poovendran_NNP ._.
+SeRLoc_NNP :_: Secure_VB Range-Independent_JJ Localization_NN for_IN Wireless_NNP Sensor_NNP Networks_NNP ._.
+In_IN WiSe_JJ ''_'' ##_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- M_NN ._.
+Maroti_NNP ,_, B_NN ._.
+Kusy_NNP ,_, G_NNP ._.
+Balogh_NNP ,_, P_NN ._.
+Volgyesi_NNP ,_, A_NNP ._.
+Nadas_NNP ,_, K_NNP ._.
+Molnar_NNP ,_, S_NN ._.
+Dora_NNP ,_, and_CC A_NN ._.
+Ledeczi_NNP ._.
+Radio_NNP Interferometric_NNP Geolocation_NNP ._.
+In_IN SenSys_NNPS ''_'' ##_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- M_NN ._.
+Maroti_NNP ,_, B_NN ._.
+Kusy_NNP ,_, G_NNP ._.
+Simon_NNP ,_, and_CC A_NN ._.
+Ledeczi_NNP ._.
+The_DT Flooding_NN Time_NNP Synchronization_NNP Protocol_NNP ._.
+In_IN SenSys_NNPS ''_'' ##_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- D_NN ._.
+Moore_NNP ,_, J_NNP ._.
+Leonard_NNP ,_, D_NNP ._.
+Rus_NN ,_, and_CC S_NN ._.
+Teller_NNP ._.
+Robust_JJ Distributed_VBN Network_NNP Localization_NN with_IN Noise_NN Range_NNP Measurements_NNP ._.
+In_IN SenSys_NNPS ''_'' ##_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- R_NN ._.
+Nagpal_NNP and_CC D_NNP ._.
+Coore_NNP ._.
+An_DT Algorithm_NN for_IN Group_NNP Formation_NN in_IN an_DT Amorphous_NNP Computer_NNP ._.
+In_IN PDCS_NN ''_'' ##_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- D_NN ._.
+Niculescu_NNP and_CC B_NNP ._.
+Nath_NNP ._.
+ad-hoc_JJ Positioning_NNP System_NNP ._.
+In_IN GlobeCom_NN ''_'' ##_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- D_NN ._.
+Niculescu_NNP and_CC B_NNP ._.
+Nath_NNP ._.
+ad-hoc_JJ Positioning_NNP System_NNP -LRB-_-LRB- APS_NNP -RRB-_-RRB- Using_VBG AOA_NN ._.
+In_IN InfoCom_NNP ''_'' ##_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- N_NN ._.
+B_NN ._.
+Priyantha_NNP ,_, A_NNP ._.
+Chakraborty_NNP ,_, and_CC H_NN ._.
+Balakrishnan_NNP ._.
+The_DT Cricket_NNP Location-Support_NNP System_NNP ._.
+In_IN MobiCom_NNP ''_'' ##_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- K_NN ._.
+Romer_NNP ._.
+The_DT Lighthouse_NNP Location_NNP System_NNP for_IN Smart_NNP Dust_NN ._.
+In_IN MobiSys_NNPS ''_'' ##_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- A_DT ._.
+Savvides_NNP ,_, C_NNP ._.
+C_NN ._.
+Han_NNP ,_, and_CC M_NN ._.
+B_NN ._.
+Srivastava_NNP ._.
+Dynamic_NNP Fine-Grained_NNP Localization_NN in_IN ad-hoc_JJ Networks_NNP of_IN Sensors_NNP ._.
+In_IN MobiCom_NNP ''_'' ##_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- R_NN ._.
+Stoleru_NNP ,_, T_NN ._.
+He_PRP ,_, J_NNP ._.
+A_DT ._.
+Stankovic_NNP ,_, and_CC D_NN ._.
+Luebke_NNP ._.
+A_DT High-Accuracy_NNP ,_, Low-Cost_NNP Localization_NNP System_NNP for_IN Wireless_NNP Sensor_NNP Networks_NNP ._.
+In_IN SenSys_NNPS ''_'' ##_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- R_NN ._.
+Stoleru_NNP ,_, P_NN ._.
+Vicaire_NNP ,_, T_NN ._.
+He_PRP ,_, and_CC J_NN ._.
+A_DT ._.
+Stankovic_NNP ._.
+StarDust_NNP :_: a_DT Flexible_JJ Architecture_NNP for_IN Passive_NNP Localization_NN in_IN Wireless_NNP Sensor_NNP Networks_NNP ._.
+In_IN SenSys_NNPS ''_'' ##_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- E_NN ._.
+W_NN ._.
+Weisstein_NN ._.
+Plane_NN Division_NN by_IN Lines_NNP ._.
+mathworld_NN ._.
+wolfram_NN ._.
+com_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- B_NN ._.
+H_NN ._.
+Wellenhoff_NNP ,_, H_NN ._.
+Lichtenegger_NNP ,_, and_CC J_NN ._.
+Collins_NNP ._.
+Global_JJ Positions_NNS System_NN :_: Theory_NNP and_CC Practice_NNP ,_, Fourth_JJ Edition_NN ._.
+Springer_NNP Verlag_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- K_NN ._.
+Whitehouse_NNP ._.
+The_DT Design_NN of_IN Calamari_NNP :_: an_DT ad-hoc_JJ Localization_NNP System_NNP for_IN Sensor_NNP Networks_NNP ._.
+In_IN University_NNP of_IN California_NNP at_IN Berkeley_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Z_NN ._.
+Zhong_NNP ._.
+MSP_NNP Evaluation_NN and_CC Implementation_NNP Report_NNP ._.
+Avaiable_JJ at_IN http_NN :_: /_: /_: www_NN ._.
+cs_NNS ._.
+umn_NN ._.
+edu_FW /_: zhong_FW /_: MSP_NNP ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- G_NN ._.
+Zhou_NNP ,_, T_NN ._.
+He_PRP ,_, and_CC J_NN ._.
+A_DT ._.
+Stankovic_NNP ._.
+Impact_NN of_IN Radio_NNP Irregularity_NNP on_IN Wireless_NNP Sensor_NNP Networks_NNP ._.
+In_IN MobiSys_NNPS ''_'' ##_NN ._.
+28_CD

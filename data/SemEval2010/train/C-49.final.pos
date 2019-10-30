@@ -1,0 +1,447 @@
+Evaluating_VBG Opportunistic_JJ Routing_VBG Protocols_NNS with_IN Large_JJ Realistic_JJ Contact_NN Traces_VBZ Libo_NNP Song_NN and_CC David_NNP F_NN ._.
+Kotz_NNP Institute_NNP for_IN Security_NNP Technology_NNP Studies_NNS -LRB-_-LRB- ISTS_NNS -RRB-_-RRB- Department_NNP of_IN Computer_NNP Science_NNP ,_, Dartmouth_NNP College_NNP ,_, Hanover_NNP ,_, NH_NNP ,_, USA_NNP #####_CD ABSTRACT_NN Traditional_JJ mobile_JJ ad-hoc_JJ network_NN -LRB-_-LRB- MANET_NN -RRB-_-RRB- routing_VBG protocols_NNS assume_VB that_DT contemporaneous_JJ end-to-end_JJ communication_NN paths_NNS exist_VBP between_IN data_NNS senders_NNS and_CC receivers_NNS ._.
+In_IN some_DT mobile_JJ ad-hoc_JJ networks_NNS with_IN a_DT sparse_JJ node_NN population_NN ,_, an_DT end-to-end_JJ communication_NN path_NN may_MD break_VB frequently_RB or_CC may_MD not_RB exist_VB at_IN any_DT time_NN ._.
+Many_JJ routing_VBG protocols_NNS have_VBP been_VBN proposed_VBN in_IN the_DT literature_NN to_TO address_VB the_DT problem_NN ,_, but_CC few_JJ were_VBD evaluated_VBN in_IN a_DT realistic_JJ opportunistic_JJ network_NN setting_NN ._.
+We_PRP use_VBP simulation_NN and_CC contact_NN traces_NNS -LRB-_-LRB- derived_VBN from_IN logs_NNS in_IN a_DT production_NN network_NN -RRB-_-RRB- to_TO evaluate_VB and_CC compare_VB five_CD existing_VBG protocols_NNS :_: direct-delivery_NN ,_, epidemic_JJ ,_, random_JJ ,_, PRoPHET_NN ,_, and_CC Link-State_NNP ,_, as_RB well_RB as_IN our_PRP$ own_JJ proposed_VBN routing_VBG protocol_NN ._.
+We_PRP show_VBP that_IN the_DT direct_JJ delivery_NN and_CC epidemic_JJ routing_VBG protocols_NNS suffer_VBP either_RB low_JJ delivery_NN ratio_NN or_CC high_JJ resource_NN usage_NN ,_, and_CC other_JJ protocols_NNS make_VBP tradeoffs_NNS between_IN delivery_NN ratio_NN and_CC resource_NN usage_NN ._.
+Categories_NNS and_CC Subject_NNP Descriptors_NNPS C_NNP ._.
+#_# ._.
+#_# -LSB-_-LRB- Computer_NNP Systems_NNP Organization_NNP -RSB-_-RRB- :_: Computer_NNP Communication_NNP Networks-Distributed_NNP Systems_NNP General_NNP Terms_NNS Performance_NNP ,_, Design_NN 1_CD ._.
+INTRODUCTION_NNP Mobile_NNP opportunistic_JJ networks_NNS are_VBP one_CD kind_NN of_IN delay-tolerant_JJ network_NN -LRB-_-LRB- DTN_NN -RRB-_-RRB- -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+Delay-tolerant_JJ networks_NNS provide_VBP service_NN despite_IN long_JJ link_NN delays_NNS or_CC frequent_JJ link_NN breaks_NNS ._.
+Long_JJ link_NN delays_NNS happen_VB in_IN networks_NNS with_IN communication_NN between_IN nodes_NNS at_IN a_DT great_JJ distance_NN ,_, such_JJ as_IN interplanetary_JJ networks_NNS -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+Link_NN breaks_NNS are_VBP caused_VBN by_IN nodes_NNS moving_VBG out_IN of_IN range_NN ,_, environmental_JJ changes_NNS ,_, interference_NN from_IN other_JJ moving_VBG objects_NNS ,_, radio_NN power-offs_NNS ,_, or_CC failed_VBD nodes_NNS ._.
+For_IN us_PRP ,_, mobile_JJ opportunistic_JJ networks_NNS are_VBP those_DT DTNs_NNS with_IN sparse_JJ node_NN population_NN and_CC frequent_JJ link_NN breaks_NNS caused_VBN by_IN power-offs_NNS and_CC the_DT mobility_NN of_IN the_DT nodes_NNS ._.
+Mobile_NNP opportunistic_JJ networks_NNS have_VBP received_VBN increasing_VBG interest_NN from_IN researchers_NNS ._.
+In_IN the_DT literature_NN ,_, these_DT networks_NNS include_VBP mobile_JJ sensor_NN networks_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, wild-animal_JJ tracking_NN networks_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, pocketswitched_JJ networks_NNS -LSB-_-LRB- #_# -RSB-_-RRB- ,_, and_CC transportation_NN networks_NNS -LSB-_-LRB- #_# ,_, ##_NN -RSB-_-RRB- ._.
+We_PRP expect_VBP to_TO see_VB more_JJR opportunistic_JJ networks_NNS when_WRB the_DT one-laptopper-child_JJ -LRB-_-LRB- OLPC_NN -RRB-_-RRB- project_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- starts_VBZ rolling_VBG out_RB inexpensive_JJ laptops_NNS with_IN wireless_JJ networking_NN capability_NN for_IN children_NNS in_IN developing_VBG countries_NNS ,_, where_WRB often_RB no_DT infrastructure_NN exits_NNS ._.
+Opportunistic_JJ networking_NN is_VBZ one_CD promising_JJ approach_NN for_IN those_DT children_NNS to_TO exchange_VB information_NN ._.
+One_CD fundamental_JJ problem_NN in_IN opportunistic_JJ networks_NNS is_VBZ how_WRB to_TO route_NN messages_NNS from_IN their_PRP$ source_NN to_TO their_PRP$ destination_NN ._.
+Mobile_NNP opportunistic_JJ networks_NNS differ_VBP from_IN the_DT Internet_NN in_IN that_DT disconnections_NNS are_VBP the_DT norm_NN instead_RB of_IN the_DT exception_NN ._.
+In_IN mobile_JJ opportunistic_JJ networks_NNS ,_, communication_NN devices_NNS can_MD be_VB carried_VBN by_IN people_NNS -LSB-_-LRB- #_# -RSB-_-RRB- ,_, vehicles_NNS -LSB-_-LRB- #_# -RSB-_-RRB- or_CC animals_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Some_DT devices_NNS can_MD form_VB a_DT small_JJ mobile_JJ ad-hoc_JJ network_NN when_WRB the_DT nodes_NNS move_VBP close_RB to_TO each_DT other_JJ ._.
+But_CC a_DT node_NN may_MD frequently_RB be_VB isolated_VBN from_IN other_JJ nodes_NNS ._.
+Note_VB that_DT traditional_JJ Internet_NN routing_VBG protocols_NNS and_CC ad-hoc_JJ routing_VBG protocols_NNS ,_, such_JJ as_IN AODV_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- or_CC DSDV_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, assume_VB that_IN a_DT contemporaneous_JJ endto-end_JJ path_NN exists_VBZ ,_, and_CC thus_RB fail_VBP in_IN mobile_JJ opportunistic_JJ networks_NNS ._.
+Indeed_RB ,_, there_EX may_MD never_RB exist_VB an_DT end-to-end_JJ path_NN between_IN two_CD given_VBN devices_NNS ._.
+In_IN this_DT paper_NN ,_, we_PRP study_VBP protocols_NNS for_IN routing_VBG messages_NNS between_IN wireless_JJ networking_NN devices_NNS carried_VBN by_IN people_NNS ._.
+We_PRP assume_VBP that_IN people_NNS send_VBP messages_NNS to_TO other_JJ people_NNS occasionally_RB ,_, using_VBG their_PRP$ devices_NNS ;_: when_WRB no_DT direct_JJ link_NN exists_VBZ between_IN the_DT source_NN and_CC the_DT destination_NN of_IN the_DT message_NN ,_, other_JJ nodes_NNS may_MD relay_VB the_DT message_NN to_TO the_DT destination_NN ._.
+Each_DT device_NN represents_VBZ a_DT unique_JJ person_NN -LRB-_-LRB- it_PRP is_VBZ out_IN of_IN the_DT scope_NN of_IN this_DT paper_NN when_WRB a_DT device_NN maybe_RB carried_VBN by_IN multiple_JJ people_NNS -RRB-_-RRB- ._.
+Each_DT message_NN is_VBZ destined_VBN for_IN a_DT specific_JJ person_NN and_CC thus_RB for_IN a_DT specific_JJ node_NN carried_VBN by_IN that_DT person_NN ._.
+Although_IN one_CD person_NN may_MD carry_VB multiple_JJ devices_NNS ,_, we_PRP assume_VBP that_IN the_DT sender_NN knows_VBZ which_WDT device_NN is_VBZ the_DT best_JJS to_TO receive_VB the_DT message_NN ._.
+We_PRP do_VBP not_RB consider_VB multicast_JJ or_CC geocast_NN in_IN this_DT paper_NN ._.
+Many_JJ routing_VBG protocols_NNS have_VBP been_VBN proposed_VBN in_IN the_DT literature_NN ._.
+Few_JJ of_IN them_PRP were_VBD evaluated_VBN in_IN realistic_JJ network_NN settings_NNS ,_, or_CC even_RB in_IN realistic_JJ simulations_NNS ,_, due_JJ to_TO the_DT lack_NN of_IN any_DT realistic_JJ people_NNS mobility_NN model_NN ._.
+Random_NNP walk_NN or_CC random_JJ way-point_JJ mobility_NN models_NNS are_VBP often_RB used_VBN to_TO evaluate_VB the_DT performance_NN of_IN those_DT routing_VBG protocols_NNS ._.
+Although_IN these_DT synthetic_JJ mobility_NN models_NNS have_VBP received_VBN extensive_JJ interest_NN by_IN mobile_JJ ad-hoc_JJ network_NN researchers_NNS -LSB-_-LRB- #_# -RSB-_-RRB- ,_, they_PRP do_VBP not_RB reflect_VB people_NNS ''_'' s_VBZ mobility_NN patterns_NNS -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+Realising_VBG the_DT limitations_NNS of_IN using_VBG random_JJ mobility_NN models_NNS in_IN simulations_NNS ,_, a_DT few_JJ researchers_NNS have_VBP studied_VBN routing_VBG protocols_NNS in_IN mobile_JJ opportunistic_JJ networks_NNS with_IN realistic_JJ mobility_NN traces_NNS ._.
+Chaintreau_NNP et_FW al_FW ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- theoretically_RB analyzed_VBD the_DT impact_NN of_IN routing_VBG algorithms_NNS over_IN a_DT model_NN derived_VBN from_IN a_DT realistic_JJ mobility_NN data_NNS set_VBN ._.
+Su_FW et_FW al_FW ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- simulated_JJ a_DT set_NN of_IN routing_VBG 35_CD protocols_NNS in_IN a_DT small_JJ experimental_JJ network_NN ._.
+Those_DT studies_NNS help_VBP researchers_NNS better_RBR understand_VB the_DT theoretical_JJ limits_NNS of_IN opportunistic_JJ networks_NNS ,_, and_CC the_DT routing_VBG protocol_NN performance_NN in_IN a_DT small_JJ network_NN -LRB-_-LRB- 20-30_CD nodes_NNS -RRB-_-RRB- ._.
+Deploying_VBG and_CC experimenting_VBG large-scale_JJ mobile_JJ opportunistic_JJ networks_NNS is_VBZ difficult_JJ ,_, we_PRP too_RB resort_VBP to_TO simulation_NN ._.
+Instead_RB of_IN using_VBG a_DT complex_JJ mobility_NN model_NN to_TO mimic_VB people_NNS ''_'' s_VBZ mobility_NN patterns_NNS ,_, we_PRP used_VBD mobility_NN traces_NNS collected_VBN in_IN a_DT production_NN wireless_JJ network_NN at_IN Dartmouth_NNP College_NNP to_TO drive_VB our_PRP$ simulation_NN ._.
+Our_PRP$ messagegeneration_NN model_NN ,_, however_RB ,_, was_VBD synthetic_JJ ._.
+To_TO the_DT best_JJS of_IN our_PRP$ knowledge_NN ,_, we_PRP are_VBP the_DT first_JJ to_TO simulate_VB the_DT effect_NN of_IN routing_VBG protocols_NNS in_IN a_DT large-scale_JJ mobile_JJ opportunistic_JJ network_NN ,_, using_VBG realistic_JJ contact_NN traces_NNS derived_VBN from_IN real_JJ traces_NNS of_IN a_DT production_NN network_NN with_IN more_JJR than_IN #_# ,_, ###_CD users_NNS ._.
+Using_VBG realistic_JJ contact_NN traces_NNS ,_, we_PRP evaluate_VBP the_DT performance_NN of_IN three_CD naive_JJ routing_VBG protocols_NNS -LRB-_-LRB- direct-delivery_NN ,_, epidemic_JJ ,_, and_CC random_JJ -RRB-_-RRB- and_CC two_CD prediction-based_JJ routing_VBG protocols_NNS ,_, PRoPHET_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- and_CC Link-State_JJ -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+We_PRP also_RB propose_VBP a_DT new_JJ prediction-based_JJ routing_VBG protocol_NN ,_, and_CC compare_VB it_PRP to_TO the_DT above_JJ in_IN our_PRP$ evaluation_NN ._.
+2_LS ._.
+ROUTING_VBG PROTOCOL_NN A_NN routing_VBG protocol_NN is_VBZ designed_VBN for_IN forwarding_NN messages_NNS from_IN one_CD node_NN -LRB-_-LRB- source_NN -RRB-_-RRB- to_TO another_DT node_NN -LRB-_-LRB- destination_NN -RRB-_-RRB- ._.
+Any_DT node_NN may_MD generate_VB messages_NNS for_IN any_DT other_JJ node_NN ,_, and_CC may_MD carry_VB messages_NNS destined_VBN for_IN other_JJ nodes_NNS ._.
+In_IN this_DT paper_NN ,_, we_PRP consider_VBP only_RB messages_NNS that_WDT are_VBP unicast_JJ -LRB-_-LRB- single_JJ destination_NN -RRB-_-RRB- ._.
+DTN_NNP routing_VBG protocols_NNS could_MD be_VB described_VBN in_IN part_NN by_IN their_PRP$ transfer_NN probability_NN and_CC replication_NN probability_NN ;_: that_DT is_VBZ ,_, when_WRB one_CD node_NN meets_VBZ another_DT node_NN ,_, what_WP is_VBZ the_DT probability_NN that_IN a_DT message_NN should_MD be_VB transfered_VBN and_CC if_IN so_RB ,_, whether_IN the_DT sender_NN should_MD retain_VB its_PRP$ copy_NN ._.
+Two_CD extremes_NNS are_VBP the_DT direct-delivery_JJ protocol_NN and_CC the_DT epidemic_JJ protocol_NN ._.
+The_DT former_JJ transfers_NNS with_IN probability_NN #_# when_WRB the_DT node_NN meets_VBZ the_DT destination_NN ,_, #_# for_IN others_NNS ,_, and_CC no_DT replication_NN ._.
+The_DT latter_JJ uses_NNS transfer_NN probability_NN #_# for_IN all_DT nodes_NNS and_CC unlimited_JJ replication_NN ._.
+Both_DT these_DT protocols_NNS have_VBP their_PRP$ advantages_NNS and_CC disadvantages_NNS ._.
+All_DT other_JJ protocols_NNS are_VBP between_IN the_DT two_CD extremes_NNS ._.
+First_RB ,_, we_PRP define_VBP the_DT notion_NN of_IN contact_NN between_IN two_CD nodes_NNS ._.
+Then_RB we_PRP describe_VBP five_CD existing_VBG protocols_NNS before_IN presenting_VBG our_PRP$ own_JJ proposal_NN ._.
+A_DT contact_NN is_VBZ defined_VBN as_IN a_DT period_NN of_IN time_NN during_IN which_WDT two_CD nodes_NNS have_VBP the_DT opportunity_NN to_TO communicate_VB ._.
+Although_IN we_PRP are_VBP aware_JJ that_IN wireless_JJ technologies_NNS differ_VBP ,_, we_PRP assume_VBP that_IN a_DT node_NN can_MD reliably_RB detect_VB the_DT beginning_NN and_CC end_NN time_NN of_IN a_DT contact_NN with_IN nearby_JJ nodes_NNS ._.
+A_DT node_NN may_MD be_VB in_IN contact_NN with_IN several_JJ other_JJ nodes_NNS at_IN the_DT same_JJ time_NN ._.
+The_DT contact_NN history_NN of_IN a_DT node_NN is_VBZ a_DT sequence_NN of_IN contacts_NNS with_IN other_JJ nodes_NNS ._.
+Node_NN i_FW has_VBZ a_DT contact_NN history_NN Hi_NN -LRB-_-LRB- j_NN -RRB-_-RRB- ,_, for_IN each_DT other_JJ node_NN j_NN ,_, which_WDT denotes_VBZ the_DT historical_JJ contacts_NNS between_IN node_NN i_FW and_CC node_NN j_NN ._.
+We_PRP record_VBP the_DT start_NN and_CC end_NN time_NN for_IN each_DT contact_NN ;_: however_RB ,_, the_DT last_JJ contacts_NNS in_IN the_DT node_NN ''_'' s_VBZ contact_NN history_NN may_MD not_RB have_VB ended_VBN ._.
+2_LS ._.
+#_# Direct_JJ Delivery_NN Protocol_NNP In_IN this_DT simple_JJ protocol_NN ,_, a_DT message_NN is_VBZ transmitted_VBN only_RB when_WRB the_DT source_NN node_NN can_MD directly_RB communicate_VB with_IN the_DT destination_NN node_NN of_IN the_DT message_NN ._.
+In_IN mobile_JJ opportunistic_JJ networks_NNS ,_, however_RB ,_, the_DT probability_NN for_IN the_DT sender_NN to_TO meet_VB the_DT destination_NN may_MD be_VB low_JJ ,_, or_CC even_RB zero_CD ._.
+2_LS ._.
+#_# Epidemic_NNP Routing_NNP Protocol_NNP The_NNP epidemic_JJ routing_VBG protocol_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- floods_NNS messages_NNS into_IN the_DT network_NN ._.
+The_DT source_NN node_NN sends_VBZ a_DT copy_NN of_IN the_DT message_NN to_TO every_DT node_NN that_IN it_PRP meets_VBZ ._.
+The_DT nodes_NNS that_WDT receive_VBP a_DT copy_NN of_IN the_DT message_NN also_RB send_VBP a_DT copy_NN of_IN the_DT message_NN to_TO every_DT node_NN that_IN they_PRP meet_VBP ._.
+Eventually_RB ,_, a_DT copy_NN of_IN the_DT message_NN arrives_VBZ at_IN the_DT destination_NN of_IN the_DT message_NN ._.
+This_DT protocol_NN is_VBZ simple_JJ ,_, but_CC may_MD use_VB significant_JJ resources_NNS ;_: excessive_JJ communication_NN may_MD drain_VB each_DT node_NN ''_'' s_NNS battery_NN quickly_RB ._.
+Moreover_RB ,_, since_IN each_DT node_NN keeps_VBZ a_DT copy_NN of_IN each_DT message_NN ,_, storage_NN is_VBZ not_RB used_VBN efficiently_RB ,_, and_CC the_DT capacity_NN of_IN the_DT network_NN is_VBZ limited_VBN ._.
+At_IN a_DT minimum_NN ,_, each_DT node_NN must_MD expire_VB messages_NNS after_IN some_DT amount_NN of_IN time_NN or_CC stop_VB forwarding_NN them_PRP after_IN a_DT certain_JJ number_NN of_IN hops_VBZ ._.
+After_IN a_DT message_NN expires_VBZ ,_, the_DT message_NN will_MD not_RB be_VB transmitted_VBN and_CC will_MD be_VB deleted_VBN from_IN the_DT storage_NN of_IN any_DT node_NN that_WDT holds_VBZ the_DT message_NN ._.
+An_DT optimization_NN to_TO reduce_VB the_DT communication_NN cost_NN is_VBZ to_TO transfer_VB index_NN messages_NNS before_IN transferring_VBG any_DT data_NNS message_NN ._.
+The_DT index_NN messages_NNS contain_VBP IDs_NNS of_IN messages_NNS that_IN a_DT node_NN currently_RB holds_VBZ ._.
+Thus_RB ,_, by_IN examining_VBG the_DT index_NN messages_NNS ,_, a_DT node_NN only_RB transfers_VBZ messages_NNS that_WDT are_VBP not_RB yet_RB contained_VBN on_IN the_DT other_JJ nodes_NNS ._.
+2_LS ._.
+#_# Random_NNP Routing_VBG An_DT obvious_JJ approach_NN between_IN the_DT above_JJ two_CD extremes_NNS is_VBZ to_TO select_VB a_DT transfer_NN probability_NN between_IN #_# and_CC #_# to_TO forward_RB messages_NNS at_IN each_DT contact_NN ._.
+We_PRP use_VBP a_DT simple_JJ replication_NN strategy_NN that_WDT allows_VBZ only_RB the_DT source_NN node_NN to_TO make_VB replicas_NNS ,_, and_CC limits_VBZ the_DT replication_NN to_TO a_DT specific_JJ number_NN of_IN copies_NNS ._.
+The_DT message_NN has_VBZ some_DT chance_NN of_IN being_VBG transferred_VBN to_TO a_DT highly_RB mobile_JJ node_NN ,_, and_CC thus_RB may_MD have_VB a_DT better_JJR chance_NN to_TO reach_VB its_PRP$ destination_NN before_IN the_DT message_NN expires_VBZ ._.
+2_LS ._.
+#_# PRoPHET_NNP Protocol_NNP PRoPHET_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- is_VBZ a_DT Probabilistic_NNP Routing_NNP Protocol_NNP using_VBG History_NN of_IN past_JJ Encounters_NNS and_CC Transitivity_NNP to_TO estimate_VB each_DT node_NN ''_'' s_NNS delivery_NN probability_NN for_IN each_DT other_JJ node_NN ._.
+When_WRB node_NN i_FW meets_VBZ node_NN j_NN ,_, the_DT delivery_NN probability_NN of_IN node_NN i_FW for_IN j_NN is_VBZ updated_VBN by_IN pij_NN =_JJ -LRB-_-LRB- #_# pij_NN -RRB-_-RRB- p0_NN +_CC pij_NN ,_, -LRB-_-LRB- #_# -RRB-_-RRB- where_WRB p0_NN is_VBZ an_DT initial_JJ probability_NN ,_, a_DT design_NN parameter_NN for_IN a_DT given_VBN network_NN ._.
+Lindgren_NNP et_FW al_FW ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- chose_VBD #_# ._.
+##_NN ,_, as_IN did_VBD we_PRP in_IN our_PRP$ evaluation_NN ._.
+When_WRB node_NN i_FW does_VBZ not_RB meet_VB j_NN for_IN some_DT time_NN ,_, the_DT delivery_NN probability_NN decreases_VBZ by_IN pij_NN =_JJ k_NN pij_NN ,_, -LRB-_-LRB- #_# -RRB-_-RRB- where_WRB is_VBZ the_DT aging_NN factor_NN -LRB-_-LRB- <_JJR #_# -RRB-_-RRB- ,_, and_CC k_NN is_VBZ the_DT number_NN of_IN time_NN units_NNS since_IN the_DT last_JJ update_VB ._.
+The_DT PRoPHET_NN protocol_NN exchanges_NNS index_NN messages_NNS as_RB well_RB as_IN delivery_NN probabilities_NNS ._.
+When_WRB node_NN i_FW receives_VBZ node_NN j_NN ''_'' s_NNS delivery_NN probabilities_NNS ,_, node_NN i_FW may_MD compute_VB the_DT transitive_JJ delivery_NN probability_NN through_IN j_NN to_TO z_SYM with_IN piz_NN =_JJ piz_NN +_CC -LRB-_-LRB- #_# piz_NN -RRB-_-RRB- pijpjz_NN ,_, -LRB-_-LRB- #_# -RRB-_-RRB- where_WRB is_VBZ a_DT design_NN parameter_NN for_IN the_DT impact_NN of_IN transitivity_NN ;_: we_PRP used_VBD =_JJ #_# ._.
+##_RB as_IN did_VBD Lindgren_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+2_LS ._.
+#_# Link-State_NNP Protocol_NNP Su_NNP et_FW al_FW ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- use_VBP a_DT link-state_JJ approach_NN to_TO estimate_VB the_DT weight_NN of_IN each_DT path_NN from_IN the_DT source_NN of_IN a_DT message_NN to_TO the_DT destination_NN ._.
+They_PRP use_VBP the_DT median_JJ inter-contact_JJ duration_NN or_CC exponentially_RB aged_JJ intercontact_NN duration_NN as_IN the_DT weight_NN on_IN links_NNS ._.
+The_DT exponentially_RB aged_JJ inter-contact_JJ duration_NN of_IN node_NN i_FW and_CC j_FW is_VBZ computed_VBN by_IN wij_NN =_JJ wij_NN +_CC -LRB-_-LRB- #_# -RRB-_-RRB- I_PRP ,_, -LRB-_-LRB- #_# -RRB-_-RRB- where_WRB I_PRP is_VBZ the_DT new_JJ inter-contact_JJ duration_NN and_CC is_VBZ the_DT aging_NN factor_NN ._.
+Nodes_NNS share_VBP their_PRP$ link-state_JJ weights_NNS when_WRB they_PRP can_MD communicate_VB with_IN each_DT other_JJ ,_, and_CC messages_NNS are_VBP forwarded_VBN to_TO the_DT node_NN that_WDT have_VBP the_DT path_NN with_IN the_DT lowest_JJS link-state_JJ weight_NN ._.
+36_CD 3_CD ._.
+TIMELY-CONTACT_JJ PROBABILITY_NN We_PRP also_RB use_VBP historical_JJ contact_NN information_NN to_TO estimate_VB the_DT probability_NN of_IN meeting_NN other_JJ nodes_NNS in_IN the_DT future_NN ._.
+But_CC our_PRP$ method_NN differs_VBZ in_IN that_DT we_PRP estimate_VBP the_DT contact_NN probability_NN within_IN a_DT period_NN of_IN time_NN ._.
+For_IN example_NN ,_, what_WP is_VBZ the_DT contact_NN probability_NN in_IN the_DT next_JJ hour_NN ?_.
+Neither_DT PRoPHET_NN nor_CC Link-State_NN considers_VBZ time_NN in_IN this_DT way_NN ._.
+One_CD way_NN to_TO estimate_VB the_DT timely-contact_JJ probability_NN is_VBZ to_TO use_VB the_DT ratio_NN of_IN the_DT total_JJ contact_NN duration_NN to_TO the_DT total_JJ time_NN ._.
+However_RB ,_, this_DT approach_NN does_VBZ not_RB capture_VB the_DT frequency_NN of_IN contacts_NNS ._.
+For_IN example_NN ,_, one_CD node_NN may_MD have_VB a_DT long_JJ contact_NN with_IN another_DT node_NN ,_, followed_VBN by_IN a_DT long_JJ non-contact_JJ period_NN ._.
+A_DT third_JJ node_NN may_MD have_VB a_DT short_JJ contact_NN with_IN the_DT first_JJ node_NN ,_, followed_VBN by_IN a_DT short_JJ non-contact_JJ period_NN ._.
+Using_VBG the_DT above_JJ estimation_NN approach_NN ,_, both_CC examples_NNS would_MD have_VB similar_JJ contact_NN probability_NN ._.
+In_IN the_DT second_JJ example_NN ,_, however_RB ,_, the_DT two_CD nodes_NNS have_VBP more_RBR frequent_JJ contacts_NNS ._.
+We_PRP design_VBP a_DT method_NN to_TO capture_VB the_DT contact_NN frequency_NN of_IN mobile_JJ nodes_NNS ._.
+For_IN this_DT purpose_NN ,_, we_PRP assume_VBP that_IN even_RB short_JJ contacts_NNS are_VBP sufficient_JJ to_TO exchange_VB messages_NNS ._.
+#_# The_DT probability_NN for_IN node_NN i_FW to_TO meet_VB node_NN j_NN is_VBZ computed_VBN by_IN the_DT following_VBG procedure_NN ._.
+We_PRP divide_VBP the_DT contact_NN history_NN Hi_NN -LRB-_-LRB- j_NN -RRB-_-RRB- into_IN a_DT sequence_NN of_IN n_NN periods_NNS of_IN T_NN starting_VBG from_IN the_DT start_NN time_NN -LRB-_-LRB- t0_NN -RRB-_-RRB- of_IN the_DT first_JJ contact_NN in_IN history_NN Hi_NN -LRB-_-LRB- j_NN -RRB-_-RRB- to_TO the_DT current_JJ time_NN ._.
+We_PRP number_NN each_DT of_IN the_DT n_NN periods_NNS from_IN #_# to_TO n_NN #_# ,_, then_RB check_VB each_DT period_NN ._.
+If_IN node_NN i_FW had_VBD any_DT contact_NN with_IN node_NN j_NN during_IN a_DT given_VBN period_NN m_NN ,_, which_WDT is_VBZ -LSB-_-LRB- t0_NN +_CC mT_NN ,_, t0_NN +_CC -LRB-_-LRB- m_NN +_CC #_# -RRB-_-RRB- T_NN -RRB-_-RRB- ,_, we_PRP set_VBD the_DT contact_NN status_NN Im_NN to_TO be_VB 1_CD ;_: otherwise_RB ,_, the_DT contact_NN status_NN Im_NN is_VBZ #_# ._.
+The_DT probability_NN p_NN -LRB-_-LRB- #_# -RRB-_-RRB- ij_NN that_IN node_NN i_FW meets_VBZ node_NN j_NN in_IN the_DT next_JJ T_NN can_MD be_VB estimated_VBN as_IN the_DT average_NN of_IN the_DT contact_NN status_NN in_IN prior_JJ intervals_NNS :_: p_NN -LRB-_-LRB- #_# -RRB-_-RRB- ij_NN =_JJ 1_CD n_NN n1X_NN m_NN =_JJ #_# Im_NN ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- To_TO adapt_VB to_TO the_DT change_NN of_IN contact_NN patterns_NNS ,_, and_CC reduce_VB the_DT storage_NN space_NN for_IN contact_NN histories_NNS ,_, a_DT node_NN may_MD discard_VB old_JJ history_NN contacts_NNS ;_: in_IN this_DT situation_NN ,_, the_DT estimate_NN would_MD be_VB based_VBN on_IN only_RB the_DT retained_VBN history_NN ._.
+The_DT above_JJ probability_NN is_VBZ the_DT direct_JJ contact_NN probability_NN of_IN two_CD nodes_NNS ._.
+We_PRP are_VBP also_RB interested_JJ in_IN the_DT probability_NN that_IN we_PRP may_MD be_VB able_JJ to_TO pass_VB a_DT message_NN through_IN a_DT sequence_NN of_IN k_NN nodes_NNS ._.
+We_PRP define_VBP the_DT k-order_NN probability_NN inductively_RB ,_, p_NN -LRB-_-LRB- k_NN -RRB-_-RRB- ij_NN =_JJ p_NN -LRB-_-LRB- #_# -RRB-_-RRB- ij_NN +_CC X_NN p_NN -LRB-_-LRB- #_# -RRB-_-RRB- i_FW p_NN -LRB-_-LRB- k1_NN -RRB-_-RRB- j_NN ,_, -LRB-_-LRB- #_# -RRB-_-RRB- where_WRB is_VBZ any_DT node_NN other_JJ than_IN i_FW or_CC j_FW ._.
+3_LS ._.
+#_# Our_PRP$ Routing_NNP Protocol_NNP We_PRP first_RB consider_VB the_DT case_NN of_IN a_DT two-hop_JJ path_NN ,_, that_WDT is_VBZ ,_, with_IN only_RB one_CD relay_NN node_NN ._.
+We_PRP consider_VBP two_CD approaches_NNS :_: either_CC the_DT receiving_VBG neighbor_NN decides_VBZ whether_IN to_TO act_VB as_IN a_DT relay_NN ,_, or_CC the_DT source_NN decides_VBZ which_WDT neighbors_NNS to_TO use_VB as_IN relay_NN ._.
+3_LS ._.
+#_# ._.
+#_# Receiver_NNP Decision_NNP Whenever_NNP a_DT node_NN meets_VBZ other_JJ nodes_NNS ,_, they_PRP exchange_VBP all_DT their_PRP$ messages_NNS -LRB-_-LRB- or_CC as_IN above_RB ,_, index_NN messages_NNS -RRB-_-RRB- ._.
+If_IN the_DT destination_NN of_IN a_DT message_NN is_VBZ the_DT receiver_NN itself_PRP ,_, the_DT message_NN is_VBZ delivered_VBN ._.
+Otherwise_RB ,_, if_IN the_DT probability_NN of_IN delivering_VBG the_DT message_NN to_TO its_PRP$ destination_NN through_IN this_DT receiver_NN node_NN within_IN T_NN is_VBZ greater_JJR than_IN or_CC equal_JJ to_TO a_DT certain_JJ threshold_NN ,_, the_DT message_NN is_VBZ stored_VBN in_IN the_DT receiver_NN ''_'' s_NNS storage_NN to_TO forward_RB 1_CD In_IN our_PRP$ simulation_NN ,_, however_RB ,_, we_PRP accurately_RB model_VBP the_DT communication_NN costs_NNS and_CC some_DT short_JJ contacts_NNS will_MD not_RB succeed_VB in_IN transfer_NN of_IN all_DT messages_NNS ._.
+to_TO the_DT destination_NN ._.
+If_IN the_DT probability_NN is_VBZ less_JJR than_IN the_DT threshold_NN ,_, the_DT receiver_NN discards_VBZ the_DT message_NN ._.
+Notice_NNP that_IN our_PRP$ protocol_NN replicates_VBZ the_DT message_NN whenever_WRB a_DT good-looking_JJ relay_NN comes_VBZ along_RB ._.
+3_LS ._.
+#_# ._.
+#_# Sender_JJR Decision_NN To_TO make_VB decisions_NNS ,_, a_DT sender_NN must_MD have_VB the_DT information_NN about_IN its_PRP$ neighbors_NNS ''_'' contact_NN probability_NN with_IN a_DT message_NN ''_'' s_NNS destination_NN ._.
+Therefore_RB ,_, meta-data_JJ exchange_NN is_VBZ necessary_JJ ._.
+When_WRB two_CD nodes_NNS meet_VBP ,_, they_PRP exchange_VBP a_DT meta-message_NN ,_, containing_VBG an_DT unordered_JJ list_NN of_IN node_NN IDs_NNS for_IN which_WDT the_DT sender_NN of_IN the_DT metamessage_NN has_VBZ a_DT contact_NN probability_NN greater_JJR than_IN the_DT threshold_NN ._.
+After_IN receiving_VBG a_DT meta-message_NN ,_, a_DT node_NN checks_NNS whether_IN it_PRP has_VBZ any_DT message_NN that_WDT destined_VBD to_TO its_PRP$ neighbor_NN ,_, or_CC to_TO a_DT node_NN in_IN the_DT node_NN list_NN of_IN the_DT neighbor_NN ''_'' s_NNS meta-message_NN ._.
+If_IN it_PRP has_VBZ ,_, it_PRP sends_VBZ a_DT copy_NN of_IN the_DT message_NN ._.
+When_WRB a_DT node_NN receives_VBZ a_DT message_NN ,_, if_IN the_DT destination_NN of_IN the_DT message_NN is_VBZ the_DT receiver_NN itself_PRP ,_, the_DT message_NN is_VBZ delivered_VBN ._.
+Otherwise_RB ,_, the_DT message_NN is_VBZ stored_VBN in_IN the_DT receiver_NN ''_'' s_NNS storage_NN for_IN forwarding_NN to_TO the_DT destination_NN ._.
+3_LS ._.
+#_# ._.
+#_# Multi-node_JJ Relay_NNP When_WRB we_PRP use_VBP more_JJR than_IN two_CD hops_VBZ to_TO relay_VB a_DT message_NN ,_, each_DT node_NN needs_VBZ to_TO know_VB the_DT contact_NN probabilities_NNS along_IN all_DT possible_JJ paths_NNS to_TO the_DT message_NN destination_NN ._.
+Every_DT node_NN keeps_VBZ a_DT contact_NN probability_NN matrix_NN ,_, in_IN which_WDT each_DT cell_NN pij_NN is_VBZ a_DT contact_NN probability_NN between_IN to_TO nodes_NNS i_FW and_CC j_FW ._.
+Each_DT node_NN i_FW computes_VBZ its_PRP$ own_JJ contact_NN probabilities_NNS -LRB-_-LRB- row_NN i_LS -RRB-_-RRB- with_IN other_JJ nodes_NNS using_VBG Equation_NN -LRB-_-LRB- #_# -RRB-_-RRB- whenever_WRB the_DT node_NN ends_VBZ a_DT contact_NN with_IN other_JJ nodes_NNS ._.
+Each_DT row_NN of_IN the_DT contact_NN probability_NN matrix_NN has_VBZ a_DT version_NN number_NN ;_: the_DT version_NN number_NN for_IN row_NN i_FW is_VBZ only_RB increased_VBN when_WRB node_NN i_FW updates_NNS the_DT matrix_NN entries_NNS in_IN row_NN i_FW ._.
+Other_JJ matrix_NN entries_NNS are_VBP updated_VBN through_IN exchange_NN with_IN other_JJ nodes_NNS when_WRB they_PRP meet_VBP ._.
+When_WRB two_CD nodes_NNS i_FW and_CC j_FW meet_VB ,_, they_PRP first_RB exchange_VB their_PRP$ contact_NN probability_NN matrices_NNS ._.
+Node_NN i_FW compares_VBZ its_PRP$ own_JJ contact_NN matrix_NN with_IN node_NN j_NN ''_'' s_NNS matrix_NN ._.
+If_IN node_NN j_NN ''_'' s_NNS matrix_NN has_VBZ a_DT row_NN l_NN with_IN a_DT higher_JJR version_NN number_NN ,_, then_RB node_NN i_FW replaces_VBZ its_PRP$ own_JJ row_NN l_NN with_IN node_NN j_NN ''_'' s_NNS row_VBP l_NN ._.
+Likewise_RB node_NN j_NN updates_NNS its_PRP$ matrix_NN ._.
+After_IN the_DT exchange_NN ,_, the_DT two_CD nodes_NNS will_MD have_VB identical_JJ contact_NN probability_NN matrices_NNS ._.
+Next_RB ,_, if_IN a_DT node_NN has_VBZ a_DT message_NN to_TO forward_RB ,_, the_DT node_NN estimates_VBZ its_PRP$ neighboring_JJ node_NN ''_'' s_NNS order-k_JJ contact_NN probability_NN to_TO contact_VB the_DT destination_NN of_IN the_DT message_NN using_VBG Equation_NN -LRB-_-LRB- #_# -RRB-_-RRB- ._.
+If_IN p_NN -LRB-_-LRB- k_NN -RRB-_-RRB- ij_NN is_VBZ above_IN a_DT threshold_NN ,_, or_CC if_IN j_NN is_VBZ the_DT destination_NN of_IN the_DT message_NN ,_, node_NN i_FW will_MD send_VB a_DT copy_NN of_IN the_DT message_NN to_TO node_NN j_NN ._.
+All_PDT the_DT above_JJ effort_NN serves_VBZ to_TO determine_VB the_DT transfer_NN probability_NN when_WRB two_CD nodes_NNS meet_VBP ._.
+The_DT replication_NN decision_NN is_VBZ orthogonal_JJ to_TO the_DT transfer_NN decision_NN ._.
+In_IN our_PRP$ implementation_NN ,_, we_PRP always_RB replicate_VBP ._.
+Although_IN PRoPHET_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- and_CC Link-State_JJ -LSB-_-LRB- ##_CD -RSB-_-RRB- do_VBP no_DT replication_NN ,_, as_IN described_VBN ,_, we_PRP added_VBD replication_NN to_TO those_DT protocols_NNS for_IN better_JJR comparison_NN to_TO our_PRP$ protocol_NN ._.
+4_LS ._.
+EVALUATION_NN RESULTS_NNS We_PRP evaluate_VBP and_CC compare_VBP the_DT results_NNS of_IN direct_JJ delivery_NN ,_, epidemic_JJ ,_, random_JJ ,_, PRoPHET_NN ,_, Link-State_NN ,_, and_CC timely-contact_JJ routing_VBG protocols_NNS ._.
+4_LS ._.
+#_# Mobility_NN traces_NNS We_PRP use_VBP real_JJ mobility_NN data_NNS collected_VBN at_IN Dartmouth_NNP College_NNP ._.
+Dartmouth_NNP College_NNP has_VBZ collected_VBN association_NN and_CC disassociation_NN messages_NNS from_IN devices_NNS on_IN its_PRP$ wireless_JJ network_NN wireless_JJ users_NNS since_IN spring_NN ####_CD -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Each_DT message_NN records_NNS the_DT wireless_JJ card_NN MAC_NNP address_NN ,_, the_DT time_NN of_IN association_NN /_: disassociation_NN ,_, and_CC the_DT name_NN of_IN the_DT access_NN point_NN ._.
+We_PRP treat_VBP each_DT unique_JJ MAC_NNP address_NN as_IN a_DT node_NN ._.
+For_IN 37_CD more_JJR information_NN about_IN Dartmouth_NNP ''_'' s_VBZ network_NN and_CC the_DT data_NNS collection_NN ,_, see_VB previous_JJ studies_NNS -LSB-_-LRB- #_# ,_, ##_NN -RSB-_-RRB- ._.
+Our_PRP$ data_NNS are_VBP not_RB contacts_NNS in_IN a_DT mobile_JJ ad-hoc_JJ network_NN ._.
+We_PRP can_MD approximate_JJ contact_NN traces_NNS by_IN assuming_VBG that_IN two_CD users_NNS can_MD communicate_VB with_IN each_DT other_JJ whenever_WRB they_PRP are_VBP associated_VBN with_IN the_DT same_JJ access_NN point_NN ._.
+Chaintreau_NNP et_FW al_FW ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- used_VBN Dartmouth_NNP data_NNS traces_NNS and_CC made_VBD the_DT same_JJ assumption_NN to_TO theoretically_RB analyze_VB the_DT impact_NN of_IN human_JJ mobility_NN on_IN opportunistic_JJ forwarding_NN algorithms_NNS ._.
+This_DT assumption_NN may_MD not_RB be_VB accurate_JJ ,_, #_# but_CC it_PRP is_VBZ a_DT good_JJ first_JJ approximation_NN ._.
+In_IN our_PRP$ simulation_NN ,_, we_PRP imagine_VBP the_DT same_JJ clients_NNS and_CC same_JJ mobility_NN in_IN a_DT network_NN with_IN no_DT access_NN points_NNS ._.
+Since_IN our_PRP$ campus_NN has_VBZ full_JJ WiFi_NNS coverage_NN ,_, we_PRP assume_VBP that_IN the_DT location_NN of_IN access_NN points_NNS had_VBD little_JJ impact_NN on_IN users_NNS ''_'' mobility_NN ._.
+We_PRP simulated_JJ one_CD full_JJ month_NN of_IN trace_NN data_NNS -LRB-_-LRB- November_NNP ####_CD -RRB-_-RRB- taken_VBN from_IN CRAWDAD_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, with_IN #_# ,_, ###_CD users_NNS ._.
+Although_IN predictionbased_JJ protocols_NNS require_VBP prior_JJ contact_NN history_NN to_TO estimate_VB each_DT node_NN ''_'' s_NNS delivery_NN probability_NN ,_, our_PRP$ preliminary_JJ results_NNS show_VBP that_IN the_DT performance_NN improvement_NN of_IN warming-up_NN over_IN one_CD month_NN of_IN trace_NN was_VBD marginal_JJ ._.
+Therefore_RB ,_, for_IN simplicity_NN ,_, we_PRP show_VBP the_DT results_NNS of_IN all_DT protocols_NNS without_IN warming-up_NN ._.
+4_LS ._.
+#_# Simulator_NNP We_PRP developed_VBD a_DT custom_NN simulator_NN ._.
+#_# Since_IN we_PRP used_VBD contact_NN traces_NNS derived_VBN from_IN real_JJ mobility_NN data_NNS ,_, we_PRP did_VBD not_RB need_VB a_DT mobility_NN model_NN and_CC omitted_VBN physical_JJ and_CC link-layer_JJ details_NNS for_IN node_NN discovery_NN ._.
+We_PRP were_VBD aware_JJ that_IN the_DT time_NN for_IN neighbor_NN discovery_NN in_IN different_JJ wireless_JJ technologies_NNS vary_VBP from_IN less_JJR than_IN one_CD seconds_NNS to_TO several_JJ seconds_NNS ._.
+Furthermore_RB ,_, connection_NN establishment_NN also_RB takes_VBZ time_NN ,_, such_JJ as_IN DHCP_NN ._.
+In_IN our_PRP$ simulation_NN ,_, we_PRP assumed_VBD the_DT nodes_NNS could_MD discover_VB and_CC connect_VB each_DT other_JJ instantly_RB when_WRB they_PRP were_VBD associated_VBN with_IN a_DT same_JJ AP_NN ._.
+To_TO accurately_RB model_VB communication_NN costs_NNS ,_, however_RB ,_, we_PRP simulated_JJ some_DT MAC-layer_JJ behaviors_NNS ,_, such_JJ as_IN collision_NN ._.
+The_DT default_NN settings_NNS of_IN the_DT network_NN of_IN our_PRP$ simulator_NN are_VBP listed_VBN in_IN Table_NNP #_# ,_, using_VBG the_DT values_NNS recommended_VBN by_IN other_JJ papers_NNS -LSB-_-LRB- ##_NNS ,_, ##_NN -RSB-_-RRB- ._.
+The_DT message_NN probability_NN was_VBD the_DT probability_NN of_IN generating_VBG messages_NNS ,_, as_IN described_VBN in_IN Section_NN #_# ._.
+#_# ._.
+The_DT default_NN transmission_NN bandwidth_NN was_VBD ##_CD Mb_NN /_: s_NNS ._.
+When_WRB one_CD node_NN tried_VBD to_TO transmit_VB a_DT message_NN ,_, it_PRP first_RB checked_VBD whether_IN any_DT nearby_JJ node_NN was_VBD transmitting_VBG ._.
+If_IN it_PRP was_VBD ,_, the_DT node_NN backed_VBD off_RP a_DT random_JJ number_NN of_IN slots_NNS ._.
+Each_DT slot_NN was_VBD #_# millisecond_JJ ,_, and_CC the_DT maximum_NN number_NN of_IN backoff_NN slots_NNS was_VBD ##_CD ._.
+The_DT size_NN of_IN messages_NNS was_VBD uniformly_RB distributed_VBN between_IN ##_CD bytes_NNS and_CC 1024_CD bytes_NNS ._.
+The_DT hop_NN count_NN limit_NN -LRB-_-LRB- HCL_NN -RRB-_-RRB- was_VBD the_DT maximum_NN number_NN of_IN hops_VBZ before_IN a_DT message_NN should_MD stop_VB forwarding_NN ._.
+The_DT time_NN to_TO live_VB -LRB-_-LRB- TTL_NN -RRB-_-RRB- was_VBD the_DT maximum_NN duration_NN that_IN a_DT message_NN may_MD exist_VB before_IN expiring_VBG ._.
+The_DT storage_NN capacity_NN was_VBD the_DT maximum_JJ space_NN that_IN a_DT node_NN can_MD use_VB for_IN storing_VBG messages_NNS ._.
+For_IN our_PRP$ routing_VBG method_NN ,_, we_PRP used_VBD a_DT default_NN prediction_NN window_NN T_NN of_IN ##_CD hours_NNS and_CC a_DT probability_NN threshold_NN of_IN #_# ._.
+##_NN ._.
+The_DT replication_NN factor_NN r_NN was_VBD not_RB limited_VBN by_IN default_NN ,_, so_IN the_DT source_NN of_IN a_DT message_NN transferred_VBD the_DT messages_NNS to_TO any_DT other_JJ node_NN that_WDT had_VBD a_DT contact_NN probability_NN with_IN the_DT message_NN destination_NN higher_JJR than_IN the_DT probability_NN threshold_NN ._.
+4_LS ._.
+#_# Message_NN generation_NN After_IN each_DT contact_NN event_NN in_IN the_DT contact_NN trace_NN ,_, we_PRP generated_VBD a_DT message_NN with_IN a_DT given_VBN probability_NN ;_: we_PRP choose_VBP a_DT source_NN node_NN and_CC a_DT des2_NN Two_CD nodes_NNS may_MD not_RB have_VB been_VBN able_JJ to_TO directly_RB communicate_VB while_IN they_PRP were_VBD at_IN two_CD far_RB sides_NNS of_IN an_DT access_NN point_NN ,_, or_CC two_CD nodes_NNS may_MD have_VB been_VBN able_JJ to_TO directly_RB communicate_VB if_IN they_PRP were_VBD between_IN two_CD adjacent_JJ access_NN points_NNS ._.
+3_CD We_PRP tried_VBD to_TO use_VB a_DT general_JJ network_NN simulator_NN -LRB-_-LRB- ns2_NN -RRB-_-RRB- ,_, which_WDT was_VBD extremely_RB slow_JJ when_WRB simulating_VBG a_DT large_JJ number_NN of_IN mobile_JJ nodes_NNS -LRB-_-LRB- in_IN our_PRP$ case_NN ,_, more_JJR than_IN ####_CD nodes_NNS -RRB-_-RRB- ,_, and_CC provided_VBD unnecessary_JJ detail_NN in_IN modeling_NN lower-level_JJ network_NN protocols_NNS ._.
+Table_NNP #_# :_: Default_NNP Settings_NNS of_IN the_DT Simulation_NNP Parameter_NNP Default_NNP value_NN message_NN probability_NN #_# ._.
+###_NN bandwidth_NN ##_CD Mb_NN /_: s_NNS transmission_NN slot_NN #_# millisecond_JJ max_NN backoff_NN slots_NNS ##_VBP message_NN size_NN 80-1024_CD bytes_NNS hop_VBP count_NN limit_NN -LRB-_-LRB- HCL_NN -RRB-_-RRB- unlimited_JJ time_NN to_TO live_VB -LRB-_-LRB- TTL_NN -RRB-_-RRB- unlimited_JJ storage_NN capacity_NN unlimited_JJ prediction_NN window_NN T_NN ##_CD hours_NNS probability_NN threshold_NN #_# ._.
+##_NN contact_NN history_NN length_NN ##_CD replication_NN always_RB aging_VBG factor_NN #_# ._.
+#_# -LRB-_-LRB- #_# ._.
+##_NN PRoPHET_NN -RRB-_-RRB- initial_JJ probability_NN p0_NN #_# ._.
+##_NN -LRB-_-LRB- PRoPHET_NN -RRB-_-RRB- transitivity_NN impact_NN #_# ._.
+##_NN -LRB-_-LRB- PRoPHET_NN -RRB-_-RRB- 0_CD 20000_CD 40000_CD 60000_CD 80000_CD 100000_CD 120000_CD 0_CD #_# ##_CD ##_CD ##_CD Numberofoccurrence_NNP hour_NN movements_NNS contacts_NNS Figure_NNP #_# :_: Movements_NNS and_CC contacts_NNS duration_NN each_DT hour_NN tination_NN node_NN randomly_RB using_VBG a_DT uniform_JJ distribution_NN across_IN nodes_NNS seen_VBN in_IN the_DT contact_NN trace_NN up_IN to_TO the_DT current_JJ time_NN ._.
+When_WRB there_EX were_VBD more_JJR contacts_NNS during_IN a_DT certain_JJ period_NN ,_, there_EX was_VBD a_DT higher_JJR likelihood_NN that_IN a_DT new_JJ message_NN was_VBD generated_VBN in_IN that_DT period_NN ._.
+This_DT correlation_NN is_VBZ not_RB unreasonable_JJ ,_, since_IN there_EX were_VBD more_JJR movements_NNS during_IN the_DT day_NN than_IN during_IN the_DT night_NN ,_, and_CC so_IN the_DT number_NN of_IN contacts_NNS ._.
+Figure_NNP #_# shows_VBZ the_DT statistics_NNS of_IN the_DT numbers_NNS of_IN movements_NNS and_CC the_DT numbers_NNS of_IN contacts_NNS during_IN each_DT hour_NN of_IN the_DT day_NN ,_, summed_VBD across_IN all_DT users_NNS and_CC all_DT days_NNS ._.
+The_DT plot_NN shows_VBZ a_DT clear_JJ diurnal_JJ activity_NN pattern_NN ._.
+The_DT activities_NNS reached_VBD lowest_JJS around_IN 5am_JJ and_CC peaked_VBD between_IN 4pm_CD and_CC 5pm_CD ._.
+We_PRP assume_VBP that_IN in_IN some_DT applications_NNS ,_, network_NN traffic_NN exhibits_VBZ similar_JJ patterns_NNS ,_, that_DT is_VBZ ,_, people_NNS send_VBP more_JJR messages_NNS during_IN the_DT day_NN ,_, too_RB ._.
+Messages_NNS expire_VBP after_IN a_DT TTL_NN ._.
+We_PRP did_VBD not_RB use_VB proactive_JJ methods_NNS to_TO notify_VB nodes_NNS the_DT delivery_NN of_IN messages_NNS ,_, so_RB that_IN the_DT messages_NNS can_MD be_VB removed_VBN from_IN storage_NN ._.
+4_LS ._.
+#_# Metrics_NNPS We_PRP define_VBP a_DT set_NN of_IN metrics_NNS that_IN we_PRP use_VBP in_IN evaluating_VBG routing_VBG protocols_NNS in_IN opportunistic_JJ networks_NNS :_: delivery_NN ratio_NN ,_, the_DT ratio_NN of_IN the_DT number_NN of_IN messages_NNS delivered_VBN to_TO the_DT number_NN of_IN total_JJ messages_NNS generated_VBN ._.
+message_NN transmissions_NNS ,_, the_DT total_JJ number_NN of_IN messages_NNS transmitted_VBN during_IN the_DT simulation_NN across_IN all_DT nodes_NNS ._.
+38_CD meta-data_JJ transmissions_NNS ,_, the_DT total_JJ number_NN of_IN meta-data_JJ units_NNS transmitted_VBN during_IN the_DT simulation_NN across_IN all_DT nodes_NNS ._.
+message_NN duplications_NNS ,_, the_DT number_NN of_IN times_NNS a_DT message_NN copy_NN occurred_VBD ,_, due_JJ to_TO replication_NN ._.
+delay_NN ,_, the_DT duration_NN between_IN a_DT message_NN ''_'' s_NNS generation_NN time_NN and_CC the_DT message_NN ''_'' s_NNS delivery_NN time_NN ._.
+storage_NN usage_NN ,_, the_DT max_NN and_CC mean_NN of_IN maximum_NN storage_NN -LRB-_-LRB- bytes_NNS -RRB-_-RRB- used_VBN across_IN all_DT nodes_NNS ._.
+4_LS ._.
+#_# Results_NNS Here_RB we_PRP compare_VBP simulation_NN results_NNS of_IN the_DT six_CD routing_VBG protocols_NNS ._.
+0_CD ._.
+###_NN 0_CD ._.
+##_NN 0_CD ._.
+#_# 1_CD unlimited_JJ ###_CD ##_CD ##_NN #_# Deliveryratio_NNP Message_NN time-to-live_JJ -LRB-_-LRB- TTL_NN -RRB-_-RRB- -LRB-_-LRB- hour_NN -RRB-_-RRB- direct_JJ random_JJ prediction_NN state_NN prophet_NN epidemic_JJ Figure_NN #_# :_: Delivery_NN ratio_NN -LRB-_-LRB- log_NN scale_NN -RRB-_-RRB- ._.
+The_DT direct_JJ and_CC random_JJ protocols_NNS for_IN one-hour_JJ TTL_NNP had_VBD delivery_NN ratios_NNS that_WDT were_VBD too_RB low_JJ to_TO be_VB visible_JJ in_IN the_DT plot_NN ._.
+Figure_NNP #_# shows_VBZ the_DT delivery_NN ratio_NN of_IN all_PDT the_DT protocols_NNS ,_, with_IN different_JJ TTLs_NNS ._.
+-LRB-_-LRB- In_IN all_PDT the_DT plots_NNS in_IN the_DT paper_NN ,_, prediction_NN stands_VBZ for_IN our_PRP$ method_NN ,_, state_NN stands_VBZ for_IN the_DT Link-State_NNP protocol_NN ,_, and_CC prophet_NN represents_VBZ PRoPHET_NN ._. -RRB-_-RRB-
+Although_IN we_PRP had_VBD #_# ,_, ###_CD users_NNS in_IN the_DT network_NN ,_, the_DT direct-delivery_NN and_CC random_JJ protocols_NNS had_VBD low_JJ delivery_NN ratios_NNS -LRB-_-LRB- note_NN the_DT log_NN scale_NN -RRB-_-RRB- ._.
+Even_RB for_IN messages_NNS with_IN an_DT unlimited_JJ lifetime_NN ,_, only_RB ##_CD out_IN of_IN ####_CD messages_NNS were_VBD delivered_VBN during_IN this_DT one-month_JJ simulation_NN ._.
+The_DT delivery_NN ratio_NN of_IN epidemic_JJ routing_VBG was_VBD the_DT best_JJS ._.
+The_DT three_CD prediction-based_JJ approaches_NNS had_VBD low_JJ delivery_NN ratio_NN ,_, compared_VBN to_TO epidemic_JJ routing_VBG ._.
+Although_IN our_PRP$ method_NN was_VBD slightly_RB better_JJR than_IN the_DT other_JJ two_CD ,_, the_DT advantage_NN was_VBD marginal_JJ ._.
+The_DT high_JJ delivery_NN ratio_NN of_IN epidemic_JJ routing_VBG came_VBD with_IN a_DT price_NN :_: excessive_JJ transmissions_NNS ._.
+Figure_NNP #_# shows_VBZ the_DT number_NN of_IN message_NN data_NNS transmissions_NNS ._.
+The_DT number_NN of_IN message_NN transmissions_NNS of_IN epidemic_JJ routing_VBG was_VBD more_JJR than_IN ##_CD times_NNS higher_JJR than_IN for_IN the_DT predictionbased_JJ routing_VBG protocols_NNS ._.
+Obviously_RB ,_, the_DT direct_JJ delivery_NN protocol_NN had_VBD the_DT lowest_JJS number_NN of_IN message_NN transmissions_NNS -_: the_DT number_NN of_IN message_NN delivered_VBN ._.
+Among_IN the_DT three_CD prediction-based_JJ methods_NNS ,_, the_DT PRoPHET_NN transmitted_VBD fewer_JJR messages_NNS ,_, but_CC had_VBD comparable_JJ delivery-ratio_NN as_IN seen_VBN in_IN Figure_NNP #_# ._.
+Figure_NNP #_# shows_VBZ that_IN epidemic_JJ and_CC all_DT prediction-based_JJ methods_NNS had_VBD substantial_JJ meta-data_JJ transmissions_NNS ,_, though_IN epidemic_JJ routing_VBG had_VBD relatively_RB more_RBR ,_, with_IN shorter_JJR TTLs_NNS ._.
+Because_IN epidemic_JJ protocol_NN transmitted_VBD messages_NNS at_IN every_DT contact_NN ,_, in_IN turn_NN ,_, more_JJR nodes_NNS had_VBD messages_NNS that_WDT required_VBD meta-data_JJ transmission_NN during_IN contact_NN ._.
+The_DT direct-delivery_NN and_CC random_JJ protocols_NNS had_VBD no_DT meta-data_JJ transmissions_NNS ._.
+In_IN addition_NN to_TO its_PRP$ message_NN transmissions_NNS and_CC meta-data_JJ transmissions_NNS ,_, the_DT epidemic_JJ routing_VBG protocol_NN also_RB had_VBD excessive_JJ message_NN 1_CD 10_CD 100_CD 1000_CD 10000_CD 100000_CD 1e_NN +_CC ##_CD 1e_NN +_CC ##_CD 1e_NN +_CC ##_CD unlimited_JJ ###_CD ##_CD ##_NN #_# Numberofmessagetransmitted_NNP Message_NN time-to-live_JJ -LRB-_-LRB- TTL_NN -RRB-_-RRB- -LRB-_-LRB- hour_NN -RRB-_-RRB- direct_JJ random_JJ prediction_NN state_NN prophet_NN epidemic_JJ Figure_NN #_# :_: Message_NN transmissions_NNS -LRB-_-LRB- log_NN scale_NN -RRB-_-RRB- 1_CD 10_CD 100_CD 1000_CD 10000_CD 100000_CD 1e_NN +_CC ##_CD 1e_NN +_CC ##_CD 1e_NN +_CC ##_CD unlimited_JJ ###_CD ##_CD ##_NN #_# Numberofmeta-datatransmissions_NNS Message_NN time-to-live_JJ -LRB-_-LRB- TTL_NN -RRB-_-RRB- -LRB-_-LRB- hour_NN -RRB-_-RRB- direct_JJ random_JJ prediction_NN state_NN prophet_NN epidemic_JJ Figure_NN #_# :_: Meta-data_JJ transmissions_NNS -LRB-_-LRB- log_NN scale_NN -RRB-_-RRB- ._.
+Direct_JJ and_CC random_JJ protocols_NNS had_VBD no_DT meta-data_JJ transmissions_NNS ._.
+duplications_NNS ,_, spreading_VBG replicas_NNS of_IN messages_NNS over_IN the_DT network_NN ._.
+Figure_NNP #_# shows_VBZ that_IN epidemic_JJ routing_VBG had_VBD one_CD or_CC two_CD orders_NNS more_RBR duplication_NN than_IN the_DT prediction-based_JJ protocols_NNS ._.
+Recall_VB that_IN the_DT directdelivery_NN and_CC random_JJ protocols_NNS did_VBD not_RB replicate_VB ,_, thus_RB had_VBD no_DT data_NNS duplications_NNS ._.
+Figure_NNP #_# shows_VBZ both_CC the_DT median_NN and_CC mean_VB delivery_NN delays_NNS ._.
+All_DT protocols_NNS show_VBP similar_JJ delivery_NN delays_NNS in_IN both_CC mean_VB and_CC median_JJ measures_NNS for_IN medium_NN TTLs_NNS ,_, but_CC differ_VBP for_IN long_JJ and_CC short_JJ TTLs_NNS ._.
+With_IN a_DT 100-hour_JJ TTL_NN ,_, or_CC unlimited_JJ TTL_NN ,_, epidemic_JJ routing_VBG had_VBD the_DT shortest_JJS delays_NNS ._.
+The_DT direct-delivery_NN had_VBD the_DT longest_JJS delay_NN for_IN unlimited_JJ TTL_NN ,_, but_CC it_PRP had_VBD the_DT shortest_JJS delay_NN for_IN the_DT one-hour_JJ TTL_NN ._.
+The_DT results_NNS seem_VBP contrary_JJ to_TO our_PRP$ intuition_NN :_: the_DT epidemic_JJ routing_VBG protocol_NN should_MD be_VB the_DT fastest_JJS routing_VBG protocol_NN since_IN it_PRP spreads_VBZ messages_NNS all_DT over_IN the_DT network_NN ._.
+Indeed_RB ,_, the_DT figures_NNS show_VBP only_RB the_DT delay_NN time_NN for_IN delivered_VBN messages_NNS ._.
+For_IN direct_JJ delivery_NN ,_, random_JJ ,_, and_CC the_DT probability-based_JJ routing_VBG protocols_NNS ,_, relatively_RB few_JJ messages_NNS were_VBD delivered_VBN for_IN short_JJ TTLs_NNS ,_, so_RB many_JJ messages_NNS expired_VBD before_IN they_PRP could_MD reach_VB their_PRP$ destination_NN ;_: those_DT messages_NNS had_VBD infinite_JJ delivery_NN delay_NN and_CC were_VBD not_RB included_VBN in_IN the_DT median_NN or_CC mean_VB measurements_NNS ._.
+For_IN longer_JJR TTLs_NNS ,_, more_JJR messages_NNS were_VBD delivered_VBN even_RB for_IN the_DT directdelivery_NN protocol_NN ._.
+The_DT statistics_NNS of_IN longer_JJR TTLs_NNS for_IN comparison_NN are_VBP more_RBR meaningful_JJ than_IN those_DT of_IN short_JJ TTLs_NNS ._.
+Since_IN our_PRP$ message_NN generation_NN rate_NN was_VBD low_JJ ,_, the_DT storage_NN usage_NN was_VBD also_RB low_JJ in_IN our_PRP$ simulation_NN ._.
+Figure_NNP #_# shows_VBZ the_DT maximum_NN and_CC average_NN of_IN maximum_JJ volume_NN -LRB-_-LRB- in_IN KBytes_NNS -RRB-_-RRB- of_IN messages_NNS stored_VBD 39_CD 1_CD 10_CD 100_CD 1000_CD 10000_CD 100000_CD 1e_NN +_CC ##_CD 1e_NN +_CC ##_CD 1e_NN +_CC ##_CD unlimited_JJ ###_CD ##_CD ##_NN #_# Numberofmessageduplications_NNPS Message_NN time-to-live_JJ -LRB-_-LRB- TTL_NN -RRB-_-RRB- -LRB-_-LRB- hour_NN -RRB-_-RRB- direct_JJ random_JJ prediction_NN state_NN prophet_NN epidemic_JJ Figure_NN #_# :_: Message_NN duplications_NNS -LRB-_-LRB- log_NN scale_NN -RRB-_-RRB- ._.
+Direct_JJ and_CC random_JJ protocols_NNS had_VBD no_DT message_NN duplications_NNS ._.
+1_CD 10_CD 100_CD 1000_CD 10000_CD unlimited100_NN ##_CD ##_CD #_# unlimited100_CD ##_CD ##_NN #_# Delay_NNP -LRB-_-LRB- minute_NN -RRB-_-RRB- Message_NN time-to-live_JJ -LRB-_-LRB- TTL_NN -RRB-_-RRB- -LRB-_-LRB- hour_NN -RRB-_-RRB- direct_JJ random_JJ prediction_NN state_NN prophet_NN epidemic_JJ Mean_NN delayMedian_JJ delay_NN Figure_NN #_# :_: Median_JJ and_CC mean_VB delays_NNS -LRB-_-LRB- log_NN scale_NN -RRB-_-RRB- ._.
+in_IN each_DT node_NN ._.
+The_DT epidemic_JJ routing_VBG had_VBD the_DT most_JJS storage_NN usage_NN ._.
+The_DT message_NN time-to-live_JJ parameter_NN was_VBD the_DT big_JJ factor_NN affecting_VBG the_DT storage_NN usage_NN for_IN epidemic_JJ and_CC prediction-based_JJ routing_VBG protocols_NNS ._.
+We_PRP studied_VBD the_DT impact_NN of_IN different_JJ parameters_NNS of_IN our_PRP$ predictionbased_JJ routing_VBG protocol_NN ._.
+Our_PRP$ prediction-based_JJ protocol_NN was_VBD sensitive_JJ to_TO several_JJ parameters_NNS ,_, such_JJ as_IN the_DT probability_NN threshold_NN and_CC the_DT prediction_NN window_NN T_NN ._.
+Figure_NNP #_# shows_VBZ the_DT delivery_NN ratios_NNS when_WRB we_PRP used_VBD different_JJ probability_NN thresholds_NNS ._.
+-LRB-_-LRB- The_DT leftmost_NN value_NN #_# ._.
+##_NN is_VBZ the_DT value_NN used_VBN for_IN the_DT other_JJ plots_NNS ._. -RRB-_-RRB-
+A_DT higher_JJR probability_NN threshold_NN limited_VBD the_DT transfer_NN probability_NN ,_, so_RB fewer_JJR messages_NNS were_VBD delivered_VBN ._.
+It_PRP also_RB required_VBD fewer_JJR transmissions_NNS as_IN shown_VBN in_IN Figure_NNP #_# ._.
+With_IN a_DT larger_JJR prediction_NN window_NN ,_, we_PRP got_VBD a_DT higher_JJR contact_NN probability_NN ._.
+Thus_RB ,_, for_IN the_DT same_JJ probability_NN threshold_NN ,_, we_PRP had_VBD a_DT slightly_RB higher_JJR delivery_NN ratio_NN as_IN shown_VBN in_IN Figure_NNP ##_NNP ,_, and_CC a_DT few_JJ more_JJR transmissions_NNS as_IN shown_VBN in_IN Figure_NNP ##_NNP ._.
+5_CD ._.
+RELATED_JJ WORK_VBP In_IN addition_NN to_TO the_DT protocols_NNS that_IN we_PRP evaluated_VBD in_IN our_PRP$ simulation_NN ,_, several_JJ other_JJ opportunistic_JJ network_NN routing_VBG protocols_NNS have_VBP been_VBN proposed_VBN in_IN the_DT literature_NN ._.
+We_PRP did_VBD not_RB implement_VB and_CC evaluate_VB these_DT routing_VBG protocols_NNS ,_, because_IN either_CC they_PRP require_VBP domain-specific_JJ information_NN -LRB-_-LRB- location_NN information_NN -RRB-_-RRB- -LSB-_-LRB- ##_CD ,_, ##_CD -RSB-_-RRB- ,_, assume_VB certain_JJ mobility_NN patterns_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, present_JJ orthogonal_JJ approaches_NNS -LSB-_-LRB- ##_NNS ,_, ##_NN -RSB-_-RRB- to_TO other_JJ routing_VBG protocols_NNS ._.
+0_CD ._.
+#_# 1_CD 10_CD 100_CD 1000_CD 10000_CD unlimited100_NN ##_CD ##_CD #_# unlimited100_CD ##_CD ##_NN #_# Storageusage_NNP -LRB-_-LRB- KB_NN -RRB-_-RRB- Message_NN time-to-live_JJ -LRB-_-LRB- TTL_NN -RRB-_-RRB- -LRB-_-LRB- hour_NN -RRB-_-RRB- direct_JJ random_JJ prediction_NN state_NN prophet_NN epidemic_JJ Mean_NN of_IN maximumMax_NN of_IN maximum_NN Figure_NN #_# :_: Max_NNP and_CC mean_VB of_IN maximum_NN storage_NN usage_NN across_IN all_DT nodes_NNS -LRB-_-LRB- log_NN scale_NN -RRB-_-RRB- ._.
+0_CD 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 1_CD 0_CD #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# Deliveryratio_NNP Probability_NNP threshold_NN Figure_NN #_# :_: Probability_NN threshold_NN impact_NN on_IN delivery_NN ratio_NN of_IN timely-contact_JJ routing_VBG ._.
+LeBrun_NNP et_FW al_FW ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- propose_VBP a_DT location-based_JJ delay-tolerant_JJ network_NN routing_VBG protocol_NN ._.
+Their_PRP$ algorithm_NN assumes_VBZ that_IN every_DT node_NN knows_VBZ its_PRP$ own_JJ position_NN ,_, and_CC the_DT destination_NN is_VBZ stationary_JJ at_IN a_DT known_VBN location_NN ._.
+A_DT node_NN forwards_RB data_NNS to_TO a_DT neighbor_NN only_RB if_IN the_DT neighbor_NN is_VBZ closer_RBR to_TO the_DT destination_NN than_IN its_PRP$ own_JJ position_NN ._.
+Our_PRP$ protocol_NN does_VBZ not_RB require_VB knowledge_NN of_IN the_DT nodes_NNS ''_'' locations_NNS ,_, and_CC learns_VBZ their_PRP$ contact_NN patterns_NNS ._.
+Leguay_NNP et_FW al_FW ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- use_VBP a_DT high-dimensional_JJ space_NN to_TO represent_VB a_DT mobility_NN pattern_NN ,_, then_RB routes_NNS messages_NNS to_TO nodes_NNS that_WDT are_VBP closer_RBR to_TO the_DT destination_NN node_NN in_IN the_DT mobility_NN pattern_NN space_NN ._.
+Location_NNP information_NN of_IN nodes_NNS is_VBZ required_VBN to_TO construct_VB mobility_NN patterns_NNS ._.
+Musolesi_JJ et_FW al_FW ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- propose_VBP an_DT adaptive_JJ routing_VBG protocol_NN for_IN intermittently_RB connected_VBN mobile_JJ ad-hoc_JJ networks_NNS ._.
+They_PRP use_VBP a_DT Kalman_NNP filter_NN to_TO compute_VB the_DT probability_NN that_IN a_DT node_NN delivers_VBZ messages_NNS ._.
+This_DT protocol_NN assumes_VBZ group_NN mobility_NN and_CC cloud_NN connectivity_NN ,_, that_WDT is_VBZ ,_, nodes_NNS move_VBP as_IN a_DT group_NN ,_, and_CC among_IN this_DT group_NN of_IN nodes_NNS a_DT contemporaneous_JJ end-to-end_JJ connection_NN exists_VBZ for_IN every_DT pair_NN of_IN nodes_NNS ._.
+When_WRB two_CD nodes_NNS are_VBP in_IN the_DT same_JJ connected_JJ cloud_NN ,_, DSDV_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- routing_VBG is_VBZ used_VBN ._.
+Network_NNP coding_VBG also_RB draws_VBZ much_JJ interest_NN from_IN DTN_NNP research_NN ._.
+Erasure-coding_JJ -LSB-_-LRB- ##_CD ,_, ##_CD -RSB-_-RRB- explores_VBZ coding_VBG algorithms_NNS to_TO reduce_VB message_NN replicas_NNS ._.
+The_DT source_NN node_NN replicates_VBZ a_DT message_NN m_NN times_NNS ,_, then_RB uses_VBZ a_DT coding_VBG scheme_NN to_TO encode_VB them_PRP in_IN one_CD big_JJ message_NN ._.
+After_IN replicas_NNS are_VBP encoded_VBN ,_, the_DT source_NN divides_VBZ the_DT big_JJ message_NN into_IN k_NN 40_CD 0_CD 0_CD ._.
+#_# 1_CD 1_CD ._.
+#_# 2_CD 2_CD ._.
+#_# 3_CD 3_CD ._.
+#_# 0_CD #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# Numberofmessagetransmitted_VBN -LRB-_-LRB- million_CD -RRB-_-RRB- Probability_NN threshold_NN Figure_NN #_# :_: Probability_NN threshold_NN impact_NN on_IN message_NN transmission_NN of_IN timely-contact_JJ routing_VBG ._.
+0_CD 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 1_CD 0_CD ._.
+##_NN #_# ._.
+#_# #_# ##_CD ###_CD Deliveryratio_NNP Prediction_NN window_NN -LRB-_-LRB- hour_NN -RRB-_-RRB- Figure_NN ##_NN :_: Prediction_NN window_NN impact_NN on_IN delivery_NN ratio_NN of_IN timely-contact_JJ routing_VBG -LRB-_-LRB- semi-log_JJ scale_NN -RRB-_-RRB- ._.
+blocks_NNS of_IN the_DT same_JJ size_NN ,_, and_CC transmits_VBZ a_DT block_NN to_TO each_DT of_IN the_DT first_JJ k_NN encountered_VBD nodes_NNS ._.
+If_IN m_NN of_IN the_DT blocks_NNS are_VBP received_VBN at_IN the_DT destination_NN ,_, the_DT message_NN can_MD be_VB restored_VBN ,_, where_WRB m_NN <_JJR k_NN ._.
+In_IN a_DT uniformly_RB distributed_VBN mobility_NN scenario_NN ,_, the_DT delivery_NN probability_NN increases_NNS because_IN the_DT probability_NN that_IN the_DT destination_NN node_NN meets_VBZ m_NN relays_NNS is_VBZ greater_JJR than_IN it_PRP meets_VBZ k_NN relays_NNS ,_, given_VBN m_NN <_JJR k_NN ._.
+6_CD ._.
+SUMMARY_NN We_PRP propose_VBP a_DT prediction-based_JJ routing_VBG protocol_NN for_IN opportunistic_JJ networks_NNS ._.
+We_PRP evaluate_VBP the_DT performance_NN of_IN our_PRP$ protocol_NN using_VBG realistic_JJ contact_NN traces_NNS ,_, and_CC compare_VB to_TO five_CD existing_VBG routing_VBG protocols_NNS ._.
+Our_PRP$ simulation_NN results_VBZ show_NN that_IN direct_JJ delivery_NN had_VBD the_DT lowest_JJS delivery_NN ratio_NN ,_, the_DT fewest_JJS data_NNS transmissions_NNS ,_, and_CC no_DT meta-data_JJ transmission_NN or_CC data_NNS duplication_NN ._.
+Direct_JJ delivery_NN is_VBZ suitable_JJ for_IN devices_NNS that_WDT require_VBP an_DT extremely_RB low_JJ power_NN consumption_NN ._.
+The_DT random_JJ protocol_NN increased_VBD the_DT chance_NN of_IN delivery_NN for_IN messages_NNS otherwise_RB stuck_VBD at_IN some_DT low_JJ mobility_NN nodes_NNS ._.
+Epidemic_JJ routing_VBG delivered_VBN the_DT most_RBS messages_NNS ._.
+The_DT excessive_JJ transmissions_NNS ,_, and_CC data_NNS duplication_NN ,_, however_RB ,_, consume_VBP more_JJR resources_NNS than_IN portable_JJ devices_NNS may_MD be_VB able_JJ to_TO provide_VB ._.
+None_NN of_IN these_DT protocols_NNS -LRB-_-LRB- direct-delivery_NN ,_, random_JJ and_CC epidemic_JJ routing_VBG -RRB-_-RRB- are_VBP practical_JJ for_IN real_JJ deployment_NN of_IN opportunistic_JJ networks_NNS ,_, 0_CD 0_CD ._.
+#_# 1_CD 1_CD ._.
+#_# 2_CD 2_CD ._.
+#_# 3_CD 3_CD ._.
+#_# 0_CD ._.
+##_NN #_# ._.
+#_# #_# ##_CD ###_CD Numberofmessagetransmitted_NNP -LRB-_-LRB- million_CD -RRB-_-RRB- Prediction_NN window_NN -LRB-_-LRB- hour_NN -RRB-_-RRB- Figure_NN ##_NN :_: Prediction_NN window_NN impact_NN on_IN message_NN transmission_NN of_IN timely-contact_JJ routing_VBG -LRB-_-LRB- semi-log_JJ scale_NN -RRB-_-RRB- ._.
+because_IN they_PRP either_DT had_VBD an_DT extremely_RB low_JJ delivery_NN ratio_NN ,_, or_CC had_VBD an_DT extremely_RB high_JJ resource_NN consumption_NN ._.
+The_DT prediction-based_JJ routing_VBG protocols_NNS had_VBD a_DT delivery_NN ratio_NN more_JJR than_IN ##_CD times_NNS better_JJR than_IN that_DT for_IN direct-delivery_NN and_CC random_JJ routing_VBG ,_, and_CC fewer_JJR transmissions_NNS and_CC less_JJR storage_NN usage_NN than_IN epidemic_JJ routing_VBG ._.
+They_PRP also_RB had_VBD fewer_JJR data_NNS duplications_NNS than_IN epidemic_JJ routing_VBG ._.
+All_PDT the_DT prediction-based_JJ routing_VBG protocols_NNS that_IN we_PRP have_VBP evaluated_VBN had_VBD similar_JJ performance_NN ._.
+Our_PRP$ method_NN had_VBD a_DT slightly_RB higher_JJR delivery_NN ratio_NN ,_, but_CC more_RBR transmissions_NNS and_CC higher_JJR storage_NN usage_NN ._.
+There_EX are_VBP many_JJ parameters_NNS for_IN prediction-based_JJ routing_VBG protocols_NNS ,_, however_RB ,_, and_CC different_JJ parameters_NNS may_MD produce_VB different_JJ results_NNS ._.
+Indeed_RB ,_, there_EX is_VBZ an_DT opportunity_NN for_IN some_DT adaptation_NN ;_: for_IN example_NN ,_, high_JJ priority_NN messages_NNS may_MD be_VB given_VBN higher_JJR transfer_NN and_CC replication_NN probabilities_NNS to_TO increase_VB the_DT chance_NN of_IN delivery_NN and_CC reduce_VB the_DT delay_NN ,_, or_CC a_DT node_NN with_IN infrequent_JJ contact_NN may_MD choose_VB to_TO raise_VB its_PRP$ transfer_NN probability_NN ._.
+We_PRP only_RB studied_VBD the_DT impact_NN of_IN predicting_VBG peer-to-peer_JJ contact_NN probability_NN for_IN routing_VBG in_IN unicast_JJ messages_NNS ._.
+In_IN some_DT applications_NNS ,_, context_NN information_NN -LRB-_-LRB- such_JJ as_IN location_NN -RRB-_-RRB- may_MD be_VB available_JJ for_IN the_DT peers_NNS ._.
+One_CD may_MD also_RB consider_VB other_JJ messaging_NN models_NNS ,_, for_IN example_NN ,_, where_WRB messages_NNS are_VBP sent_VBN to_TO a_DT location_NN ,_, such_JJ that_IN every_DT node_NN at_IN that_DT location_NN will_MD receive_VB a_DT copy_NN of_IN the_DT message_NN ._.
+Location_NNP prediction_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- may_MD be_VB used_VBN to_TO predict_VB nodes_NNS ''_'' mobility_NN ,_, and_CC to_TO choose_VB as_IN relays_NNS those_DT nodes_NNS moving_VBG toward_IN the_DT destined_VBN location_NN ._.
+Research_NN on_IN routing_VBG in_IN opportunistic_JJ networks_NNS is_VBZ still_RB in_IN its_PRP$ early_JJ stage_NN ._.
+Many_JJ other_JJ issues_NNS of_IN opportunistic_JJ networks_NNS ,_, such_JJ as_IN security_NN and_CC privacy_NN ,_, are_VBP mainly_RB left_VBN open_JJ ._.
+We_PRP anticipate_VBP studying_VBG these_DT issues_NNS in_IN future_JJ work_NN ._.
+7_CD ._.
+ACKNOWLEDGEMENT_NN This_DT research_NN is_VBZ a_DT project_NN of_IN the_DT Center_NNP for_IN Mobile_NNP Computing_NNP and_CC the_DT Institute_NNP for_IN Security_NNP Technology_NNP Studies_NNS at_IN Dartmouth_NNP College_NNP ._.
+It_PRP was_VBD supported_VBN by_IN DoCoMo_NNP Labs_NNPS USA_NNP ,_, the_DT CRAWDAD_NNP archive_NN at_IN Dartmouth_NNP College_NNP -LRB-_-LRB- funded_VBN by_IN NSF_NN CRI_NNP Award_NN 0454062_CD -RRB-_-RRB- ,_, NSF_NNP Infrastructure_NNP Award_NN EIA-9802068_NN ,_, and_CC by_IN Grant_NNP number_NN 2005-DD-BX-1091_NN awarded_VBN by_IN the_DT Bureau_NNP of_IN Justice_NNP Assistance_NNP ._.
+Points_NNS of_IN view_NN or_CC opinions_NNS in_IN this_DT document_NN are_VBP those_DT of_IN the_DT authors_NNS and_CC do_VBP not_RB represent_VB the_DT official_JJ position_NN or_CC policies_NNS of_IN any_DT sponsor_NN ._.
+8_CD ._.
+REFERENCES_NNS -LSB-_-LRB- #_# -RSB-_-RRB- John_NNP Burgess_NNP ,_, Brian_NNP Gallagher_NNP ,_, David_NNP Jensen_NNP ,_, and_CC Brian_NNP Neil_NNP Levine_NNP ._.
+MaxProp_NNP :_: routing_VBG for_IN vehicle-based_JJ 41_CD disruption-tolerant_JJ networks_NNS ._.
+In_IN Proceedings_NNP of_IN the_DT 25th_JJ IEEE_NNP International_NNP Conference_NNP on_IN Computer_NNP Communications_NNP -LRB-_-LRB- INFOCOM_NNP -RRB-_-RRB- ,_, April_NNP ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- Scott_NNP Burleigh_NNP ,_, Adrian_NNP Hooke_NNP ,_, Leigh_NNP Torgerson_NNP ,_, Kevin_NNP Fall_NN ,_, Vint_NNP Cerf_NNP ,_, Bob_NNP Durst_NNP ,_, Keith_NNP Scott_NNP ,_, and_CC Howard_NNP Weiss_NNP ._.
+Delay-tolerant_JJ networking_NN :_: An_DT approach_NN to_TO interplanetary_JJ Internet_NN ._.
+IEEE_NNP Communications_NNP Magazine_NNP ,_, ##_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 128-136_CD ,_, June_NNP ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- Tracy_NNP Camp_NNP ,_, Jeff_NNP Boleng_NNP ,_, and_CC Vanessa_NNP Davies_NNP ._.
+A_DT survey_NN of_IN mobility_NN models_NNS for_IN ad-hoc_JJ network_NN research_NN ._.
+Wireless_NNP Communication_NNP &_CC Mobile_NNP Computing_NNP -LRB-_-LRB- WCMC_NNP -RRB-_-RRB- :_: Special_JJ issue_NN on_IN Mobile_NNP ad-hoc_JJ Networking_NNP :_: Research_NNP ,_, Trends_NNPS and_CC Applications_NNS ,_, #_# -LRB-_-LRB- #_# -RRB-_-RRB- :_: 483-502_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- Andrew_NNP Campbell_NNP ,_, Shane_NNP Eisenman_NNP ,_, Nicholas_NNP Lane_NNP ,_, Emiliano_NNP Miluzzo_NNP ,_, and_CC Ronald_NNP Peterson_NNP ._.
+People-centric_JJ urban_JJ sensing_VBG ._.
+In_IN IEEE_NNP Wireless_NNP Internet_NNP Conference_NNP ,_, August_NNP 2006_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- Augustin_NNP Chaintreau_NNP ,_, Pan_NNP Hui_NNP ,_, Jon_NNP Crowcroft_NNP ,_, Christophe_NNP Diot_NNP ,_, Richard_NNP Gass_NNP ,_, and_CC James_NNP Scott_NNP ._.
+Impact_NN of_IN human_JJ mobility_NN on_IN the_DT design_NN of_IN opportunistic_JJ forwarding_NN algorithms_NNS ._.
+In_IN Proceedings_NNP of_IN the_DT 25th_JJ IEEE_NNP International_NNP Conference_NNP on_IN Computer_NNP Communications_NNP -LRB-_-LRB- INFOCOM_NNP -RRB-_-RRB- ,_, April_NNP ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- Kevin_NNP Fall_NN ._.
+A_DT delay-tolerant_JJ network_NN architecture_NN for_IN challenged_VBN internets_NNS ._.
+In_IN Proceedings_NNP of_IN the_DT ####_CD Conference_NN on_IN Applications_NNS ,_, Technologies_NNPS ,_, Architectures_NNPS ,_, and_CC Protocols_NNS for_IN Computer_NNP Communications_NNP -LRB-_-LRB- SIGCOMM_NNP -RRB-_-RRB- ,_, August_NNP ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- Tristan_NNP Henderson_NNP ,_, David_NNP Kotz_NNP ,_, and_CC Ilya_NNP Abyzov_NNP ._.
+The_DT changing_VBG usage_NN of_IN a_DT mature_JJ campus-wide_JJ wireless_JJ network_NN ._.
+In_IN Proceedings_NNP of_IN the_DT 10th_JJ Annual_JJ International_JJ Conference_NN on_IN Mobile_NNP Computing_NNP and_CC Networking_NNP -LRB-_-LRB- MobiCom_NNP -RRB-_-RRB- ,_, pages_NNS 187-201_CD ,_, September_NNP ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- Pan_NNP Hui_NNP ,_, Augustin_NNP Chaintreau_NNP ,_, James_NNP Scott_NNP ,_, Richard_NNP Gass_NNP ,_, Jon_NNP Crowcroft_NNP ,_, and_CC Christophe_NNP Diot_NNP ._.
+Pocket_NN switched_VBD networks_NNS and_CC human_JJ mobility_NN in_IN conference_NN environments_NNS ._.
+In_IN ACM_NNP SIGCOMM_NNP Workshop_NNP on_IN Delay_NNP Tolerant_NNP Networking_NNP ,_, pages_NNS 244-251_CD ,_, August_NNP ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- Ravi_NNP Jain_NNP ,_, Dan_NNP Lelescu_NNP ,_, and_CC Mahadevan_NNP Balakrishnan_NNP ._.
+Model_NNP T_NN :_: an_DT empirical_JJ model_NN for_IN user_NN registration_NN patterns_NNS in_IN a_DT campus_NN wireless_JJ LAN_NN ._.
+In_IN Proceedings_NNP of_IN the_DT 11th_JJ Annual_JJ International_JJ Conference_NN on_IN Mobile_NNP Computing_NNP and_CC Networking_NNP -LRB-_-LRB- MobiCom_NNP -RRB-_-RRB- ,_, pages_NNS 170-184_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_CD -RSB-_-RRB- Sushant_NNP Jain_NNP ,_, Mike_NNP Demmer_NNP ,_, Rabin_NNP Patra_NNP ,_, and_CC Kevin_NNP Fall_NN ._.
+Using_VBG redundancy_NN to_TO cope_VB with_IN failures_NNS in_IN a_DT delay_NN tolerant_JJ network_NN ._.
+In_IN Proceedings_NNP of_IN the_DT ####_CD Conference_NN on_IN Applications_NNS ,_, Technologies_NNPS ,_, Architectures_NNPS ,_, and_CC Protocols_NNS for_IN Computer_NNP Communications_NNP -LRB-_-LRB- SIGCOMM_NNP -RRB-_-RRB- ,_, pages_NNS 109-120_CD ,_, August_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Philo_NNP Juang_NNP ,_, Hidekazu_NNP Oki_NNP ,_, Yong_NNP Wang_NNP ,_, Margaret_NNP Martonosi_NNP ,_, Li-Shiuan_NNP Peh_NNP ,_, and_CC Daniel_NNP Rubenstein_NNP ._.
+Energy-efficient_JJ computing_NN for_IN wildlife_NN tracking_NN :_: Design_NN tradeoffs_NNS and_CC early_JJ experiences_NNS with_IN ZebraNet_NNP ._.
+In_IN the_DT Tenth_NNP International_NNP Conference_NNP on_IN Architectural_NNP Support_NN for_IN Programming_NNP Languages_NNPS and_CC Operating_NNP Systems_NNPS ,_, October_NNP 2002_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- David_NNP Kotz_NNP and_CC Kobby_NNP Essien_NNP ._.
+Analysis_NN of_IN a_DT campus-wide_JJ wireless_JJ network_NN ._.
+Wireless_NNP Networks_NNP ,_, ##_CD :_: 115-133_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- David_NNP Kotz_NNP ,_, Tristan_NNP Henderson_NNP ,_, and_CC Ilya_NNP Abyzov_NNP ._.
+CRAWDAD_NNP data_NNS set_VBD dartmouth_NNP /_: campus_NN ._.
+http_NN :_: /_: /_: crawdad_NN ._.
+cs_NNS ._.
+dartmouth_NNP ._.
+edu_NN /_: dartmouth_NNP /_: campus_NN ,_, December_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Jason_NNP LeBrun_NNP ,_, Chen-Nee_NNP Chuah_NNP ,_, Dipak_NNP Ghosal_NNP ,_, and_CC Michael_NNP Zhang_NNP ._.
+Knowledge-based_JJ opportunistic_JJ forwarding_NN in_IN vehicular_JJ wireless_JJ ad-hoc_JJ networks_NNS ._.
+In_IN IEEE_NNP Vehicular_NNP Technology_NNP Conference_NNP ,_, pages_NNS 2289-2293_CD ,_, May_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Jeremie_NNP Leguay_NNP ,_, Timur_NNP Friedman_NNP ,_, and_CC Vania_NNP Conan_NNP ._.
+Evaluating_VBG mobility_NN pattern_NN space_NN routing_VBG for_IN DTNs_NNS ._.
+In_IN Proceedings_NNP of_IN the_DT 25th_JJ IEEE_NNP International_NNP Conference_NNP on_IN Computer_NNP Communications_NNP -LRB-_-LRB- INFOCOM_NNP -RRB-_-RRB- ,_, April_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Anders_NNP Lindgren_NNP ,_, Avri_NNP Doria_NNP ,_, and_CC Olov_NNP Schelen_NNP ._.
+Probabilistic_NNP routing_VBG in_IN intermittently_RB connected_VBN networks_NNS ._.
+In_IN Workshop_NNP on_IN Service_NNP Assurance_NNP with_IN Partial_JJ and_CC Intermittent_NNP Resources_NNP -LRB-_-LRB- SAPIR_NNP -RRB-_-RRB- ,_, pages_NNS 239-254_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Mirco_NNP Musolesi_NNP ,_, Stephen_NNP Hailes_NNP ,_, and_CC Cecilia_NNP Mascolo_NNP ._.
+Adaptive_JJ routing_VBG for_IN intermittently_RB connected_VBN mobile_JJ ad-hoc_JJ networks_NNS ._.
+In_IN IEEE_NNP International_NNP Symposium_NNP on_IN a_DT World_NN of_IN Wireless_NNP Mobile_NNP and_CC Multimedia_NNP Networks_NNP ,_, pages_NNS 183-189_CD ,_, June_NNP ####_CD ._.
+extended_VBN version_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- OLPC_NN ._.
+One_CD laptop_NN per_IN child_NN project_NN ._.
+http_NN :_: /_: /_: laptop_NN ._.
+org_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- C_NN ._.
+E_NN ._.
+Perkins_NNP and_CC P_NN ._.
+Bhagwat_NNP ._.
+Highly_RB dynamic_JJ destination-sequenced_JJ distance-vector_NN routing_VBG -LRB-_-LRB- DSDV_NN -RRB-_-RRB- for_IN mobile_JJ computers_NNS ._.
+Computer_NNP Communication_NNP Review_NNP ,_, pages_NNS 234-244_CD ,_, October_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- C_NN ._.
+E_NN ._.
+Perkins_NNP and_CC E_NNP ._.
+M_NN ._.
+Royer_NNP ._.
+ad-hoc_JJ on-demand_JJ distance_NN vector_NN routing_VBG ._.
+In_IN IEEE_NNP Workshop_NNP on_IN Mobile_NNP Computing_NNP Systems_NNPS and_CC Applications_NNS ,_, pages_NNS 90-100_CD ,_, February_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Libo_NNP Song_NN ,_, David_NNP Kotz_NNP ,_, Ravi_NNP Jain_NNP ,_, and_CC Xiaoning_VBG He_PRP ._.
+Evaluating_VBG next-cell_JJ predictors_NNS with_IN extensive_JJ Wi-Fi_JJ mobility_NN data_NNS ._.
+IEEE_NNP Transactions_NNS on_IN Mobile_NNP Computing_NNP ,_, 5_CD -LRB-_-LRB- ##_CD -RRB-_-RRB- :_: 1633-1649_CD ,_, December_NNP ####_CD ._.
+-LSB-_-LRB- ##_CD -RSB-_-RRB- Jing_NNP Su_NNP ,_, Ashvin_NNP Goel_NNP ,_, and_CC Eyal_NNP de_IN Lara_NNP ._.
+An_DT empirical_JJ evaluation_NN of_IN the_DT student-net_JJ delay_NN tolerant_JJ network_NN ._.
+In_IN International_NNP Conference_NNP on_IN Mobile_NNP and_CC Ubiquitous_NNP Systems_NNP -LRB-_-LRB- MobiQuitous_NNP -RRB-_-RRB- ,_, July_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Amin_NNP Vahdat_NNP and_CC David_NNP Becker_NNP ._.
+Epidemic_JJ routing_VBG for_IN partially-connected_JJ ad-hoc_JJ networks_NNS ._.
+Technical_NNP Report_NNP CS-2000-06_NNP ,_, Duke_NNP University_NNP ,_, July_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Yong_NNP Wang_NNP ,_, Sushant_NNP Jain_NNP ,_, Margaret_NNP Martonosia_NNP ,_, and_CC Kevin_NNP Fall_NN ._.
+Erasure-coding_JJ based_VBN routing_VBG for_IN opportunistic_JJ networks_NNS ._.
+In_IN ACM_NNP SIGCOMM_NNP Workshop_NNP on_IN Delay_NNP Tolerant_NNP Networking_NNP ,_, pages_NNS 229-236_CD ,_, August_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Yu_NNP Wang_NNP and_CC Hongyi_NNP Wu_NNP ._.
+DFT-MSN_NNP :_: the_DT delay_NN fault_NN tolerant_JJ mobile_JJ sensor_NN network_NN for_IN pervasive_JJ information_NN gathering_NN ._.
+In_IN Proceedings_NNP of_IN the_DT 25th_JJ IEEE_NNP International_NNP Conference_NNP on_IN Computer_NNP Communications_NNP -LRB-_-LRB- INFOCOM_NNP -RRB-_-RRB- ,_, April_NNP ####_CD ._.
+42_CD

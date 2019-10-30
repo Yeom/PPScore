@@ -1,0 +1,485 @@
+Implementation_NN of_IN a_DT Dynamic_NNP Adjustment_NNP Mechanism_NN with_IN Efficient_JJ Replica_NNP Selection_NN in_IN Data_NNP Grid_NNP Environments_NNP Chao-Tung_NNP Yang_NNP I-Hsien_NNP Yang_NNP Chun-Hsiang_NNP Chen_NNP Shih-Yu_NNP Wang_NNP High-Performance_NNP Computing_NNP Laboratory_NNP Department_NNP of_IN Computer_NNP Science_NNP and_CC Information_NNP Engineering_NNP Tunghai_NNP University_NNP Taichung_NNP City_NNP ,_, #####_CD ,_, Taiwan_NNP R_NNP ._.
+O_NN ._.
+C_NN ._.
+ctyang_NN @_SYM thu_FW ._.
+edu_NN ._.
+tw_NN g932813_NN @_IN thu_NN ._.
+edu_NN ._.
+tw_NN ABSTRACT_NN The_DT co-allocation_NN architecture_NN was_VBD developed_VBN in_IN order_NN to_TO enable_VB parallel_JJ downloading_NN of_IN datasets_NNS from_IN multiple_JJ servers_NNS ._.
+Several_JJ co-allocation_NN strategies_NNS have_VBP been_VBN coupled_VBN and_CC used_VBN to_TO exploit_VB rate_NN differences_NNS among_IN various_JJ client-server_NN links_NNS and_CC to_TO address_VB dynamic_JJ rate_NN fluctuations_NNS by_IN dividing_VBG files_NNS into_IN multiple_JJ blocks_NNS of_IN equal_JJ sizes_NNS ._.
+However_RB ,_, a_DT major_JJ obstacle_NN ,_, the_DT idle_JJ time_NN of_IN faster_JJR servers_NNS having_VBG to_TO wait_VB for_IN the_DT slowest_JJS server_NN to_TO deliver_VB the_DT final_JJ block_NN ,_, makes_VBZ it_PRP important_JJ to_TO reduce_VB differences_NNS in_IN finishing_VBG time_NN among_IN replica_NN servers_NNS ._.
+In_IN this_DT paper_NN ,_, we_PRP propose_VBP a_DT dynamic_JJ coallocation_NN scheme_NN ,_, namely_RB Recursive-Adjustment_JJ Co-Allocation_NN scheme_NN ,_, to_TO improve_VB the_DT performance_NN of_IN data_NNS transfer_NN in_IN Data_NNS Grids_NNS ._.
+Our_PRP$ approach_NN reduces_VBZ the_DT idle_JJ time_NN spent_VBD waiting_VBG for_IN the_DT slowest_JJS server_NN and_CC decreases_VBZ data_NNS transfer_NN completion_NN time_NN ._.
+We_PRP also_RB provide_VBP an_DT effective_JJ scheme_NN for_IN reducing_VBG the_DT cost_NN of_IN reassembling_NN data_NN blocks_NNS ._.
+Categories_NNS and_CC Subject_NNP Descriptors_NNPS C_NNP ._.
+#_# ._.
+#_# -LSB-_-LRB- Distributed_VBN Systems_NNPS -RSB-_-RRB- :_: Distributed_VBN applications_NNS ._.
+H_NN ._.
+#_# ._.
+#_# -LSB-_-LRB- Online_NNP Information_NNP Services_NNP -RSB-_-RRB- :_: Data_NNS sharing_VBG ,_, Web-based_JJ services_NNS ._.
+General_NNP Terms_NNS Management_NNP ,_, Performance_NNP ,_, Design_NNP ,_, Experimentation_NN ._.
+1_LS ._.
+INTRODUCTION_NNP Data_NNP Grids_NNP aggregate_NN distributed_VBN resources_NNS for_IN solving_VBG large-size_JJ dataset_NN management_NN problems_NNS ._.
+Most_JJS Data_NNS Grid_NNP applications_NNS execute_VBP simultaneously_RB and_CC access_NN large_JJ numbers_NNS of_IN data_NNS files_NNS in_IN the_DT Grid_NNP environment_NN ._.
+Certain_JJ data-intensive_JJ scientific_JJ applications_NNS ,_, such_JJ as_IN high-energy_JJ physics_NNS ,_, bioinformatics_NNS applications_NNS and_CC virtual_JJ astrophysical_JJ observatories_NNS ,_, entail_VB huge_JJ amounts_NNS of_IN data_NNS that_WDT require_VBP data_NNS file_VB management_NN systems_NNS to_TO replicate_VB files_NNS and_CC manage_VBP data_NNS transfers_NNS and_CC distributed_VBN data_NNS access_NN ._.
+The_DT data_NNS grid_NN infrastructure_NN integrates_VBZ data_NNS storage_NN devices_NNS and_CC data_NNS management_NN services_NNS into_IN the_DT grid_NN environment_NN ,_, which_WDT consists_VBZ of_IN scattered_VBN computing_NN and_CC storage_NN resources_NNS ,_, perhaps_RB located_JJ in_IN different_JJ countries_NNS /_: regions_NNS yet_RB accessible_JJ to_TO users_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Replicating_VBG popular_JJ content_NN in_IN distributed_VBN servers_NNS is_VBZ widely_RB used_VBN in_IN practice_NN -LSB-_-LRB- ##_CD ,_, ##_CD ,_, ##_CD -RSB-_-RRB- ._.
+Recently_RB ,_, large-scale_JJ ,_, data-sharing_JJ scientific_JJ communities_NNS such_JJ as_IN those_DT described_VBN in_IN -LSB-_-LRB- #_# ,_, #_# -RSB-_-RRB- used_VBN this_DT technology_NN to_TO replicate_VB their_PRP$ large_JJ datasets_NNS over_IN several_JJ sites_NNS ._.
+Downloading_VBG large_JJ datasets_NNS from_IN several_JJ replica_NN locations_NNS may_MD result_VB in_IN varied_JJ performance_NN rates_NNS ,_, because_IN the_DT replica_NN sites_NNS may_MD have_VB different_JJ architectures_NNS ,_, system_NN loadings_NNS ,_, and_CC network_NN connectivity_NN ._.
+Bandwidth_NN quality_NN is_VBZ the_DT most_RBS important_JJ factor_NN affecting_VBG transfers_NNS between_IN clients_NNS and_CC servers_NNS since_IN download_NN speeds_NNS are_VBP limited_VBN by_IN the_DT bandwidth_NN traffic_NN congestion_NN in_IN the_DT links_NNS connecting_VBG the_DT servers_NNS to_TO the_DT clients_NNS ._.
+One_CD way_NN to_TO improve_VB download_NN speeds_NNS is_VBZ to_TO determine_VB the_DT best_JJS replica_NN locations_NNS using_VBG replica_NN selection_NN techniques_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+This_DT method_NN selects_VBZ the_DT best_JJS servers_NNS to_TO provide_VB optimum_JJ transfer_NN rates_NNS because_IN bandwidth_NN quality_NN can_MD vary_VB unpredictably_RB due_JJ to_TO the_DT sharing_VBG nature_NN of_IN the_DT internet_NN ._.
+Another_DT way_NN is_VBZ to_TO use_VB co-allocation_JJ technology_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- to_TO download_VB data_NNS ._.
+Co-allocation_NN of_IN data_NNS transfers_NNS enables_VBZ the_DT clients_NNS to_TO download_VB data_NNS from_IN multiple_JJ locations_NNS by_IN establishing_VBG multiple_JJ connections_NNS in_IN parallel_NN ._.
+This_DT can_MD improve_VB the_DT performance_NN compared_VBN to_TO the_DT single-server_JJ cases_NNS and_CC alleviate_VB the_DT internet_NN congestion_NN problem_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Several_JJ co-allocation_NN strategies_NNS were_VBD provided_VBN in_IN previous_JJ work_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+An_DT idle-time_JJ drawback_NN remains_VBZ since_IN faster_JJR servers_NNS must_MD wait_VB for_IN the_DT slowest_JJS server_NN to_TO deliver_VB its_PRP$ final_JJ block_NN ._.
+Therefore_RB ,_, it_PRP is_VBZ important_JJ to_TO reduce_VB the_DT differences_NNS in_IN finishing_VBG time_NN among_IN replica_NN servers_NNS ._.
+In_IN this_DT paper_NN ,_, we_PRP propose_VBP a_DT dynamic_JJ co-allocation_NN scheme_NN based_VBN on_IN co-allocation_NN Grid_NNP data_NNS transfer_NN architecture_NN called_VBN RecursiveAdjustment_NNP Co-Allocation_NNP scheme_NN that_WDT reduces_VBZ the_DT idle_JJ time_NN spent_VBD waiting_VBG for_IN the_DT slowest_JJS server_NN and_CC improves_VBZ data_NNS transfer_NN performance_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Experimental_JJ results_NNS show_VBP that_IN our_PRP$ approach_NN is_VBZ superior_JJ to_TO previous_JJ methods_NNS and_CC achieved_VBD the_DT best_JJS overall_JJ performance_NN ._.
+We_PRP also_RB discuss_VBP combination_NN cost_NN and_CC provide_VB an_DT effective_JJ scheme_NN for_IN reducing_VBG it_PRP ._.
+The_DT remainder_NN of_IN this_DT paper_NN is_VBZ organized_VBN as_IN follows_VBZ ._.
+Related_JJ background_NN review_NN and_CC studies_NNS are_VBP presented_VBN in_IN Section_NN #_# and_CC the_DT co-allocation_NN architecture_NN and_CC related_JJ work_NN are_VBP introduced_VBN in_IN Section_NN #_# ._.
+In_IN Section_NN #_# ,_, an_DT efficient_JJ replica_NN selection_NN service_NN is_VBZ proposed_VBN by_IN us_PRP ._.
+Our_PRP$ research_NN approaches_NNS are_VBP outlined_VBN in_IN Section_NN #_# ,_, and_CC experimental_JJ results_NNS and_CC a_DT performance_NN evaluation_NN of_IN our_PRP$ scheme_NN are_VBP presented_VBN in_IN Section_NN #_# ._.
+Section_NN #_# concludes_VBZ this_DT research_NN paper_NN ._.
+2_LS ._.
+BACKGROUND_NN 2_CD ._.
+#_# Data_NNS Grid_NNP The_NNP Data_NNP Grids_NNP enable_VB the_DT sharing_NN ,_, selection_NN ,_, and_CC connection_NN of_IN a_DT wide_JJ variety_NN of_IN geographically_RB distributed_VBN computational_JJ and_CC storage_NN resources_NNS for_IN solving_VBG large-scale_JJ data_NNS intensive_JJ scientific_JJ applications_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, high_JJ energy_NN physics_NNS ,_, bioinformatics_NNS applications_NNS ,_, and_CC astrophysical_JJ virtual_JJ observatory_NN -RRB-_-RRB- ._.
+The_DT term_NN Data_NNS Grid_NNP traditionally_RB represents_VBZ the_DT network_NN of_IN distributed_VBN storage_NN resources_NNS ,_, from_IN archival_JJ systems_NNS to_TO caches_NNS and_CC databases_NNS ,_, which_WDT are_VBP linked_VBN using_VBG a_DT logical_JJ name_NN space_NN to_TO create_VB global_JJ ,_, persistent_JJ identifiers_NNS and_CC provide_VBP uniform_JJ access_NN mechanisms_NNS -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+Data_NNS Grids_NNS -LSB-_-LRB- #_# ,_, #_# ,_, ##_NN -RSB-_-RRB- federate_VBP a_DT lot_NN of_IN storage_NN resources_NNS ._.
+Large_JJ collections_NNS of_IN measured_VBN or_CC computed_VBN data_NNS are_VBP emerging_VBG as_RB important_JJ resources_NNS in_IN many_JJ data_NNS intensive_JJ applications_NNS ._.
+2_LS ._.
+#_# ._.
+#_# Replica_NNP Management_NNP Replica_NNP management_NN involves_VBZ creating_VBG or_CC removing_VBG replicas_NNS at_IN a_DT data_NN grid_NN site_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+In_IN other_JJ words_NNS ,_, the_DT role_NN of_IN a_DT replica_NN manager_NN is_VBZ to_TO create_VB or_CC delete_VB replicas_NNS ,_, within_IN specified_VBN storage_NN systems_NNS ._.
+Most_JJS often_RB ,_, these_DT replicas_NNS are_VBP exact_JJ copies_NNS of_IN the_DT original_JJ files_NNS ,_, created_VBN only_RB to_TO harness_NN certain_JJ performance_NN benefits_NNS ._.
+A_DT replica_NN manager_NN typically_RB maintains_VBZ a_DT replica_NN catalog_NN containing_VBG replica_NN site_NN addresses_NNS and_CC the_DT file_NN instances_NNS ._.
+The_DT replica_NN management_NN service_NN is_VBZ responsible_JJ for_IN managing_VBG the_DT replication_NN of_IN complete_JJ and_CC partial_JJ copies_NNS of_IN datasets_NNS ,_, defined_VBN as_IN collections_NNS of_IN files_NNS ._.
+The_DT replica_NN management_NN service_NN is_VBZ just_RB one_CD component_NN in_IN a_DT Data_NN Grid_NNP environment_NN that_WDT provides_VBZ support_NN for_IN high-performance_JJ ,_, data-intensive_JJ applications_NNS ._.
+A_DT replica_NN or_CC location_NN is_VBZ a_DT subset_NN of_IN a_DT collection_NN that_WDT is_VBZ stored_VBN on_IN a_DT particular_JJ physical_JJ storage_NN system_NN ._.
+There_EX may_MD be_VB multiple_JJ possibly_RB overlapping_VBG subsets_NNS of_IN a_DT collection_NN stored_VBN on_IN multiple_JJ storage_NN systems_NNS in_IN a_DT Data_NN Grid_NNP ._.
+These_DT Grid_NNP storage_NN systems_NNS may_MD use_VB a_DT variety_NN of_IN underlying_VBG storage_NN technologies_NNS and_CC data_NNS movement_NN protocols_NNS ,_, which_WDT are_VBP independent_JJ of_IN replica_NN management_NN ._.
+2_LS ._.
+#_# ._.
+#_# Replica_NNP Catalog_NN As_IN mentioned_VBN above_IN ,_, the_DT purpose_NN of_IN the_DT replica_NN catalog_NN is_VBZ to_TO provide_VB mappings_NNS between_IN logical_JJ names_NNS for_IN files_NNS or_CC collections_NNS and_CC one_CD or_CC more_JJR copies_NNS of_IN the_DT objects_NNS on_IN physical_JJ storage_NN systems_NNS ._.
+The_DT replica_NN catalog_NN includes_VBZ optional_JJ entries_NNS that_WDT describe_VBP individual_JJ logical_JJ files_NNS ._.
+Logical_JJ files_NNS are_VBP entities_NNS with_IN globally_RB unique_JJ names_NNS that_WDT may_MD have_VB one_CD or_CC more_JJR physical_JJ instances_NNS ._.
+The_DT catalog_NN may_MD optionally_RB contain_VB one_CD logical_JJ file_NN entry_NN in_IN the_DT replica_NN catalog_NN for_IN each_DT logical_JJ file_NN in_IN a_DT collection_NN ._.
+A_DT Data_NNP Grid_NNP may_MD contain_VB multiple_JJ replica_NN catalogs_NNS ._.
+For_IN example_NN ,_, a_DT community_NN of_IN researchers_NNS interested_JJ in_IN a_DT particular_JJ research_NN topic_NN might_MD maintain_VB a_DT replica_NN catalog_NN for_IN a_DT collection_NN of_IN data_NNS sets_NNS of_IN mutual_JJ interest_NN ._.
+It_PRP is_VBZ possible_JJ to_TO create_VB hierarchies_NNS of_IN replica_NN catalogs_NNS to_TO impose_VB a_DT directory-like_JJ structure_NN on_IN related_JJ logical_JJ collections_NNS ._.
+In_IN addition_NN ,_, the_DT replica_NN manager_NN can_MD perform_VB access_NN control_NN on_IN entire_JJ catalogs_NNS as_RB well_RB as_IN on_IN individual_JJ logical_JJ files_NNS ._.
+2_LS ._.
+#_# ._.
+#_# Replica_NNP Selection_NN The_DT purpose_NN of_IN replica_NN selection_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- is_VBZ to_TO select_VB a_DT replica_NN from_IN among_IN the_DT sites_NNS which_WDT constitute_VBP a_DT Data_NN Grid_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+The_DT criteria_NNS of_IN selection_NN depend_VBP on_IN characteristics_NNS of_IN the_DT application_NN ._.
+By_IN using_VBG this_DT mechanism_NN ,_, users_NNS of_IN the_DT Data_NNS Grid_NNP can_MD easily_RB manage_VB replicas_NNS of_IN data_NNS sets_NNS at_IN their_PRP$ sites_NNS ,_, with_IN better_JJR performance_NN ._.
+Much_JJ previous_JJ effort_NN has_VBZ been_VBN devoted_VBN to_TO the_DT replica_NN selection_NN problem_NN ._.
+The_DT common_JJ process_NN of_IN replica_NN selection_NN consists_VBZ of_IN three_CD steps_NNS :_: data_NNS preparation_NN ,_, preprocessing_NN and_CC prediction_NN ._.
+Then_RB ,_, applications_NNS can_MD select_VB a_DT replica_NN according_VBG to_TO its_PRP$ specific_JJ attributes_NNS ._.
+Replica_NN selection_NN is_VBZ important_JJ to_TO data-intensive_JJ applications_NNS ,_, and_CC it_PRP can_MD provide_VB location_NN transparency_NN ._.
+When_WRB a_DT user_NN requests_NNS for_IN accessing_VBG a_DT data_NN set_NN ,_, the_DT system_NN determines_VBZ an_DT appropriate_JJ way_NN to_TO deliver_VB the_DT replica_NN to_TO the_DT user_NN ._.
+2_LS ._.
+#_# Globus_NNP Toolkit_NNP and_CC GridFTP_NNP The_DT Globus_NNP Project_NNP -LSB-_-LRB- #_# ,_, ##_NN ,_, ##_NN -RSB-_-RRB- provides_VBZ software_NN tools_NNS collectively_RB called_VBN The_DT Globus_NNP Toolkit_NNP that_WDT makes_VBZ it_PRP easier_JJR to_TO build_VB computational_JJ Grids_NNS and_CC Grid-based_JJ applications_NNS ._.
+Many_JJ organizations_NNS use_VBP the_DT Globus_NNP Toolkit_NNP to_TO build_VB computational_JJ Grids_NNS to_TO support_VB their_PRP$ applications_NNS ._.
+The_DT composition_NN of_IN the_DT Globus_NNP Toolkit_NNP can_MD be_VB pictured_VBN as_IN three_CD pillars_NNS :_: Resource_NNP Management_NNP ,_, Information_NNP Services_NNP ,_, and_CC Data_NNP Management_NNP ._.
+Each_DT pillar_NN represents_VBZ a_DT primary_JJ component_NN of_IN the_DT Globus_NNP Toolkit_NNP and_CC makes_VBZ use_NN of_IN a_DT common_JJ foundation_NN of_IN security_NN ._.
+GRAM_NN implements_VBZ a_DT resource_NN management_NN protocol_NN ,_, MDS_NN implements_VBZ an_DT information_NN services_NNS protocol_NN ,_, and_CC GridFTP_NN implements_VBZ a_DT data_NN transfer_NN protocol_NN ._.
+They_PRP all_DT use_VBP the_DT GSI_NNP security_NN protocol_NN at_IN the_DT connection_NN layer_NN -LSB-_-LRB- ##_CD ,_, ##_CD ,_, ##_CD ,_, ##_CD -RSB-_-RRB- ._.
+The_DT Globus_NNP alliance_NN proposed_VBD a_DT common_JJ data_NNS transfer_NN and_CC access_NN protocol_NN called_VBN GridFTP_NNP that_WDT provides_VBZ secure_JJ ,_, efficient_JJ data_NNS movement_NN in_IN Grid_NNP environments_NNS -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+This_DT protocol_NN ,_, which_WDT extends_VBZ the_DT standard_JJ FTP_NN protocol_NN ,_, provides_VBZ a_DT superset_NN of_IN the_DT features_NNS offered_VBN by_IN the_DT various_JJ Grid_NNP storage_NN systems_NNS currently_RB in_IN use_NN ._.
+In_IN order_NN to_TO solve_VB the_DT appearing_VBG problems_NNS ,_, the_DT Data_NNP Grid_NNP community_NN tries_VBZ to_TO develop_VB a_DT secure_JJ ,_, efficient_JJ data_NNS transport_NN mechanism_NN and_CC replica_NN management_NN services_NNS ._.
+GridFTP_NN is_VBZ a_DT reliable_JJ ,_, secure_JJ and_CC efficient_JJ data_NNS transport_NN protocol_NN which_WDT is_VBZ developed_VBN as_IN a_DT part_NN of_IN the_DT Globus_NNP project_NN ._.
+There_EX is_VBZ another_DT key_JJ technology_NN from_IN Globus_NNP project_NN ,_, called_VBN replica_NN catalog_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- which_WDT is_VBZ used_VBN to_TO register_VB and_CC manage_VB complete_JJ and_CC partial_JJ copies_NNS of_IN data_NNS sets_NNS ._.
+The_DT replica_NN catalog_NN contains_VBZ the_DT mapping_VBG information_NN from_IN a_DT logical_JJ file_NN or_CC collection_NN to_TO one_CD or_CC more_JJR physical_JJ files_NNS ._.
+2_LS ._.
+#_# Network_NNP Weather_NNP Service_NNP The_NNP Network_NNP Weather_NNP Service_NNP -LRB-_-LRB- NWS_NNP -RRB-_-RRB- -LSB-_-LRB- ##_CD -RSB-_-RRB- is_VBZ a_DT generalized_VBN and_CC distributed_VBN monitoring_NN system_NN for_IN producing_VBG short-term_JJ performance_NN forecasts_NNS based_VBN on_IN historical_JJ performance_NN measurements_NNS ._.
+The_DT goal_NN of_IN the_DT system_NN is_VBZ to_TO dynamically_RB characterize_VB and_CC forecast_VB the_DT performance_NN deliverable_NN at_IN the_DT application_NN level_NN from_IN a_DT set_NN of_IN network_NN and_CC computational_JJ resources_NNS ._.
+A_DT typical_JJ installation_NN involves_VBZ one_CD nws_NNS __VBP nameserver_NN ,_, one_CD or_CC more_JJR nws_NNS __VBP memory_NN -LRB-_-LRB- which_WDT may_MD reside_VB on_IN different_JJ machines_NNS -RRB-_-RRB- ,_, and_CC an_DT nws_NNS __VBP sensor_NN running_VBG on_IN each_DT machine_NN with_IN resources_NNS which_WDT are_VBP to_TO be_VB monitored_VBN ._.
+The_DT system_NN includes_VBZ sensors_NNS for_IN end-to-end_JJ TCP_NN /_: IP_NNP performance_NN -LRB-_-LRB- bandwidth_NN and_CC latency_NN -RRB-_-RRB- ,_, available_JJ CPU_NNP percentage_NN ,_, and_CC available_JJ non-paged_JJ memory_NN ._.
+798_CD 2_CD ._.
+#_# Sysstat_NNP Utilities_NNP The_NNP Sysstat_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- utilities_NNS are_VBP a_DT collection_NN of_IN performance_NN monitoring_NN tools_NNS for_IN the_DT Linux_NNP OS_NNP ._.
+The_DT Sysstat_NNP package_NN incorporates_VBZ the_DT sar_NN ,_, mpstat_NN ,_, and_CC iostat_NN commands_NNS ._.
+The_DT sar_JJ command_NN collects_VBZ and_CC reports_VBZ system_NN activity_NN information_NN ,_, which_WDT can_MD also_RB be_VB saved_VBN in_IN a_DT system_NN activity_NN file_NN for_IN future_JJ inspection_NN ._.
+The_DT iostat_NN command_NN reports_NNS CPU_NNP statistics_NNS and_CC I_PRP /_: O_NN statistics_NNS for_IN tty_NN devices_NNS and_CC disks_NNS ._.
+The_DT statistics_NNS reported_VBN by_IN sar_NN concern_NN I_PRP /_: O_NN transfer_NN rates_NNS ,_, paging_NN activity_NN ,_, process-related_JJ activities_NNS ,_, interrupts_VBZ ,_, network_NN activity_NN ,_, memory_NN and_CC swap_NN space_NN utilization_NN ,_, CPU_NNP utilization_NN ,_, kernel_NN activities_NNS ,_, and_CC tty_NN statistics_NNS ,_, among_IN others_NNS ._.
+Uniprocessor_NN -LRB-_-LRB- UP_NN -RRB-_-RRB- and_CC Symmetric_JJ multiprocessor_NN -LRB-_-LRB- SMP_NN -RRB-_-RRB- machines_NNS are_VBP fully_RB supported_VBN ._.
+3_LS ._.
+CO-ALLOCATION_JJ ARCHITECTURE_NN AND_CC RELATED_JJ WORK_VBP The_DT co-allocation_JJ architecture_NN proposed_VBN in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- consists_VBZ of_IN three_CD main_JJ components_NNS :_: an_DT information_NN service_NN ,_, a_DT broker_NN /_: co-allocator_NN ,_, and_CC local_JJ storage_NN systems_NNS ._.
+Figure_NNP #_# shows_VBZ the_DT co-allocation_NN of_IN Grid_NNP Data_NNP transfers_NNS ,_, which_WDT is_VBZ an_DT extension_NN of_IN the_DT basic_JJ template_NN for_IN resource_NN management_NN -LSB-_-LRB- #_# -RSB-_-RRB- provided_VBN by_IN Globus_NNP Toolkit_NNP ._.
+Applications_NNS specify_VBP the_DT characteristics_NNS of_IN desired_VBN data_NNS and_CC pass_VB the_DT attribute_NN description_NN to_TO a_DT broker_NN ._.
+The_DT broker_NN queries_NNS available_JJ resources_NNS and_CC gets_VBZ replica_NN locations_NNS from_IN information_NN services_NNS -LSB-_-LRB- #_# -RSB-_-RRB- and_CC replica_NN management_NN services_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, and_CC then_RB gets_VBZ a_DT list_NN of_IN physical_JJ locations_NNS for_IN the_DT desired_VBN files_NNS ._.
+Figure_NNP #_# ._.
+Data_NNS Grid_NNP Co-Allocation_NNP Architecture_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- The_DT candidate_NN replica_NN locations_NNS are_VBP passed_VBN to_TO a_DT replica_NN selection_NN service_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, which_WDT was_VBD presented_VBN in_IN a_DT previous_JJ work_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+This_DT replica_NN selection_NN service_NN provides_VBZ estimates_NNS of_IN candidate_NN transfer_NN performance_NN based_VBN on_IN a_DT cost_NN model_NN and_CC chooses_VBZ appropriate_JJ amounts_NNS to_TO request_NN from_IN the_DT better_JJR locations_NNS ._.
+The_DT co-allocation_JJ agent_NN then_RB downloads_NNS the_DT data_NNS in_IN parallel_NN from_IN the_DT selected_VBN servers_NNS ._.
+In_IN these_DT researches_VBZ ,_, GridFTP_NN -LSB-_-LRB- #_# ,_, ##_NN ,_, ##_NN -RSB-_-RRB- was_VBD used_VBN to_TO enable_VB parallel_JJ data_NNS transfers_NNS ._.
+GridFTP_NN is_VBZ a_DT high-performance_JJ ,_, secure_JJ ,_, reliable_JJ data_NNS transfer_NN protocol_NN optimized_VBN for_IN high-bandwidth_JJ widearea_NN networks_NNS ._.
+Among_IN its_PRP$ many_JJ features_NNS are_VBP security_NN ,_, parallel_JJ streams_NNS ,_, partial_JJ file_NN transfers_NNS ,_, third-party_JJ transfers_NNS ,_, and_CC reusable_JJ data_NNS channels_NNS ._.
+Its_PRP$ partial_JJ file_NN transfer_NN ability_NN allows_VBZ files_NNS to_TO be_VB retrieved_VBN from_IN data_NNS servers_NNS by_IN specifying_VBG the_DT start_NN and_CC end_NN offsets_NNS of_IN file_NN sections_NNS ._.
+Data_NNS grids_NNS consist_VBP of_IN scattered_VBN computing_NN and_CC storage_NN resources_NNS located_JJ in_IN different_JJ countries_NNS /_: regions_NNS yet_RB accessible_JJ to_TO users_NNS -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+In_IN this_DT study_NN we_PRP used_VBD the_DT grid_NN middleware_NN Globus_NNP Toolkit_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- as_IN the_DT data_NNS grid_NN infrastructure_NN ._.
+The_DT Globus_NNP Toolkit_NNP provides_VBZ solutions_NNS for_IN such_JJ considerations_NNS as_IN security_NN ,_, resource_NN management_NN ,_, data_NNS management_NN ,_, and_CC information_NN services_NNS ._.
+One_CD of_IN its_PRP$ primary_JJ components_NNS is_VBZ MDS_NN -LSB-_-LRB- #_# ,_, ##_NN ,_, ##_NN ,_, ##_NN -RSB-_-RRB- ,_, which_WDT is_VBZ designed_VBN to_TO provide_VB a_DT standard_JJ mechanism_NN for_IN discovering_VBG and_CC publishing_VBG resource_NN status_NN and_CC configuration_NN information_NN ._.
+It_PRP provides_VBZ a_DT uniform_JJ and_CC flexible_JJ interface_NN for_IN data_NNS collected_VBN by_IN lower-level_JJ information_NN providers_NNS in_IN two_CD modes_NNS :_: static_JJ -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, OS_NNP ,_, CPU_NNP types_NNS ,_, and_CC system_NN architectures_NNS -RRB-_-RRB- and_CC dynamic_JJ data_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, disk_NN availability_NN ,_, memory_NN availability_NN ,_, and_CC loading_NN -RRB-_-RRB- ._.
+And_CC it_PRP uses_VBZ GridFTP_NN -LSB-_-LRB- #_# ,_, ##_NN ,_, ##_NN -RSB-_-RRB- ,_, a_DT reliable_JJ ,_, secure_JJ ,_, and_CC efficient_JJ data_NNS transport_NN protocol_NN to_TO provide_VB efficient_JJ management_NN and_CC transfer_NN of_IN terabytes_NNS or_CC petabytes_NNS of_IN data_NNS in_IN a_DT wide-area_NN ,_, distributed-resource_JJ environment_NN ._.
+As_IN datasets_NNS are_VBP replicated_VBN within_IN Grid_NNP environments_NNS for_IN reliability_NN and_CC performance_NN ,_, clients_NNS require_VBP the_DT abilities_NNS to_TO discover_VB existing_VBG data_NNS replicas_NNS ,_, and_CC create_VB and_CC register_VB new_JJ replicas_NNS ._.
+A_DT Replica_NNP Location_NNP Service_NNP -LRB-_-LRB- RLS_NNP -RRB-_-RRB- -LSB-_-LRB- #_# -RSB-_-RRB- provides_VBZ a_DT mechanism_NN for_IN discovering_VBG and_CC registering_VBG existing_VBG replicas_NNS ._.
+Several_JJ prediction_NN metrics_NNS have_VBP been_VBN developed_VBN to_TO help_VB replica_NN selection_NN ._.
+For_IN instance_NN ,_, Vazhkudai_NNP and_CC Schopf_NNP -LSB-_-LRB- ##_CD ,_, ##_CD ,_, ##_CD -RSB-_-RRB- used_VBN past_IN data_NNS transfer_NN histories_NNS to_TO estimate_VB current_JJ data_NNS transfer_NN throughputs_NN ._.
+In_IN our_PRP$ previous_JJ work_NN -LSB-_-LRB- ##_CD ,_, ##_CD -RSB-_-RRB- ,_, we_PRP proposed_VBD a_DT replica_NN selection_NN cost_NN model_NN and_CC a_DT replica_NN selection_NN service_NN to_TO perform_VB replica_NN selection_NN ._.
+In_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ,_, the_DT author_NN proposes_VBZ co-allocation_JJ architecture_NN for_IN co-allocating_JJ Grid_NNP data_NNS transfers_NNS across_IN multiple_JJ connections_NNS by_IN exploiting_VBG the_DT partial_JJ copy_NN feature_NN of_IN GridFTP_NN ._.
+It_PRP also_RB provides_VBZ Brute-Force_NNP ,_, History-Base_NNP ,_, and_CC Dynamic_NNP Load_NN Balancing_NN for_IN allocating_VBG data_NNS block_NN ._.
+Brute-Force_NNP Co-Allocation_NNP :_: Brute-Force_NNP Co-Allocation_NNP works_VBZ by_IN dividing_VBG the_DT file_NN size_NN equally_RB among_IN available_JJ flows_NNS ._.
+It_PRP does_VBZ not_RB address_VB the_DT bandwidth_NN differences_NNS among_IN the_DT various_JJ client-server_NN links_NNS ._.
+History-based_JJ Co-Allocation_NNP :_: The_DT History-based_JJ CoAllocation_NNP scheme_NN keeps_VBZ block_NN sizes_NNS per_IN flow_NN proportional_JJ to_TO predicted_VBN transfer_NN rates_NNS ._.
+Conservative_JJ Load_NN Balancing_NN :_: One_CD of_IN their_PRP$ dynamic_JJ coallocation_NN is_VBZ Conservative_JJ Load_NN Balancing_NN ._.
+The_DT Conservative_JJ Load_NN Balancing_NN dynamic_JJ co-allocation_NN strategy_NN divides_VBZ requested_VBN datasets_NNS into_IN k_NN disjoint_NN blocks_NNS of_IN equal_JJ size_NN ._.
+Available_JJ servers_NNS are_VBP assigned_VBN single_JJ blocks_NNS to_TO deliver_VB in_IN parallel_NN ._.
+When_WRB a_DT server_NN finishes_VBZ delivering_VBG a_DT block_NN ,_, another_DT is_VBZ requested_VBN ,_, and_CC so_RB on_IN ,_, till_IN the_DT entire_JJ file_NN is_VBZ downloaded_VBN ._.
+The_DT loadings_NNS on_IN the_DT co-allocated_JJ flows_NNS are_VBP automatically_RB adjusted_VBN because_IN the_DT faster_RBR servers_NNS will_MD deliver_VB more_RBR quickly_RB providing_VBG larger_JJR portions_NNS of_IN the_DT file_NN ._.
+Aggressive_JJ Load_NN Balancing_NN :_: Another_DT dynamic_JJ coallocation_NN strategy_NN ,_, presented_VBN in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ,_, is_VBZ the_DT Aggressive_JJ Load_NN Balancing_NN ._.
+The_DT Aggressive_JJ Load_NN Balancing_NN dynamic_JJ co-allocation_NN strategy_NN presented_VBN in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- adds_VBZ functions_NNS that_WDT change_VBP block_NN size_NN de-liveries_NNS by_IN :_: -LRB-_-LRB- #_# -RRB-_-RRB- progressively_RB increasing_VBG the_DT amounts_NNS of_IN data_NNS requested_VBN from_IN faster_JJR servers_NNS ,_, and_CC -LRB-_-LRB- #_# -RRB-_-RRB- reducing_VBG the_DT amounts_NNS of_IN data_NNS requested_VBN from_IN slower_JJR servers_NNS or_CC ceasing_VBG to_TO request_NN data_NNS from_IN them_PRP altogether_RB ._.
+The_DT co-allocation_NN strategies_NNS described_VBN above_IN do_VBP not_RB handle_VB the_DT shortcoming_NN of_IN faster_JJR servers_NNS having_VBG to_TO wait_VB for_IN the_DT slowest_JJS server_NN to_TO deliver_VB its_PRP$ final_JJ block_NN ._.
+In_IN most_JJS cases_NNS ,_, this_DT wastes_NNS much_JJ time_NN and_CC decreases_VBZ overall_JJ performance_NN ._.
+Thus_RB ,_, we_PRP propose_VBP an_DT efficient_JJ approach_NN called_VBD Recursive-Adjustment_NNP Co-Allocation_NNP and_CC based_VBN 799_CD on_IN a_DT co-allocation_NN architecture_NN ._.
+It_PRP improves_VBZ dynamic_JJ co-allocation_NN and_CC reduces_VBZ waiting_VBG time_NN ,_, thus_RB improving_VBG overall_JJ transfer_NN performance_NN ._.
+4_LS ._.
+AN_DT EFFICIENT_JJ REPLICA_NN SELECTION_NN SERVICE_NN We_PRP constructed_VBD a_DT replica_NN selection_NN service_NN to_TO enable_VB clients_NNS to_TO select_VB the_DT better_JJR replica_NN servers_NNS in_IN Data_NNS Grid_NNP environments_NNS ._.
+See_VB below_IN for_IN a_DT detailed_JJ description_NN ._.
+4_LS ._.
+#_# Replica_NNP Selection_NN Scenario_NN Our_PRP$ proposed_VBN replica_NN selection_NN model_NN is_VBZ illustrated_VBN in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ,_, which_WDT shows_VBZ how_WRB a_DT client_NN identifies_VBZ the_DT best_JJS location_NN for_IN a_DT desired_VBN replica_NN transfer_NN ._.
+The_DT client_NN first_JJ logins_NNS in_IN at_IN a_DT local_JJ site_NN and_CC executes_VBZ the_DT Data_NNP Grid_NNP platform_NN application_NN ,_, which_WDT checks_NNS to_TO see_VB if_IN the_DT files_NNS are_VBP available_JJ at_IN the_DT local_JJ site_NN ._.
+If_IN they_PRP are_VBP present_JJ at_IN the_DT local_JJ site_NN ,_, the_DT application_NN accesses_VBZ them_PRP immediately_RB ;_: otherwise_RB ,_, it_PRP passes_VBZ the_DT logical_JJ file_NN names_NNS to_TO the_DT replica_NN catalog_NN server_NN ,_, which_WDT returns_VBZ a_DT list_NN of_IN physical_JJ locations_NNS for_IN all_DT registered_VBN copies_NNS ._.
+The_DT application_NN passes_VBZ this_DT list_NN of_IN replica_NN locations_NNS to_TO a_DT replica_NN selection_NN server_NN ,_, which_WDT identifies_VBZ the_DT storage_NN system_NN destination_NN locations_NNS for_IN all_DT candidate_NN data_NNS transfer_NN operations_NNS ._.
+The_DT replica_NN selection_NN server_NN sends_VBZ the_DT possible_JJ destination_NN locations_NNS to_TO the_DT information_NN server_NN ,_, which_WDT provides_VBZ performance_NN measurements_NNS and_CC predictions_NNS of_IN the_DT three_CD system_NN factors_NNS described_VBN below_IN ._.
+The_DT replica_NN selection_NN server_NN chooses_VBZ better_JJR replica_NN locations_NNS according_VBG to_TO these_DT estimates_NNS and_CC returns_NNS location_NN information_NN to_TO the_DT transfer_NN application_NN ,_, which_WDT receives_VBZ the_DT replica_NN through_IN GridFTP_NN ._.
+When_WRB the_DT application_NN finishes_NNS ,_, it_PRP returns_VBZ the_DT results_NNS to_TO the_DT user_NN ._.
+4_LS ._.
+#_# System_NNP Factors_NNS Determining_VBG the_DT best_JJS database_NN from_IN many_JJ with_IN the_DT same_JJ replications_NNS is_VBZ a_DT significant_JJ problem_NN ._.
+In_IN our_PRP$ model_NN ,_, we_PRP consider_VBP three_CD system_NN factors_NNS that_WDT affect_VBP replica_NN selection_NN :_: Network_NNP bandwidth_NN :_: This_DT is_VBZ one_CD of_IN the_DT most_RBS significant_JJ Data_NNS Grid_NNP factors_NNS since_IN data_NNS files_NNS in_IN Data_NNS Grid_NNP environments_NNS are_VBP usually_RB very_RB large_JJ ._.
+In_IN other_JJ words_NNS ,_, data_NNS file_VBP transfer_NN times_NNS are_VBP tightly_RB dependent_JJ on_IN network_NN bandwidth_NN situations_NNS ._.
+Because_IN network_NN bandwidth_NN is_VBZ an_DT unstable_JJ dynamic_JJ factor_NN ,_, we_PRP must_MD measure_VB it_PRP frequently_RB and_CC predict_VB it_PRP as_IN accurately_RB as_IN possible_JJ ._.
+The_DT Network_NNP Weather_NNP Service_NNP -LRB-_-LRB- NWS_NNP -RRB-_-RRB- is_VBZ a_DT powerful_JJ toolkit_NN for_IN this_DT purpose_NN ._.
+CPU_NNP load_NN :_: Grid_NNP platforms_NNS consist_VBP of_IN numbers_NNS of_IN heterogeneous_JJ systems_NNS ,_, built_VBN with_IN different_JJ system_NN architectures_NNS ,_, e_LS ._.
+g_NN ._.
+,_, cluster_NN platforms_NNS ,_, supercomputers_NNS ,_, PCs_NNS ._.
+CPU_NNP loading_VBG is_VBZ a_DT dynamic_JJ system_NN factor_NN ,_, and_CC a_DT heavy_JJ system_NN CPU_NNP load_NN will_MD certainly_RB affect_VB data_NNS file_NN downloads_NNS process_NN from_IN the_DT site_NN ._.
+The_DT measurement_NN of_IN it_PRP is_VBZ done_VBN by_IN the_DT Globus_NNP Toolkit_NNP /_: MDS_NN ._.
+I_PRP /_: O_NN state_NN :_: Data_NNP Grid_NNP nodes_NNS consist_VBP of_IN different_JJ heterogeneous_JJ storage_NN systems_NNS ._.
+Data_NNS files_NNS in_IN Data_NNS Grids_NNS are_VBP huge_JJ ._.
+If_IN the_DT I_PRP /_: O_NN state_NN of_IN a_DT site_NN that_WDT we_PRP wish_VBP to_TO download_VB files_NNS from_IN is_VBZ very_RB busy_JJ ,_, it_PRP will_MD directly_RB affect_VB data_NNS transfer_VB performance_NN ._.
+We_PRP measure_VBP I_PRP /_: O_NN states_NNS using_VBG sysstat_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- utilities_NNS ._.
+4_LS ._.
+#_# Our_PRP$ Replica_NNP Selection_NN Cost_NN Model_NNP The_DT target_NN function_NN of_IN a_DT cost_NN model_NN for_IN distributed_VBN and_CC replicated_VBN data_NNS storage_NN is_VBZ the_DT information_NN score_NN from_IN the_DT information_NN service_NN ._.
+We_PRP listed_VBD some_DT influencing_JJ factors_NNS for_IN our_PRP$ cost_NN model_NN in_IN the_DT preceding_VBG section_NN ._.
+However_RB ,_, we_PRP must_MD express_VB these_DT factors_NNS in_IN mathematical_JJ notation_NN for_IN further_JJ analysis_NN ._.
+We_PRP assume_VBP node_NN i_FW is_VBZ the_DT local_JJ site_NN the_DT user_NN or_CC application_NN logs_NNS in_IN on_IN ,_, and_CC node_NN j_NN possesses_VBZ the_DT replica_NN the_DT user_NN or_CC application_NN wants_VBZ ._.
+The_DT seven_CD system_NN parameters_NNS our_PRP$ replica_NN selection_NN cost_NN model_NN considers_VBZ are_VBP :_: Scorei-j_NN :_: the_DT score_NN value_NN represents_VBZ how_WRB efficiently_RB a_DT user_NN or_CC application_NN at_IN node_NN i_FW can_MD acquire_VB a_DT replica_NN from_IN node_NN j_NN BW_NN jiP_NN :_: percentage_NN of_IN bandwidth_NN available_JJ from_IN node_NN i_FW to_TO node_NN j_NN ;_: current_JJ bandwidth_NN divided_VBN by_IN highest_JJS theoretical_JJ bandwidth_NN BBW_NNP :_: network_NN bandwidth_NN weight_NN defined_VBN by_IN the_DT Data_NNP Grid_NNP administrator_NN CPU_NNP jP_NNP :_: percentage_NN of_IN node_NN j_NN CPU_NNP idle_JJ states_NNS WCPU_NNP :_: CPU_NNP load_NN weight_NN defined_VBN by_IN the_DT Data_NNP Grid_NNP administrator_NN OI_NNP jP_NNP /_: :_: percentage_NN of_IN node_NN j_NN I_PRP /_: O_NN idle_JJ states_NNS WI_VBP /_: O_NN :_: I_PRP /_: O_NN state_NN weight_NN defined_VBN by_IN the_DT Data_NNP Grid_NNP administrator_NN We_PRP define_VBP the_DT following_VBG general_JJ formula_NN using_VBG these_DT system_NN factors_NNS ._.
+OIOI_NN j_NN CPUCPU_NN j_NN BWBW_NN jiji_NN WPWPWPScore_NN /_: /_: -LRB-_-LRB- #_# -RRB-_-RRB- The_DT three_CD influencing_VBG factors_NNS in_IN this_DT formula_NN :_: WBW_NNP ,_, WCPU_NNP ,_, and_CC WI_NNP /_: O_NN describe_VBP CPU_NNP ,_, I_PRP /_: O_NN ,_, and_CC network_NN bandwidth_NN weights_NNS ,_, which_WDT can_MD be_VB determined_VBN by_IN Data_NNS Grid_NNP organization_NN administrators_NNS according_VBG to_TO the_DT various_JJ attributes_NNS of_IN the_DT storage_NN systems_NNS in_IN Data_NNS Grid_NNP nodes_NNS since_IN some_DT storage_NN equipment_NN does_VBZ not_RB affect_VB CPU_NNP loading_VBG ._.
+After_IN several_JJ experimental_JJ measurements_NNS ,_, we_PRP determined_VBD that_IN network_NN bandwidth_NN is_VBZ the_DT most_RBS significant_JJ factor_NN directly_RB influencing_VBG data_NNS transfer_NN times_NNS ._.
+When_WRB we_PRP performed_VBD data_NNS transfers_NNS using_VBG the_DT GridFTP_NN protocol_NN we_PRP discovered_VBD that_IN CPU_NNP and_CC I_PRP /_: O_NN statuses_NNS slightly_RB affect_VBP data_NNS transfer_VB performance_NN ._.
+Their_PRP$ respective_JJ values_NNS in_IN our_PRP$ Data_NNS Grid_NNP environment_NN are_VBP ##_CD %_NN ,_, ##_CD %_NN ,_, and_CC ##_CD %_NN ._.
+4_LS ._.
+#_# Co-Allocation_NNP Cost_NN Analysis_NN When_WRB clients_NNS download_VBP datasets_NNS using_VBG GridFTP_NN co-allocation_NN technology_NN ,_, three_CD time_NN costs_NNS are_VBP incurred_VBN :_: the_DT time_NN required_VBN for_IN client_NN authentication_NN to_TO the_DT GridFTP_NN server_NN ,_, actual_JJ data_NNS transmission_NN time_NN ,_, and_CC data_NNS block_VBP reassembly_NN time_NN ._.
+Authentication_NNP Time_NNP :_: Before_IN a_DT transfer_NN ,_, the_DT client_NN must_MD load_VB a_DT Globus_NNP proxy_NN and_CC authenticate_VB itself_PRP to_TO the_DT GridFTP_NN server_NN with_IN specified_VBN user_NN credentials_NNS ._.
+The_DT client_NN then_RB establishes_VBZ a_DT control_NN channel_NN ,_, sets_VBZ up_RP transfer_NN parameters_NNS ,_, and_CC requests_NNS data_NNS channel_NN creation_NN ._.
+When_WRB the_DT channel_NN has_VBZ been_VBN established_VBN ,_, the_DT data_NNS begins_VBZ flowing_VBG ._.
+Transmission_NNP Time_NNP :_: Transmission_NNP time_NN is_VBZ measured_VBN from_IN the_DT time_NN when_WRB the_DT client_NN starts_VBZ transferring_VBG to_TO the_DT time_NN when_WRB all_DT transmission_NN jobs_NNS are_VBP finished_VBN ,_, and_CC it_PRP includes_VBZ the_DT time_NN 800_CD required_VBN for_IN resetting_VBG data_NNS channels_NNS between_IN transfer_NN requests_NNS ._.
+Data_NN pathways_NNS need_VBP be_VB opened_VBN only_RB once_RB and_CC may_MD handle_VB many_JJ transfers_NNS before_IN being_VBG closed_VBN ._.
+This_DT allows_VBZ the_DT same_JJ data_NN pathways_NNS to_TO be_VB used_VBN for_IN multiple_JJ file_NN transfers_NNS ._.
+However_RB ,_, data_NNS channels_NNS must_MD be_VB explicitly_RB reset_VB between_IN transfer_NN requests_NNS ._.
+This_DT is_VBZ less_RBR time-costly_RB ._.
+Combination_NN Time_NN :_: Co-allocation_NN architecture_NN exploits_VBZ the_DT partial_JJ copy_NN feature_NN of_IN the_DT GridFTP_NN data_NNS movement_NN tool_NN to_TO enable_VB data_NNS transfers_NNS across_IN multiple_JJ connections_NNS ._.
+With_IN partial_JJ file_NN transfer_NN ,_, file_NN sections_NNS can_MD be_VB retrieved_VBN from_IN data_NNS servers_NNS by_IN specifying_VBG only_RB the_DT section_NN start_NN and_CC end_NN offsets_NNS ._.
+When_WRB these_DT file_NN sections_NNS are_VBP delivered_VBN ,_, they_PRP may_MD need_VB to_TO be_VB reassembled_VBN ;_: the_DT reassembly_NN operation_NN incurs_VBZ an_DT additional_JJ time_NN cost_NN ._.
+5_CD ._.
+DYNAMIC_JJ CO-ALLOCATION_JJ STRATEGY_NN Dynamic_NNP co-allocation_NN ,_, described_VBN above_IN ,_, is_VBZ the_DT most_RBS efficient_JJ approach_NN to_TO reducing_VBG the_DT influence_NN of_IN network_NN variations_NNS between_IN clients_NNS and_CC servers_NNS ._.
+However_RB ,_, the_DT idle_JJ time_NN of_IN faster_JJR servers_NNS awaiting_VBG the_DT slowest_JJS server_NN to_TO deliver_VB the_DT last_JJ block_NN is_VBZ still_RB a_DT major_JJ factor_NN affecting_VBG overall_JJ efficiency_NN ,_, which_WDT Conservative_JJ Load_NN Balancing_NN and_CC Aggressive_JJ Load_NN Balancing_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- can_MD not_RB effectively_RB avoid_VB ._.
+The_DT approach_NN proposed_VBD in_IN the_DT present_JJ paper_NN ,_, a_DT dynamic_JJ allocation_NN mechanism_NN called_VBN Recursive-Adjustment_NNP CoAllocation_NNP can_MD overcome_VB this_DT ,_, and_CC thus_RB ,_, improve_VBP data_NNS transfer_VB performance_NN ._.
+5_CD ._.
+#_# Recursive-Adjustment_NNP Co-Allocation_NNP Recursive-Adjustment_NNP Co-Allocation_NNP works_VBZ by_IN continuously_RB adjusting_VBG each_DT replica_NN server_NN ''_'' s_NNS workload_NN to_TO correspond_VB to_TO its_PRP$ realtime_NN bandwidth_NN during_IN file_NN transfers_NNS ._.
+The_DT goal_NN is_VBZ to_TO make_VB the_DT expected_VBN finish_NN time_NN of_IN all_DT servers_NNS the_DT same_JJ ._.
+As_IN Figure_NNP #_# shows_NNS ,_, when_WRB an_DT appropriate_JJ file_NN section_NN is_VBZ first_JJ selected_VBN ,_, it_PRP is_VBZ divided_VBN into_IN proper_JJ block_NN sizes_NNS according_VBG to_TO the_DT respective_JJ server_NN bandwidths_NNS ._.
+The_DT co-allocator_NN then_RB assigns_VBZ the_DT blocks_NNS to_TO servers_NNS for_IN transfer_NN ._.
+At_IN this_DT moment_NN ,_, it_PRP is_VBZ expected_VBN that_IN the_DT transfer_NN finish_NN time_NN will_MD be_VB consistent_JJ at_IN E_NN -LRB-_-LRB- T1_NN -RRB-_-RRB- ._.
+However_RB ,_, since_IN server_NN bandwidths_NNS may_MD fluctuate_VB during_IN segment_NN deliveries_NNS ,_, actual_JJ completion_NN time_NN may_MD be_VB dissimilar_JJ -LRB-_-LRB- solid_JJ line_NN ,_, in_IN Figure_NNP #_# -RRB-_-RRB- ._.
+Once_RB the_DT quickest_JJS server_NN finishes_VBZ its_PRP$ work_NN at_IN time_NN T1_NN ,_, the_DT next_JJ section_NN is_VBZ assigned_VBN to_TO the_DT servers_NNS again_RB ._.
+This_DT allows_VBZ each_DT server_NN to_TO finish_VB its_PRP$ assigned_VBN workload_NN by_IN the_DT expected_VBN time_NN at_IN E_NN -LRB-_-LRB- T2_NN -RRB-_-RRB- ._.
+These_DT adjustments_NNS are_VBP repeated_VBN until_IN the_DT entire_JJ file_NN transfer_NN is_VBZ finished_VBN ._.
+Server_NN #_# Server_NN #_# Server_NN #_# Round_NNP #_# Round_NNP #_# E_NN -LRB-_-LRB- T1_NN -RRB-_-RRB- E_NN -LRB-_-LRB- T2_NN -RRB-_-RRB- T1_NN File_NN A_NN Section_NN #_# Section_NN #_# ..._: ..._: Figure_NNP #_# ._.
+The_DT adjustment_NN process_NN The_DT Recursive-Adjustment_JJ Co-Allocation_NN process_NN is_VBZ illustrated_VBN in_IN Figure_NNP #_# ._.
+When_WRB a_DT user_NN requests_NNS file_NN A_NN ,_, the_DT replica_NN selection_NN service_NN responds_VBZ with_IN the_DT subset_NN of_IN all_DT available_JJ servers_NNS defined_VBN by_IN the_DT maximum_NN performance_NN matrix_NN ._.
+The_DT co-allocation_JJ service_NN gets_VBZ this_DT list_NN of_IN selected_VBN replica_NN servers_NNS ._.
+Assuming_VBG n_NN replica_NN servers_NNS are_VBP selected_VBN ,_, Si_NNP denotes_VBZ server_NN i_FW such_JJ that_IN #_# i_FW n_NN ._.
+A_DT connection_NN for_IN file_NN downloading_NN is_VBZ then_RB built_VBN to_TO each_DT server_NN ._.
+The_DT RecursiveAdjustment_NNP Co-Allocation_NNP process_NN is_VBZ as_IN follows_VBZ ._.
+A_DT new_JJ section_NN of_IN a_DT file_NN to_TO be_VB allocated_VBN is_VBZ first_RB defined_VBN ._.
+The_DT section_NN size_NN ,_, SEj_NN ,_, is_VBZ :_: SEj_NN =_JJ UnassignedFileSize_NN ,_, -LRB-_-LRB- #_# <_JJR <_JJR #_# -RRB-_-RRB- -LRB-_-LRB- #_# -RRB-_-RRB- where_WRB SEj_NN denotes_VBZ the_DT section_NN j_NN such_JJ that_IN #_# j_FW k_NN ,_, assuming_VBG we_PRP allocate_VBP k_NN times_NNS for_IN the_DT download_NN process_NN ._.
+And_CC thus_RB ,_, there_EX are_VBP k_NN sections_NNS ,_, while_IN Tj_NN denotes_VBZ the_DT time_NN section_NN j_NN allocated_VBN ._.
+UnassignedFileSize_NNP is_VBZ the_DT portion_NN of_IN file_NN A_NN not_RB yet_RB distributed_VBN for_IN downloading_VBG ;_: initially_RB ,_, UnassignedFileSize_NNP is_VBZ equal_JJ to_TO the_DT total_JJ size_NN of_IN file_NN A_NN ._.
+is_VBZ the_DT rate_NN that_WDT determines_VBZ how_WRB much_JJ of_IN the_DT section_NN remains_VBZ to_TO be_VB assigned_VBN ._.
+Figure_NNP #_# ._.
+The_DT Recursive-Adjustment_NNP Co-Allocation_NNP process_NN ._.
+In_IN the_DT next_JJ step_NN ,_, SEj_NN is_VBZ divided_VBN into_IN several_JJ blocks_NNS and_CC assigned_VBN to_TO n_NN servers_NNS ._.
+Each_DT server_NN has_VBZ a_DT real-time_JJ transfer_NN rate_NN to_TO the_DT client_NN of_IN Bi_NNP ,_, which_WDT is_VBZ measured_VBN by_IN the_DT Network_NNP Weather_NNP Service_NNP -LRB-_-LRB- NWS_NNP -RRB-_-RRB- -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+The_DT block_NN size_NN per_IN flow_NN from_IN SEj_NN for_IN each_DT server_NN i_FW at_IN time_NN Tj_NN is_VBZ :_: i_FW n_NN i_FW ii_LS n_NN i_FW iji_FW zeUnFinishSiBBzeUnFinishSiSES_NN -_: -RRB-_-RRB- -LRB-_-LRB- 11_CD -LRB-_-LRB- #_# -RRB-_-RRB- where_WRB UnFinishSizei_NNP denotes_VBZ the_DT size_NN of_IN unfinished_JJ transfer_NN blocks_VBZ that_DT is_VBZ assigned_VBN in_IN previous_JJ rounds_NNS at_IN server_NN i_FW ._.
+UnFinishSizei_NNP is_VBZ equal_JJ to_TO zero_CD in_IN first_JJ round_NN ._.
+Ideally_RB ,_, depending_VBG to_TO the_DT real_JJ time_NN bandwidth_NN at_IN time_NN Tj_NN ,_, every_DT flow_NN is_VBZ expected_VBN to_TO finish_VB its_PRP$ workload_NN in_IN future_NN ._.
+This_DT fulfills_VBZ our_PRP$ requirement_NN to_TO minimize_VB the_DT time_NN faster_RBR servers_NNS must_MD wait_VB for_IN the_DT slowest_JJS server_NN to_TO finish_VB ._.
+If_IN ,_, in_IN some_DT cases_NNS ,_, network_NN variations_NNS greatly_RB degrade_VB transfer_NN rates_NNS ,_, UnFinishSizei_NNP may_MD exceed_VB n_NN i_FW ii_LS n_NN i_FW ij_FW BBzeUnFinishSiSE_NN 11_CD *_SYM -RRB-_-RRB- -LRB-_-LRB- ,_, which_WDT is_VBZ the_DT total_JJ block_NN size_NN expected_VBN to_TO be_VB transferred_VBN after_IN Tj_NN ._.
+In_IN such_JJ cases_NNS ,_, the_DT co-allocator_NN eliminates_VBZ the_DT servers_NNS in_IN advance_NN and_CC assigns_VBZ SEj_NN to_TO other_JJ servers_NNS ._.
+After_IN allocation_NN ,_, all_DT channels_NNS continue_VBP transferring_VBG data_NNS blocks_NNS ._.
+When_WRB a_DT faster_RBR channel_NN finishes_VBZ its_PRP$ assigned_VBN data_NN blocks_NNS ,_, the_DT co-allocator_NN begins_VBZ allocating_VBG an_DT unassigned_JJ section_NN of_IN file_NN A_NN again_RB ._.
+The_DT process_NN of_IN allocating_VBG data_NNS 801_CD blocks_NNS to_TO adjust_VB expected_VBN flow_NN finish_NN time_NN continues_VBZ until_IN the_DT entire_JJ file_NN has_VBZ been_VBN allocated_VBN ._.
+5_CD ._.
+#_# Determining_VBG When_WRB to_TO Stop_VB Continuous_JJ Adjustment_NNP Our_PRP$ approach_NN gets_VBZ new_JJ sections_NNS from_IN whole_JJ files_NNS by_IN dividing_VBG unassigned_JJ file_NN ranges_NNS in_IN each_DT round_NN of_IN allocation_NN ._.
+These_DT unassigned_JJ portions_NNS of_IN the_DT file_NN ranges_VBZ become_VBN smaller_JJR after_IN each_DT allocation_NN ._.
+Since_IN adjustment_NN is_VBZ continuous_JJ ,_, it_PRP would_MD run_VB as_IN an_DT endless_JJ loop_NN if_IN not_RB limited_VBN by_IN a_DT stop_NN condition_NN ._.
+However_RB ,_, when_WRB is_VBZ it_PRP appropriate_JJ to_TO stop_VB continuous_JJ adjustment_NN ?_.
+We_PRP provide_VBP two_CD monitoring_VBG criteria_NNS ,_, LeastSize_NNP and_CC ExpectFinishedTime_NNP ,_, to_TO enable_VB users_NNS to_TO define_VB stop_VB thresholds_NNS ._.
+When_WRB a_DT threshold_NN is_VBZ reached_VBN ,_, the_DT co-allocation_NN server_NN stopped_VBD dividing_VBG the_DT remainder_NN of_IN the_DT file_NN and_CC assigns_VBZ that_IN remainder_NN as_IN the_DT final_JJ section_NN ._.
+The_DT LeastSize_NNP criterion_NN specifies_VBZ the_DT smallest_JJS file_NN we_PRP want_VBP to_TO process_NN ,_, and_CC when_WRB the_DT unassigned_JJ portion_NN of_IN UnassignedFileSize_NN drops_VBZ below_IN the_DT LeastSize_NNP specification_NN ,_, division_NN stops_VBZ ._.
+ExpectFinishedTime_NNP criterion_NN specifies_VBZ the_DT remaining_VBG time_NN transfer_NN is_VBZ expected_VBN to_TO take_VB ._.
+When_WRB the_DT expected_VBN transfer_NN time_NN of_IN the_DT unassigned_JJ portion_NN of_IN a_DT file_NN drops_VBZ below_IN the_DT time_NN specified_VBN by_IN ExpectFinishedTime_NNP ,_, file_NN division_NN stops_VBZ ._.
+The_DT expected_VBN rest_NN time_NN value_NN is_VBZ determined_VBN by_IN :_: 1_CD n_NN i_FW iBFileSizeUnAssigned_FW -LRB-_-LRB- #_# -RRB-_-RRB- These_DT two_CD criteria_NNS determine_VB the_DT final_JJ section_NN size_NN allocated_VBN ._.
+Higher_JJR threshold_NN values_NNS will_MD induce_VB fewer_JJR divisions_NNS and_CC yield_VB lower_JJR co-allocation_NN costs_NNS ,_, which_WDT include_VBP establishing_VBG connections_NNS ,_, negotiation_NN ,_, reassembly_NN ,_, etc_FW ._.
+However_RB ,_, although_IN the_DT total_JJ coallocation_NN adjustment_NN time_NN may_MD be_VB lower_JJR ,_, bandwidth_NN variations_NNS may_MD also_RB exert_VB more_JJR influence_NN ._.
+By_IN contrast_NN ,_, lower_JJR threshold_NN values_NNS will_MD induce_VB more_RBR frequent_JJ dynamic_JJ server_NN workload_NN adjustments_NNS and_CC ,_, in_IN the_DT case_NN of_IN greater_JJR network_NN fluctuations_NNS ,_, result_VBP in_IN fewer_JJR differences_NNS in_IN server_NN transfer_NN finish_NN time_NN ._.
+However_RB ,_, lower_JJR values_NNS will_MD also_RB increase_VB co-allocation_JJ times_NNS ,_, and_CC hence_RB ,_, increase_NN co-allocation_NN costs_NNS ._.
+Therefore_RB ,_, the_DT internet_NN environment_NN ,_, transferred_VBN file_NN sizes_NNS ,_, and_CC co-allocation_NN costs_NNS should_MD all_DT be_VB considered_VBN in_IN determining_VBG optimum_JJ thresholds_NNS ._.
+5_CD ._.
+#_# Reducing_VBG the_DT Reassembly_NNP Overhead_NN The_DT process_NN of_IN reassembling_NN blocks_VBZ after_IN data_NNS transfers_NNS using_VBG coallocation_NN technology_NN results_VBZ in_IN additional_JJ overhead_NN and_CC decreases_VBZ overall_JJ performance_NN ._.
+The_DT reassembly_NN overhead_NN is_VBZ related_JJ to_TO total_JJ block_NN size_NN ,_, and_CC could_MD be_VB reduced_VBN by_IN upgrading_VBG hardware_NN capabilities_NNS or_CC using_VBG better_JJR software_NN algorithms_NNS ._.
+We_PRP propose_VBP an_DT efficient_JJ alternative_JJ reassembly_NN mechanism_NN to_TO reduce_VB the_DT added_VBN combination_NN overhead_NN after_IN all_DT block_NN transmissions_NNS are_VBP finished_VBN ._.
+It_PRP differs_VBZ from_IN the_DT conventional_JJ method_NN in_IN which_WDT the_DT software_NN starts_VBZ assembly_NN after_IN all_DT blocks_NNS have_VBP been_VBN delivered_VBN by_IN starting_VBG to_TO assemble_VB blocks_NNS once_RB the_DT first_JJ deliveries_NN finish_NN ._.
+Of_IN course_NN ,_, this_DT makes_VBZ it_PRP necessary_JJ to_TO maintain_VB the_DT original_JJ splitting_NN order_NN ._.
+Co-allocation_JJ strategies_NNS such_JJ as_IN Conservative_JJ Load_NN Balancing_NN and_CC Recursive-Adjustment_JJ Co-Allocation_NN produce_VBP additional_JJ blocks_NNS during_IN file_NN transfers_NNS and_CC can_MD benefit_VB from_IN enabling_VBG reassembly_NN during_IN data_NNS transfers_NNS ._.
+If_IN some_DT blocks_NNS are_VBP assembled_VBN in_IN advance_NN ,_, the_DT time_NN cost_NN for_IN assembling_VBG the_DT blocks_NNS remaining_VBG after_IN all_DT transfers_NNS finish_VBP can_MD be_VB reduced_VBN ._.
+6_CD ._.
+EXPERIMENTAL_JJ RESULTS_NNS AND_CC ANALYSIS_NNS In_IN this_DT section_NN ,_, we_PRP discuss_VBP the_DT performance_NN of_IN our_PRP$ RecursiveAdjustment_NNP Co-Allocation_NNP strategy_NN ._.
+We_PRP evaluate_VBP four_CD coallocation_NN schemes_NNS :_: -LRB-_-LRB- #_# -RRB-_-RRB- Brute-Force_NNP -LRB-_-LRB- Brute_NNP -RRB-_-RRB- ,_, -LRB-_-LRB- #_# -RRB-_-RRB- History-based_JJ -LRB-_-LRB- History_NN -RRB-_-RRB- ,_, -LRB-_-LRB- #_# -RRB-_-RRB- Conservative_JJ Load_NN Balancing_NN -LRB-_-LRB- Conservative_NN -RRB-_-RRB- and_CC -LRB-_-LRB- #_# -RRB-_-RRB- Recursive-Adjustment_JJ Co-Allocation_NN -LRB-_-LRB- Recursive_JJ -RRB-_-RRB- ._.
+We_PRP analyze_VBP the_DT performance_NN of_IN each_DT scheme_NN by_IN comparing_VBG their_PRP$ transfer_NN finish_NN time_NN ,_, and_CC the_DT total_JJ idle_JJ time_NN faster_RBR servers_NNS spent_VBD waiting_VBG for_IN the_DT slowest_JJS server_NN to_TO finish_VB delivering_VBG the_DT last_JJ block_NN ._.
+We_PRP also_RB analyze_VBP the_DT overall_JJ performances_NNS in_IN the_DT various_JJ cases_NNS ._.
+We_PRP performed_VBD wide-area_JJ data_NNS transfer_NN experiments_NNS using_VBG our_PRP$ GridFTP_NNP GUI_NNP client_NN tool_NN ._.
+We_PRP executed_VBD our_PRP$ co-allocation_NN client_NN tool_NN on_IN our_PRP$ testbed_VBN at_IN Tunghai_NNP University_NNP -LRB-_-LRB- THU_NNP -RRB-_-RRB- ,_, Taichung_NNP City_NNP ,_, Taiwan_NNP ,_, and_CC fetched_VBD files_NNS from_IN four_CD selected_VBN replica_NN servers_NNS :_: one_CD at_IN Providence_NNP University_NNP -LRB-_-LRB- PU_NN -RRB-_-RRB- ,_, one_CD at_IN Li-Zen_NNP High_NNP School_NNP -LRB-_-LRB- LZ_NNP -RRB-_-RRB- ,_, one_CD at_IN Hsiuping_NNP Institute_NNP of_IN Technology_NNP School_NNP -LRB-_-LRB- HIT_NNP -RRB-_-RRB- ,_, and_CC one_CD at_IN Da-Li_NNP High_NNP School_NNP -LRB-_-LRB- DL_NNP -RRB-_-RRB- ._.
+All_PDT these_DT institutions_NNS are_VBP in_IN Taiwan_NNP ,_, and_CC each_DT is_VBZ at_IN least_JJS ##_CD Km_NN from_IN THU_NNP ._.
+Figure_NNP #_# shows_VBZ our_PRP$ Data_NNS Grid_NNP testbed_VBD ._.
+Our_PRP$ servers_NNS have_VBP Globus_NNP #_# ._.
+#_# ._.
+#_# or_CC above_IN installed_VBN ._.
+Internet_NNP THU_NNP Li-Zen_NNP High_NNP School_NNP -LRB-_-LRB- LZ_NNP -RRB-_-RRB- HITCeleron_NN ###_CD MHz_NN 256_CD MB_NN RAM_NNP 60_CD GB_NNP HD_NNP AMD_NNP Athlon_NNP -LRB-_-LRB- tm_NN -RRB-_-RRB- XP_NN ####_NN +_CC 1024_CD MB_NNP RAM_NNP 120_CD GB_NNP HD_NNP Pentium_NNP #_# #_# ._.
+#_# GHz_SYM 512_CD MB_NN RAM_NNP 80_CD GB_NNP HD_NNP PU_NN Da-Li_NNP High_NNP School_NNP -LRB-_-LRB- DL_NNP -RRB-_-RRB- Athlon_NNP MP_NNP ####_NNP MHz_NNP *_SYM #_# 1_CD GB_NN RAM_NNP 60_CD GB_NNP HD_NNP Pentium_NNP #_# #_# ._.
+#_# GHZ_CD 128_CD MB_NN RAM_NNP 40_CD GB_NNP HD_NNP Pentium_NNP #_# #_# ._.
+#_# GHZ_CD 512_CD MB_NN RAM_NNP 80_CD GB_NNP HD_NNP Figure_NNP #_# ._.
+Our_PRP$ Data_NNS Grid_NNP testbed_VBD In_IN the_DT following_VBG experiments_NNS ,_, we_PRP set_VBD =_JJ #_# ._.
+#_# ,_, the_DT LeastSize_NN threshold_NN to_TO 10MB_NN ,_, and_CC experimented_VBD with_IN file_NN sizes_NNS of_IN ##_CD MB_NN ,_, 50MB_NN ,_, 100MB_NN ,_, 500MB_NN ,_, 1000MB_NN ,_, 2000MB_NN ,_, and_CC 4000MB_NN ._.
+For_IN comparison_NN ,_, we_PRP measured_VBD the_DT performance_NN of_IN Conservative_JJ Load_NN Balancing_NN on_IN each_DT size_NN using_VBG the_DT same_JJ block_NN numbers_NNS ._.
+Figure_NNP #_# shows_VBZ a_DT snapshot_NN of_IN our_PRP$ GridFTP_NN client_NN tool_NN ._.
+This_DT client_NN tool_NN is_VBZ developed_VBN by_IN using_VBG Java_NNP CoG_NN ._.
+It_PRP allows_VBZ easier_JJR and_CC more_RBR rapid_JJ application_NN development_NN by_IN encouraging_VBG collaborative_JJ code_NN reuse_NN and_CC avoiding_VBG duplication_NN of_IN effort_NN among_IN problem-solving_JJ environments_NNS ,_, science_NN portals_NNS ,_, Grid_NNP middleware_NNP ,_, and_CC collaborative_JJ pilots_NNS ._.
+Table_NNP #_# shows_VBZ average_JJ transmission_NN rates_NNS between_IN THU_NNP and_CC each_DT replica_NN server_NN ._.
+These_DT numbers_NNS were_VBD obtained_VBN by_IN transferring_VBG files_NNS of_IN 500MB_NN ,_, 1000MB_NN ,_, and_CC 2000MB_NN from_IN a_DT single_JJ replica_NN server_NN using_VBG our_PRP$ GridFTP_NN client_NN tool_NN ,_, and_CC each_DT number_NN is_VBZ an_DT average_JJ over_IN several_JJ runs_NNS ._.
+Table_NNP #_# ._.
+GridFTP_NN end-to-end_JJ transmission_NN rate_NN from_IN THU_NNP to_TO various_JJ servers_NNS Server_NN Average_JJ transmission_NN rate_NN HIT_NNP ##_CD ._.
+#_# Mbps_NNPS LZ_NNP ##_CD ._.
+#_# Mbps_NNPS DL_NNP ##_CD ._.
+#_# Mbps_NNPS PU_NN ##_NN ._.
+#_# Mbps_NNPS 802_CD Figure_NNP #_# ._.
+Our_PRP$ GridFTP_NN client_NN tool_NN We_PRP analyzed_VBD the_DT effect_NN of_IN faster_JJR servers_NNS waiting_VBG for_IN the_DT slowest_JJS server_NN to_TO deliver_VB the_DT last_JJ block_NN for_IN each_DT scheme_NN ._.
+Figure_NNP #_# -LRB-_-LRB- a_DT -RRB-_-RRB- shows_VBZ total_JJ idle_JJ time_NN for_IN various_JJ file_NN sizes_NNS ._.
+Note_VB that_IN our_PRP$ RecursiveAdjustment_NNP Co-Allocation_NNP scheme_NN achieved_VBD significant_JJ performance_NN improvements_NNS over_IN other_JJ schemes_NNS for_IN every_DT file_NN size_NN ._.
+These_DT results_NNS demonstrate_VBP that_IN our_PRP$ approach_NN efficiently_RB reduces_VBZ the_DT differences_NNS in_IN servers_NNS finish_VBP times_NNS ._.
+The_DT experimental_JJ results_NNS shown_VBN in_IN Figure_NNP #_# -LRB-_-LRB- b_NN -RRB-_-RRB- indicate_VBP that_IN our_PRP$ scheme_NN beginning_VBG block_NN reassembly_NN as_RB soon_RB as_IN the_DT first_JJ blocks_NNS have_VBP been_VBN completely_RB delivered_VBN reduces_VBZ combination_NN time_NN ,_, thus_RB aiding_VBG co-allocation_JJ strategies_NNS like_IN Conservative_JJ Load_NN Balancing_NN and_CC RecursiveAdjustment_NN Co-Allocation_NN that_WDT produce_VBP more_JJR blocks_NNS during_IN data_NNS transfers_NNS ._.
+Figure_NNP #_# shows_VBZ total_JJ completion_NN time_NN experimental_JJ results_NNS in_IN a_DT detailed_JJ cost_NN structure_NN view_NN ._.
+Servers_NNS were_VBD at_IN PU_NN ,_, DL_NN ,_, and_CC HIT_NNP ,_, with_IN the_DT client_NN at_IN THU_NNP ._.
+The_DT first_JJ three_CD bars_NNS for_IN each_DT file_NN size_NN denote_VBP the_DT time_NN to_TO download_VB the_DT entire_JJ file_NN from_IN single_JJ server_NN ,_, while_IN the_DT other_JJ bars_NNS show_VBP co-allocated_JJ downloads_NNS using_VBG all_DT three_CD servers_NNS ._.
+Our_PRP$ co-allocation_NN scheme_NN finished_VBD the_DT job_NN faster_RBR than_IN the_DT other_JJ co-allocation_NN strategies_NNS ._.
+Thus_RB ,_, we_PRP may_MD infer_VB that_IN the_DT main_JJ gains_NNS our_PRP$ technology_NN offers_NNS are_VBP lower_JJR transmission_NN and_CC combination_NN times_NNS than_IN other_JJ co-allocation_NN strategies_NNS ._.
+0_CD 20_CD 40_CD 60_CD 80_CD 100_CD 120_CD 140_CD 160_CD 180_CD 200_CD 100_CD ###_CD ####_CD ####_CD ####_CD File_NNP Size_NN -LRB-_-LRB- MB_NN -RRB-_-RRB- WaitTime_NN -LRB-_-LRB- Sec_NN -RRB-_-RRB- Brute3_NN History3_NN Conservative3_NN Recursive3_NN 0_CD 10_CD 20_CD 30_CD 40_CD 50_CD 60_CD 70_CD 80_CD 90_CD 100_CD 500_CD ####_CD ####_CD ####_CD File_NNP Size_NN -LRB-_-LRB- MB_NN -RRB-_-RRB- CombinationTime_NN -LRB-_-LRB- Sec_NN -RRB-_-RRB- Brute3_NN History3_NN Conservative3_NN Recursive3_NN Figure_NN #_# ._.
+-LRB-_-LRB- a_DT -RRB-_-RRB- Idle_JJ times_NNS for_IN various_JJ methods_NNS ;_: servers_NNS are_VBP at_IN PU_NN ,_, DL_NN ,_, and_CC HIT_NNP ._.
+-LRB-_-LRB- b_NN -RRB-_-RRB- Combination_NN times_NNS for_IN various_JJ methods_NNS ;_: servers_NNS are_VBP at_IN PU_NN ,_, DL_NN ,_, and_CC HIT_NNP ._.
+In_IN the_DT next_JJ experiment_NN ,_, we_PRP used_VBD the_DT Recursive-Adjustment_NNP CoAllocation_NNP strategy_NN with_IN various_JJ sets_NNS of_IN replica_NN servers_NNS and_CC measured_VBN overall_JJ performances_NNS ,_, where_WRB overall_JJ performance_NN is_VBZ :_: Total_JJ Performance_NNP =_JJ File_NN size_NN /_: Total_JJ Completion_NNP Time_NNP -LRB-_-LRB- #_# -RRB-_-RRB- Table_NNP #_# lists_NNS all_DT experiments_NNS we_PRP performed_VBD and_CC the_DT sets_NNS of_IN replica_NN servers_NNS used_VBN ._.
+The_DT results_NNS in_IN Figure_NNP #_# -LRB-_-LRB- a_DT -RRB-_-RRB- show_VBP that_IN using_VBG coallocation_NN technologies_NNS yielded_VBD no_DT improvement_NN for_IN smaller_JJR file_NN sizes_NNS such_JJ as_IN 10MB_NN ._.
+They_PRP also_RB show_VBP that_IN in_IN most_JJS cases_NNS ,_, overall_JJ performance_NN increased_VBD as_IN the_DT number_NN of_IN co-allocated_JJ flows_NNS increased_VBN ._.
+We_PRP observed_VBD that_IN for_IN our_PRP$ testbed_VBN and_CC our_PRP$ co-allocation_NN technology_NN ,_, overall_JJ performance_NN reached_VBD its_PRP$ highest_JJS value_NN in_IN the_DT REC3_NN __CD #_# case_NN ._.
+However_RB ,_, in_IN the_DT REC4_NN case_NN ,_, when_WRB we_PRP added_VBD one_CD flow_NN to_TO the_DT set_NN of_IN replica_NN servers_NNS ,_, the_DT performance_NN did_VBD not_RB increase_VB ._.
+On_IN the_DT contrary_NN ,_, it_PRP decreased_VBD ._.
+We_PRP can_MD infer_VB that_IN the_DT co-allocation_NN efficiency_NN reached_VBD saturation_NN in_IN the_DT REC3_NN __CD #_# case_NN ,_, and_CC that_IN additional_JJ flows_NNS caused_VBD additional_JJ overhead_NN and_CC reduced_VBD overall_JJ performance_NN ._.
+This_DT means_VBZ that_IN more_JJR download_NN flows_NNS do_VBP not_RB necessarily_RB result_VB in_IN higher_JJR performance_NN ._.
+We_PRP must_MD choose_VB appropriate_JJ numbers_NNS of_IN flows_NNS to_TO achieve_VB optimum_JJ performance_NN ._.
+We_PRP show_VBP the_DT detailed_JJ cost_NN structure_NN view_NN for_IN the_DT case_NN of_IN REC3_NN __CD #_# and_CC the_DT case_NN of_IN REC4_NN in_IN Figure_NNP #_# -LRB-_-LRB- b_NN -RRB-_-RRB- ._.
+The_DT detailed_JJ cost_NN consists_VBZ of_IN authentication_NN time_NN ,_, transfer_NN time_NN and_CC combination_NN time_NN ._.
+0_CD 100_CD 200_CD 300_CD 400_CD 500_CD 600_CD PU1_NN DL1_NN HIT1_NN BRU3_NN HIS3_NN CON3_NN REC3_NN PU1_NN DL1_NN HIT1_NN BRU3_NN HIS3_NN CON3_NN REC3_NN PU1_NN DL1_NN HIT1_NN BRU3_NN HIS3_NN CON3_NN REC3_NN PU1_NN DL1_NN HIT1_NN BRU3_NN HIS3_NN CON3_NN REC3_NN 500_CD ####_CD ####_CD ####_CD File_NNP Size_NN -LRB-_-LRB- MB_NN -RRB-_-RRB- CompletionTime_NN -LRB-_-LRB- Sec_NN -RRB-_-RRB- Authentication_NN Time_NNP Transmission_NNP Time_NNP Combination_NNP Time_NNP Figure_NNP #_# ._.
+Completion_NN times_NNS for_IN various_JJ methods_NNS ;_: servers_NNS are_VBP at_IN PU_NN ,_, DL_NN ,_, and_CC HIT_NNP ._.
+Table_NNP #_# ._.
+The_DT sets_NNS of_IN replica_NN servers_NNS for_IN all_DT cases_NNS Case_NN Servers_NNS PU1_NN PU_NN DL1_NN DL_NN REC2_NN PU_NN ,_, DL_NN REC3_NN __CD #_# PU_NN ,_, DL_NN ,_, LZ_NN REC3_NN __CD #_# PU_NN ,_, DL_NN ,_, HIT_NN REC4_NN PU_NN ,_, DL_NN ,_, HIT_NN ,_, LZ_NN 0_CD 10_CD 20_CD 30_CD 40_CD 50_CD 60_CD 70_CD 10_CD ##_CD ###_CD ###_CD ####_CD ####_CD ####_CD File_NNP Size_NN -LRB-_-LRB- MB_NN -RRB-_-RRB- OverallPerformance_NN -LRB-_-LRB- Mbits_NNS -RRB-_-RRB- PU1_NN DL1_NN REC2_NN REC3_NN __CD #_# REC3_NN __CD #_# REC4_NN 0_CD 10_CD 20_CD 30_CD 40_CD 50_CD 60_CD 70_CD REC3_NN __CD #_# REC4_NN REC3_NN __CD #_# REC4_NN REC3_NN __CD #_# REC4_NN REC3_NN __CD #_# REC4_NN REC3_NN __CD #_# REC4_NN REC3_NN __CD #_# REC4_NN REC3_NN __CD #_# REC4_NN 10_CD ##_CD ###_CD ###_CD ####_CD ####_CD ####_CD File_NNP Size_NN -LRB-_-LRB- MB_NN -RRB-_-RRB- OverallPerformance_NN -LRB-_-LRB- Mbits_NNS -RRB-_-RRB- Authentication_NNP Time_NNP Transmission_NNP Time_NNP Combination_NNP Time_NNP Figure_NNP #_# ._.
+-LRB-_-LRB- a_DT -RRB-_-RRB- Overall_JJ performances_NNS for_IN various_JJ sets_NNS of_IN servers_NNS ._.
+-LRB-_-LRB- b_NN -RRB-_-RRB- Detailed_JJ cost_NN structure_NN view_NN for_IN the_DT case_NN of_IN REC3_NN __CD #_# and_CC the_DT case_NN of_IN REC4_NN ._.
+7_CD ._.
+CONCLUSIONS_NNS The_DT co-allocation_NN architecture_NN provides_VBZ a_DT coordinated_VBN agent_NN for_IN assigning_VBG data_NN blocks_NNS ._.
+A_DT previous_JJ work_NN showed_VBD that_IN the_DT dynamic_JJ co-allocation_NN scheme_NN leads_VBZ to_TO performance_NN improvements_NNS ._.
+However_RB ,_, it_PRP can_MD not_RB handle_VB the_DT idle_JJ time_NN of_IN faster_JJR servers_NNS ,_, which_WDT must_MD wait_VB for_IN the_DT slowest_JJS server_NN to_TO deliver_VB its_PRP$ final_JJ block_NN ._.
+We_PRP proposed_VBD the_DT Recursive-Adjustment_NNP Co-Allocation_NNP scheme_NN to_TO improve_VB data_NNS transfer_VB performances_NNS using_VBG the_DT co-allocation_NN architecture_NN in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ._.
+In_IN this_DT approach_NN ,_, the_DT workloads_NNS of_IN selected_VBN replica_NN servers_NNS are_VBP continuously_RB adjusted_VBN during_IN data_NNS transfers_NNS ,_, and_CC we_PRP provide_VBP a_DT function_NN that_WDT enables_VBZ users_NNS to_TO define_VB a_DT final_JJ 803_CD block_NN threshold_NN ,_, according_VBG to_TO their_PRP$ data_NNS grid_NN environment_NN ._.
+Experimental_JJ results_NNS show_VBP the_DT effectiveness_NN of_IN our_PRP$ proposed_VBN technique_NN in_IN improving_VBG transfer_NN time_NN and_CC reducing_VBG overall_JJ idle_JJ time_NN spent_VBD waiting_VBG for_IN the_DT slowest_JJS server_NN ._.
+We_PRP also_RB discussed_VBD the_DT re-combination_NN cost_NN and_CC provided_VBD an_DT effective_JJ scheme_NN for_IN reducing_VBG it_PRP ._.
+8_CD ._.
+REFERENCES_NNS -LSB-_-LRB- #_# -RSB-_-RRB- B_NN ._.
+Allcock_NNP ,_, J_NNP ._.
+Bester_NNP ,_, J_NNP ._.
+Bresnahan_NNP ,_, A_NNP ._.
+Chervenak_NNP ,_, I_PRP ._.
+Foster_NNP ,_, C_NNP ._.
+Kesselman_NNP ,_, S_NN ._.
+Meder_NNP ,_, V_NNP ._.
+Nefedova_NNP ,_, D_NNP ._.
+Quesnel_NNP ,_, and_CC S_NN ._.
+Tuecke_NNP ,_, Data_NNP Management_NNP and_CC Transfer_NN in_IN HighPerformance_NNP Computational_NNP Grid_NNP Environments_NNP ,_, Parallel_JJ Computing_NNP ,_, ##_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 749-771_CD ,_, May_NNP ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- B_NN ._.
+Allcock_NNP ,_, J_NNP ._.
+Bester_NNP ,_, J_NNP ._.
+Bresnahan_NNP ,_, A_NNP ._.
+Chervenak_NNP ,_, I_PRP ._.
+Foster_NNP ,_, C_NNP ._.
+Kesselman_NNP ,_, S_NN ._.
+Meder_NNP ,_, V_NNP ._.
+Nefedova_NNP ,_, D_NNP ._.
+Quesnel_NNP ,_, and_CC S_NN ._.
+Tuecke_NNP ,_, Secure_NNP ,_, Efficient_JJ Data_NNS Transport_NN and_CC Replica_NNP Management_NNP for_IN High-Performance_NNP Data-Intensive_NNP Computing_NNP ,_, Proc_NNP ._.
+of_IN the_DT Eighteenth_NNP IEEE_NNP Symposium_NNP on_IN Mass_NNP Storage_NNP Systems_NNPS and_CC Technologies_NNPS ,_, pp_NN ._.
+13-28_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- B_NN ._.
+Allcock_NNP ,_, S_NN ._.
+Tuecke_NNP ,_, I_PRP ._.
+Foster_NNP ,_, A_NNP ._.
+Chervenak_NNP ,_, and_CC C_NN ._.
+Kesselman_NNP ._.
+Protocols_NNS and_CC Services_NNPS for_IN Distributed_VBN DataIntensive_NNP Science_NNP ._.
+ACAT2000_NN Proceedings_NNP ,_, pp_NN ._.
+161-163_CD ,_, 2000_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- A_DT ._.
+Chervenak_NNP ,_, E_NNP ._.
+Deelman_NNP ,_, I_PRP ._.
+Foster_NNP ,_, L_NNP ._.
+Guy_NNP ,_, W_NNP ._.
+Hoschek_NNP ,_, A_NNP ._.
+Iamnitchi_NNP ,_, C_NNP ._.
+Kesselman_NNP ,_, P_NN ._.
+Kunszt_NNP ,_, and_CC M_NN ._.
+Ripeanu_NNP ,_, Giggle_NNP :_: A_NNP Framework_NNP for_IN Constructing_NNP Scalable_NNP Replica_NNP Location_NNP Services_NNPS ,_, Proc_NNP ._.
+of_IN SC_NNP ####_NNP ,_, Baltimore_NNP ,_, MD_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- A_DT ._.
+Chervenak_NNP ,_, I_PRP ._.
+Foster_NNP ,_, C_NNP ._.
+Kesselman_NNP ,_, C_NNP ._.
+Salisbury_NNP ,_, and_CC S_NN ._.
+Tuecke_NNP ,_, The_NNP Data_NNP Grid_NNP :_: Towards_IN an_DT Architecture_NNP for_IN the_DT Distributed_VBN Management_NN and_CC Analysis_NN of_IN Large_JJ Scientific_NNP Datasets_NNPS ,_, Journal_NNP of_IN Network_NNP and_CC Computer_NNP Applications_NNS ,_, 23_CD :_: 187-200_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- K_NNP ._.
+Czajkowski_NNP ,_, S_NN ._.
+Fitzgerald_NNP ,_, I_PRP ._.
+Foster_NNP ,_, and_CC C_NN ._.
+Kesselman_NNP ,_, Grid_NNP Information_NNP Services_NNP for_IN Distributed_VBN Resource_NNP Sharing_VBG ,_, Proc_NNP ._.
+of_IN the_DT Tenth_NNP IEEE_NNP International_NNP Symposium_NNP on_IN High-Performance_NNP Distributed_VBD Computing_NNP -LRB-_-LRB- HPDC-10_NNP ''_'' ##_NN -RRB-_-RRB- ,_, 181-194_CD ,_, August_NNP ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- K_NNP ._.
+Czajkowski_NNP ,_, I_PRP ._.
+Foster_NNP ,_, and_CC C_NN ._.
+Kesselman_NNP ._.
+Resource_NNP CoAllocation_NNP in_IN Computational_NNP Grids_NNP ,_, Proc_NNP ._.
+of_IN the_DT Eighth_NNP IEEE_NNP International_NNP Symposium_NNP on_IN High_NNP Performance_NNP Distributed_VBD Computing_NNP -LRB-_-LRB- HPDC-8_NN ''_'' ##_NN -RRB-_-RRB- ,_, August_NNP ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- F_NN ._.
+Donno_NNP ,_, L_NNP ._.
+Gaido_NNP ,_, A_NNP ._.
+Ghiselli_NNP ,_, F_NN ._.
+Prelz_NNP ,_, and_CC M_NN ._.
+Sgaravatto_NNP ,_, DataGrid_NNP Prototype_NNP #_# ,_, TERENA_NNP Networking_NNP Conference_NNP ,_, http_NN :_: /_: /_: www_NN ._.
+terena_NN ._.
+nl_NN /_: conferences_NNS /_: tnc2002_NN /_: Papers_NNP /_: p5a2ghiselli_NNS ._.
+pdf_NN ,_, June_NNP ####_CD ,_, -LSB-_-LRB- #_# -RSB-_-RRB- I_PRP ._.
+Foster_NNP ,_, C_NNP ._.
+Kesselman_NNP ,_, and_CC S_NN ._.
+Tuecke_NNP ._.
+The_DT Anatomy_NNP of_IN the_DT Grid_NNP :_: Enabling_VBG Scalable_JJ Virtual_JJ Organizations_NNPS ._.
+Int_NN ._.
+J_NN ._.
+of_IN Supercomputer_NNP Applications_NNS and_CC High_JJ Performance_NNP Computing_NNP ,_, ##_CD -LRB-_-LRB- #_# -RRB-_-RRB- ,_, pp_NN ._.
+200-222_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- I_PRP ._.
+Foster_NNP and_CC C_NNP ._.
+Kesselman_NNP ,_, Globus_NNP :_: A_NNP Metacomputing_NNP Infrastructure_NNP Toolkit_NNP ,_, Intl_NNP J_NNP ._.
+Supercomputer_NN Applications_NNS ,_, 11_CD -LRB-_-LRB- #_# -RRB-_-RRB- ,_, pp_NN ._.
+115-128_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Global_JJ Grid_NNP Forum_NNP ,_, http_NN :_: /_: /_: www_NN ._.
+ggf_NN ._.
+org_NN /_: -LSB-_-LRB- ##_CD -RSB-_-RRB- W_NNP ._.
+Hoschek_NNP ,_, J_NNP ._.
+Jaen-Martinez_NNP ,_, A_NNP ._.
+Samar_NNP ,_, H_NN ._.
+Stockinger_NNP ,_, and_CC K_NN ._.
+Stockinger_NNP ,_, Data_NNP Management_NNP in_IN an_DT International_NNP Data_NNP Grid_NNP Project_NNP ,_, Proc_NNP ._.
+of_IN First_NNP IEEE_NNP /_: ACM_NNP International_NNP Workshop_NNP on_IN Grid_NNP Computing_NNP -_: Grid_NNP ####_NNP ,_, Bangalore_NNP ,_, India_NNP ,_, December_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- IBM_NNP Red_NNP Books_NNPS ,_, Introduction_NN to_TO Grid_NNP Computing_NNP with_IN Globus_NNP ,_, IBM_NNP Press_NNP ,_, www_NN ._.
+redbooks_NNS ._.
+ibm_NN ._.
+com_NN /_: redbooks_NNS /_: pdfs_NNS /_: sg246895_NN ._.
+pdf_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- H_NN ._.
+Stockinger_NNP ,_, A_NNP ._.
+Samar_NNP ,_, B_NN ._.
+Allcock_NNP ,_, I_PRP ._.
+Foster_NNP ,_, K_NNP ._.
+Holtman_NNP ,_, and_CC B_NN ._.
+Tierney_NNP ,_, File_NNP and_CC Object_NNP Replication_NN in_IN Data_NNS Grids_NNS ,_, Journal_NNP of_IN Cluster_NNP Computing_NNP ,_, #_# -LRB-_-LRB- #_# -RRB-_-RRB- :_: 305-314_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- SYSSTAT_NN utilities_NNS home_NN page_NN ,_, http_NN :_: /_: /_: perso_NN ._.
+wanadoo_NN ._.
+fr_NN /_: sebastien_NN ._.
+godard_NN /_: -LSB-_-LRB- ##_CD -RSB-_-RRB- The_DT Globus_NNP Alliance_NNP ,_, http_NN :_: /_: /_: www_NN ._.
+globus_NN ._.
+org_NN /_: -LSB-_-LRB- ##_CD -RSB-_-RRB- S_NN ._.
+Vazhkudai_NNP ,_, Enabling_VBG the_DT Co-Allocation_NN of_IN Grid_NNP Data_NNP Transfers_NNPS ,_, Proc_NNP ._.
+of_IN Fourth_JJ International_NNP Workshop_NNP on_IN Grid_NNP Computing_NNP ,_, pp_NN ._.
+41-51_CD ,_, November_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- S_NN ._.
+Vazhkudai_NNP and_CC J_NNP ._.
+Schopf_NNP ,_, Using_VBG Regression_NN Techniques_NNS to_TO Predict_VB Large_JJ Data_NNS Transfers_NNS ,_, International_NNP Journal_NNP of_IN High_NNP Performance_NNP Computing_NNP Applications_NNS -LRB-_-LRB- IJHPCA_NN -RRB-_-RRB- ,_, 17_CD :_: 249-268_CD ,_, August_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- S_NN ._.
+Vazhkudai_NNP ,_, S_NN ._.
+Tuecke_NNP ,_, and_CC I_PRP ._.
+Foster_NNP ,_, Replica_NNP Selection_NN in_IN the_DT Globus_NNP Data_NNP Grid_NNP ,_, Proc_NNP ._.
+of_IN the_DT 1st_CD International_NNP Symposium_NNP on_IN Cluster_NNP Computing_NNP and_CC the_DT Grid_NNP -LRB-_-LRB- CCGRID_NNP 2001_CD -RRB-_-RRB- ,_, pp_NN ._.
+106-113_CD ,_, May_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- S_NN ._.
+Vazhkudai_NNP ,_, J_NNP ._.
+Schopf_NNP ,_, Predicting_VBG Sporadic_JJ Grid_NNP Data_NNP Transfers_NNPS ,_, Proc_NNP ._.
+of_IN 11th_JJ IEEE_NNP International_NNP Symposium_NNP on_IN High_NNP Performance_NNP Distributed_VBD Computing_NNP -LRB-_-LRB- HPDC-11_NN ##_NN -RRB-_-RRB- ,_, pp_NN ._.
+188-196_CD ,_, July_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- S_NN ._.
+Vazhkudai_NNP ,_, J_NNP ._.
+Schopf_NNP ,_, and_CC I_PRP ._.
+Foster_NNP ,_, Predicting_VBG the_DT Performance_NNP of_IN Wide_NN Area_NNP Data_NNP Transfers_NNPS ,_, Proc_NNP ._.
+of_IN the_DT 16th_JJ International_NNP Parallel_JJ and_CC Distributed_VBN Processing_NNP Symposium_NNP -LRB-_-LRB- IPDPS_NNP ####_CD -RRB-_-RRB- ,_, pp_NN ._.
+34-43_CD ,_, April_NNP ####_CD ,_, pp_NN ._.
+##_SYM -_: ##_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- R_NN ._.
+Wolski_NNP ,_, N_NNP ._.
+Spring_NN ,_, and_CC J_NN ._.
+Hayes_NNP ,_, The_DT Network_NNP Weather_NNP Service_NNP :_: A_DT Distributed_VBN Resource_NNP Performance_NNP Forecasting_NN Service_NNP for_IN Metacomputing_NNP ,_, Future_NNP Generation_NNP Computer_NNP Systems_NNPS ,_, ##_NN -LRB-_-LRB- 5-6_CD -RRB-_-RRB- :_: 757-768_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Chao-Tung_NNP Yang_NNP ,_, Chun-Hsiang_NNP Chen_NNP ,_, Kuan-Ching_NNP Li_NNP ,_, and_CC Ching-Hsien_NNP Hsu_NNP ,_, Performance_NNP Analysis_NN of_IN Applying_VBG Replica_NNP Selection_NN Technology_NN for_IN Data_NNS Grid_NNP Environments_NNP ,_, PaCT_NNP ####_NNP ,_, Lecture_NNP Notes_NNP in_IN Computer_NNP Science_NNP ,_, vol_NN ._.
+####_NN ,_, pp_NN ._.
+278-287_CD ,_, Springer-Verlag_NNP ,_, September_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Chao-Tung_NNP Yang_NNP ,_, I-Hsien_NNP Yang_NNP ,_, Kuan-Ching_NNP Li_NNP ,_, and_CC ChingHsien_NNP Hsu_NNP A_NNP Recursive-Adjustment_NNP Co-Allocation_NNP Scheme_NNP in_IN Data_NNP Grid_NNP Environments_NNP ,_, ICA3PP_NN ####_CD Algorithm_NN and_CC Architecture_NNP for_IN Parallel_JJ Processing_NN ,_, Lecture_NNP Notes_NNP in_IN Computer_NNP Science_NNP ,_, vol_NN ._.
+####_NN ,_, pp_NN ._.
+40-49_CD ,_, Springer-Verlag_NNP ,_, October_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- X_NN ._.
+Zhang_NNP ,_, J_NNP ._.
+Freschl_NNP ,_, and_CC J_NN ._.
+Schopf_NNP ,_, A_NNP Performance_NNP Study_NNP of_IN Monitoring_NN and_CC Information_NNP Services_NNP for_IN Distributed_VBN Systems_NNPS ,_, Proc_NNP ._.
+of_IN 12th_JJ IEEE_NNP International_NNP Symposium_NNP on_IN High_NNP Performance_NNP Distributed_VBD Computing_NNP -LRB-_-LRB- HPDC-12_NNP ##_CD -RRB-_-RRB- ,_, pp_NN ._.
+270-282_CD ,_, August_NNP ####_CD ._.
+804_CD

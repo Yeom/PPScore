@@ -1,0 +1,469 @@
+Implementing_VBG Commitment-Based_JJ Interactions_NNS Michael_NNP Winikoff_NNP School_NNP of_IN Computer_NNP Science_NNP and_CC IT_NNP RMIT_NNP University_NNP Melbourne_NNP ,_, Australia_NNP michael_NNP ._.
+winikoff_NN @_SYM rmit_FW ._.
+edu_NN ._.
+au_NN ABSTRACT_NN Although_IN agent_NN interaction_NN plays_VBZ a_DT vital_JJ role_NN in_IN MAS_NNP ,_, and_CC messagecentric_JJ approaches_NNS to_TO agent_NN interaction_NN have_VBP their_PRP$ drawbacks_NNS ,_, present_JJ agent-oriented_JJ programming_NN languages_NNS do_VBP not_RB provide_VB support_NN for_IN implementing_VBG agent_NN interaction_NN that_WDT is_VBZ flexible_JJ and_CC robust_JJ ._.
+Instead_RB ,_, messages_NNS are_VBP provided_VBN as_IN a_DT primitive_JJ building_NN block_NN ._.
+In_IN this_DT paper_NN we_PRP consider_VBP one_CD approach_NN for_IN modelling_VBG agent_NN interactions_NNS :_: the_DT commitment_NN machines_NNS framework_NN ._.
+This_DT framework_NN supports_VBZ modelling_VBG interactions_NNS at_IN a_DT higher_JJR level_NN -LRB-_-LRB- using_VBG social_JJ commitments_NNS -RRB-_-RRB- ,_, resulting_VBG in_IN more_JJR flexible_JJ interactions_NNS ._.
+We_PRP investigate_VBP how_WRB commitmentbased_JJ interactions_NNS can_MD be_VB implemented_VBN in_IN conventional_JJ agent-oriented_JJ programming_NN languages_NNS ._.
+The_DT contributions_NNS of_IN this_DT paper_NN are_VBP :_: a_DT mapping_NN from_IN a_DT commitment_NN machine_NN to_TO a_DT collection_NN of_IN BDI-style_JJ plans_NNS ;_: extensions_NNS to_TO the_DT semantics_NNS of_IN BDI_NNP programming_NN languages_NNS ;_: and_CC an_DT examination_NN of_IN two_CD issues_NNS that_WDT arise_VBP when_WRB distributing_VBG commitment_NN machines_NNS -LRB-_-LRB- turn_NN management_NN and_CC race_NN conditions_NNS -RRB-_-RRB- and_CC solutions_NNS to_TO these_DT problems_NNS ._.
+Categories_NNS and_CC Subject_NNP Descriptors_NNS I_PRP ._.
+#_# ._.
+##_NN -LSB-_-LRB- Artificial_NNP Intelligence_NNP -RSB-_-RRB- :_: Distributed_VBN Artificial_NNP IntelligenceMultiagent_NNP systems_NNS ;_: I_PRP ._.
+#_# ._.
+#_# -LSB-_-LRB- Artificial_NNP Intelligence_NNP -RSB-_-RRB- :_: Programming_NNP Languages_NNPS and_CC Software_NNP General_NNP Terms_NNS Design_NN 1_CD ._.
+INTRODUCTION_NNP Agents_NNPS are_VBP social_JJ ,_, and_CC agent_NN interaction_NN plays_VBZ a_DT vital_JJ role_NN in_IN multiagent_JJ systems_NNS ._.
+Consequently_RB ,_, design_NN and_CC implementation_NN of_IN agent_NN interaction_NN is_VBZ an_DT important_JJ research_NN topic_NN ._.
+The_DT standard_JJ approach_NN for_IN designing_VBG agent_NN interactions_NNS is_VBZ messagecentric_JJ :_: interactions_NNS are_VBP defined_VBN by_IN interaction_NN protocols_NNS that_WDT give_VBP the_DT permissible_JJ sequences_NNS of_IN messages_NNS ,_, specified_VBN using_VBG notations_NNS such_JJ as_IN finite_JJ state_NN machines_NNS ,_, Petri_JJ nets_NNS ,_, or_CC Agent_NNP UML_NNP ._.
+It_PRP has_VBZ been_VBN argued_VBN that_IN this_DT message-centric_JJ approach_NN to_TO interaction_NN design_NN is_VBZ not_RB a_DT good_JJ match_NN for_IN intelligent_JJ agents_NNS ._.
+Intelligent_JJ agents_NNS should_MD exhibit_VB the_DT ability_NN to_TO persist_VB in_IN achieving_VBG their_PRP$ goals_NNS in_IN the_DT face_NN of_IN failure_NN -LRB-_-LRB- robustness_NN -RRB-_-RRB- by_IN trying_VBG different_JJ approaches_NNS -LRB-_-LRB- flexibility_NN -RRB-_-RRB- ._.
+On_IN the_DT other_JJ hand_NN ,_, when_WRB following_VBG an_DT interaction_NN protocol_NN ,_, an_DT agent_NN has_VBZ limited_VBN flexibility_NN and_CC robustness_NN :_: the_DT ability_NN to_TO persistently_RB try_VB alternative_JJ means_NNS to_TO achieving_VBG the_DT interaction_NN ''_'' s_NNS aim_NN is_VBZ limited_VBN to_TO those_DT options_NNS that_IN the_DT protocol_NN ''_'' s_NNS designer_NN provided_VBN ,_, and_CC in_IN practice_NN ,_, message-centric_JJ design_NN processes_NNS do_VBP not_RB tend_VB to_TO lead_VB to_TO protocols_NNS that_WDT are_VBP flexible_JJ or_CC robust_JJ ._.
+Recognising_VBG these_DT limitations_NNS of_IN the_DT traditional_JJ approach_NN to_TO designing_VBG agent_NN interactions_NNS ,_, a_DT number_NN of_IN approaches_NNS have_VBP been_VBN proposed_VBN in_IN recent_JJ years_NNS that_WDT move_VBP away_RB from_IN message-centric_JJ interaction_NN protocols_NNS ,_, and_CC instead_RB consider_VB designing_VBG agent_NN interactions_NNS using_VBG higher-level_JJ concepts_NNS such_JJ as_IN social_JJ commitments_NNS -LSB-_-LRB- #_# ,_, ##_NN ,_, 18_CD -RSB-_-RRB- or_CC interaction_NN goals_NNS -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+There_EX has_VBZ also_RB been_VBN work_NN on_IN richer_JJR forms_NNS of_IN interaction_NN in_IN specific_JJ settings_NNS ,_, such_JJ as_IN teams_NNS of_IN cooperative_JJ agents_NNS -LSB-_-LRB- #_# ,_, ##_NN -RSB-_-RRB- ._.
+However_RB ,_, although_IN there_EX has_VBZ been_VBN work_NN on_IN designing_VBG flexible_JJ and_CC robust_JJ agent_NN interactions_NNS ,_, there_EX has_VBZ been_VBN virtually_RB no_DT work_NN on_IN providing_VBG programming_NN language_NN support_NN for_IN implementing_VBG such_JJ interactions_NNS ._.
+Current_JJ Agent_NNP Oriented_NNP Programming_NNP Languages_NNP -LRB-_-LRB- AOPLs_NNS -RRB-_-RRB- do_VBP not_RB provide_VB support_NN for_IN implementing_VBG flexible_JJ and_CC robust_JJ agent_NN interactions_NNS using_VBG higher-level_JJ concepts_NNS than_IN messages_NNS ._.
+Indeed_RB ,_, modern_JJ AOPLs_NNS -LSB-_-LRB- #_# -RSB-_-RRB- ,_, with_IN virtually_RB no_DT exceptions_NNS ,_, provide_VBP only_JJ simple_JJ message_NN sending_VBG as_IN the_DT basis_NN for_IN implementing_VBG agent_NN interaction_NN ._.
+This_DT paper_NN presents_VBZ what_WP ,_, to_TO the_DT best_JJS of_IN our_PRP$ knowledge_NN ,_, is_VBZ the_DT second_JJ AOPL_NN to_TO support_VB high-level_JJ ,_, flexible_JJ ,_, and_CC robust_JJ agent_NN interaction_NN implementation_NN ._.
+The_DT first_JJ such_JJ language_NN ,_, STAPLE_NN ,_, was_VBD proposed_VBN a_DT few_JJ years_NNS ago_IN -LSB-_-LRB- #_# -RSB-_-RRB- ,_, but_CC is_VBZ not_RB described_VBN in_IN detail_NN ,_, and_CC is_VBZ arguably_RB impractical_JJ for_IN use_NN by_IN non-specialists_NNS ,_, due_JJ to_TO its_PRP$ logical_JJ basis_NN and_CC heavy_JJ reliance_NN on_IN temporal_JJ and_CC modal_JJ logic_NN ._.
+This_DT paper_NN presents_VBZ a_DT scheme_NN for_IN extending_VBG BDI-like_JJ AOPLs_NNS to_TO support_VB direct_JJ implementation_NN of_IN agent_NN interactions_NNS that_WDT are_VBP designed_VBN using_VBG Yolum_NNP &_CC Singh_NNP ''_'' s_VBZ commitment_NN machine_NN -LRB-_-LRB- CM_NN -RRB-_-RRB- framework_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+In_IN the_DT remainder_NN of_IN this_DT paper_NN we_PRP briefly_RB review_VBP commitment_NN machines_NNS and_CC present_VB a_DT simple_JJ abstraction_NN of_IN BDI_NNP AOPLs_NNS which_WDT lies_VBZ in_IN the_DT common_JJ subset_NN of_IN languages_NNS such_JJ as_IN Jason_NNP ,_, 3APL_NN ,_, and_CC CAN_NNP ._.
+We_PRP then_RB present_VBP a_DT scheme_NN for_IN translating_VBG commitment_NN machines_NNS to_TO this_DT language_NN ,_, and_CC indicate_VBP how_WRB the_DT language_NN needs_VBZ to_TO be_VB extended_VBN to_TO support_VB this_DT ._.
+We_PRP then_RB extend_VBP our_PRP$ scheme_NN to_TO address_VB a_DT range_NN of_IN issues_NNS concerned_VBN with_IN distribution_NN ,_, including_VBG turn_NN tracking_NN -LSB-_-LRB- #_# -RSB-_-RRB- ,_, and_CC race_NN conditions_NNS ._.
+2_LS ._.
+BACKGROUND_NN 2_CD ._.
+#_# Commitment_NN Machines_NNS The_DT aim_NN of_IN the_DT commitment_NN machine_NN framework_NN is_VBZ to_TO allow_VB for_IN the_DT definition_NN of_IN interactions_NNS that_WDT are_VBP more_RBR flexible_JJ than_IN traditional_JJ message-centric_JJ approaches_NNS ._.
+A_DT Commitment_NN Machine_NN -LRB-_-LRB- CM_NN -RRB-_-RRB- -LSB-_-LRB- ##_CD -RSB-_-RRB- specifies_VBZ an_DT interaction_NN between_IN entities_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+agents_NNS ,_, services_NNS ,_, processes_NNS -RRB-_-RRB- in_IN terms_NNS of_IN actions_NNS that_WDT change_VBP the_DT interaction_NN state_NN ._.
+This_DT interact_NN state_NN consists_VBZ of_IN fluents_NNS -LRB-_-LRB- predicates_NNS that_WDT change_VBP value_NN over_IN time_NN -RRB-_-RRB- ,_, but_CC also_RB social_JJ commitments_NNS ,_, both_DT base-level_JJ and_CC conditional_JJ ._.
+A_DT base-level_JJ social_JJ commitment_NN is_VBZ an_DT undertaking_NN by_IN debtor_NN A_NN to_TO creditor_NN B_NN to_TO bring_VB about_RB condition_NN p_NN ,_, denoted_VBN C_NN -LRB-_-LRB- A_NN ,_, B_NN ,_, p_NN -RRB-_-RRB- ._.
+This_DT is_VBZ sometimes_RB abbreviated_VBN to_TO C_NN -LRB-_-LRB- p_NN -RRB-_-RRB- ,_, where_WRB it_PRP is_VBZ not_RB important_JJ to_TO specify_VB the_DT identities_NNS of_IN the_DT entities_NNS in_IN question_NN ._.
+For_IN example_NN ,_, a_DT commitment_NN by_IN customer_NN C_NN to_TO merchant_NN M_NN to_TO make_VB the_DT fluent_JJ paid_VBN true_JJ would_MD be_VB written_VBN as_IN C_NN -LRB-_-LRB- C_NN ,_, M_NN ,_, paid_VBN -RRB-_-RRB- ._.
+A_DT conditional_JJ social_JJ commitment_NN is_VBZ an_DT undertaking_NN by_IN debtor_NN A_NN to_TO creditor_NN B_NN that_WDT should_MD condition_NN q_VB become_VBN true_JJ ,_, A_DT will_MD then_RB commit_VB to_TO bringing_VBG about_IN condition_NN p_NN ._.
+This_DT is_VBZ denoted_VBN by_IN CC_NN -LRB-_-LRB- A_NN ,_, B_NN ,_, q_NN ,_, p_NN -RRB-_-RRB- ,_, and_CC ,_, where_WRB the_DT identity_NN of_IN the_DT entities_NNS involved_VBN is_VBZ unimportant_JJ -LRB-_-LRB- or_CC obvious_JJ -RRB-_-RRB- ,_, is_VBZ abbreviated_VBN to_TO CC_NN -LRB-_-LRB- q_NN p_NN -RRB-_-RRB- where_WRB the_DT arrow_NN is_VBZ a_DT reminder_NN of_IN the_DT causal_JJ link_NN between_IN q_JJ becoming_VBG true_JJ and_CC the_DT creation_NN of_IN a_DT commitment_NN to_TO make_VB p_NN true_JJ ._.
+For_IN example_NN ,_, a_DT commitment_NN to_TO make_VB the_DT fluent_JJ paid_VBN true_JJ once_RB goods_NNS have_VBP been_VBN received_VBN would_MD be_VB written_VBN CC_NN -LRB-_-LRB- goods_NNS paid_VBN -RRB-_-RRB- ._.
+The_DT semantics_NNS of_IN commitments_NNS -LRB-_-LRB- both_CC base-level_JJ and_CC conditional_JJ -RRB-_-RRB- is_VBZ defined_VBN with_IN rules_NNS that_WDT specify_VBP how_WRB commitments_NNS change_VBP over_IN time_NN ._.
+For_IN example_NN ,_, the_DT commitment_NN C_NN -LRB-_-LRB- p_NN -RRB-_-RRB- -LRB-_-LRB- or_CC CC_NN -LRB-_-LRB- q_NN p_NN -RRB-_-RRB- -RRB-_-RRB- is_VBZ discharged_VBN when_WRB p_NN becomes_VBZ true_JJ ;_: and_CC the_DT commitment_NN CC_NN -LRB-_-LRB- q_NN p_NN -RRB-_-RRB- is_VBZ replaced_VBN by_IN C_NN -LRB-_-LRB- p_NN -RRB-_-RRB- when_WRB q_JJ becomes_VBZ true_JJ ._.
+In_IN this_DT paper_NN we_PRP use_VBP the_DT more_JJR symmetric_JJ semantics_NNS proposed_VBN by_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- and_CC subsequently_RB reformalised_VBN by_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ._.
+In_IN brief_NN ,_, these_DT semantics_NNS deal_VBP with_IN a_DT number_NN of_IN more_JJR complex_JJ cases_NNS ,_, such_JJ as_IN where_WRB commitments_NNS are_VBP created_VBN when_WRB conditions_NNS already_RB hold_VBP :_: if_IN p_NN holds_VBZ when_WRB CC_NN -LRB-_-LRB- p_NN q_NN -RRB-_-RRB- is_VBZ meant_VBN to_TO be_VB created_VBN ,_, then_RB C_NN -LRB-_-LRB- q_NN -RRB-_-RRB- is_VBZ created_VBN instead_RB of_IN CC_NN -LRB-_-LRB- p_NN q_NN -RRB-_-RRB- ._.
+An_DT interaction_NN is_VBZ defined_VBN by_IN specifying_VBG the_DT entities_NNS involved_VBN ,_, the_DT possible_JJ contents_NNS of_IN the_DT interaction_NN state_NN -LRB-_-LRB- both_DT fluents_NNS and_CC commitments_NNS -RRB-_-RRB- ,_, and_CC -LRB-_-LRB- most_RBS importantly_RB -RRB-_-RRB- the_DT actions_NNS that_WDT each_DT entity_NN can_MD perform_VB along_IN with_IN the_DT preconditions_NNS and_CC effects_NNS of_IN each_DT action_NN ,_, specified_VBN as_IN add_VB and_CC delete_VB lists_NNS ._.
+A_DT commitment_NN machine_NN -LRB-_-LRB- CM_NN -RRB-_-RRB- defines_VBZ a_DT range_NN of_IN possible_JJ interactions_NNS that_WDT each_DT start_NN in_IN some_DT state1_NN ,_, and_CC perform_VB actions_NNS until_IN reaching_VBG a_DT final_JJ state_NN ._.
+A_DT final_JJ state_NN is_VBZ one_CD that_WDT has_VBZ no_DT base-level_JJ commitments_NNS ._.
+One_CD way_NN of_IN visualising_VBG the_DT interactions_NNS that_WDT are_VBP possible_JJ with_IN a_DT given_VBN commitment_NN machine_NN is_VBZ to_TO generate_VB the_DT finite_JJ state_NN machine_NN corresponding_VBG to_TO the_DT CM_NN ._.
+For_IN example_NN ,_, figure_NN #_# gives_VBZ the_DT FSM2_NN corresponding_VBG to_TO the_DT NetBill_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- commitment_NN machine_NN :_: a_DT simple_JJ CM_NN where_WRB a_DT customer_NN -LRB-_-LRB- C_NN -RRB-_-RRB- and_CC merchant_NN -LRB-_-LRB- M_NN -RRB-_-RRB- attempt_NN to_TO trade_VB using_VBG the_DT following_VBG actions3_NN :_: 1_CD Unlike_IN standard_JJ interaction_NN protocols_NNS ,_, or_CC finite_JJ state_NN machines_NNS ,_, there_EX is_VBZ no_DT designated_VBN initial_JJ state_NN for_IN the_DT interaction_NN ._.
+2_CD The_DT finite_JJ state_NN machine_NN is_VBZ software-generated_JJ :_: the_DT nodes_NNS and_CC connections_NNS were_VBD computed_VBN by_IN an_DT implementation_NN of_IN the_DT axioms_NNS -LRB-_-LRB- available_JJ from_IN http_NN :_: /_: /_: www_NN ._.
+winikoff_NN ._.
+net_JJ /_: CM_NN -RRB-_-RRB- and_CC were_VBD then_RB laid_VBN out_RP by_IN graphviz_NN -LRB-_-LRB- http_NN :_: /_: /_: www_NN ._.
+graphviz_NN ._.
+org_NN /_: -RRB-_-RRB- ._.
+3_CD We_PRP use_VBP the_DT notation_NN A_NN -LRB-_-LRB- X_NN -RRB-_-RRB- :_: P_NN E_NN to_TO indicate_VB that_IN action_NN A_NN is_VBZ performed_VBN by_IN entity_NN X_NN ,_, has_VBZ precondition_NN P_NN -LRB-_-LRB- with_IN :_: P_NN omitted_VBN if_IN empty_JJ -RRB-_-RRB- and_CC effect_NN E_NN ._.
+sendRequest_NN -LRB-_-LRB- C_NN -RRB-_-RRB- request_NN sendQuote_NN -LRB-_-LRB- M_NN -RRB-_-RRB- offer_VBP where_WRB offer_NN promiseGoods_NN promiseReceipt_NN and_CC promiseGoods_NN CC_NN -LRB-_-LRB- M_NN ,_, C_NN ,_, accept_VB ,_, goods_NNS -RRB-_-RRB- and_CC promiseReceipt_JJ CC_NN -LRB-_-LRB- M_NN ,_, C_NN ,_, pay_NN ,_, receipt_NN -RRB-_-RRB- sendAccept_NN -LRB-_-LRB- C_NN -RRB-_-RRB- accept_VBP where_WRB accept_VB CC_NN -LRB-_-LRB- C_NN ,_, M_NN ,_, goods_NNS ,_, pay_NN -RRB-_-RRB- sendGoods_NNS -LRB-_-LRB- M_NN -RRB-_-RRB- promiseReceipt_JJ goods_NNS where_WRB promiseReceipt_JJ CC_NN -LRB-_-LRB- M_NN ,_, C_NN ,_, pay_NN ,_, receipt_NN -RRB-_-RRB- sendEPO_NN -LRB-_-LRB- C_NN -RRB-_-RRB- :_: goods_NNS pay_VBP sendReceipt_NN -LRB-_-LRB- M_NN -RRB-_-RRB- :_: pay_VB receipt_NN ._.
+The_DT commitment_NN accept_VB is_VBZ the_DT customer_NN ''_'' s_NNS promise_VBP to_TO pay_VB once_RB goods_NNS have_VBP been_VBN sent_VBN ,_, promiseGoods_NNS is_VBZ the_DT merchant_NN ''_'' s_NNS promise_VBP to_TO send_VB the_DT goods_NNS once_IN the_DT customer_NN accepts_VBZ ,_, and_CC promiseReceipt_NN is_VBZ the_DT merchant_NN ''_'' s_NNS promise_VBP to_TO send_VB a_DT receipt_NN once_RB payment_NN has_VBZ been_VBN made_VBN ._.
+As_IN seen_VBN in_IN figure_NN #_# ,_, commitment_NN machines_NNS can_MD support_VB a_DT range_NN of_IN interaction_NN sequences_NNS ._.
+2_LS ._.
+#_# An_DT Abstract_JJ Agent_NNP ProgrammingLanguage_NNP Agent_NNP programming_NN languages_NNS in_IN the_DT BDI_NNP tradition_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+dMARS_NNP ,_, JAM_NNP ,_, PRS_NNP ,_, UM-PRS_NNP ,_, JACK_NNP ,_, AgentSpeak_NNP -LRB-_-LRB- L_NNP -RRB-_-RRB- ,_, Jason_NNP ,_, 3APL_NN ,_, CAN_NNP ,_, Jadex_NNP -RRB-_-RRB- define_VBP agent_NN behaviour_NN in_IN terms_NNS of_IN event-triggered_JJ plans_NNS ,_, where_WRB each_DT plan_NN specifies_VBZ what_WP it_PRP is_VBZ triggered_VBN by_IN ,_, under_IN what_WP situations_NNS it_PRP can_MD be_VB considered_VBN to_TO be_VB applicable_JJ -LRB-_-LRB- defined_VBN using_VBG a_DT so-called_JJ context_NN condition_NN -RRB-_-RRB- ,_, and_CC a_DT plan_NN body_NN :_: a_DT sequence_NN of_IN steps_NNS that_WDT can_MD include_VB posting_VBG events_NNS which_WDT in_IN turn_NN triggers_VBZ further_JJ plans_NNS ._.
+Given_VBN a_DT collection_NN of_IN plans_NNS and_CC an_DT event_NN e_SYM that_WDT has_VBZ been_VBN posted_VBN the_DT agent_NN first_RB collects_VBZ all_DT plans_NNS types_NNS that_WDT are_VBP triggered_VBN by_IN that_DT event_NN -LRB-_-LRB- the_DT relevant_JJ plans_NNS -RRB-_-RRB- ,_, then_RB evaluates_VBZ the_DT context_NN conditions_NNS of_IN these_DT plans_NNS to_TO obtain_VB a_DT set_NN of_IN applicable_JJ plan_NN instances_NNS ._.
+One_CD of_IN these_DT is_VBZ chosen_VBN and_CC is_VBZ executed_VBN ._.
+We_PRP now_RB briefly_RB define_VB the_DT formal_JJ syntax_NN and_CC semantics_NNS of_IN a_DT Simple_JJ Abstract_JJ -LRB-_-LRB- BDI_NN -RRB-_-RRB- Agent_NNP Programming_NNP Language_NN -LRB-_-LRB- SAAPL_NN -RRB-_-RRB- ._.
+This_DT language_NN is_VBZ intended_VBN to_TO be_VB an_DT abstraction_NN that_WDT is_VBZ in_IN the_DT common_JJ subset_NN of_IN such_JJ languages_NNS as_IN Jason_NNP -LSB-_-LRB- #_# ,_, Chapter_NNP #_# -RSB-_-RRB- ,_, 3APL_NN -LSB-_-LRB- #_# ,_, Chapter_NNP #_# -RSB-_-RRB- ,_, and_CC CAN_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Thus_RB ,_, it_PRP is_VBZ intentionally_RB incomplete_JJ in_IN some_DT areas_NNS ,_, for_IN instance_NN it_PRP doesn_VBD ''_'' t_NN commit_VB to_TO a_DT particular_JJ mechanism_NN for_IN dealing_VBG with_IN plan_NN failure_NN ,_, since_IN different_JJ mechanisms_NNS are_VBP used_VBN by_IN different_JJ AOPLs_NNS ._.
+An_DT agent_NN program_NN -LRB-_-LRB- denoted_VBN by_IN -RRB-_-RRB- consists_VBZ of_IN a_DT collection_NN of_IN plan_NN clauses_NNS of_IN the_DT form_NN e_SYM :_: C_NN P_NN where_WRB e_SYM is_VBZ an_DT event_NN ,_, C_NN is_VBZ a_DT context_NN condition_NN -LRB-_-LRB- a_DT logical_JJ formula_NN over_IN the_DT agent_NN ''_'' s_NNS beliefs_NNS -RRB-_-RRB- ,_, and_CC P_NN is_VBZ the_DT plan_NN body_NN ._.
+The_DT plan_NN body_NN is_VBZ built_VBN up_RP from_IN the_DT following_VBG constructs_NNS ._.
+We_PRP have_VBP the_DT empty_JJ step_NN which_WDT always_RB succeeds_VBZ and_CC does_VBZ nothing_NN ,_, operations_NNS to_TO add_VB -LRB-_-LRB- +_CC b_NN -RRB-_-RRB- and_CC delete_VB -LRB-_-LRB- b_NN -RRB-_-RRB- beliefs_NNS ,_, sending_VBG a_DT message_NN m_NN to_TO agent_NN N_NN -LRB-_-LRB- N_NN m_NN -RRB-_-RRB- ,_, and_CC posting_VBG an_DT event4_NN -LRB-_-LRB- e_LS -RRB-_-RRB- ._.
+These_DT can_MD be_VB sequenced_VBN -LRB-_-LRB- P_NN ;_: P_NN -RRB-_-RRB- ._.
+C_NN :_: :_: =_JJ b_NN |_NN C_NN C_NN |_NN C_NN C_NN |_NN C_NN |_CD x_NN ._.
+C_NN P_NN :_: :_: =_JJ |_NN +_CC b_NN |_CD b_NN |_NN e_SYM |_CD N_NN m_NN |_CD P_NN ;_: P_NN Formal_JJ semantics_NNS for_IN this_DT language_NN is_VBZ given_VBN in_IN figure_NN #_# ._.
+This_DT semantics_NNS is_VBZ based_VBN on_IN the_DT semantics_NNS for_IN AgentSpeak_NNP given_VBN by_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ,_, which_WDT in_IN turn_NN is_VBZ based_VBN on_IN the_DT semantics_NNS for_IN CAN_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+The_DT semantics_NNS is_VBZ in_IN the_DT style_NN of_IN Plotkin_NNP ''_'' s_VBZ Structural_NNP Operational_NNP Semantics_NNP ,_, and_CC assumes_VBZ that_IN operations_NNS exist_VBP that_IN check_NN whether_IN a_DT condition_NN 4_CD We_PRP use_VBP N_NN m_NN as_IN short_JJ hand_NN for_IN the_DT event_NN corresponding_VBG to_TO receiving_VBG message_NN m_NN from_IN agent_NN N_NN ._.
+874_CD The_DT Sixth_NNP Intl_NNP ._.
+Joint_NNP Conf_NNP ._.
+on_IN Autonomous_NNP Agents_NNPS and_CC Multi-Agent_NNP Systems_NNP -LRB-_-LRB- AAMAS_NNP ##_CD -RRB-_-RRB- Figure_NNP #_# :_: Finite_JJ State_NN Machine_NN for_IN NetBill_NNP -LRB-_-LRB- shaded_JJ =_JJ final_JJ states_NNS -RRB-_-RRB- follows_VBZ from_IN a_DT belief_NN set_NN ,_, that_WDT add_VBP a_DT belief_NN to_TO a_DT belief_NN set_NN ,_, and_CC that_IN delete_VBP a_DT belief_NN from_IN a_DT belief_NN set_NN ._.
+In_IN the_DT case_NN of_IN beliefs_NNS being_VBG a_DT set_NN of_IN ground_NN atoms_NNS these_DT operations_NNS are_VBP respectively_RB consequence_NN checking_NN -LRB-_-LRB- B_NN |_NN =_JJ C_NN -RRB-_-RRB- ,_, and_CC set_VBN addition_NN -LRB-_-LRB- B_NN -LCB-_-LRB- b_NN -RCB-_-RRB- -RRB-_-RRB- and_CC deletion_NN -LRB-_-LRB- B_NN \_CD -LCB-_-LRB- b_NN -RCB-_-RRB- -RRB-_-RRB- ._.
+More_RBR sophisticated_JJ belief_NN management_NN methods_NNS may_MD be_VB used_VBN ,_, but_CC are_VBP not_RB considered_VBN here_RB ._.
+We_PRP define_VBP a_DT basic_JJ configuration_NN S_NN =_JJ Q_NNP ,_, N_NNP ,_, B_NNP ,_, P_NN where_WRB Q_NNP is_VBZ a_DT -LRB-_-LRB- global_JJ -RRB-_-RRB- message_NN queue_NN -LRB-_-LRB- modelled_VBN as_IN a_DT sequence5_NN where_WRB messages_NNS are_VBP added_VBN at_IN one_CD end_NN and_CC removed_VBN from_IN the_DT other_JJ end_NN -RRB-_-RRB- ,_, N_NN is_VBZ the_DT name_NN of_IN the_DT agent_NN ,_, B_NN is_VBZ the_DT beliefs_NNS of_IN the_DT agent_NN and_CC P_NN is_VBZ the_DT plan_NN body_NN being_VBG executed_VBN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+the_DT intention_NN -RRB-_-RRB- ._.
+We_PRP also_RB define_VBP an_DT agent_NN configuration_NN ,_, where_WRB instead_RB of_IN a_DT single_JJ plan_NN body_NN P_NN there_EX is_VBZ a_DT set_NN of_IN plan_NN instances_NNS ,_, ._.
+Finally_RB ,_, a_DT complete_JJ MAS_NNP is_VBZ a_DT pair_NN Q_NNP ,_, As_IN of_IN a_DT global_JJ message_NN queue_NN Q_NNP and_CC a_DT set_NN of_IN agent_NN configurations_NNS -LRB-_-LRB- without_IN the_DT queue_NN ,_, Q_NNP -RRB-_-RRB- ._.
+The_DT global_JJ message_NN queue_NN is_VBZ a_DT sequence_NN of_IN triplets_NNS of_IN the_DT form_NN sender_NN :_: recipient_JJ :_: message_NN ._.
+A_DT transition_NN S0_NN S1_NN specifies_VBZ that_IN executing_VBG S0_NN a_DT single_JJ step_NN yields_NNS S1_NN ._.
+We_PRP annotate_VBP the_DT arrow_NN with_IN an_DT indication_NN of_IN whether_IN the_DT configuration_NN in_IN question_NN is_VBZ basic_JJ ,_, an_DT agent_NN configuration_NN ,_, or_CC a_DT MAS_NNP configuration_NN ._.
+The_DT transition_NN relation_NN is_VBZ defined_VBN using_VBG rules_NNS of_IN the_DT form_NN S_NN S_NN or_CC of_IN the_DT form_NN S_NN Sr_NNP S_NNP Sr_NNP ;_: the_DT latter_JJ are_VBP conditional_JJ with_IN the_DT top_NN -LRB-_-LRB- numerator_NN -RRB-_-RRB- being_VBG the_DT premise_NN and_CC the_DT bottom_NN -LRB-_-LRB- denominator_NN -RRB-_-RRB- being_VBG the_DT conclusion_NN ._.
+Note_VB that_IN there_EX is_VBZ non-determinism_NN in_IN SAAPL_NNP ,_, e_LS ._.
+g_NN ._.
+the_DT choice_NN of_IN plan_NN to_TO execute_VB from_IN a_DT set_NN of_IN applicable_JJ plans_NNS ._.
+This_DT is_VBZ resolved_VBN by_IN using_VBG selection_NN functions_NNS :_: SO_NNP selects_VBZ one_CD of_IN the_DT applicable_JJ plan_NN instances_NNS to_TO handle_VB a_DT given_VBN event_NN ,_, SI_NNP selects_VBZ which_WDT of_IN the_DT plan_NN instances_NNS that_WDT can_MD be_VB executed_VBN should_MD be_VB executed_VBN next_RB ,_, and_CC SA_NNP selects_VBZ which_WDT agent_NN should_MD execute_VB -LRB-_-LRB- a_DT step_NN -RRB-_-RRB- next_JJ ._.
+3_LS ._.
+IMPLEMENTING_VBG COMMITMENT-BASED_JJ INTERACTIONS_NNS In_IN this_DT section_NN we_PRP present_VBP a_DT mapping_NN from_IN a_DT commitment_NN machine_NN to_TO a_DT collection_NN of_IN SAAPL_NN programs_NNS -LRB-_-LRB- one_CD for_IN each_DT role_NN -RRB-_-RRB- ._.
+We_PRP begin_VBP by_IN considering_VBG the_DT simple_JJ case_NN of_IN two_CD interacting_VBG agents_NNS ,_, and_CC 5_CD The_DT +_CC operator_NN is_VBZ used_VBN to_TO denote_VB sequence_NN concatenation_NN ._.
+assume_VB that_IN the_DT agents_NNS take_VBP turns_VBZ to_TO act_VB ._.
+In_IN section_NN #_# we_PRP relax_VBP these_DT assumptions_NNS ._.
+Each_DT action_NN A_NN -LRB-_-LRB- X_NN -RRB-_-RRB- :_: P_NN E_NN is_VBZ mapped_VBN to_TO a_DT number_NN of_IN plans_NNS :_: there_EX is_VBZ a_DT plan_NN -LRB-_-LRB- for_IN agent_NN X_NN -RRB-_-RRB- with_IN context_NN condition_NN P_NN that_WDT performs_VBZ the_DT action_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+applies_VBZ the_DT effects_NNS E_NN to_TO the_DT agent_NN ''_'' s_NNS beliefs_NNS -RRB-_-RRB- and_CC sends_VBZ a_DT message_NN to_TO the_DT other_JJ agent_NN ,_, and_CC a_DT plan_NN -LRB-_-LRB- for_IN the_DT other_JJ agent_NN -RRB-_-RRB- that_WDT updates_NNS its_PRP$ state_NN when_WRB a_DT message_NN is_VBZ received_VBN from_IN X_NN ._.
+For_IN example_NN ,_, given_VBN the_DT action_NN sendAccept_NN -LRB-_-LRB- C_NN -RRB-_-RRB- accept_VBP we_PRP have_VBP the_DT following_VBG plans_NNS ,_, where_WRB each_DT plan_NN is_VBZ preceded_VBN by_IN M_NN :_: or_CC C_NN :_: to_TO indicate_VB which_WDT agent_NN that_WDT plan_VBP belongs_VBZ to_TO ._.
+Note_VB that_IN where_WRB the_DT identify_VB of_IN the_DT sender_NN -LRB-_-LRB- respectively_RB recipient_JJ -RRB-_-RRB- is_VBZ obvious_JJ ,_, i_FW ._.
+e_LS ._.
+the_DT other_JJ agent_NN ,_, we_PRP abbreviate_VBP N_NN m_NN to_TO m_NN -LRB-_-LRB- resp_NN ._.
+N_NN m_NN to_TO m_NN -RRB-_-RRB- ._.
+Turn_VB taking_VBG is_VBZ captured_VBN through_IN the_DT event_NN -LRB-_-LRB- short_JJ for_IN interact_NN -RRB-_-RRB- :_: the_DT agent_NN that_WDT is_VBZ active_JJ has_VBZ an_DT event_NN that_WDT is_VBZ being_VBG handled_VBN ._.
+Handling_VBG the_DT event_NN involves_VBZ sending_VBG a_DT message_NN to_TO the_DT other_JJ agent_NN ,_, and_CC then_RB doing_VBG nothing_NN until_IN a_DT response_NN is_VBZ received_VBN ._.
+C_NN :_: :_: true_JJ +_CC accept_VB ;_: sendAccept_NNP ._.
+M_NN :_: sendAccept_NN :_: true_JJ +_CC accept_VB ;_: ._.
+If_IN the_DT action_NN has_VBZ a_DT non-trivial_JJ precondition_NN then_RB there_EX are_VBP two_CD plans_NNS in_IN the_DT recipient_JJ :_: one_CD to_TO perform_VB the_DT action_NN -LRB-_-LRB- if_IN possible_JJ -RRB-_-RRB- ,_, and_CC another_DT to_TO report_VB an_DT error_NN if_IN the_DT action_NN ''_'' s_NNS precondition_NN doesn_NN ''_'' t_NN hold_NN -LRB-_-LRB- we_PRP return_VBP to_TO this_DT in_IN section_NN #_# -RRB-_-RRB- ._.
+For_IN example_NN ,_, the_DT action_NN sendReceipt_NN -LRB-_-LRB- M_NN -RRB-_-RRB- :_: pay_VB receipt_NN generates_VBZ the_DT following_VBG plans_NNS :_: M_NN :_: :_: pay_NN +_CC receipt_NN ;_: sendReceipt_NN ._.
+C_NN :_: sendReceipt_NN :_: pay_NN +_CC receipt_NN ;_: ._.
+C_NN :_: sendReceipt_NN :_: pay_NN ..._: report_NN error_NN ..._: ._.
+In_IN addition_NN to_TO these_DT plans_NNS ,_, we_PRP also_RB need_VBP plans_NNS to_TO start_VB and_CC finish_VB the_DT interaction_NN ._.
+An_DT interaction_NN can_MD be_VB completed_VBN whenever_WRB there_EX are_VBP no_DT base-level_JJ commitments_NNS ,_, so_IN both_CC agents_NNS have_VBP the_DT following_VBG plans_NNS :_: :_: p_NN ._.
+C_NN -LRB-_-LRB- p_NN -RRB-_-RRB- done_VBN ._.
+done_VBN :_: p_NN ._.
+C_NN -LRB-_-LRB- p_NN -RRB-_-RRB- ._.
+done_VBN :_: p_NN ._.
+C_NN -LRB-_-LRB- p_NN -RRB-_-RRB- ..._: report_NN error_NN ..._: ._.
+An_DT interaction_NN is_VBZ started_VBN by_IN setting_VBG up_RP an_DT agent_NN ''_'' s_NNS initial_JJ beliefs_NNS ,_, and_CC then_RB having_VBG it_PRP begin_VB to_TO interact_VB ._.
+Exactly_RB how_WRB to_TO do_VB this_DT depends_VBZ on_IN the_DT agent_NN platform_NN :_: e_LS ._.
+g_NN ._.
+the_DT agent_NN platform_NN in_IN question_NN may_MD offer_VB a_DT simple_JJ way_NN to_TO load_NN beliefs_NNS from_IN a_DT file_NN ._.
+A_DT generic_JJ approach_NN that_WDT is_VBZ a_DT little_JJ cumbersome_JJ ,_, but_CC is_VBZ portable_JJ ,_, is_VBZ to_TO send_VB each_DT of_IN the_DT agents_NNS involved_VBN in_IN the_DT interaction_NN a_DT sequence_NN of_IN init_NN messages_NNS ,_, each_DT The_DT Sixth_NNP Intl_NNP ._.
+Joint_NNP Conf_NNP ._.
+on_IN Autonomous_NNP Agents_NNPS and_CC Multi-Agent_NNP Systems_NNP -LRB-_-LRB- AAMAS_NNP ##_CD -RRB-_-RRB- ###_CD Q_NNP ,_, N_NNP ,_, B_NNP ,_, +_CC b_NN Basic_JJ Q_NNP ,_, N_NNP ,_, B_NN -LCB-_-LRB- b_NN -RCB-_-RRB- ,_, Q_NNP ,_, N_NNP ,_, B_NN ,_, b_NN Basic_JJ Q_NNP ,_, N_NNP ,_, B_NNP \_CD -LCB-_-LRB- b_NN -RCB-_-RRB- ,_, =_JJ -LCB-_-LRB- Pi_NN |_NN -LRB-_-LRB- ti_NN :_: ci_NN Pi_NN -RRB-_-RRB- ti_NN =_JJ e_SYM B_NN |_NN =_JJ ci_NN -RCB-_-RRB- Q_NNP ,_, N_NNP ,_, B_NNP ,_, e_LS Basic_JJ Q_NNP ,_, N_NNP ,_, B_NNP ,_, SO_NNP -LRB-_-LRB- -RRB-_-RRB- Q_NNP ,_, N_NNP ,_, B_NNP ,_, P1_NN Basic_JJ Q_NNP ,_, N_NNP ,_, B_NNP ,_, P_NN Q_NNP ,_, N_NNP ,_, B_NNP ,_, P1_NN ;_: P2_NN Basic_JJ Q_NNP ,_, N_NNP ,_, B_NNP ,_, P_NN ;_: P2_NN Q_NNP ,_, N_NNP ,_, B_NNP ,_, ;_: P_NN Basic_JJ Q_NNP ,_, N_NNP ,_, B_NNP ,_, P_NN Q_NNP ,_, N_NNP ,_, B_NNP ,_, NB_NN m_NN Basic_JJ Q_NNP +_CC N_NN :_: NB_NN :_: m_NN ,_, N_NN ,_, B_NN ,_, Q_NNP =_JJ NA_NNP :_: N_NN :_: m_NN +_CC Q_NNP Q_NNP ,_, N_NNP ,_, B_NNP ,_, Agent_NNP Q_NNP ,_, N_NNP ,_, B_NNP ,_, -LCB-_-LRB- NA_NNP m_NN -RCB-_-RRB- P_NN =_JJ SI_NN -LRB-_-LRB- -RRB-_-RRB- Q_NNP ,_, N_NNP ,_, B_NNP ,_, P_NN Basic_JJ Q_NNP ,_, N_NNP ,_, B_NNP ,_, P_NN Q_NNP ,_, N_NNP ,_, B_NNP ,_, Agent_NNP Q_NNP ,_, N_NNP ,_, B_NNP ,_, -LRB-_-LRB- \_CD -LCB-_-LRB- P_NN -RCB-_-RRB- -RRB-_-RRB- -LCB-_-LRB- P_NN -RCB-_-RRB- P_NN =_JJ SI_NN -LRB-_-LRB- -RRB-_-RRB- P_NN =_JJ Q_NNP ,_, N_NNP ,_, B_NNP ,_, Agent_NNP Q_NNP ,_, N_NNP ,_, B_NNP ,_, -LRB-_-LRB- \_CD -LCB-_-LRB- P_NN -RCB-_-RRB- -RRB-_-RRB- N_NN ,_, B_NN ,_, =_JJ SA_NNP -LRB-_-LRB- As_IN -RRB-_-RRB- Q_NNP ,_, N_NNP ,_, B_NNP ,_, Agent_NNP Q_NNP ,_, N_NNP ,_, B_NNP ,_, Q_NNP ,_, As_IN MAS_NNP Q_NNP ,_, -LRB-_-LRB- As_IN -LCB-_-LRB- N_NN ,_, B_NN ,_, -RCB-_-RRB- -RRB-_-RRB- \_CD -LCB-_-LRB- N_NN ,_, B_NN ,_, -RCB-_-RRB- Figure_NNP #_# :_: Operational_JJ Semantics_NNS for_IN SAAPL_NN containing_VBG a_DT belief_NN to_TO be_VB added_VBN ;_: and_CC then_RB send_VB one_CD of_IN the_DT agents_NNS a_DT start_NN message_NN which_WDT begins_VBZ the_DT interaction_NN ._.
+Both_DT agents_NNS thus_RB have_VBP the_DT following_VBG two_CD plans_NNS :_: init_NN -LRB-_-LRB- B_NN -RRB-_-RRB- :_: true_JJ +_CC B_NN ._.
+start_NN :_: true_JJ ._.
+Figure_NNP #_# gives_VBZ the_DT SAAPL_NN programs_NNS for_IN both_DT merchant_NN and_CC customer_NN that_WDT implement_VBP the_DT NetBill_NNP protocol_NN ._.
+For_IN conciseness_NN the_DT error_NN reporting_NN plans_NNS are_VBP omitted_VBN ._.
+We_PRP now_RB turn_VBP to_TO refining_VBG the_DT context_NN conditions_NNS ._.
+There_EX are_VBP three_CD refinements_NNS that_IN we_PRP consider_VBP ._.
+Firstly_RB ,_, we_PRP need_VBP to_TO prevent_VB performing_VBG actions_NNS that_WDT have_VBP no_DT effect_NN on_IN the_DT interaction_NN state_NN ._.
+Secondly_RB ,_, an_DT agent_NN may_MD want_VB to_TO specify_VB that_IN certain_JJ actions_NNS that_IN it_PRP is_VBZ able_JJ to_TO perform_VB should_MD not_RB be_VB performed_VBN unless_IN additional_JJ conditions_NNS hold_VBP ._.
+For_IN example_NN ,_, the_DT customer_NN may_MD not_RB want_VB to_TO agree_VB to_TO the_DT merchant_NN ''_'' s_NNS offer_VBP unless_IN the_DT goods_NNS have_VBP a_DT certain_JJ price_NN or_CC property_NN ._.
+Thirdly_RB ,_, the_DT context_NN conditions_NNS of_IN the_DT plans_NNS that_WDT terminate_VBP the_DT interaction_NN need_NN to_TO be_VB refined_VBN in_IN order_NN to_TO avoid_VB terminating_VBG the_DT interaction_NN prematurely_RB ._.
+For_IN each_DT plan_NN of_IN the_DT form_NN :_: P_NN +_CC E_NN ;_: m_NN we_PRP replace_VBP the_DT context_NN condition_NN P_NN with_IN the_DT enhanced_VBN condition_NN P_NN P_NN E_NN where_WRB P_NN is_VBZ any_DT additional_JJ conditions_NNS that_IN the_DT agent_NN wishes_VBZ to_TO impose_VB ,_, and_CC E_NN is_VBZ the_DT negation_NN of_IN the_DT effects_NNS of_IN the_DT action_NN ._.
+For_IN example_NN ,_, the_DT customer_NN ''_'' s_NNS payment_NN plan_NN becomes_VBZ -LRB-_-LRB- assuming_VBG no_DT additional_JJ conditions_NNS ,_, i_FW ._.
+e_LS ._.
+no_DT P_NN -RRB-_-RRB- :_: :_: goods_NNS pay_NN +_CC pay_NN ;_: sendEPO_NN ._.
+For_IN each_DT plan_NN of_IN the_DT form_NN m_NN :_: P_NN +_CC E_NN ;_: we_PRP could_MD add_VB E_NN to_TO the_DT precondition_NN ,_, but_CC this_DT is_VBZ redundant_JJ ,_, since_IN it_PRP is_VBZ already_RB checked_VBN by_IN the_DT performer_NN of_IN the_DT action_NN ,_, and_CC if_IN the_DT action_NN has_VBZ no_DT effect_NN then_RB Customer_NN ''_'' s_NNS plans_NNS :_: :_: true_JJ +_CC request_NN ;_: sendRequest_NN ._.
+:_: true_JJ +_CC accept_VB ;_: sendAccept_NNP ._.
+:_: goods_NNS +_CC pay_NN ;_: sendEPO_NN ._.
+sendQuote_NNP :_: true_JJ +_CC promiseGoods_NNS ;_: +_CC promiseReceipt_NN ;_: ._.
+sendGoods_NNS :_: true_JJ +_CC promiseReceipt_NN ;_: +_CC goods_NNS ;_: ._.
+sendReceipt_NNP :_: pay_NN +_CC receipt_NN ;_: ._.
+Merchant_NN ''_'' s_NNS plans_NNS :_: :_: true_JJ +_CC promiseGoods_NNS ;_: +_CC promiseReceipt_NN ;_: sendQuote_NN ._.
+:_: true_JJ +_CC promiseReceipt_NN ;_: +_CC goods_NNS ;_: sendGoods_NNS ._.
+:_: pay_NN +_CC receipt_NN ;_: sendReceipt_NN ._.
+sendRequest_NNP :_: true_JJ +_CC request_NN ;_: ._.
+sendAccept_NNP :_: true_JJ +_CC accept_VB ;_: ._.
+sendEPO_NNP :_: goods_NNS +_CC pay_NN ;_: ._.
+Shared_VBN plans_NNS -LRB-_-LRB- i_FW ._.
+e_LS ._.
+plans_NNS of_IN both_DT agents_NNS -RRB-_-RRB- :_: :_: p_NN ._.
+C_NN -LRB-_-LRB- p_NN -RRB-_-RRB- done_VBN ._.
+done_VBN :_: p_NN ._.
+C_NN -LRB-_-LRB- p_NN -RRB-_-RRB- ._.
+init_NN -LRB-_-LRB- B_NN -RRB-_-RRB- :_: true_JJ +_CC B_NN ._.
+start_NN :_: true_JJ ._.
+Where_WRB accept_VBP CC_NN -LRB-_-LRB- goods_NNS pay_VBP -RRB-_-RRB- promiseGoods_NNPS CC_NN -LRB-_-LRB- accept_VB goods_NNS -RRB-_-RRB- promiseReceipt_JJ CC_NN -LRB-_-LRB- pay_NN receipt_NN -RRB-_-RRB- offer_VBP promiseGoods_NNS promiseReceipt_JJ Figure_NN #_# :_: SAAPL_NNP Implementation_NNP of_IN NetBill_NNP the_DT sender_NN won_VBD ''_'' t_NN perform_VB it_PRP and_CC send_VB the_DT message_NN -LRB-_-LRB- see_VB also_RB the_DT discussion_NN in_IN section_NN #_# -RRB-_-RRB- ._.
+When_WRB specifying_VBG additional_JJ conditions_NNS -LRB-_-LRB- P_NN -RRB-_-RRB- ,_, some_DT care_NN needs_VBZ to_TO be_VB taken_VBN to_TO avoid_VB situations_NNS where_WRB progress_NN can_MD not_RB be_VB made_VBN because_IN the_DT only_JJ action_NN -LRB-_-LRB- s_NNS -RRB-_-RRB- possible_JJ are_VBP prevented_VBN by_IN additional_JJ conditions_NNS ._.
+One_CD way_NN of_IN indicating_VBG preference_NN between_IN actions_NNS -LRB-_-LRB- in_IN many_JJ agent_NN platforms_NNS -RRB-_-RRB- is_VBZ to_TO reorder_VB the_DT agent_NN ''_'' s_NNS plans_NNS ._.
+This_DT is_VBZ clearly_RB safe_JJ ,_, since_IN actions_NNS are_VBP not_RB prevented_VBN ,_, just_RB considered_VBN in_IN a_DT different_JJ order_NN ._.
+The_DT third_JJ refinement_NN of_IN context_NN conditions_NNS concerns_VBZ the_DT plans_NNS that_WDT terminate_VBP the_DT interaction_NN ._.
+In_IN the_DT Commitment_NNP Machine_NN framework_NN any_DT state_NN that_WDT has_VBZ no_DT base-level_JJ commitment_NN is_VBZ final_JJ ,_, in_IN that_IN the_DT interaction_NN may_MD end_VB there_RB -LRB-_-LRB- or_CC it_PRP may_MD continue_VB -RRB-_-RRB- ._.
+However_RB ,_, only_RB some_DT of_IN these_DT final_JJ states_NNS are_VBP desirable_JJ final_JJ states_NNS ._.
+Which_WDT final_JJ states_NNS are_VBP considered_VBN to_TO be_VB desirable_JJ depends_VBZ on_IN the_DT domain_NN and_CC the_DT desired_VBN interaction_NN outcome_NN ._.
+In_IN the_DT NetBill_NNP example_NN ,_, the_DT desirable_JJ final_JJ state_NN is_VBZ one_CD where_WRB the_DT goods_NNS have_VBP been_VBN sent_VBN and_CC paid_VBN for_IN ,_, and_CC a_DT receipt_NN issued_VBN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+goods_NNS pay_VBP receipt_NN -RRB-_-RRB- ._.
+In_IN order_NN to_TO prevent_VB an_DT agent_NN from_IN terminating_VBG the_DT interaction_NN too_RB early_RB we_PRP add_VBP this_DT as_IN a_DT precondition_NN to_TO the_DT termination_NN plan_NN :_: :_: goods_NNS pay_VBP receipt_NN p_NN ._.
+C_NN -LRB-_-LRB- p_NN -RRB-_-RRB- done_VBN ._.
+Figure_NNP #_# shows_VBZ the_DT plans_NNS that_WDT are_VBP changed_VBN from_IN figure_NN #_# ._.
+In_IN order_NN to_TO support_VB the_DT realisation_NN of_IN CMs_NNS ,_, we_PRP need_VBP to_TO change_VB SAAPL_NNP in_IN a_DT number_NN of_IN ways_NNS ._.
+These_DT changes_NNS ,_, which_WDT are_VBP discussed_VBN below_IN ,_, can_MD be_VB applied_VBN to_TO existing_VBG BDI_NNP languages_NNS to_TO make_VB them_PRP commitment_NN machine_NN supportive_JJ ._.
+We_PRP present_VBP the_DT three_CD changes_NNS ,_, explain_VBP what_WP they_PRP involve_VBP ,_, and_CC for_IN each_DT change_NN explain_VB how_WRB the_DT change_NN was_VBD implemented_VBN using_VBG the_DT 3APL_NN agent_NN oriented_VBN programming_NN language_NN ._.
+The_DT three_CD changes_NNS are_VBP :_: 1_CD ._.
+extending_VBG the_DT beliefs_NNS of_IN the_DT agent_NN so_IN that_IN they_PRP can_MD contain_VB commitments_NNS ;_: 876_CD The_DT Sixth_NNP Intl_NNP ._.
+Joint_NNP Conf_NNP ._.
+on_IN Autonomous_NNP Agents_NNPS and_CC Multi-Agent_NNP Systems_NNP -LRB-_-LRB- AAMAS_NNP ##_CD -RRB-_-RRB- Customer_NN ''_'' s_NNS plans_NNS :_: :_: request_NN +_CC request_NN ;_: sendRequest_NN ._.
+:_: accept_VB +_CC accept_VB ;_: sendAccept_NNP ._.
+:_: goods_NNS pay_NN +_CC pay_NN ;_: sendEPO_NN ._.
+Merchant_NN ''_'' s_NNS plans_NNS :_: :_: offer_NN +_CC promiseGoods_NNS ;_: +_CC promiseReceipt_NN ;_: sendQuote_NN ._.
+:_: -LRB-_-LRB- promiseReceipt_JJ goods_NNS -RRB-_-RRB- +_CC promiseReceipt_NN ;_: +_CC goods_NNS ;_: sendGoods_NNS ._.
+:_: pay_NN receipt_NN +_CC receipt_NN ;_: sendReceipt_NN ._.
+Where_WRB accept_VBP CC_NN -LRB-_-LRB- goods_NNS pay_VBP -RRB-_-RRB- promiseGoods_NNPS CC_NN -LRB-_-LRB- accept_VB goods_NNS -RRB-_-RRB- promiseReceipt_JJ CC_NN -LRB-_-LRB- pay_NN receipt_NN -RRB-_-RRB- offer_VBP promiseGoods_NNS promiseReceipt_JJ Figure_NN #_# :_: SAAPL_NNP Implementation_NNP of_IN NetBill_NNP with_IN refined_JJ context_NN conditions_NNS -LRB-_-LRB- changed_VBN plans_NNS only_RB -RRB-_-RRB- 2_CD ._.
+changing_VBG the_DT definition_NN of_IN |_NN =_JJ to_TO encompass_VB implied_JJ commitments_NNS ;_: and_CC 3_CD ._.
+whenever_WRB a_DT belief_NN is_VBZ added_VBN ,_, updating_VBG existing_VBG commitments_NNS ,_, according_VBG to_TO the_DT rules_NNS of_IN commitment_NN dynamics_NNS ._.
+Extending_VBG the_DT notion_NN of_IN beliefs_NNS to_TO encompass_VB commitments_NNS in_IN fact_NN requires_VBZ no_DT change_NN in_IN agent_NN platforms_NNS that_WDT are_VBP prolog-like_JJ and_CC support_NN terms_NNS as_IN beliefs_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+Jason_NNP ,_, 3APL_NNP ,_, CAN_NNP -RRB-_-RRB- ._.
+However_RB ,_, other_JJ agent_NN platforms_NNS do_VBP require_VB an_DT extension_NN ._.
+For_IN example_NN ,_, JACK_NNP ,_, which_WDT is_VBZ an_DT extension_NN of_IN Java_NNP ,_, would_MD require_VB changes_NNS to_TO support_VB commitments_NNS that_WDT can_MD be_VB nested_JJ ._.
+In_IN the_DT case_NN of_IN 3APL_NN no_DT change_NN is_VBZ needed_VBN to_TO support_VB this_DT ._.
+Whenever_NNP a_DT context_NN condition_NN contains_VBZ commitments_NNS ,_, determining_VBG whether_IN the_DT context_NN condition_NN is_VBZ implied_VBN by_IN the_DT agent_NN ''_'' s_NNS beliefs_NNS -LRB-_-LRB- B_NN |_NN =_JJ C_NN -RRB-_-RRB- needs_VBZ to_TO take_VB into_IN account_NN the_DT notion_NN of_IN implied_VBN commitments_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+In_IN brief_NN ,_, a_DT commitment_NN can_MD be_VB considered_VBN to_TO follow_VB from_IN a_DT belief_NN set_NN B_NN if_IN the_DT commitment_NN is_VBZ in_IN the_DT belief_NN set_NN -LRB-_-LRB- C_NN B_NN -RRB-_-RRB- ,_, but_CC also_RB under_IN other_JJ conditions_NNS ._.
+For_IN example_NN ,_, a_DT commitment_NN to_TO pay_VB C_NN -LRB-_-LRB- pay_NN -RRB-_-RRB- can_MD be_VB considered_VBN to_TO be_VB implied_VBN by_IN a_DT belief_NN set_NN containing_VBG pay_NN because_IN the_DT commitment_NN may_MD have_VB held_VBN and_CC been_VBN discharged_VBN when_WRB pay_NN was_VBD made_VBN true_JJ ._.
+Similar_JJ rules_NNS apply_VBP for_IN conditional_JJ commitments_NNS ._.
+These_DT rules_NNS ,_, which_WDT were_VBD introduced_VBN in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- were_VBD subsequently_RB re-formalised_JJ in_IN a_DT simpler_JJR form_NN by_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- resulting_VBG in_IN the_DT four_CD inference_NN rules_NNS in_IN the_DT bottom_JJ part_NN of_IN figure_NN #_# ._.
+The_DT change_NN that_WDT needs_VBZ to_TO be_VB made_VBN to_TO SAAPL_NNP to_TO support_VB commitment_NN machine_NN implementations_NNS is_VBZ to_TO extend_VB the_DT definition_NN of_IN |_NN =_JJ to_TO include_VB these_DT four_CD rules_NNS ._.
+For_IN 3APL_NN this_DT was_VBD realised_VBN by_IN having_VBG each_DT agent_NN include_VBP the_DT following_VBG Prolog_NNP clauses_NNS :_: holds_VBZ -LRB-_-LRB- X_NN -RRB-_-RRB- :_: -_: clause_NN -LRB-_-LRB- X_NN ,_, true_JJ -RRB-_-RRB- ._.
+holds_VBZ -LRB-_-LRB- c_NN -LRB-_-LRB- P_NN -RRB-_-RRB- -RRB-_-RRB- :_: -_: holds_VBZ -LRB-_-LRB- P_NN -RRB-_-RRB- ._.
+holds_VBZ -LRB-_-LRB- c_NN -LRB-_-LRB- P_NN -RRB-_-RRB- -RRB-_-RRB- :_: -_: clause_NN -LRB-_-LRB- cc_NN -LRB-_-LRB- Q_NNP ,_, P_NN -RRB-_-RRB- ,_, true_JJ -RRB-_-RRB- ,_, holds_VBZ -LRB-_-LRB- Q_NNP -RRB-_-RRB- ._.
+holds_VBZ -LRB-_-LRB- cc_NN -LRB-_-LRB- __CD ,_, Q_NNP -RRB-_-RRB- -RRB-_-RRB- :_: -_: holds_VBZ -LRB-_-LRB- Q_NNP -RRB-_-RRB- ._.
+holds_VBZ -LRB-_-LRB- cc_NN -LRB-_-LRB- __CD ,_, Q_NNP -RRB-_-RRB- -RRB-_-RRB- :_: -_: holds_VBZ -LRB-_-LRB- c_NN -LRB-_-LRB- Q_NNP -RRB-_-RRB- -RRB-_-RRB- ._.
+The_DT first_JJ clause_NN simply_RB says_VBZ that_IN anything_NN holds_VBZ if_IN it_PRP is_VBZ in_IN agent_NN ''_'' s_NNS beliefs_NNS -LRB-_-LRB- clause_NN -LRB-_-LRB- X_NN ,_, true_JJ -RRB-_-RRB- is_VBZ true_JJ if_IN X_NN is_VBZ a_DT fact_NN -RRB-_-RRB- ._.
+The_DT remaining_VBG four_CD clauses_NNS correspond_VBP respectively_RB to_TO the_DT inference_NN rules_NNS C1_NN ,_, C2_NN ,_, CC1_NN and_CC CC2_NN ._.
+To_TO use_VB these_DT rules_NNS we_PRP then_RB modify_VB context_NN conditions_NNS in_IN our_PRP$ program_NN so_IN that_IN instead_RB of_IN writing_VBG ,_, for_IN example_NN ,_, cc_NN -LRB-_-LRB- m_NN ,_, c_NN ,_, pay_NN ,_, receipt_NN -RRB-_-RRB- we_PRP write_VBP holds_VBZ -LRB-_-LRB- cc_NN -LRB-_-LRB- m_NN ,_, c_NN ,_, pay_NN ,_, receipt_NN -RRB-_-RRB- -RRB-_-RRB- ._.
+B_NN =_JJ norm_NN -LRB-_-LRB- B_NN -LCB-_-LRB- b_NN -RCB-_-RRB- -RRB-_-RRB- Q_NNP ,_, N_NNP ,_, B_NNP ,_, +_CC b_NN Q_NNP ,_, N_NNP ,_, B_NNP ,_, function_NN norm_NN -LRB-_-LRB- B_NN -RRB-_-RRB- B_NN B_NN for_IN each_DT b_NN B_NN do_VBP if_IN b_NN =_JJ C_NN -LRB-_-LRB- p_NN -RRB-_-RRB- B_NN |_NN =_JJ p_NN then_RB B_NN B_NN \_CD -LCB-_-LRB- b_NN -RCB-_-RRB- elseif_FW b_NN =_JJ CC_NN -LRB-_-LRB- p_NN q_NN -RRB-_-RRB- then_RB if_IN B_NN |_NN =_JJ q_NN then_RB B_NN B_NN \_CD -LCB-_-LRB- b_NN -RCB-_-RRB- elseif_NN B_NN |_NN =_JJ p_NN then_RB B_NN -LRB-_-LRB- B_NN \_CD -LCB-_-LRB- b_NN -RCB-_-RRB- -RRB-_-RRB- -LCB-_-LRB- C_NN -LRB-_-LRB- q_NN -RRB-_-RRB- -RCB-_-RRB- elseif_NN B_NN |_NN =_JJ C_NN -LRB-_-LRB- q_NN -RRB-_-RRB- then_RB B_NN B_NN \_CD -LCB-_-LRB- b_NN -RCB-_-RRB- endif_NN endif_NN endfor_NN return_NN B_NN end_NN function_NN B_NN |_NN =_JJ P_NN B_NN |_NN =_JJ C_NN -LRB-_-LRB- P_NN -RRB-_-RRB- C1_NN CC_NN -LRB-_-LRB- Q_NNP P_NN -RRB-_-RRB- B_NN B_NN |_NN =_JJ Q_NNP B_NN |_NN =_JJ P_NN C2_NN B_NN |_NN =_JJ CC_NN -LRB-_-LRB- P_NN Q_NNP -RRB-_-RRB- B_NN |_NN =_JJ Q_NNP CC1_NN B_NN |_NN =_JJ C_NN -LRB-_-LRB- Q_NNP -RRB-_-RRB- B_NN |_NN =_JJ CC_NN -LRB-_-LRB- P_NN Q_NNP -RRB-_-RRB- CC2_NN Figure_NN #_# :_: New_NNP Operational_NNP Semantics_NNP The_NNP final_JJ change_NN is_VBZ to_TO update_VB commitments_NNS when_WRB a_DT belief_NN is_VBZ added_VBN ._.
+Formally_RB ,_, this_DT is_VBZ done_VBN by_IN modifying_VBG the_DT semantic_JJ rule_NN for_IN belief_NN addition_NN so_IN that_IN it_PRP applies_VBZ an_DT algorithm_NN to_TO update_VB commitments_NNS ._.
+The_DT modified_VBN rule_NN and_CC algorithm_NN -LRB-_-LRB- which_WDT mirrors_VBZ the_DT definition_NN of_IN norm_NN in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- -RRB-_-RRB- can_MD be_VB found_VBN in_IN the_DT top_JJ part_NN of_IN figure_NN #_# ._.
+For_IN 3APL_NN this_DT final_JJ change_NN was_VBD achieved_VBN by_IN manually_RB inserting_VBG update_VB -LRB-_-LRB- -RRB-_-RRB- after_IN updating_VBG beliefs_NNS ,_, and_CC defining_VBG the_DT following_VBG rules_NNS for_IN update_VBP -LRB-_-LRB- -RRB-_-RRB- :_: update_VB -LRB-_-LRB- -RRB-_-RRB- <_JJR -_: c_NN -LRB-_-LRB- P_NN -RRB-_-RRB- AND_CC holds_VBZ -LRB-_-LRB- P_NN -RRB-_-RRB- |_CD -LCB-_-LRB- Deletec_NN -LRB-_-LRB- P_NN -RRB-_-RRB- ;_: update_VB -LRB-_-LRB- -RRB-_-RRB- -RCB-_-RRB- ,_, update_VBP -LRB-_-LRB- -RRB-_-RRB- <_JJR -_: cc_NN -LRB-_-LRB- P_NN ,_, Q_NNP -RRB-_-RRB- AND_CC holds_VBZ -LRB-_-LRB- Q_NNP -RRB-_-RRB- |_CD -LCB-_-LRB- Deletecc_NN -LRB-_-LRB- P_NN ,_, Q_NNP -RRB-_-RRB- ;_: update_VB -LRB-_-LRB- -RRB-_-RRB- -RCB-_-RRB- ,_, update_VBP -LRB-_-LRB- -RRB-_-RRB- <_JJR -_: cc_NN -LRB-_-LRB- P_NN ,_, Q_NNP -RRB-_-RRB- AND_CC holds_VBZ -LRB-_-LRB- P_NN -RRB-_-RRB- |_CD -LCB-_-LRB- Deletecc_NN -LRB-_-LRB- P_NN ,_, Q_NNP -RRB-_-RRB- ;_: Addc_NN -LRB-_-LRB- Q_NNP -RRB-_-RRB- ;_: update_VB -LRB-_-LRB- -RRB-_-RRB- -RCB-_-RRB- ,_, update_VBP -LRB-_-LRB- -RRB-_-RRB- <_JJR -_: cc_NN -LRB-_-LRB- P_NN ,_, Q_NNP -RRB-_-RRB- AND_CC holds_VBZ -LRB-_-LRB- c_NN -LRB-_-LRB- Q_NNP -RRB-_-RRB- -RRB-_-RRB- |_CD -LCB-_-LRB- Deletecc_NN -LRB-_-LRB- P_NN ,_, Q_NNP -RRB-_-RRB- ;_: update_VB -LRB-_-LRB- -RRB-_-RRB- -RCB-_-RRB- ,_, update_VBP -LRB-_-LRB- -RRB-_-RRB- <_JJR -_: true_JJ |_RB Skip_VB where_WRB Deletec_NNP and_CC Deletecc_NNP delete_VBP respectively_RB a_DT base-level_JJ and_CC conditional_JJ commitment_NN ,_, and_CC Addc_NNP adds_VBZ a_DT base-level_JJ commitment_NN ._.
+One_CD aspect_NN that_WDT doesn_VBP ''_'' t_NN require_VBP a_DT change_NN is_VBZ linking_VBG commitments_NNS and_CC actions_NNS ._.
+This_DT is_VBZ because_IN commitments_NNS don_VBP ''_'' t_NN trigger_NN actions_NNS directly_RB :_: they_PRP may_MD trigger_VB actions_NNS indirectly_RB ,_, but_CC in_IN general_JJ their_PRP$ effect_NN is_VBZ to_TO prevent_VB completion_NN of_IN an_DT interaction_NN while_IN there_EX are_VBP outstanding_JJ -LRB-_-LRB- base_JJ level_NN -RRB-_-RRB- commitments_NNS ._.
+Figure_NNP #_# shows_VBZ the_DT message_NN sequences_NNS from_IN a_DT number_NN of_IN runs_NNS of_IN a_DT 3APL_NN implementation_NN of_IN the_DT NetBill_NNP commitment_NN machine6_NN ._.
+In_IN order_NN to_TO illustrate_VB the_DT different_JJ possible_JJ interactions_NNS the_DT code_NN was_VBD modified_VBN so_RB that_IN each_DT agent_NN selected_VBN randomly_RB from_IN the_DT actions_NNS that_IN it_PRP could_MD perform_VB ,_, and_CC a_DT number_NN of_IN runs_NNS were_VBD made_VBN with_IN the_DT customer_NN as_IN the_DT initiator_NN ,_, and_CC then_RB with_IN the_DT merchant_NN as_IN the_DT initiator_NN ._.
+There_EX are_VBP other_JJ possible_JJ sequences_NNS of_IN messages_NNS ,_, not_RB shown_VBN ,_, 6_CD Source_NN code_NN is_VBZ available_JJ from_IN http_NN :_: /_: /_: www_NN ._.
+winikoff_NN ._.
+net_JJ /_: CM_NN The_DT Sixth_NNP Intl_NNP ._.
+Joint_NNP Conf_NNP ._.
+on_IN Autonomous_NNP Agents_NNPS and_CC Multi-Agent_NNP Systems_NNP -LRB-_-LRB- AAMAS_NNP ##_CD -RRB-_-RRB- ###_CD Figure_NNP #_# :_: Sample_VB runs_NNS from_IN 3APL_NN implementation_NN -LRB-_-LRB- alternating_VBG turns_NNS -RRB-_-RRB- including_VBG the_DT obvious_JJ one_CD :_: request_NN ,_, quote_NN ,_, accept_VB ,_, goods_NNS ,_, payment_NN ,_, receipt_NN ,_, and_CC then_RB done_VBN ._.
+One_CD minor_JJ difference_NN between_IN the_DT 3APL_NN implementation_NN and_CC SAAPL_NN concerns_NNS the_DT semantics_NNS of_IN messages_NNS ._.
+In_IN the_DT semantics_NNS of_IN SAAPL_NN -LRB-_-LRB- and_CC of_IN most_JJS AOPLs_NNS -RRB-_-RRB- ,_, receiving_VBG a_DT message_NN is_VBZ treated_VBN as_IN an_DT event_NN ._.
+However_RB ,_, in_IN 3APL_NN ,_, receiving_VBG a_DT message_NN is_VBZ modelled_VBN as_IN the_DT addition_NN to_TO the_DT agent_NN ''_'' s_NNS beliefs_NNS of_IN a_DT fact_NN indicating_VBG that_IN the_DT message_NN was_VBD received_VBN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+Thus_RB in_IN the_DT 3APL_NN implementation_NN we_PRP have_VBP PG_NN rules_NNS that_WDT are_VBP triggered_VBN by_IN these_DT beliefs_NNS ,_, rather_RB than_IN by_IN any_DT event_NN ._.
+One_CD issue_NN with_IN this_DT approach_NN is_VBZ that_IN the_DT belief_NN remains_VBZ there_RB ,_, so_IN we_PRP need_VBP to_TO ensure_VB that_IN the_DT belief_NN in_IN question_NN is_VBZ either_CC deleted_VBN once_RB handled_VBN ,_, or_CC that_IN we_PRP modify_VBP preconditions_NNS of_IN plans_NNS to_TO avoid_VB handling_VBG it_PRP more_JJR than_IN once_RB ._.
+In_IN our_PRP$ implementation_NN we_PRP delete_VBP these_DT received_VBN beliefs_NNS when_WRB they_PRP are_VBP handled_VBN ,_, to_TO avoid_VB duplicate_VB handling_NN of_IN messages_NNS ._.
+4_LS ._.
+BEYOND_IN TWO_CD PARTICIPANTS_NNS Generalising_VBG to_TO more_JJR than_IN two_CD interaction_NN participants_NNS requires_VBZ revisiting_VBG how_WRB turn_NN management_NN is_VBZ done_VBN ,_, since_IN it_PRP is_VBZ no_RB longer_RB possible_JJ to_TO assume_VB alternating_VBG turns_NNS -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+In_IN fact_NN ,_, perhaps_RB surprisingly_RB ,_, even_RB in_IN the_DT two_CD participant_NN setting_NN ,_, an_DT alternating_VBG turn_NN setup_NN is_VBZ an_DT unreasonable_JJ assumption_NN !_.
+For_IN example_NN ,_, consider_VB the_DT path_NN -LRB-_-LRB- in_IN figure_NN #_# -RRB-_-RRB- from_IN state_NN #_# to_TO ##_CD -LRB-_-LRB- sendGoods_NNS -RRB-_-RRB- then_RB to_TO state_NN ##_NN -LRB-_-LRB- sendAccept_NN -RRB-_-RRB- ._.
+The_DT result_NN ,_, in_IN an_DT alternating_VBG turn_NN setup_NN ,_, is_VBZ a_DT dead-end_JJ :_: there_EX is_VBZ only_RB a_DT single_JJ possible_JJ action_NN in_IN state_NN 12_CD ,_, namely_RB sendEPO_NN ,_, but_CC this_DT action_NN is_VBZ done_VBN by_IN the_DT customer_NN ,_, and_CC it_PRP is_VBZ the_DT merchant_NN ''_'' s_NNS turn_VBP to_TO act_VB !_.
+Figure_NNP #_# shows_VBZ the_DT FSM_NNP for_IN NetBill_NNP with_IN alternating_VBG initiative_NN ._.
+A_DT solution_NN to_TO this_DT problem_NN that_WDT works_VBZ in_IN this_DT example_NN ,_, but_CC doesn_NN ''_'' t_NN generalise7_NN ,_, is_VBZ to_TO weaken_VB the_DT alternating_VBG turn_NN taking_VBG regime_NN by_IN allowing_VBG an_DT agent_NN to_TO act_VB twice_RB in_IN a_DT row_NN if_IN its_PRP$ second_JJ action_NN is_VBZ driven_VBN by_IN a_DT commitment_NN ._.
+A_DT general_JJ solution_NN is_VBZ to_TO track_VB whose_WP$ turn_VB it_PRP is_VBZ to_TO act_VB ._.
+This_DT can_MD be_VB done_VBN by_IN working_VBG out_RP which_WDT agents_NNS have_VBP actions_NNS that_WDT are_VBP able_JJ to_TO be_VB performed_VBN in_IN the_DT current_JJ state_NN ._.
+If_IN there_EX is_VBZ only_RB a_DT single_JJ active_JJ agent_NN ,_, then_RB it_PRP is_VBZ clearly_RB that_IN agent_NN ''_'' s_NNS turn_VBP to_TO act_VB ._.
+However_RB ,_, if_IN more_JJR than_IN one_CD agent_NN is_VBZ active_JJ then_RB somehow_RB the_DT agents_NNS need_VBP to_TO work_VB out_RP who_WP should_MD act_VB next_JJ ._.
+Working_VBG this_DT out_RP by_IN negotiation_NN is_VBZ not_RB a_DT particularly_RB good_JJ solution_NN for_IN two_CD reasons_NNS ._.
+Firstly_RB ,_, this_DT negotiation_NN has_VBZ to_TO be_VB done_VBN at_IN every_DT step_NN of_IN the_DT interaction_NN where_WRB more_JJR than_IN one_CD agent_NN is_VBZ active_JJ -LRB-_-LRB- in_IN the_DT NetBill_NNP ,_, this_DT applies_VBZ to_TO seven_CD out_IN of_IN sixteen_CD states_NNS -RRB-_-RRB- ,_, so_IN it_PRP is_VBZ highly_RB desirable_JJ to_TO have_VB a_DT light-weight_JJ mechanism_NN for_IN doing_VBG this_DT ._.
+Secondly_RB ,_, it_PRP is_VBZ not_RB clear_JJ how_WRB the_DT negotiation_NN can_MD avoid_VB an_DT infinite_JJ regress_NN situation_NN -LRB-_-LRB- you_PRP go_VBP first_RB ,_, no_DT ,_, you_PRP go_VBP first_RB ,_, ..._: -RRB-_-RRB- without_IN imposing_VBG some_DT arbitrary_JJ rule_NN ._.
+It_PRP is_VBZ also_RB possible_JJ to_TO resolve_VB who_WP should_MD act_VB by_IN imposing_VBG an_DT arbitrary_JJ rule_NN ,_, for_IN example_NN ,_, that_IN the_DT customer_NN always_RB acts_VBZ in_IN preference_NN to_TO the_DT merchant_NN ,_, or_CC that_IN each_DT agent_NN has_VBZ a_DT numerical_JJ priority_NN -LRB-_-LRB- perhaps_RB determined_VBN by_IN the_DT order_NN in_IN which_WDT they_PRP joined_VBD the_DT interaction_NN ?_. -RRB-_-RRB-
+that_IN determines_VBZ who_WP acts_VBZ ._.
+An_DT alternative_JJ solution_NN ,_, which_WDT exploits_VBZ the_DT symmetrical_JJ properties_NNS of_IN commitment_NN machines_NNS ,_, is_VBZ to_TO not_RB try_VB and_CC manage_VB turn_NN taking_VBG ._.
+7_CD Consider_VB actions_NNS A1_NN -LRB-_-LRB- C_NN -RRB-_-RRB- p_NN ,_, A2_NN -LRB-_-LRB- C_NN -RRB-_-RRB- q_NN ,_, and_CC A3_NN -LRB-_-LRB- M_NN -RRB-_-RRB- :_: p_NN q_NN r_NN ._.
+Figure_NNP #_# :_: NetBill_NNP with_IN alternating_VBG initiative_NN Instead_RB of_IN tracking_NN and_CC controlling_VBG whose_WP$ turn_VB it_PRP is_VBZ ,_, we_PRP simply_RB allow_VBP the_DT agents_NNS to_TO act_VB freely_RB ,_, and_CC rely_VBP on_IN the_DT properties_NNS of_IN the_DT interaction_NN space_NN to_TO ensure_VB that_IN things_NNS work_VBP out_RP ,_, a_DT notion_NN that_IN we_PRP shall_MD make_VB precise_JJ ,_, and_CC prove_VB ,_, in_IN the_DT remainder_NN of_IN this_DT section_NN ._.
+The_DT issue_NN with_IN having_VBG multiple_JJ agents_NNS be_VB active_JJ simultaneously_RB is_VBZ that_IN instead_RB of_IN all_DT agents_NNS agreeing_VBG on_IN the_DT current_JJ interaction_NN state_NN ,_, agents_NNS can_MD be_VB in_IN different_JJ states_NNS ._.
+This_DT can_MD be_VB visualised_VBN as_IN each_DT agent_NN having_VBG its_PRP$ own_JJ copy_NN of_IN the_DT FSM_NNP that_IN it_PRP navigates_VBZ through_IN where_WRB it_PRP is_VBZ possible_JJ for_IN agents_NNS to_TO follow_VB different_JJ paths_NNS through_IN the_DT FSM_NNP ._.
+The_DT two_CD specific_JJ issues_NNS that_WDT need_VBP to_TO be_VB addressed_VBN are_VBP :_: 1_CD ._.
+Can_MD agents_NNS end_VB up_RP in_IN different_JJ final_JJ states_NNS ?_.
+2_LS ._.
+Can_MD an_DT agent_NN be_VB in_IN a_DT position_NN where_WRB an_DT error_NN occurs_VBZ because_IN it_PRP can_MD not_RB perform_VB an_DT action_NN corresponding_VBG to_TO a_DT received_VBN message_NN ?_.
+We_PRP will_MD show_VB that_IN ,_, because_IN actions_NNS commute_NN under_IN certain_JJ assumptions_NNS ,_, agents_NNS can_MD not_RB end_VB up_RP in_IN different_JJ final_JJ states_NNS ,_, and_CC furthermore_RB ,_, that_IN errors_NNS can_MD not_RB occur_VB -LRB-_-LRB- again_RB ,_, under_IN certain_JJ assumptions_NNS -RRB-_-RRB- ._.
+By_IN actions_NNS commute_NN we_PRP mean_VBP that_IN the_DT state_NN resulting_VBG from_IN performing_VBG a_DT sequence_NN of_IN actions_NNS A1_NN ..._: An_DT is_VBZ the_DT same_JJ ,_, regardless_RB of_IN the_DT order_NN in_IN which_WDT the_DT actions_NNS are_VBP performed_VBN ._.
+This_DT means_VBZ that_IN even_RB if_IN agents_NNS take_VBP different_JJ paths_NNS through_IN the_DT FSM_NNP ,_, they_PRP still_RB end_VB up_RP in_IN the_DT same_JJ resulting_VBG state_NN ,_, because_IN once_RB all_DT messages_NNS have_VBP been_VBN processed_VBN ,_, all_DT agents_NNS will_MD have_VB performed_VBN the_DT same_JJ set_NN of_IN actions_NNS ._.
+This_DT addresses_VBZ the_DT issue_NN of_IN ending_VBG up_RP in_IN different_JJ final_JJ states_NNS ._.
+We_PRP return_VBP to_TO the_DT possibility_NN of_IN errors_NNS occurring_VBG shortly_RB ._.
+Definition_NN #_# -LRB-_-LRB- Monotonicity_NN -RRB-_-RRB- An_DT action_NN is_VBZ monotonic_JJ if_IN it_PRP does_VBZ not_RB delete8_VB any_DT fluents_NNS or_CC commitments_NNS ._.
+A_DT Commitment_NN Machine_NN is_VBZ 8_CD That_DT is_VBZ directly_RB deletes_NNS ,_, it_PRP is_VBZ fine_JJ to_TO discharge_VB commitments_NNS by_IN adding_VBG fluents_NNS /_: commitments_NNS ._.
+878_CD The_DT Sixth_NNP Intl_NNP ._.
+Joint_NNP Conf_NNP ._.
+on_IN Autonomous_NNP Agents_NNPS and_CC Multi-Agent_NNP Systems_NNP -LRB-_-LRB- AAMAS_NNP ##_CD -RRB-_-RRB- monotonic_JJ if_IN all_DT of_IN its_PRP$ actions_NNS are_VBP monotonic_JJ ._.
+-LRB-_-LRB- Adapted_VBN from_IN -LSB-_-LRB- ##_CD ,_, Definition_NNP #_# -RSB-_-RRB- -RRB-_-RRB- Theorem_NNP #_# If_IN A1_NN and_CC A2_NN are_VBP monotonic_JJ actions_NNS ,_, then_RB performing_VBG A1_NN followed_VBN by_IN A2_NN has_VBZ the_DT same_JJ effect_NN on_IN the_DT agent_NN ''_'' s_NNS beliefs_NNS as_IN performing_VBG A2_NN followed_VBN by_IN A1_NN ._.
+-LRB-_-LRB- Adapted_VBN from_IN -LSB-_-LRB- ##_NN ,_, Theorem_NNP #_# -RSB-_-RRB- -RRB-_-RRB- ._.
+This_DT assumes_VBZ that_IN both_CC actions_NNS can_MD be_VB performed_VBN ._.
+However_RB ,_, it_PRP is_VBZ possible_JJ for_IN the_DT performance_NN of_IN A1_NN to_TO disable_VB A2_NN from_IN being_VBG done_VBN ._.
+For_IN example_NN ,_, if_IN A1_NN has_VBZ the_DT effect_NN +_CC p_NN ,_, and_CC A2_NN has_VBZ precondition_NN p_NN ,_, then_RB although_IN both_DT actions_NNS may_MD be_VB enabled_VBN in_IN the_DT initial_JJ state_NN ,_, they_PRP can_MD not_RB be_VB performed_VBN in_IN either_CC order_NN ._.
+We_PRP can_MD prevent_VB this_DT by_IN ensuring_VBG that_IN actions_NNS ''_'' preconditions_NNS do_VBP not_RB contain_VB negation_NN -LRB-_-LRB- or_CC implication_NN -RRB-_-RRB- ,_, since_IN a_DT monotonic_JJ action_NN can_MD not_RB result_VB in_IN a_DT precondition_NN that_WDT is_VBZ negation-free_JJ becoming_VBG false_JJ ._.
+Note_VB that_IN this_DT restriction_NN only_RB applies_VBZ to_TO the_DT original_JJ action_NN precondition_NN ,_, P_NN ,_, not_RB to_TO any_DT additional_JJ preconditions_NNS imposed_VBN by_IN the_DT agent_NN -LRB-_-LRB- P_NN -RRB-_-RRB- ._.
+This_DT is_VBZ because_IN only_RB P_NN is_VBZ used_VBN to_TO determine_VB whether_IN another_DT agent_NN is_VBZ able_JJ to_TO perform_VB the_DT action_NN ._.
+Thus_RB monotonic_JJ CMs_NNS with_IN preconditions_NNS that_WDT do_VBP not_RB contain_VB negations_NNS have_VBP actions_NNS that_WDT commute_NN ._.
+However_RB ,_, in_IN fact_NN ,_, the_DT restriction_NN to_TO monotonic_JJ CMs_NNS is_VBZ unnecessarily_RB strong_JJ :_: all_DT that_DT is_VBZ needed_VBN is_VBZ that_IN whenever_WRB there_EX is_VBZ a_DT choice_NN of_IN agent_NN that_WDT can_MD act_VB ,_, then_RB the_DT possible_JJ actions_NNS are_VBP monotonic_JJ ._.
+If_IN there_EX is_VBZ only_RB a_DT single_JJ agent_NN that_WDT can_MD act_VB ,_, then_RB no_DT restriction_NN is_VBZ needed_VBN on_IN the_DT actions_NNS :_: they_PRP may_MD or_CC may_MD not_RB be_VB monotonic_JJ ._.
+Definition_NN #_# -LRB-_-LRB- Locally_RB Monotonic_NNP -RRB-_-RRB- A_DT commitment_NN machine_NN is_VBZ locally_RB monotonic_JJ if_IN for_IN any_DT state_NN S_NN either_CC -LRB-_-LRB- a_LS -RRB-_-RRB- only_RB a_DT single_JJ agent_NN has_VBZ actions_NNS that_WDT can_MD be_VB performed_VBN ;_: or_CC -LRB-_-LRB- b_LS -RRB-_-RRB- all_DT actions_NNS that_WDT can_MD be_VB performed_VBN in_IN S_NN are_VBP monotonic_JJ ._.
+Theorem_NNP #_# In_IN a_DT locally_RB monotonic_JJ CM_NN ,_, once_RB all_DT messages_NNS have_VBP been_VBN processed_VBN ,_, all_DT agents_NNS will_MD be_VB in_IN the_DT same_JJ state_NN ._.
+Furthermore_RB ,_, no_DT errors_NNS can_MD occur_VB ._.
+Proof_NNP :_: Once_RB all_DT messages_NNS have_VBP been_VBN processed_VBN we_PRP have_VBP that_IN all_DT agents_NNS will_MD have_VB performed_VBN the_DT same_JJ action_NN set_NN ,_, perhaps_RB in_IN a_DT different_JJ order_NN ._.
+The_DT essence_NN of_IN the_DT proof_NN is_VBZ to_TO argue_VB that_IN as_RB long_JJ as_IN agents_NNS haven_NN ''_'' t_NN yet_RB converged_VBN to_TO the_DT same_JJ state_NN ,_, all_DT actions_NNS must_MD be_VB monotonic_JJ ,_, and_CC hence_RB that_IN these_DT actions_NNS commute_NN ,_, and_CC can_MD not_RB disable_VB any_DT other_JJ actions_NNS ._.
+Consider_VB the_DT first_JJ point_NN of_IN divergence_NN ,_, where_WRB an_DT agent_NN performs_VBZ action_NN A_NN and_CC at_IN the_DT same_JJ time_NN another_DT agent_NN -LRB-_-LRB- call_VB it_PRP XB_NN -RRB-_-RRB- performs_VBZ action_NN B_NN ._.
+Clearly_RB ,_, this_DT state_NN has_VBZ actions_NNS of_IN more_JJR than_IN one_CD agent_NN enabled_VBD ,_, so_RB ,_, since_IN the_DT CM_NN is_VBZ locally_RB monotonic_JJ ,_, the_DT relevant_JJ actions_NNS must_MD be_VB monotonic_JJ ._.
+Therefore_RB ,_, after_IN doing_VBG A_NN ,_, the_DT action_NN B_NN must_MD still_RB be_VB enabled_VBN ,_, and_CC so_IN the_DT message_NN to_TO do_VB B_NN can_MD be_VB processed_VBN by_IN updating_VBG the_DT recipient_JJ agent_NN ''_'' s_NNS beliefs_NNS with_IN the_DT effects_NNS of_IN B_NN ._.
+Furthermore_RB ,_, because_IN monotonic_JJ actions_NNS commute_NN ,_, the_DT result_NN of_IN doing_VBG A_DT before_IN B_NN is_VBZ the_DT same_JJ as_IN doing_VBG B_NN before_IN A_DT :_: S_NN A_DT SA_NNP ?_. ?_.
+yB_NN B_NN ?_. ?_.
+y_NN SB_NN A_NN SAB_NNP However_RB ,_, what_WP happens_VBZ if_IN the_DT next_JJ action_NN after_IN A_DT is_VBZ not_RB B_NN ,_, but_CC C_NN ?_.
+Because_IN B_NN is_VBZ enabled_VBN ,_, and_CC C_NN is_VBZ not_RB done_VBN by_IN agent_NN XB_NN -LRB-_-LRB- see_VB below_IN -RRB-_-RRB- ,_, we_PRP must_MD have_VB that_DT C_NN is_VBZ also_RB monotonic_JJ ,_, and_CC hence_RB -LRB-_-LRB- a_DT -RRB-_-RRB- the_DT result_NN of_IN doing_VBG A_NN and_CC B_NN and_CC C_NN is_VBZ the_DT same_JJ regardless_RB of_IN the_DT order_NN in_IN which_WDT the_DT three_CD actions_NNS are_VBP done_VBN ;_: and_CC -LRB-_-LRB- b_LS -RRB-_-RRB- C_NN doesn_NN ''_'' t_NN disable_JJ B_NN ,_, so_RB B_NN can_MD still_RB be_VB done_VBN after_IN C_NN ._.
+S_NN A_NN SA_NNP C_NNP SAC_NN ?_. ?_.
+yB_NN B_NN ?_. ?_.
+y_NN B_NN ?_. ?_.
+y_NN SB_NN A_NN SAB_NN C_NN SABC_NN The_DT reason_NN why_WRB C_NN can_MD not_RB be_VB done_VBN by_IN XB_NN is_VBZ that_IN messages_NNS are_VBP processed_VBN in_IN the_DT order_NN of_IN their_PRP$ arrival9_NN ._.
+From_IN the_DT perspective_NN of_IN XB_NN the_DT action_NN B_NN was_VBD done_VBN before_IN C_NN ,_, and_CC therefore_RB from_IN any_DT other_JJ agent_NN ''_'' s_NNS perspective_NN the_DT message_NN saying_VBG that_IN B_NN was_VBD done_VBN must_MD be_VB received_VBN -LRB-_-LRB- and_CC processed_VBN -RRB-_-RRB- before_IN a_DT message_NN saying_VBG that_IN C_NN is_VBZ done_VBN ._.
+This_DT argument_NN can_MD be_VB extended_VBN to_TO show_VB that_IN once_RB agents_NNS start_VBP taking_VBG different_JJ paths_NNS through_IN the_DT FSM_NNP all_DT actions_NNS taken_VBN until_IN the_DT point_NN where_WRB they_PRP converge_VBP on_IN a_DT single_JJ state_NN must_MD be_VB monotonic_JJ ,_, and_CC hence_RB it_PRP is_VBZ always_RB possible_JJ to_TO converge_VB -LRB-_-LRB- because_IN actions_NNS aren_NNS ''_'' t_NN disabled_JJ -RRB-_-RRB- ,_, so_IN the_DT interaction_NN is_VBZ error_NN free_JJ ;_: and_CC the_DT resulting_VBG state_NN once_RB convergence_NN occurs_VBZ is_VBZ the_DT same_JJ -LRB-_-LRB- because_IN monotonic_JJ actions_NNS commute_NN -RRB-_-RRB- ._.
+This_DT theorem_NN gives_VBZ a_DT strong_JJ theoretical_JJ guarantee_NN that_IN not_RB doing_VBG turn_NN management_NN will_MD not_RB lead_VB to_TO disaster_NN ._.
+This_DT is_VBZ analogous_JJ to_TO proving_VBG that_IN disabling_VBG all_DT traffic_NN lights_NNS would_MD not_RB lead_VB to_TO any_DT accidents_NNS ,_, and_CC is_VBZ only_RB possible_JJ because_IN the_DT refined_VBN CM_NN axioms_NNS are_VBP symmetrical_JJ ._.
+Based_VBN on_IN this_DT theorem_IN the_DT generic_JJ transformation_NN from_IN CM_NN to_TO code_NN should_MD allow_VB agents_NNS to_TO act_VB freely_RB ,_, which_WDT is_VBZ achieved_VBN by_IN simply_RB changing_VBG :_: P_NN P_NN E_NN +_CC E_NN ;_: A_DT to_TO :_: P_NN P_NN E_NN +_CC E_NN ;_: A_DT ;_: For_IN example_NN ,_, instead_RB of_IN :_: request_NN +_CC request_NN ;_: sendRequest_NN we_PRP have_VBP :_: request_NN +_CC request_NN ;_: sendRequest_NN ;_: ._.
+One_CD consequence_NN of_IN the_DT theorem_NN is_VBZ that_IN it_PRP is_VBZ not_RB necessary_JJ to_TO ensure_VB that_IN agents_NNS process_NN messages_NNS before_IN continuing_VBG to_TO interact_VB ._.
+However_RB ,_, in_IN order_NN to_TO avoid_VB unnecessary_JJ parallelism_NN ,_, which_WDT can_MD make_VB debugging_VBG harder_JJR ,_, it_PRP may_MD still_RB be_VB desirable_JJ to_TO process_VB messages_NNS before_IN performing_VBG actions_NNS ._.
+Figure_NNP #_# shows_VBZ a_DT number_NN of_IN runs_NNS from_IN the_DT 3APL_NN implementation_NN that_WDT has_VBZ been_VBN modified_VBN to_TO allow_VB free_JJ ,_, non-alternating_JJ ,_, interaction_NN ._.
+5_CD ._.
+DISCUSSION_NN We_PRP have_VBP presented_VBN a_DT scheme_NN for_IN mapping_VBG commitment_NN machines_NNS to_TO BDI_NNP platforms_NNS -LRB-_-LRB- using_VBG SAAPL_NNP as_IN an_DT exemplar_NN -RRB-_-RRB- ,_, identified_VBD three_CD changes_NNS that_WDT needed_VBD to_TO be_VB made_VBN to_TO SAAPL_NNP to_TO support_VB CM-based_JJ interaction_NN ,_, and_CC shown_VBN that_IN turn_NN management_NN can_MD be_VB avoided_VBN in_IN CMbased_JJ interaction_NN ,_, provided_VBD the_DT CM_NN is_VBZ locally_RB monotonic_JJ ._.
+The_DT three_CD changes_NNS to_TO SAAPL_NNP ,_, and_CC the_DT translation_NN scheme_NN from_IN commitment_NN machine_NN to_TO BDI_NNP plans_NNS are_VBP both_DT applicable_JJ to_TO any_DT BDI_NN language_NN ._.
+As_IN we_PRP have_VBP mentioned_VBN in_IN section_NN #_# ,_, there_EX has_VBZ been_VBN some_DT work_NN on_IN designing_VBG flexible_JJ and_CC robust_JJ agent_NN interaction_NN ,_, but_CC virtually_RB no_DT work_NN on_IN implementing_VBG flexible_JJ and_CC robust_JJ interactions_NNS ._.
+We_PRP have_VBP already_RB discussed_VBN STAPLE_NN -LSB-_-LRB- #_# ,_, ##_NN -RSB-_-RRB- ._.
+Another_DT piece_NN of_IN work_NN that_WDT is_VBZ relevant_JJ is_VBZ the_DT work_NN by_IN Cheong_NNP and_CC Winikoff_NNP on_IN their_PRP$ Hermes_NNP methodology_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+Although_IN the_DT main_JJ focus_NN of_IN their_PRP$ work_NN is_VBZ a_DT pragmatic_JJ design_NN methodology_NN ,_, they_PRP also_RB provide_VBP guidelines_NNS for_IN implementing_VBG Hermes_NNP designs_NNS using_VBG BDI_NNP platforms_NNS -LRB-_-LRB- specifically_RB Jadex_NNP -RRB-_-RRB- -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+However_RB ,_, since_IN Hermes_NNP does_VBZ not_RB yield_VB a_DT design_NN that_WDT is_VBZ formal_JJ ,_, it_PRP is_VBZ only_RB possible_JJ to_TO generate_VB skeleton_NN code_NN that_WDT then_RB needs_VBZ to_TO be_VB completed_VBN ._.
+Also_RB ,_, they_PRP do_VBP not_RB address_VB the_DT turn_NN taking_VBG issue_NN :_: how_WRB to_TO decide_VB which_WDT agent_NN acts_VBZ when_WRB more_JJR than_IN one_CD agent_NN is_VBZ able_JJ to_TO act_VB ._.
+9_CD We_PRP also_RB assume_VBP that_IN the_DT communication_NN medium_NN does_VBZ not_RB deliver_VB messages_NNS out_IN of_IN order_NN ,_, which_WDT is_VBZ the_DT case_NN for_IN -LRB-_-LRB- e_LS ._.
+g_NN ._. -RRB-_-RRB-
+TCP_NN ._.
+The_DT Sixth_NNP Intl_NNP ._.
+Joint_NNP Conf_NNP ._.
+on_IN Autonomous_NNP Agents_NNPS and_CC Multi-Agent_NNP Systems_NNP -LRB-_-LRB- AAMAS_NNP ##_CD -RRB-_-RRB- ###_CD Figure_NNP #_# :_: Sample_VB runs_NNS from_IN 3APL_NN implementation_NN -LRB-_-LRB- non-alternating_JJ turns_NNS -RRB-_-RRB- The_DT work_NN of_IN Kremer_NNP and_CC Flores_NNP -LRB-_-LRB- e_LS ._.
+g_NN ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- -RRB-_-RRB- also_RB uses_VBZ commitments_NNS ,_, and_CC deals_NNS with_IN implementation_NN ._.
+However_RB ,_, they_PRP provide_VBP infrastructure_NN support_NN -LRB-_-LRB- CASA_NN -RRB-_-RRB- rather_RB than_IN a_DT programming_NN language_NN ,_, and_CC do_VBP not_RB appear_VB to_TO provide_VB assistance_NN to_TO a_DT programmer_NN seeking_VBG to_TO implement_VB agents_NNS ._.
+Although_IN we_PRP have_VBP implemented_VBN the_DT NetBill_NNP interaction_NN using_VBG 3APL_NN ,_, the_DT changes_NNS to_TO the_DT semantics_NNS were_VBD done_VBN by_IN modifying_VBG our_PRP$ NetBill_NNP 3APL_NN program_NN ,_, rather_RB than_IN by_IN modifying_VBG the_DT 3APL_NN implementation_NN itself_PRP ._.
+Clearly_RB ,_, it_PRP would_MD be_VB desirable_JJ to_TO modify_VB the_DT semantics_NNS of_IN 3APL_NN -LRB-_-LRB- or_CC of_IN another_DT language_NN -RRB-_-RRB- directly_RB ,_, by_IN changing_VBG the_DT implementation_NN ._.
+Also_RB ,_, although_IN we_PRP have_VBP not_RB done_VBN so_RB ,_, it_PRP should_MD be_VB clear_JJ that_IN the_DT translation_NN from_IN a_DT CM_NN to_TO its_PRP$ implementation_NN could_MD easily_RB be_VB automated_VBN ._.
+Another_DT area_NN for_IN further_JJ work_NN is_VBZ to_TO look_VB at_IN how_WRB the_DT assumptions_NNS required_VBN to_TO ensure_VB that_IN actions_NNS commute_NN can_MD be_VB relaxed_VBN ._.
+Finally_RB ,_, there_EX is_VBZ a_DT need_NN to_TO perform_VB empirical_JJ evaluation_NN ._.
+There_EX has_VBZ already_RB been_VBN some_DT work_NN on_IN comparing_VBG Hermes_NNS with_IN a_DT conventional_JJ message-centric_JJ approach_NN to_TO designing_VBG interaction_NN ,_, and_CC this_DT has_VBZ shown_VBN that_IN using_VBG Hermes_NNP results_VBZ in_IN designs_NNS that_WDT are_VBP significantly_RB more_RBR flexible_JJ and_CC robust_JJ -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+It_PRP would_MD be_VB interesting_JJ to_TO compare_VB commitment_NN machines_NNS with_IN Hermes_NNS ,_, but_CC ,_, since_IN commitment_NN machines_NNS are_VBP a_DT framework_NN ,_, not_RB a_DT design_NN methodology_NN ,_, we_PRP need_VBP to_TO compare_VB Hermes_NNS with_IN a_DT methodology_NN for_IN designing_VBG interactions_NNS that_WDT results_VBZ in_IN commitment_NN machines_NNS -LSB-_-LRB- ##_NNS ,_, ##_NN -RSB-_-RRB- ._.
+6_CD ._.
+REFERENCES_NNS -LSB-_-LRB- #_# -RSB-_-RRB- R_NN ._.
+H_NN ._.
+Bordini_NNP ,_, M_NN ._.
+Dastani_NNP ,_, J_NNP ._.
+Dix_NNP ,_, and_CC A_NN ._.
+E_NN ._.
+F_NN ._.
+Seghrouchni_NNP ,_, editors_NNS ._.
+Multi-Agent_JJ Programming_NN :_: Languages_NNS ,_, Platforms_NNS and_CC Applications_NNS ._.
+Springer_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- C_NN ._.
+Cheong_NNP and_CC M_NN ._.
+Winikoff_NNP ._.
+Hermes_NNP :_: Designing_NNP goal-oriented_JJ agent_NN interactions_NNS ._.
+In_IN Proceedings_NNP of_IN the_DT 6th_JJ International_NNP Workshop_NNP on_IN Agent-Oriented_NNP Software_NNP Engineering_NNP -LRB-_-LRB- AOSE-2005_NN -RRB-_-RRB- ,_, July_NNP ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- C_NN ._.
+Cheong_NNP and_CC M_NN ._.
+Winikoff_NNP ._.
+Hermes_NNP :_: Implementing_VBG goal-oriented_JJ agent_NN interactions_NNS ._.
+In_IN Proceedings_NNP of_IN the_DT Third_JJ international_JJ Workshop_NNP on_IN Programming_NNP Multi-Agent_NNP Systems_NNP -LRB-_-LRB- ProMAS_NNP -RRB-_-RRB- ,_, July_NNP ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- C_NN ._.
+Cheong_NNP and_CC M_NN ._.
+Winikoff_NNP ._.
+Hermes_NNP versus_CC prometheus_NN :_: A_DT comparative_JJ evaluation_NN of_IN two_CD agent_NN interaction_NN design_NN approaches_NNS ._.
+Submitted_VBN for_IN publication_NN ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- P_NN ._.
+R_NN ._.
+Cohen_NNP and_CC H_NNP ._.
+J_NN ._.
+Levesque_NNP ._.
+Teamwork_NNP ._.
+Nous_NNP ,_, 25_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 487-512_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- M_NN ._.
+Dastani_NNP ,_, J_NNP ._.
+van_NN der_FW Ham_FW ,_, and_CC F_NN ._.
+Dignum_NNP ._.
+Communication_NN for_IN goal_NN directed_VBD agents_NNS ._.
+In_IN Proceedings_NNP of_IN the_DT Agent_NNP Communication_NNP Languages_NNPS and_CC Conversation_NNP Policies_NNS Workshop_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- F_NN ._.
+P_NN ._.
+Dignum_NNP and_CC G_NNP ._.
+A_DT ._.
+Vreeswijk_NNP ._.
+Towards_IN a_DT testbed_VBN for_IN multi-party_JJ dialogues_NNS ._.
+In_IN Advances_NNS in_IN Agent_NNP Communication_NNP ,_, pages_NNS 212-230_CD ._.
+Springer_NNP ,_, LNCS_NNP ####_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- R_NN ._.
+Kremer_NNP and_CC R_NN ._.
+Flores_NNP ._.
+Using_VBG a_DT performative_JJ subsumption_NN lattice_NN to_TO support_VB commitment-based_JJ conversations_NNS ._.
+In_IN F_NN ._.
+Dignum_NNP ,_, V_NNP ._.
+Dignum_NNP ,_, S_NN ._.
+Koenig_NNP ,_, S_NN ._.
+Kraus_NNP ,_, M_NN ._.
+P_NN ._.
+Singh_NNP ,_, and_CC M_NN ._.
+Wooldridge_NNP ,_, editors_NNS ,_, Autonomous_NNP Agents_NNPS and_CC Multi-Agent_NNP Systems_NNP -LRB-_-LRB- AAMAS_NNP -RRB-_-RRB- ,_, pages_NNS 114-121_CD ._.
+ACM_NNP Press_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- S_NN ._.
+Kumar_NNP and_CC P_NN ._.
+R_NN ._.
+Cohen_NNP ._.
+STAPLE_NN :_: An_DT agent_NN programming_NN language_NN based_VBN on_IN the_DT joint_JJ intention_NN theory_NN ._.
+In_IN Proceedings_NNP of_IN the_DT Third_NNP International_NNP Joint_NNP Conference_NNP on_IN Autonomous_NNP Agents_NNPS &_CC Multi-Agent_NNP Systems_NNP -LRB-_-LRB- AAMAS_NNP ####_CD -RRB-_-RRB- ,_, pages_NNS 1390-1391_CD ._.
+ACM_NNP Press_NNP ,_, July_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- S_NN ._.
+Kumar_NNP ,_, M_NN ._.
+J_NN ._.
+Huber_NNP ,_, and_CC P_NN ._.
+R_NN ._.
+Cohen_NNP ._.
+Representing_VBG and_CC executing_VBG protocols_NNS as_IN joint_JJ actions_NNS ._.
+In_IN Proceedings_NNP of_IN the_DT First_NNP International_NNP Joint_NNP Conference_NNP on_IN Autonomous_NNP Agents_NNPS and_CC Multi-Agent_NNP Systems_NNPS ,_, pages_NNS ###_SYM -_: ###_NN ,_, Bologna_NNP ,_, Italy_NNP ,_, 15_CD -_: ##_CD July_NNP ####_CD ._.
+ACM_NNP Press_NNP ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- M_NN ._.
+Tambe_NN and_CC W_NN ._.
+Zhang_NNP ._.
+Towards_IN flexible_JJ teamwork_NN in_IN persistent_JJ teams_NNS :_: Extended_JJ report_NN ._.
+Journal_NNP of_IN Autonomous_NNP Agents_NNPS and_CC Multi-agent_JJ Systems_NNPS ,_, ####_CD ._.
+Special_JJ issue_NN on_IN Best_NN of_IN ICMAS_NNP ##_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- M_NN ._.
+Winikoff_NNP ._.
+An_DT AgentSpeak_NNP meta-interpreter_NN and_CC its_PRP$ applications_NNS ._.
+In_IN Third_NNP International_NNP Workshop_NNP on_IN Programming_NNP Multi-Agent_NNP Systems_NNP -LRB-_-LRB- ProMAS_NNP -RRB-_-RRB- ,_, pages_NNS 123-138_CD ._.
+Springer_NNP ,_, LNCS_NNP ####_CD -LRB-_-LRB- post-proceedings_NNS ,_, ####_CD -RRB-_-RRB- ,_, 2005_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- M_NN ._.
+Winikoff_NNP ._.
+Designing_NNP commitment-based_JJ agent_NN interactions_NNS ._.
+In_IN Proceedings_NNP of_IN the_DT ####_CD IEEE_NNP /_: WIC_NNP /_: ACM_NNP International_NNP Conference_NNP on_IN Intelligent_NNP Agent_NNP Technology_NNP -LRB-_-LRB- IAT-06_NN -RRB-_-RRB- ,_, ####_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- M_NN ._.
+Winikoff_NNP ._.
+Implementing_VBG flexible_JJ and_CC robust_JJ agent_NN interactions_NNS using_VBG distributed_VBN commitment_NN machines_NNS ._.
+Multiagent_JJ and_CC Grid_NNP Systems_NNPS ,_, #_# -LRB-_-LRB- #_# -RRB-_-RRB- ,_, ####_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- M_NN ._.
+Winikoff_NNP ,_, W_NNP ._.
+Liu_NNP ,_, and_CC J_NN ._.
+Harland_NNP ._.
+Enhancing_NN commitment_NN machines_NNS ._.
+In_IN J_NN ._.
+Leite_NNP ,_, A_NNP ._.
+Omicini_NNP ,_, P_NN ._.
+Torroni_NNP ,_, and_CC P_NN ._.
+Yolum_NNP ,_, editors_NNS ,_, Declarative_JJ Agent_NNP Languages_NNPS and_CC Technologies_NNPS II_NNP ,_, number_NN ####_CD in_IN Lecture_NNP Notes_NNP in_IN Artificial_NNP Intelligence_NNP -LRB-_-LRB- LNAI_NNP -RRB-_-RRB- ,_, pages_NNS 198-220_CD ._.
+Springer_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- M_NN ._.
+Winikoff_NNP ,_, L_NNP ._.
+Padgham_NNP ,_, J_NNP ._.
+Harland_NNP ,_, and_CC J_NN ._.
+Thangarajah_NNP ._.
+Declarative_NNP &_CC procedural_JJ goals_NNS in_IN intelligent_JJ agent_NN systems_NNS ._.
+In_IN Proceedings_NNP of_IN the_DT Eighth_NNP International_NNP Conference_NNP on_IN Principles_NNS of_IN Knowledge_NN Representation_NN and_CC Reasoning_NN -LRB-_-LRB- KR2002_NN -RRB-_-RRB- ,_, Toulouse_NNP ,_, France_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- P_NN ._.
+Yolum_NN ._.
+Towards_IN design_NN tools_NNS for_IN protocol_NN development_NN ._.
+In_IN F_NN ._.
+Dignum_NNP ,_, V_NNP ._.
+Dignum_NNP ,_, S_NN ._.
+Koenig_NNP ,_, S_NN ._.
+Kraus_NNP ,_, M_NN ._.
+P_NN ._.
+Singh_NNP ,_, and_CC M_NN ._.
+Wooldridge_NNP ,_, editors_NNS ,_, Autonomous_NNP Agents_NNPS and_CC Multi-Agent_NNP Systems_NNP -LRB-_-LRB- AAMAS_NNP -RRB-_-RRB- ,_, pages_NNS 99-105_CD ._.
+ACM_NNP Press_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- P_NN ._.
+Yolum_NN and_CC M_NN ._.
+P_NN ._.
+Singh_NNP ._.
+Flexible_JJ protocol_NN specification_NN and_CC execution_NN :_: Applying_VBG event_NN calculus_NN planning_NN using_VBG commitments_NNS ._.
+In_IN Proceedings_NNP of_IN the_DT 1st_JJ Joint_NNP Conference_NN on_IN Autonomous_NNP Agents_NNPS and_CC MultiAgent_NNP Systems_NNP -LRB-_-LRB- AAMAS_NNP -RRB-_-RRB- ,_, pages_NNS 527-534_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- P_NN ._.
+Yolum_NN and_CC M_NN ._.
+P_NN ._.
+Singh_NNP ._.
+Reasoning_NN about_IN commitments_NNS in_IN the_DT event_NN calculus_NN :_: An_DT approach_NN for_IN specifying_VBG and_CC executing_VBG protocols_NNS ._.
+Annals_NNS of_IN Mathematics_NNS and_CC Artificial_NNP Intelligence_NNP -LRB-_-LRB- AMAI_NNP -RRB-_-RRB- ,_, ####_NN ._.
+880_CD The_DT Sixth_NNP Intl_NNP ._.
+Joint_NNP Conf_NNP ._.
+on_IN Autonomous_NNP Agents_NNPS and_CC Multi-Agent_NNP Systems_NNP -LRB-_-LRB- AAMAS_NNP ##_CD -RRB-_-RRB-

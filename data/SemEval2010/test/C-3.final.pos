@@ -1,0 +1,630 @@
+Self-Adaptive_JJ Applications_NNS on_IN the_DT Grid_NNP Gosia_NNP Wrzesinska_NNP Jason_NNP Maassen_NNP Henri_NNP E_NNP ._.
+Bal_NN Dept_NNP ._.
+of_IN Computer_NNP Systems_NNPS ,_, Vrije_NNP Universiteit_NNP Amsterdam_NNP -LCB-_-LRB- gosia_NN ,_, jason_NN ,_, bal_JJ -RCB-_-RRB- @_SYM cs_NNS ._.
+vu_NN ._.
+nl_NN Abstract_JJ Grids_NNS are_VBP inherently_RB heterogeneous_JJ and_CC dynamic_JJ ._.
+One_CD important_JJ problem_NN in_IN grid_NN computing_NN is_VBZ resource_NN selection_NN ,_, that_WDT is_VBZ ,_, finding_VBG an_DT appropriate_JJ resource_NN set_VBN for_IN the_DT application_NN ._.
+Another_DT problem_NN is_VBZ adaptation_NN to_TO the_DT changing_VBG characteristics_NNS of_IN the_DT grid_NN environment_NN ._.
+Existing_VBG solutions_NNS to_TO these_DT two_CD problems_NNS require_VBP that_IN a_DT performance_NN model_NN for_IN an_DT application_NN is_VBZ known_VBN ._.
+However_RB ,_, constructing_VBG such_JJ models_NNS is_VBZ a_DT complex_JJ task_NN ._.
+In_IN this_DT paper_NN ,_, we_PRP investigate_VBP an_DT approach_NN that_WDT does_VBZ not_RB require_VB performance_NN models_NNS ._.
+We_PRP start_VBP an_DT application_NN on_IN any_DT set_NN of_IN resources_NNS ._.
+During_IN the_DT application_NN run_NN ,_, we_PRP periodically_RB collect_VBP the_DT statistics_NNS about_IN the_DT application_NN run_NN and_CC deduce_VBP application_NN requirements_NNS from_IN these_DT statistics_NNS ._.
+Then_RB ,_, we_PRP adjust_VBP the_DT resource_NN set_VBN to_TO better_RB fit_VB the_DT application_NN needs_VBZ ._.
+This_DT approach_NN allows_VBZ us_PRP to_TO avoid_VB performance_NN bottlenecks_NNS ,_, such_JJ as_IN overloaded_JJ WAN_NNP links_NNS or_CC very_RB slow_JJ processors_NNS ,_, and_CC therefore_RB can_MD yield_VB significant_JJ performance_NN improvements_NNS ._.
+We_PRP evaluate_VBP our_PRP$ approach_NN in_IN a_DT number_NN of_IN scenarios_NNS typical_JJ for_IN the_DT Grid_NNP ._.
+Categories_NNS and_CC Subject_NNP Descriptors_NNPS C_NNP ._.
+#_# ._.
+#_# -LSB-_-LRB- COMPUTER_NNP COMMUNICATION_NNP NETWORKS_NNS -RSB-_-RRB- :_: Distributed_VBN Systems-Distributed_JJ applications_NNS ;_: C_NN ._.
+#_# -LSB-_-LRB- PERFORMANCE_NN OF_IN SYSTEMS_NN -RSB-_-RRB- :_: Measurement_NN techniques_NNS ,_, Modelling_VBG techniques_NNS General_NNP Terms_NNS Algorithms_NNS ,_, Measurement_NNP ,_, Performance_NNP ,_, Experimentation_NN 1_CD ._.
+Introduction_NN In_IN recent_JJ years_NNS ,_, grid_NN computing_NN has_VBZ become_VBN a_DT real_JJ alternative_NN to_TO traditional_JJ parallel_JJ computing_NN ._.
+A_DT grid_NN provides_VBZ much_JJ computational_JJ power_NN ,_, and_CC thus_RB offers_VBZ the_DT possibility_NN to_TO solve_VB very_RB large_JJ problems_NNS ,_, especially_RB if_IN applications_NNS can_MD run_VB on_IN multiple_JJ sites_NNS at_IN the_DT same_JJ time_NN -LRB-_-LRB- #_# ;_: ##_CD ;_: ##_CD -RRB-_-RRB- ._.
+However_RB ,_, the_DT complexity_NN of_IN Grid_NNP environments_NNS also_RB is_VBZ many_JJ times_NNS larger_JJR than_IN that_DT of_IN traditional_JJ parallel_JJ machines_NNS like_IN clusters_NNS and_CC supercomputers_NNS ._.
+One_CD important_JJ problem_NN is_VBZ resource_NN selection_NN -_: selecting_VBG a_DT set_NN of_IN compute_VB nodes_NNS such_JJ that_IN the_DT application_NN achieves_VBZ good_JJ performance_NN ._.
+Even_RB in_IN traditional_JJ ,_, homogeneous_JJ parallel_NN environments_NNS ,_, finding_VBG the_DT optimal_JJ number_NN of_IN nodes_NNS is_VBZ a_DT hard_JJ problem_NN and_CC is_VBZ often_RB solved_VBN in_IN a_DT trial-and-error_JJ fashion_NN ._.
+In_IN a_DT grid_NN environment_NN this_DT problem_NN is_VBZ even_RB more_RBR difficult_JJ ,_, because_IN of_IN the_DT heterogeneity_NN of_IN resources_NNS :_: the_DT compute_VBP nodes_NNS have_VBP various_JJ speeds_NNS and_CC the_DT quality_NN of_IN network_NN connections_NNS between_IN them_PRP varies_VBZ from_IN low-latency_NN and_CC high-bandwidth_JJ local-area_NN networks_NNS -LRB-_-LRB- LANs_NNS -RRB-_-RRB- to_TO high-latency_NN and_CC possibly_RB low-bandwidth_JJ wide-area_JJ networks_NNS -LRB-_-LRB- WANs_NNS -RRB-_-RRB- ._.
+Another_DT important_JJ problem_NN is_VBZ that_IN the_DT performance_NN and_CC availability_NN of_IN grid_NN resources_NNS varies_VBZ over_IN time_NN :_: the_DT network_NN links_NNS or_CC compute_VB nodes_NNS may_MD become_VB overloaded_JJ ,_, or_CC the_DT compute_VB nodes_NNS may_MD become_VB unavailable_JJ because_IN of_IN crashes_NNS or_CC because_IN they_PRP have_VBP been_VBN claimed_VBN by_IN a_DT higher_JJR priority_NN application_NN ._.
+Also_RB ,_, new_JJ ,_, better_RBR resources_NNS may_MD become_VB available_JJ ._.
+To_TO maintain_VB a_DT reasonable_JJ performance_NN level_NN ,_, the_DT application_NN therefore_RB needs_VBZ to_TO adapt_VB to_TO the_DT changing_VBG conditions_NNS ._.
+The_DT adaptation_NN problem_NN can_MD be_VB reduced_VBN to_TO the_DT resource_NN selection_NN problem_NN :_: the_DT resource_NN selection_NN phase_NN can_MD be_VB repeated_VBN during_IN application_NN execution_NN ,_, either_CC at_IN regular_JJ intervals_NNS ,_, or_CC when_WRB a_DT performance_NN problem_NN is_VBZ detected_VBN ,_, or_CC when_WRB new_JJ resources_NNS become_VBP available_JJ ._.
+This_DT approach_NN has_VBZ been_VBN adopted_VBN by_IN a_DT number_NN of_IN systems_NNS -LRB-_-LRB- #_# ;_: ##_CD ;_: ##_CD -RRB-_-RRB- ._.
+For_IN resource_NN selection_NN ,_, the_DT application_NN runtime_NN is_VBZ estimated_VBN for_IN some_DT resource_NN sets_NNS and_CC the_DT set_NN that_WDT yields_VBZ the_DT shortest_JJS runtime_NN is_VBZ selected_VBN for_IN execution_NN ._.
+Predicting_VBG the_DT application_NN runtime_NN on_IN a_DT given_VBN set_NN of_IN resources_NNS ,_, however_RB ,_, requires_VBZ knowledge_NN about_IN the_DT application_NN ._.
+Typically_RB ,_, an_DT analytical_JJ performance_NN model_NN is_VBZ used_VBN ,_, but_CC constructing_VBG such_JJ a_DT model_NN is_VBZ inherently_RB difficult_JJ and_CC requires_VBZ an_DT expertise_NN which_WDT application_NN programmers_NNS may_MD not_RB have_VB ._.
+In_IN this_DT paper_NN ,_, we_PRP introduce_VBP and_CC evaluate_VBP an_DT alternative_JJ approach_NN to_TO application_NN adaptation_NN and_CC resource_NN selection_NN which_WDT does_VBZ not_RB need_VB a_DT performance_NN model_NN ._.
+We_PRP start_VBP an_DT application_NN on_IN any_DT set_NN of_IN resources_NNS ._.
+During_IN the_DT application_NN run_NN ,_, we_PRP periodically_RB collect_VBP information_NN about_IN the_DT communication_NN times_NNS and_CC idle_JJ times_NNS of_IN the_DT processors_NNS ._.
+We_PRP use_VBP these_DT statistics_NNS to_TO automatically_RB estimate_VB the_DT resource_NN requirements_NNS of_IN the_DT application_NN ._.
+Next_RB ,_, we_PRP adjust_VBP the_DT resource_NN set_VBD the_DT application_NN is_VBZ running_VBG on_RP by_IN adding_VBG or_CC removing_VBG compute_VB nodes_NNS or_CC even_RB entire_JJ clusters_NNS ._.
+Our_PRP$ adaptation_NN strategy_NN uses_VBZ the_DT work_NN by_IN Eager_NNP et_FW al_FW ._.
+-LRB-_-LRB- ##_NN -RRB-_-RRB- to_TO determine_VB the_DT efficiency_NN and_CC tries_VBZ to_TO keep_VB the_DT efficiency_NN of_IN the_DT application_NN between_IN a_DT lower_JJR and_CC upper_JJ threshold_NN derived_VBN from_IN their_PRP$ theory_NN ._.
+Processors_NNS are_VBP added_VBN or_CC deleted_VBN to_TO stay_VB between_IN the_DT thresholds_NNS ,_, thus_RB adapting_VBG automatically_RB to_TO the_DT changing_VBG environment_NN ._.
+A_DT major_JJ advantage_NN of_IN our_PRP$ approach_NN is_VBZ that_IN it_PRP improves_VBZ application_NN performance_NN in_IN many_JJ different_JJ situations_NNS that_WDT are_VBP typical_JJ for_IN grid_NN computing_NN ._.
+It_PRP handles_VBZ all_DT of_IN the_DT following_VBG cases_NNS :_: automatically_RB adapting_VBG the_DT number_NN of_IN processors_NNS to_TO the_DT degree_NN of_IN parallelism_NN in_IN the_DT application_NN ,_, even_RB when_WRB this_DT degree_NN changes_NNS dynamically_RB during_IN the_DT computation_NN migrating_VBG -LRB-_-LRB- part_NN of_IN -RRB-_-RRB- a_DT computation_NN away_RB from_IN overloaded_JJ resources_NNS removing_VBG resources_NNS with_IN poor_JJ communication_NN links_NNS that_WDT slow_VBP down_RP the_DT computation_NN adding_VBG new_JJ resources_NNS to_TO replace_VB resources_NNS that_WDT have_VBP crashed_VBN Our_PRP$ work_NN assumes_VBZ the_DT application_NN is_VBZ malleable_JJ and_CC can_MD run_VB -LRB-_-LRB- efficiently_RB -RRB-_-RRB- on_IN multiple_JJ sites_NNS of_IN a_DT grid_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, using_VBG co-allocation_NN -LRB-_-LRB- ##_NN -RRB-_-RRB- -RRB-_-RRB- ._.
+It_PRP should_MD not_RB use_VB static_JJ load_NN balancing_NN or_CC be_VB very_RB sensitive_JJ to_TO wide121_VB area_NN latencies_NNS ._.
+We_PRP have_VBP applied_VBN our_PRP$ ideas_NNS to_TO divide-and-conquer_JJ applications_NNS ,_, which_WDT satisfy_VBP these_DT requirements_NNS ._.
+Divide-and-conquer_JJR has_VBZ been_VBN shown_VBN to_TO be_VB an_DT attractive_JJ paradigm_NN for_IN programming_NN grid_NN applications_NNS -LRB-_-LRB- #_# ;_: ##_NN -RRB-_-RRB- ._.
+We_PRP believe_VBP that_IN our_PRP$ approach_NN can_MD be_VB extended_VBN to_TO other_JJ classes_NNS of_IN applications_NNS with_IN the_DT given_VBN assumptions_NNS ._.
+We_PRP implemented_VBD our_PRP$ strategy_NN in_IN Satin_NNP ,_, which_WDT is_VBZ a_DT Java-centric_JJ framework_NN for_IN writing_VBG grid-enabled_JJ divide-and-conquer_JJ applications_NNS -LRB-_-LRB- ##_NNS -RRB-_-RRB- ._.
+We_PRP evaluate_VBP the_DT performance_NN of_IN our_PRP$ approach_NN on_IN the_DT DAS-2_NN wide-area_NN system_NN and_CC we_PRP will_MD show_VB that_IN our_PRP$ approach_NN yields_NNS major_JJ performance_NN improvements_NNS -LRB-_-LRB- roughly_RB 10-60_CD %_NN -RRB-_-RRB- in_IN the_DT above_JJ scenarios_NNS ._.
+The_DT rest_NN of_IN this_DT paper_NN is_VBZ structured_VBN as_IN follows_VBZ ._.
+In_IN Section_NN #_# ,_, we_PRP explain_VBP what_WP assumptions_NNS we_PRP are_VBP making_VBG about_IN the_DT applications_NNS and_CC grid_NN resources_NNS ._.
+In_IN Section_NN #_# ,_, we_PRP present_VBP our_PRP$ resource_NN selection_NN and_CC adaptation_NN strategy_NN ._.
+In_IN Section_NN #_# ,_, we_PRP describe_VBP its_PRP$ implementation_NN in_IN the_DT Satin_NNP framework_NN ._.
+In_IN Section_NN #_# ,_, we_PRP evaluate_VBP our_PRP$ approach_NN in_IN a_DT number_NN of_IN grid_NN scenarios_NNS ._.
+In_IN Section_NN #_# ,_, we_PRP compare_VBP our_PRP$ approach_NN with_IN the_DT related_JJ work_NN ._.
+Finally_RB ,_, in_IN Section_NN #_# ,_, we_PRP conclude_VBP and_CC describe_VBP future_JJ work_NN ._.
+2_LS ._.
+Background_NN and_CC assumptions_NNS In_IN this_DT section_NN ,_, we_PRP describe_VBP our_PRP$ assumptions_NNS about_IN the_DT applications_NNS and_CC their_PRP$ resources_NNS ._.
+We_PRP assume_VBP the_DT following_VBG resource_NN model_NN ._.
+The_DT applications_NNS are_VBP running_VBG on_IN multiple_JJ sites_NNS at_IN the_DT same_JJ time_NN ,_, where_WRB sites_NNS are_VBP clusters_NNS or_CC supercomputers_NNS ._.
+We_PRP also_RB assume_VBP that_IN the_DT processors_NNS of_IN the_DT sites_NNS are_VBP accessible_JJ using_VBG a_DT grid_NN scheduling_NN system_NN ,_, such_JJ as_IN Koala_NNP -LRB-_-LRB- ##_CD -RRB-_-RRB- ,_, Zorilla_NNP -LRB-_-LRB- #_# -RRB-_-RRB- or_CC GRMS_NN -LRB-_-LRB- #_# -RRB-_-RRB- ._.
+Processors_NNS belonging_VBG to_TO one_CD site_NN are_VBP connected_VBN by_IN a_DT fast_JJ LAN_NN with_IN a_DT low_JJ latency_NN and_CC high_JJ bandwidth_NN ._.
+The_DT different_JJ sites_NNS are_VBP connected_VBN by_IN a_DT WAN_NNP ._.
+Communication_NN between_IN sites_NNS suffers_VBZ from_IN high_JJ latencies_NNS ._.
+We_PRP assume_VBP that_IN the_DT links_NNS connecting_VBG the_DT sites_NNS with_IN the_DT Internet_NN backbone_NN might_MD become_VB bottlenecks_NNS causing_VBG the_DT inter-site_JJ communication_NN to_TO suffer_VB from_IN low_JJ bandwidths_NNS ._.
+We_PRP studied_VBD the_DT adaptation_NN problem_NN in_IN the_DT context_NN of_IN divide-andconquer_NN applications_NNS ._.
+However_RB ,_, we_PRP believe_VBP that_IN our_PRP$ methodology_NN can_MD be_VB used_VBN for_IN other_JJ types_NNS of_IN applications_NNS as_RB well_RB ._.
+In_IN this_DT section_NN we_PRP summarize_VBP the_DT assumptions_NNS about_IN applications_NNS that_WDT are_VBP important_JJ to_TO our_PRP$ approach_NN ._.
+The_DT first_JJ assumption_NN we_PRP make_VBP is_VBZ that_IN the_DT application_NN is_VBZ malleable_JJ ,_, i_FW ._.
+e_LS ._.
+,_, it_PRP is_VBZ able_JJ to_TO handle_VB processors_NNS joining_VBG and_CC leaving_VBG the_DT on-going_JJ computation_NN ._.
+In_IN -LRB-_-LRB- ##_NN -RRB-_-RRB- ,_, we_PRP showed_VBD how_WRB divide-andconquer_JJ applications_NNS can_MD be_VB made_VBN fault_NN tolerant_JJ and_CC malleable_JJ ._.
+Processors_NNS can_MD be_VB added_VBN or_CC removed_VBN at_IN any_DT point_NN in_IN the_DT computation_NN with_IN little_JJ overhead_NN ._.
+The_DT second_JJ assumption_NN is_VBZ that_IN the_DT application_NN can_MD efficiently_RB run_VB on_IN processors_NNS with_IN different_JJ speeds_NNS ._.
+This_DT can_MD be_VB achieved_VBN by_IN using_VBG a_DT dynamic_JJ load_NN balancing_NN strategy_NN ,_, such_JJ as_IN work_NN stealing_VBG used_VBN by_IN divide-and-conquer_JJ applications_NNS -LRB-_-LRB- ##_NNS -RRB-_-RRB- ._.
+Also_RB ,_, master-worker_NN applications_NNS typically_RB use_VBP dynamic_JJ load-balancing_JJ strategies_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, MW_SYM -_: a_DT framework_NN for_IN writing_VBG gridenabled_JJ master-worker_NN applications_NNS -LRB-_-LRB- ##_NNS -RRB-_-RRB- -RRB-_-RRB- ._.
+We_PRP find_VBP it_PRP a_DT reasonable_JJ assumption_NN for_IN a_DT grid_NN application_NN ,_, since_IN applications_NNS for_IN which_WDT the_DT slowest_JJS processor_NN becomes_VBZ a_DT bottleneck_NN will_MD not_RB be_VB able_JJ to_TO efficiently_RB utilize_VB grid_NN resources_NNS ._.
+Finally_RB ,_, the_DT application_NN should_MD be_VB insensitive_JJ to_TO wide-area_JJ latencies_NNS ,_, so_IN it_PRP can_MD run_VB efficiently_RB on_IN a_DT widearea_NN grid_NN -LRB-_-LRB- ##_CD ;_: ##_CD -RRB-_-RRB- ._.
+3_LS ._.
+Self-adaptation_NN In_IN this_DT section_NN we_PRP will_MD explain_VB how_WRB we_PRP use_VBP application_NN malleability_NN to_TO find_VB a_DT suitable_JJ set_NN of_IN resources_NNS for_IN a_DT given_VBN application_NN and_CC to_TO adapt_VB to_TO changing_VBG conditions_NNS in_IN the_DT grid_NN environment_NN ._.
+In_IN order_NN to_TO monitor_VB the_DT application_NN performance_NN and_CC guide_NN the_DT adaptation_NN ,_, we_PRP added_VBD an_DT extra_JJ process_NN to_TO the_DT computation_NN which_WDT we_PRP call_VBP adaptation_NN coordinator_NN ._.
+The_DT adaptation_NN coordinator_NN periodically_RB collects_VBZ performance_NN statistics_NNS from_IN the_DT application_NN processors_NNS ._.
+We_PRP introduce_VBP a_DT new_JJ application_NN performance_NN metric_NN :_: weighted_JJ average_JJ efficiency_NN which_WDT describes_VBZ the_DT application_NN performance_NN on_IN a_DT heterogeneous_JJ set_NN of_IN resources_NNS ._.
+The_DT coordinator_NN uses_VBZ statistics_NNS from_IN application_NN processors_NNS to_TO compute_VB the_DT weighted_JJ average_JJ efficiency_NN ._.
+If_IN the_DT efficiency_NN falls_VBZ above_IN or_CC below_IN certain_JJ thresholds_NNS ,_, the_DT coordinator_NN decides_VBZ on_IN adding_VBG or_CC removing_VBG processors_NNS ._.
+A_DT heuristic_NN formula_NN is_VBZ used_VBN to_TO decide_VB which_WDT processors_NNS have_VBP to_TO be_VB removed_VBN ._.
+During_IN this_DT process_NN the_DT coordinator_NN learns_VBZ the_DT application_NN requirements_NNS by_IN remembering_VBG the_DT characteristics_NNS of_IN the_DT removed_VBN processors_NNS ._.
+These_DT requirements_NNS are_VBP then_RB used_VBN to_TO guide_VB the_DT adding_VBG of_IN new_JJ processors_NNS ._.
+3_LS ._.
+#_# Weighted_VBN average_JJ efficiency_NN In_IN traditional_JJ parallel_JJ computing_NN ,_, a_DT standard_JJ metric_JJ describing_VBG the_DT performance_NN of_IN a_DT parallel_JJ application_NN is_VBZ efficiency_NN ._.
+Efficiency_NN is_VBZ defined_VBN as_IN the_DT average_JJ utilization_NN of_IN the_DT processors_NNS ,_, that_DT is_VBZ ,_, the_DT fraction_NN of_IN time_NN the_DT processors_NNS spend_VBP doing_VBG useful_JJ work_NN rather_RB than_IN being_VBG idle_JJ or_CC communicating_VBG with_IN other_JJ processors_NNS -LRB-_-LRB- ##_NNS -RRB-_-RRB- ._.
+efficiency_NN =_JJ 1_CD n_NN n_NN i_FW =_JJ #_# -LRB-_-LRB- #_# overheadi_NNS -RRB-_-RRB- where_WRB n_NN is_VBZ the_DT number_NN of_IN processors_NNS and_CC overheadi_NN is_VBZ the_DT fraction_NN of_IN time_NN the_DT ith_NN processor_NN spends_VBZ being_VBG idle_JJ or_CC communicating_VBG ._.
+Efficiency_NN indicates_VBZ the_DT benefit_NN of_IN using_VBG multiple_JJ processors_NNS ._.
+Typically_RB ,_, the_DT efficiency_NN drops_VBZ as_IN new_JJ processors_NNS are_VBP added_VBN to_TO the_DT computation_NN ._.
+Therefore_RB ,_, achieving_VBG a_DT high_JJ speedup_NN -LRB-_-LRB- and_CC thus_RB a_DT low_JJ execution_NN time_NN -RRB-_-RRB- and_CC achieving_VBG a_DT high_JJ system_NN utilization_NN are_VBP conflicting_VBG goals_NNS -LRB-_-LRB- ##_NNS -RRB-_-RRB- ._.
+The_DT optimal_JJ number_NN of_IN processors_NNS is_VBZ the_DT number_NN for_IN which_WDT the_DT ratio_NN of_IN efficiency_NN to_TO execution_NN time_NN is_VBZ maximized_VBN ._.
+Adding_VBG processors_NNS beyond_IN this_DT number_NN yields_NNS little_JJ benefit_NN ._.
+This_DT number_NN is_VBZ typically_RB hard_JJ to_TO find_VB ,_, but_CC in_IN -LRB-_-LRB- ##_NN -RRB-_-RRB- it_PRP was_VBD theoretically_RB proven_VBN that_IN if_IN the_DT optimal_JJ number_NN of_IN processors_NNS is_VBZ used_VBN ,_, the_DT efficiency_NN is_VBZ at_IN least_JJS ##_CD %_NN ._.
+Therefore_RB ,_, adding_VBG processors_NNS when_WRB efficiency_NN is_VBZ smaller_JJR or_CC equal_JJ to_TO ##_CD %_NN will_MD only_RB decrease_VB the_DT system_NN utilization_NN without_IN significant_JJ performance_NN gains_NNS ._.
+For_IN heterogeneous_JJ environments_NNS with_IN different_JJ processor_NN speeds_NNS ,_, we_PRP extended_VBD the_DT notion_NN of_IN efficiency_NN and_CC introduced_VBN weighted_JJ average_JJ efficiency_NN ._.
+wa_NN efficiency_NN =_JJ 1_CD n_NN n_NN i_FW =_JJ #_# speedi_NNS -LRB-_-LRB- #_# overheadi_NNS -RRB-_-RRB- The_DT useful_JJ work_NN done_VBN by_IN a_DT processor_NN -LRB-_-LRB- #_# overheadi_NNS -RRB-_-RRB- is_VBZ weighted_VBN by_IN multiplying_VBG it_PRP by_IN the_DT speed_NN of_IN this_DT processor_NN relative_JJ to_TO the_DT fastest_JJS processor_NN ._.
+The_DT fastest_JJS processor_NN has_VBZ speed_NN =_JJ #_# ,_, for_IN others_NNS holds_VBZ :_: #_# <_JJR speed_NN #_# ._.
+Therefore_RB ,_, slower_JJR processors_NNS are_VBP modeled_VBN as_IN fast_JJ ones_NNS that_WDT spend_VBP a_DT large_JJ fraction_NN of_IN the_DT time_NN being_VBG idle_JJ ._.
+Weighted_JJ average_JJ efficiency_NN reflects_VBZ the_DT fact_NN that_IN adding_VBG slow_JJ processors_NNS yields_NNS less_RBR benefit_NN than_IN adding_VBG fast_JJ processors_NNS ._.
+In_IN the_DT heterogeneous_JJ world_NN ,_, it_PRP is_VBZ hardly_RB beneficial_JJ to_TO add_VB processors_NNS if_IN the_DT efficiency_NN is_VBZ lower_JJR than_IN ##_CD %_NN unless_IN the_DT added_VBN processor_NN is_VBZ faster_RBR than_IN some_DT of_IN the_DT currently_RB used_VBN processors_NNS ._.
+Adding_VBG faster_RBR processors_NNS might_MD be_VB beneficial_JJ regardless_RB of_IN the_DT efficiency_NN ._.
+3_LS ._.
+#_# Application_NN monitoring_NN Each_DT processor_NN measures_VBZ the_DT time_NN it_PRP spends_VBZ communicating_VBG or_CC being_VBG idle_JJ ._.
+The_DT computation_NN is_VBZ divided_VBN into_IN monitoring_NN periods_NNS ._.
+After_IN each_DT monitoring_NN period_NN ,_, the_DT processors_NNS compute_VBP their_PRP$ overhead_NN over_IN this_DT period_NN as_IN the_DT percentage_NN of_IN the_DT time_NN they_PRP spent_VBD being_VBG idle_JJ or_CC communicating_VBG in_IN this_DT period_NN ._.
+Apart_RB from_IN total_JJ overhead_NN ,_, each_DT processor_NN also_RB computes_VBZ the_DT overhead_NN of_IN inter-cluster_NN and_CC intracluster_NN communication_NN ._.
+To_TO calculate_VB weighted_JJ average_JJ efficiency_NN ,_, we_PRP need_VBP to_TO know_VB the_DT relative_JJ speeds_NNS of_IN the_DT processors_NNS ,_, which_WDT depend_VBP on_IN the_DT application_NN and_CC the_DT problem_NN size_NN used_VBN ._.
+Since_IN it_PRP is_VBZ impractical_JJ to_TO run_VB the_DT 122_CD whole_JJ application_NN on_IN each_DT processor_NN separately_RB ,_, we_PRP use_VBP applicationspecific_JJ benchmarks_NNS ._.
+Currently_RB we_PRP use_VBP the_DT same_JJ application_NN with_IN a_DT small_JJ problem_NN size_NN as_IN a_DT benchmark_NN and_CC we_PRP require_VBP the_DT application_NN programmer_NN to_TO specify_VB this_DT problem_NN size_NN ._.
+This_DT approach_NN requires_VBZ extra_JJ effort_NN from_IN the_DT programmer_NN to_TO find_VB the_DT right_JJ problem_NN size_NN and_CC possibly_RB to_TO produce_VB input_NN files_NNS for_IN this_DT problem_NN size_NN ,_, which_WDT may_MD be_VB hard_JJ ._.
+In_IN the_DT future_NN ,_, we_PRP are_VBP planning_VBG to_TO generate_VB benchmarks_NNS automatically_RB by_IN choosing_VBG a_DT random_JJ subset_NN of_IN the_DT task_NN graph_NN of_IN the_DT original_JJ application_NN ._.
+Benchmarks_NNS have_VBP to_TO be_VB re-run_JJ periodically_RB because_IN the_DT speed_NN of_IN a_DT processor_NN might_MD change_VB if_IN it_PRP becomes_VBZ overloaded_JJ by_IN another_DT application_NN -LRB-_-LRB- for_IN time-shared_JJ machines_NNS -RRB-_-RRB- ._.
+There_EX is_VBZ a_DT trade-off_NN between_IN the_DT accuracy_NN of_IN speed_NN measurements_NNS and_CC the_DT overhead_NN it_PRP incurs_VBZ ._.
+The_DT longer_JJR the_DT benchmark_NN ,_, the_DT greater_JJR the_DT accuracy_NN of_IN the_DT measurement_NN ._.
+The_DT more_RBR often_RB it_PRP is_VBZ run_VBN ,_, the_DT faster_RBR changes_NNS in_IN processor_NN speed_NN are_VBP detected_VBN ._.
+In_IN our_PRP$ current_JJ implementation_NN ,_, the_DT application_NN programmer_NN specifies_VBZ the_DT length_NN of_IN the_DT benchmark_NN -LRB-_-LRB- by_IN specifying_VBG its_PRP$ problem_NN size_NN -RRB-_-RRB- and_CC the_DT maximal_JJ overhead_NN it_PRP is_VBZ allowed_VBN to_TO cause_VB ._.
+Processors_NNS run_VBP the_DT benchmark_NN at_IN such_JJ frequency_NN so_RB as_IN not_RB to_TO exceed_VB the_DT specified_VBN overhead_NN ._.
+In_IN the_DT future_NN ,_, we_PRP plan_VBP to_TO combine_VB benchmarking_VBG with_IN monitoring_VBG the_DT load_NN of_IN the_DT processor_NN which_WDT would_MD allow_VB us_PRP to_TO avoid_VB running_VBG the_DT benchmark_NN if_IN no_DT change_NN in_IN processor_NN load_NN is_VBZ detected_VBN ._.
+This_DT optimization_NN will_MD further_RBR reduce_VB the_DT benchmarking_NN overhead_NN ._.
+Note_VB that_IN the_DT benchmarking_NN overhead_NN could_MD be_VB avoided_VBN completely_RB for_IN more_JJR regular_JJ applications_NNS ,_, for_IN example_NN ,_, for_IN masterworker_NN applications_NNS with_IN tasks_NNS of_IN equal_JJ or_CC similar_JJ size_NN ._.
+The_DT processor_NN speed_NN could_MD then_RB be_VB measured_VBN by_IN counting_VBG the_DT tasks_NNS processed_VBN by_IN this_DT processor_NN within_IN one_CD monitoring_NN period_NN ._.
+Unfortunately_RB ,_, divide-and-conquer_JJ applications_NNS typically_RB exhibit_VBP a_DT very_RB irregular_JJ structure_NN ._.
+The_DT sizes_NNS of_IN tasks_NNS can_MD vary_VB by_IN many_JJ orders_NNS of_IN magnitude_NN ._.
+At_IN the_DT end_NN of_IN each_DT monitoring_NN period_NN ,_, the_DT processors_NNS send_VBP the_DT overhead_NN statistics_NNS and_CC processor_NN speeds_NNS to_TO the_DT coordinator_NN ._.
+Periodically_RB ,_, the_DT coordinator_NN computes_VBZ the_DT weighted_JJ average_JJ efficiency_NN and_CC other_JJ statistics_NNS ,_, such_JJ as_IN average_JJ inter-cluster_JJ overhead_NN or_CC overheads_NNS in_IN each_DT cluster_NN ._.
+The_DT clocks_NNS of_IN the_DT processors_NNS are_VBP not_RB synchronized_VBN with_IN each_DT other_JJ or_CC with_IN the_DT clock_NN of_IN the_DT coordinator_NN ._.
+Each_DT processor_NN decides_VBZ separately_RB when_WRB it_PRP is_VBZ time_NN to_TO send_VB data_NNS ._.
+Occasionally_RB ,_, the_DT coordinator_NN may_MD miss_VB data_NNS at_IN the_DT end_NN of_IN a_DT monitoring_NN period_NN ,_, so_IN it_PRP has_VBZ to_TO use_VB data_NNS from_IN the_DT previous_JJ monitoring_NN period_NN for_IN these_DT processors_NNS ._.
+This_DT causes_VBZ small_JJ inaccuracies_NNS in_IN the_DT calculations_NNS of_IN the_DT coordinator_NN ,_, but_CC does_VBZ not_RB influence_VB the_DT performance_NN of_IN adaptation_NN ._.
+3_LS ._.
+#_# Adaptation_NNP strategy_NN The_DT adaptation_NN coordinator_NN tries_VBZ to_TO keep_VB the_DT weighted_JJ average_JJ efficiency_NN between_IN Emin_NNP and_CC Emax_NNP ._.
+When_WRB it_PRP exceeds_VBZ Emax_NNP ,_, the_DT coordinator_NN requests_NNS new_JJ processors_NNS from_IN the_DT scheduler_NN ._.
+The_DT number_NN of_IN requested_VBN processors_NNS depends_VBZ on_IN the_DT current_JJ efficiency_NN :_: the_DT higher_JJR the_DT efficiency_NN ,_, the_DT more_JJR processors_NNS are_VBP requested_VBN ._.
+The_DT coordinator_NN starts_VBZ removing_VBG processors_NNS when_WRB the_DT weighted_JJ average_JJ efficiency_NN drops_VBZ below_IN Emin_NNP ._.
+The_DT number_NN of_IN nodes_NNS that_WDT are_VBP removed_VBN again_RB depends_VBZ on_IN the_DT weighted_JJ average_JJ efficiency_NN ._.
+The_DT lower_JJR the_DT efficiency_NN ,_, the_DT more_RBR nodes_NNS are_VBP removed_VBN ._.
+The_DT thresholds_NNS we_PRP use_VBP are_VBP Emax_NN =_JJ ##_CD %_NN ,_, because_IN we_PRP know_VBP that_IN adding_VBG processors_NNS when_WRB efficiency_NN is_VBZ lower_JJR does_VBZ not_RB make_VB sense_NN ,_, and_CC Emin_NN =_JJ ##_CD %_NN ._.
+Efficiency_NN of_IN ##_CD %_NN or_CC lower_JJR might_MD indicate_VB performance_NN problems_NNS such_JJ as_IN low_JJ bandwidth_NN or_CC overloaded_JJ processors_NNS ._.
+In_IN that_DT case_NN ,_, removing_VBG bad_JJ processors_NNS will_MD be_VB beneficial_JJ for_IN the_DT application_NN ._.
+Such_JJ low_JJ efficiency_NN might_MD also_RB indicate_VB that_IN we_PRP simply_RB have_VBP too_RB many_JJ processors_NNS ._.
+In_IN that_DT case_NN ,_, removing_VBG some_DT processors_NNS may_MD not_RB be_VB beneficial_JJ but_CC it_PRP will_MD not_RB harm_VB the_DT application_NN ._.
+The_DT coordinator_NN always_RB tries_VBZ to_TO remove_VB the_DT worst_JJS processors_NNS ._.
+The_DT badness_NN of_IN a_DT processor_NN is_VBZ determined_VBN by_IN the_DT following_VBG formula_NN :_: proc_NN badnessi_NN =_JJ 1_CD speedi_NN +_CC ic_JJ overheadi_NN +_CC inW_NN orstCluster_NN -LRB-_-LRB- i_LS -RRB-_-RRB- The_DT processor_NN is_VBZ considered_VBN bad_JJ if_IN it_PRP has_VBZ low_JJ speed_NN -LRB-_-LRB- #_# speed_NN is_VBZ big_JJ -RRB-_-RRB- and_CC high_JJ inter-cluster_NN overhead_NN -LRB-_-LRB- ic_JJ overhead_NN -RRB-_-RRB- ._.
+High_JJ intercluster_NN overhead_NN indicates_VBZ that_IN the_DT bandwidth_NN to_TO this_DT processor_NN ''_'' s_NNS cluster_NN is_VBZ insufficient_JJ ._.
+Removing_VBG processors_NNS located_VBN in_IN a_DT single_JJ cluster_NN is_VBZ desirable_JJ since_IN it_PRP decreases_VBZ the_DT amount_NN of_IN wide-area_NN communication_NN ._.
+Therefore_RB ,_, processors_NNS belonging_VBG to_TO the_DT worst_JJS cluster_NN are_VBP preferred_VBN ._.
+Function_NN inW_NN orstCluster_NN -LRB-_-LRB- i_LS -RRB-_-RRB- returns_NNS #_# for_IN processors_NNS belonging_VBG to_TO the_DT worst_JJS cluster_NN and_CC #_# otherwise_RB ._.
+The_DT badness_NN of_IN clusters_NNS is_VBZ computed_VBN similarly_RB to_TO the_DT badness_NN of_IN processors_NNS :_: cluster_NN badnessi_NN =_JJ 1_CD speedi_NN +_CC ic_JJ overheadi_NNS The_DT speed_NN of_IN a_DT cluster_NN is_VBZ the_DT sum_NN of_IN processor_NN speeds_NNS normalized_VBD to_TO the_DT speed_NN of_IN the_DT fastest_JJS cluster_NN ._.
+The_DT ic_JJ overhead_NN of_IN a_DT cluster_NN is_VBZ an_DT average_NN of_IN processor_NN inter-cluster_NN overheads_NNS ._.
+The_DT ,_, and_CC coefficients_NNS determine_VBP the_DT relative_JJ importance_NN of_IN the_DT terms_NNS ._.
+Those_DT coefficients_NNS are_VBP established_VBN empirically_RB ._.
+Currently_RB we_PRP are_VBP using_VBG the_DT following_VBG values_NNS :_: =_JJ #_# ,_, =_JJ ###_CD and_CC =_JJ ##_NN ,_, based_VBN on_IN the_DT observation_NN that_IN ic_JJ overhead_JJ >_JJR #_# ._.
+#_# indicates_VBZ bandwidth_NN problems_NNS and_CC processors_NNS with_IN speed_NN <_JJR #_# ._.
+##_NN do_VBP not_RB contribute_VB to_TO the_DT computation_NN ._.
+Additionally_RB ,_, when_WRB one_CD of_IN the_DT clusters_NNS has_VBZ an_DT exceptionally_RB high_JJ inter-cluster_NN overhead_NN -LRB-_-LRB- larger_JJR than_IN #_# ._.
+##_NN -RRB-_-RRB- ,_, we_PRP conclude_VBP that_IN the_DT bandwidth_NN on_IN the_DT link_NN between_IN this_DT cluster_NN and_CC the_DT Internet_NN backbone_NN is_VBZ insufficient_JJ for_IN the_DT application_NN ._.
+In_IN that_DT case_NN ,_, we_PRP simply_RB remove_VB the_DT whole_JJ cluster_NN instead_RB of_IN computing_VBG node_NN badness_NN and_CC removing_VBG the_DT worst_JJS nodes_NNS ._.
+After_IN deciding_VBG which_WDT nodes_NNS are_VBP removed_VBN ,_, the_DT coordinator_NN sends_VBZ a_DT message_NN to_TO these_DT nodes_NNS and_CC the_DT nodes_NNS leave_VBP the_DT computation_NN ._.
+Figure_NNP #_# shows_VBZ a_DT schematic_JJ view_NN of_IN the_DT adaptation_NN strategy_NN ._.
+Dashed_VBN lines_NNS indicate_VBP a_DT part_NN that_WDT is_VBZ not_RB supported_VBN yet_RB ,_, as_RB will_MD be_VB explained_VBN below_IN ._.
+This_DT simple_JJ adaptation_NN strategy_NN allows_VBZ us_PRP to_TO improve_VB application_NN performance_NN in_IN several_JJ situations_NNS typical_JJ for_IN the_DT Grid_NNP :_: If_IN an_DT application_NN is_VBZ started_VBN on_IN fewer_JJR processors_NNS than_IN its_PRP$ degree_NN of_IN parallelism_NN allows_VBZ ,_, it_PRP will_MD automatically_RB expand_VB to_TO more_JJR processors_NNS -LRB-_-LRB- as_RB soon_RB as_IN there_EX are_VBP extra_JJ resources_NNS available_JJ -RRB-_-RRB- ._.
+Conversely_RB ,_, if_IN an_DT application_NN is_VBZ started_VBN on_IN more_JJR processors_NNS than_IN it_PRP can_MD efficiently_RB use_VB ,_, a_DT part_NN of_IN the_DT processors_NNS will_MD be_VB released_VBN ._.
+If_IN an_DT application_NN is_VBZ running_VBG on_IN an_DT appropriate_JJ set_NN of_IN resources_NNS but_CC after_IN a_DT while_IN some_DT of_IN the_DT resources_NNS -LRB-_-LRB- processors_NNS and_CC /_: or_CC network_NN links_NNS -RRB-_-RRB- become_VBP overloaded_JJ and_CC slow_VB down_RP the_DT computation_NN ,_, the_DT overloaded_JJ resources_NNS will_MD be_VB removed_VBN ._.
+After_IN removing_VBG the_DT overloaded_JJ resources_NNS ,_, the_DT weighted_JJ average_JJ efficiency_NN will_MD increase_VB to_TO above_IN the_DT Emax_NN threshold_NN and_CC the_DT adaptation_NN coordinator_NN will_MD try_VB to_TO add_VB new_JJ resources_NNS ._.
+Therefore_RB ,_, the_DT application_NN will_MD be_VB migrated_VBN from_IN overloaded_JJ resources_NNS ._.
+If_IN some_DT of_IN the_DT original_JJ resources_NNS chosen_VBN by_IN the_DT user_NN are_VBP inappropriate_JJ for_IN the_DT application_NN ,_, for_IN example_NN the_DT bandwidth_NN to_TO one_CD of_IN the_DT clusters_NNS is_VBZ too_RB small_JJ ,_, the_DT inappropriate_JJ resources_NNS will_MD be_VB removed_VBN ._.
+If_IN necessary_JJ ,_, the_DT adaptation_NN component_NN will_MD try_VB to_TO add_VB other_JJ resources_NNS ._.
+If_IN during_IN the_DT computation_NN a_DT substantial_JJ part_NN of_IN the_DT processors_NNS will_MD crash_VB ,_, the_DT adaptation_NN component_NN will_MD try_VB to_TO add_VB new_JJ resources_NNS to_TO replace_VB the_DT crashed_VBN processors_NNS ._.
+123_CD 0_CD 2000_CD 4000_CD 6000_CD runtime_NN -LRB-_-LRB- secs_NNS ._. -RRB-_-RRB-
+Scenario_NN #_# a_DT b_NN c_NN Scenario_NN #_# Scenario_NN #_# Scenario_NN #_# Scenario_NN #_# Scenario_NN #_# without_IN monitoring_NN and_CC adaptation_NN -LRB-_-LRB- runtime_NN #_# -RRB-_-RRB- with_IN monitoring_NN and_CC adaptation_NN -LRB-_-LRB- runtime_NN #_# -RRB-_-RRB- with_IN monitoring_NN but_CC no_DT adaptation_NN -LRB-_-LRB- runtime_NN #_# -RRB-_-RRB- Figure_NNP #_# ._.
+The_DT runtimes_NNS of_IN the_DT Barnes-Hut_JJ application_NN ,_, scenarios_NNS 0-5_CD add_VBP nodes_NNS faster_RBR nodes_NNS available_JJ if_IN compute_VB weighted_JJ average_JJ efficiency_NN E_NN wa_NN wait_VB &_CC collect_VB statistics_NNS rank_VB nodes_NNS remove_VB worst_JJS nodes_NNS waE_NNP Ewa_NNP Y_NN N_NN N_NN Y_NN above_IN if_IN below_IN if_IN Emin_NNP maxE_NNP Figure_NNP #_# ._.
+Adaptation_NN strategy_NN If_IN the_DT application_NN degree_NN of_IN parallelism_NN is_VBZ changing_VBG during_IN the_DT computation_NN ,_, the_DT number_NN of_IN nodes_NNS the_DT application_NN is_VBZ running_VBG on_RP will_MD be_VB automatically_RB adjusted_VBN ._.
+Further_JJ improvements_NNS are_VBP possible_JJ ,_, but_CC require_VBP extra_JJ functionality_NN from_IN the_DT grid_NN scheduler_NN and_CC /_: or_CC integration_NN with_IN monitoring_NN services_NNS such_JJ as_IN NWS_NN -LRB-_-LRB- ##_NN -RRB-_-RRB- ._.
+For_IN example_NN ,_, adding_VBG nodes_NNS to_TO a_DT computation_NN can_MD be_VB improved_VBN ._.
+Currently_RB ,_, we_PRP add_VBP any_DT nodes_NNS the_DT scheduler_NN gives_VBZ us_PRP ._.
+However_RB ,_, it_PRP would_MD be_VB more_RBR efficient_JJ to_TO ask_VB for_IN the_DT fastest_JJS processors_NNS among_IN the_DT available_JJ ones_NNS ._.
+This_DT could_MD be_VB done_VBN ,_, for_IN example_NN ,_, by_IN passing_VBG a_DT benchmark_NN to_TO the_DT grid_NN scheduler_NN ,_, so_RB that_IN it_PRP can_MD measure_VB processor_NN speeds_NNS in_IN an_DT application_NN specific_JJ way_NN ._.
+Typically_RB ,_, it_PRP would_MD be_VB enough_RB to_TO measure_VB the_DT speed_NN of_IN one_CD processor_NN per_IN site_NN ,_, since_IN clusters_NNS and_CC supercomputers_NNS are_VBP usually_RB homogeneous_JJ ._.
+An_DT alternative_JJ approach_NN would_MD be_VB ranking_VBG the_DT processors_NNS based_VBN on_IN parameters_NNS such_JJ as_IN clock_NN speed_NN and_CC cache_NN size_NN ._.
+This_DT approach_NN is_VBZ sometimes_RB used_VBN for_IN resource_NN selection_NN for_IN sequential_JJ applications_NNS -LRB-_-LRB- ##_NNS -RRB-_-RRB- ._.
+However_RB ,_, it_PRP is_VBZ less_RBR accurate_JJ than_IN using_VBG an_DT application_NN specific_JJ benchmark_NN ._.
+Also_RB ,_, during_IN application_NN execution_NN ,_, we_PRP can_MD learn_VB some_DT application_NN requirements_NNS and_CC pass_VB them_PRP to_TO the_DT scheduler_NN ._.
+One_CD example_NN is_VBZ minimal_JJ bandwidth_NN required_VBN by_IN the_DT application_NN ._.
+The_DT lower_JJR bound_VBN on_IN minimal_JJ required_VBN bandwidth_NN is_VBZ tightened_VBN each_DT time_NN a_DT cluster_NN with_IN high_JJ inter-cluster_JJ overhead_NN is_VBZ removed_VBN ._.
+The_DT bandwidth_NN between_IN each_DT pair_NN of_IN clusters_NNS is_VBZ estimated_VBN during_IN the_DT computation_NN by_IN measuring_VBG data_NNS transfer_NN times_NNS ,_, and_CC the_DT bandwidth_NN to_TO the_DT removed_VBN cluster_NN is_VBZ set_VBN as_IN a_DT minimum_NN ._.
+Alternatively_RB ,_, information_NN from_IN a_DT grid_NN monitoring_NN system_NN can_MD be_VB used_VBN ._.
+Such_JJ bounds_NNS can_MD be_VB passed_VBN to_TO the_DT scheduler_NN to_TO avoid_VB adding_VBG inappropriate_JJ resources_NNS ._.
+It_PRP is_VBZ especially_RB important_JJ when_WRB migrating_VBG from_IN resources_NNS that_WDT cause_VBP performance_NN problems_NNS :_: we_PRP have_VBP to_TO be_VB careful_JJ not_RB to_TO add_VB the_DT resources_NNS we_PRP have_VBP just_RB removed_VBN ._.
+Currently_RB we_PRP use_VBP blacklisting_NN -_: we_PRP simply_RB do_VBP not_RB allow_VB adding_VBG resources_NNS we_PRP removed_VBD before_RB ._.
+This_DT means_VBZ ,_, however_RB ,_, that_IN we_PRP can_MD not_RB use_VB these_DT resources_NNS even_RB if_IN the_DT cause_NN of_IN the_DT performance_NN problem_NN disappears_VBZ ,_, e_LS ._.
+g_NN ._.
+the_DT bandwidth_NN of_IN a_DT link_NN might_MD improve_VB if_IN the_DT background_NN traffic_NN diminishes_VBZ ._.
+We_PRP are_VBP currently_RB not_RB able_JJ to_TO perform_VB opportunistic_JJ migration_NN -_: migrating_VBG to_TO better_JJR resources_NNS when_WRB they_PRP are_VBP discovered_VBN ._.
+If_IN an_DT application_NN runs_VBZ with_IN efficiency_NN between_IN Emin_NNP and_CC Emax_NNP ,_, the_DT adaptation_NN component_NN will_MD not_RB undertake_VB any_DT action_NN ,_, even_RB if_IN better_JJR resources_NNS become_VBP available_JJ ._.
+Enabling_VBG opportunistic_JJ migration_NN requires_VBZ ,_, again_RB ,_, the_DT ability_NN to_TO specify_VB to_TO the_DT scheduler_NN what_WDT better_JJR resources_NNS are_VBP -LRB-_-LRB- faster_RBR ,_, with_IN a_DT certain_JJ minimal_JJ bandwidth_NN -RRB-_-RRB- and_CC receiving_VBG notifications_NNS when_WRB such_JJ resources_NNS become_VBP available_JJ ._.
+Existing_VBG grid_NN schedulers_NNS such_JJ as_IN GRAM_NN from_IN the_DT Globus_NNP Toolkit_NNP -LRB-_-LRB- ##_CD -RRB-_-RRB- do_VBP not_RB support_VB such_JJ functionality_NN ._.
+The_DT developers_NNS of_IN the_DT KOALA_NN metascheduler_NN -LRB-_-LRB- ##_NN -RRB-_-RRB- have_VBP recently_RB started_VBN a_DT project_NN whose_WP$ goal_NN is_VBZ to_TO provide_VB support_NN for_IN adaptive_JJ applications_NNS ._.
+We_PRP are_VBP currently_RB discussing_VBG with_IN them_PRP the_DT possibility_NN of_IN providing_VBG the_DT functionalities_NNS required_VBN by_IN us_PRP ,_, aiming_VBG to_TO extend_VB our_PRP$ adaptivity_NN strat124_NN egy_NN to_TO support_VB opportunistic_JJ migration_NN and_CC to_TO improve_VB the_DT initial_JJ resource_NN selection_NN ._.
+4_LS ._.
+Implementation_NN We_PRP incorporated_VBD our_PRP$ adaptation_NN mechanism_NN into_IN Satin_NN -_: a_DT Java_NNP framework_NN for_IN creating_VBG grid-enabled_JJ divide-and-conquer_JJ applications_NNS ._.
+With_IN Satin_NNP ,_, the_DT programmer_NN annotates_VBZ the_DT sequential_JJ code_NN with_IN divide-and-conquer_JJ primitives_NNS and_CC compiles_VBZ the_DT annotated_JJ code_NN with_IN a_DT special_JJ Satin_NN compiler_NN that_WDT generates_VBZ the_DT necessary_JJ communication_NN and_CC load_NN balancing_NN code_NN ._.
+Satin_NNP uses_VBZ a_DT very_RB efficient_JJ ,_, grid-aware_JJ load_NN balancing_VBG algorithm_NN -_: Cluster-aware_NN Random_NNP Work_NNP Stealing_NNP -LRB-_-LRB- CRS_NNP -RRB-_-RRB- -LRB-_-LRB- ##_CD -RRB-_-RRB- ,_, which_WDT hides_VBZ wide-area_JJ latencies_NNS by_IN overlapping_VBG local_JJ and_CC remote_JJ stealing_NN ._.
+Satin_NNP also_RB provides_VBZ transparent_JJ fault_NN tolerance_NN and_CC malleability_NN -LRB-_-LRB- ##_NN -RRB-_-RRB- ._.
+With_IN Satin_NNP ,_, removing_VBG and_CC adding_VBG processors_NNS from_IN /_: to_TO an_DT ongoing_JJ computation_NN incurs_VBZ little_JJ overhead_NN ._.
+We_PRP instrumented_VBD the_DT Satin_NNP runtime_NN system_NN to_TO collect_VB runtime_NN statistics_NNS and_CC send_VB them_PRP to_TO the_DT adaptation_NN coordinator_NN ._.
+The_DT coordinator_NN is_VBZ implemented_VBN as_IN a_DT separate_JJ process_NN ._.
+Both_DT coordinator_NN and_CC Satin_NN are_VBP implemented_VBN entirely_RB in_IN Java_NNP on_IN top_NN of_IN the_DT Ibis_NNP communication_NN library_NN -LRB-_-LRB- ##_NN -RRB-_-RRB- ._.
+The_DT core_NN of_IN Ibis_NNP is_VBZ also_RB implemented_VBN in_IN Java_NNP ._.
+The_DT resulting_VBG system_NN therefore_RB is_VBZ highly_RB portable_JJ -LRB-_-LRB- due_JJ to_TO Java_NNP ''_'' s_VBZ write_VB once_RB ,_, run_VBP anywhere_RB property_NN -RRB-_-RRB- allowing_VBG the_DT software_NN to_TO run_VB unmodified_JJ on_IN a_DT heterogeneous_JJ grid_NN ._.
+Ibis_NNP also_RB provides_VBZ the_DT Ibis_NNP Registry_NNP ._.
+The_DT Registry_NN provides_VBZ ,_, among_IN others_NNS ,_, a_DT membership_NN service_NN to_TO the_DT processors_NNS taking_VBG part_NN in_IN the_DT computation_NN ._.
+The_DT adaptation_NN coordinator_NN uses_VBZ the_DT Registry_NN to_TO discover_VB the_DT application_NN processes_NNS ,_, and_CC the_DT application_NN processes_NNS use_VBP this_DT service_NN to_TO discover_VB each_DT other_JJ ._.
+The_DT Registry_NN also_RB offers_VBZ fault_NN detection_NN -LRB-_-LRB- additional_JJ to_TO the_DT fault_NN detection_NN provided_VBN by_IN the_DT communication_NN channels_NNS -RRB-_-RRB- ._.
+Finally_RB ,_, the_DT Registry_NNP provides_VBZ the_DT possibility_NN to_TO send_VB signals_NNS to_TO application_NN processes_NNS ._.
+The_DT coordinator_NN uses_VBZ this_DT functionality_NN to_TO notify_VB the_DT processors_NNS that_IN they_PRP need_VBP to_TO leave_VB the_DT computation_NN ._.
+Currently_RB the_DT Registry_NN is_VBZ implemented_VBN as_IN a_DT centralized_JJ server_NN ._.
+For_IN requesting_VBG new_JJ nodes_NNS ,_, the_DT Zorilla_NNP -LRB-_-LRB- #_# -RRB-_-RRB- system_NN is_VBZ used_VBN -_: a_DT peer-to-peer_JJ supercomputing_NN middleware_NN which_WDT allows_VBZ straightforward_JJ allocation_NN of_IN processors_NNS in_IN multiple_JJ clusters_NNS and_CC /_: or_CC supercomputers_NNS ._.
+Zorilla_NNP provides_VBZ locality-aware_JJ scheduling_NN ,_, which_WDT tries_VBZ to_TO allocate_VB processors_NNS that_WDT are_VBP located_JJ close_RB to_TO each_DT other_JJ in_IN terms_NNS of_IN communication_NN latency_NN ._.
+In_IN the_DT future_NN ,_, Zorilla_NNP will_MD also_RB support_VB bandwidth-aware_JJ scheduling_NN ,_, which_WDT tries_VBZ to_TO maximize_VB the_DT total_JJ bandwidth_NN in_IN the_DT system_NN ._.
+Zorilla_NNP can_MD be_VB easily_RB replaced_VBN with_IN another_DT grid_NN scheduler_NN ._.
+In_IN the_DT future_NN ,_, we_PRP are_VBP planning_VBG to_TO integrate_VB our_PRP$ adaptation_NN component_NN with_IN GAT_NN -LRB-_-LRB- #_# -RRB-_-RRB- which_WDT is_VBZ becoming_VBG a_DT standard_NN in_IN the_DT grid_NN community_NN and_CC KOALA_NN -LRB-_-LRB- ##_NN -RRB-_-RRB- a_DT scheduler_NN that_WDT provides_VBZ co-allocation_NN on_IN top_NN of_IN standard_JJ grid_NN middleware_NN ,_, such_JJ as_IN the_DT Globus_NNP Toolkit_NNP -LRB-_-LRB- ##_CD -RRB-_-RRB- ._.
+5_CD ._.
+Performance_NNP evaluation_NN In_IN this_DT section_NN ,_, we_PRP will_MD evaluate_VB our_PRP$ approach_NN ._.
+We_PRP will_MD demonstrate_VB the_DT performance_NN of_IN our_PRP$ mechanism_NN in_IN a_DT few_JJ scenarios_NNS ._.
+The_DT first_JJ scenario_NN is_VBZ an_DT ideal_JJ situation_NN :_: the_DT application_NN runs_VBZ on_IN a_DT reasonable_JJ set_NN of_IN nodes_NNS -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, such_JJ that_IN the_DT efficiency_NN is_VBZ around_IN ##_CD %_NN -RRB-_-RRB- and_CC no_DT problems_NNS such_JJ as_IN overloaded_JJ networks_NNS and_CC processors_NNS ,_, crashing_VBG processors_NNS etc_FW ._.
+occur_VB ._.
+This_DT scenario_NN allows_VBZ us_PRP to_TO measure_VB the_DT overhead_NN of_IN the_DT adaptation_NN support_NN ._.
+The_DT remaining_VBG scenarios_NNS are_VBP typical_JJ for_IN grid_NN environments_NNS and_CC demonstrate_VBP that_IN with_IN our_PRP$ adaptation_NN support_VBP the_DT application_NN can_MD avoid_VB serious_JJ performance_NN bottlenecks_NNS such_JJ as_IN overloaded_JJ processors_NNS or_CC network_NN links_NNS ._.
+For_IN each_DT scenario_NN ,_, we_PRP compare_VBP the_DT performance_NN of_IN an_DT application_NN with_IN adaptation_NN support_NN to_TO a_DT non-adaptive_JJ version_NN ._.
+In_IN the_DT non-adaptive_JJ version_NN ,_, the_DT coordinator_NN does_VBZ not_RB collect_VB statistics_NNS and_CC no_DT benchmarking_NN -LRB-_-LRB- for_IN measuring_VBG processor_NN speeds_NNS -RRB-_-RRB- is_VBZ performed_VBN ._.
+In_IN the_DT ideal_JJ scenario_NN ,_, 0_CD #_# ##_CD ##_CD iteration_NN number_NN 0_CD 200_CD 400_CD 600_CD iterationduration_NN -LRB-_-LRB- secs_NNS ._. -RRB-_-RRB-
+starting_VBG on_IN #_# nodes_NNS starting_VBG on_IN ##_NN nodes_NNS starting_VBG on_IN ##_NN nodes_NNS starting_VBG on_IN #_# nodes_NNS starting_VBG on_IN ##_NN nodes_NNS starting_VBG on_IN ##_NN nodes_NNS -RCB-_-RRB- no_DT adaptation_NN -RCB-_-RRB- with_IN adaptation_NN Figure_NN #_# ._.
+Barnes-Hut_JJ iteration_NN durations_NNS with_IN /_: without_IN adaptation_NN ,_, too_RB few_JJ processors_NNS 0_CD #_# ##_CD ##_CD iteration_NN number_NN 0_CD 200_CD 400_CD 600_CD 800_CD 1000_CD iterationduration_NN -LRB-_-LRB- secs_NNS ._. -RRB-_-RRB-
+no_DT adaptation_NN with_IN adaptation_NN CPU_NNP load_NN introduced_VBD overloaded_JJ nodes_NNS removed_VBD started_VBN adding_VBG nodes_NNS 36_CD nodes_NNS reached_VBD Figure_NNP #_# ._.
+Barnes-Hut_JJ iteration_NN durations_NNS with_IN /_: without_IN adaptation_NN ,_, overloaded_VBN CPUs_NNS we_PRP additionally_RB measure_VB the_DT performance_NN of_IN an_DT application_NN with_IN collecting_VBG statistics_NNS and_CC benchmarking_NN turned_VBD on_RP but_CC without_IN doing_VBG adaptation_NN ,_, that_WDT is_VBZ ,_, without_IN allowing_VBG it_PRP to_TO change_VB the_DT number_NN of_IN nodes_NNS ._.
+This_DT allows_VBZ us_PRP to_TO measure_VB the_DT overhead_NN of_IN benchmarking_NN and_CC collecting_VBG statistics_NNS ._.
+In_IN all_DT experiments_NNS we_PRP used_VBD a_DT monitoring_NN period_NN of_IN #_# minutes_NNS for_IN the_DT adaptive_JJ versions_NNS of_IN the_DT applications_NNS ._.
+All_PDT the_DT experiments_NNS were_VBD carried_VBN out_RP on_IN the_DT DAS-2_NN wide-area_NN system_NN -LRB-_-LRB- #_# -RRB-_-RRB- ,_, which_WDT consists_VBZ of_IN five_CD clusters_NNS located_JJ at_IN five_CD Dutch_JJ uni125_NN versities_NNS ._.
+One_CD of_IN the_DT clusters_NNS consists_VBZ of_IN ##_CD nodes_NNS ,_, the_DT others_NNS of_IN ##_CD nodes_NNS ._.
+Each_DT node_NN contains_VBZ two_CD #_# GHz_NNP Pentium_NNP processors_NNS ._.
+Within_IN a_DT cluster_NN ,_, the_DT nodes_NNS are_VBP connected_VBN by_IN Fast_JJ Ethernet_NN ._.
+The_DT clusters_NNS are_VBP connected_VBN by_IN the_DT Dutch_JJ university_NN Internet_NN backbone_NN ._.
+In_IN our_PRP$ experiments_NNS ,_, we_PRP used_VBD the_DT Barnes-Hut_NNP N-body_NN simulation_NN ._.
+BarnesHut_NNP simulates_VBZ the_DT evolution_NN of_IN a_DT large_JJ set_NN of_IN bodies_NNS under_IN influence_NN of_IN -LRB-_-LRB- gravitational_JJ or_CC electrostatic_JJ -RRB-_-RRB- forces_NNS ._.
+The_DT evolution_NN of_IN N_NN bodies_NNS is_VBZ simulated_JJ in_IN iterations_NNS of_IN discrete_JJ time_NN steps_NNS ._.
+5_CD ._.
+#_# Scenario_NN #_# :_: adaptivity_NN overhead_NN In_IN this_DT scenario_NN ,_, the_DT application_NN is_VBZ started_VBN on_IN ##_CD nodes_NNS ._.
+The_DT nodes_NNS are_VBP equally_RB divided_VBN over_IN #_# clusters_NNS -LRB-_-LRB- ##_CD nodes_NNS in_IN each_DT cluster_NN -RRB-_-RRB- ._.
+On_IN this_DT number_NN of_IN nodes_NNS ,_, the_DT application_NN runs_VBZ with_IN ##_CD %_NN efficiency_NN ,_, so_IN we_PRP consider_VBP it_PRP a_DT reasonable_JJ number_NN of_IN nodes_NNS ._.
+As_IN mentioned_VBN above_IN ,_, in_IN this_DT scenario_NN we_PRP measured_VBD three_CD runtimes_NNS :_: the_DT runtime_NN of_IN the_DT application_NN without_IN adaptation_NN support_NN -LRB-_-LRB- runtime_NN #_# -RRB-_-RRB- ,_, the_DT runtime_NN with_IN adaptation_NN support_NN -LRB-_-LRB- runtime_NN #_# -RRB-_-RRB- and_CC the_DT runtime_NN with_IN monitoring_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, collection_NN of_IN statistics_NNS and_CC benchmarking_NN -RRB-_-RRB- turned_VBD on_RP but_CC without_IN allowing_VBG it_PRP to_TO change_VB the_DT number_NN of_IN nodes_NNS -LRB-_-LRB- runtime_NN #_# -RRB-_-RRB- ._.
+Those_DT runtimes_NNS are_VBP shown_VBN in_IN Figure_NNP #_# ,_, first_JJ group_NN of_IN bars_NNS ._.
+The_DT comparison_NN between_IN runtime_NN #_# and_CC #_# shows_VBZ the_DT overhead_NN of_IN adaptation_NN support_NN ._.
+In_IN this_DT experiment_NN it_PRP is_VBZ around_IN ##_CD %_NN ._.
+Almost_RB all_DT overhead_NN comes_VBZ from_IN benchmarking_VBG ._.
+The_DT benchmark_NN is_VBZ run_VBN 1-2_CD times_NNS per_IN monitoring_NN period_NN ._.
+This_DT overhead_NN can_MD be_VB made_VBN smaller_JJR by_IN increasing_VBG the_DT length_NN of_IN the_DT monitoring_NN period_NN and_CC decreasing_VBG the_DT benchmarking_NN frequency_NN ._.
+The_DT monitoring_NN period_NN we_PRP used_VBD -LRB-_-LRB- #_# minutes_NNS -RRB-_-RRB- is_VBZ relatively_RB short_JJ ,_, because_IN the_DT runtime_NN of_IN the_DT application_NN was_VBD also_RB relatively_RB short_JJ -LRB-_-LRB- 30-60_CD minutes_NNS -RRB-_-RRB- ._.
+Using_VBG longer_JJR running_VBG applications_NNS would_MD not_RB allow_VB us_PRP to_TO finish_VB the_DT experimentation_NN in_IN a_DT reasonable_JJ time_NN ._.
+However_RB ,_, real-world_JJ grid_NN applications_NNS typically_RB need_VBP hours_NNS ,_, days_NNS or_CC even_RB weeks_NNS to_TO complete_VB ._.
+For_IN such_JJ applications_NNS ,_, a_DT much_RB longer_JJR monitoring_NN period_NN can_MD be_VB used_VBN and_CC the_DT adaptation_NN overhead_NN can_MD be_VB kept_VBN much_RB lower_JJR ._.
+For_IN example_NN ,_, with_IN the_DT Barnes-Hut_JJ application_NN ,_, if_IN the_DT monitoring_NN period_NN is_VBZ extended_VBN to_TO ##_VB minutes_NNS ,_, the_DT overhead_JJ drops_NNS to_TO 6_CD %_NN ._.
+Note_VB that_IN combining_VBG benchmarking_VBG with_IN monitoring_VBG processor_NN load_NN -LRB-_-LRB- as_IN described_VBN in_IN Section_NN #_# ._.
+#_# -RRB-_-RRB- would_MD reduce_VB the_DT benchmarking_NN overhead_NN to_TO almost_RB zero_CD :_: since_IN the_DT processor_NN load_NN is_VBZ not_RB changing_VBG ,_, the_DT benchmarks_NNS would_MD only_RB need_VB to_TO be_VB run_VBN at_IN the_DT beginning_NN of_IN the_DT computation_NN ._.
+5_CD ._.
+#_# Scenario_NN #_# :_: expanding_VBG to_TO more_JJR nodes_NNS In_IN this_DT scenario_NN ,_, the_DT application_NN is_VBZ started_VBN on_IN fewer_JJR nodes_NNS than_IN the_DT application_NN can_MD efficiently_RB use_VB ._.
+This_DT may_MD happen_VB because_IN the_DT user_NN does_VBZ not_RB know_VB the_DT right_JJ number_NN of_IN nodes_NNS or_CC because_IN insufficient_JJ nodes_NNS were_VBD available_JJ at_IN the_DT moment_NN the_DT application_NN was_VBD started_VBN ._.
+We_PRP tried_VBD #_# initial_JJ numbers_NNS of_IN nodes_NNS :_: #_# -LRB-_-LRB- Scenario_NN 1a_NN -RRB-_-RRB- ,_, ##_NN -LRB-_-LRB- Scenario_NN 1b_NN -RRB-_-RRB- and_CC ##_NN -LRB-_-LRB- Scenario_NN 1c_NN -RRB-_-RRB- ._.
+The_DT nodes_NNS were_VBD located_VBN in_IN #_# or_CC #_# clusters_NNS ._.
+In_IN each_DT of_IN the_DT three_CD sub-scenarios_NNS ,_, the_DT application_NN gradually_RB expanded_VBN to_TO 36-40_CD nodes_NNS located_JJ in_IN #_# clusters_NNS ._.
+This_DT allowed_VBN to_TO reduce_VB the_DT application_NN runtimes_NNS by_IN ##_CD %_NN -LRB-_-LRB- Scenario_NN 1a_NN -RRB-_-RRB- ,_, ##_CD %_NN -LRB-_-LRB- Scenario_NN 1b_NN -RRB-_-RRB- and_CC 12_CD %_NN -LRB-_-LRB- Scenario_NN 1c_NN -RRB-_-RRB- with_IN respect_NN to_TO the_DT non-adaptive_JJ version_NN ._.
+Those_DT runtimes_NNS are_VBP shown_VBN in_IN Figure_NNP #_# ._.
+Since_IN Barnes-Hut_NNP is_VBZ an_DT iterative_JJ application_NN ,_, we_PRP also_RB measured_VBD the_DT time_NN of_IN each_DT iteration_NN ,_, as_IN shown_VBN in_IN Figure_NNP #_# ._.
+Adaptation_NN reduces_VBZ the_DT iteration_NN time_NN by_IN a_DT factor_NN of_IN #_# -LRB-_-LRB- Scenario_NN 1a_NN -RRB-_-RRB- ,_, #_# ._.
+#_# -LRB-_-LRB- Scenario_NN 1b_NN -RRB-_-RRB- and_CC #_# ._.
+#_# -LRB-_-LRB- Scenario_NN 1c_NN -RRB-_-RRB- which_WDT allows_VBZ us_PRP to_TO conclude_VB that_IN the_DT gains_NNS in_IN the_DT total_JJ runtime_NN would_MD be_VB even_RB bigger_JJR if_IN the_DT application_NN were_VBD run_VBN longer_RB than_IN for_IN ##_CD iterations_NNS ._.
+5_CD ._.
+#_# Scenario_NN #_# :_: overloaded_JJ processors_NNS In_IN this_DT scenario_NN ,_, we_PRP started_VBD the_DT application_NN on_IN ##_NN nodes_NNS in_IN #_# clusters_NNS ._.
+After_IN ###_CD seconds_NNS ,_, we_PRP introduced_VBD a_DT heavy_JJ ,_, artificial_JJ load_NN on_IN the_DT processors_NNS in_IN one_CD of_IN the_DT clusters_NNS ._.
+Such_PDT a_DT situation_NN may_MD happen_VB when_WRB an_DT application_NN with_IN a_DT higher_JJR priority_NN is_VBZ started_VBN on_IN some_DT of_IN the_DT resources_NNS ._.
+Figure_NNP #_# shows_VBZ the_DT iteration_NN durations_NNS of_IN both_CC the_DT adaptive_JJ and_CC non-adaptive_JJ versions_NNS ._.
+After_IN introducing_VBG the_DT load_NN ,_, the_DT iteration_NN 0_CD #_# ##_CD ##_CD iteration_NN number_NN 0_CD 200_CD 400_CD 600_CD 800_CD 1000_CD iterationduration_NN -LRB-_-LRB- secs_NNS ._. -RRB-_-RRB-
+no_DT adaptation_NN with_IN adaptation_NN one_CD cluster_NN is_VBZ badly_RB connected_JJ badly_RB connected_JJ cluster_NN removed_VBD started_VBN adding_VBG nodes_NNS 36_CD nodes_NNS reached_VBD Figure_NNP #_# ._.
+Barnes-Hut_JJ iteration_NN durations_NNS with_IN /_: without_IN adaptation_NN ,_, overloaded_JJ network_NN link_NN 0_CD #_# ##_CD ##_CD iteration_NN number_NN 0_CD 200_CD 400_CD 600_CD 800_CD 1000_CD iterationduration_NN -LRB-_-LRB- secs_NNS ._. -RRB-_-RRB-
+no_DT adaptation_NN with_IN adaptation_NN one_CD cluster_NN is_VBZ badly_RB connected_JJ 12_CD nodes_NNS lightly_RB overloaded_VBD removed_VBN badly_RB connected_JJ cluster_NN removed_VBD #_# lightly_RB overloaded_VBN nodes_NNS Figure_NNP #_# ._.
+Barnes-Hut_JJ iteration_NN durations_NNS with_IN /_: without_IN adaptation_NN ,_, overloaded_VBN CPUs_NNS and_CC an_DT overloaded_JJ network_NN link_NN duration_NN increased_VBN by_IN a_DT factor_NN of_IN #_# to_TO #_# ._.
+Also_RB ,_, the_DT iteration_NN times_NNS became_VBD very_RB variable_JJ ._.
+The_DT adaptive_JJ version_NN reacted_VBN by_IN removing_VBG the_DT overloaded_JJ nodes_NNS ._.
+After_IN removing_VBG these_DT nodes_NNS ,_, the_DT weighted_JJ average_JJ efficiency_NN rose_VBD to_TO around_IN ##_CD %_NN which_WDT triggered_VBD adding_VBG new_JJ nodes_NNS and_CC the_DT application_NN expanded_VBD back_RB to_TO ##_CD nodes_NNS ._.
+So_RB ,_, the_DT overloaded_JJ nodes_NNS were_VBD replaced_VBN by_IN better_JJR nodes_NNS ,_, which_WDT brought_VBD the_DT iteration_NN duration_NN back_RB to_TO the_DT initial_JJ values_NNS ._.
+This_DT reduced_VBD the_DT total_JJ runtime_NN by_IN ##_CD %_NN ._.
+The_DT runtimes_NNS are_VBP shown_VBN in_IN Figure_NNP #_# ._.
+126_CD 5_CD ._.
+#_# Scenario_NN #_# :_: overloaded_JJ network_NN link_NN In_IN this_DT scenario_NN ,_, we_PRP ran_VBD the_DT application_NN on_IN ##_NN nodes_NNS in_IN #_# clusters_NNS ._.
+We_PRP simulated_JJ that_IN the_DT uplink_NN to_TO one_CD of_IN the_DT clusters_NNS was_VBD overloaded_VBN and_CC the_DT bandwidth_NN on_IN this_DT uplink_NN was_VBD reduced_VBN to_TO approximately_RB 100_CD KB_NN /_: s_NNS ._.
+To_TO simulate_VB low_JJ bandwidth_NN we_PRP use_VBP the_DT traffic-shaping_JJ techniques_NNS described_VBN in_IN -LRB-_-LRB- #_# -RRB-_-RRB- ._.
+The_DT iteration_NN durations_NNS in_IN this_DT experiment_NN are_VBP shown_VBN in_IN Figure_NNP #_# ._.
+The_DT iteration_NN durations_NNS of_IN the_DT nonadaptive_JJ version_NN exhibit_VBP enormous_JJ variation_NN :_: from_IN ###_CD to_TO ###_CD seconds_NNS ._.
+The_DT adaptive_JJ version_NN removed_VBD the_DT badly_RB connected_JJ cluster_NN after_IN the_DT first_JJ monitoring_NN period_NN ._.
+As_IN a_DT result_NN ,_, the_DT weighted_JJ average_JJ efficiency_NN rose_VBD to_TO around_IN ##_CD %_NN and_CC new_JJ nodes_NNS were_VBD gradually_RB added_VBN until_IN their_PRP$ number_NN reached_VBD ##_CD ._.
+This_DT brought_VBD the_DT iteration_NN times_NNS down_IN to_TO around_IN ###_CD seconds_NNS ._.
+The_DT total_JJ runtime_NN was_VBD reduced_VBN by_IN ##_CD %_NN -LRB-_-LRB- Figure_NN #_# -RRB-_-RRB- ._.
+5_CD ._.
+#_# Scenario_NN #_# :_: overloaded_JJ processors_NNS and_CC an_DT overloaded_JJ network_NN link_NN In_IN this_DT scenario_NN ,_, we_PRP ran_VBD the_DT application_NN on_IN ##_NN nodes_NNS in_IN #_# clusters_NNS ._.
+Again_RB ,_, we_PRP simulated_JJ an_DT overloaded_JJ uplink_NN to_TO one_CD of_IN the_DT clusters_NNS ._.
+Additionally_RB ,_, we_PRP simulated_JJ processors_NNS with_IN heterogeneous_JJ speeds_NNS by_IN inserting_VBG a_DT relatively_RB light_JJ artificial_JJ load_NN on_IN the_DT processors_NNS in_IN one_CD of_IN the_DT remaining_VBG clusters_NNS ._.
+The_DT iteration_NN durations_NNS are_VBP shown_VBN in_IN Figure_NNP #_# ._.
+Again_RB ,_, the_DT non-adaptive_JJ version_NN exhibits_VBZ a_DT great_JJ variation_NN in_IN iteration_NN durations_NNS :_: from_IN ###_CD to_TO ####_CD seconds_NNS ._.
+The_DT adaptive_JJ version_NN removes_VBZ the_DT badly_RB connected_JJ cluster_NN after_IN the_DT first_JJ monitoring_NN period_NN which_WDT brings_VBZ the_DT iteration_NN duration_NN down_IN to_TO ###_CD seconds_NNS on_IN average_NN ._.
+After_IN removing_VBG one_CD of_IN the_DT clusters_NNS ,_, since_IN some_DT of_IN the_DT processors_NNS are_VBP slower_JJR -LRB-_-LRB- approximately_RB #_# times_NNS -RRB-_-RRB- ,_, the_DT weighted_JJ average_JJ efficiency_NN raises_VBZ only_RB to_TO around_IN ##_CD %_NN ._.
+Since_IN this_DT value_NN lies_VBZ between_IN Emin_NNP and_CC Emax_NNP ,_, no_DT nodes_NNS are_VBP added_VBN or_CC removed_VBN ._.
+This_DT example_NN illustrates_VBZ what_WP the_DT advantages_NNS of_IN opportunistic_JJ migration_NN would_MD be_VB ._.
+There_EX were_VBD faster_JJR nodes_NNS available_JJ in_IN the_DT system_NN ._.
+If_IN these_DT nodes_NNS were_VBD added_VBN to_TO the_DT application_NN -LRB-_-LRB- which_WDT could_MD trigger_VB removing_VBG the_DT slower_JJR nodes_NNS -RRB-_-RRB- the_DT iteration_NN duration_NN could_MD be_VB reduced_VBN even_RB further_RBR ._.
+Still_RB ,_, the_DT adaptation_NN reduced_VBD the_DT total_JJ runtime_NN by_IN ##_CD %_NN -LRB-_-LRB- Figure_NN #_# -RRB-_-RRB- ._.
+5_CD ._.
+#_# Scenario_NN #_# :_: crashing_VBG nodes_NNS In_IN the_DT last_JJ scenario_NN ,_, we_PRP also_RB run_VBP the_DT application_NN on_IN ##_NN nodes_NNS in_IN #_# clusters_NNS ._.
+After_IN ###_CD seconds_NNS ,_, #_# out_IN of_IN #_# clusters_NNS crash_NN ._.
+The_DT iteration_NN durations_NNS are_VBP shown_VBN in_IN Figure_NNP #_# ._.
+After_IN the_DT crash_NN ,_, the_DT iteration_NN duration_NN raised_VBN from_IN ###_CD to_TO ###_CD seconds_NNS ._.
+The_DT weighted_JJ efficiency_NN rose_VBD to_TO around_IN ##_CD %_NN which_WDT triggered_VBD adding_VBG new_JJ nodes_NNS in_IN the_DT adaptive_JJ version_NN ._.
+The_DT number_NN of_IN nodes_NNS gradually_RB went_VBD back_RB to_TO ##_CD which_WDT brought_VBD the_DT iteration_NN duration_NN back_RB to_TO around_IN ###_CD seconds_NNS ._.
+The_DT total_JJ runtime_NN was_VBD reduced_VBN by_IN ##_CD %_NN -LRB-_-LRB- Figure_NN #_# -RRB-_-RRB- ._.
+6_CD ._.
+Related_JJ work_NN A_DT number_NN of_IN Grid_NNP projects_NNS address_VBP the_DT question_NN of_IN resource_NN selection_NN and_CC adaptation_NN ._.
+In_IN GrADS_NN -LRB-_-LRB- ##_NN -RRB-_-RRB- and_CC ASSIST_NN -LRB-_-LRB- #_# -RRB-_-RRB- ,_, resource_NN selection_NN and_CC adaptation_NN requires_VBZ a_DT performance_NN model_NN that_WDT allows_VBZ predicting_VBG application_NN runtimes_NNS ._.
+In_IN the_DT resource_NN selection_NN phase_NN ,_, a_DT number_NN of_IN possible_JJ resource_NN sets_NNS is_VBZ examined_VBN and_CC the_DT set_NN of_IN resources_NNS with_IN the_DT shortest_JJS predicted_VBN runtime_NN is_VBZ selected_VBN ._.
+If_IN performance_NN degradation_NN is_VBZ detected_VBN during_IN the_DT computation_NN ,_, the_DT resource_NN selection_NN phase_NN is_VBZ repeated_VBN ._.
+GrADS_NN uses_VBZ the_DT ratio_NN of_IN the_DT predicted_VBN execution_NN times_NNS -LRB-_-LRB- of_IN certain_JJ application_NN phases_NNS -RRB-_-RRB- to_TO the_DT real_JJ execution_NN times_NNS as_IN an_DT indicator_NN of_IN application_NN performance_NN ._.
+ASSIST_VB uses_VBZ the_DT number_NN of_IN iterations_NNS per_IN time_NN unit_NN -LRB-_-LRB- for_IN iterative_JJ applications_NNS -RRB-_-RRB- or_CC the_DT number_NN of_IN tasks_NNS per_IN time_NN unit_NN -LRB-_-LRB- for_IN regular_JJ master-worker_NN applications_NNS -RRB-_-RRB- as_IN a_DT performance_NN indicator_NN ._.
+The_DT main_JJ difference_NN between_IN these_DT approaches_NNS and_CC our_PRP$ approach_NN is_VBZ the_DT use_NN of_IN performance_NN models_NNS ._.
+The_DT main_JJ advantage_NN is_VBZ that_IN once_RB the_DT performance_NN model_NN is_VBZ known_VBN ,_, the_DT system_NN is_VBZ able_JJ to_TO take_VB more_JJR accurate_JJ migration_NN decisions_NNS than_IN with_IN our_PRP$ approach_NN ._.
+However_RB ,_, even_RB if_IN the_DT performance_NN 0_CD #_# ##_CD ##_CD iteration_NN number_NN 0_CD 200_CD 400_CD 600_CD 800_CD 1000_CD iterationduration_NN -LRB-_-LRB- secs_NNS ._. -RRB-_-RRB-
+no_DT adaptation_NN with_IN adaptation_NN 2_CD out_IN of_IN #_# clusters_NNS crash_NN started_VBD adding_VBG nodes_NNS 36_CD nodes_NNS reached_VBD Figure_NNP #_# ._.
+Barnes-Hut_JJ iteration_NN durations_NNS with_IN /_: without_IN adaptation_NN ,_, crashing_VBG CPUs_NNS model_NN is_VBZ known_VBN ,_, the_DT problem_NN of_IN finding_VBG an_DT optimal_JJ resource_NN set_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+the_DT resource_NN set_VBN with_IN the_DT minimal_JJ execution_NN time_NN -RRB-_-RRB- is_VBZ NP-complete_JJ ._.
+Currently_RB ,_, both_DT GrADS_NN and_CC ASSIST_NN examine_VBP only_RB a_DT subset_NN of_IN all_DT possible_JJ resource_NN sets_NNS and_CC therefore_RB there_EX is_VBZ no_DT guarantee_NN that_IN the_DT resulting_VBG resource_NN set_NN will_MD be_VB optimal_JJ ._.
+As_IN the_DT number_NN of_IN available_JJ grid_NN resources_NNS increases_VBZ ,_, the_DT accuracy_NN of_IN this_DT approach_NN diminishes_VBZ ,_, as_IN the_DT subset_NN of_IN possible_JJ resource_NN sets_NNS that_WDT can_MD be_VB examined_VBN in_IN a_DT reasonable_JJ time_NN becomes_VBZ smaller_JJR ._.
+Another_DT disadvantage_NN of_IN these_DT systems_NNS is_VBZ that_IN the_DT performance_NN degradation_NN detection_NN is_VBZ suitable_JJ only_RB for_IN iterative_JJ or_CC regular_JJ applications_NNS ._.
+Cactus_NN -LRB-_-LRB- #_# -RRB-_-RRB- and_CC GridWay_NNP -LRB-_-LRB- ##_CD -RRB-_-RRB- do_VBP not_RB use_VB performance_NN models_NNS ._.
+However_RB ,_, these_DT frameworks_NNS are_VBP only_RB suitable_JJ for_IN sequential_JJ -LRB-_-LRB- GridWay_NN -RRB-_-RRB- or_CC single-site_JJ applications_NNS -LRB-_-LRB- Cactus_NN -RRB-_-RRB- ._.
+In_IN that_DT case_NN ,_, the_DT resource_NN selection_NN problem_NN boils_VBZ down_RP to_TO selecting_VBG the_DT fastest_JJS machine_NN or_CC cluster_NN ._.
+Processor_NNP clock_NN speed_NN ,_, average_JJ load_NN and_CC a_DT number_NN of_IN processors_NNS in_IN a_DT cluster_NN -LRB-_-LRB- Cactus_NN -RRB-_-RRB- are_VBP used_VBN to_TO rank_VB resources_NNS and_CC the_DT resource_NN with_IN the_DT highest_JJS rank_NN is_VBZ selected_VBN ._.
+The_DT application_NN is_VBZ migrated_VBN if_IN performance_NN degradation_NN is_VBZ detected_VBN or_CC better_JJR resources_NNS are_VBP discovered_VBN ._.
+Both_DT Cactus_NNP and_CC GridWay_NNP use_VBP the_DT number_NN of_IN iterations_NNS per_IN time_NN unit_NN as_IN the_DT performance_NN indicator_NN ._.
+The_DT main_JJ limitation_NN of_IN this_DT methodology_NN is_VBZ that_IN it_PRP is_VBZ suitable_JJ only_RB for_IN sequential_JJ or_CC single-site_JJ applications_NNS ._.
+Moreover_RB ,_, resource_NN selection_NN based_VBN on_IN clock_NN speed_NN is_VBZ not_RB always_RB accurate_JJ ._.
+Finally_RB ,_, performance_NN degradation_NN detection_NN is_VBZ suitable_JJ only_RB for_IN iterative_JJ applications_NNS and_CC can_MD not_RB be_VB used_VBN for_IN irregular_JJ computations_NNS such_JJ as_IN search_NN and_CC optimization_NN problems_NNS ._.
+The_DT resource_NN selection_NN problem_NN was_VBD also_RB studied_VBN by_IN the_DT AppLeS_NN project_NN -LRB-_-LRB- #_# -RRB-_-RRB- ._.
+In_IN the_DT context_NN of_IN this_DT project_NN ,_, a_DT number_NN of_IN applications_NNS were_VBD studied_VBN and_CC performance_NN models_NNS for_IN these_DT applications_NNS were_VBD created_VBN ._.
+Based_VBN on_IN such_PDT a_DT model_NN a_DT scheduling_NN agent_NN is_VBZ built_VBN that_IN uses_VBZ the_DT performance_NN model_NN to_TO select_VB the_DT best_JJS resource_NN set_NN and_CC the_DT best_JJS application_NN schedule_NN on_IN this_DT set_NN ._.
+AppLeS_NNS scheduling_VBG agents_NNS are_VBP written_VBN on_IN a_DT case-by-case_JJ basis_NN and_CC can_MD not_RB be_VB reused_VBN for_IN another_DT application_NN ._.
+Two_CD reusable_JJ templates_NNS were_VBD also_RB developed_VBN for_IN specific_JJ classes_NNS of_IN applications_NNS ,_, namely_RB master-worker_JJ -LRB-_-LRB- AMWAT_JJ template_NN -RRB-_-RRB- and_CC parameter_NN sweep_NN -LRB-_-LRB- APST_NN template_NN -RRB-_-RRB- applications_NNS ._.
+Migration_NN is_VBZ not_RB supported_VBN by_IN the_DT AppLeS_NN software_NN ._.
+127_CD In_IN -LRB-_-LRB- ##_NN -RRB-_-RRB- ,_, the_DT problem_NN of_IN scheduling_NN master-worker_NN applications_NNS is_VBZ studied_VBN ._.
+The_DT authors_NNS assume_VBP homogeneous_JJ processors_NNS -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, with_IN the_DT same_JJ speed_NN -RRB-_-RRB- and_CC do_VBP not_RB take_VB communication_NN costs_NNS into_IN account_NN ._.
+Therefore_RB ,_, the_DT problem_NN is_VBZ reduced_VBN to_TO finding_VBG the_DT right_JJ number_NN of_IN workers_NNS ._.
+The_DT approach_NN here_RB is_VBZ similar_JJ to_TO ours_JJ in_IN that_IN no_DT performance_NN model_NN is_VBZ used_VBN ._.
+Instead_RB ,_, the_DT system_NN tries_VBZ to_TO deduce_VB the_DT application_NN requirements_NNS at_IN runtime_NN and_CC adjusts_VBZ the_DT number_NN of_IN workers_NNS to_TO approach_VB the_DT ideal_JJ number_NN ._.
+7_CD ._.
+Conclusions_NNS and_CC future_JJ work_NN In_IN this_DT paper_NN ,_, we_PRP investigated_VBD the_DT problem_NN of_IN resource_NN selection_NN and_CC adaptation_NN in_IN grid_NN environments_NNS ._.
+Existing_VBG approaches_NNS to_TO these_DT problems_NNS typically_RB assume_VBP the_DT existence_NN of_IN a_DT performance_NN model_NN that_WDT allows_VBZ predicting_VBG application_NN runtimes_NNS on_IN various_JJ sets_NNS of_IN resources_NNS ._.
+However_RB ,_, creating_VBG performance_NN models_NNS is_VBZ inherently_RB difficult_JJ and_CC requires_VBZ knowledge_NN about_IN the_DT application_NN ._.
+We_PRP propose_VBP an_DT approach_NN that_WDT does_VBZ not_RB require_VB in-depth_JJ knowledge_NN about_IN the_DT application_NN ._.
+We_PRP start_VBP the_DT application_NN on_IN an_DT arbitrary_JJ set_NN of_IN resources_NNS and_CC monitor_VB its_PRP$ performance_NN ._.
+The_DT performance_NN monitoring_NN allows_VBZ us_PRP to_TO learn_VB certain_JJ application_NN requirements_NNS such_JJ as_IN the_DT number_NN of_IN processors_NNS needed_VBN by_IN the_DT application_NN or_CC the_DT application_NN ''_'' s_NNS bandwidth_NN requirements_NNS ._.
+We_PRP use_VBP this_DT knowledge_NN to_TO gradually_RB refine_VB the_DT resource_NN set_VBN by_IN removing_VBG inadequate_JJ nodes_NNS or_CC adding_VBG new_JJ nodes_NNS if_IN necessary_JJ ._.
+This_DT approach_NN does_VBZ not_RB result_VB in_IN the_DT optimal_JJ resource_NN set_NN ,_, but_CC in_IN a_DT reasonable_JJ resource_NN set_NN ,_, i_FW ._.
+e_LS ._.
+a_DT set_VBN free_JJ from_IN various_JJ performance_NN bottlenecks_NNS such_JJ as_IN slow_JJ network_NN connections_NNS or_CC overloaded_JJ processors_NNS ._.
+Our_PRP$ approach_NN also_RB allows_VBZ the_DT application_NN to_TO adapt_VB to_TO the_DT changing_VBG grid_NN conditions_NNS ._.
+The_DT adaptation_NN decisions_NNS are_VBP based_VBN on_IN the_DT weighted_JJ average_JJ efficiency_NN -_: an_DT extension_NN of_IN the_DT concept_NN of_IN parallel_JJ efficiency_NN defined_VBN for_IN traditional_JJ ,_, homogeneous_JJ parallel_NN machines_NNS ._.
+If_IN the_DT weighted_JJ average_JJ efficiency_NN drops_VBZ below_IN a_DT certain_JJ level_NN ,_, the_DT adaptation_NN coordinator_NN starts_VBZ removing_VBG worst_JJS nodes_NNS ._.
+The_DT badness_NN of_IN the_DT nodes_NNS is_VBZ defined_VBN by_IN a_DT heuristic_NN formula_NN ._.
+If_IN the_DT weighted_JJ average_JJ efficiency_NN raises_VBZ above_IN a_DT certain_JJ level_NN ,_, new_JJ nodes_NNS are_VBP added_VBN ._.
+Our_PRP$ simple_JJ adaptation_NN strategy_NN allows_VBZ us_PRP to_TO handle_VB multiple_JJ scenarios_NNS typical_JJ for_IN grid_NN environments_NNS :_: expand_VB to_TO more_JJR nodes_NNS or_CC shrink_VB to_TO fewer_JJR nodes_NNS if_IN the_DT application_NN was_VBD started_VBN on_IN an_DT inappropriate_JJ number_NN of_IN processors_NNS ,_, remove_VB inadequate_JJ nodes_NNS and_CC replace_VB them_PRP with_IN better_JJR ones_NNS ,_, replace_VB crashed_VBD processors_NNS ,_, etc_FW ._.
+The_DT application_NN adapts_VBZ fully_RB automatically_RB to_TO changing_VBG conditions_NNS ._.
+We_PRP implemented_VBD our_PRP$ approach_NN in_IN the_DT Satin_NNP divide-and-conquer_JJ framework_NN and_CC evaluated_VBD it_PRP on_IN the_DT DAS-2_NN distributed_VBN supercomputer_NN and_CC demonstrate_VBP that_IN our_PRP$ approach_NN can_MD yield_VB significant_JJ performance_NN improvements_NNS -LRB-_-LRB- up_RB to_TO ##_CD %_NN in_IN our_PRP$ experiments_NNS -RRB-_-RRB- ._.
+Future_JJ work_NN will_MD involve_VB extending_VBG our_PRP$ adaptation_NN strategy_NN to_TO support_VB opportunistic_JJ migration_NN ._.
+This_DT ,_, however_RB ,_, requires_VBZ grid_NN schedulers_NNS with_IN more_RBR sophisticated_JJ functionality_NN than_IN currently_RB exists_VBZ ._.
+Further_JJ research_NN is_VBZ also_RB needed_VBN to_TO decrease_VB the_DT benchmarking_NN overhead_NN ._.
+For_IN example_NN ,_, the_DT information_NN about_IN CPU_NNP load_NN could_MD be_VB used_VBN to_TO decrease_VB the_DT benchmarking_NN frequency_NN ._.
+Another_DT line_NN of_IN research_NN that_IN we_PRP wish_VBP to_TO investigate_VB is_VBZ using_VBG feedback_NN control_NN to_TO refine_VB the_DT adaptation_NN strategy_NN during_IN the_DT application_NN run_NN ._.
+For_IN example_NN ,_, the_DT node_NN badness_NN formula_NN could_MD be_VB refined_VBN at_IN runtime_NN based_VBN on_IN the_DT effectiveness_NN of_IN the_DT previous_JJ adaptation_NN decisions_NNS ._.
+Finally_RB ,_, the_DT centralized_JJ implementation_NN of_IN the_DT adaptation_NN coordinator_NN might_MD become_VB a_DT bottleneck_NN for_IN applications_NNS which_WDT are_VBP running_VBG on_IN very_RB large_JJ numbers_NNS of_IN nodes_NNS -LRB-_-LRB- hundreds_NNS or_CC thousands_NNS -RRB-_-RRB- ._.
+This_DT problem_NN can_MD be_VB solved_VBN by_IN implementing_VBG a_DT hierarchy_NN of_IN coordinators_NNS :_: one_CD subcoordinator_NN per_IN cluster_NN which_WDT collects_VBZ and_CC processes_VBZ statistics_NNS from_IN its_PRP$ cluster_NN and_CC one_CD main_JJ coordinator_NN which_WDT collects_VBZ the_DT information_NN from_IN the_DT sub-coordinators_NNS ._.
+Acknowledgments_NNS This_DT work_NN was_VBD carried_VBN out_RP in_IN the_DT context_NN of_IN Virtual_NNP Laboratory_NNP for_IN e-Science_NN project_NN -LRB-_-LRB- ww_NN ._.
+vl-e_NN ._.
+nl_NN -RRB-_-RRB- ._.
+This_DT project_NN is_VBZ supported_VBN by_IN a_DT BSIK_NNP grant_NN from_IN the_DT Dutch_NNP Ministry_NNP of_IN Education_NNP ,_, Culture_NNP and_CC Science_NNP -LRB-_-LRB- OC_NNP &_CC W_NNP -RRB-_-RRB- and_CC is_VBZ part_NN of_IN the_DT ICT_NNP innovation_NN program_NN of_IN the_DT Ministry_NNP of_IN Economic_NNP Affairs_NNP -LRB-_-LRB- EZ_NNP -RRB-_-RRB- ._.
+References_NNS -LSB-_-LRB- #_# -RSB-_-RRB- M_NN ._.
+Aldinucci_NNP ,_, F_NN ._.
+Andre_NNP ,_, J_NNP ._.
+Buisson_NNP ,_, S_NN ._.
+Campa_NNP ,_, M_NN ._.
+Coppola_NNP ,_, M_NN ._.
+Danelutto_NNP ,_, and_CC C_NN ._.
+Zoccolo_NNP ._.
+Parallel_JJ program_NN /_: component_NN adaptivity_NN management_NN ._.
+In_IN ParCo_NNP ####_NNP ,_, Sept_NNP ._.
+####_NN ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- G_NN ._.
+Allen_NNP ,_, D_NNP ._.
+Angulo_NNP ,_, I_PRP ._.
+Foster_NNP ,_, G_NNP ._.
+Lanfermann_NNP ,_, C_NNP ._.
+Liu_NNP ,_, T_NN ._.
+Radke_NNP ,_, E_NNP ._.
+Seidel_NNP ,_, and_CC J_NN ._.
+Shalf_FW ._.
+The_DT cactus_NN worm_NN :_: Experiments_NNS with_IN resource_NN discovery_NN and_CC allocation_NN in_IN a_DT grid_NN environment_NN ._.
+Int_NN ''_'' l_NN Journal_NNP of_IN High_NNP Performance_NNP Computing_NNP Applications_NNS ,_, ##_NN -LRB-_-LRB- #_# -RRB-_-RRB- :_: 345-358_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- G_NN ._.
+Allen_NNP ,_, K_NNP ._.
+Davis_NNP ,_, K_NNP ._.
+N_NN ._.
+Dolkas_NNP ,_, N_NNP ._.
+D_NN ._.
+Doulamis_NNP ,_, T_NN ._.
+Goodale_NNP ,_, T_NN ._.
+Kielmann_NNP ,_, A_NNP ._.
+Merzky_NNP ,_, J_NNP ._.
+Nabrzyski_NNP ,_, J_NNP ._.
+Pukacki_NNP ,_, T_NN ._.
+Radke_NNP ,_, M_NN ._.
+Russell_NNP ,_, E_NNP ._.
+Seidel_NNP ,_, J_NNP ._.
+Shalf_NNP ,_, and_CC I_PRP ._.
+Taylor_NNP ._.
+Enabling_VBG applications_NNS on_IN the_DT grid_NN -_: a_DT gridlab_JJ overview_NN ._.
+Int_NN ''_'' l_NN Journal_NNP of_IN High-Performance_NNP Computing_NNP Applications_NNS ,_, ##_NN -LRB-_-LRB- #_# -RRB-_-RRB- :_: 449-466_CD ,_, Aug_NNP ._.
+####_NN ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- J_NN ._.
+E_NN ._.
+Baldeschwieler_NNP ,_, R_NN ._.
+D_NN ._.
+Blumofe_NNP ,_, and_CC E_NN ._.
+A_DT ._.
+Brewer_NNP ._.
+ATLAS_NNP :_: An_DT Infrastructure_NN for_IN Global_JJ Computing_NNP ._.
+In_IN 7th_JJ ACM_JJ SIGOPS_NNS European_JJ Workshop_NNP on_IN System_NNP Support_NN for_IN Worldwide_NNP Applications_NNS ,_, pages_NNS 165-172_CD ,_, Sept_NNP ._.
+####_NN ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- F_NN ._.
+Berman_NNP ,_, R_NN ._.
+Wolski_NNP ,_, H_NN ._.
+Casanova_NNP ,_, W_NNP ._.
+Cirne_NNP ,_, H_NN ._.
+Dail_NN ,_, M_NN ._.
+Faerman_NNP ,_, S_NN ._.
+Figueira_NNP ,_, J_NNP ._.
+Hayes_NNP ,_, G_NNP ._.
+Obertelli_NNP ,_, J_NNP ._.
+Schopf_NNP ,_, G_NNP ._.
+Shao_NNP ,_, S_NN ._.
+Smallen_NNP ,_, N_NNP ._.
+Spring_NN ,_, A_DT ._.
+Su_FW ,_, and_CC D_NN ._.
+Zagorodnov_NNP ._.
+Adaptive_JJ Computing_NNP on_IN the_DT Grid_NNP Using_VBG AppLeS_NNS ._.
+IEEE_NNP Trans_NNP ._.
+on_IN Parallel_JJ and_CC Distributed_VBN Systems_NNPS ,_, ##_NN -LRB-_-LRB- #_# -RRB-_-RRB- :_: 369-382_CD ,_, Apr_NN ._.
+####_NN ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- D_NN ._.
+-_: M_NN ._.
+Chiu_NNP ,_, M_NN ._.
+Kadansky_NNP ,_, J_NNP ._.
+Provino_NNP ,_, and_CC J_NN ._.
+Wesley_NNP ._.
+Experiences_NNS in_IN programming_VBG a_DT traffic_NN shaper_NN ._.
+In_IN 5th_JJ IEEE_NN Symp_NN ._.
+on_IN Computers_NNS and_CC Communications_NNPS ,_, pages_NNS 470-476_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- W_NN ._.
+Chrabakh_NNP and_CC R_NN ._.
+Wolski_NNP ._.
+GridSAT_NNP :_: A_NNP Chaff-based_JJ Distributed_VBN SAT_NNP Solver_NNP for_IN the_DT Grid_NNP ._.
+In_IN ####_CD ACM_NNP /_: IEEE_NNP conference_NN on_IN Supercomputing_NN ,_, page_NN ##_NN ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- The_DT Distributed_VBN ASCI_NNP Supercomputer_NNP -LRB-_-LRB- DAS_NNP -RRB-_-RRB- ._.
+http_NN :_: /_: /_: www_NN ._.
+cs_NNS ._.
+vu_NN ._.
+nl_NN /_: das2_NN /_: ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- N_NN ._.
+Drost_NNP ,_, R_NN ._.
+V_NN ._.
+van_NN Nieuwport_NNP ,_, and_CC H_NN ._.
+E_NN ._.
+Bal_NN ._.
+Simple_JJ localityaware_NN co-allocation_NN in_IN peer-to-peer_JJ supercomputing_NN ._.
+In_IN 6th_JJ Int_NN ''_'' l_NN Workshop_NNP on_IN Global_NNP Peer-2-Peer_NNP Computing_NNP ,_, May_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- D_NN ._.
+L_NN ._.
+Eager_NNP ,_, J_NNP ._.
+Zahorjan_NNP ,_, and_CC E_NN ._.
+D_NN ._.
+Lazowska_NNP ._.
+Speedup_NNP versus_CC efficiency_NN in_IN parallel_JJ systems_NNS ._.
+IEEE_NNP Transactions_NNS on_IN Computers_NNS ,_, ##_NN -LRB-_-LRB- #_# -RRB-_-RRB- :_: 408-423_CD ,_, Mar_NNP ._.
+####_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- I_PRP ._.
+Foster_NNP ._.
+Globus_NNP toolkit_NN version_NN #_# :_: Software_NNP for_IN serviceoriented_JJ systems_NNS ._.
+In_IN IFIP_NNP International_NNP Conference_NNP on_IN Network_NNP and_CC Parallel_JJ Computing_NNP ,_, pages_NNS 2-13_CD ._.
+Springer-Verlag_NNP LNCS_NNP ####_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+-_: P_NN ._.
+Goux_NNP ,_, S_NN ._.
+Kulkarni_NNP ,_, M_NN ._.
+Yoder_NNP ,_, and_CC J_NN ._.
+Linderoth_NNP ._.
+An_DT Enabling_VBG Framework_NN for_IN Master-Worker_NNP Applications_NNS on_IN the_DT Computational_NNP Grid_NNP ._.
+In_IN 9th_JJ IEEE_NN Int_NN ''_'' l_NN Symp_NNP ._.
+on_IN High_JJ Performance_NNP Distributed_VBN Computing_NNP ,_, pages_NNS 43-50_CD ,_, Aug_NNP ._.
+####_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- E_NN ._.
+Heymann_NNP ,_, M_NN ._.
+A_DT ._.
+Senar_NNP ,_, E_NNP ._.
+Luque_NNP ,_, and_CC M_NN ._.
+Livny_NNP ._.
+Adaptive_JJ scheduling_NN for_IN master-worker_NN applications_NNS on_IN the_DT computational_JJ grid_NN ._.
+In_IN 1st_JJ IEEE_NN /_: ACM_NNP International_NNP Workshop_NNP on_IN Grid_NNP Computing_NNP ,_, pages_NNS 214-227_CD ._.
+Springer_NNP Verlag_NNP LNCS_NNP 1971_CD ,_, ####_CD ._.
+128_CD -LSB-_-LRB- ##_CD -RSB-_-RRB- E_NN ._.
+Huedo_NNP ,_, R_NN ._.
+S_NN ._.
+Montero_NNP ,_, and_CC I_PRP ._.
+M_NN ._.
+Llorente_NNP ._.
+A_DT framework_NN for_IN adaptive_JJ execution_NN in_IN grids_NNS ._.
+Software_NNP -_: Practice_NNP &_CC Experience_NN ,_, ##_NN -LRB-_-LRB- #_# -RRB-_-RRB- :_: 631-651_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- H_NN ._.
+H_NN ._.
+Mohamed_NNP and_CC D_NNP ._.
+H_NN ._.
+Epema_NN ._.
+Experiences_NNS with_IN the_DT KOALA_NNP Co-Allocating_NNP Scheduler_NNP in_IN Multiclusters_NNPS ._.
+In_IN 5th_JJ IEEE_NN /_: ACM_NNP Int_NNP ''_'' l_NN Symp_NNP ._.
+on_IN Cluster_NNP Computing_NNP and_CC the_DT GRID_NN ,_, pages_NNS 640-650_CD ,_, May_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- A_DT ._.
+Plaat_NNP ,_, H_NN ._.
+E_NN ._.
+Bal_NN ,_, and_CC R_NN ._.
+F_NN ._.
+H_NN ._.
+Hofman_NNP ._.
+Sensitivity_NN of_IN parallel_NN applications_NNS to_TO large_JJ differences_NNS in_IN bandwidth_NN and_CC latency_NN in_IN two-layer_JJ interconnects_NNS ._.
+In_IN 5th_JJ Int_NN ''_'' l_NN Symp_NNP ._.
+On_IN High_JJ Performance_NNP Computer_NNP Architecture_NNP ,_, pages_NNS 244-253_CD ,_, Jan_NNP ._.
+####_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+W_NN ._.
+Romein_NNP ,_, H_NN ._.
+E_NN ._.
+Bal_NN ,_, J_NN ._.
+Schaeffer_NNP ,_, and_CC A_NN ._.
+Plaat_NNP ._.
+A_DT performance_NN analysis_NN of_IN transposition-table-driven_JJ work_NN scheduling_NN in_IN distributed_VBN search_NN ._.
+IEEE_NNP Trans_NNP ._.
+on_IN Parallel_JJ and_CC Distributed_VBN Systems_NNPS ,_, ##_NN -LRB-_-LRB- #_# -RRB-_-RRB- :_: 447-459_CD ,_, May_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- S_NN ._.
+S_NN ._.
+Vadhiyar_NNP and_CC J_NNP ._.
+J_NN ._.
+Dongarra_NNP ._.
+Self_NN adaptivity_NN in_IN Grid_NNP computing_NN ._.
+Concurrency_NNP and_CC Computation_NNP :_: Practice_NN and_CC Experience_NN ,_, ##_NN -LRB-_-LRB- 2-4_CD -RRB-_-RRB- :_: 235-257_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- R_NN ._.
+V_NN ._.
+van_NN Nieuwpoort_NNP ,_, T_NN ._.
+Kielmann_NNP ,_, and_CC H_NN ._.
+E_NN ._.
+Bal_NN ._.
+Efficient_JJ load_NN balancing_NN for_IN wide-area_JJ divide-and-conquer_JJ applications_NNS ._.
+In_IN 8th_JJ ACM_JJ SIGPLAN_NN Symp_NN ._.
+on_IN Principles_NNS and_CC Practices_NNPS of_IN Parallel_JJ Programming_NN ,_, pages_NNS 34-43_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- R_NN ._.
+V_NN ._.
+van_NN Nieuwpoort_NNP ,_, J_NNP ._.
+Maassen_NNP ,_, T_NN ._.
+Kielmann_NNP ,_, and_CC H_NN ._.
+E_NN ._.
+Bal_NN ._.
+Satin_NNP :_: Simple_NN and_CC Efficient_JJ Java-based_JJ Grid_NNP Programming_NNP ._.
+Scalable_JJ Computing_NNP :_: Practice_NN and_CC Experience_NN ,_, #_# -LRB-_-LRB- #_# -RRB-_-RRB- :_: 19-32_CD ,_, Sept_NNP ._.
+####_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- R_NN ._.
+V_NN ._.
+van_NN Nieuwpoort_NNP ,_, J_NNP ._.
+Maassen_NNP ,_, G_NNP ._.
+Wrzesinska_FW ,_, R_NN ._.
+Hofman_NNP ,_, C_NNP ._.
+Jacobs_NNP ,_, T_NN ._.
+Kielmann_NNP ,_, and_CC H_NN ._.
+E_NN ._.
+Bal_NN ._.
+Ibis_NNP :_: a_DT Flexible_JJ and_CC Efficient_JJ Java-based_JJ Grid_NNP Programming_NNP Environment_NNP ._.
+Concurrency_NNP &_CC Computation_NNP :_: Practice_NNP &_CC Experience_NN ,_, 17_CD -LRB-_-LRB- ##_CD -RRB-_-RRB- :_: 1079-1107_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- R_NN ._.
+Wolski_NNP ,_, N_NNP ._.
+Spring_NN ,_, and_CC J_NN ._.
+Hayes_NNP ._.
+The_DT network_NN weather_NN service_NN :_: A_DT distributed_VBN resource_NN performance_NN forecasting_NN service_NN for_IN metacomputing_NN ._.
+Journal_NNP of_IN Future_NNP Generation_NNP Computing_NNP Systems_NNPS ,_, ##_NN -LRB-_-LRB- 5-6_CD -RRB-_-RRB- :_: 757-768_CD ,_, Oct_NN ._.
+####_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- G_NN ._.
+Wrzesinska_FW ,_, R_NN ._.
+V_NN ._.
+van_NN Nieuwport_NNP ,_, J_NNP ._.
+Maassen_NNP ,_, and_CC H_NN ._.
+E_NN ._.
+Bal_NN ._.
+Fault-tolerance_NN ,_, Malleability_NN and_CC Migration_NN for_IN Divideand-Conquer_NNP Applications_NNS on_IN the_DT Grid_NNP ._.
+In_IN Int_NN ''_'' l_NN Parallel_JJ and_CC Distributed_VBN Processing_NNP Symposium_NNP ,_, Apr_NNP ._.
+####_NN ._.
+129_CD

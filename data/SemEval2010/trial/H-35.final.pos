@@ -1,0 +1,679 @@
+AdaRank_NNP :_: A_NNP Boosting_NNP Algorithm_NNP for_IN Information_NNP Retrieval_NNP Jun_NNP Xu_NNP Microsoft_NNP Research_NNP Asia_NNP No_NNP ._.
+##_NN Zhichun_NNP Road_NNP ,_, Haidian_NNP Distinct_JJ Beijing_NNP ,_, China_NNP ######_CD junxu_NN @_IN microsoft_NN ._.
+com_NN Hang_NNP Li_NNP Microsoft_NNP Research_NNP Asia_NNP No_NNP ._.
+##_NN Zhichun_NNP Road_NNP ,_, Haidian_NNP Distinct_JJ Beijing_NNP ,_, China_NNP ######_CD hangli_NNS @_IN microsoft_NN ._.
+com_NN ABSTRACT_NN In_IN this_DT paper_NN we_PRP address_VBP the_DT issue_NN of_IN learning_VBG to_TO rank_VB for_IN document_NN retrieval_NN ._.
+In_IN the_DT task_NN ,_, a_DT model_NN is_VBZ automatically_RB created_VBN with_IN some_DT training_NN data_NNS and_CC then_RB is_VBZ utilized_VBN for_IN ranking_NN of_IN documents_NNS ._.
+The_DT goodness_NN of_IN a_DT model_NN is_VBZ usually_RB evaluated_VBN with_IN performance_NN measures_NNS such_JJ as_IN MAP_NN -LRB-_-LRB- Mean_NN Average_JJ Precision_NN -RRB-_-RRB- and_CC NDCG_NN -LRB-_-LRB- Normalized_VBN Discounted_JJ Cumulative_JJ Gain_NN -RRB-_-RRB- ._.
+Ideally_RB a_DT learning_VBG algorithm_NN would_MD train_VB a_DT ranking_JJ model_NN that_WDT could_MD directly_RB optimize_VB the_DT performance_NN measures_VBZ with_IN respect_NN to_TO the_DT training_NN data_NNS ._.
+Existing_VBG methods_NNS ,_, however_RB ,_, are_VBP only_RB able_JJ to_TO train_VB ranking_JJ models_NNS by_IN minimizing_VBG loss_NN functions_NNS loosely_RB related_JJ to_TO the_DT performance_NN measures_NNS ._.
+For_IN example_NN ,_, Ranking_NN SVM_NN and_CC RankBoost_NN train_NN ranking_JJ models_NNS by_IN minimizing_VBG classification_NN errors_NNS on_IN instance_NN pairs_NNS ._.
+To_TO deal_VB with_IN the_DT problem_NN ,_, we_PRP propose_VBP a_DT novel_JJ learning_NN algorithm_NN within_IN the_DT framework_NN of_IN boosting_VBG ,_, which_WDT can_MD minimize_VB a_DT loss_NN function_NN directly_RB defined_VBN on_IN the_DT performance_NN measures_NNS ._.
+Our_PRP$ algorithm_NN ,_, referred_VBN to_TO as_IN AdaRank_NNP ,_, repeatedly_RB constructs_NNS weak_JJ rankers_NNS ''_'' on_IN the_DT basis_NN of_IN re-weighted_JJ training_NN data_NNS and_CC finally_RB linearly_RB combines_VBZ the_DT weak_JJ rankers_NNS for_IN making_VBG ranking_JJ predictions_NNS ._.
+We_PRP prove_VBP that_IN the_DT training_NN process_NN of_IN AdaRank_NNP is_VBZ exactly_RB that_DT of_IN enhancing_VBG the_DT performance_NN measure_NN used_VBN ._.
+Experimental_JJ results_NNS on_IN four_CD benchmark_JJ datasets_NNS show_VBP that_IN AdaRank_NNP significantly_RB outperforms_VBZ the_DT baseline_NN methods_NNS of_IN BM25_NN ,_, Ranking_NN SVM_NN ,_, and_CC RankBoost_NNP ._.
+Categories_NNS and_CC Subject_NNP Descriptors_NNPS H_NN ._.
+#_# ._.
+#_# -LSB-_-LRB- Information_NNP Search_VB and_CC Retrieval_NN -RSB-_-RRB- :_: Retrieval_NNP models_NNS General_NNP Terms_NNS Algorithms_NNS ,_, Experimentation_NN ,_, Theory_NNP 1_CD ._.
+INTRODUCTION_NNP Recently_RB learning_VBG to_TO rank_VB ''_'' has_VBZ gained_VBN increasing_VBG attention_NN in_IN both_CC the_DT fields_NNS of_IN information_NN retrieval_NN and_CC machine_NN learning_NN ._.
+When_WRB applied_VBN to_TO document_VB retrieval_NN ,_, learning_VBG to_TO rank_VB becomes_VBZ a_DT task_NN as_IN follows_VBZ ._.
+In_IN training_NN ,_, a_DT ranking_JJ model_NN is_VBZ constructed_VBN with_IN data_NNS consisting_VBG of_IN queries_NNS ,_, their_PRP$ corresponding_JJ retrieved_VBN documents_NNS ,_, and_CC relevance_NN levels_NNS given_VBN by_IN humans_NNS ._.
+In_IN ranking_JJ ,_, given_VBN a_DT new_JJ query_NN ,_, the_DT corresponding_JJ retrieved_VBN documents_NNS are_VBP sorted_VBN by_IN using_VBG the_DT trained_JJ ranking_JJ model_NN ._.
+In_IN document_NN retrieval_NN ,_, usually_RB ranking_JJ results_NNS are_VBP evaluated_VBN in_IN terms_NNS of_IN performance_NN measures_NNS such_JJ as_IN MAP_NN -LRB-_-LRB- Mean_NN Average_JJ Precision_NN -RRB-_-RRB- -LSB-_-LRB- #_# -RSB-_-RRB- and_CC NDCG_NN -LRB-_-LRB- Normalized_VBN Discounted_JJ Cumulative_JJ Gain_NN -RRB-_-RRB- -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Ideally_RB ,_, the_DT ranking_JJ function_NN is_VBZ created_VBN so_IN that_IN the_DT accuracy_NN of_IN ranking_NN in_IN terms_NNS of_IN one_CD of_IN the_DT measures_NNS with_IN respect_NN to_TO the_DT training_NN data_NNS is_VBZ maximized_VBN ._.
+Several_JJ methods_NNS for_IN learning_VBG to_TO rank_VB have_VBP been_VBN developed_VBN and_CC applied_VBN to_TO document_VB retrieval_NN ._.
+For_IN example_NN ,_, Herbrich_NNP et_FW al_FW ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- propose_VBP a_DT learning_VBG algorithm_NN for_IN ranking_VBG on_IN the_DT basis_NN of_IN Support_NN Vector_NNP Machines_NNP ,_, called_VBN Ranking_NNP SVM_NNP ._.
+Freund_NNP et_FW al_FW ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- take_VB a_DT similar_JJ approach_NN and_CC perform_VB the_DT learning_NN by_IN using_VBG boosting_VBG ,_, referred_VBN to_TO as_IN RankBoost_NNP ._.
+All_PDT the_DT existing_VBG methods_NNS used_VBN for_IN document_NN retrieval_NN -LSB-_-LRB- #_# ,_, #_# ,_, #_# ,_, ##_NN ,_, ##_NN ,_, ##_NN -RSB-_-RRB- are_VBP designed_VBN to_TO optimize_VB loss_NN functions_NNS loosely_RB related_JJ to_TO the_DT IR_NNP performance_NN measures_NNS ,_, not_RB loss_NN functions_NNS directly_RB based_VBN on_IN the_DT measures_NNS ._.
+For_IN example_NN ,_, Ranking_NN SVM_NN and_CC RankBoost_NN train_NN ranking_JJ models_NNS by_IN minimizing_VBG classification_NN errors_NNS on_IN instance_NN pairs_NNS ._.
+In_IN this_DT paper_NN ,_, we_PRP aim_VBP to_TO develop_VB a_DT new_JJ learning_NN algorithm_NN that_WDT can_MD directly_RB optimize_VB any_DT performance_NN measure_NN used_VBN in_IN document_NN retrieval_NN ._.
+Inspired_VBN by_IN the_DT work_NN of_IN AdaBoost_NNP for_IN classification_NN -LSB-_-LRB- #_# -RSB-_-RRB- ,_, we_PRP propose_VBP to_TO develop_VB a_DT boosting_VBG algorithm_NN for_IN information_NN retrieval_NN ,_, referred_VBN to_TO as_IN AdaRank_NNP ._.
+AdaRank_NNP utilizes_VBZ a_DT linear_JJ combination_NN of_IN weak_JJ rankers_NNS ''_'' as_IN its_PRP$ model_NN ._.
+In_IN learning_NN ,_, it_PRP repeats_VBZ the_DT process_NN of_IN re-weighting_VBG the_DT training_NN sample_NN ,_, creating_VBG a_DT weak_JJ ranker_NN ,_, and_CC calculating_VBG a_DT weight_NN for_IN the_DT ranker_NN ._.
+We_PRP show_VBP that_IN AdaRank_NNP algorithm_NN can_MD iteratively_RB optimize_VB an_DT exponential_JJ loss_NN function_NN based_VBN on_IN any_DT of_IN IR_NNP performance_NN measures_NNS ._.
+A_DT lower_JJR bound_VBN of_IN the_DT performance_NN on_IN training_NN data_NNS is_VBZ given_VBN ,_, which_WDT indicates_VBZ that_IN the_DT ranking_JJ accuracy_NN in_IN terms_NNS of_IN the_DT performance_NN measure_NN can_MD be_VB continuously_RB improved_VBN during_IN the_DT training_NN process_NN ._.
+AdaRank_NNP offers_VBZ several_JJ advantages_NNS :_: ease_NN in_IN implementation_NN ,_, theoretical_JJ soundness_NN ,_, efficiency_NN in_IN training_NN ,_, and_CC high_JJ accuracy_NN in_IN ranking_NN ._.
+Experimental_JJ results_NNS indicate_VBP that_IN AdaRank_NNP can_MD outperform_VB the_DT baseline_NN methods_NNS of_IN BM25_NN ,_, Ranking_NN SVM_NN ,_, and_CC RankBoost_NNP ,_, on_IN four_CD benchmark_JJ datasets_NNS including_VBG OHSUMED_NNP ,_, WSJ_NNP ,_, AP_NNP ,_, and_CC ._.
+Gov_NNP ._.
+Tuning_VBG ranking_JJ models_NNS using_VBG certain_JJ training_NN data_NNS and_CC a_DT performance_NN measure_NN is_VBZ a_DT common_JJ practice_NN in_IN IR_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+As_IN the_DT number_NN of_IN features_NNS in_IN the_DT ranking_JJ model_NN gets_VBZ larger_JJR and_CC the_DT amount_NN of_IN training_NN data_NNS gets_VBZ larger_JJR ,_, the_DT tuning_NN becomes_VBZ harder_RBR ._.
+From_IN the_DT viewpoint_NN of_IN IR_NNP ,_, AdaRank_NNP can_MD be_VB viewed_VBN as_IN a_DT machine_NN learning_NN method_NN for_IN ranking_JJ model_NN tuning_NN ._.
+Recently_RB ,_, direct_JJ optimization_NN of_IN performance_NN measures_NNS in_IN learning_NN has_VBZ become_VBN a_DT hot_JJ research_NN topic_NN ._.
+Several_JJ methods_NNS for_IN classification_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- and_CC ranking_JJ -LSB-_-LRB- #_# ,_, ##_NN -RSB-_-RRB- have_VBP been_VBN proposed_VBN ._.
+AdaRank_NNP can_MD be_VB viewed_VBN as_IN a_DT machine_NN learning_NN method_NN for_IN direct_JJ optimization_NN of_IN performance_NN measures_NNS ,_, based_VBN on_IN a_DT different_JJ approach_NN ._.
+The_DT rest_NN of_IN the_DT paper_NN is_VBZ organized_VBN as_IN follows_VBZ ._.
+After_IN a_DT summary_NN of_IN related_JJ work_NN in_IN Section_NN #_# ,_, we_PRP describe_VBP the_DT proposed_VBN AdaRank_NNP algorithm_NN in_IN details_NNS in_IN Section_NN #_# ._.
+Experimental_JJ results_NNS and_CC discussions_NNS are_VBP given_VBN in_IN Section_NN #_# ._.
+Section_NN #_# concludes_VBZ this_DT paper_NN and_CC gives_VBZ future_JJ work_NN ._.
+2_LS ._.
+RELATED_JJ WORK_VBP 2_CD ._.
+#_# Information_NNP Retrieval_NNP The_NNP key_JJ problem_NN for_IN document_NN retrieval_NN is_VBZ ranking_JJ ,_, specifically_RB ,_, how_WRB to_TO create_VB the_DT ranking_JJ model_NN -LRB-_-LRB- function_NN -RRB-_-RRB- that_WDT can_MD sort_VB documents_NNS based_VBN on_IN their_PRP$ relevance_NN to_TO the_DT given_VBN query_NN ._.
+It_PRP is_VBZ a_DT common_JJ practice_NN in_IN IR_NNP to_TO tune_VB the_DT parameters_NNS of_IN a_DT ranking_JJ model_NN using_VBG some_DT labeled_VBN data_NNS and_CC one_CD performance_NN measure_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+For_IN example_NN ,_, the_DT state-ofthe-art_JJ methods_NNS of_IN BM25_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- and_CC LMIR_NN -LRB-_-LRB- Language_NN Models_NNS for_IN Information_NN Retrieval_NN -RRB-_-RRB- -LSB-_-LRB- ##_CD ,_, ##_CD -RSB-_-RRB- all_DT have_VBP parameters_NNS to_TO tune_VB ._.
+As_IN the_DT ranking_JJ models_NNS become_VBP more_RBR sophisticated_JJ -LRB-_-LRB- more_JJR features_NNS are_VBP used_VBN -RRB-_-RRB- and_CC more_RBR labeled_JJ data_NNS become_VBP available_JJ ,_, how_WRB to_TO tune_VB or_CC train_VB ranking_JJ models_NNS turns_VBZ out_RP to_TO be_VB a_DT challenging_JJ issue_NN ._.
+Recently_RB methods_NNS of_IN learning_VBG to_TO rank_VB ''_'' have_VBP been_VBN applied_VBN to_TO ranking_JJ model_NN construction_NN and_CC some_DT promising_JJ results_NNS have_VBP been_VBN obtained_VBN ._.
+For_IN example_NN ,_, Joachims_JJ -LSB-_-LRB- ##_CD -RSB-_-RRB- applies_VBZ Ranking_NNP SVM_NNP to_TO document_VB retrieval_NN ._.
+He_PRP utilizes_VBZ click-through_JJ data_NNS to_TO deduce_VB training_NN data_NNS for_IN the_DT model_NN creation_NN ._.
+Cao_NNP et_FW al_FW ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- adapt_VBP Ranking_NN SVM_NN to_TO document_VB retrieval_NN by_IN modifying_VBG the_DT Hinge_NNP Loss_NN function_NN to_TO better_JJR meet_VB the_DT requirements_NNS of_IN IR_NNP ._.
+Specifically_RB ,_, they_PRP introduce_VBP a_DT Hinge_NNP Loss_NN function_NN that_WDT heavily_RB penalizes_VBZ errors_NNS on_IN the_DT tops_NNS of_IN ranking_JJ lists_NNS and_CC errors_NNS from_IN queries_NNS with_IN fewer_JJR retrieved_VBN documents_NNS ._.
+Burges_NNP et_FW al_FW ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- employ_VBP Relative_JJ Entropy_NNP as_IN a_DT loss_NN function_NN and_CC Gradient_NN Descent_NN as_IN an_DT algorithm_NN to_TO train_VB a_DT Neural_NNP Network_NNP model_NN for_IN ranking_VBG in_IN document_NN retrieval_NN ._.
+The_DT method_NN is_VBZ referred_VBN to_TO as_IN RankNet_NNP ''_'' ._.
+2_LS ._.
+#_# Machine_NN Learning_NNP There_EX are_VBP three_CD topics_NNS in_IN machine_NN learning_NN which_WDT are_VBP related_JJ to_TO our_PRP$ current_JJ work_NN ._.
+They_PRP are_VBP learning_VBG to_TO rank_VB ''_'' ,_, boosting_VBG ,_, and_CC direct_JJ optimization_NN of_IN performance_NN measures_NNS ._.
+Learning_VBG to_TO rank_VB is_VBZ to_TO automatically_RB create_VB a_DT ranking_JJ function_NN that_WDT assigns_VBZ scores_NNS to_TO instances_NNS and_CC then_RB rank_VB the_DT instances_NNS by_IN using_VBG the_DT scores_NNS ._.
+Several_JJ approaches_NNS have_VBP been_VBN proposed_VBN to_TO tackle_VB the_DT problem_NN ._.
+One_CD major_JJ approach_NN to_TO learning_VBG to_TO rank_VB is_VBZ that_DT of_IN transforming_VBG it_PRP into_IN binary_JJ classification_NN on_IN instance_NN pairs_NNS ._.
+This_DT pair-wise_JJ ''_'' approach_NN fits_VBZ well_RB with_IN information_NN retrieval_NN and_CC thus_RB is_VBZ widely_RB used_VBN in_IN IR_NNP ._.
+Typical_JJ methods_NNS of_IN the_DT approach_NN include_VBP Ranking_NN SVM_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, RankBoost_NN -LSB-_-LRB- #_# -RSB-_-RRB- ,_, and_CC RankNet_NNP -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+For_IN other_JJ approaches_NNS to_TO learning_VBG to_TO rank_VB ,_, refer_VB to_TO -LSB-_-LRB- #_# ,_, ##_NN ,_, ##_NN -RSB-_-RRB- ._.
+In_IN the_DT pair-wise_JJ approach_NN to_TO ranking_JJ ,_, the_DT learning_VBG task_NN is_VBZ formalized_VBN as_IN a_DT problem_NN of_IN classifying_VBG instance_NN pairs_NNS into_IN two_CD categories_NNS -LRB-_-LRB- correctly_RB ranked_VBD and_CC incorrectly_RB ranked_VBD -RRB-_-RRB- ._.
+Actually_RB ,_, it_PRP is_VBZ known_VBN that_IN reducing_VBG classification_NN errors_NNS on_IN instance_NN pairs_NNS is_VBZ equivalent_JJ to_TO maximizing_VBG a_DT lower_JJR bound_VBN of_IN MAP_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+In_IN that_DT sense_NN ,_, the_DT existing_VBG methods_NNS of_IN Ranking_NN SVM_NN ,_, RankBoost_NNP ,_, and_CC RankNet_NNP are_VBP only_RB able_JJ to_TO minimize_VB loss_NN functions_NNS that_WDT are_VBP loosely_RB related_VBN to_TO the_DT IR_NNP performance_NN measures_NNS ._.
+Boosting_VBG is_VBZ a_DT general_JJ technique_NN for_IN improving_VBG the_DT accuracies_NNS of_IN machine_NN learning_NN algorithms_NNS ._.
+The_DT basic_JJ idea_NN of_IN boosting_VBG is_VBZ to_TO repeatedly_RB construct_VB weak_JJ learners_NNS ''_'' by_IN re-weighting_NN training_NN data_NNS and_CC form_VB an_DT ensemble_NN of_IN weak_JJ learners_NNS such_JJ that_IN the_DT total_JJ performance_NN of_IN the_DT ensemble_NN is_VBZ boosted_VBN ''_'' ._.
+Freund_NNP and_CC Schapire_NNP have_VBP proposed_VBN the_DT first_JJ well-known_NN boosting_VBG algorithm_NN called_VBD AdaBoost_NNP -LRB-_-LRB- Adaptive_NNP Boosting_NNP -RRB-_-RRB- -LSB-_-LRB- #_# -RSB-_-RRB- ,_, which_WDT is_VBZ designed_VBN for_IN binary_JJ classification_NN -LRB-_-LRB- 0-1_CD prediction_NN -RRB-_-RRB- ._.
+Later_RB ,_, Schapire_NNP &_CC Singer_NNP have_VBP introduced_VBN a_DT generalized_VBN version_NN of_IN AdaBoost_NNP in_IN which_WDT weak_JJ learners_NNS can_MD give_VB confidence_NN scores_NNS in_IN their_PRP$ predictions_NNS rather_RB than_IN make_VB 0-1_CD decisions_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Extensions_NNS have_VBP been_VBN made_VBN to_TO deal_VB with_IN the_DT problems_NNS of_IN multi-class_JJ classification_NN -LSB-_-LRB- ##_CD ,_, ##_CD -RSB-_-RRB- ,_, regression_NN -LSB-_-LRB- #_# -RSB-_-RRB- ,_, and_CC ranking_JJ -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+In_IN fact_NN ,_, AdaBoost_NNP is_VBZ an_DT algorithm_NN that_WDT ingeniously_RB constructs_NNS a_DT linear_JJ model_NN by_IN minimizing_VBG the_DT exponential_JJ loss_NN function_NN ''_'' with_IN respect_NN to_TO the_DT training_NN data_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Our_PRP$ work_NN in_IN this_DT paper_NN can_MD be_VB viewed_VBN as_IN a_DT boosting_VBG method_NN developed_VBN for_IN ranking_JJ ,_, particularly_RB for_IN ranking_VBG in_IN IR_NNP ._.
+Recently_RB ,_, a_DT number_NN of_IN authors_NNS have_VBP proposed_VBN conducting_VBG direct_JJ optimization_NN of_IN multivariate_JJ performance_NN measures_NNS in_IN learning_NN ._.
+For_IN instance_NN ,_, Joachims_JJ -LSB-_-LRB- ##_CD -RSB-_-RRB- presents_VBZ an_DT SVM_NN method_NN to_TO directly_RB optimize_VB nonlinear_JJ multivariate_JJ performance_NN measures_NNS like_IN the_DT F1_NN measure_NN for_IN classification_NN ._.
+Cossock_NNP &_CC Zhang_NNP -LSB-_-LRB- #_# -RSB-_-RRB- find_VB a_DT way_NN to_TO approximately_RB optimize_VB the_DT ranking_JJ performance_NN measure_NN DCG_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Metzler_NNP et_FW al_FW ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- also_RB propose_VBP a_DT method_NN of_IN directly_RB maximizing_VBG rank-based_JJ metrics_NNS for_IN ranking_VBG on_IN the_DT basis_NN of_IN manifold_NN learning_NN ._.
+AdaRank_NNP is_VBZ also_RB one_CD that_WDT tries_VBZ to_TO directly_RB optimize_VB multivariate_JJ performance_NN measures_NNS ,_, but_CC is_VBZ based_VBN on_IN a_DT different_JJ approach_NN ._.
+AdaRank_NNP is_VBZ unique_JJ in_IN that_IN it_PRP employs_VBZ an_DT exponential_JJ loss_NN function_NN based_VBN on_IN IR_NNP performance_NN measures_NNS and_CC a_DT boosting_VBG technique_NN ._.
+3_LS ._.
+OUR_NNP METHOD_NN :_: ADARANK_NN 3_CD ._.
+#_# General_NNP Framework_NNP We_PRP first_RB describe_VBP the_DT general_JJ framework_NN of_IN learning_VBG to_TO rank_VB for_IN document_NN retrieval_NN ._.
+In_IN retrieval_NN -LRB-_-LRB- testing_NN -RRB-_-RRB- ,_, given_VBN a_DT query_NN the_DT system_NN returns_VBZ a_DT ranking_JJ list_NN of_IN documents_NNS in_IN descending_VBG order_NN of_IN the_DT relevance_NN scores_NNS ._.
+The_DT relevance_NN scores_NNS are_VBP calculated_VBN with_IN a_DT ranking_JJ function_NN -LRB-_-LRB- model_NN -RRB-_-RRB- ._.
+In_IN learning_NN -LRB-_-LRB- training_NN -RRB-_-RRB- ,_, a_DT number_NN of_IN queries_NNS and_CC their_PRP$ corresponding_JJ retrieved_VBN documents_NNS are_VBP given_VBN ._.
+Furthermore_RB ,_, the_DT relevance_NN levels_NNS of_IN the_DT documents_NNS with_IN respect_NN to_TO the_DT queries_NNS are_VBP also_RB provided_VBN ._.
+The_DT relevance_NN levels_NNS are_VBP represented_VBN as_IN ranks_NNS -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, categories_NNS in_IN a_DT total_JJ order_NN -RRB-_-RRB- ._.
+The_DT objective_NN of_IN learning_NN is_VBZ to_TO construct_VB a_DT ranking_JJ function_NN which_WDT achieves_VBZ the_DT best_JJS results_NNS in_IN ranking_NN of_IN the_DT training_NN data_NNS in_IN the_DT sense_NN of_IN minimization_NN of_IN a_DT loss_NN function_NN ._.
+Ideally_RB the_DT loss_NN function_NN is_VBZ defined_VBN on_IN the_DT basis_NN of_IN the_DT performance_NN measure_NN used_VBN in_IN testing_NN ._.
+Suppose_VB that_DT Y_NN =_JJ -LCB-_-LRB- r1_NN ,_, r2_NN ,_, ,_, r_NN -RCB-_-RRB- is_VBZ a_DT set_NN of_IN ranks_NNS ,_, where_WRB denotes_VBZ the_DT number_NN of_IN ranks_NNS ._.
+There_EX exists_VBZ a_DT total_JJ order_NN between_IN the_DT ranks_NNS r_NN r_NN #_# r1_NN ,_, where_WRB ''_'' denotes_VBZ a_DT preference_NN relationship_NN ._.
+In_IN training_NN ,_, a_DT set_NN of_IN queries_NNS Q_NNP =_JJ -LCB-_-LRB- q1_NN ,_, q2_NN ,_, ,_, qm_NN -RCB-_-RRB- is_VBZ given_VBN ._.
+Each_DT query_NN qi_NN is_VBZ associated_VBN with_IN a_DT list_NN of_IN retrieved_VBN documents_NNS di_FW =_JJ -LCB-_-LRB- di1_NN ,_, di2_NN ,_, ,_, di_FW ,_, n_NN -LRB-_-LRB- qi_NN -RRB-_-RRB- -RCB-_-RRB- and_CC a_DT list_NN of_IN labels_NNS yi_NN =_JJ -LCB-_-LRB- yi1_NN ,_, yi2_NN ,_, ,_, yi_NN ,_, n_NN -LRB-_-LRB- qi_NN -RRB-_-RRB- -RCB-_-RRB- ,_, where_WRB n_NN -LRB-_-LRB- qi_NN -RRB-_-RRB- denotes_VBZ the_DT sizes_NNS of_IN lists_NNS di_FW and_CC yi_FW ,_, dij_NN denotes_VBZ the_DT jth_NN document_NN in_IN di_FW ,_, and_CC yij_NN Y_NN denotes_VBZ the_DT rank_NN of_IN document_NN di_FW j_FW ._.
+A_DT feature_NN vector_NN xij_NN =_JJ -LRB-_-LRB- qi_NN ,_, di_FW j_FW -RRB-_-RRB- X_NN is_VBZ created_VBN from_IN each_DT query-document_NN pair_NN -LRB-_-LRB- qi_NN ,_, di_FW j_FW -RRB-_-RRB- ,_, i_FW =_JJ #_# ,_, #_# ,_, ,_, m_NN ;_: j_NN =_JJ #_# ,_, #_# ,_, ,_, n_NN -LRB-_-LRB- qi_NN -RRB-_-RRB- ._.
+Thus_RB ,_, the_DT training_NN set_NN can_MD be_VB represented_VBN as_IN S_NN =_JJ -LCB-_-LRB- -LRB-_-LRB- qi_NN ,_, di_FW ,_, yi_NN -RRB-_-RRB- -RCB-_-RRB- m_NN i_FW =_JJ #_# ._.
+The_DT objective_NN of_IN learning_NN is_VBZ to_TO create_VB a_DT ranking_JJ function_NN f_FW :_: X_NN ,_, such_JJ that_IN for_IN each_DT query_NN the_DT elements_NNS in_IN its_PRP$ corresponding_JJ document_NN list_NN can_MD be_VB assigned_VBN relevance_NN scores_NNS using_VBG the_DT function_NN and_CC then_RB be_VB ranked_VBN according_VBG to_TO the_DT scores_NNS ._.
+Specifically_RB ,_, we_PRP create_VBP a_DT permutation_NN of_IN integers_NNS -LRB-_-LRB- qi_NNS ,_, di_FW ,_, f_LS -RRB-_-RRB- for_IN query_NN qi_NN ,_, the_DT corresponding_JJ list_NN of_IN documents_NNS di_FW ,_, and_CC the_DT ranking_JJ function_NN f_FW ._.
+Let_VB di_FW =_JJ -LCB-_-LRB- di1_NN ,_, di2_NN ,_, ,_, di_FW ,_, n_NN -LRB-_-LRB- qi_NN -RRB-_-RRB- -RCB-_-RRB- be_VB identified_VBN by_IN the_DT list_NN of_IN integers_NNS -LCB-_-LRB- #_# ,_, #_# ,_, ,_, n_NN -LRB-_-LRB- qi_NN -RRB-_-RRB- -RCB-_-RRB- ,_, then_RB permutation_NN -LRB-_-LRB- qi_NN ,_, di_FW ,_, f_LS -RRB-_-RRB- is_VBZ defined_VBN as_IN a_DT bijection_NN from_IN -LCB-_-LRB- #_# ,_, #_# ,_, ,_, n_NN -LRB-_-LRB- qi_NN -RRB-_-RRB- -RCB-_-RRB- to_TO itself_PRP ._.
+We_PRP use_VBP -LRB-_-LRB- j_NN -RRB-_-RRB- to_TO denote_VB the_DT position_NN of_IN item_NN j_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, di_FW j_FW -RRB-_-RRB- ._.
+The_DT learning_NN process_NN turns_VBZ out_RP to_TO be_VB that_DT of_IN minimizing_VBG the_DT loss_NN function_NN which_WDT represents_VBZ the_DT disagreement_NN between_IN the_DT permutation_NN -LRB-_-LRB- qi_NN ,_, di_FW ,_, f_LS -RRB-_-RRB- and_CC the_DT list_NN of_IN ranks_NNS yi_VBP ,_, for_IN all_DT of_IN the_DT queries_NNS ._.
+Table_NNP #_# :_: Notations_NNS and_CC explanations_NNS ._.
+Notations_NNS Explanations_NNS qi_VBP Q_NNP ith_NN query_NN di_FW =_JJ -LCB-_-LRB- di1_NN ,_, di2_NN ,_, ,_, di_FW ,_, n_NN -LRB-_-LRB- qi_NN -RRB-_-RRB- -RCB-_-RRB- List_NN of_IN documents_NNS for_IN qi_NN yi_NN j_NN -LCB-_-LRB- r1_NN ,_, r2_NN ,_, ,_, r_NN -RCB-_-RRB- Rank_NNP of_IN di_FW j_FW w_FW ._.
+r_NN ._.
+t_NN ._.
+qi_NN yi_NN =_JJ -LCB-_-LRB- yi1_NN ,_, yi2_NN ,_, ,_, yi_NN ,_, n_NN -LRB-_-LRB- qi_NN -RRB-_-RRB- -RCB-_-RRB- List_NN of_IN ranks_NNS for_IN qi_NN S_NN =_JJ -LCB-_-LRB- -LRB-_-LRB- qi_NN ,_, di_FW ,_, yi_NN -RRB-_-RRB- -RCB-_-RRB- m_NN i_FW =_JJ #_# Training_VBG set_VBN xij_NN =_JJ -LRB-_-LRB- qi_NN ,_, dij_NN -RRB-_-RRB- X_NN Feature_NN vector_NN for_IN -LRB-_-LRB- qi_NN ,_, di_FW j_FW -RRB-_-RRB- f_FW -LRB-_-LRB- xij_NN -RRB-_-RRB- Ranking_NN model_NN -LRB-_-LRB- qi_NN ,_, di_FW ,_, f_LS -RRB-_-RRB- Permutation_NN for_IN qi_NN ,_, di_FW ,_, and_CC f_LS ht_NN -LRB-_-LRB- xi_NN j_NN -RRB-_-RRB- tth_NN weak_JJ ranker_NN E_NN -LRB-_-LRB- -LRB-_-LRB- qi_NN ,_, di_FW ,_, f_LS -RRB-_-RRB- ,_, yi_NN -RRB-_-RRB- -LSB-_-LRB- #_# ,_, +_CC #_# -RSB-_-RRB- Performance_NNP measure_NN function_NN In_IN the_DT paper_NN ,_, we_PRP define_VBP the_DT rank_NN model_NN as_IN a_DT linear_JJ combination_NN of_IN weak_JJ rankers_NNS :_: f_FW -LRB-_-LRB- x_NN -RRB-_-RRB- =_JJ T_NN t_NN =_JJ #_# tht_NN -LRB-_-LRB- x_NN -RRB-_-RRB- ,_, where_WRB ht_NN -LRB-_-LRB- x_NN -RRB-_-RRB- is_VBZ a_DT weak_JJ ranker_NN ,_, t_NN is_VBZ its_PRP$ weight_NN ,_, and_CC T_NN is_VBZ the_DT number_NN of_IN weak_JJ rankers_NNS ._.
+In_IN information_NN retrieval_NN ,_, query-based_JJ performance_NN measures_NNS are_VBP used_VBN to_TO evaluate_VB the_DT goodness_NN ''_'' of_IN a_DT ranking_JJ function_NN ._.
+By_IN query_NN based_VBN measure_NN ,_, we_PRP mean_VBP a_DT measure_NN defined_VBN over_IN a_DT ranking_JJ list_NN of_IN documents_NNS with_IN respect_NN to_TO a_DT query_NN ._.
+These_DT measures_NNS include_VBP MAP_NN ,_, NDCG_NN ,_, MRR_NN -LRB-_-LRB- Mean_NN Reciprocal_JJ Rank_NNP -RRB-_-RRB- ,_, WTA_NN -LRB-_-LRB- Winners_NNS Take_VB ALL_NN -RRB-_-RRB- ,_, and_CC Precision_NNP @_IN n_NN -LSB-_-LRB- #_# ,_, ##_NN -RSB-_-RRB- ._.
+We_PRP utilize_VBP a_DT general_JJ function_NN E_NN -LRB-_-LRB- -LRB-_-LRB- qi_NN ,_, di_FW ,_, f_LS -RRB-_-RRB- ,_, yi_NN -RRB-_-RRB- -LSB-_-LRB- #_# ,_, +_CC #_# -RSB-_-RRB- to_TO represent_VB the_DT performance_NN measures_NNS ._.
+The_DT first_JJ argument_NN of_IN E_NN is_VBZ the_DT permutation_NN created_VBN using_VBG the_DT ranking_JJ function_NN f_FW on_IN di_FW ._.
+The_DT second_JJ argument_NN is_VBZ the_DT list_NN of_IN ranks_NNS yi_VBP given_VBN by_IN humans_NNS ._.
+E_NN measures_VBZ the_DT agreement_NN between_IN and_CC yi_NN ._.
+Table_NNP #_# gives_VBZ a_DT summary_NN of_IN notations_NNS described_VBN above_IN ._.
+Next_RB ,_, as_IN examples_NNS of_IN performance_NN measures_NNS ,_, we_PRP present_VBP the_DT definitions_NNS of_IN MAP_NN and_CC NDCG_NN ._.
+Given_VBN a_DT query_NN qi_NN ,_, the_DT corresponding_JJ list_NN of_IN ranks_NNS yi_VBP ,_, and_CC a_DT permutation_NN i_FW on_IN di_FW ,_, average_JJ precision_NN for_IN qi_NN is_VBZ defined_VBN as_IN :_: AvgPi_NN =_JJ n_NN -LRB-_-LRB- qi_NN -RRB-_-RRB- j_NN =_JJ #_# Pi_NN -LRB-_-LRB- j_NN -RRB-_-RRB- yij_NN n_NN -LRB-_-LRB- qi_NN -RRB-_-RRB- j_NN =_JJ #_# yij_NN ,_, -LRB-_-LRB- #_# -RRB-_-RRB- where_WRB yij_NN takes_VBZ on_RP #_# and_CC #_# as_IN values_NNS ,_, representing_VBG being_VBG relevant_JJ or_CC irrelevant_JJ and_CC Pi_NN -LRB-_-LRB- j_NN -RRB-_-RRB- is_VBZ defined_VBN as_IN precision_NN at_IN the_DT position_NN of_IN dij_NN :_: Pi_NN -LRB-_-LRB- j_NN -RRB-_-RRB- =_JJ k_NN :_: i_FW -LRB-_-LRB- k_NN -RRB-_-RRB- i_FW -LRB-_-LRB- j_NN -RRB-_-RRB- yik_NN i_FW -LRB-_-LRB- j_NN -RRB-_-RRB- ,_, -LRB-_-LRB- #_# -RRB-_-RRB- where_WRB i_FW -LRB-_-LRB- j_NN -RRB-_-RRB- denotes_VBZ the_DT position_NN of_IN di_FW j_FW ._.
+Given_VBN a_DT query_NN qi_NN ,_, the_DT list_NN of_IN ranks_NNS yi_VBP ,_, and_CC a_DT permutation_NN i_FW on_IN di_FW ,_, NDCG_NN at_IN position_NN m_NN for_IN qi_NN is_VBZ defined_VBN as_IN :_: Ni_NN =_JJ ni_NNS j_NN :_: i_FW -LRB-_-LRB- j_NN -RRB-_-RRB- m_NN 2yi_JJ j_NN #_# log_NN -LRB-_-LRB- #_# +_CC i_FW -LRB-_-LRB- j_NN -RRB-_-RRB- -RRB-_-RRB- ,_, -LRB-_-LRB- #_# -RRB-_-RRB- where_WRB yij_NN takes_VBZ on_IN ranks_NNS as_IN values_NNS and_CC ni_NNS is_VBZ a_DT normalization_NN constant_NN ._.
+ni_NNS is_VBZ chosen_VBN so_IN that_IN a_DT perfect_JJ ranking_JJ i_FW ''_'' s_VBZ NDCG_NNP score_NN at_IN position_NN m_NN is_VBZ #_# ._.
+3_LS ._.
+#_# Algorithm_NNP Inspired_VBN by_IN the_DT AdaBoost_NNP algorithm_NN for_IN classification_NN ,_, we_PRP have_VBP devised_VBN a_DT novel_JJ algorithm_NN which_WDT can_MD optimize_VB a_DT loss_NN function_NN based_VBN on_IN the_DT IR_NNP performance_NN measures_NNS ._.
+The_DT algorithm_NN is_VBZ referred_VBN to_TO as_IN AdaRank_NNP ''_'' and_CC is_VBZ shown_VBN in_IN Figure_NNP #_# ._.
+AdaRank_NNP takes_VBZ a_DT training_NN set_VBN S_NN =_JJ -LCB-_-LRB- -LRB-_-LRB- qi_NN ,_, di_FW ,_, yi_NN -RRB-_-RRB- -RCB-_-RRB- m_NN i_FW =_JJ #_# as_IN input_NN and_CC takes_VBZ the_DT performance_NN measure_NN function_NN E_NN and_CC the_DT number_NN of_IN iterations_NNS T_NN as_IN parameters_NNS ._.
+AdaRank_NNP runs_VBZ T_NN rounds_NNS and_CC at_IN each_DT round_NN it_PRP creates_VBZ a_DT weak_JJ ranker_NN ht_NN -LRB-_-LRB- t_NN =_JJ #_# ,_, ,_, T_NN -RRB-_-RRB- ._.
+Finally_RB ,_, it_PRP outputs_VBZ a_DT ranking_JJ model_NN f_FW by_IN linearly_RB combining_VBG the_DT weak_JJ rankers_NNS ._.
+At_IN each_DT round_NN ,_, AdaRank_NNP maintains_VBZ a_DT distribution_NN of_IN weights_NNS over_IN the_DT queries_NNS in_IN the_DT training_NN data_NNS ._.
+We_PRP denote_VBP the_DT distribution_NN of_IN weights_NNS Input_NNP :_: S_NN =_JJ -LCB-_-LRB- -LRB-_-LRB- qi_NN ,_, di_FW ,_, yi_NN -RRB-_-RRB- -RCB-_-RRB- m_NN i_FW =_JJ #_# ,_, and_CC parameters_NNS E_NN and_CC T_NN Initialize_VBP P1_NN -LRB-_-LRB- i_LS -RRB-_-RRB- =_JJ #_# /_: m_NN ._.
+For_IN t_NN =_JJ #_# ,_, ,_, T_NN Create_VB weak_JJ ranker_NN ht_NN with_IN weighted_JJ distribution_NN Pt_NN on_IN training_NN data_NNS S_NN ._.
+Choose_VB t_NN t_NN =_JJ 1_CD 2_CD ln_NN m_NN i_FW =_JJ #_# Pt_NN -LRB-_-LRB- i_LS -RRB-_-RRB- -LCB-_-LRB- #_# +_CC E_NN -LRB-_-LRB- -LRB-_-LRB- qi_NN ,_, di_FW ,_, ht_NN -RRB-_-RRB- ,_, yi_NN -RRB-_-RRB- -RCB-_-RRB- m_NN i_FW =_JJ #_# Pt_NN -LRB-_-LRB- i_LS -RRB-_-RRB- -LCB-_-LRB- #_# E_NN -LRB-_-LRB- -LRB-_-LRB- qi_NN ,_, di_FW ,_, ht_NN -RRB-_-RRB- ,_, yi_NN -RRB-_-RRB- -RCB-_-RRB- ._.
+Create_VB ft_NN ft_NN -LRB-_-LRB- x_NN -RRB-_-RRB- =_JJ t_NN k_NN =_JJ #_# khk_NN -LRB-_-LRB- x_NN -RRB-_-RRB- ._.
+Update_NNP Pt_NNP +_CC #_# Pt_NN +_CC #_# -LRB-_-LRB- i_LS -RRB-_-RRB- =_JJ exp_NN -LCB-_-LRB- E_NN -LRB-_-LRB- -LRB-_-LRB- qi_NN ,_, di_FW ,_, ft_NN -RRB-_-RRB- ,_, yi_NN -RRB-_-RRB- -RCB-_-RRB- m_NN j_NN =_JJ #_# exp_FW -LCB-_-LRB- E_NN -LRB-_-LRB- -LRB-_-LRB- qj_NN ,_, dj_NN ,_, ft_NN -RRB-_-RRB- ,_, yj_NN -RRB-_-RRB- -RCB-_-RRB- ._.
+End_NN For_IN Output_NN ranking_JJ model_NN :_: f_FW -LRB-_-LRB- x_NN -RRB-_-RRB- =_JJ fT_NN -LRB-_-LRB- x_NN -RRB-_-RRB- ._.
+Figure_NNP #_# :_: The_DT AdaRank_NNP algorithm_NN ._.
+at_IN round_JJ t_NN as_IN Pt_NN and_CC the_DT weight_NN on_IN the_DT ith_NN training_NN query_NN qi_NN at_IN round_JJ t_NN as_IN Pt_NN -LRB-_-LRB- i_LS -RRB-_-RRB- ._.
+Initially_RB ,_, AdaRank_NNP sets_VBZ equal_JJ weights_NNS to_TO the_DT queries_NNS ._.
+At_IN each_DT round_NN ,_, it_PRP increases_VBZ the_DT weights_NNS of_IN those_DT queries_NNS that_WDT are_VBP not_RB ranked_VBN well_RB by_IN ft_NN ,_, the_DT model_NN created_VBN so_RB far_RB ._.
+As_IN a_DT result_NN ,_, the_DT learning_NN at_IN the_DT next_JJ round_NN will_MD be_VB focused_VBN on_IN the_DT creation_NN of_IN a_DT weak_JJ ranker_NN that_WDT can_MD work_VB on_IN the_DT ranking_NN of_IN those_DT hard_JJ ''_'' queries_NNS ._.
+At_IN each_DT round_NN ,_, a_DT weak_JJ ranker_NN ht_NN is_VBZ constructed_VBN based_VBN on_IN training_NN data_NNS with_IN weight_NN distribution_NN Pt_NN ._.
+The_DT goodness_NN of_IN a_DT weak_JJ ranker_NN is_VBZ measured_VBN by_IN the_DT performance_NN measure_NN E_NN weighted_VBN by_IN Pt_NN :_: m_NN i_FW =_JJ #_# Pt_NN -LRB-_-LRB- i_LS -RRB-_-RRB- E_NN -LRB-_-LRB- -LRB-_-LRB- qi_NN ,_, di_FW ,_, ht_NN -RRB-_-RRB- ,_, yi_NN -RRB-_-RRB- ._.
+Several_JJ methods_NNS for_IN weak_JJ ranker_NN construction_NN can_MD be_VB considered_VBN ._.
+For_IN example_NN ,_, a_DT weak_JJ ranker_NN can_MD be_VB created_VBN by_IN using_VBG a_DT subset_NN of_IN queries_NNS -LRB-_-LRB- together_RB with_IN their_PRP$ document_NN list_NN and_CC label_NN list_NN -RRB-_-RRB- sampled_VBD according_VBG to_TO the_DT distribution_NN Pt_NN ._.
+In_IN this_DT paper_NN ,_, we_PRP use_VBP single_JJ features_NNS as_IN weak_JJ rankers_NNS ,_, as_RB will_MD be_VB explained_VBN in_IN Section_NN #_# ._.
+#_# ._.
+Once_RB a_DT weak_JJ ranker_NN ht_NN is_VBZ built_VBN ,_, AdaRank_NNP chooses_VBZ a_DT weight_NN t_NN >_JJR #_# for_IN the_DT weak_JJ ranker_NN ._.
+Intuitively_RB ,_, t_NN measures_VBZ the_DT importance_NN of_IN ht_NN ._.
+A_DT ranking_JJ model_NN ft_NN is_VBZ created_VBN at_IN each_DT round_NN by_IN linearly_RB combining_VBG the_DT weak_JJ rankers_NNS constructed_VBN so_RB far_RB h1_NN ,_, ,_, ht_VB with_IN weights_NNS 1_CD ,_, ,_, t_NN ._.
+ft_NN is_VBZ then_RB used_VBN for_IN updating_VBG the_DT distribution_NN Pt_NN +_CC #_# ._.
+3_LS ._.
+#_# Theoretical_JJ Analysis_NN The_DT existing_VBG learning_NN algorithms_NNS for_IN ranking_JJ attempt_NN to_TO minimize_VB a_DT loss_NN function_NN based_VBN on_IN instance_NN pairs_NNS -LRB-_-LRB- document_NN pairs_NNS -RRB-_-RRB- ._.
+In_IN contrast_NN ,_, AdaRank_NNP tries_VBZ to_TO optimize_VB a_DT loss_NN function_NN based_VBN on_IN queries_NNS ._.
+Furthermore_RB ,_, the_DT loss_NN function_NN in_IN AdaRank_NNP is_VBZ defined_VBN on_IN the_DT basis_NN of_IN general_JJ IR_NN performance_NN measures_NNS ._.
+The_DT measures_NNS can_MD be_VB MAP_NN ,_, NDCG_NN ,_, WTA_NNP ,_, MRR_NNP ,_, or_CC any_DT other_JJ measures_NNS whose_WP$ range_NN is_VBZ within_IN -LSB-_-LRB- #_# ,_, +_CC #_# -RSB-_-RRB- ._.
+We_PRP next_RB explain_VBP why_WRB this_DT is_VBZ the_DT case_NN ._.
+Ideally_RB we_PRP want_VBP to_TO maximize_VB the_DT ranking_JJ accuracy_NN in_IN terms_NNS of_IN a_DT performance_NN measure_NN on_IN the_DT training_NN data_NNS :_: max_NN fF_NN m_NN i_FW =_JJ #_# E_NN -LRB-_-LRB- -LRB-_-LRB- qi_NN ,_, di_FW ,_, f_LS -RRB-_-RRB- ,_, yi_NN -RRB-_-RRB- ,_, -LRB-_-LRB- #_# -RRB-_-RRB- where_WRB F_NN is_VBZ the_DT set_NN of_IN possible_JJ ranking_JJ functions_NNS ._.
+This_DT is_VBZ equivalent_JJ to_TO minimizing_VBG the_DT loss_NN on_IN the_DT training_NN data_NNS min_NN fF_NN m_NN i_FW =_JJ #_# -LRB-_-LRB- #_# E_NN -LRB-_-LRB- -LRB-_-LRB- qi_NN ,_, di_FW ,_, f_LS -RRB-_-RRB- ,_, yi_NN -RRB-_-RRB- -RRB-_-RRB- ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- It_PRP is_VBZ difficult_JJ to_TO directly_RB optimize_VB the_DT loss_NN ,_, because_IN E_NN is_VBZ a_DT noncontinuous_JJ function_NN and_CC thus_RB may_MD be_VB difficult_JJ to_TO handle_VB ._.
+We_PRP instead_RB attempt_VBP to_TO minimize_VB an_DT upper_JJ bound_VBN of_IN the_DT loss_NN in_IN -LRB-_-LRB- #_# -RRB-_-RRB- min_NN fF_NN m_NN i_FW =_JJ #_# exp_FW -LCB-_-LRB- E_NN -LRB-_-LRB- -LRB-_-LRB- qi_NN ,_, di_FW ,_, f_LS -RRB-_-RRB- ,_, yi_NN -RRB-_-RRB- -RCB-_-RRB- ,_, -LRB-_-LRB- #_# -RRB-_-RRB- because_IN ex_FW #_# x_CC holds_VBZ for_IN any_DT x_NN ._.
+We_PRP consider_VBP the_DT use_NN of_IN a_DT linear_JJ combination_NN of_IN weak_JJ rankers_NNS as_IN our_PRP$ ranking_JJ model_NN :_: f_FW -LRB-_-LRB- x_NN -RRB-_-RRB- =_JJ T_NN t_NN =_JJ #_# tht_NN -LRB-_-LRB- x_NN -RRB-_-RRB- ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- The_DT minimization_NN in_IN -LRB-_-LRB- #_# -RRB-_-RRB- then_RB turns_VBZ out_RP to_TO be_VB min_NN htH_NN ,_, t_NN +_CC L_NN -LRB-_-LRB- ht_NN ,_, t_NN -RRB-_-RRB- =_JJ m_NN i_FW =_JJ #_# exp_FW -LCB-_-LRB- E_NN -LRB-_-LRB- -LRB-_-LRB- qi_NN ,_, di_FW ,_, ft1_NN +_CC tht_NN -RRB-_-RRB- ,_, yi_NN -RRB-_-RRB- -RCB-_-RRB- ,_, -LRB-_-LRB- #_# -RRB-_-RRB- where_WRB H_NN is_VBZ the_DT set_NN of_IN possible_JJ weak_JJ rankers_NNS ,_, t_NN is_VBZ a_DT positive_JJ weight_NN ,_, and_CC -LRB-_-LRB- ft1_NN +_CC tht_NN -RRB-_-RRB- -LRB-_-LRB- x_NN -RRB-_-RRB- =_JJ ft1_NN -LRB-_-LRB- x_NN -RRB-_-RRB- +_CC tht_NN -LRB-_-LRB- x_NN -RRB-_-RRB- ._.
+Several_JJ ways_NNS of_IN computing_VBG coefficients_NNS t_NN and_CC weak_JJ rankers_NNS ht_VBP may_MD be_VB considered_VBN ._.
+Following_VBG the_DT idea_NN of_IN AdaBoost_NNP ,_, in_IN AdaRank_NNP we_PRP take_VBP the_DT approach_NN of_IN forward_RB stage-wise_JJ additive_JJ modeling_NN ''_'' -LSB-_-LRB- ##_CD -RSB-_-RRB- and_CC get_VB the_DT algorithm_NN in_IN Figure_NNP 1_CD ._.
+It_PRP can_MD be_VB proved_VBN that_IN there_EX exists_VBZ a_DT lower_JJR bound_VBN on_IN the_DT ranking_JJ accuracy_NN for_IN AdaRank_NNP on_IN training_NN data_NNS ,_, as_IN presented_VBN in_IN Theorem_NNP #_# ._.
+T_NN #_# ._.
+The_DT following_VBG bound_VBN holds_VBZ on_IN the_DT ranking_JJ accuracy_NN of_IN the_DT AdaRank_NNP algorithm_NN on_IN training_NN data_NNS :_: 1_CD m_NN m_NN i_FW =_JJ #_# E_NN -LRB-_-LRB- -LRB-_-LRB- qi_NN ,_, di_FW ,_, fT_NN -RRB-_-RRB- ,_, yi_NN -RRB-_-RRB- #_# T_NN t_NN =_JJ #_# et_FW min_NN #_# -LRB-_-LRB- t_NN -RRB-_-RRB- #_# ,_, where_WRB -LRB-_-LRB- t_NN -RRB-_-RRB- =_JJ m_NN i_FW =_JJ #_# Pt_NN -LRB-_-LRB- i_LS -RRB-_-RRB- E_NN -LRB-_-LRB- -LRB-_-LRB- qi_NN ,_, di_FW ,_, ht_NN -RRB-_-RRB- ,_, yi_NN -RRB-_-RRB- ,_, t_NN min_NN =_JJ mini_NN =_JJ #_# ,_, ,_, m_NN t_NN i_FW ,_, and_CC t_NN i_FW =_JJ E_NN -LRB-_-LRB- -LRB-_-LRB- qi_NN ,_, di_FW ,_, ft1_NN +_CC tht_NN -RRB-_-RRB- ,_, yi_NN -RRB-_-RRB- E_NN -LRB-_-LRB- -LRB-_-LRB- qi_NN ,_, di_FW ,_, ft1_NN -RRB-_-RRB- ,_, yi_NN -RRB-_-RRB- tE_NN -LRB-_-LRB- -LRB-_-LRB- qi_NN ,_, di_FW ,_, ht_NN -RRB-_-RRB- ,_, yi_NN -RRB-_-RRB- ,_, for_IN all_DT i_FW =_JJ #_# ,_, #_# ,_, ,_, m_NN and_CC t_NN =_JJ #_# ,_, #_# ,_, ,_, T_NN ._.
+A_DT proof_NN of_IN the_DT theorem_NN can_MD be_VB found_VBN in_IN appendix_NN ._.
+The_DT theorem_NN implies_VBZ that_IN the_DT ranking_JJ accuracy_NN in_IN terms_NNS of_IN the_DT performance_NN measure_NN can_MD be_VB continuously_RB improved_VBN ,_, as_RB long_RB as_IN et_FW min_NN #_# -LRB-_-LRB- t_NN -RRB-_-RRB- #_# <_JJR #_# holds_VBZ ._.
+3_LS ._.
+#_# Advantages_NNPS AdaRank_NNP is_VBZ a_DT simple_JJ yet_RB powerful_JJ method_NN ._.
+More_RBR importantly_RB ,_, it_PRP is_VBZ a_DT method_NN that_WDT can_MD be_VB justified_VBN from_IN the_DT theoretical_JJ viewpoint_NN ,_, as_IN discussed_VBN above_IN ._.
+In_IN addition_NN AdaRank_NNP has_VBZ several_JJ other_JJ advantages_NNS when_WRB compared_VBN with_IN the_DT existing_VBG learning_NN to_TO rank_VB methods_NNS such_JJ as_IN Ranking_NN SVM_NN ,_, RankBoost_NNP ,_, and_CC RankNet_NNP ._.
+First_RB ,_, AdaRank_NNP can_MD incorporate_VB any_DT performance_NN measure_NN ,_, provided_VBD that_IN the_DT measure_NN is_VBZ query_NN based_VBN and_CC in_IN the_DT range_NN of_IN -LSB-_-LRB- #_# ,_, +_CC #_# -RSB-_-RRB- ._.
+Notice_NNP that_IN the_DT major_JJ IR_NN measures_NNS meet_VBP this_DT requirement_NN ._.
+In_IN contrast_NN the_DT existing_VBG methods_NNS only_RB minimize_VBP loss_NN functions_NNS that_WDT are_VBP loosely_RB related_VBN to_TO the_DT IR_NNP measures_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Second_RB ,_, the_DT learning_VBG process_NN of_IN AdaRank_NNP is_VBZ more_RBR efficient_JJ than_IN those_DT of_IN the_DT existing_VBG learning_NN algorithms_NNS ._.
+The_DT time_NN complexity_NN of_IN AdaRank_NNP is_VBZ of_IN order_NN O_NN -LRB-_-LRB- -LRB-_-LRB- k_NN +_CC T_NN -RRB-_-RRB- mn_NN log_NN n_NN -RRB-_-RRB- ,_, where_WRB k_NN denotes_VBZ the_DT number_NN of_IN features_NNS ,_, T_NN the_DT number_NN of_IN rounds_NNS ,_, m_NN the_DT number_NN of_IN queries_NNS in_IN training_NN data_NNS ,_, and_CC n_NN is_VBZ the_DT maximum_JJ number_NN of_IN documents_NNS for_IN queries_NNS in_IN training_NN data_NNS ._.
+The_DT time_NN complexity_NN of_IN RankBoost_NNP ,_, for_IN example_NN ,_, is_VBZ of_IN order_NN O_NN -LRB-_-LRB- T_NN m_NN n2_NN -RRB-_-RRB- -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+Third_NNP ,_, AdaRank_NNP employs_VBZ a_DT more_RBR reasonable_JJ framework_NN for_IN performing_VBG the_DT ranking_JJ task_NN than_IN the_DT existing_VBG methods_NNS ._.
+Specifically_RB in_IN AdaRank_NNP the_DT instances_NNS correspond_VBP to_TO queries_NNS ,_, while_IN in_IN the_DT existing_VBG methods_NNS the_DT instances_NNS correspond_VBP to_TO document_VB pairs_NNS ._.
+As_IN a_DT result_NN ,_, AdaRank_NNP does_VBZ not_RB have_VB the_DT following_VBG shortcomings_NNS that_WDT plague_VBP the_DT existing_VBG methods_NNS ._.
+-LRB-_-LRB- a_DT -RRB-_-RRB- The_DT existing_VBG methods_NNS have_VBP to_TO make_VB a_DT strong_JJ assumption_NN that_IN the_DT document_NN pairs_NNS from_IN the_DT same_JJ query_NN are_VBP independently_RB distributed_VBN ._.
+In_IN reality_NN ,_, this_DT is_VBZ clearly_RB not_RB the_DT case_NN and_CC this_DT problem_NN does_VBZ not_RB exist_VB for_IN AdaRank_NNP ._.
+-LRB-_-LRB- b_NN -RRB-_-RRB- Ranking_VBG the_DT most_RBS relevant_JJ documents_NNS on_IN the_DT tops_NNS of_IN document_NN lists_NNS is_VBZ crucial_JJ for_IN document_NN retrieval_NN ._.
+The_DT existing_VBG methods_NNS can_MD not_RB focus_VB on_IN the_DT training_NN on_IN the_DT tops_NNS ,_, as_IN indicated_VBN in_IN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+Several_JJ methods_NNS for_IN rectifying_VBG the_DT problem_NN have_VBP been_VBN proposed_VBN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, -LSB-_-LRB- #_# -RSB-_-RRB- -RRB-_-RRB- ,_, however_RB ,_, they_PRP do_VBP not_RB seem_VB to_TO fundamentally_RB solve_VB the_DT problem_NN ._.
+In_IN contrast_NN ,_, AdaRank_NNP can_MD naturally_RB focus_VB on_IN training_NN on_IN the_DT tops_NNS of_IN document_NN lists_NNS ,_, because_IN the_DT performance_NN measures_NNS used_VBN favor_NN rankings_NNS for_IN which_WDT relevant_JJ documents_NNS are_VBP on_IN the_DT tops_NNS ._.
+-LRB-_-LRB- c_NN -RRB-_-RRB- In_IN the_DT existing_VBG methods_NNS ,_, the_DT numbers_NNS of_IN document_NN pairs_NNS vary_VBP from_IN query_NN to_TO query_NN ,_, resulting_VBG in_IN creating_VBG models_NNS biased_VBN toward_IN queries_NNS with_IN more_JJR document_NN pairs_NNS ,_, as_IN pointed_VBN out_RP in_IN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+AdaRank_NNP does_VBZ not_RB have_VB this_DT drawback_NN ,_, because_IN it_PRP treats_VBZ queries_NNS rather_RB than_IN document_NN pairs_NNS as_IN basic_JJ units_NNS in_IN learning_NN ._.
+3_LS ._.
+#_# Differences_NNS from_IN AdaBoost_NNP AdaRank_NNP is_VBZ a_DT boosting_VBG algorithm_NN ._.
+In_IN that_DT sense_NN ,_, it_PRP is_VBZ similar_JJ to_TO AdaBoost_NNP ,_, but_CC it_PRP also_RB has_VBZ several_JJ striking_JJ differences_NNS from_IN AdaBoost_NNP ._.
+First_RB ,_, the_DT types_NNS of_IN instances_NNS are_VBP different_JJ ._.
+AdaRank_NNP makes_VBZ use_NN of_IN queries_NNS and_CC their_PRP$ corresponding_JJ document_NN lists_NNS as_IN instances_NNS ._.
+The_DT labels_NNS in_IN training_NN data_NNS are_VBP lists_NNS of_IN ranks_NNS -LRB-_-LRB- relevance_NN levels_NNS -RRB-_-RRB- ._.
+AdaBoost_NNP makes_VBZ use_NN of_IN feature_NN vectors_NNS as_IN instances_NNS ._.
+The_DT labels_NNS in_IN training_NN data_NNS are_VBP simply_RB +_CC #_# and_CC #_# ._.
+Second_RB ,_, the_DT performance_NN measures_NNS are_VBP different_JJ ._.
+In_IN AdaRank_NNP ,_, the_DT performance_NN measure_NN is_VBZ a_DT generic_JJ measure_NN ,_, defined_VBN on_IN the_DT document_NN list_NN and_CC the_DT rank_NN list_NN of_IN a_DT query_NN ._.
+In_IN AdaBoost_NNP the_DT corresponding_JJ performance_NN measure_NN is_VBZ a_DT specific_JJ measure_NN for_IN binary_JJ classification_NN ,_, also_RB referred_VBN to_TO as_IN margin_NN ''_'' -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Third_NNP ,_, the_DT ways_NNS of_IN updating_VBG weights_NNS are_VBP also_RB different_JJ ._.
+In_IN AdaBoost_NNP ,_, the_DT distribution_NN of_IN weights_NNS on_IN training_NN instances_NNS is_VBZ calculated_VBN according_VBG to_TO the_DT current_JJ distribution_NN and_CC the_DT performance_NN of_IN the_DT current_JJ weak_JJ learner_NN ._.
+In_IN AdaRank_NNP ,_, in_IN contrast_NN ,_, it_PRP is_VBZ calculated_VBN according_VBG to_TO the_DT performance_NN of_IN the_DT ranking_JJ model_NN created_VBN so_RB far_RB ,_, as_IN shown_VBN in_IN Figure_NNP #_# ._.
+Note_VB that_DT AdaBoost_NNP can_MD also_RB adopt_VB the_DT weight_NN updating_VBG method_NN used_VBN in_IN AdaRank_NNP ._.
+For_IN AdaBoost_NNP they_PRP are_VBP equivalent_JJ -LRB-_-LRB- cf_NN ._.
+,_, -LSB-_-LRB- ##_CD -RSB-_-RRB- page_NN ###_CD -RRB-_-RRB- ._.
+However_RB ,_, this_DT is_VBZ not_RB true_JJ for_IN AdaRank_NNP ._.
+3_LS ._.
+#_# Construction_NN of_IN Weak_JJ Ranker_NN We_PRP consider_VBP an_DT efficient_JJ implementation_NN for_IN weak_JJ ranker_NN construction_NN ,_, which_WDT is_VBZ also_RB used_VBN in_IN our_PRP$ experiments_NNS ._.
+In_IN the_DT implementation_NN ,_, as_IN weak_JJ ranker_NN we_PRP choose_VBP the_DT feature_NN that_WDT has_VBZ the_DT optimal_JJ weighted_JJ performance_NN among_IN all_DT of_IN the_DT features_NNS :_: max_NN k_NN m_NN i_FW =_JJ #_# Pt_NN -LRB-_-LRB- i_LS -RRB-_-RRB- E_NN -LRB-_-LRB- -LRB-_-LRB- qi_NN ,_, di_FW ,_, xk_NN -RRB-_-RRB- ,_, yi_NN -RRB-_-RRB- ._.
+Creating_VBG weak_JJ rankers_NNS in_IN this_DT way_NN ,_, the_DT learning_VBG process_NN turns_VBZ out_RP to_TO be_VB that_DT of_IN repeatedly_RB selecting_VBG features_NNS and_CC linearly_RB combining_VBG the_DT selected_VBN features_NNS ._.
+Note_VB that_DT features_NNS which_WDT are_VBP not_RB selected_VBN in_IN the_DT training_NN phase_NN will_MD have_VB a_DT weight_NN of_IN zero_CD ._.
+4_LS ._.
+EXPERIMENTAL_JJ RESULTS_NNS We_PRP conducted_VBD experiments_NNS to_TO test_VB the_DT performances_NNS of_IN AdaRank_NNP using_VBG four_CD benchmark_JJ datasets_NNS :_: OHSUMED_NNP ,_, WSJ_NNP ,_, AP_NNP ,_, and_CC ._.
+Gov_NNP ._.
+Table_NNP #_# :_: Features_NNS used_VBN in_IN the_DT experiments_NNS on_IN OHSUMED_NNP ,_, WSJ_NNP ,_, and_CC AP_NN datasets_NNS ._.
+C_NN -LRB-_-LRB- w_NN ,_, d_NN -RRB-_-RRB- represents_VBZ frequency_NN of_IN word_NN w_NN in_IN document_NN d_NN ;_: C_NN represents_VBZ the_DT entire_JJ collection_NN ;_: n_NN denotes_VBZ number_NN of_IN terms_NNS in_IN query_NN ;_: |_CD |_CD denotes_VBZ the_DT size_NN function_NN ;_: and_CC id_NN f_FW -LRB-_-LRB- -RRB-_-RRB- denotes_VBZ inverse_JJ document_NN frequency_NN ._.
+1_CD wiq_NN d_NN ln_NN -LRB-_-LRB- c_NN -LRB-_-LRB- wi_NN ,_, d_NN -RRB-_-RRB- +_CC #_# -RRB-_-RRB- #_# wiq_FW d_FW ln_NN -LRB-_-LRB- |_CD C_NN |_NN c_NN -LRB-_-LRB- wi_NN ,_, C_NN -RRB-_-RRB- +_CC #_# -RRB-_-RRB- 3_CD wiq_NN d_NN ln_NN -LRB-_-LRB- id_NN f_FW -LRB-_-LRB- wi_NN -RRB-_-RRB- -RRB-_-RRB- #_# wiq_FW d_FW ln_NN -LRB-_-LRB- c_NN -LRB-_-LRB- wi_NN ,_, d_NN -RRB-_-RRB- |_CD d_NN |_NN +_CC #_# -RRB-_-RRB- 5_CD wiq_NN d_NN ln_NN -LRB-_-LRB- c_NN -LRB-_-LRB- wi_NN ,_, d_NN -RRB-_-RRB- |_CD d_NN |_CD id_NN f_FW -LRB-_-LRB- wi_NN -RRB-_-RRB- +_CC #_# -RRB-_-RRB- #_# wiq_FW d_FW ln_NN -LRB-_-LRB- c_NN -LRB-_-LRB- wi_NN ,_, d_NN -RRB-_-RRB- |_NN C_NN |_CD |_NN d_NN |_CD c_NN -LRB-_-LRB- wi_NN ,_, C_NN -RRB-_-RRB- +_CC #_# -RRB-_-RRB- 7_CD ln_NN -LRB-_-LRB- BM25_NN score_NN -RRB-_-RRB- 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# MAP_NN NDCG_NN @_IN #_# NDCG_NNP @_IN #_# NDCG_NNP @_IN #_# NDCG_NNP @_IN ##_CD BM25_CD Ranking_NN SVM_NN RarnkBoost_NN AdaRank_NN ._.
+MAP_NN AdaRank_NN ._.
+NDCG_NNP Figure_NNP #_# :_: Ranking_NN accuracies_NNS on_IN OHSUMED_NNP data_NNS ._.
+4_LS ._.
+#_# Experiment_NNP Setting_NNP Ranking_NNP SVM_NNP -LSB-_-LRB- ##_CD ,_, ##_CD -RSB-_-RRB- and_CC RankBoost_NN -LSB-_-LRB- #_# -RSB-_-RRB- were_VBD selected_VBN as_IN baselines_NNS in_IN the_DT experiments_NNS ,_, because_IN they_PRP are_VBP the_DT state-of-the-art_JJ learning_NN to_TO rank_VB methods_NNS ._.
+Furthermore_RB ,_, BM25_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- was_VBD used_VBN as_IN a_DT baseline_NN ,_, representing_VBG the_DT state-of-the-arts_JJ IR_NN method_NN -LRB-_-LRB- we_PRP actually_RB used_VBD the_DT tool_NN Lemur1_NN -RRB-_-RRB- ._.
+For_IN AdaRank_NNP ,_, the_DT parameter_NN T_NN was_VBD determined_VBN automatically_RB during_IN each_DT experiment_NN ._.
+Specifically_RB ,_, when_WRB there_EX is_VBZ no_DT improvement_NN in_IN ranking_JJ accuracy_NN in_IN terms_NNS of_IN the_DT performance_NN measure_NN ,_, the_DT iteration_NN stops_VBZ -LRB-_-LRB- and_CC T_NN is_VBZ determined_VBN -RRB-_-RRB- ._.
+As_IN the_DT measure_NN E_NN ,_, MAP_NN and_CC NDCG_NN @_IN #_# were_VBD utilized_VBN ._.
+The_DT results_NNS for_IN AdaRank_NNP using_VBG MAP_NN and_CC NDCG_NN @_IN #_# as_IN measures_NNS in_IN training_NN are_VBP represented_VBN as_IN AdaRank_NNP ._.
+MAP_NN and_CC AdaRank_NN ._.
+NDCG_NNP ,_, respectively_RB ._.
+4_LS ._.
+#_# Experiment_NN with_IN OHSUMED_NNP Data_NNP In_IN this_DT experiment_NN ,_, we_PRP made_VBD use_NN of_IN the_DT OHSUMED_NNP dataset_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- to_TO test_VB the_DT performances_NNS of_IN AdaRank_NNP ._.
+The_DT OHSUMED_NNP dataset_NN consists_VBZ of_IN ###_CD ,_, ###_CD documents_NNS and_CC ###_CD queries_NNS ._.
+There_EX are_VBP in_IN total_JJ 16_CD ,_, ###_CD query-document_NN pairs_NNS upon_IN which_WDT relevance_NN judgments_NNS are_VBP made_VBN ._.
+The_DT relevance_NN judgments_NNS are_VBP either_CC d_NN ''_'' -LRB-_-LRB- definitely_RB relevant_JJ -RRB-_-RRB- ,_, p_NN ''_'' -LRB-_-LRB- possibly_RB relevant_JJ -RRB-_-RRB- ,_, or_CC n_NN ''_'' -LRB-_-LRB- not_RB relevant_JJ -RRB-_-RRB- ._.
+The_DT data_NNS have_VBP been_VBN used_VBN in_IN many_JJ experiments_NNS in_IN IR_NNP ,_, for_IN example_NN -LSB-_-LRB- #_# ,_, ##_NN -RSB-_-RRB- ._.
+As_IN features_NNS ,_, we_PRP adopted_VBD those_DT used_VBN in_IN document_NN retrieval_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+Table_NNP #_# shows_VBZ the_DT features_NNS ._.
+For_IN example_NN ,_, tf_NN -LRB-_-LRB- term_NN frequency_NN -RRB-_-RRB- ,_, idf_NN -LRB-_-LRB- inverse_JJ document_NN frequency_NN -RRB-_-RRB- ,_, dl_NN -LRB-_-LRB- document_NN length_NN -RRB-_-RRB- ,_, and_CC combinations_NNS of_IN them_PRP are_VBP defined_VBN as_IN features_NNS ._.
+BM25_NN score_NN itself_PRP is_VBZ also_RB a_DT feature_NN ._.
+Stop_VB words_NNS were_VBD removed_VBN and_CC stemming_VBG was_VBD conducted_VBN in_IN the_DT data_NNS ._.
+We_PRP randomly_RB divided_VBD queries_NNS into_IN four_CD even_RB subsets_NNS and_CC conducted_VBN 4-fold_JJ cross-validation_NN experiments_NNS ._.
+We_PRP tuned_VBD the_DT parameters_NNS for_IN BM25_NN during_IN one_CD of_IN the_DT trials_NNS and_CC applied_VBD them_PRP to_TO the_DT other_JJ trials_NNS ._.
+The_DT results_NNS reported_VBN in_IN Figure_NNP #_# are_VBP those_DT averaged_VBN over_IN four_CD trials_NNS ._.
+In_IN MAP_NN calculation_NN ,_, we_PRP define_VBP the_DT rank_NN d_NN ''_'' as_IN relevant_JJ and_CC 1_CD http_NN :_: /_: /_: www_NN ._.
+lemurproject_NN ._.
+com_NN Table_NNP #_# :_: Statistics_NNS on_IN WSJ_NNP and_CC AP_NNP datasets_NNS ._.
+Dataset_NNP #_# queries_NNS #_# retrieved_VBN docs_NNS #_# docs_NNS per_IN query_NN AP_NN ###_CD ##_NN ,_, ###_CD ###_CD ._.
+##_NN WSJ_NNP ###_CD ##_CD ,_, ###_CD ###_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_RB MAP_NN NDCG_NN @_IN #_# NDCG_NNP @_IN #_# NDCG_NNP @_IN #_# NDCG_NNP @_IN ##_CD BM25_CD Ranking_NN SVM_NN RankBoost_NN AdaRank_NN ._.
+MAP_NN AdaRank_NN ._.
+NDCG_NNP Figure_NNP #_# :_: Ranking_NN accuracies_NNS on_IN WSJ_NNP dataset_NNP ._.
+the_DT other_JJ two_CD ranks_NNS as_IN irrelevant_JJ ._.
+From_IN Figure_NNP #_# ,_, we_PRP see_VBP that_IN both_CC AdaRank_NNP ._.
+MAP_NN and_CC AdaRank_NN ._.
+NDCG_NN outperform_JJ BM25_NN ,_, Ranking_NN SVM_NN ,_, and_CC RankBoost_NNP in_IN terms_NNS of_IN all_DT measures_NNS ._.
+We_PRP conducted_VBD significant_JJ tests_NNS -LRB-_-LRB- t-test_NN -RRB-_-RRB- on_IN the_DT improvements_NNS of_IN AdaRank_NNP ._.
+MAP_NN over_IN BM25_NN ,_, Ranking_NN SVM_NN ,_, and_CC RankBoost_NNP in_IN terms_NNS of_IN MAP_NN ._.
+The_DT results_NNS indicate_VBP that_IN all_PDT the_DT improvements_NNS are_VBP statistically_RB significant_JJ -LRB-_-LRB- p-value_JJ <_JJR #_# ._.
+##_NN -RRB-_-RRB- ._.
+We_PRP also_RB conducted_VBD t-test_NN on_IN the_DT improvements_NNS of_IN AdaRank_NNP ._.
+NDCG_NN over_IN BM25_NN ,_, Ranking_NN SVM_NN ,_, and_CC RankBoost_NNP in_IN terms_NNS of_IN NDCG_NNP @_IN #_# ._.
+The_DT improvements_NNS are_VBP also_RB statistically_RB significant_JJ ._.
+4_LS ._.
+#_# Experiment_NN with_IN WSJ_NNP and_CC AP_NNP Data_NNP In_IN this_DT experiment_NN ,_, we_PRP made_VBD use_NN of_IN the_DT WSJ_NNP and_CC AP_NNP datasets_VBZ from_IN the_DT TREC_NN ad-hoc_JJ retrieval_NN track_NN ,_, to_TO test_VB the_DT performances_NNS of_IN AdaRank_NNP ._.
+WSJ_NNP contains_VBZ ##_CD ,_, ###_CD articles_NNS of_IN Wall_NNP Street_NNP Journals_NNPS from_IN ####_CD to_TO ####_CD ,_, and_CC AP_NN contains_VBZ ###_CD ,_, ###_CD articles_NNS of_IN Associated_NNP Press_NNP in_IN ####_CD and_CC ####_CD ._.
+###_NN queries_NNS are_VBP selected_VBN from_IN the_DT TREC_NN topics_NNS -LRB-_-LRB- No_UH ._.
+###_CD No_DT ._.
+###_NN -RRB-_-RRB- ._.
+Each_DT query_NN has_VBZ a_DT number_NN of_IN documents_NNS associated_VBN and_CC they_PRP are_VBP labeled_VBN as_IN relevant_JJ ''_'' or_CC irrelevant_JJ ''_'' -LRB-_-LRB- to_TO the_DT query_NN -RRB-_-RRB- ._.
+Following_VBG the_DT practice_NN in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ,_, the_DT queries_NNS that_WDT have_VBP less_JJR than_IN ##_CD relevant_JJ documents_NNS were_VBD discarded_VBN ._.
+Table_NNP #_# shows_VBZ the_DT statistics_NNS on_IN the_DT two_CD datasets_NNS ._.
+In_IN the_DT same_JJ way_NN as_IN in_IN section_NN #_# ._.
+#_# ,_, we_PRP adopted_VBD the_DT features_NNS listed_VBN in_IN Table_NNP #_# for_IN ranking_NN ._.
+We_PRP also_RB conducted_VBD 4-fold_JJ cross-validation_NN experiments_NNS ._.
+The_DT results_NNS reported_VBN in_IN Figure_NNP #_# and_CC #_# are_VBP those_DT averaged_VBN over_IN four_CD trials_NNS on_IN WSJ_NNP and_CC AP_NNP datasets_NNS ,_, respectively_RB ._.
+From_IN Figure_NNP #_# and_CC #_# ,_, we_PRP can_MD see_VB that_IN AdaRank_NNP ._.
+MAP_NN and_CC AdaRank_NN ._.
+NDCG_NN outperform_JJ BM25_NN ,_, Ranking_NN SVM_NN ,_, and_CC RankBoost_NNP in_IN terms_NNS of_IN all_DT measures_NNS on_IN both_DT WSJ_NNP and_CC AP_NNP ._.
+We_PRP conducted_VBD t-tests_NNS on_IN the_DT improvements_NNS of_IN AdaRank_NNP ._.
+MAP_NN and_CC AdaRank_NN ._.
+NDCG_NN over_IN BM25_NN ,_, Ranking_NN SVM_NN ,_, and_CC RankBoost_NNP on_IN WSJ_NNP and_CC AP_NNP ._.
+The_DT results_NNS indicate_VBP that_IN all_PDT the_DT improvements_NNS in_IN terms_NNS of_IN MAP_NN are_VBP statistically_RB significant_JJ -LRB-_-LRB- p-value_JJ <_JJR #_# ._.
+##_NN -RRB-_-RRB- ._.
+However_RB only_RB some_DT of_IN the_DT improvements_NNS in_IN terms_NNS of_IN NDCG_NNP @_IN #_# are_VBP statistically_RB significant_JJ ,_, although_IN overall_JJ the_DT improvements_NNS on_IN NDCG_NN scores_NNS are_VBP quite_RB high_JJ -LRB-_-LRB- 1-2_CD points_NNS -RRB-_-RRB- ._.
+4_LS ._.
+#_# Experiment_NN with_IN ._.
+Gov_NNP Data_NNP In_IN this_DT experiment_NN ,_, we_PRP further_RBR made_VBN use_NN of_IN the_DT TREC_NN ._.
+Gov_NNP data_NNS to_TO test_VB the_DT performance_NN of_IN AdaRank_NNP for_IN the_DT task_NN of_IN web_NN retrieval_NN ._.
+The_DT corpus_NN is_VBZ a_DT crawl_NN from_IN the_DT ._.
+gov_NN domain_NN in_IN early_JJ ####_NN ,_, and_CC has_VBZ been_VBN used_VBN at_IN TREC_NNP Web_NN Track_NNP since_IN ####_CD ._.
+There_EX are_VBP a_DT total_JJ 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_RB MAP_NN NDCG_NN @_IN #_# NDCG_NNP @_IN #_# NDCG_NNP @_IN #_# NDCG_NNP @_IN ##_CD BM25_CD Ranking_NN SVM_NN RankBoost_NN AdaRank_NN ._.
+MAP_NN AdaRank_NN ._.
+NDCG_NNP Figure_NNP #_# :_: Ranking_NN accuracies_NNS on_IN AP_NN dataset_NN ._.
+0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# MAP_NN NDCG_NN @_IN #_# NDCG_NNP @_IN #_# NDCG_NNP @_IN #_# NDCG_NNP @_IN ##_CD BM25_CD Ranking_NN SVM_NN RankBoost_NN AdaRank_NN ._.
+MAP_NN AdaRank_NN ._.
+NDCG_NNP Figure_NNP #_# :_: Ranking_NN accuracies_NNS on_IN ._.
+Gov_NNP dataset_NNP ._.
+Table_NNP #_# :_: Features_NNS used_VBN in_IN the_DT experiments_NNS on_IN ._.
+Gov_NNP dataset_NNP ._.
+1_CD BM25_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- #_# MSRA1000_CD -LSB-_-LRB- ##_CD -RSB-_-RRB- 3_CD PageRank_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- #_# HostRank_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- 5_CD Relevance_NN Propagation_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- -LRB-_-LRB- ##_CD features_NNS -RRB-_-RRB- of_IN #_# ,_, ###_CD ,_, ###_CD web_NN pages_NNS with_IN ##_NN ,_, ###_CD ,_, ###_CD hyperlinks_NNS in_IN the_DT data_NNS ._.
+The_DT ##_CD queries_NNS in_IN the_DT topic_NN distillation_NN task_NN in_IN the_DT Web_NN Track_NNP of_IN TREC_NNP ####_CD -LSB-_-LRB- #_# -RSB-_-RRB- were_VBD used_VBN ._.
+The_DT ground_NN truths_NNS for_IN the_DT queries_NNS are_VBP provided_VBN by_IN the_DT TREC_NN committee_NN with_IN binary_JJ judgment_NN :_: relevant_JJ or_CC irrelevant_JJ ._.
+The_DT number_NN of_IN relevant_JJ pages_NNS vary_VBP from_IN query_NN to_TO query_NN -LRB-_-LRB- from_IN #_# to_TO ##_CD -RRB-_-RRB- ._.
+We_PRP extracted_VBD ##_CD features_NNS from_IN each_DT query-document_NN pair_NN ._.
+Table_NNP #_# gives_VBZ a_DT list_NN of_IN the_DT features_NNS ._.
+They_PRP are_VBP the_DT outputs_NNS of_IN some_DT well-known_JJ algorithms_NNS -LRB-_-LRB- systems_NNS -RRB-_-RRB- ._.
+These_DT features_NNS are_VBP different_JJ from_IN those_DT in_IN Table_NNP #_# ,_, because_IN the_DT task_NN is_VBZ different_JJ ._.
+Again_RB ,_, we_PRP conducted_VBD 4-fold_JJ cross-validation_NN experiments_NNS ._.
+The_DT results_NNS averaged_VBD over_IN four_CD trials_NNS are_VBP reported_VBN in_IN Figure_NNP #_# ._.
+From_IN the_DT results_NNS ,_, we_PRP can_MD see_VB that_IN AdaRank_NNP ._.
+MAP_NN and_CC AdaRank_NN ._.
+NDCG_NN outperform_VBP all_PDT the_DT baselines_NNS in_IN terms_NNS of_IN all_DT measures_NNS ._.
+We_PRP conducted_VBD ttests_NNS on_IN the_DT improvements_NNS of_IN AdaRank_NNP ._.
+MAP_NN and_CC AdaRank_NN ._.
+NDCG_NN over_IN BM25_NN ,_, Ranking_NN SVM_NN ,_, and_CC RankBoost_NNP ._.
+Some_DT of_IN the_DT improvements_NNS are_VBP not_RB statistically_RB significant_JJ ._.
+This_DT is_VBZ because_IN we_PRP have_VBP only_RB 50_CD queries_NNS used_VBN in_IN the_DT experiments_NNS ,_, and_CC the_DT number_NN of_IN queries_NNS is_VBZ too_RB small_JJ ._.
+4_LS ._.
+#_# Discussions_NNPS We_PRP investigated_VBD the_DT reasons_NNS that_WDT AdaRank_NNP outperforms_VBZ the_DT baseline_NN methods_NNS ,_, using_VBG the_DT results_NNS of_IN the_DT OHSUMED_NNP dataset_NN as_IN examples_NNS ._.
+First_RB ,_, we_PRP examined_VBD the_DT reason_NN that_WDT AdaRank_NNP has_VBZ higher_JJR performances_NNS than_IN Ranking_JJ SVM_NN and_CC RankBoost_NN ._.
+Specifically_RB we_PRP com0_VBP ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_RB d-n_JJ d-p_JJ p-n_JJ accuracy_NN pair_NN type_NN Ranking_NN SVM_NN RankBoost_NN AdaRank_NN ._.
+MAP_NN AdaRank_NN ._.
+NDCG_NNP Figure_NNP #_# :_: Accuracy_NN on_IN ranking_JJ document_NN pairs_NNS with_IN OHSUMED_NN dataset_NN ._.
+0_CD 2_CD 4_CD 6_CD 8_CD 10_CD 12_CD numberofqueries_NNS number_NN of_IN document_NN pairs_NNS per_IN query_NN Figure_NN #_# :_: Distribution_NN of_IN queries_NNS with_IN different_JJ number_NN of_IN document_NN pairs_NNS in_IN training_NN data_NNS of_IN trial_NN #_# ._.
+pared_VBD the_DT error_NN rates_NNS between_IN different_JJ rank_NN pairs_NNS made_VBN by_IN Ranking_NN SVM_NN ,_, RankBoost_NNP ,_, AdaRank_NNP ._.
+MAP_NN ,_, and_CC AdaRank_NNP ._.
+NDCG_NN on_IN the_DT test_NN data_NNS ._.
+The_DT results_NNS averaged_VBD over_IN four_CD trials_NNS in_IN the_DT 4-fold_JJ cross_NN validation_NN are_VBP shown_VBN in_IN Figure_NNP #_# ._.
+We_PRP use_VBP d-n_JJ ''_'' to_TO stand_VB for_IN the_DT pairs_NNS between_IN definitely_RB relevant_JJ ''_'' and_CC not_RB relevant_JJ ''_'' ,_, d-p_JJ ''_'' the_DT pairs_NNS between_IN definitely_RB relevant_JJ ''_'' and_CC partially_RB relevant_JJ ''_'' ,_, and_CC p-n_NN ''_'' the_DT pairs_NNS between_IN partially_RB relevant_JJ ''_'' and_CC not_RB relevant_JJ ''_'' ._.
+From_IN Figure_NNP #_# ,_, we_PRP can_MD see_VB that_IN AdaRank_NNP ._.
+MAP_NN and_CC AdaRank_NN ._.
+NDCG_NN make_VBP fewer_JJR errors_NNS for_IN d-n_NN ''_'' and_CC d-p_JJ ''_'' ,_, which_WDT are_VBP related_JJ to_TO the_DT tops_NNS of_IN rankings_NNS and_CC are_VBP important_JJ ._.
+This_DT is_VBZ because_IN AdaRank_NNP ._.
+MAP_NN and_CC AdaRank_NN ._.
+NDCG_NN can_MD naturally_RB focus_VB upon_IN the_DT training_NN on_IN the_DT tops_NNS by_IN optimizing_VBG MAP_NN and_CC NDCG_NN @_IN #_# ,_, respectively_RB ._.
+We_PRP also_RB made_VBD statistics_NNS on_IN the_DT number_NN of_IN document_NN pairs_NNS per_IN query_NN in_IN the_DT training_NN data_NNS -LRB-_-LRB- for_IN trial_NN #_# -RRB-_-RRB- ._.
+The_DT queries_NNS are_VBP clustered_VBN into_IN different_JJ groups_NNS based_VBN on_IN the_DT the_DT number_NN of_IN their_PRP$ associated_VBN document_NN pairs_NNS ._.
+Figure_NNP #_# shows_VBZ the_DT distribution_NN of_IN the_DT query_NN groups_NNS ._.
+In_IN the_DT figure_NN ,_, for_IN example_NN ,_, 0-1k_NN ''_'' is_VBZ the_DT group_NN of_IN queries_NNS whose_WP$ number_NN of_IN document_NN pairs_NNS are_VBP between_IN #_# and_CC ###_CD ._.
+We_PRP can_MD see_VB that_IN the_DT numbers_NNS of_IN document_NN pairs_NNS really_RB vary_VBP from_IN query_NN to_TO query_NN ._.
+Next_IN we_PRP evaluated_VBD the_DT accuracies_NNS of_IN AdaRank_NNP ._.
+MAP_NN and_CC RankBoost_NN in_IN terms_NNS of_IN MAP_NN for_IN each_DT of_IN the_DT query_NN group_NN ._.
+The_DT results_NNS are_VBP reported_VBN in_IN Figure_NNP #_# ._.
+We_PRP found_VBD that_IN the_DT average_JJ MAP_NN of_IN AdaRank_NNP ._.
+MAP_NN over_IN the_DT groups_NNS is_VBZ two_CD points_NNS higher_JJR than_IN RankBoost_NNP ._.
+Furthermore_RB ,_, it_PRP is_VBZ interesting_JJ to_TO see_VB that_DT AdaRank_NNP ._.
+MAP_NN performs_VBZ particularly_RB better_JJR than_IN RankBoost_NNP for_IN queries_NNS with_IN small_JJ numbers_NNS of_IN document_NN pairs_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, 0-1k_NN ''_'' ,_, 1k-2k_JJ ''_'' ,_, and_CC 2k-3k_JJ ''_'' -RRB-_-RRB- ._.
+The_DT results_NNS indicate_VBP that_IN AdaRank_NNP ._.
+MAP_NN can_MD effectively_RB avoid_VB creating_VBG a_DT model_NN biased_VBN towards_IN queries_NNS with_IN more_JJR document_NN pairs_NNS ._.
+For_IN AdaRank_NNP ._.
+NDCG_NNP ,_, similar_JJ results_NNS can_MD be_VB observed_VBN ._.
+0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# MAP_NN query_NN group_NN RankBoost_NNP AdaRank_NNP ._.
+MAP_NN Figure_NN #_# :_: Differences_NNS in_IN MAP_NN for_IN different_JJ query_NN groups_NNS ._.
+0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN trial_NN #_# trial_NN #_# trial_NN #_# trial_NN #_# MAP_NN AdaRank_NN ._.
+MAP_NN AdaRank_NN ._.
+NDCG_NNP Figure_NNP #_# :_: MAP_NN on_IN training_NN set_VBN when_WRB model_NN is_VBZ trained_VBN with_IN MAP_NN or_CC NDCG_NN @_IN #_# ._.
+We_PRP further_RB conducted_VBD an_DT experiment_NN to_TO see_VB whether_IN AdaRank_NNP has_VBZ the_DT ability_NN to_TO improve_VB the_DT ranking_JJ accuracy_NN in_IN terms_NNS of_IN a_DT measure_NN by_IN using_VBG the_DT measure_NN in_IN training_NN ._.
+Specifically_RB ,_, we_PRP trained_VBD ranking_JJ models_NNS using_VBG AdaRank_NNP ._.
+MAP_NN and_CC AdaRank_NN ._.
+NDCG_NN and_CC evaluated_VBD their_PRP$ accuracies_NNS on_IN the_DT training_NN dataset_NN in_IN terms_NNS of_IN both_DT MAP_NN and_CC NDCG_NN @_IN #_# ._.
+The_DT experiment_NN was_VBD conducted_VBN for_IN each_DT trial_NN ._.
+Figure_NNP 9_CD and_CC Figure_NNP ##_CD show_VBP the_DT results_NNS in_IN terms_NNS of_IN MAP_NN and_CC NDCG_NN @_IN #_# ,_, respectively_RB ._.
+We_PRP can_MD see_VB that_IN ,_, AdaRank_NNP ._.
+MAP_NN trained_VBN with_IN MAP_NN performs_VBZ better_RBR in_IN terms_NNS of_IN MAP_NN while_IN AdaRank_NNP ._.
+NDCG_NN trained_VBN with_IN NDCG_NN @_IN #_# performs_VBZ better_RBR in_IN terms_NNS of_IN NDCG_NNP @_IN #_# ._.
+The_DT results_NNS indicate_VBP that_IN AdaRank_NNP can_MD indeed_RB enhance_VB ranking_JJ performance_NN in_IN terms_NNS of_IN a_DT measure_NN by_IN using_VBG the_DT measure_NN in_IN training_NN ._.
+Finally_RB ,_, we_PRP tried_VBD to_TO verify_VB the_DT correctness_NN of_IN Theorem_NNP #_# ._.
+That_DT is_VBZ ,_, the_DT ranking_JJ accuracy_NN in_IN terms_NNS of_IN the_DT performance_NN measure_NN can_MD be_VB continuously_RB improved_VBN ,_, as_RB long_RB as_IN et_FW min_NN #_# -LRB-_-LRB- t_NN -RRB-_-RRB- #_# <_JJR #_# holds_VBZ ._.
+As_IN an_DT example_NN ,_, Figure_NNP ##_NN shows_VBZ the_DT learning_VBG curve_NN of_IN AdaRank_NNP ._.
+MAP_NN in_IN terms_NNS of_IN MAP_NN during_IN the_DT training_NN phase_NN in_IN one_CD trial_NN of_IN the_DT cross_NN validation_NN ._.
+From_IN the_DT figure_NN ,_, we_PRP can_MD see_VB that_IN the_DT ranking_JJ accuracy_NN of_IN AdaRank_NNP ._.
+MAP_NN steadily_RB improves_VBZ ,_, as_IN the_DT training_NN goes_VBZ on_IN ,_, until_IN it_PRP reaches_VBZ to_TO the_DT peak_NN ._.
+The_DT result_NN agrees_VBZ well_RB with_IN Theorem_NNP #_# ._.
+5_CD ._.
+CONCLUSION_NN AND_CC FUTURE_NN WORK_VBP In_IN this_DT paper_NN we_PRP have_VBP proposed_VBN a_DT novel_JJ algorithm_NN for_IN learning_VBG ranking_JJ models_NNS in_IN document_NN retrieval_NN ,_, referred_VBN to_TO as_IN AdaRank_NNP ._.
+In_IN contrast_NN to_TO existing_VBG methods_NNS ,_, AdaRank_NNP optimizes_VBZ a_DT loss_NN function_NN that_WDT is_VBZ directly_RB defined_VBN on_IN the_DT performance_NN measures_NNS ._.
+It_PRP employs_VBZ a_DT boosting_VBG technique_NN in_IN ranking_JJ model_NN learning_NN ._.
+AdaRank_NNP offers_VBZ several_JJ advantages_NNS :_: ease_NN of_IN implementation_NN ,_, theoretical_JJ soundness_NN ,_, efficiency_NN in_IN training_NN ,_, and_CC high_JJ accuracy_NN in_IN ranking_NN ._.
+Experimental_JJ results_NNS based_VBN on_IN four_CD benchmark_JJ datasets_NNS show_VBP that_IN AdaRank_NNP can_MD significantly_RB outperform_VB the_DT baseline_NN methods_NNS of_IN BM25_NN ,_, Ranking_NN SVM_NN ,_, and_CC RankBoost_NNP ._.
+0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN trial_NN #_# trial_NN #_# trial_NN #_# trial_NN #_# NDCG_NNP @_IN #_# AdaRank_NNP ._.
+MAP_NN AdaRank_NN ._.
+NDCG_NNP Figure_NNP ##_NNP :_: NDCG_NNP @_IN #_# on_IN training_NN set_VBN when_WRB model_NN is_VBZ trained_VBN with_IN MAP_NN or_CC NDCG_NN @_IN #_# ._.
+0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ##_CD ###_CD ###_CD ###_CD ###_CD ###_CD ###_CD MAP_NN number_NN of_IN rounds_NNS Figure_NNP ##_CD :_: Learning_NNP curve_NN of_IN AdaRank_NNP ._.
+Future_JJ work_NN includes_VBZ theoretical_JJ analysis_NN on_IN the_DT generalization_NN error_NN and_CC other_JJ properties_NNS of_IN the_DT AdaRank_NNP algorithm_NN ,_, and_CC further_RB empirical_JJ evaluations_NNS of_IN the_DT algorithm_NN including_VBG comparisons_NNS with_IN other_JJ algorithms_NNS that_WDT can_MD directly_RB optimize_VB performance_NN measures_NNS ._.
+6_CD ._.
+ACKNOWLEDGMENTS_NNS We_PRP thank_VBP Harry_NNP Shum_NNP ,_, Wei-Ying_NNP Ma_NNP ,_, Tie-Yan_NNP Liu_NNP ,_, Gu_NNP Xu_NNP ,_, Bin_NNP Gao_NNP ,_, Robert_NNP Schapire_NNP ,_, and_CC Andrew_NNP Arnold_NNP for_IN their_PRP$ valuable_JJ comments_NNS and_CC suggestions_NNS to_TO this_DT paper_NN ._.
+7_CD ._.
+REFERENCES_NNS -LSB-_-LRB- #_# -RSB-_-RRB- R_NN ._.
+Baeza-Yates_NNS and_CC B_NN ._.
+Ribeiro-Neto_NNP ._.
+Modern_NNP Information_NNP Retrieval_NNP ._.
+Addison_NNP Wesley_NNP ,_, May_NNP ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- C_NN ._.
+Burges_NNS ,_, R_NN ._.
+Ragno_NNP ,_, and_CC Q_NNP ._.
+Le_NNP ._.
+Learning_VBG to_TO rank_VB with_IN nonsmooth_JJ cost_NN functions_NNS ._.
+In_IN Advances_NNS in_IN Neural_NNP Information_NNP Processing_NNP Systems_NNPS ##_NN ,_, pages_NNS 395-402_CD ._.
+MIT_NNP Press_NNP ,_, Cambridge_NNP ,_, MA_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- C_NN ._.
+Burges_NNP ,_, T_NN ._.
+Shaked_NNP ,_, E_NNP ._.
+Renshaw_NNP ,_, A_NNP ._.
+Lazier_NNP ,_, M_NN ._.
+Deeds_NNS ,_, N_NN ._.
+Hamilton_NNP ,_, and_CC G_NN ._.
+Hullender_NNP ._.
+Learning_VBG to_TO rank_VB using_VBG gradient_NN descent_NN ._.
+In_IN ICML_NN ##_NN ,_, pages_NNS 89-96_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- Y_NN ._.
+Cao_NNP ,_, J_NNP ._.
+Xu_NNP ,_, T_NN ._.
+-_: Y_NN ._.
+Liu_NNP ,_, H_NN ._.
+Li_NNP ,_, Y_NN ._.
+Huang_NNP ,_, and_CC H_NN ._.
+-_: W_NN ._.
+Hon_NNP ._.
+Adapting_VBG ranking_JJ SVM_NNP to_TO document_VB retrieval_NN ._.
+In_IN SIGIR_NNP ##_CD ,_, pages_NNS 186-193_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- D_NN ._.
+Cossock_NN and_CC T_NN ._.
+Zhang_NNP ._.
+Subset_NN ranking_NN using_VBG regression_NN ._.
+In_IN COLT_NN ,_, pages_NNS 605-619_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- N_NN ._.
+Craswell_NNP ,_, D_NNP ._.
+Hawking_VBG ,_, R_NN ._.
+Wilkinson_NNP ,_, and_CC M_NN ._.
+Wu_NNP ._.
+Overview_NN of_IN the_DT TREC_NN ####_CD web_NN track_NN ._.
+In_IN TREC_NN ,_, pages_NNS 78-92_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- N_NN ._.
+Duffy_NN and_CC D_NN ._.
+Helmbold_NNP ._.
+Boosting_VBG methods_NNS for_IN regression_NN ._.
+Mach_NNP ._.
+Learn_VB ._.
+,_, ##_NN -LRB-_-LRB- 2-3_CD -RRB-_-RRB- :_: 153-200_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- Y_NN ._.
+Freund_NNP ,_, R_NN ._.
+D_NN ._.
+Iyer_NNP ,_, R_NN ._.
+E_NN ._.
+Schapire_NNP ,_, and_CC Y_NN ._.
+Singer_NNP ._.
+An_DT efficient_JJ boosting_VBG algorithm_NN for_IN combining_VBG preferences_NNS ._.
+Journal_NNP of_IN Machine_NNP Learning_NNP Research_NNP ,_, #_# :_: 933-969_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- Y_NN ._.
+Freund_NN and_CC R_NN ._.
+E_NN ._.
+Schapire_NNP ._.
+A_DT decision-theoretic_JJ generalization_NN of_IN on-line_JJ learning_NN and_CC an_DT application_NN to_TO boosting_VBG ._.
+J_NN ._.
+Comput_NNP ._.
+Syst_NNP ._.
+Sci_NNP ._.
+,_, ##_NN -LRB-_-LRB- #_# -RRB-_-RRB- :_: 119-139_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+Friedman_NNP ,_, T_NN ._.
+Hastie_NNP ,_, and_CC R_NN ._.
+Tibshirani_NNP ._.
+Additive_JJ logistic_JJ regression_NN :_: A_DT statistical_JJ view_NN of_IN boosting_VBG ._.
+The_DT Annals_NNP of_IN Statistics_NNPS ,_, ##_NN -LRB-_-LRB- #_# -RRB-_-RRB- :_: 337-374_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- G_NN ._.
+Fung_NNP ,_, R_NN ._.
+Rosales_NNP ,_, and_CC B_NN ._.
+Krishnapuram_NNP ._.
+Learning_NNP rankings_NNS via_IN convex_NN hull_NN separation_NN ._.
+In_IN Advances_NNS in_IN Neural_NNP Information_NNP Processing_NNP Systems_NNPS ##_NN ,_, pages_NNS 395-402_CD ._.
+MIT_NNP Press_NNP ,_, Cambridge_NNP ,_, MA_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- T_NN ._.
+Hastie_NNP ,_, R_NN ._.
+Tibshirani_NNP ,_, and_CC J_NN ._.
+H_NN ._.
+Friedman_NNP ._.
+The_DT Elements_NNS of_IN Statistical_JJ Learning_NNP ._.
+Springer_NNP ,_, August_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- R_NN ._.
+Herbrich_NNP ,_, T_NN ._.
+Graepel_NN ,_, and_CC K_NN ._.
+Obermayer_NNP ._.
+Large_JJ Margin_NN rank_NN boundaries_NNS for_IN ordinal_JJ regression_NN ._.
+MIT_NNP Press_NNP ,_, Cambridge_NNP ,_, MA_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- W_NN ._.
+Hersh_NNP ,_, C_NNP ._.
+Buckley_NNP ,_, T_NN ._.
+J_NN ._.
+Leone_NNP ,_, and_CC D_NN ._.
+Hickam_NNP ._.
+Ohsumed_NNP :_: an_DT interactive_JJ retrieval_NN evaluation_NN and_CC new_JJ large_JJ test_NN collection_NN for_IN research_NN ._.
+In_IN SIGIR_NN ,_, pages_NNS 192-201_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- K_NN ._.
+Jarvelin_NNP and_CC J_NNP ._.
+Kekalainen_NNP ._.
+IR_NN evaluation_NN methods_NNS for_IN retrieving_VBG highly_RB relevant_JJ documents_NNS ._.
+In_IN SIGIR_NNP ##_CD ,_, pages_NNS 41-48_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- T_NN ._.
+Joachims_NNP ._.
+Optimizing_VBG search_NN engines_NNS using_VBG clickthrough_JJ data_NNS ._.
+In_IN SIGKDD_NNP #_# ,_, pages_NNS 133-142_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- T_NN ._.
+Joachims_NNP ._.
+A_DT support_NN vector_NN method_NN for_IN multivariate_JJ performance_NN measures_NNS ._.
+In_IN ICML_NN ##_NN ,_, pages_NNS 377-384_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+Lafferty_NNP and_CC C_NNP ._.
+Zhai_NNP ._.
+Document_NNP language_NN models_NNS ,_, query_NN models_NNS ,_, and_CC risk_NN minimization_NN for_IN information_NN retrieval_NN ._.
+In_IN SIGIR_NNP ##_CD ,_, pages_NNS 111-119_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- D_NN ._.
+A_DT ._.
+Metzler_NNP ,_, W_NNP ._.
+B_NN ._.
+Croft_NNP ,_, and_CC A_NN ._.
+McCallum_NNP ._.
+Direct_JJ maximization_NN of_IN rank-based_JJ metrics_NNS for_IN information_NN retrieval_NN ._.
+Technical_NNP report_NN ,_, CIIR_NN ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- R_NN ._.
+Nallapati_NNP ._.
+Discriminative_JJ models_NNS for_IN information_NN retrieval_NN ._.
+In_IN SIGIR_NNP ##_CD ,_, pages_NNS 64-71_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- L_NN ._.
+Page_NNP ,_, S_NN ._.
+Brin_NNP ,_, R_NN ._.
+Motwani_NNP ,_, and_CC T_NN ._.
+Winograd_NNP ._.
+The_DT pagerank_NN citation_NN ranking_NN :_: Bringing_VBG order_NN to_TO the_DT web_NN ._.
+Technical_NNP report_NN ,_, Stanford_NNP Digital_NNP Library_NNP Technologies_NNP Project_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+M_NN ._.
+Ponte_NNP and_CC W_NNP ._.
+B_NN ._.
+Croft_NNP ._.
+A_DT language_NN modeling_NN approach_NN to_TO information_NN retrieval_NN ._.
+In_IN SIGIR_NNP ##_CD ,_, pages_NNS 275-281_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- T_NN ._.
+Qin_NNP ,_, T_NN ._.
+-_: Y_NN ._.
+Liu_NNP ,_, X_NN ._.
+-_: D_NN ._.
+Zhang_NNP ,_, Z_NN ._.
+Chen_NNP ,_, and_CC W_NN ._.
+-_: Y_NN ._.
+Ma_NNP ._.
+A_DT study_NN of_IN relevance_NN propagation_NN for_IN web_NN search_NN ._.
+In_IN SIGIR_NNP ##_CD ,_, pages_NNS 408-415_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- S_NN ._.
+E_NN ._.
+Robertson_NNP and_CC D_NNP ._.
+A_DT ._.
+Hull_NNP ._.
+The_DT TREC-9_NN filtering_VBG track_NN final_JJ report_NN ._.
+In_IN TREC_NN ,_, pages_NNS 25-40_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- R_NN ._.
+E_NN ._.
+Schapire_NNP ,_, Y_NN ._.
+Freund_NNP ,_, P_NN ._.
+Barlett_NNP ,_, and_CC W_NN ._.
+S_NN ._.
+Lee_NNP ._.
+Boosting_VBG the_DT margin_NN :_: A_DT new_JJ explanation_NN for_IN the_DT effectiveness_NN of_IN voting_VBG methods_NNS ._.
+In_IN ICML_NN ##_NN ,_, pages_NNS 322-330_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- R_NN ._.
+E_NN ._.
+Schapire_NNP and_CC Y_NN ._.
+Singer_NNP ._.
+Improved_VBN boosting_VBG algorithms_NNS using_VBG confidence-rated_JJ predictions_NNS ._.
+Mach_NNP ._.
+Learn_VB ._.
+,_, 37_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 297-336_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- R_NN ._.
+Song_NN ,_, J_NN ._.
+Wen_NNP ,_, S_NN ._.
+Shi_NNP ,_, G_NNP ._.
+Xin_NNP ,_, T_NN ._.
+yan_NNP Liu_NNP ,_, T_NN ._.
+Qin_NNP ,_, X_NN ._.
+Zheng_NNP ,_, J_NNP ._.
+Zhang_NNP ,_, G_NNP ._.
+Xue_NNP ,_, and_CC W_NN ._.
+-_: Y_NN ._.
+Ma_NNP ._.
+Microsoft_NNP Research_NNP Asia_NNP at_IN web_NN track_NN and_CC terabyte_NN track_NN of_IN TREC_NN ####_CD ._.
+In_IN TREC_NN ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- A_DT ._.
+Trotman_NNP ._.
+Learning_VBG to_TO rank_VB ._.
+Inf_NNP ._.
+Retr_NNP ._.
+,_, #_# -LRB-_-LRB- #_# -RRB-_-RRB- :_: 359-381_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+Xu_NNP ,_, Y_NN ._.
+Cao_NNP ,_, H_NN ._.
+Li_NNP ,_, and_CC Y_NN ._.
+Huang_NNP ._.
+Cost-sensitive_JJ learning_NN of_IN SVM_NN for_IN ranking_NN ._.
+In_IN ECML_NN ,_, pages_NNS 833-840_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- G_NN ._.
+-_: R_NN ._.
+Xue_NNP ,_, Q_NNP ._.
+Yang_NNP ,_, H_NN ._.
+-_: J_NN ._.
+Zeng_NNP ,_, Y_NN ._.
+Yu_NNP ,_, and_CC Z_NN ._.
+Chen_NNP ._.
+Exploiting_VBG the_DT hierarchical_JJ structure_NN for_IN link_NN analysis_NN ._.
+In_IN SIGIR_NNP ##_CD ,_, pages_NNS 186-193_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- H_NN ._.
+Yu_NNP ._.
+SVM_NNP selective_JJ sampling_NN for_IN ranking_VBG with_IN application_NN to_TO data_NNS retrieval_NN ._.
+In_IN SIGKDD_NNP ##_CD ,_, pages_NNS 354-363_CD ,_, ####_CD ._.
+APPENDIX_NN Here_RB we_PRP give_VBP the_DT proof_NN of_IN Theorem_NNP #_# ._.
+P_NN ._.
+Set_VB ZT_NN =_JJ m_NN i_FW =_JJ #_# exp_FW -LCB-_-LRB- E_NN -LRB-_-LRB- -LRB-_-LRB- qi_NN ,_, di_FW ,_, fT_NN -RRB-_-RRB- ,_, yi_NN -RRB-_-RRB- -RCB-_-RRB- and_CC -LRB-_-LRB- t_NN -RRB-_-RRB- =_JJ #_# 2_, -LRB-_-LRB- #_# +_CC -LRB-_-LRB- t_NN -RRB-_-RRB- -RRB-_-RRB- ._.
+According_VBG to_TO the_DT definition_NN of_IN t_NN ,_, we_PRP know_VBP that_IN et_FW =_JJ -LRB-_-LRB- t_NN -RRB-_-RRB- 1_CD -LRB-_-LRB- t_NN -RRB-_-RRB- ._.
+ZT_NN =_JJ m_NN i_FW =_JJ #_# exp_FW -LCB-_-LRB- E_NN -LRB-_-LRB- -LRB-_-LRB- qi_NN ,_, di_FW ,_, fT1_NN +_CC T_NN hT_NN -RRB-_-RRB- ,_, yi_NN -RRB-_-RRB- -RCB-_-RRB- =_JJ m_NN i_FW =_JJ #_# exp_FW E_NN -LRB-_-LRB- -LRB-_-LRB- qi_NN ,_, di_FW ,_, fT1_NN -RRB-_-RRB- ,_, yi_NN -RRB-_-RRB- T_NN E_NN -LRB-_-LRB- -LRB-_-LRB- qi_NN ,_, di_FW ,_, hT_NN -RRB-_-RRB- ,_, yi_NN -RRB-_-RRB- T_NN i_FW m_NN i_FW =_JJ #_# exp_FW -LCB-_-LRB- E_NN -LRB-_-LRB- -LRB-_-LRB- qi_NN ,_, di_FW ,_, fT1_NN -RRB-_-RRB- ,_, yi_NN -RRB-_-RRB- -RCB-_-RRB- exp_NN -LCB-_-LRB- T_NN E_NN -LRB-_-LRB- -LRB-_-LRB- qi_NN ,_, di_FW ,_, hT_NN -RRB-_-RRB- ,_, yi_NN -RRB-_-RRB- -RCB-_-RRB- eT_NNP min_NN =_JJ eT_NN min_NN ZT1_NN m_NN i_FW =_JJ #_# exp_FW -LCB-_-LRB- E_NN -LRB-_-LRB- -LRB-_-LRB- qi_NN ,_, di_FW ,_, fT1_NN -RRB-_-RRB- ,_, yi_NN -RRB-_-RRB- -RCB-_-RRB- ZT1_NN exp_NN -LCB-_-LRB- T_NN E_NN -LRB-_-LRB- -LRB-_-LRB- qi_NN ,_, di_FW ,_, hT_NN -RRB-_-RRB- ,_, yi_NN -RRB-_-RRB- -RCB-_-RRB- =_JJ eT_NN min_NN ZT1_NN m_NN i_FW =_JJ #_# PT_NN -LRB-_-LRB- i_LS -RRB-_-RRB- exp_NN -LCB-_-LRB- T_NN E_NN -LRB-_-LRB- -LRB-_-LRB- qi_NN ,_, di_FW ,_, hT_NN -RRB-_-RRB- ,_, yi_NN -RRB-_-RRB- -RCB-_-RRB- ._.
+Moreover_RB ,_, if_IN E_NN -LRB-_-LRB- -LRB-_-LRB- qi_NN ,_, di_FW ,_, hT_NN -RRB-_-RRB- ,_, yi_NN -RRB-_-RRB- -LSB-_-LRB- #_# ,_, +_CC #_# -RSB-_-RRB- then_RB ,_, ZT_NNP eT_NNP minZT1_NN m_NN i_FW =_JJ #_# PT_NN -LRB-_-LRB- i_LS -RRB-_-RRB- 1_CD +_CC E_NN -LRB-_-LRB- -LRB-_-LRB- qi_NN ,_, di_FW ,_, hT_NN -RRB-_-RRB- ,_, yi_NN -RRB-_-RRB- 2_CD eT_NN +_CC 1E_NN -LRB-_-LRB- -LRB-_-LRB- qi_NN ,_, di_FW ,_, hT_NN -RRB-_-RRB- ,_, yi_NN -RRB-_-RRB- 2_CD eT_NN =_JJ eT_NN min_NN ZT1_NN -LRB-_-LRB- T_NN -RRB-_-RRB- 1_CD -LRB-_-LRB- T_NN -RRB-_-RRB- -LRB-_-LRB- T_NN -RRB-_-RRB- +_CC -LRB-_-LRB- #_# -LRB-_-LRB- T_NN -RRB-_-RRB- -RRB-_-RRB- -LRB-_-LRB- T_NN -RRB-_-RRB- 1_CD -LRB-_-LRB- T_NN -RRB-_-RRB- =_JJ ZT1eT_NN min_NN #_# -LRB-_-LRB- T_NN -RRB-_-RRB- -LRB-_-LRB- #_# -LRB-_-LRB- T_NN -RRB-_-RRB- -RRB-_-RRB- ZT2_NN T_NN t_NN =_JJ T1_NN et_FW min_NN #_# -LRB-_-LRB- t_NN -RRB-_-RRB- -LRB-_-LRB- #_# -LRB-_-LRB- t_NN -RRB-_-RRB- -RRB-_-RRB- Z1_NN T_NN t_NN =_JJ #_# et_FW min_NN #_# -LRB-_-LRB- t_NN -RRB-_-RRB- -LRB-_-LRB- #_# -LRB-_-LRB- t_NN -RRB-_-RRB- -RRB-_-RRB- =_JJ m_NN m_NN i_FW =_JJ #_# 1_CD m_NN exp_NN -LCB-_-LRB- E_NN -LRB-_-LRB- -LRB-_-LRB- qi_NN ,_, di_FW ,_, 1h1_NN -RRB-_-RRB- ,_, yi_NN -RRB-_-RRB- -RCB-_-RRB- T_NN t_NN =_JJ #_# et_FW min_NN #_# -LRB-_-LRB- t_NN -RRB-_-RRB- -LRB-_-LRB- #_# -LRB-_-LRB- t_NN -RRB-_-RRB- -RRB-_-RRB- =_JJ m_NN m_NN i_FW =_JJ #_# 1_CD m_NN exp_NN -LCB-_-LRB- 1E_NN -LRB-_-LRB- -LRB-_-LRB- qi_NN ,_, di_FW ,_, h1_NN -RRB-_-RRB- ,_, yi_NN -RRB-_-RRB- #_# i_FW -RCB-_-RRB- T_NN t_NN =_JJ #_# et_FW min_NN #_# -LRB-_-LRB- t_NN -RRB-_-RRB- -LRB-_-LRB- #_# -LRB-_-LRB- t_NN -RRB-_-RRB- -RRB-_-RRB- me1_NN min_NN m_NN i_FW =_JJ #_# 1_CD m_NN exp_NN -LCB-_-LRB- 1E_NN -LRB-_-LRB- -LRB-_-LRB- qi_NN ,_, di_FW ,_, h1_NN -RRB-_-RRB- ,_, yi_NN -RRB-_-RRB- -RCB-_-RRB- T_NN t_NN =_JJ #_# et_FW min_NN #_# -LRB-_-LRB- t_NN -RRB-_-RRB- -LRB-_-LRB- #_# -LRB-_-LRB- t_NN -RRB-_-RRB- -RRB-_-RRB- m_NN e1_NN min_NN #_# -LRB-_-LRB- #_# -RRB-_-RRB- -LRB-_-LRB- #_# -LRB-_-LRB- #_# -RRB-_-RRB- -RRB-_-RRB- T_NN t_NN =_JJ #_# et_FW min_NN #_# -LRB-_-LRB- t_NN -RRB-_-RRB- -LRB-_-LRB- #_# -LRB-_-LRB- t_NN -RRB-_-RRB- -RRB-_-RRB- =_JJ m_NN T_NN t_NN =_JJ #_# et_FW min_NN #_# -LRB-_-LRB- t_NN -RRB-_-RRB- #_# ._.
+1_CD m_NN m_NN i_FW =_JJ #_# E_NN -LRB-_-LRB- -LRB-_-LRB- qi_NN ,_, di_FW ,_, fT_NN -RRB-_-RRB- ,_, yi_NN -RRB-_-RRB- 1_CD m_NN m_NN i_FW =_JJ #_# -LCB-_-LRB- #_# exp_NN -LRB-_-LRB- E_NN -LRB-_-LRB- -LRB-_-LRB- qi_NN ,_, di_FW ,_, fT_NN -RRB-_-RRB- ,_, yi_NN -RRB-_-RRB- -RRB-_-RRB- -RCB-_-RRB- #_# T_NN t_NN =_JJ #_# et_FW min_NN #_# -LRB-_-LRB- t_NN -RRB-_-RRB- #_# ._.

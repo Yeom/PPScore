@@ -1,0 +1,748 @@
+Pruning_NN Policies_NNS for_IN Two-Tiered_JJ Inverted_NNP Index_NNP with_IN Correctness_NNP Guarantee_NNP Alexandros_NNP Ntoulas_NNP Microsoft_NNP Search_VB Labs_NNPS 1065_CD La_NNP Avenida_NNP Mountain_NNP View_NNP ,_, CA_NNP #####_NNP ,_, USA_NNP antoulas_NNS @_IN microsoft_NN ._.
+com_NN Junghoo_NNP Cho_NNP UCLA_NNP Computer_NNP Science_NNP Dept_NNP ._.
+Boelter_NNP Hall_NNP Los_NNP Angeles_NNP ,_, CA_NNP #####_NNP ,_, USA_NNP cho_NN @_IN cs_NNS ._.
+ucla_NN ._.
+edu_NN ABSTRACT_NN The_DT Web_NN search_NN engines_NNS maintain_VBP large-scale_JJ inverted_JJ indexes_NNS which_WDT are_VBP queried_VBN thousands_NNS of_IN times_NNS per_IN second_JJ by_IN users_NNS eager_JJ for_IN information_NN ._.
+In_IN order_NN to_TO cope_VB with_IN the_DT vast_JJ amounts_NNS of_IN query_NN loads_NNS ,_, search_NN engines_NNS prune_VBP their_PRP$ index_NN to_TO keep_VB documents_NNS that_WDT are_VBP likely_JJ to_TO be_VB returned_VBN as_IN top_JJ results_NNS ,_, and_CC use_VB this_DT pruned_VBN index_NN to_TO compute_VB the_DT first_JJ batches_NNS of_IN results_NNS ._.
+While_IN this_DT approach_NN can_MD improve_VB performance_NN by_IN reducing_VBG the_DT size_NN of_IN the_DT index_NN ,_, if_IN we_PRP compute_VBP the_DT top_JJ results_NNS only_RB from_IN the_DT pruned_VBN index_NN we_PRP may_MD notice_VB a_DT significant_JJ degradation_NN in_IN the_DT result_NN quality_NN :_: if_IN a_DT document_NN should_MD be_VB in_IN the_DT top_JJ results_NNS but_CC was_VBD not_RB included_VBN in_IN the_DT pruned_VBN index_NN ,_, it_PRP will_MD be_VB placed_VBN behind_IN the_DT results_NNS computed_VBN from_IN the_DT pruned_VBN index_NN ._.
+Given_VBN the_DT fierce_JJ competition_NN in_IN the_DT online_JJ search_NN market_NN ,_, this_DT phenomenon_NN is_VBZ clearly_RB undesirable_JJ ._.
+In_IN this_DT paper_NN ,_, we_PRP study_VBD how_WRB we_PRP can_MD avoid_VB any_DT degradation_NN of_IN result_NN quality_NN due_JJ to_TO the_DT pruning-based_JJ performance_NN optimization_NN ,_, while_IN still_RB realizing_VBG most_JJS of_IN its_PRP$ benefit_NN ._.
+Our_PRP$ contribution_NN is_VBZ a_DT number_NN of_IN modifications_NNS in_IN the_DT pruning_NN techniques_NNS for_IN creating_VBG the_DT pruned_VBN index_NN and_CC a_DT new_JJ result_NN computation_NN algorithm_NN that_WDT guarantees_VBZ that_IN the_DT top-matching_JJ pages_NNS are_VBP always_RB placed_VBN at_IN the_DT top_JJ search_NN results_NNS ,_, even_RB though_IN we_PRP are_VBP computing_VBG the_DT first_JJ batch_NN from_IN the_DT pruned_VBN index_NN most_JJS of_IN the_DT time_NN ._.
+We_PRP also_RB show_VBP how_WRB to_TO determine_VB the_DT optimal_JJ size_NN of_IN a_DT pruned_VBN index_NN and_CC we_PRP experimentally_RB evaluate_VB our_PRP$ algorithms_NNS on_IN a_DT collection_NN of_IN ###_CD million_CD Web_NN pages_NNS ._.
+Categories_NNS and_CC Subject_NNP Descriptors_NNPS H_NN ._.
+#_# ._.
+#_# -LSB-_-LRB- Information_NNP Storage_NNP and_CC Retrieval_NNP -RSB-_-RRB- :_: Content_NNP Analysis_NNP and_CC Indexing_NN ;_: H_NN ._.
+#_# ._.
+#_# -LSB-_-LRB- Information_NNP Storage_NNP and_CC Retrieval_NNP -RSB-_-RRB- :_: Information_NNP Search_VB and_CC Retrieval_NNP General_NNP Terms_NNS Algorithms_NNS ,_, Measuring_VBG ,_, Performance_NNP ,_, Design_NNP ,_, Experimentation_NN 1_CD ._.
+INTRODUCTION_NN The_DT amount_NN of_IN information_NN on_IN the_DT Web_NN is_VBZ growing_VBG at_IN a_DT prodigious_JJ rate_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+According_VBG to_TO a_DT recent_JJ study_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, it_PRP is_VBZ estimated_VBN that_IN the_DT Web_NN currently_RB consists_VBZ of_IN more_JJR than_IN ##_CD billion_CD pages_NNS ._.
+Due_JJ to_TO this_DT immense_JJ amount_NN of_IN available_JJ information_NN ,_, the_DT users_NNS are_VBP becoming_VBG more_RBR and_CC more_RBR dependent_JJ on_IN the_DT Web_NN search_NN engines_NNS for_IN locating_VBG relevant_JJ information_NN on_IN the_DT Web_NN ._.
+Typically_RB ,_, the_DT Web_NN search_NN engines_NNS ,_, similar_JJ to_TO other_JJ information_NN retrieval_NN applications_NNS ,_, utilize_VBP a_DT data_NN structure_NN called_VBN inverted_JJ index_NN ._.
+An_DT inverted_JJ index_NN provides_VBZ for_IN the_DT efficient_JJ retrieval_NN of_IN the_DT documents_NNS -LRB-_-LRB- or_CC Web_NN pages_NNS -RRB-_-RRB- that_WDT contain_VBP a_DT particular_JJ keyword_NN ._.
+In_IN most_JJS cases_NNS ,_, a_DT query_NN that_IN the_DT user_NN issues_NNS may_MD have_VB thousands_NNS or_CC even_RB millions_NNS of_IN matching_VBG documents_NNS ._.
+In_IN order_NN to_TO avoid_VB overwhelming_JJ the_DT users_NNS with_IN a_DT huge_JJ amount_NN of_IN results_NNS ,_, the_DT search_NN engines_NNS present_VBP the_DT results_NNS in_IN batches_NNS of_IN ##_CD to_TO ##_CD relevant_JJ documents_NNS ._.
+The_DT user_NN then_RB looks_VBZ through_IN the_DT first_JJ batch_NN of_IN results_NNS and_CC ,_, if_IN she_PRP doesn_VBD ''_'' t_NN find_VB the_DT answer_NN she_PRP is_VBZ looking_VBG for_IN ,_, she_PRP may_MD potentially_RB request_VB to_TO view_VB the_DT next_JJ batch_NN or_CC decide_VB to_TO issue_VB a_DT new_JJ query_NN ._.
+A_DT recent_JJ study_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- indicated_VBD that_IN approximately_RB ##_CD %_NN of_IN the_DT users_NNS examine_VB at_IN most_JJS the_DT first_JJ #_# batches_NNS of_IN the_DT results_NNS ._.
+That_DT is_VBZ ,_, 80_CD %_NN of_IN the_DT users_NNS typically_RB view_VBP at_IN most_JJS ##_CD to_TO ##_CD results_NNS for_IN every_DT query_NN that_IN they_PRP issue_VBP to_TO a_DT search_NN engine_NN ._.
+At_IN the_DT same_JJ time_NN ,_, given_VBN the_DT size_NN of_IN the_DT Web_NN ,_, the_DT inverted_JJ index_NN that_IN the_DT search_NN engines_NNS maintain_VBP can_MD grow_VB very_RB large_JJ ._.
+Since_IN the_DT users_NNS are_VBP interested_JJ in_IN a_DT small_JJ number_NN of_IN results_NNS -LRB-_-LRB- and_CC thus_RB are_VBP viewing_VBG a_DT small_JJ portion_NN of_IN the_DT index_NN for_IN every_DT query_NN that_IN they_PRP issue_VBP -RRB-_-RRB- ,_, using_VBG an_DT index_NN that_WDT is_VBZ capable_JJ of_IN returning_VBG all_PDT the_DT results_NNS for_IN a_DT query_NN may_MD constitute_VB a_DT significant_JJ waste_NN in_IN terms_NNS of_IN time_NN ,_, storage_NN space_NN and_CC computational_JJ resources_NNS ,_, which_WDT is_VBZ bound_VBN to_TO get_VB worse_JJR as_IN the_DT Web_NN grows_VBZ larger_JJR over_IN time_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+One_CD natural_JJ solution_NN to_TO this_DT problem_NN is_VBZ to_TO create_VB a_DT small_JJ index_NN on_IN a_DT subset_NN of_IN the_DT documents_NNS that_WDT are_VBP likely_JJ to_TO be_VB returned_VBN as_IN the_DT top_JJ results_NNS -LRB-_-LRB- by_IN using_VBG ,_, for_IN example_NN ,_, the_DT pruning_NN techniques_NNS in_IN -LSB-_-LRB- #_# ,_, ##_NN -RSB-_-RRB- -RRB-_-RRB- and_CC compute_VB the_DT first_JJ batch_NN of_IN answers_NNS using_VBG the_DT pruned_VBN index_NN ._.
+While_IN this_DT approach_NN has_VBZ been_VBN shown_VBN to_TO give_VB significant_JJ improvement_NN in_IN performance_NN ,_, it_PRP also_RB leads_VBZ to_TO noticeable_JJ degradation_NN in_IN the_DT quality_NN of_IN the_DT search_NN results_VBZ ,_, because_IN the_DT top_JJ answers_NNS are_VBP computed_VBN only_RB from_IN the_DT pruned_VBN index_NN -LSB-_-LRB- #_# ,_, ##_NN -RSB-_-RRB- ._.
+That_DT is_VBZ ,_, even_RB if_IN a_DT page_NN should_MD be_VB placed_VBN as_IN the_DT top-matching_JJ page_NN according_VBG to_TO a_DT search_NN engine_NN ''_'' s_NNS ranking_VBG metric_JJ ,_, the_DT page_NN may_MD be_VB placed_VBN behind_IN the_DT ones_NNS contained_VBD in_IN the_DT pruned_VBN index_NN if_IN the_DT page_NN did_VBD not_RB become_VB part_NN of_IN the_DT pruned_VBN index_NN for_IN various_JJ reasons_NNS -LSB-_-LRB- #_# ,_, ##_NN -RSB-_-RRB- ._.
+Given_VBN the_DT fierce_JJ competition_NN among_IN search_NN engines_NNS today_NN this_DT degradation_NN is_VBZ clearly_RB undesirable_JJ and_CC needs_VBZ to_TO be_VB addressed_VBN if_IN possible_JJ ._.
+In_IN this_DT paper_NN ,_, we_PRP study_VBD how_WRB we_PRP can_MD avoid_VB any_DT degradation_NN of_IN search_NN quality_NN due_JJ to_TO the_DT above_JJ performance_NN optimization_NN while_IN still_RB realizing_VBG most_JJS of_IN its_PRP$ benefit_NN ._.
+That_DT is_VBZ ,_, we_PRP present_VBP a_DT number_NN of_IN simple_JJ -LRB-_-LRB- yet_RB important_JJ -RRB-_-RRB- changes_NNS in_IN the_DT pruning_NN techniques_NNS for_IN creating_VBG the_DT pruned_VBN index_NN ._.
+Our_PRP$ main_JJ contribution_NN is_VBZ a_DT new_JJ answer_NN computation_NN algorithm_NN that_WDT guarantees_VBZ that_IN the_DT top-matching_JJ pages_NNS -LRB-_-LRB- according_VBG to_TO the_DT search-engine_NN ''_'' s_NNS ranking_VBG metric_JJ -RRB-_-RRB- are_VBP always_RB placed_VBN at_IN the_DT top_NN of_IN search_NN results_NNS ,_, even_RB though_IN we_PRP are_VBP computing_VBG the_DT first_JJ batch_NN of_IN answers_NNS from_IN the_DT pruned_VBN index_NN most_JJS of_IN the_DT time_NN ._.
+These_DT enhanced_VBN pruning_NN techniques_NNS and_CC answer-computation_NN algorithms_NNS are_VBP explored_VBN in_IN the_DT context_NN of_IN the_DT cluster_NN architecture_NN commonly_RB employed_VBN by_IN today_NN ''_'' s_VBZ search_NN engines_NNS ._.
+Finally_RB ,_, we_PRP study_NN and_CC present_JJ how_WRB search_NN engines_NNS can_MD minimize_VB the_DT operational_JJ cost_NN of_IN answering_VBG queries_NNS while_IN providing_VBG high_JJ quality_NN search_NN results_NNS ._.
+IF_IN IF_IN IF_IN IF_IN IF_IN IF_IN IF_IN Ip_NNP Ip_NNP Ip_NNP Ip_NNP Ip_NNP Ip_NNP 5000_CD queries_NNS /_: sec_NN ####_CD queries_NNS /_: sec_NN :_: ####_CD queries_NNS /_: sec_NN :_: ####_CD queries_NNS /_: sec_NN 2nd_JJ tier_NN 1st_JJ tier_NN -LRB-_-LRB- a_DT -RRB-_-RRB- -LRB-_-LRB- b_NN -RRB-_-RRB- Figure_NN #_# :_: -LRB-_-LRB- a_LS -RRB-_-RRB- Search_VB engine_NN replicates_VBZ its_PRP$ full_JJ index_NN IF_IN to_TO increase_VB query-answering_JJ capacity_NN ._.
+-LRB-_-LRB- b_NN -RRB-_-RRB- In_IN the_DT 1st_JJ tier_NN ,_, small_JJ pindexes_NNS IP_NNP handle_VB most_JJS of_IN the_DT queries_NNS ._.
+When_WRB IP_NNP can_MD not_RB answer_VB a_DT query_NN ,_, it_PRP is_VBZ redirected_VBN to_TO the_DT 2nd_JJ tier_NN ,_, where_WRB the_DT full_JJ index_NN IF_IN is_VBZ used_VBN to_TO compute_VB the_DT answer_NN ._.
+2_LS ._.
+CLUSTER_NN ARCHITECTURE_NN AND_CC COST_NN SAVINGS_NNP FROM_NNP A_NNP PRUNED_VBD INDEX_NNP Typically_RB ,_, a_DT search_NN engine_NN downloads_NNS documents_NNS from_IN the_DT Web_NN and_CC maintains_VBZ a_DT local_JJ inverted_JJ index_NN that_WDT is_VBZ used_VBN to_TO answer_VB queries_NNS quickly_RB ._.
+Inverted_JJ indexes_NNS ._.
+Assume_VB that_IN we_PRP have_VBP collected_VBN a_DT set_NN of_IN documents_NNS D_NN =_JJ -LCB-_-LRB- D1_NN ,_, ..._: ,_, DM_NN -RCB-_-RRB- and_CC that_IN we_PRP have_VBP extracted_VBN all_PDT the_DT terms_NNS T_NN =_JJ -LCB-_-LRB- t1_NN ,_, ..._: ,_, tn_NN -RCB-_-RRB- from_IN the_DT documents_NNS ._.
+For_IN every_DT single_JJ term_NN ti_NN T_NN we_PRP maintain_VBP a_DT list_NN I_NN -LRB-_-LRB- ti_NN -RRB-_-RRB- of_IN document_NN IDs_NNS that_WDT contain_VBP ti_NN ._.
+Every_DT entry_NN in_IN I_NN -LRB-_-LRB- ti_NN -RRB-_-RRB- is_VBZ called_VBN a_DT posting_VBG and_CC can_MD be_VB extended_VBN to_TO include_VB additional_JJ information_NN ,_, such_JJ as_IN how_WRB many_JJ times_NNS ti_NN appears_VBZ in_IN a_DT document_NN ,_, the_DT positions_NNS of_IN ti_NN in_IN the_DT document_NN ,_, whether_IN ti_NN is_VBZ bold_JJ /_: italic_JJ ,_, etc_FW ._.
+The_DT set_NN of_IN all_PDT the_DT lists_NNS I_NN =_JJ -LCB-_-LRB- I_PRP -LRB-_-LRB- t1_NN -RRB-_-RRB- ,_, ..._: ,_, I_PRP -LRB-_-LRB- tn_NN -RRB-_-RRB- -RCB-_-RRB- is_VBZ our_PRP$ inverted_JJ index_NN ._.
+2_LS ._.
+#_# Two-tier_JJR index_NN architecture_NN Search_VB engines_NNS are_VBP accepting_VBG an_DT enormous_JJ number_NN of_IN queries_NNS every_DT day_NN from_IN eager_JJ users_NNS searching_VBG for_IN relevant_JJ information_NN ._.
+For_IN example_NN ,_, Google_NNP is_VBZ estimated_VBN to_TO answer_VB more_JJR than_IN ###_CD million_CD user_NN queries_NNS per_IN day_NN ._.
+In_IN order_NN to_TO cope_VB with_IN this_DT huge_JJ query_NN load_NN ,_, search_NN engines_NNS typically_RB replicate_VBP their_PRP$ index_NN across_IN a_DT large_JJ cluster_NN of_IN machines_NNS as_IN the_DT following_VBG example_NN illustrates_VBZ :_: Example_NN #_# Consider_VB a_DT search_NN engine_NN that_WDT maintains_VBZ a_DT cluster_NN of_IN machines_NNS as_IN in_IN Figure_NNP #_# -LRB-_-LRB- a_DT -RRB-_-RRB- ._.
+The_DT size_NN of_IN its_PRP$ full_JJ inverted_JJ index_NN IF_IN is_VBZ larger_JJR than_IN what_WP can_MD be_VB stored_VBN in_IN a_DT single_JJ machine_NN ,_, so_IN each_DT copy_NN of_IN IF_IN is_VBZ stored_VBN across_IN four_CD different_JJ machines_NNS ._.
+We_PRP also_RB suppose_VBP that_IN one_CD copy_NN of_IN IF_IN can_MD handle_VB the_DT query_NN load_NN of_IN ####_CD queries_NNS /_: sec_NN ._.
+Assuming_VBG that_IN the_DT search_NN engine_NN gets_VBZ ####_CD queries_NNS /_: sec_NN ,_, it_PRP needs_VBZ to_TO replicate_VB IF_IN five_CD times_NNS to_TO handle_VB the_DT load_NN ._.
+Overall_RB ,_, the_DT search_NN engine_NN needs_VBZ to_TO maintain_VB #_# #_# =_SYM ##_CD machines_NNS in_IN its_PRP$ cluster_NN ._.
+#_# While_IN fully_RB replicating_VBG the_DT entire_JJ index_NN IF_IN multiple_JJ times_NNS is_VBZ a_DT straightforward_JJ way_NN to_TO scale_NN to_TO a_DT large_JJ number_NN of_IN queries_NNS ,_, typical_JJ query_NN loads_NNS at_IN search_NN engines_NNS exhibit_VBP certain_JJ localities_NNS ,_, allowing_VBG for_IN significant_JJ reduction_NN in_IN cost_NN by_IN replicating_VBG only_RB a_DT small_JJ portion_NN of_IN the_DT full_JJ index_NN ._.
+In_IN principle_NN ,_, this_DT is_VBZ typically_RB done_VBN by_IN pruning_NN a_DT full_JJ index_NN IF_IN to_TO create_VB a_DT smaller_JJR ,_, pruned_VBN index_NN -LRB-_-LRB- or_CC p-index_NN -RRB-_-RRB- IP_NNP ,_, which_WDT contains_VBZ a_DT subset_NN of_IN the_DT documents_NNS that_WDT are_VBP likely_JJ to_TO be_VB returned_VBN as_IN top_JJ results_NNS ._.
+Given_VBN the_DT p-index_NN ,_, search_NN engines_NNS operate_VBP by_IN employing_VBG a_DT twotier_JJR index_NN architecture_NN as_IN we_PRP show_VBP in_IN Figure_NNP #_# -LRB-_-LRB- b_NN -RRB-_-RRB- :_: All_DT incoming_JJ queries_NNS are_VBP first_JJ directed_VBN to_TO one_CD of_IN the_DT p-indexes_NNS kept_VBD in_IN the_DT 1st_JJ tier_NN ._.
+In_IN the_DT cases_NNS where_WRB a_DT p-index_NN can_MD not_RB compute_VB the_DT answer_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+was_VBD unable_JJ to_TO find_VB enough_JJ documents_NNS to_TO return_VB to_TO the_DT user_NN -RRB-_-RRB- the_DT query_NN is_VBZ answered_VBN by_IN redirecting_VBG it_PRP to_TO the_DT 2nd_JJ tier_NN ,_, where_WRB we_PRP maintain_VBP a_DT full_JJ index_NN IF_IN ._.
+The_DT following_VBG example_NN illustrates_VBZ the_DT potential_JJ reduction_NN in_IN the_DT query-processing_JJ cost_NN by_IN employing_VBG this_DT two-tier_JJ index_NN architecture_NN ._.
+Example_NN #_# Assume_VB the_DT same_JJ parameter_NN settings_NNS as_IN in_IN Example_NNP #_# ._.
+That_DT is_VBZ ,_, the_DT search_NN engine_NN gets_VBZ a_DT query_NN load_NN of_IN ####_CD queries_NNS /_: sec_JJ Algorithm_NN #_# ._.
+#_# Computation_NNP of_IN answer_NN with_IN correctness_NN guarantee_NN Input_NNP q_NN =_JJ -LRB-_-LRB- -LCB-_-LRB- t1_NN ,_, ..._: ,_, tn_NN -RCB-_-RRB- ,_, -LSB-_-LRB- i_LS ,_, i_FW +_CC k_NN -RSB-_-RRB- -RRB-_-RRB- where_WRB -LCB-_-LRB- t1_NN ,_, ..._: ,_, tn_NN -RCB-_-RRB- :_: keywords_NNS in_IN the_DT query_NN -LSB-_-LRB- i_FW ,_, i_FW +_CC k_NN -RSB-_-RRB- :_: range_NN of_IN the_DT answer_NN to_TO return_VB Procedure_NNP -LRB-_-LRB- #_# -RRB-_-RRB- -LRB-_-LRB- A_NN ,_, C_NN -RRB-_-RRB- =_JJ ComputeAnswer_NN -LRB-_-LRB- q_NN ,_, IP_NNP -RRB-_-RRB- -LRB-_-LRB- #_# -RRB-_-RRB- If_IN -LRB-_-LRB- C_NN =_JJ #_# -RRB-_-RRB- Then_RB -LRB-_-LRB- #_# -RRB-_-RRB- Return_NN A_NN -LRB-_-LRB- #_# -RRB-_-RRB- Else_RB -LRB-_-LRB- #_# -RRB-_-RRB- A_NN =_JJ ComputeAnswer_NN -LRB-_-LRB- q_NN ,_, IF_IN -RRB-_-RRB- -LRB-_-LRB- #_# -RRB-_-RRB- Return_NN A_NN Figure_NN #_# :_: Computing_NNP the_DT answer_NN under_IN the_DT two-tier_JJ architecture_NN with_IN the_DT result_NN correctness_NN guarantee_NN ._.
+and_CC every_DT copy_NN of_IN an_DT index_NN -LRB-_-LRB- both_CC the_DT full_JJ IF_IN and_CC p-index_NN IP_NNP -RRB-_-RRB- can_MD handle_VB up_RP to_TO ####_CD queries_NNS /_: sec_NN ._.
+Also_RB assume_VB that_IN the_DT size_NN of_IN IP_NNP is_VBZ one_CD fourth_JJ of_IN IF_IN and_CC thus_RB can_MD be_VB stored_VBN on_IN a_DT single_JJ machine_NN ._.
+Finally_RB ,_, suppose_VBP that_IN the_DT p-indexes_NNS can_MD handle_VB ##_CD %_NN of_IN the_DT user_NN queries_NNS by_IN themselves_PRP and_CC only_RB forward_RB the_DT remaining_VBG ##_CD %_NN queries_NNS to_TO IF_IN ._.
+Under_IN this_DT setting_NN ,_, since_IN all_DT ####_CD /_: sec_NN user_NN queries_NNS are_VBP first_JJ directed_VBN to_TO a_DT p-index_NN ,_, five_CD copies_NNS of_IN IP_NNP are_VBP needed_VBN in_IN the_DT 1st_JJ tier_NN ._.
+For_IN the_DT 2nd_JJ tier_NN ,_, since_IN ##_CD %_NN -LRB-_-LRB- or_CC ####_CD queries_NNS /_: sec_NN -RRB-_-RRB- are_VBP forwarded_VBN ,_, we_PRP need_VBP to_TO maintain_VB one_CD copy_NN of_IN IF_IN to_TO handle_VB the_DT load_NN ._.
+Overall_RB we_PRP need_VBP a_DT total_NN of_IN #_# machines_NNS -LRB-_-LRB- five_CD machines_NNS for_IN the_DT five_CD copies_NNS of_IN IP_NNP and_CC four_CD machines_NNS for_IN one_CD copy_NN of_IN IF_IN -RRB-_-RRB- ._.
+Compared_VBN to_TO Example_NNP #_# ,_, this_DT is_VBZ more_JJR than_IN ##_CD %_NN reduction_NN in_IN the_DT number_NN of_IN machines_NNS ._.
+#_# The_DT above_IN example_NN demonstrates_VBZ the_DT potential_JJ cost_NN saving_VBG achieved_VBN by_IN using_VBG a_DT p-index_NN ._.
+However_RB ,_, the_DT two-tier_JJ architecture_NN may_MD have_VB a_DT significant_JJ drawback_NN in_IN terms_NNS of_IN its_PRP$ result_NN quality_NN compared_VBN to_TO the_DT full_JJ replication_NN of_IN IF_IN ;_: given_VBN the_DT fact_NN that_IN the_DT p-index_NN contains_VBZ only_RB a_DT subset_NN of_IN the_DT data_NNS of_IN the_DT full_JJ index_NN ,_, it_PRP is_VBZ possible_JJ that_IN ,_, for_IN some_DT queries_NNS ,_, the_DT p-index_NN may_MD not_RB contain_VB the_DT top-ranked_JJ document_NN according_VBG to_TO the_DT particular_JJ ranking_JJ criteria_NNS used_VBN by_IN the_DT search_NN engine_NN and_CC fail_VBP to_TO return_VB it_PRP as_IN the_DT top_JJ page_NN ,_, leading_VBG to_TO noticeable_JJ quality_NN degradation_NN in_IN search_NN results_NNS ._.
+Given_VBN the_DT fierce_JJ competition_NN in_IN the_DT online_JJ search_NN market_NN ,_, search_NN engine_NN operators_NNS desperately_RB try_VBP to_TO avoid_VB any_DT reduction_NN in_IN search_NN quality_NN in_IN order_NN to_TO maximize_VB user_NN satisfaction_NN ._.
+2_LS ._.
+#_# Correctness_NNPS guarantee_VBP under_IN two-tier_JJ architecture_NN How_WRB can_MD we_PRP avoid_VB the_DT potential_JJ degradation_NN of_IN search_NN quality_NN under_IN the_DT two-tier_JJ architecture_NN ?_.
+Our_PRP$ basic_JJ idea_NN is_VBZ straightforward_JJ :_: We_PRP use_VBP the_DT top-k_JJ result_NN from_IN the_DT p-index_NN only_RB if_IN we_PRP know_VBP for_IN sure_JJ that_IN the_DT result_NN is_VBZ the_DT same_JJ as_IN the_DT top-k_JJ result_NN from_IN the_DT full_JJ index_NN ._.
+The_DT algorithm_NN in_IN Figure_NNP #_# formalizes_VBZ this_DT idea_NN ._.
+In_IN the_DT algorithm_NN ,_, when_WRB we_PRP compute_VBP the_DT result_NN from_IN IP_NNP -LRB-_-LRB- Step_VBP #_# -RRB-_-RRB- ,_, we_PRP compute_VBP not_RB only_RB the_DT top-k_JJ result_NN A_NN ,_, but_CC also_RB the_DT correctness_NN indicator_NN function_NN C_NN defined_VBN as_IN follows_VBZ :_: Definition_NN #_# -LRB-_-LRB- Correctness_NN indicator_NN function_NN -RRB-_-RRB- Given_VBN a_DT query_NN q_NN ,_, the_DT p-index_NN IP_NNP returns_VBZ the_DT answer_NN A_NN together_RB with_IN a_DT correctness_NN indicator_NN function_NN C_NN ._.
+C_NN is_VBZ set_VBN to_TO #_# if_IN A_DT is_VBZ guaranteed_VBN to_TO be_VB identical_JJ -LRB-_-LRB- i_FW ._.
+e_LS ._.
+same_JJ results_NNS in_IN the_DT same_JJ order_NN -RRB-_-RRB- to_TO the_DT result_NN computed_VBN from_IN the_DT full_JJ index_NN IF_IN ._.
+If_IN it_PRP is_VBZ possible_JJ that_IN A_NN is_VBZ different_JJ ,_, C_NN is_VBZ set_VBN to_TO #_# ._.
+#_# Note_VB that_IN the_DT algorithm_NN returns_VBZ the_DT result_NN from_IN IP_NNP -LRB-_-LRB- Step_VBP #_# -RRB-_-RRB- only_RB when_WRB it_PRP is_VBZ identical_JJ to_TO the_DT result_NN from_IN IF_IN -LRB-_-LRB- condition_NN C_NN =_JJ #_# in_IN Step_NN #_# -RRB-_-RRB- ._.
+Otherwise_RB ,_, the_DT algorithm_NN recomputes_NNS and_CC returns_VBZ the_DT result_NN from_IN the_DT full_JJ index_NN IF_IN -LRB-_-LRB- Step_NN #_# -RRB-_-RRB- ._.
+Therefore_RB ,_, the_DT algorithm_NN is_VBZ guaranteed_VBN to_TO return_VB the_DT same_JJ result_NN as_IN the_DT full_JJ replication_NN of_IN IF_IN all_PDT the_DT time_NN ._.
+Now_RB ,_, the_DT real_JJ challenge_NN is_VBZ to_TO find_VB out_RP -LRB-_-LRB- #_# -RRB-_-RRB- how_WRB we_PRP can_MD compute_VB the_DT correctness_NN indicator_NN function_NN C_NN and_CC -LRB-_-LRB- #_# -RRB-_-RRB- how_WRB we_PRP should_MD prune_VB the_DT index_NN to_TO make_VB sure_JJ that_IN the_DT majority_NN of_IN queries_NNS are_VBP handled_VBN by_IN IP_NNP alone_RB ._.
+Question_NN #_# How_WRB can_MD we_PRP compute_VB the_DT correctness_NN indicator_NN function_NN C_NN ?_.
+A_DT straightforward_JJ way_NN to_TO calculate_VB C_NN is_VBZ to_TO compute_VB the_DT top-k_JJ answer_NN both_CC from_IN IP_NNP and_CC IF_IN and_CC compare_VB them_PRP ._.
+This_DT naive_JJ solution_NN ,_, however_RB ,_, incurs_VBZ a_DT cost_NN even_RB higher_JJR than_IN the_DT full_JJ replication_NN of_IN IF_IN because_IN the_DT answers_NNS are_VBP computed_VBN twice_RB :_: once_RB from_IN IP_NNP and_CC once_RB from_IN IF_IN ._.
+Is_VBZ there_EX any_DT way_NN to_TO compute_VB the_DT correctness_NN indicator_NN function_NN C_NN only_RB from_IN IP_NNP without_IN computing_VBG the_DT answer_NN from_IN IF_IN ?_.
+Question_NN #_# How_WRB should_MD we_PRP prune_VB IF_IN to_TO IP_NNP to_TO realize_VB the_DT maximum_NN cost_NN saving_NN ?_.
+The_DT effectiveness_NN of_IN Algorithm_NNP #_# ._.
+#_# critically_RB depends_VBZ on_IN how_WRB often_RB the_DT correctness_NN indicator_NN function_NN C_NN is_VBZ evaluated_VBN to_TO be_VB #_# ._.
+If_IN C_NN =_JJ #_# for_IN all_DT queries_NNS ,_, for_IN example_NN ,_, the_DT answers_NNS to_TO all_DT queries_NNS will_MD be_VB computed_VBN twice_RB ,_, once_RB from_IN IP_NNP -LRB-_-LRB- Step_VBP #_# -RRB-_-RRB- and_CC once_RB from_IN IF_IN -LRB-_-LRB- Step_NN #_# -RRB-_-RRB- ,_, so_IN the_DT performance_NN will_MD be_VB worse_JJR than_IN the_DT full_JJ replication_NN of_IN IF_IN ._.
+What_WP will_MD be_VB the_DT optimal_JJ way_NN to_TO prune_VB IF_IN to_TO IP_NNP ,_, such_JJ that_IN C_NN =_JJ #_# for_IN a_DT large_JJ fraction_NN of_IN queries_NNS ?_.
+In_IN the_DT next_JJ few_JJ sections_NNS ,_, we_PRP try_VBP to_TO address_VB these_DT questions_NNS ._.
+3_LS ._.
+OPTIMAL_JJ SIZE_NNS OF_IN THE_DT P-INDEX_NN Intuitively_RB ,_, there_EX exists_VBZ a_DT clear_JJ tradeoff_NN between_IN the_DT size_NN of_IN IP_NNP and_CC the_DT fraction_NN of_IN queries_NNS that_WDT IP_NNP can_MD handle_VB :_: When_WRB IP_NNP is_VBZ large_JJ and_CC has_VBZ more_JJR information_NN ,_, it_PRP will_MD be_VB able_JJ to_TO handle_VB more_JJR queries_NNS ,_, but_CC the_DT cost_NN for_IN maintaining_VBG and_CC looking_VBG up_RP IP_NNP will_MD be_VB higher_JJR ._.
+When_WRB IP_NNP is_VBZ small_JJ ,_, on_IN the_DT other_JJ hand_NN ,_, the_DT cost_NN for_IN IP_NNP will_MD be_VB smaller_JJR ,_, but_CC more_RBR queries_NNS will_MD be_VB forwarded_VBN to_TO IF_IN ,_, requiring_VBG us_PRP to_TO maintain_VB more_JJR copies_NNS of_IN IF_IN ._.
+Given_VBN this_DT tradeoff_NN ,_, how_WRB should_MD we_PRP determine_VB the_DT optimal_JJ size_NN of_IN IP_NNP in_IN order_NN to_TO maximize_VB the_DT cost_NN saving_NN ?_.
+To_TO find_VB the_DT answer_NN ,_, we_PRP start_VBP with_IN a_DT simple_JJ example_NN ._.
+Example_NN #_# Again_RB ,_, consider_VB a_DT scenario_NN similar_JJ to_TO Example_NNP #_# ,_, where_WRB the_DT query_NN load_NN is_VBZ ####_CD queries_NNS /_: sec_NN ,_, each_DT copy_NN of_IN an_DT index_NN can_MD handle_VB ####_CD queries_NNS /_: sec_NN ,_, and_CC the_DT full_JJ index_NN spans_VBZ across_IN #_# machines_NNS ._.
+But_CC now_RB ,_, suppose_VBP that_IN if_IN we_PRP prune_VBP IF_IN by_IN ##_CD %_NN to_TO IP_NNP #_# -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, the_DT size_NN of_IN IP_NNP #_# is_VBZ ##_CD %_NN of_IN IF_IN -RRB-_-RRB- ,_, IP_NNP #_# can_MD handle_VB ##_CD %_NN of_IN the_DT queries_NNS -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, C_NN =_JJ #_# for_IN ##_CD %_NN of_IN the_DT queries_NNS -RRB-_-RRB- ._.
+Also_RB suppose_VBP that_IN if_IN IF_IN is_VBZ pruned_VBN by_IN ##_CD %_NN to_TO IP_NNP #_# ,_, IP_NNP #_# can_MD handle_VB ##_CD %_NN of_IN the_DT queries_NNS ._.
+Which_WDT one_NN of_IN the_DT IP_NNP #_# ,_, IP_NNP #_# is_VBZ preferable_JJ for_IN the_DT 1st_JJ -_: tier_NN index_NN ?_.
+To_TO find_VB out_RP the_DT answer_NN ,_, we_PRP first_RB compute_VB the_DT number_NN of_IN machines_NNS needed_VBN when_WRB we_PRP use_VBP IP_NNP #_# for_IN the_DT 1st_JJ tier_NN ._.
+At_IN the_DT 1st_JJ tier_NN ,_, we_PRP need_VBP #_# copies_NNS of_IN IP_NNP #_# to_TO handle_VB the_DT query_NN load_NN of_IN ####_CD queries_NNS /_: sec_NN ._.
+Since_IN the_DT size_NN of_IN IP_NNP #_# is_VBZ ##_CD %_NN of_IN IF_IN -LRB-_-LRB- that_WDT requires_VBZ #_# machines_NNS -RRB-_-RRB- ,_, one_CD copy_NN of_IN IP_NNP #_# requires_VBZ one_CD machine_NN ._.
+Therefore_RB ,_, the_DT total_JJ number_NN of_IN machines_NNS required_VBN for_IN the_DT 1st_JJ tier_NN is_VBZ ##_NN =_JJ #_# -LRB-_-LRB- #_# copies_NNS of_IN IP_NNP #_# with_IN #_# machine_NN per_IN copy_NN -RRB-_-RRB- ._.
+Also_RB ,_, since_IN IP_NNP #_# can_MD handle_VB ##_CD %_NN of_IN the_DT queries_NNS ,_, the_DT 2nd_JJ tier_NN has_VBZ to_TO handle_VB ####_CD queries_NNS /_: sec_NN -LRB-_-LRB- ##_CD %_NN of_IN the_DT ####_CD queries_NNS /_: sec_NN -RRB-_-RRB- ,_, so_IN we_PRP need_VBP a_DT total_NN of_IN ##_NN =_JJ ##_CD machines_NNS for_IN the_DT 2nd_JJ tier_NN -LRB-_-LRB- #_# copies_NNS of_IN IF_IN with_IN #_# machines_NNS per_IN copy_NN -RRB-_-RRB- ._.
+Overall_RB ,_, when_WRB we_PRP use_VBP IP_NNP #_# for_IN the_DT 1st_JJ tier_NN ,_, we_PRP need_VBP #_# +_CC ##_NN =_JJ ##_CD machines_NNS to_TO handle_VB the_DT load_NN ._.
+We_PRP can_MD do_VB similar_JJ analysis_NN when_WRB we_PRP use_VBP IP_NNP #_# and_CC see_VB that_IN a_DT total_NN of_IN ##_CD machines_NNS are_VBP needed_VBN when_WRB IP_NNP #_# is_VBZ used_VBN ._.
+Given_VBN this_DT result_NN ,_, we_PRP can_MD conclude_VB that_IN using_VBG IP_NNP #_# is_VBZ preferable_JJ ._.
+#_# The_DT above_IN example_NN shows_VBZ that_IN the_DT cost_NN of_IN the_DT two-tier_JJ architecture_NN depends_VBZ on_IN two_CD important_JJ parameters_NNS :_: the_DT size_NN of_IN the_DT p-index_NN and_CC the_DT fraction_NN of_IN the_DT queries_NNS that_WDT can_MD be_VB handled_VBN by_IN the_DT 1st_JJ tier_NN index_NN alone_RB ._.
+We_PRP use_VBP s_NNS to_TO denote_VB the_DT size_NN of_IN the_DT p-index_NN relative_JJ to_TO IF_IN -LRB-_-LRB- i_LS ._.
+e_LS ._.
+,_, if_IN s_NNS =_JJ #_# ._.
+#_# ,_, for_IN example_NN ,_, the_DT p-index_NN is_VBZ ##_CD %_NN of_IN the_DT size_NN of_IN IF_IN -RRB-_-RRB- ._.
+We_PRP use_VBP f_FW -LRB-_-LRB- s_NNS -RRB-_-RRB- to_TO denote_VB the_DT fraction_NN of_IN the_DT queries_NNS that_IN a_DT p-index_NN of_IN size_NN s_NNS can_MD handle_VB -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, if_IN f_FW -LRB-_-LRB- s_NNS -RRB-_-RRB- =_JJ #_# ._.
+#_# ,_, ##_CD %_NN of_IN the_DT queries_NNS return_VBP the_DT value_NN C_NN =_JJ #_# from_IN IP_NNP -RRB-_-RRB- ._.
+In_IN general_JJ ,_, we_PRP can_MD expect_VB that_DT f_FW -LRB-_-LRB- s_NNS -RRB-_-RRB- will_MD increase_VB as_IN s_NNS gets_VBZ larger_JJR because_IN IP_NNP can_MD handle_VB more_JJR queries_NNS as_IN its_PRP$ size_NN grows_VBZ ._.
+In_IN Figure_NNP #_# ,_, we_PRP show_VBP an_DT example_NN graph_NN of_IN f_FW -LRB-_-LRB- s_NNS -RRB-_-RRB- over_IN s_NNS ._.
+Given_VBN the_DT notation_NN ,_, we_PRP can_MD state_VB the_DT problem_NN of_IN p-index-size_JJ optimization_NN as_IN follows_VBZ ._.
+In_IN formulating_VBG the_DT problem_NN ,_, we_PRP assume_VBP that_IN the_DT number_NN of_IN machines_NNS required_VBN to_TO operate_VB a_DT two-tier_JJ architecture_NN 0_CD 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 1_CD 0_CD #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# Fractionofqueriesguaranteed-f_NN -LRB-_-LRB- s_NNS -RRB-_-RRB- Fraction_NN of_IN index_NN -_: s_NNS Fraction_NN of_IN queries_NNS guaranteed_VBN per_IN fraction_NN of_IN index_NN Optimal_JJ size_NN s_NNS =_JJ #_# ._.
+##_NN Figure_NN #_# :_: Example_NN function_NN showing_VBG the_DT fraction_NN of_IN guaranteed_VBN queries_NNS f_LS -LRB-_-LRB- s_NNS -RRB-_-RRB- at_IN a_DT given_VBN size_NN s_NNS of_IN the_DT p-index_NN ._.
+is_VBZ roughly_RB proportional_JJ to_TO the_DT total_JJ size_NN of_IN the_DT indexes_NNS necessary_JJ to_TO handle_VB the_DT query_NN load_NN ._.
+Problem_NNP #_# -LRB-_-LRB- Optimal_JJ index_NN size_NN -RRB-_-RRB- Given_VBN a_DT query_NN load_NN Q_NNP and_CC the_DT function_NN f_FW -LRB-_-LRB- s_NNS -RRB-_-RRB- ,_, find_VB the_DT optimal_JJ p-index_NN size_NN s_VBZ that_IN minimizes_VBZ the_DT total_JJ size_NN of_IN the_DT indexes_NNS necessary_JJ to_TO handle_VB the_DT load_NN Q_NNP ._.
+#_# The_DT following_VBG theorem_NN shows_VBZ how_WRB we_PRP can_MD determine_VB the_DT optimal_JJ index_NN size_NN ._.
+Theorem_NNP #_# The_DT cost_NN for_IN handling_VBG the_DT query_NN load_NN Q_NNP is_VBZ minimal_JJ when_WRB the_DT size_NN of_IN the_DT p-index_NN ,_, s_NNS ,_, satisfies_VBZ d_NN f_FW -LRB-_-LRB- s_NNS -RRB-_-RRB- d_NN s_VBZ =_JJ #_# ._.
+#_# Proof_NNP The_DT proof_NN of_IN this_DT and_CC the_DT following_VBG theorems_NNS is_VBZ omitted_VBN due_JJ to_TO space_NN constraints_NNS ._.
+This_DT theorem_NN shows_VBZ that_IN the_DT optimal_JJ point_NN is_VBZ when_WRB the_DT slope_NN of_IN the_DT f_FW -LRB-_-LRB- s_NNS -RRB-_-RRB- curve_NN is_VBZ #_# ._.
+For_IN example_NN ,_, in_IN Figure_NNP #_# ,_, the_DT optimal_JJ size_NN is_VBZ when_WRB s_NNS =_JJ #_# ._.
+##_NN ._.
+Note_VB that_IN the_DT exact_JJ shape_NN of_IN the_DT f_FW -LRB-_-LRB- s_NNS -RRB-_-RRB- graph_NN may_MD vary_VB depending_VBG on_IN the_DT query_NN load_NN and_CC the_DT pruning_NN policy_NN ._.
+For_IN example_NN ,_, even_RB for_IN the_DT same_JJ p-index_NN ,_, if_IN the_DT query_NN load_NN changes_NNS significantly_RB ,_, fewer_JJR -LRB-_-LRB- or_CC more_JJR -RRB-_-RRB- queries_NNS may_MD be_VB handled_VBN by_IN the_DT p-index_NN ,_, decreasing_VBG -LRB-_-LRB- or_CC increasing_VBG -RRB-_-RRB- f_FW -LRB-_-LRB- s_NNS -RRB-_-RRB- ._.
+Similarly_RB ,_, if_IN we_PRP use_VBP an_DT effective_JJ pruning_NN policy_NN ,_, more_JJR queries_NNS will_MD be_VB handled_VBN by_IN IP_NNP than_IN when_WRB we_PRP use_VBP an_DT ineffective_JJ pruning_NN policy_NN ,_, increasing_VBG f_FW -LRB-_-LRB- s_NNS -RRB-_-RRB- ._.
+Therefore_RB ,_, the_DT function_NN f_FW -LRB-_-LRB- s_NNS -RRB-_-RRB- and_CC the_DT optimal-index_JJ size_NN may_MD change_VB significantly_RB depending_VBG on_IN the_DT query_NN load_NN and_CC the_DT pruning_NN policy_NN ._.
+In_IN our_PRP$ later_JJ experiments_NNS ,_, however_RB ,_, we_PRP find_VBP that_IN even_RB though_IN the_DT shape_NN of_IN the_DT f_FW -LRB-_-LRB- s_NNS -RRB-_-RRB- graph_NN changes_NNS noticeably_RB between_IN experiments_NNS ,_, the_DT optimal_JJ index_NN size_NN consistently_RB lies_VBZ between_IN ##_CD %_NN -_: ##_CD %_NN in_IN most_JJS experiments_NNS ._.
+4_LS ._.
+PRUNING_NN POLICIES_NNS In_IN this_DT section_NN ,_, we_PRP show_VBP how_WRB we_PRP should_MD prune_VB the_DT full_JJ index_NN IF_IN to_TO IP_NNP ,_, so_RB that_IN -LRB-_-LRB- #_# -RRB-_-RRB- we_PRP can_MD compute_VB the_DT correctness_NN indicator_NN function_NN C_NN from_IN IP_NNP itself_PRP and_CC -LRB-_-LRB- #_# -RRB-_-RRB- we_PRP can_MD handle_VB a_DT large_JJ fraction_NN of_IN queries_NNS by_IN IP_NNP ._.
+In_IN designing_VBG the_DT pruning_NN policies_NNS ,_, we_PRP note_VBP the_DT following_VBG two_CD localities_NNS in_IN the_DT users_NNS ''_'' search_NN behavior_NN :_: 1_CD ._.
+Keyword_NNP locality_NN :_: Although_IN there_EX are_VBP many_JJ different_JJ words_NNS in_IN the_DT document_NN collection_NN that_IN the_DT search_NN engine_NN indexes_NNS ,_, a_DT few_JJ popular_JJ keywords_NNS constitute_VBP the_DT majority_NN of_IN the_DT query_NN loads_NNS ._.
+This_DT keyword_JJ locality_NN implies_VBZ that_IN the_DT search_NN engine_NN will_MD be_VB able_JJ to_TO answer_VB a_DT significant_JJ fraction_NN of_IN user_NN queries_NNS even_RB if_IN it_PRP can_MD handle_VB only_RB these_DT few_JJ popular_JJ keywords_NNS ._.
+2_LS ._.
+Document_NNP locality_NN :_: Even_RB if_IN a_DT query_NN has_VBZ millions_NNS of_IN matching_VBG documents_NNS ,_, users_NNS typically_RB look_VBP at_IN only_RB the_DT first_JJ few_JJ results_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Thus_RB ,_, as_RB long_RB as_IN search_NN engines_NNS can_MD compute_VB the_DT first_JJ few_JJ top-k_JJ answers_NNS correctly_RB ,_, users_NNS often_RB will_MD not_RB notice_VB that_IN the_DT search_NN engine_NN actually_RB has_VBZ not_RB computed_VBN the_DT correct_JJ answer_NN for_IN the_DT remaining_VBG results_NNS -LRB-_-LRB- unless_IN the_DT users_NNS explicitly_RB request_VBP them_PRP -RRB-_-RRB- ._.
+Based_VBN on_IN the_DT above_JJ two_CD localities_NNS ,_, we_PRP now_RB investigate_VBP two_CD different_JJ types_NNS of_IN pruning_NN policies_NNS :_: -LRB-_-LRB- #_# -RRB-_-RRB- a_DT keyword_JJ pruning_NN policy_NN ,_, which_WDT takes_VBZ advantage_NN of_IN the_DT keyword_JJ locality_NN by_IN pruning_NN the_DT whole_JJ inverted_JJ list_NN I_NN -LRB-_-LRB- ti_NN -RRB-_-RRB- for_IN unpopular_JJ keywords_NNS ti_NN ''_'' s_NNS and_CC -LRB-_-LRB- #_# -RRB-_-RRB- a_DT document_NN pruning_NN policy_NN ,_, which_WDT takes_VBZ advantage_NN of_IN the_DT document_NN locality_NN by_IN keeping_VBG only_RB a_DT few_JJ postings_NNS in_IN each_DT list_NN I_NN -LRB-_-LRB- ti_NN -RRB-_-RRB- ,_, which_WDT are_VBP likely_JJ to_TO be_VB included_VBN in_IN the_DT top-k_JJ results_NNS ._.
+As_IN we_PRP discussed_VBD before_RB ,_, we_PRP need_VBP to_TO be_VB able_JJ to_TO compute_VB the_DT correctness_NN indicator_NN function_NN from_IN the_DT pruned_VBN index_NN alone_RB in_IN order_NN to_TO provide_VB the_DT correctness_NN guarantee_NN ._.
+Since_IN the_DT computation_NN of_IN correctness_NN indicator_NN function_NN may_MD critically_RB depend_VB on_IN the_DT particular_JJ ranking_JJ function_NN used_VBN by_IN a_DT search_NN engine_NN ,_, we_PRP first_RB clarify_VB our_PRP$ assumptions_NNS on_IN the_DT ranking_JJ function_NN ._.
+4_LS ._.
+#_# Assumptions_NNPS on_IN ranking_JJ function_NN Consider_VB a_DT query_NN q_NN =_JJ -LCB-_-LRB- t1_NN ,_, t2_NN ,_, ..._: ,_, tw_NN -RCB-_-RRB- that_WDT contains_VBZ a_DT subset_NN of_IN the_DT index_NN terms_NNS ._.
+The_DT goal_NN of_IN the_DT search_NN engine_NN is_VBZ to_TO return_VB the_DT documents_NNS that_WDT are_VBP most_RBS relevant_JJ to_TO query_VB q_NN ._.
+This_DT is_VBZ done_VBN in_IN two_CD steps_NNS :_: first_RB we_PRP use_VBP the_DT inverted_JJ index_NN to_TO find_VB all_PDT the_DT documents_NNS that_IN contain_VBP the_DT terms_NNS in_IN the_DT query_NN ._.
+Second_RB ,_, once_IN we_PRP have_VBP the_DT relevant_JJ documents_NNS ,_, we_PRP calculate_VBP the_DT rank_NN -LRB-_-LRB- or_CC score_NN -RRB-_-RRB- of_IN each_DT one_CD of_IN the_DT documents_NNS with_IN respect_NN to_TO the_DT query_NN and_CC we_PRP return_VBP to_TO the_DT user_NN the_DT documents_NNS that_IN rank_VBP the_DT highest_JJS ._.
+Most_JJS of_IN the_DT major_JJ search_NN engines_NNS today_NN return_NN documents_NNS containing_VBG all_DT query_NN terms_NNS -LRB-_-LRB- i_FW ._.
+e_LS ._.
+they_PRP use_VBP AND-semantics_NNS -RRB-_-RRB- ._.
+In_IN order_NN to_TO make_VB our_PRP$ discussions_NNS more_RBR concise_JJ ,_, we_PRP will_MD also_RB assume_VB the_DT popular_JJ AND-semantics_NNS while_IN answering_VBG a_DT query_NN ._.
+It_PRP is_VBZ straightforward_JJ to_TO extend_VB our_PRP$ results_NNS to_TO OR-semantics_NNS as_RB well_RB ._.
+The_DT exact_JJ ranking_JJ function_NN that_IN search_NN engines_NNS employ_VBP is_VBZ a_DT closely_RB guarded_VBN secret_NN ._.
+What_WP is_VBZ known_VBN ,_, however_RB ,_, is_VBZ that_IN the_DT factors_NNS in_IN determining_VBG the_DT document_NN ranking_NN can_MD be_VB roughly_RB categorized_VBN into_IN two_CD classes_NNS :_: Query-dependent_JJ relevance_NN ._.
+This_DT particular_JJ factor_NN of_IN relevance_NN captures_VBZ how_WRB relevant_JJ the_DT query_NN is_VBZ to_TO every_DT document_NN ._.
+At_IN a_DT high_JJ level_NN ,_, given_VBN a_DT document_NN D_NN ,_, for_IN every_DT term_NN ti_NN a_DT search_NN engine_NN assigns_VBZ a_DT term_NN relevance_NN score_NN tr_NN -LRB-_-LRB- D_NN ,_, ti_NN -RRB-_-RRB- to_TO D_NN ._.
+Given_VBN the_DT tr_NN -LRB-_-LRB- D_NN ,_, ti_NN -RRB-_-RRB- scores_NNS for_IN every_DT ti_NN ,_, then_RB the_DT query-dependent_JJ relevance_NN of_IN D_NN to_TO the_DT query_NN ,_, noted_VBD as_IN tr_NN -LRB-_-LRB- D_NN ,_, q_NN -RRB-_-RRB- ,_, can_MD be_VB computed_VBN by_IN combining_VBG the_DT individual_JJ term_NN relevance_NN values_NNS ._.
+One_CD popular_JJ way_NN for_IN calculating_VBG the_DT querydependent_JJ relevance_NN is_VBZ to_TO represent_VB both_CC the_DT document_NN D_NN and_CC the_DT query_NN q_NN using_VBG the_DT TF_NN ._.
+IDF_NN vector_NN space_NN model_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- and_CC employ_VB a_DT cosine_NN distance_NN metric_JJ ._.
+Since_IN the_DT exact_JJ form_NN of_IN tr_NN -LRB-_-LRB- D_NN ,_, ti_NN -RRB-_-RRB- and_CC tr_NN -LRB-_-LRB- D_NN ,_, q_NN -RRB-_-RRB- differs_VBZ depending_VBG on_IN the_DT search_NN engine_NN ,_, we_PRP will_MD not_RB restrict_VB to_TO any_DT particular_JJ form_NN ;_: instead_RB ,_, in_IN order_NN to_TO make_VB our_PRP$ work_NN applicable_JJ in_IN the_DT general_JJ case_NN ,_, we_PRP will_MD make_VB the_DT generic_JJ assumption_NN that_IN the_DT query-dependent_JJ relevance_NN is_VBZ computed_VBN as_IN a_DT function_NN of_IN the_DT individual_JJ term_NN relevance_NN values_NNS in_IN the_DT query_NN :_: tr_NN -LRB-_-LRB- D_NN ,_, q_NN -RRB-_-RRB- =_JJ ftr_NN -LRB-_-LRB- tr_NN -LRB-_-LRB- D_NN ,_, t1_NN -RRB-_-RRB- ,_, ..._: ,_, tr_NN -LRB-_-LRB- D_NN ,_, tw_NN -RRB-_-RRB- -RRB-_-RRB- -LRB-_-LRB- #_# -RRB-_-RRB- Query-independent_JJ document_NN quality_NN ._.
+This_DT is_VBZ a_DT factor_NN that_WDT measures_VBZ the_DT overall_JJ quality_NN of_IN a_DT document_NN D_NN independent_JJ of_IN the_DT particular_JJ query_NN issued_VBN by_IN the_DT user_NN ._.
+Popular_NNP techniques_NNS that_WDT compute_VBP the_DT general_JJ quality_NN of_IN a_DT page_NN include_VBP PageRank_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, HITS_VBZ -LSB-_-LRB- ##_CD -RSB-_-RRB- and_CC the_DT likelihood_NN that_IN the_DT page_NN is_VBZ a_DT spam_NN page_NN -LSB-_-LRB- ##_CD ,_, ##_CD -RSB-_-RRB- ._.
+Here_RB ,_, we_PRP will_MD use_VB pr_NN -LRB-_-LRB- D_NN -RRB-_-RRB- to_TO denote_VB this_DT query-independent_JJ part_NN of_IN the_DT final_JJ ranking_JJ function_NN for_IN document_NN D_NN ._.
+The_DT final_JJ ranking_JJ score_NN r_NN -LRB-_-LRB- D_NN ,_, q_NN -RRB-_-RRB- of_IN a_DT document_NN will_MD depend_VB on_IN both_CC the_DT query-dependent_JJ and_CC query-independent_JJ parts_NNS of_IN the_DT ranking_JJ function_NN ._.
+The_DT exact_JJ combination_NN of_IN these_DT parts_NNS may_MD be_VB done_VBN in_IN a_DT variety_NN of_IN ways_NNS ._.
+In_IN general_JJ ,_, we_PRP can_MD assume_VB that_IN the_DT final_JJ ranking_JJ score_NN of_IN a_DT document_NN is_VBZ a_DT function_NN of_IN its_PRP$ query-dependent_JJ and_CC query-independent_JJ relevance_NN scores_NNS ._.
+More_RBR formally_RB :_: r_NN -LRB-_-LRB- D_NN ,_, q_NN -RRB-_-RRB- =_JJ fr_NN -LRB-_-LRB- tr_NN -LRB-_-LRB- D_NN ,_, q_NN -RRB-_-RRB- ,_, pr_NN -LRB-_-LRB- D_NN -RRB-_-RRB- -RRB-_-RRB- -LRB-_-LRB- #_# -RRB-_-RRB- For_IN example_NN ,_, fr_NN -LRB-_-LRB- tr_NN -LRB-_-LRB- D_NN ,_, q_NN -RRB-_-RRB- ,_, pr_NN -LRB-_-LRB- D_NN -RRB-_-RRB- -RRB-_-RRB- may_MD take_VB the_DT form_NN fr_NN -LRB-_-LRB- tr_NN -LRB-_-LRB- D_NN ,_, q_NN -RRB-_-RRB- ,_, pr_NN -LRB-_-LRB- D_NN -RRB-_-RRB- -RRB-_-RRB- =_JJ tr_NN -LRB-_-LRB- D_NN ,_, q_NN -RRB-_-RRB- +_CC -LRB-_-LRB- #_# -RRB-_-RRB- pr_NN -LRB-_-LRB- D_NN -RRB-_-RRB- ,_, thus_RB giving_VBG weight_NN to_TO the_DT query-dependent_JJ part_NN and_CC the_DT weight_NN 1_CD to_TO the_DT query-independent_JJ part_NN ._.
+In_IN Equations_NNS #_# and_CC #_# the_DT exact_JJ form_NN of_IN fr_NN and_CC ftr_NN can_MD vary_VB depending_VBG on_IN the_DT search_NN engine_NN ._.
+Therefore_RB ,_, to_TO make_VB our_PRP$ discussion_NN applicable_JJ independent_JJ of_IN the_DT particular_JJ ranking_JJ function_NN used_VBN by_IN search_NN engines_NNS ,_, in_IN this_DT paper_NN ,_, we_PRP will_MD make_VB only_RB the_DT generic_JJ assumption_NN that_IN the_DT ranking_JJ function_NN r_NN -LRB-_-LRB- D_NN ,_, q_NN -RRB-_-RRB- is_VBZ monotonic_JJ on_IN its_PRP$ parameters_NNS tr_NN -LRB-_-LRB- D_NN ,_, t1_NN -RRB-_-RRB- ,_, ..._: ,_, tr_NN -LRB-_-LRB- D_NN ,_, tw_NN -RRB-_-RRB- and_CC pr_NN -LRB-_-LRB- D_NN -RRB-_-RRB- ._.
+t1_NN D1_NN D2_NN D3_NN D4_NN D5_NN D6_NN t2_NN D1_NN D2_NN D3_NN t3_NN D3_NN D5_NN D7_NN D8_NN t4_NN D4_NN D10_NN t5_NN D6_NN D8_NN D9_NN Figure_NN #_# :_: Keyword_NNP and_CC document_NN pruning_NN ._.
+Algorithm_NN #_# ._.
+#_# Computation_NN of_IN C_NN for_IN keyword_JJ pruning_NN Procedure_NN -LRB-_-LRB- #_# -RRB-_-RRB- C_NN =_JJ #_# -LRB-_-LRB- #_# -RRB-_-RRB- Foreach_NNP ti_NNS q_VBP -LRB-_-LRB- #_# -RRB-_-RRB- If_IN -LRB-_-LRB- I_NN -LRB-_-LRB- ti_NN -RRB-_-RRB- /_: IP_NNP -RRB-_-RRB- Then_RB C_NN =_JJ #_# -LRB-_-LRB- #_# -RRB-_-RRB- Return_NN C_NN Figure_NN #_# :_: Result_NN guarantee_NN in_IN keyword_JJ pruning_NN ._.
+Definition_NN #_# A_DT function_NN f_FW -LRB-_-LRB- ,_, ,_, ..._: ,_, -RRB-_-RRB- is_VBZ monotonic_JJ if_IN #_# 2_CD ,_, #_# #_# ,_, ..._: #_# #_# it_PRP holds_VBZ that_IN :_: f_LS -LRB-_-LRB- #_# ,_, #_# ,_, ..._: ,_, #_# -RRB-_-RRB- f_FW -LRB-_-LRB- #_# ,_, #_# ,_, ..._: ,_, #_# -RRB-_-RRB- ._.
+Roughly_RB ,_, the_DT monotonicity_NN of_IN the_DT ranking_JJ function_NN implies_VBZ that_IN ,_, between_IN two_CD documents_NNS D1_NN and_CC D2_NN ,_, if_IN D1_NN has_VBZ higher_JJR querydependent_JJ relevance_NN than_IN D2_NN and_CC also_RB a_DT higher_JJR query-independent_JJ score_NN than_IN D2_NN ,_, then_RB D1_NN should_MD be_VB ranked_VBN higher_JJR than_IN D2_NN ,_, which_WDT we_PRP believe_VBP is_VBZ a_DT reasonable_JJ assumption_NN in_IN most_JJS practical_JJ settings_NNS ._.
+4_LS ._.
+#_# Keyword_NNP pruning_NN Given_VBN our_PRP$ assumptions_NNS on_IN the_DT ranking_JJ function_NN ,_, we_PRP now_RB investigate_VBP the_DT keyword_JJ pruning_NN policy_NN ,_, which_WDT prunes_VBZ the_DT inverted_JJ index_NN IF_IN horizontally_RB by_IN removing_VBG the_DT whole_JJ I_NN -LRB-_-LRB- ti_NN -RRB-_-RRB- ''_'' s_VBZ corresponding_VBG to_TO the_DT least_JJS frequent_JJ terms_NNS ._.
+In_IN Figure_NNP #_# we_PRP show_VBP a_DT graphical_JJ representation_NN of_IN keyword_JJ pruning_NN ,_, where_WRB we_PRP remove_VBP the_DT inverted_JJ lists_NNS for_IN t3_NN and_CC t5_NN ,_, assuming_VBG that_IN they_PRP do_VBP not_RB appear_VB often_RB in_IN the_DT query_NN load_NN ._.
+Note_VB that_IN after_IN keyword_JJ pruning_NN ,_, if_IN all_DT keywords_NNS -LCB-_-LRB- t1_NN ,_, ..._: ,_, tn_NN -RCB-_-RRB- in_IN the_DT query_NN q_NN appear_VBP in_IN IP_NNP ,_, the_DT p-index_NN has_VBZ the_DT same_JJ information_NN as_IN IF_IN as_RB long_JJ as_IN q_NN is_VBZ concerned_VBN ._.
+In_IN other_JJ words_NNS ,_, if_IN all_DT keywords_NNS in_IN q_NN appear_VBP in_IN IP_NNP ,_, the_DT answer_NN computed_VBN from_IN IP_NNP is_VBZ guaranteed_VBN to_TO be_VB the_DT same_JJ as_IN the_DT answer_NN computed_VBN from_IN IF_IN ._.
+Figure_NNP #_# formalizes_VBZ this_DT observation_NN and_CC computes_VBZ the_DT correctness_NN indicator_NN function_NN C_NN for_IN a_DT keyword-pruned_JJ index_NN IP_NNP ._.
+It_PRP is_VBZ straightforward_JJ to_TO prove_VB that_IN the_DT answer_NN from_IN IP_NNP is_VBZ identical_JJ to_TO that_DT from_IN IF_IN if_IN C_NN =_JJ #_# in_IN the_DT above_JJ algorithm_NN ._.
+We_PRP now_RB consider_VBP the_DT issue_NN of_IN optimizing_VBG the_DT IP_NNP such_JJ that_IN it_PRP can_MD handle_VB the_DT largest_JJS fraction_NN of_IN queries_NNS ._.
+This_DT problem_NN can_MD be_VB formally_RB stated_VBN as_IN follows_VBZ :_: Problem_NNP #_# -LRB-_-LRB- Optimal_JJ keyword_NN pruning_NN -RRB-_-RRB- Given_VBN the_DT query_NN load_NN Q_NNP and_CC a_DT goal_NN index_NN size_NN s_NNS |_VBP IF_IN |_NN for_IN the_DT pruned_VBN index_NN ,_, select_VBP the_DT inverted_JJ lists_NNS IP_NNP =_JJ -LCB-_-LRB- I_PRP -LRB-_-LRB- t1_NN -RRB-_-RRB- ,_, ..._: ,_, I_PRP -LRB-_-LRB- th_DT -RRB-_-RRB- -RCB-_-RRB- such_JJ that_IN |_CD IP_NNP |_CD s_NNS |_VBP IF_IN |_NN and_CC the_DT fraction_NN of_IN queries_NNS that_WDT IP_NNP can_MD answer_VB -LRB-_-LRB- expressed_VBN by_IN f_FW -LRB-_-LRB- s_NNS -RRB-_-RRB- -RRB-_-RRB- is_VBZ maximized_VBN ._.
+#_# Unfortunately_RB ,_, the_DT optimal_JJ solution_NN to_TO the_DT above_JJ problem_NN is_VBZ intractable_JJ as_IN we_PRP can_MD show_VB by_IN reducing_VBG from_IN knapsack_NN -LRB-_-LRB- we_PRP omit_VBP the_DT complete_JJ proof_NN -RRB-_-RRB- ._.
+Theorem_NNP #_# The_DT problem_NN of_IN calculating_VBG the_DT optimal_JJ keyword_NN pruning_NN is_VBZ NP-hard_NN ._.
+#_# Given_VBN the_DT intractability_NN of_IN the_DT optimal_JJ solution_NN ,_, we_PRP need_VBP to_TO resort_VB to_TO an_DT approximate_JJ solution_NN ._.
+A_DT common_JJ approach_NN for_IN similar_JJ knapsack_NN problems_NNS is_VBZ to_TO adopt_VB a_DT greedy_JJ policy_NN by_IN keeping_VBG the_DT items_NNS with_IN the_DT maximum_NN benefit_NN per_IN unit_NN cost_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+In_IN our_PRP$ context_NN ,_, the_DT potential_JJ benefit_NN of_IN an_DT inverted_JJ list_NN I_NN -LRB-_-LRB- ti_NN -RRB-_-RRB- is_VBZ the_DT number_NN of_IN queries_NNS that_WDT can_MD be_VB answered_VBN by_IN IP_NNP when_WRB I_NN -LRB-_-LRB- ti_NN -RRB-_-RRB- is_VBZ included_VBN in_IN IP_NNP ._.
+We_PRP approximate_JJ this_DT number_NN by_IN the_DT fraction_NN of_IN queries_NNS in_IN the_DT query_NN load_NN Q_NNP that_WDT include_VBP the_DT term_NN ti_NN and_CC represent_VBP it_PRP as_IN P_NN -LRB-_-LRB- ti_NN -RRB-_-RRB- ._.
+For_IN example_NN ,_, if_IN ###_CD out_IN of_IN ####_CD queries_NNS contain_VBP the_DT term_NN computer_NN ,_, Algorithm_NNP #_# ._.
+#_# Greedy_NNP keyword_VBD pruning_NN HS_NN Procedure_NN -LRB-_-LRB- #_# -RRB-_-RRB- ti_NN ,_, calculate_VBP HS_NN -LRB-_-LRB- ti_NN -RRB-_-RRB- =_JJ P_NN -LRB-_-LRB- ti_NN -RRB-_-RRB- |_CD I_NN -LRB-_-LRB- ti_NN -RRB-_-RRB- |_NN ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- Include_VB the_DT inverted_JJ lists_NNS with_IN the_DT highest_JJS HS_NN -LRB-_-LRB- ti_NN -RRB-_-RRB- values_NNS such_JJ that_IN |_CD IP_NNP |_CD s_NNS |_VBP IF_IN |_CD ._.
+Figure_NNP #_# :_: Approximation_NN algorithm_NN for_IN the_DT optimal_JJ keyword_NN pruning_NN ._.
+Algorithm_NN #_# ._.
+#_# Global_JJ document_NN pruning_NN V_NN SG_NN Procedure_NN -LRB-_-LRB- #_# -RRB-_-RRB- Sort_NN all_DT documents_NNS Di_NNP based_VBN on_IN pr_NN -LRB-_-LRB- Di_NNP -RRB-_-RRB- -LRB-_-LRB- #_# -RRB-_-RRB- Find_VB the_DT threshold_NN value_NN p_NN ,_, such_JJ that_IN only_RB s_VBZ fraction_NN of_IN the_DT documents_NNS have_VBP pr_NN -LRB-_-LRB- Di_NNP -RRB-_-RRB- >_JJR p_NN -LRB-_-LRB- #_# -RRB-_-RRB- Keep_VBP Di_NNP in_IN the_DT inverted_JJ lists_NNS if_IN pr_NN -LRB-_-LRB- Di_NNP -RRB-_-RRB- >_JJR p_NN Figure_NN #_# :_: Global_JJ document_NN pruning_NN based_VBN on_IN pr_NN ._.
+then_RB P_NN -LRB-_-LRB- computer_NN -RRB-_-RRB- =_JJ #_# ._.
+#_# ._.
+The_DT cost_NN of_IN including_VBG I_NN -LRB-_-LRB- ti_NN -RRB-_-RRB- in_IN the_DT pindex_NN is_VBZ its_PRP$ size_NN |_CD I_NN -LRB-_-LRB- ti_NN -RRB-_-RRB- |_NN ._.
+Thus_RB ,_, in_IN our_PRP$ greedy_JJ approach_NN in_IN Figure_NNP #_# ,_, we_PRP include_VBP I_PRP -LRB-_-LRB- ti_NN -RRB-_-RRB- ''_'' s_NNS in_IN the_DT decreasing_VBG order_NN of_IN P_NN -LRB-_-LRB- ti_NN -RRB-_-RRB- /_: |_CD I_NN -LRB-_-LRB- ti_NN -RRB-_-RRB- |_RB as_RB long_JJ as_IN |_CD IP_NNP |_CD s_NNS |_VBP IF_IN |_CD ._.
+Later_RB in_IN our_PRP$ experiment_NN section_NN ,_, we_PRP evaluate_VBP what_WP fraction_NN of_IN queries_NNS can_MD be_VB handled_VBN by_IN IP_NNP when_WRB we_PRP employ_VBP this_DT greedy_JJ keyword-pruning_JJ policy_NN ._.
+4_LS ._.
+#_# Document_NNP pruning_NN At_IN a_DT high_JJ level_NN ,_, document_NN pruning_NN tries_VBZ to_TO take_VB advantage_NN of_IN the_DT observation_NN that_IN most_JJS users_NNS are_VBP mainly_RB interested_JJ in_IN viewing_VBG the_DT top_JJ few_JJ answers_NNS to_TO a_DT query_NN ._.
+Given_VBN this_DT ,_, it_PRP is_VBZ unnecessary_JJ to_TO keep_VB all_DT postings_NNS in_IN an_DT inverted_JJ list_NN I_NN -LRB-_-LRB- ti_NN -RRB-_-RRB- ,_, because_IN users_NNS will_MD not_RB look_VB at_IN most_JJS of_IN the_DT documents_NNS in_IN the_DT list_NN anyway_RB ._.
+We_PRP depict_VBP the_DT conceptual_JJ diagram_NN of_IN the_DT document_NN pruning_NN policy_NN in_IN Figure_NNP #_# ._.
+In_IN the_DT figure_NN ,_, we_PRP vertically_RB prune_VBP postings_NNS corresponding_VBG to_TO D4_NN ,_, D5_NN and_CC D6_NN of_IN t1_NN and_CC D8_NN of_IN t3_NN ,_, assuming_VBG that_IN these_DT documents_NNS are_VBP unlikely_JJ to_TO be_VB part_NN of_IN top-k_JJ answers_NNS to_TO user_NN queries_NNS ._.
+Again_RB ,_, our_PRP$ goal_NN is_VBZ to_TO develop_VB a_DT pruning_NN policy_NN such_JJ that_IN -LRB-_-LRB- #_# -RRB-_-RRB- we_PRP can_MD compute_VB the_DT correctness_NN indicator_NN function_NN C_NN from_IN IP_NNP alone_RB and_CC -LRB-_-LRB- #_# -RRB-_-RRB- we_PRP can_MD handle_VB the_DT largest_JJS fraction_NN of_IN queries_NNS with_IN IP_NNP ._.
+In_IN the_DT next_JJ few_JJ sections_NNS ,_, we_PRP discuss_VBP a_DT few_JJ alternative_JJ approaches_NNS for_IN document_NN pruning_NN ._.
+4_LS ._.
+#_# ._.
+#_# Global_JJ PR-based_JJ pruning_NN We_PRP first_RB investigate_VBP the_DT pruning_NN policy_NN that_WDT is_VBZ commonly_RB used_VBN by_IN existing_VBG search_NN engines_NNS ._.
+The_DT basic_JJ idea_NN for_IN this_DT pruning_NN policy_NN is_VBZ that_IN the_DT query-independent_JJ quality_NN score_NN pr_NN -LRB-_-LRB- D_NN -RRB-_-RRB- is_VBZ a_DT very_RB important_JJ factor_NN in_IN computing_VBG the_DT final_JJ ranking_NN of_IN the_DT document_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+PageRank_NN is_VBZ known_VBN to_TO be_VB one_CD of_IN the_DT most_RBS important_JJ factors_NNS determining_VBG the_DT overall_JJ ranking_NN in_IN the_DT search_NN results_VBZ -RRB-_-RRB- ,_, so_IN we_PRP build_VBP the_DT p-index_NN by_IN keeping_VBG only_RB those_DT documents_NNS whose_WP$ pr_NN values_NNS are_VBP high_JJ -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, pr_NN -LRB-_-LRB- D_NN -RRB-_-RRB- >_JJR p_NN for_IN a_DT threshold_NN value_NN p_NN -RRB-_-RRB- ._.
+The_DT hope_NN is_VBZ that_IN most_JJS of_IN the_DT top-ranked_JJ results_NNS are_VBP likely_JJ to_TO have_VB high_JJ pr_NN -LRB-_-LRB- D_NN -RRB-_-RRB- values_NNS ,_, so_IN the_DT answer_NN computed_VBN from_IN this_DT p-index_NN is_VBZ likely_JJ to_TO be_VB similar_JJ to_TO the_DT answer_NN computed_VBN from_IN the_DT full_JJ index_NN ._.
+Figure_NNP #_# describes_VBZ this_DT pruning_NN policy_NN more_RBR formally_RB ,_, where_WRB we_PRP sort_VBP all_DT documents_NNS Di_NNP ''_'' s_NNS by_IN their_PRP$ respective_JJ pr_NN -LRB-_-LRB- Di_NNP -RRB-_-RRB- values_NNS and_CC keep_VB a_DT Di_NNP in_IN the_DT p-index_NN when_WRB its_PRP$ Algorithm_NNP #_# ._.
+#_# Local_JJ document_NN pruning_NN V_NN SL_NN N_NN :_: maximum_NN size_NN of_IN a_DT single_JJ posting_VBG list_NN Procedure_NN -LRB-_-LRB- #_# -RRB-_-RRB- Foreach_NN I_NN -LRB-_-LRB- ti_NN -RRB-_-RRB- IF_IN -LRB-_-LRB- #_# -RRB-_-RRB- Sort_NNP Di_NNP ''_'' s_NNS in_IN I_NN -LRB-_-LRB- ti_NN -RRB-_-RRB- based_VBN on_IN pr_NN -LRB-_-LRB- Di_NNP -RRB-_-RRB- -LRB-_-LRB- #_# -RRB-_-RRB- If_IN |_CD I_NN -LRB-_-LRB- ti_NN -RRB-_-RRB- |_CD N_NN Then_RB keep_VB all_DT Di_NNP ''_'' s_NNS -LRB-_-LRB- #_# -RRB-_-RRB- Else_RB keep_VB the_DT top-N_JJ Di_NNP ''_'' s_VBZ with_IN the_DT highest_JJS pr_NN -LRB-_-LRB- Di_NNP -RRB-_-RRB- Figure_NNP #_# :_: Local_JJ document_NN pruning_NN based_VBN on_IN pr_NN ._.
+Algorithm_NN #_# ._.
+#_# Extended_VBN keyword-specific_JJ document_NN pruning_NN Procedure_NN -LRB-_-LRB- #_# -RRB-_-RRB- For_IN each_DT I_NN -LRB-_-LRB- ti_NN -RRB-_-RRB- -LRB-_-LRB- #_# -RRB-_-RRB- Keep_VBP D_NN I_NN -LRB-_-LRB- ti_NN -RRB-_-RRB- if_IN pr_NN -LRB-_-LRB- D_NN -RRB-_-RRB- >_JJR pi_NN or_CC tr_NN -LRB-_-LRB- D_NN ,_, ti_NN -RRB-_-RRB- >_JJR ti_NN Figure_NN #_# :_: Extended_VBN keyword-specific_JJ document_NN pruning_NN based_VBN on_IN pr_NN and_CC tr_NN ._.
+pr_NN -LRB-_-LRB- Di_NNP -RRB-_-RRB- value_NN is_VBZ higher_JJR than_IN the_DT global_JJ threshold_NN value_NN p_NN ._.
+We_PRP refer_VBP to_TO this_DT pruning_NN policy_NN as_IN global_JJ PR-based_JJ pruning_NN -LRB-_-LRB- GPR_NN -RRB-_-RRB- ._.
+Variations_NNS of_IN this_DT pruning_NN policy_NN are_VBP possible_JJ ._.
+For_IN example_NN ,_, we_PRP may_MD adjust_VB the_DT threshold_NN value_NN p_NN locally_RB for_IN each_DT inverted_JJ list_NN I_NN -LRB-_-LRB- ti_NN -RRB-_-RRB- ,_, so_RB that_IN we_PRP maintain_VBP at_IN least_JJS a_DT certain_JJ number_NN of_IN postings_NNS for_IN each_DT inverted_JJ list_NN I_NN -LRB-_-LRB- ti_NN -RRB-_-RRB- ._.
+This_DT policy_NN is_VBZ shown_VBN in_IN Figure_NNP #_# ._.
+We_PRP refer_VBP to_TO this_DT pruning_NN policy_NN as_IN local_JJ PR-based_JJ pruning_NN -LRB-_-LRB- LPR_NN -RRB-_-RRB- ._.
+Unfortunately_RB ,_, the_DT biggest_JJS shortcoming_NN of_IN this_DT policy_NN is_VBZ that_IN we_PRP can_MD prove_VB that_IN we_PRP can_MD not_RB compute_VB the_DT correctness_NN function_NN C_NN from_IN IP_NNP alone_RB when_WRB IP_NNP is_VBZ constructed_VBN this_DT way_NN ._.
+Theorem_NNP #_# No_DT PR-based_JJ document_NN pruning_NN can_MD provide_VB the_DT result_NN guarantee_NN ._.
+#_# Proof_NNP Assume_VB we_PRP create_VB IP_NNP based_VBN on_IN the_DT GPR_NN policy_NN -LRB-_-LRB- generalizing_VBG the_DT proof_NN to_TO LPR_NN is_VBZ straightforward_JJ -RRB-_-RRB- and_CC that_IN every_DT document_NN D_NN with_IN pr_NN -LRB-_-LRB- D_NN -RRB-_-RRB- >_JJR p_NN is_VBZ included_VBN in_IN IP_NNP ._.
+Assume_VB that_IN the_DT kth_NN entry_NN in_IN the_DT top-k_JJ results_NNS ,_, has_VBZ a_DT ranking_JJ score_NN of_IN r_NN -LRB-_-LRB- Dk_NN ,_, q_NN -RRB-_-RRB- =_JJ fr_NN -LRB-_-LRB- tr_NN -LRB-_-LRB- Dk_NN ,_, q_NN -RRB-_-RRB- ,_, pr_NN -LRB-_-LRB- Dk_NN -RRB-_-RRB- -RRB-_-RRB- ._.
+Now_RB consider_VB another_DT document_NN Dj_NN that_WDT was_VBD pruned_VBN from_IN IP_NNP because_IN pr_NN -LRB-_-LRB- Dj_NN -RRB-_-RRB- <_JJR p_NN ._.
+Even_RB so_RB ,_, it_PRP is_VBZ still_RB possible_JJ that_IN the_DT document_NN ''_'' s_NNS tr_NN -LRB-_-LRB- Dj_NN ,_, q_NN -RRB-_-RRB- value_NN is_VBZ very_RB high_JJ such_JJ that_IN r_NN -LRB-_-LRB- Dj_NN ,_, q_NN -RRB-_-RRB- =_JJ fr_NN -LRB-_-LRB- tr_NN -LRB-_-LRB- Dj_NN ,_, q_NN -RRB-_-RRB- ,_, pr_NN -LRB-_-LRB- Dj_NN -RRB-_-RRB- -RRB-_-RRB- >_JJR r_NN -LRB-_-LRB- Dk_NN ,_, q_NN -RRB-_-RRB- ._.
+Therefore_RB ,_, under_IN a_DT PR-based_JJ pruning_NN policy_NN ,_, the_DT quality_NN of_IN the_DT answer_NN computed_VBN from_IN IP_NNP can_MD be_VB significantly_RB worse_JJR than_IN that_DT from_IN IF_IN and_CC it_PRP is_VBZ not_RB possible_JJ to_TO detect_VB this_DT degradation_NN without_IN computing_VBG the_DT answer_NN from_IN IF_IN ._.
+In_IN the_DT next_JJ section_NN ,_, we_PRP propose_VBP simple_JJ yet_RB essential_JJ changes_NNS to_TO this_DT pruning_NN policy_NN that_WDT allows_VBZ us_PRP to_TO compute_VB the_DT correctness_NN function_NN C_NN from_IN IP_NNP alone_RB ._.
+4_LS ._.
+#_# ._.
+#_# Extended_VBN keyword-specific_JJ pruning_NN The_DT main_JJ problem_NN of_IN global_JJ PR-based_JJ document_NN pruning_NN policies_NNS is_VBZ that_IN we_PRP do_VBP not_RB know_VB the_DT term-relevance_JJ score_NN tr_NN -LRB-_-LRB- D_NN ,_, ti_NN -RRB-_-RRB- of_IN the_DT pruned_VBN documents_NNS ,_, so_RB a_DT document_NN not_RB in_IN IP_NNP may_MD have_VB a_DT higher_JJR ranking_JJ score_NN than_IN the_DT ones_NNS returned_VBD from_IN IP_NNP because_IN of_IN their_PRP$ high_JJ tr_NN scores_NNS ._.
+Here_RB ,_, we_PRP propose_VBP a_DT new_JJ pruning_NN policy_NN ,_, called_VBN extended_VBN keyword-specific_JJ document_NN pruning_NN -LRB-_-LRB- EKS_NN -RRB-_-RRB- ,_, which_WDT avoids_VBZ this_DT problem_NN by_IN pruning_NN not_RB just_RB based_VBN on_IN the_DT query-independent_JJ pr_NN -LRB-_-LRB- D_NN -RRB-_-RRB- score_NN but_CC also_RB based_VBN on_IN the_DT term-relevance_NN tr_NN -LRB-_-LRB- D_NN ,_, ti_NN -RRB-_-RRB- score_NN ._.
+That_DT is_VBZ ,_, for_IN every_DT inverted_JJ list_NN I_NN -LRB-_-LRB- ti_NN -RRB-_-RRB- ,_, we_PRP pick_VBP two_CD threshold_JJ values_NNS ,_, pi_NN for_IN pr_NN and_CC ti_NN for_IN tr_NN ,_, such_JJ that_IN if_IN a_DT document_NN D_NN I_NN -LRB-_-LRB- ti_NN -RRB-_-RRB- satisfies_VBZ pr_NN -LRB-_-LRB- D_NN -RRB-_-RRB- >_JJR pi_NN or_CC tr_NN -LRB-_-LRB- D_NN ,_, ti_NN -RRB-_-RRB- >_JJR ti_NNS ,_, we_PRP include_VBP it_PRP in_IN I_CD -LRB-_-LRB- ti_NN -RRB-_-RRB- of_IN IP_NNP ._.
+Otherwise_RB ,_, we_PRP prune_VBP it_PRP from_IN IP_NNP ._.
+Figure_NNP #_# formally_RB describes_VBZ this_DT algorithm_NN ._.
+The_DT threshold_NN values_NNS ,_, pi_NN and_CC ti_NN ,_, may_MD be_VB selected_VBN in_IN a_DT number_NN of_IN different_JJ ways_NNS ._.
+For_IN example_NN ,_, if_IN pr_NN and_CC tr_NN have_VBP equal_JJ weight_NN in_IN the_DT final_JJ ranking_NN and_CC if_IN we_PRP want_VBP to_TO keep_VB at_IN most_JJS N_NN postings_NNS in_IN each_DT inverted_JJ list_NN I_NN -LRB-_-LRB- ti_NN -RRB-_-RRB- ,_, we_PRP may_MD want_VB to_TO set_VB the_DT two_CD threshold_NN values_NNS equal_JJ to_TO i_FW -LRB-_-LRB- pi_NN =_JJ ti_NN =_JJ i_LS -RRB-_-RRB- and_CC adjust_VBP i_FW such_JJ that_IN N_NN postings_NNS remain_VBP in_IN I_CD -LRB-_-LRB- ti_NN -RRB-_-RRB- ._.
+This_DT new_JJ pruning_NN policy_NN ,_, when_WRB combined_VBN with_IN a_DT monotonic_JJ scoring_VBG function_NN ,_, enables_VBZ us_PRP to_TO compute_VB the_DT correctness_NN indicator_NN function_NN C_NN from_IN the_DT pruned_VBN index_NN ._.
+We_PRP use_VBP the_DT following_VBG example_NN to_TO explain_VB how_WRB we_PRP may_MD compute_VB C_NN ._.
+Example_NN #_# Consider_VB the_DT query_NN q_NN =_JJ -LCB-_-LRB- t1_NN ,_, t2_NN -RCB-_-RRB- and_CC a_DT monotonic_JJ ranking_JJ function_NN ,_, f_FW -LRB-_-LRB- pr_NN -LRB-_-LRB- D_NN -RRB-_-RRB- ,_, tr_NN -LRB-_-LRB- D_NN ,_, t1_NN -RRB-_-RRB- ,_, tr_NN -LRB-_-LRB- D_NN ,_, t2_NN -RRB-_-RRB- -RRB-_-RRB- ._.
+There_EX are_VBP three_CD possible_JJ scenarios_NNS on_IN how_WRB a_DT document_NN D_NN appears_VBZ in_IN the_DT pruned_VBN index_NN IP_NNP ._.
+1_LS ._.
+D_NN appears_VBZ in_IN both_CC I_PRP -LRB-_-LRB- t1_NN -RRB-_-RRB- and_CC I_NN -LRB-_-LRB- t2_NN -RRB-_-RRB- of_IN IP_NNP :_: Since_IN complete_JJ information_NN of_IN D_NN appears_VBZ in_IN IP_NNP ,_, we_PRP can_MD compute_VB the_DT exact_JJ Algorithm_NN #_# ._.
+#_# Computing_NNP Answer_NNP from_IN IP_NNP Input_NNP Query_NNP q_NN =_JJ -LCB-_-LRB- t1_NN ,_, ..._: ,_, tw_NN -RCB-_-RRB- Output_NN A_NN :_: top-k_JJ result_NN ,_, C_NN :_: correctness_NN indicator_NN function_NN Procedure_NN -LRB-_-LRB- #_# -RRB-_-RRB- For_IN each_DT Di_NNP I_NN -LRB-_-LRB- t1_NN -RRB-_-RRB- I_NN -LRB-_-LRB- tw_NN -RRB-_-RRB- -LRB-_-LRB- #_# -RRB-_-RRB- For_IN each_DT tm_NN q_NN -LRB-_-LRB- #_# -RRB-_-RRB- If_IN Di_NNP I_NNP -LRB-_-LRB- tm_NN -RRB-_-RRB- -LRB-_-LRB- #_# -RRB-_-RRB- tr_NN -LRB-_-LRB- Di_NNP ,_, tm_NN -RRB-_-RRB- =_JJ tr_NN -LRB-_-LRB- Di_NNP ,_, tm_NN -RRB-_-RRB- -LRB-_-LRB- #_# -RRB-_-RRB- Else_RB -LRB-_-LRB- #_# -RRB-_-RRB- tr_NN -LRB-_-LRB- Di_NNP ,_, tm_NN -RRB-_-RRB- =_JJ tm_NN -LRB-_-LRB- #_# -RRB-_-RRB- f_FW -LRB-_-LRB- Di_NNP -RRB-_-RRB- =_JJ f_FW -LRB-_-LRB- pr_NN -LRB-_-LRB- Di_NNP -RRB-_-RRB- ,_, tr_NN -LRB-_-LRB- Di_NNP ,_, t1_NN -RRB-_-RRB- ,_, ..._: ,_, tr_NN -LRB-_-LRB- Di_NNP ,_, tn_NN -RRB-_-RRB- -RRB-_-RRB- -LRB-_-LRB- #_# -RRB-_-RRB- A_NN =_JJ top-k_JJ Di_NNP ''_'' s_VBZ with_IN highest_JJS f_FW -LRB-_-LRB- Di_NNP -RRB-_-RRB- values_NNS -LRB-_-LRB- #_# -RRB-_-RRB- C_NN =_JJ j_NN 1_CD if_IN all_DT Di_NNP A_NNP appear_VBP in_IN all_DT I_CD -LRB-_-LRB- ti_NN -RRB-_-RRB- ,_, ti_NN q_NN 0_CD otherwise_RB Figure_NN ##_CD :_: Ranking_NN based_VBN on_IN thresholds_NNS tr_NN -LRB-_-LRB- ti_NN -RRB-_-RRB- and_CC pr_NN -LRB-_-LRB- ti_NN -RRB-_-RRB- ._.
+score_NN of_IN D_NN based_VBN on_IN pr_NN -LRB-_-LRB- D_NN -RRB-_-RRB- ,_, tr_NN -LRB-_-LRB- D_NN ,_, t1_NN -RRB-_-RRB- and_CC tr_NN -LRB-_-LRB- D_NN ,_, t2_NN -RRB-_-RRB- values_NNS in_IN IP_NNP :_: f_LS -LRB-_-LRB- pr_NN -LRB-_-LRB- D_NN -RRB-_-RRB- ,_, tr_NN -LRB-_-LRB- D_NN ,_, t1_NN -RRB-_-RRB- ,_, tr_NN -LRB-_-LRB- D_NN ,_, t2_NN -RRB-_-RRB- -RRB-_-RRB- ._.
+2_LS ._.
+D_NN appears_VBZ only_RB in_IN I_CD -LRB-_-LRB- t1_NN -RRB-_-RRB- but_CC not_RB in_IN I_CD -LRB-_-LRB- t2_NN -RRB-_-RRB- :_: Since_IN D_NN does_VBZ not_RB appear_VB in_IN I_CD -LRB-_-LRB- t2_NN -RRB-_-RRB- ,_, we_PRP do_VBP not_RB know_VB tr_NN -LRB-_-LRB- D_NN ,_, t2_NN -RRB-_-RRB- ,_, so_IN we_PRP can_MD not_RB compute_VB its_PRP$ exact_JJ ranking_JJ score_NN ._.
+However_RB ,_, from_IN our_PRP$ pruning_NN criteria_NNS ,_, we_PRP know_VBP that_IN tr_NN -LRB-_-LRB- D_NN ,_, t2_NN -RRB-_-RRB- can_MD not_RB be_VB larger_JJR than_IN the_DT threshold_NN value_NN t2_NN ._.
+Therefore_RB ,_, from_IN the_DT monotonicity_NN of_IN f_FW -LRB-_-LRB- Definition_NN #_# -RRB-_-RRB- ,_, we_PRP know_VBP that_IN the_DT ranking_JJ score_NN of_IN D_NN ,_, f_FW -LRB-_-LRB- pr_NN -LRB-_-LRB- D_NN -RRB-_-RRB- ,_, tr_NN -LRB-_-LRB- D_NN ,_, t1_NN -RRB-_-RRB- ,_, tr_NN -LRB-_-LRB- D_NN ,_, t2_NN -RRB-_-RRB- -RRB-_-RRB- ,_, can_MD not_RB be_VB larger_JJR than_IN f_FW -LRB-_-LRB- pr_NN -LRB-_-LRB- D_NN -RRB-_-RRB- ,_, tr_NN -LRB-_-LRB- D_NN ,_, t1_NN -RRB-_-RRB- ,_, t2_NN -RRB-_-RRB- ._.
+3_LS ._.
+D_NN does_VBZ not_RB appear_VB in_IN any_DT list_NN :_: Since_IN D_NN does_VBZ not_RB appear_VB at_IN all_DT in_IN IP_NNP ,_, we_PRP do_VBP not_RB know_VB any_DT of_IN the_DT pr_NN -LRB-_-LRB- D_NN -RRB-_-RRB- ,_, tr_NN -LRB-_-LRB- D_NN ,_, t1_NN -RRB-_-RRB- ,_, tr_NN -LRB-_-LRB- D_NN ,_, t2_NN -RRB-_-RRB- values_NNS ._.
+However_RB ,_, from_IN our_PRP$ pruning_NN criteria_NNS ,_, we_PRP know_VBP that_IN pr_NN -LRB-_-LRB- D_NN -RRB-_-RRB- p1_NN and_CC p2_NN and_CC that_IN tr_NN -LRB-_-LRB- D_NN ,_, t1_NN -RRB-_-RRB- t1_NN and_CC tr_NN -LRB-_-LRB- D_NN ,_, t2_NN -RRB-_-RRB- t2_NN ._.
+Therefore_RB ,_, from_IN the_DT monotonicity_NN of_IN f_FW ,_, we_PRP know_VBP that_IN the_DT ranking_JJ score_NN of_IN D_NN ,_, can_MD not_RB be_VB larger_JJR than_IN f_FW -LRB-_-LRB- min_NN -LRB-_-LRB- p1_NN ,_, p2_NN -RRB-_-RRB- ,_, t1_NN ,_, t2_NN -RRB-_-RRB- ._.
+#_# The_DT above_IN example_NN shows_VBZ that_IN when_WRB a_DT document_NN does_VBZ not_RB appear_VB in_IN one_CD of_IN the_DT inverted_JJ lists_NNS I_CD -LRB-_-LRB- ti_NN -RRB-_-RRB- with_IN ti_NN q_NN ,_, we_PRP can_MD not_RB compute_VB its_PRP$ exact_JJ ranking_JJ score_NN ,_, but_CC we_PRP can_MD still_RB compute_VB its_PRP$ upper_JJ bound_VBN score_NN by_IN using_VBG the_DT threshold_NN value_NN ti_NN for_IN the_DT missing_VBG values_NNS ._.
+This_DT suggests_VBZ the_DT algorithm_NN in_IN Figure_NNP ##_VBP that_IN computes_VBZ the_DT top-k_JJ result_NN A_NN from_IN IP_NNP together_RB with_IN the_DT correctness_NN indicator_NN function_NN C_NN ._.
+In_IN the_DT algorithm_NN ,_, the_DT correctness_NN indicator_NN function_NN C_NN is_VBZ set_VBN to_TO one_CD only_RB if_IN all_DT documents_NNS in_IN the_DT top-k_JJ result_NN A_DT appear_VBP in_IN all_DT inverted_JJ lists_NNS I_CD -LRB-_-LRB- ti_NN -RRB-_-RRB- with_IN ti_NN q_NN ,_, so_IN we_PRP know_VBP their_PRP$ exact_JJ score_NN ._.
+In_IN this_DT case_NN ,_, because_IN these_DT documents_NNS have_VBP scores_NNS higher_JJR than_IN the_DT upper_JJ bound_VBN scores_NNS of_IN any_DT other_JJ documents_NNS ,_, we_PRP know_VBP that_IN no_DT other_JJ documents_NNS can_MD appear_VB in_IN the_DT top-k_NN ._.
+The_DT following_VBG theorem_NN formally_RB proves_VBZ the_DT correctness_NN of_IN the_DT algorithm_NN ._.
+In_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- Fagin_NNP et_FW al_FW ._.
+,_, provides_VBZ a_DT similar_JJ proof_NN in_IN the_DT context_NN of_IN multimedia_NNS middleware_NN ._.
+Theorem_NNP #_# Given_VBN an_DT inverted_JJ index_NN IP_NNP pruned_VBN by_IN the_DT algorithm_NN in_IN Figure_NNP #_# ,_, a_DT query_NN q_NN =_JJ -LCB-_-LRB- t1_NN ,_, ..._: ,_, tw_NN -RCB-_-RRB- and_CC a_DT monotonic_JJ ranking_JJ function_NN ,_, the_DT top-k_JJ result_NN from_IN IP_NNP computed_VBN by_IN Algorithm_NNP #_# ._.
+#_# is_VBZ the_DT same_JJ as_IN the_DT top-k_JJ result_NN from_IN IF_IN if_IN C_NN =_JJ #_# ._.
+#_# Proof_NNP Let_VB us_PRP assume_VB Dk_NN is_VBZ the_DT kth_NN ranked_VBD document_NN computed_VBN from_IN IP_NNP according_VBG to_TO Algorithm_NNP #_# ._.
+#_# ._.
+For_IN every_DT document_NN Di_NNP IF_IN that_DT is_VBZ not_RB in_IN the_DT top-k_JJ result_NN from_IN IP_NNP ,_, there_EX are_VBP two_CD possible_JJ scenarios_NNS :_: First_NNP ,_, Di_NNP is_VBZ not_RB in_IN the_DT final_JJ answer_NN because_IN it_PRP was_VBD pruned_VBN from_IN all_DT inverted_JJ lists_NNS I_CD -LRB-_-LRB- tj_NN -RRB-_-RRB- ,_, #_# j_FW w_FW ,_, in_IN IP_NNP ._.
+In_IN this_DT case_NN ,_, we_PRP know_VBP that_IN pr_NN -LRB-_-LRB- Di_NNP -RRB-_-RRB- min1jwpj_NN <_JJR pr_NN -LRB-_-LRB- Dk_NN -RRB-_-RRB- and_CC that_IN tr_NN -LRB-_-LRB- Di_NNP ,_, tj_NN -RRB-_-RRB- tj_NN <_JJR tr_NN -LRB-_-LRB- Dk_NN ,_, tj_NN -RRB-_-RRB- ,_, #_# j_FW w_FW ._.
+From_IN the_DT monotonicity_NN assumption_NN ,_, it_PRP follows_VBZ that_IN the_DT ranking_JJ score_NN of_IN DI_NNP is_VBZ r_NN -LRB-_-LRB- Di_NNP -RRB-_-RRB- <_JJR r_NN -LRB-_-LRB- Dk_NN -RRB-_-RRB- ._.
+That_DT is_VBZ ,_, Di_NNP ''_'' s_VBZ score_NN can_MD never_RB be_VB larger_JJR than_IN that_DT of_IN Dk_NN ._.
+Second_RB ,_, Di_NNP is_VBZ not_RB in_IN the_DT answer_NN because_IN Di_NNP is_VBZ pruned_VBN from_IN some_DT inverted_JJ lists_NNS ,_, say_VBP ,_, I_PRP -LRB-_-LRB- t1_NN -RRB-_-RRB- ,_, ..._: ,_, I_PRP -LRB-_-LRB- tm_NN -RRB-_-RRB- ,_, in_IN IP_NNP ._.
+Let_VB us_PRP assume_VB r_NN -LRB-_-LRB- Di_NNP -RRB-_-RRB- =_JJ f_FW -LRB-_-LRB- pr_NN -LRB-_-LRB- Di_NNP -RRB-_-RRB- ,_, t1_NN ,_, ..._: ,_, tm_NN ,_, tr_NN -LRB-_-LRB- Di_NNP ,_, tm_NN +_CC #_# -RRB-_-RRB- ,_, ..._: ,_, tr_NN -LRB-_-LRB- Di_NNP ,_, tw_NN -RRB-_-RRB- -RRB-_-RRB- ._.
+Then_RB ,_, from_IN tr_NN -LRB-_-LRB- Di_NNP ,_, tj_NN -RRB-_-RRB- tj_NN -LRB-_-LRB- #_# j_FW m_NN -RRB-_-RRB- and_CC the_DT monotonicity_NN assumption_NN ,_, 0_CD 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 1_CD 0_CD #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# 0_CD 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 1_CD Fractionofqueriesguaranteedf_NN -LRB-_-LRB- s_NNS -RRB-_-RRB- Fraction_NN of_IN index_NN s_NNS Fraction_NN of_IN queries_NNS guaranteed_VBN per_IN fraction_NN of_IN index_NN queries_NNS guaranteed_VBN Figure_NNP ##_CD :_: Fraction_NN of_IN guaranteed_VBN queries_NNS f_LS -LRB-_-LRB- s_NNS -RRB-_-RRB- answered_VBN in_IN a_DT keyword-pruned_JJ p-index_NN of_IN size_NN s_NNS ._.
+we_PRP know_VBP that_IN r_NN -LRB-_-LRB- Di_NNP -RRB-_-RRB- r_NN -LRB-_-LRB- Di_NNP -RRB-_-RRB- ._.
+Also_RB ,_, Algorithm_NNP #_# ._.
+#_# sets_VBZ C_NN =_JJ 1_CD only_RB when_WRB the_DT top-k_JJ documents_NNS have_VBP scores_NNS larger_JJR than_IN r_NN -LRB-_-LRB- Di_NNP -RRB-_-RRB- ._.
+Therefore_RB ,_, r_NN -LRB-_-LRB- Di_NNP -RRB-_-RRB- can_MD not_RB be_VB larger_JJR than_IN r_NN -LRB-_-LRB- Dk_NN -RRB-_-RRB- ._.
+5_CD ._.
+EXPERIMENTAL_JJ EVALUATION_NN In_IN order_NN to_TO perform_VB realistic_JJ tests_NNS for_IN our_PRP$ pruning_NN policies_NNS ,_, we_PRP implemented_VBD a_DT search_NN engine_NN prototype_NN ._.
+For_IN the_DT experiments_NNS in_IN this_DT paper_NN ,_, our_PRP$ search_NN engine_NN indexed_VBD about_IN ###_CD million_CD pages_NNS ,_, crawled_VBN from_IN the_DT Web_NN during_IN March_NNP of_IN ####_CD ._.
+The_DT crawl_NN started_VBD from_IN the_DT Open_NNP Directory_NNP ''_'' s_VBZ -LSB-_-LRB- ##_CD -RSB-_-RRB- homepage_NN and_CC proceeded_VBD in_IN a_DT breadth-first_JJ manner_NN ._.
+Overall_RB ,_, the_DT total_JJ uncompressed_JJ size_NN of_IN our_PRP$ crawled_VBN Web_NN pages_NNS is_VBZ approximately_RB #_# ._.
+#_# TB_NN ,_, yielding_VBG a_DT full_JJ inverted_JJ index_NN IF_IN of_IN approximately_RB #_# ._.
+#_# TB_NN ._.
+For_IN the_DT experiments_NNS reported_VBN in_IN this_DT section_NN we_PRP used_VBD a_DT real_JJ set_NN of_IN queries_NNS issued_VBN to_TO Looksmart_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- on_IN a_DT daily_JJ basis_NN during_IN April_NNP of_IN ####_CD ._.
+After_IN keeping_VBG only_RB the_DT queries_NNS containing_VBG keywords_NNS that_WDT were_VBD present_JJ in_IN our_PRP$ inverted_JJ index_NN ,_, we_PRP were_VBD left_VBN with_IN a_DT set_NN of_IN about_IN 462_CD million_CD queries_NNS ._.
+Within_IN our_PRP$ query_JJ set_NN ,_, the_DT average_JJ number_NN of_IN terms_NNS per_IN query_NN is_VBZ #_# and_CC ##_CD %_NN of_IN the_DT queries_NNS contain_VBP at_IN most_JJS #_# terms_NNS ._.
+Some_DT experiments_NNS require_VBP us_PRP to_TO use_VB a_DT particular_JJ ranking_JJ function_NN ._.
+For_IN these_DT ,_, we_PRP use_VBP the_DT ranking_JJ function_NN similar_JJ to_TO the_DT one_CD used_VBN in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ._.
+More_RBR precisely_RB ,_, our_PRP$ ranking_JJ function_NN r_NN -LRB-_-LRB- D_NN ,_, q_NN -RRB-_-RRB- is_VBZ r_NN -LRB-_-LRB- D_NN ,_, q_NN -RRB-_-RRB- =_JJ prnorm_NN -LRB-_-LRB- D_NN -RRB-_-RRB- +_CC trnorm_NN -LRB-_-LRB- D_NN ,_, q_NN -RRB-_-RRB- -LRB-_-LRB- #_# -RRB-_-RRB- where_WRB prnorm_NN -LRB-_-LRB- D_NN -RRB-_-RRB- is_VBZ the_DT normalized_VBN PageRank_NN of_IN D_NN computed_VBN from_IN the_DT downloaded_VBN pages_NNS and_CC trnorm_NN -LRB-_-LRB- D_NN ,_, q_NN -RRB-_-RRB- is_VBZ the_DT normalized_VBN TF_NN ._.
+IDF_NN cosine_NN distance_NN of_IN D_NN to_TO q_VB ._.
+This_DT function_NN is_VBZ clearly_RB simpler_JJR than_IN the_DT real_JJ functions_NNS employed_VBN by_IN commercial_JJ search_NN engines_NNS ,_, but_CC we_PRP believe_VBP for_IN our_PRP$ evaluation_NN this_DT simple_JJ function_NN is_VBZ adequate_JJ ,_, because_IN we_PRP are_VBP not_RB studying_VBG the_DT effectiveness_NN of_IN a_DT ranking_JJ function_NN ,_, but_CC the_DT effectiveness_NN of_IN pruning_NN policies_NNS ._.
+5_CD ._.
+#_# Keyword_NNP pruning_NN In_IN our_PRP$ first_JJ experiment_NN we_PRP study_VBP the_DT performance_NN of_IN the_DT keyword_JJ pruning_NN ,_, described_VBN in_IN Section_NN #_# ._.
+#_# ._.
+More_RBR specifically_RB ,_, we_PRP apply_VBP the_DT algorithm_NN HS_NN of_IN Figure_NNP #_# to_TO our_PRP$ full_JJ index_NN IF_IN and_CC create_VB a_DT keyword-pruned_JJ p-index_NN IP_NNP of_IN size_NN s_NNS ._.
+For_IN the_DT construction_NN of_IN our_PRP$ keyword-pruned_JJ p-index_NN we_PRP used_VBD the_DT query_NN frequencies_NNS observed_VBN during_IN the_DT first_JJ ##_CD days_NNS of_IN our_PRP$ data_NNS set_VBN ._.
+Then_RB ,_, using_VBG the_DT remaining_VBG 20-day_JJ query_NN load_NN ,_, we_PRP measured_VBD f_FW -LRB-_-LRB- s_NNS -RRB-_-RRB- ,_, the_DT fraction_NN of_IN queries_NNS handled_VBN by_IN IP_NNP ._.
+According_VBG to_TO the_DT algorithm_NN of_IN Figure_NNP #_# ,_, a_DT query_NN can_MD be_VB handled_VBN by_IN IP_NNP -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, C_NN =_JJ #_# -RRB-_-RRB- if_IN IP_NNP includes_VBZ the_DT inverted_JJ lists_NNS for_IN all_DT of_IN the_DT query_NN ''_'' s_NNS keywords_NNS ._.
+We_PRP have_VBP repeated_VBN the_DT experiment_NN for_IN varying_VBG values_NNS of_IN s_NNS ,_, picking_VBG the_DT keywords_NNS greedily_RB as_IN discussed_VBN in_IN Section_NN #_# ._.
+#_# ._.
+The_DT result_NN is_VBZ shown_VBN in_IN Figure_NNP ##_NNP ._.
+The_DT horizontal_JJ axis_NN denotes_VBZ the_DT size_NN s_NNS of_IN the_DT p-index_NN as_IN a_DT fraction_NN of_IN the_DT size_NN of_IN IF_IN ._.
+The_DT vertical_JJ axis_NN shows_VBZ the_DT fraction_NN f_FW -LRB-_-LRB- s_NNS -RRB-_-RRB- of_IN the_DT queries_NNS that_IN the_DT p-index_NN of_IN size_NN s_NNS can_MD answer_VB ._.
+The_DT results_NNS of_IN Figure_NNP ##_NNP ,_, are_VBP very_RB encouraging_JJ :_: we_PRP can_MD answer_VB a_DT significant_JJ fraction_NN of_IN the_DT queries_NNS with_IN a_DT small_JJ fraction_NN of_IN the_DT original_JJ index_NN ._.
+For_IN example_NN ,_, approximately_RB ##_CD %_NN of_IN the_DT queries_NNS can_MD be_VB answered_VBN using_VBG ##_CD %_NN of_IN the_DT original_JJ index_NN ._.
+Also_RB ,_, we_PRP find_VBP that_IN when_WRB we_PRP use_VBP the_DT keyword_JJ pruning_NN policy_NN only_RB ,_, the_DT optimal_JJ index_NN size_NN is_VBZ s_NN =_JJ #_# ._.
+##_NN ._.
+0_CD 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 1_CD 0_CD #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# Fractionofqueriesguaranteed-f_NN -LRB-_-LRB- s_NNS -RRB-_-RRB- Fraction_NN of_IN index_NN -_: s_NNS Fraction_NN of_IN queries_NNS guaranteed_VBN for_IN top-20_JJ per_IN fraction_NN of_IN index_NN fraction_NN of_IN queries_NNS guaranteed_VBN -LRB-_-LRB- EKS_NN -RRB-_-RRB- Figure_NN ##_NN :_: Fraction_NN of_IN guaranteed_VBN queries_NNS f_LS -LRB-_-LRB- s_NNS -RRB-_-RRB- answered_VBN in_IN a_DT document-pruned_JJ p-index_NN of_IN size_NN s_NNS ._.
+0_CD 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 1_CD 0_CD #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# Fractionofqueriesanswered_JJ index_NN size_NN -_: s_NNS Fraction_NN of_IN queries_NNS answered_VBN for_IN top-20_JJ per_IN fraction_NN of_IN index_NN GPR_NNP LPR_NNP EKS_NNP Figure_NNP ##_NNP :_: Fraction_NN of_IN queries_NNS answered_VBN in_IN a_DT document-pruned_JJ p-index_NN of_IN size_NN s_NNS ._.
+5_CD ._.
+#_# Document_NNP pruning_NN We_PRP continue_VBP our_PRP$ experimental_JJ evaluation_NN by_IN studying_VBG the_DT performance_NN of_IN the_DT various_JJ document_NN pruning_NN policies_NNS described_VBN in_IN Section_NN #_# ._.
+#_# ._.
+For_IN the_DT experiments_NNS on_IN document_NN pruning_NN reported_VBN here_RB we_PRP worked_VBD with_IN a_DT #_# ._.
+#_# %_NN sample_NN of_IN the_DT whole_JJ query_NN set_NN ._.
+The_DT reason_NN behind_IN this_DT is_VBZ merely_RB practical_JJ :_: since_IN we_PRP have_VBP much_RB less_JJR machines_NNS compared_VBN to_TO a_DT commercial_JJ search_NN engine_NN it_PRP would_MD take_VB us_PRP about_IN a_DT year_NN of_IN computation_NN to_TO process_VB all_DT ###_CD million_CD queries_NNS ._.
+For_IN our_PRP$ first_JJ experiment_NN ,_, we_PRP generate_VBP a_DT document-pruned_JJ p-index_NN of_IN size_NN s_NNS by_IN using_VBG the_DT Extended_JJ Keyword-Specific_JJ pruning_NN -LRB-_-LRB- EKS_NN -RRB-_-RRB- in_IN Section_NN #_# ._.
+Within_IN the_DT p-index_NN we_PRP measure_VBP the_DT fraction_NN of_IN queries_NNS that_WDT can_MD be_VB guaranteed_VBN -LRB-_-LRB- according_VBG to_TO Theorem_NNP #_# -RRB-_-RRB- to_TO be_VB correct_JJ ._.
+We_PRP have_VBP performed_VBN the_DT experiment_NN for_IN varying_VBG index_NN sizes_NNS s_NNS and_CC the_DT result_NN is_VBZ shown_VBN in_IN Figure_NNP ##_NNP ._.
+Based_VBN on_IN this_DT figure_NN ,_, we_PRP can_MD see_VB that_IN our_PRP$ document_NN pruning_NN algorithm_NN performs_VBZ well_RB across_IN the_DT scale_NN of_IN index_NN sizes_NNS s_NNS :_: for_IN all_DT index_NN sizes_NNS larger_JJR than_IN ##_CD %_NN ,_, we_PRP can_MD guarantee_VB the_DT correct_JJ answer_NN for_IN about_IN ##_CD %_NN of_IN the_DT queries_NNS ._.
+This_DT implies_VBZ that_IN our_PRP$ EKS_NNP algorithm_NN can_MD successfully_RB identify_VB the_DT necessary_JJ postings_NNS for_IN calculating_VBG the_DT top-20_JJ results_NNS for_IN ##_CD %_NN of_IN the_DT queries_NNS by_IN using_VBG at_IN least_JJS ##_CD %_NN of_IN the_DT full_JJ index_NN size_NN ._.
+From_IN the_DT figure_NN ,_, we_PRP can_MD see_VB that_IN the_DT optimal_JJ index_NN size_NN s_VBZ =_JJ #_# ._.
+##_RB when_WRB we_PRP use_VBP EKS_NN as_IN our_PRP$ pruning_NN policy_NN ._.
+We_PRP can_MD compare_VB the_DT two_CD pruning_NN schemes_NNS ,_, namely_RB the_DT keyword_JJ pruning_NN and_CC EKS_NN ,_, by_IN contrasting_VBG Figures_NNS ##_CD and_CC ##_CD ._.
+Our_PRP$ observation_NN is_VBZ that_IN ,_, if_IN we_PRP would_MD have_VB to_TO pick_VB one_CD of_IN the_DT two_CD pruning_NN policies_NNS ,_, then_RB the_DT two_CD policies_NNS seem_VBP to_TO be_VB more_RBR or_CC less_RBR equivalent_JJ for_IN the_DT p-index_NN sizes_NNS s_VBZ ##_CD %_NN ._.
+For_IN the_DT p-index_NN sizes_NNS s_VBZ >_JJR ##_CD %_NN ,_, keyword_JJ pruning_NN does_VBZ a_DT much_RB better_JJR job_NN as_IN it_PRP provides_VBZ a_DT higher_JJR number_NN of_IN guarantees_NNS at_IN any_DT given_VBN index_NN size_NN ._.
+Later_RB in_IN Section_NN #_# ._.
+#_# ,_, we_PRP discuss_VBP the_DT combination_NN of_IN the_DT two_CD policies_NNS ._.
+In_IN our_PRP$ next_JJ experiment_NN ,_, we_PRP are_VBP interested_JJ in_IN comparing_VBG EKS_NN with_IN the_DT PR-based_JJ pruning_NN policies_NNS described_VBN in_IN Section_NN #_# ._.
+#_# ._.
+To_TO this_DT end_NN ,_, apart_RB from_IN EKS_NNP ,_, we_PRP also_RB generated_VBD document-pruned_JJ pindexes_NNS for_IN the_DT Global_JJ pr-based_JJ pruning_NN -LRB-_-LRB- GPR_NN -RRB-_-RRB- and_CC the_DT Local_JJ prbased_JJ pruning_NN -LRB-_-LRB- LPR_NN -RRB-_-RRB- policies_NNS ._.
+For_IN each_DT of_IN the_DT polices_NNS we_PRP created_VBD document-pruned_JJ p-indexes_NNS of_IN varying_VBG sizes_NNS s_NNS ._.
+Since_IN GPR_NN and_CC LPR_NN can_MD not_RB provide_VB a_DT correctness_NN guarantee_NN ,_, we_PRP will_MD compare_VB the_DT fraction_NN of_IN queries_NNS from_IN each_DT policy_NN that_WDT are_VBP identical_JJ -LRB-_-LRB- i_FW ._.
+e_LS ._.
+the_DT same_JJ results_NNS in_IN the_DT same_JJ order_NN -RRB-_-RRB- to_TO the_DT top-k_JJ results_NNS calculated_VBN from_IN the_DT full_JJ index_NN ._.
+Here_RB ,_, we_PRP will_MD report_VB our_PRP$ results_NNS for_IN k_NN =_JJ ##_NN ;_: the_DT results_NNS are_VBP similar_JJ for_IN other_JJ values_NNS of_IN k_NN ._.
+The_DT results_NNS are_VBP shown_VBN in_IN Figure_NNP ##_NNP ._.
+0_CD 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 1_CD 0_CD #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# Averagefractionofdocsinanswer_JJR index_NN size_NN -_: s_NNS Average_JJ fraction_NN of_IN docs_NNS in_IN answer_NN for_IN top-20_JJ per_IN fraction_NN of_IN index_NN GPR_NN LPR_NN EKS_NNS Figure_NNP ##_CD :_: Average_JJ fraction_NN of_IN the_DT top-20_JJ results_NNS of_IN p-index_NN with_IN size_NN s_NNS contained_VBD in_IN top-20_JJ results_NNS of_IN the_DT full_JJ index_NN ._.
+Fraction_NN of_IN queries_NNS guaranteed_VBN for_IN top-20_JJ per_IN fraction_NN of_IN index_NN ,_, using_VBG keyword_NN and_CC document_NN 0_CD 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 1_CD Keyword_NN fraction_NN of_IN index_NN -_: sh_NN 0_CD 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 1_CD Document_NNP fraction_NN of_IN index_NN -_: sv_NN 0_CD 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 1_CD Fraction_NN of_IN queries_NNS guaranteed_VBN -_: f_SYM -LRB-_-LRB- s_NNS -RRB-_-RRB- Figure_NNP ##_CD :_: Combining_VBG keyword_NN and_CC document_NN pruning_NN ._.
+The_DT horizontal_JJ axis_NN shows_VBZ the_DT size_NN s_NNS of_IN the_DT p-index_NN ;_: the_DT vertical_JJ axis_NN shows_VBZ the_DT fraction_NN f_FW -LRB-_-LRB- s_NNS -RRB-_-RRB- of_IN the_DT queries_NNS whose_WP$ top-20_JJ results_NNS are_VBP identical_JJ to_TO the_DT top-20_JJ results_NNS of_IN the_DT full_JJ index_NN ,_, for_IN a_DT given_VBN size_NN s_NNS ._.
+By_IN observing_VBG Figure_NN ##_NN ,_, we_PRP can_MD see_VB that_DT GPR_NN performs_VBZ the_DT worst_JJS of_IN the_DT three_CD policies_NNS ._.
+On_IN the_DT other_JJ hand_NN EKS_NN ,_, picks_VBZ up_RB early_RB ,_, by_IN answering_VBG a_DT great_JJ fraction_NN of_IN queries_NNS -LRB-_-LRB- about_IN ##_CD %_NN -RRB-_-RRB- correctly_RB with_IN only_RB ##_CD %_NN of_IN the_DT index_NN size_NN ._.
+The_DT fraction_NN of_IN queries_NNS that_WDT LPR_NN can_MD answer_VB remains_NNS below_IN that_DT of_IN EKS_NN until_IN about_IN s_NNS =_JJ ##_CD %_NN ._.
+For_IN any_DT index_NN size_NN larger_JJR than_IN ##_CD %_NN ,_, LPR_NN performs_VBZ the_DT best_JJS ._.
+In_IN the_DT experiment_NN of_IN Figure_NNP ##_NNP ,_, we_PRP applied_VBD the_DT strict_JJ definition_NN that_IN the_DT results_NNS of_IN the_DT p-index_NN have_VBP to_TO be_VB in_IN the_DT same_JJ order_NN as_IN the_DT ones_NNS of_IN the_DT full_JJ index_NN ._.
+However_RB ,_, in_IN a_DT practical_JJ scenario_NN ,_, it_PRP may_MD be_VB acceptable_JJ to_TO have_VB some_DT of_IN the_DT results_NNS out_IN of_IN order_NN ._.
+Therefore_RB ,_, in_IN our_PRP$ next_JJ experiment_NN we_PRP will_MD measure_VB the_DT fraction_NN of_IN the_DT results_NNS coming_VBG from_IN an_DT p-index_NN that_WDT are_VBP contained_VBN within_IN the_DT results_NNS of_IN the_DT full_JJ index_NN ._.
+The_DT result_NN of_IN the_DT experiment_NN is_VBZ shown_VBN on_IN Figure_NN ##_NN ._.
+The_DT horizontal_JJ axis_NN is_VBZ ,_, again_RB ,_, the_DT size_NN s_NNS of_IN the_DT p-index_NN ;_: the_DT vertical_JJ axis_NN shows_VBZ the_DT average_JJ fraction_NN of_IN the_DT top-20_JJ results_NNS common_JJ with_IN the_DT top-20_JJ results_NNS from_IN the_DT full_JJ index_NN ._.
+Overall_RB ,_, Figure_NNP ##_NNP depicts_VBZ that_IN EKS_NN and_CC LPR_NN identify_VBP the_DT same_JJ high_JJ -LRB-_-LRB- ##_CD %_NN -RRB-_-RRB- fraction_NN of_IN results_NNS on_IN average_NN for_IN any_DT size_NN s_VBZ ##_CD %_NN ,_, with_IN GPR_NN not_RB too_RB far_RB behind_IN ._.
+5_CD ._.
+#_# Combining_VBG keyword_NN and_CC document_NN pruning_NN In_IN Sections_NNS #_# ._.
+#_# and_CC #_# ._.
+#_# we_PRP studied_VBD the_DT individual_JJ performance_NN of_IN our_PRP$ keyword_NN and_CC document_NN pruning_NN schemes_NNS ._.
+One_CD interesting_JJ question_NN however_RB is_VBZ how_WRB do_VBP these_DT policies_NNS perform_VBP in_IN combination_NN ?_.
+What_WDT fraction_NN of_IN queries_NNS can_MD we_PRP guarantee_VB if_IN we_PRP apply_VBP both_CC keyword_VBP and_CC document_VBP pruning_NN in_IN our_PRP$ full_JJ index_NN IF_IN ?_.
+To_TO answer_VB this_DT question_NN ,_, we_PRP performed_VBD the_DT following_VBG experiment_NN ._.
+We_PRP started_VBD with_IN the_DT full_JJ index_NN IF_IN and_CC we_PRP applied_VBD keyword_JJ pruning_NN to_TO create_VB an_DT index_NN Ih_NN P_NN of_IN size_NN sh_NN ###_CD %_NN of_IN IF_IN ._.
+After_IN that_DT ,_, we_PRP further_RB applied_VBD document_NN pruning_NN to_TO Ih_NN P_NN ,_, and_CC created_VBN our_PRP$ final_JJ pindex_NN IP_NNP of_IN size_NN sv_NN ###_CD %_NN of_IN Ih_NN P_NN ._.
+We_PRP then_RB calculated_VBD the_DT fraction_NN of_IN guaranteed_VBN queries_NNS in_IN IP_NNP ._.
+We_PRP repeated_VBD the_DT experiment_NN for_IN different_JJ values_NNS of_IN sh_NN and_CC sv_NN ._.
+The_DT result_NN is_VBZ shown_VBN on_IN Figure_NN ##_NN ._.
+The_DT x-axis_NN shows_VBZ the_DT index_NN size_NN sh_NN after_IN applying_VBG keyword_JJ pruning_NN ;_: the_DT y-axis_NN shows_VBZ the_DT index_NN size_NN sv_NN after_IN applying_VBG document_NN pruning_NN ;_: the_DT z-axis_NN shows_VBZ the_DT fraction_NN of_IN guaranteed_VBN queries_NNS after_IN the_DT two_CD prunings_NNS ._.
+For_IN example_NN the_DT point_NN -LRB-_-LRB- #_# ._.
+#_# ,_, #_# ._.
+#_# ,_, #_# ._.
+#_# -RRB-_-RRB- means_VBZ that_IN if_IN we_PRP apply_VBP keyword_JJ pruning_NN and_CC keep_VB ##_CD %_NN of_IN IF_IN ,_, and_CC subsequently_RB on_IN the_DT resulting_VBG index_NN we_PRP apply_VBP document_NN pruning_NN keeping_VBG ##_CD %_NN -LRB-_-LRB- thus_RB creating_VBG a_DT pindex_NN of_IN size_NN ##_CD %_NN ##_CD %_NN =_JJ #_# %_NN of_IN IF_IN -RRB-_-RRB- we_PRP can_MD guarantee_VB ##_CD %_NN of_IN the_DT queries_NNS ._.
+By_IN observing_VBG Figure_NN ##_NN ,_, we_PRP can_MD see_VB that_IN for_IN p-index_NN sizes_NNS smaller_JJR than_IN ##_CD %_NN ,_, our_PRP$ combined_VBN pruning_NN does_VBZ relatively_RB well_RB ._.
+For_IN example_NN ,_, by_IN performing_VBG ##_CD %_NN keyword_NN and_CC ##_CD %_NN document_NN pruning_NN -LRB-_-LRB- which_WDT translates_VBZ to_TO a_DT pruned_VBN index_NN with_IN s_NNS =_JJ #_# ._.
+##_NN -RRB-_-RRB- we_PRP can_MD provide_VB a_DT guarantee_NN for_IN about_IN ##_CD %_NN of_IN the_DT queries_NNS ._.
+In_IN Figure_NNP ##_NNP ,_, we_PRP also_RB observe_VBP a_DT plateau_NN for_IN sh_NN >_JJR #_# ._.
+#_# and_CC sv_NN >_JJR #_# ._.
+#_# ._.
+For_IN this_DT combined_JJ pruning_NN policy_NN ,_, the_DT optimal_JJ index_NN size_NN is_VBZ at_IN s_NNS =_JJ #_# ._.
+##_NN ,_, with_IN sh_NN =_JJ 0_CD ._.
+##_NN and_CC sv_NN =_JJ #_# ._.
+##_NN ._.
+6_CD ._.
+RELATED_JJ WORK_VBP -LSB-_-LRB- #_# ,_, ##_NN -RSB-_-RRB- provide_VBP a_DT good_JJ overview_NN of_IN inverted_JJ indexing_NN in_IN Web_NN search_NN engines_NNS and_CC IR_NN systems_NNS ._.
+Experimental_JJ studies_NNS and_CC analyses_NNS of_IN various_JJ partitioning_VBG schemes_NNS for_IN an_DT inverted_JJ index_NN are_VBP presented_VBN in_IN -LSB-_-LRB- #_# ,_, ##_NN ,_, ##_NN -RSB-_-RRB- ._.
+The_DT pruning_NN algorithms_NNS that_IN we_PRP have_VBP presented_VBN in_IN this_DT paper_NN are_VBP independent_JJ of_IN the_DT partitioning_NN scheme_NN used_VBN ._.
+The_DT works_NNS in_IN -LSB-_-LRB- #_# ,_, #_# ,_, #_# ,_, ##_NN ,_, ##_NN -RSB-_-RRB- are_VBP the_DT most_RBS related_JJ to_TO ours_JJ ,_, as_IN they_PRP describe_VBP pruning_NN techniques_NNS based_VBN on_IN the_DT idea_NN of_IN keeping_VBG the_DT postings_NNS that_WDT contribute_VBP the_DT most_RBS in_IN the_DT final_JJ ranking_NN ._.
+However_RB ,_, -LSB-_-LRB- #_# ,_, #_# ,_, #_# ,_, 27_CD -RSB-_-RRB- do_VBP not_RB consider_VB any_DT query-independent_JJ quality_NN -LRB-_-LRB- such_JJ as_IN PageRank_NN -RRB-_-RRB- in_IN the_DT ranking_JJ function_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- presents_VBZ a_DT generic_JJ framework_NN for_IN computing_VBG approximate_JJ top-k_JJ answers_NNS with_IN some_DT probabilistic_JJ bounds_NNS on_IN the_DT quality_NN of_IN results_NNS ._.
+Our_PRP$ work_NN essentially_RB extends_VBZ -LSB-_-LRB- #_# ,_, 2_CD ,_, #_# ,_, #_# ,_, ##_NN ,_, ##_NN ,_, ##_NN -RSB-_-RRB- by_IN proposing_VBG mechanisms_NNS for_IN providing_VBG the_DT correctness_NN guarantee_NN to_TO the_DT computed_JJ top-k_JJ results_NNS ._.
+Search_VB engines_NNS use_VB various_JJ methods_NNS of_IN caching_NN as_IN a_DT means_NN of_IN reducing_VBG the_DT cost_NN associated_VBN with_IN queries_NNS -LSB-_-LRB- ##_CD ,_, ##_CD ,_, ##_CD ,_, ##_CD -RSB-_-RRB- ._.
+This_DT thread_NN of_IN work_NN is_VBZ also_RB orthogonal_JJ to_TO ours_JJ because_IN a_DT caching_NN scheme_NN may_MD operate_VB on_IN top_NN of_IN our_PRP$ p-index_NN in_IN order_NN to_TO minimize_VB the_DT answer_NN computation_NN cost_NN ._.
+The_DT exact_JJ ranking_JJ functions_NNS employed_VBN by_IN current_JJ search_NN engines_NNS are_VBP closely_RB guarded_VBN secrets_NNS ._.
+In_IN general_JJ ,_, however_RB ,_, the_DT rankings_NNS are_VBP based_VBN on_IN query-dependent_JJ relevance_NN and_CC queryindependent_JJ document_NN quality_NN ._.
+Query-dependent_JJ relevance_NN can_MD be_VB calculated_VBN in_IN a_DT variety_NN of_IN ways_NNS ._.
+Similarly_RB ,_, there_EX are_VBP a_DT number_NN of_IN works_NNS that_WDT measure_VBP the_DT quality_NN of_IN the_DT documents_NNS ,_, typically_RB as_IN captured_VBN through_IN link-based_JJ analysis_NN -LSB-_-LRB- ##_CD ,_, ##_CD ,_, ##_CD -RSB-_-RRB- ._.
+Since_IN our_PRP$ work_NN does_VBZ not_RB assume_VB a_DT particular_JJ form_NN of_IN ranking_JJ function_NN ,_, it_PRP is_VBZ complementary_JJ to_TO this_DT body_NN of_IN work_NN ._.
+There_EX has_VBZ been_VBN a_DT great_JJ body_NN of_IN work_NN on_IN top-k_JJ result_NN calculation_NN ._.
+The_DT main_JJ idea_NN is_VBZ to_TO either_CC stop_VB the_DT traversal_NN of_IN the_DT inverted_JJ lists_NNS early_RB ,_, or_CC to_TO shrink_VB the_DT lists_NNS by_IN pruning_NN postings_NNS from_IN the_DT lists_NNS -LSB-_-LRB- ##_NNS ,_, 4_CD ,_, ##_CD ,_, #_# -RSB-_-RRB- ._.
+Our_PRP$ proof_NN for_IN the_DT correctness_NN indicator_NN function_NN was_VBD primarily_RB inspired_VBN by_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ._.
+7_CD ._.
+CONCLUDING_VBG REMARKS_NNS Web_NN search_NN engines_NNS typically_RB prune_VBP their_PRP$ large-scale_JJ inverted_JJ indexes_NNS in_IN order_NN to_TO scale_NN to_TO enormous_JJ query_NN loads_NNS ._.
+While_IN this_DT approach_NN may_MD improve_VB performance_NN ,_, by_IN computing_VBG the_DT top_JJ results_NNS from_IN a_DT pruned_VBN index_NN we_PRP may_MD notice_VB a_DT significant_JJ degradation_NN in_IN the_DT result_NN quality_NN ._.
+In_IN this_DT paper_NN ,_, we_PRP provided_VBD a_DT framework_NN for_IN new_JJ pruning_NN techniques_NNS and_CC answer_VB computation_NN algorithms_NNS that_WDT guarantee_VBP that_IN the_DT top_JJ matching_NN pages_NNS are_VBP always_RB placed_VBN at_IN the_DT top_NN of_IN search_NN results_VBZ in_IN the_DT correct_JJ order_NN ._.
+We_PRP studied_VBD two_CD pruning_NN techniques_NNS ,_, namely_RB keyword-based_JJ and_CC document-based_JJ pruning_NN as_RB well_RB as_IN their_PRP$ combination_NN ._.
+Our_PRP$ experimental_JJ results_NNS demonstrated_VBD that_IN our_PRP$ algorithms_NNS can_MD effectively_RB be_VB used_VBN to_TO prune_VB an_DT inverted_JJ index_NN without_IN degradation_NN in_IN the_DT quality_NN of_IN results_NNS ._.
+In_IN particular_JJ ,_, a_DT keyword-pruned_JJ index_NN can_MD guarantee_VB ##_CD %_NN of_IN the_DT queries_NNS with_IN a_DT size_NN of_IN ##_CD %_NN of_IN the_DT full_JJ index_NN ,_, while_IN a_DT document-pruned_JJ index_NN can_MD guarantee_VB ##_CD %_NN of_IN the_DT queries_NNS with_IN the_DT same_JJ size_NN ._.
+When_WRB we_PRP combine_VBP the_DT two_CD pruning_NN algorithms_NNS we_PRP can_MD guarantee_VB ##_CD %_NN of_IN the_DT queries_NNS with_IN an_DT index_NN size_NN of_IN ##_CD %_NN ._.
+It_PRP is_VBZ our_PRP$ hope_NN that_IN our_PRP$ work_NN will_MD help_VB search_VB engines_NNS develop_VB better_JJR ,_, faster_RBR and_CC more_RBR efficient_JJ indexes_NNS and_CC thus_RB provide_VB for_IN a_DT better_JJR user_NN search_NN experience_NN on_IN the_DT Web_NN ._.
+8_CD ._.
+REFERENCES_NNS -LSB-_-LRB- #_# -RSB-_-RRB- V_NN ._.
+N_NN ._.
+Anh_NNP ,_, O_NNP ._.
+de_IN Kretser_NNP ,_, and_CC A_NN ._.
+Moffat_NNP ._.
+Vector-space_JJ ranking_NN with_IN effective_JJ early_JJ termination_NN ._.
+In_IN SIGIR_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- V_NN ._.
+N_NN ._.
+Anh_NNP and_CC A_NNP ._.
+Moffat_NNP ._.
+Pruning_NN strategies_NNS for_IN mixed-mode_JJ querying_NN ._.
+In_IN CIKM_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- R_NN ._.
+A_DT ._.
+Baeza-Yates_NNS and_CC B_NN ._.
+A_DT ._.
+Ribeiro-Neto_NNP ._.
+Modern_NNP Information_NNP Retrieval_NNP ._.
+ACM_NNP Press_NNP /_: Addison-Wesley_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- N_NN ._.
+Bruno_NNP ,_, L_NNP ._.
+Gravano_NNP ,_, and_CC A_NN ._.
+Marian_NNP ._.
+Evaluating_VBG top-k_JJ queries_NNS over_IN web-accessible_JJ databases_NNS ._.
+In_IN ICDE_NN ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- S_NN ._.
+Buttcher_NNP and_CC C_NNP ._.
+L_NN ._.
+A_DT ._.
+Clarke_NNP ._.
+A_DT document-centric_JJ approach_NN to_TO static_JJ index_NN pruning_NN in_IN text_NN retrieval_NN systems_NNS ._.
+In_IN CIKM_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- B_NN ._.
+Cahoon_NNP ,_, K_NNP ._.
+S_NN ._.
+McKinley_NNP ,_, and_CC Z_NN ._.
+Lu_NNP ._.
+Evaluating_VBG the_DT performance_NN of_IN distributed_VBN architectures_NNS for_IN information_NN retrieval_NN using_VBG a_DT variety_NN of_IN workloads_NNS ._.
+ACM_NNP TOIS_NNP ,_, ##_CD -LRB-_-LRB- #_# -RRB-_-RRB- ,_, ####_NN ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- D_NN ._.
+Carmel_NNP ,_, D_NNP ._.
+Cohen_NNP ,_, R_NN ._.
+Fagin_NNP ,_, E_NNP ._.
+Farchi_NNP ,_, M_NN ._.
+Herscovici_NNP ,_, Y_NN ._.
+Maarek_NNP ,_, and_CC A_NN ._.
+Soffer_NNP ._.
+Static_JJ index_NN pruning_NN for_IN information_NN retrieval_NN systems_NNS ._.
+In_IN SIGIR_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- S_NN ._.
+Chaudhuri_NNP and_CC L_NNP ._.
+Gravano_NNP ._.
+Optimizing_VBG queries_NNS over_IN multimedia_NNS repositories_NNS ._.
+In_IN SIGMOD_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- T_NN ._.
+H_NN ._.
+Cormen_NNP ,_, C_NNP ._.
+E_NN ._.
+Leiserson_NNP ,_, and_CC R_NN ._.
+L_NN ._.
+Rivest_NNP ._.
+Introduction_NN to_TO Algorithms_NNP ,_, 2nd_JJ Edition_NN ._.
+MIT_NNP Press_NNP /_: McGraw_NNP Hill_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Open_VB directory_NN ._.
+http_NN :_: /_: /_: www_NN ._.
+dmoz_NN ._.
+org_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- R_NN ._.
+Fagin_NNP ._.
+Combining_VBG fuzzy_JJ information_NN :_: an_DT overview_NN ._.
+In_IN SIGMOD_NNP Record_NNP ,_, ##_CD -LRB-_-LRB- #_# -RRB-_-RRB- ,_, ####_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- R_NN ._.
+Fagin_NNP ,_, A_NNP ._.
+Lotem_NNP ,_, and_CC M_NN ._.
+Naor_NNP ._.
+Optimal_JJ aggregation_NN algorithms_NNS for_IN middleware_NN ._.
+In_IN PODS_NN ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- A_DT ._.
+Gulli_NNP and_CC A_NNP ._.
+Signorini_NNP ._.
+The_DT indexable_JJ web_NN is_VBZ more_JJR than_IN ##_CD ._.
+#_# billion_CD pages_NNS ._.
+In_IN WWW_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- U_NNP ._.
+Guntzer_NNP ,_, G_NNP ._.
+Balke_NNP ,_, and_CC W_NN ._.
+Kiessling_NNP ._.
+Towards_IN efficient_JJ multi-feature_JJ queries_NNS in_IN heterogeneous_JJ environments_NNS ._.
+In_IN ITCC_NN ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Z_NN ._.
+Gyongyi_NNP ,_, H_NN ._.
+Garcia-Molina_NNP ,_, and_CC J_NN ._.
+Pedersen_NNP ._.
+Combating_VBG web_NN spam_NN with_IN trustrank_NN ._.
+In_IN VLDB_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- B_NN ._.
+J_NN ._.
+Jansen_NNP and_CC A_NNP ._.
+Spink_NNP ._.
+An_DT analysis_NN of_IN web_NN documents_NNS retrieved_VBN and_CC viewed_VBN ._.
+In_IN International_NNP Conf_NNP ._.
+on_IN Internet_NNP Computing_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+Kleinberg_NNP ._.
+Authoritative_JJ sources_NNS in_IN a_DT hyperlinked_JJ environment_NN ._.
+Journal_NNP of_IN the_DT ACM_NNP ,_, ##_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 604-632_CD ,_, September_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- R_NN ._.
+Lempel_NN and_CC S_NN ._.
+Moran_NNP ._.
+Predictive_JJ caching_NN and_CC prefetching_NN of_IN query_NN results_VBZ in_IN search_NN engines_NNS ._.
+In_IN WWW_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- R_NN ._.
+Lempel_NN and_CC S_NN ._.
+Moran_NNP ._.
+Optimizing_VBG result_NN prefetching_NN in_IN web_NN search_NN engines_NNS with_IN segmented_JJ indices_NNS ._.
+ACM_NNP Trans_NNP ._.
+Inter_NNP ._.
+Tech_NNP ._.
+,_, #_# -LRB-_-LRB- #_# -RRB-_-RRB- ,_, ####_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- X_NN ._.
+Long_NNP and_CC T_NN ._.
+Suel_NNP ._.
+Optimized_VBN query_JJ execution_NN in_IN large_JJ search_NN engines_NNS with_IN global_JJ page_NN ordering_VBG ._.
+In_IN VLDB_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- X_NN ._.
+Long_NNP and_CC T_NN ._.
+Suel_NNP ._.
+Three-level_JJ caching_NN for_IN efficient_JJ query_NN processing_NN in_IN large_JJ web_NN search_NN engines_NNS ._.
+In_IN WWW_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Looksmart_NNP inc_NN ._.
+http_NN :_: /_: /_: www_NN ._.
+looksmart_NN ._.
+com_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- S_NN ._.
+Melnik_NNP ,_, S_NN ._.
+Raghavan_NNP ,_, B_NN ._.
+Yang_NNP ,_, and_CC H_NN ._.
+Garcia-Molina_NNP ._.
+Building_VBG a_DT distributed_VBN full-text_JJ index_NN for_IN the_DT web_NN ._.
+ACM_NNP TOIS_NNP ,_, ##_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 217-241_CD ,_, 2001_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- A_DT ._.
+Ntoulas_NNP ,_, J_NNP ._.
+Cho_NNP ,_, C_NNP ._.
+Olston_NNP ._.
+What_WDT ''_'' s_VBZ new_JJ on_IN the_DT web_NN ?_.
+The_DT evolution_NN of_IN the_DT web_NN from_IN a_DT search_NN engine_NN perspective_NN ._.
+In_IN WWW_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- A_DT ._.
+Ntoulas_NNP ,_, M_NN ._.
+Najork_NNP ,_, M_NN ._.
+Manasse_NNP ,_, and_CC D_NN ._.
+Fetterly_RB ._.
+Detecting_VBG spam_NN web_NN pages_NNS through_IN content_NN analysis_NN ._.
+In_IN WWW_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- L_NN ._.
+Page_NNP ,_, S_NN ._.
+Brin_NNP ,_, R_NN ._.
+Motwani_NNP ,_, and_CC T_NN ._.
+Winograd_NNP ._.
+The_DT pagerank_NN citation_NN ranking_NN :_: Bringing_VBG order_NN to_TO the_DT web_NN ._.
+Technical_NNP report_NN ,_, Stanford_NNP University_NNP ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- M_NN ._.
+Persin_NNP ,_, J_NNP ._.
+Zobel_NNP ,_, and_CC R_NN ._.
+Sacks-Davis_NNP ._.
+Filtered_VBN document_NN retrieval_NN with_IN frequency-sorted_JJ indexes_NNS ._.
+Journal_NNP of_IN the_DT American_NNP Society_NNP of_IN Information_NNP Science_NNP ,_, ##_CD -LRB-_-LRB- ##_CD -RRB-_-RRB- ,_, ####_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- M_NN ._.
+Richardson_NNP and_CC P_NN ._.
+Domingos_NNP ._.
+The_DT intelligent_JJ surfer_NN :_: Probabilistic_NNP combination_NN of_IN link_NN and_CC content_NN information_NN in_IN pagerank_NN ._.
+In_IN Advances_NNS in_IN Neural_NNP Information_NNP Processing_NNP Systems_NNPS ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- S_NN ._.
+Robertson_NNP and_CC K_NNP ._.
+Sparck-Jones_NNS ._.
+Relevance_NN weighting_NN of_IN search_NN terms_NNS ._.
+Journal_NNP of_IN the_DT American_NNP Society_NNP for_IN Information_NNP Science_NNP ,_, 27_CD :_: 129-46_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- G_NN ._.
+Salton_NNP and_CC M_NN ._.
+J_NN ._.
+McGill_NNP ._.
+Introduction_NN to_TO modern_JJ information_NN retrieval_NN ._.
+McGraw-Hill_NNP ,_, first_JJ edition_NN ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- P_NN ._.
+C_NN ._.
+Saraiva_NNP ,_, E_NNP ._.
+S_NN ._.
+de_IN Moura_NNP ,_, N_NNP ._.
+Ziviani_NNP ,_, W_NNP ._.
+Meira_NNP ,_, R_NN ._.
+Fonseca_NNP ,_, and_CC B_NN ._.
+Riberio-Neto_NNP ._.
+Rank-preserving_JJ two-level_JJ caching_NN for_IN scalable_JJ search_NN engines_NNS ._.
+In_IN SIGIR_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- M_NN ._.
+Theobald_NNP ,_, G_NNP ._.
+Weikum_NNP ,_, and_CC R_NN ._.
+Schenkel_NNP ._.
+Top-k_NN query_NN evaluation_NN with_IN probabilistic_JJ guarantees_NNS ._.
+In_IN VLDB_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- A_DT ._.
+Tomasic_NNP and_CC H_NNP ._.
+Garcia-Molina_NNP ._.
+Performance_NNP of_IN inverted_JJ indices_NNS in_IN shared-nothing_JJ distributed_VBN text_NN document_NN information_NN retrieval_NN systems_NNS ._.
+In_IN Parallel_JJ and_CC Distributed_VBN Information_NNP Systems_NNP ,_, ####_CD ._.

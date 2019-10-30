@@ -1,0 +1,969 @@
+Context-Sensitive_JJ Information_NN Retrieval_NNP Using_VBG Implicit_NNP Feedback_NNP Xuehua_NNP Shen_NNP Department_NNP of_IN Computer_NNP Science_NNP University_NNP of_IN Illinois_NNP at_IN Urbana-Champaign_NNP Bin_NNP Tan_NNP Department_NNP of_IN Computer_NNP Science_NNP University_NNP of_IN Illinois_NNP at_IN Urbana-Champaign_NNP ChengXiang_NNP Zhai_NNP Department_NNP of_IN Computer_NNP Science_NNP University_NNP of_IN Illinois_NNP at_IN Urbana-Champaign_NNP ABSTRACT_NN A_DT major_JJ limitation_NN of_IN most_JJS existing_VBG retrieval_NN models_NNS and_CC systems_NNS is_VBZ that_IN the_DT retrieval_NN decision_NN is_VBZ made_VBN based_VBN solely_RB on_IN the_DT query_NN and_CC document_NN collection_NN ;_: information_NN about_IN the_DT actual_JJ user_NN and_CC search_NN context_NN is_VBZ largely_RB ignored_VBN ._.
+In_IN this_DT paper_NN ,_, we_PRP study_VBD how_WRB to_TO exploit_VB implicit_JJ feedback_NN information_NN ,_, including_VBG previous_JJ queries_NNS and_CC clickthrough_JJ information_NN ,_, to_TO improve_VB retrieval_NN accuracy_NN in_IN an_DT interactive_JJ information_NN retrieval_NN setting_NN ._.
+We_PRP propose_VBP several_JJ contextsensitive_JJ retrieval_NN algorithms_NNS based_VBN on_IN statistical_JJ language_NN models_NNS to_TO combine_VB the_DT preceding_VBG queries_NNS and_CC clicked_VBD document_NN summaries_NNS with_IN the_DT current_JJ query_NN for_IN better_JJR ranking_NN of_IN documents_NNS ._.
+We_PRP use_VBP the_DT TREC_NN AP_NN data_NNS to_TO create_VB a_DT test_NN collection_NN with_IN search_NN context_NN information_NN ,_, and_CC quantitatively_RB evaluate_VB our_PRP$ models_NNS using_VBG this_DT test_NN set_NN ._.
+Experiment_NN results_NNS show_VBP that_IN using_VBG implicit_JJ feedback_NN ,_, especially_RB the_DT clicked_VBN document_NN summaries_NNS ,_, can_MD improve_VB retrieval_NN performance_NN substantially_RB ._.
+Categories_NNS and_CC Subject_NNP Descriptors_NNPS H_NN ._.
+#_# ._.
+#_# -LSB-_-LRB- Information_NNP Search_VB and_CC Retrieval_NN -RSB-_-RRB- :_: Retrieval_NNP models_NNS General_NNP Terms_NNS Algorithms_NNS 1_CD ._.
+INTRODUCTION_NN In_IN most_JJS existing_VBG information_NN retrieval_NN models_NNS ,_, the_DT retrieval_NN problem_NN is_VBZ treated_VBN as_IN involving_VBG one_CD single_JJ query_NN and_CC a_DT set_NN of_IN documents_NNS ._.
+From_IN a_DT single_JJ query_NN ,_, however_RB ,_, the_DT retrieval_NN system_NN can_MD only_RB have_VB very_RB limited_JJ clue_NN about_IN the_DT user_NN ''_'' s_NNS information_NN need_NN ._.
+An_DT optimal_JJ retrieval_NN system_NN thus_RB should_MD try_VB to_TO exploit_VB as_RB much_JJ additional_JJ context_NN information_NN as_IN possible_JJ to_TO improve_VB retrieval_NN accuracy_NN ,_, whenever_WRB it_PRP is_VBZ available_JJ ._.
+Indeed_RB ,_, context-sensitive_JJ retrieval_NN has_VBZ been_VBN identified_VBN as_IN a_DT major_JJ challenge_NN in_IN information_NN retrieval_NN research_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+There_EX are_VBP many_JJ kinds_NNS of_IN context_NN that_IN we_PRP can_MD exploit_VB ._.
+Relevance_NN feedback_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- can_MD be_VB considered_VBN as_IN a_DT way_NN for_IN a_DT user_NN to_TO provide_VB more_JJR context_NN of_IN search_NN and_CC is_VBZ known_VBN to_TO be_VB effective_JJ for_IN improving_VBG retrieval_NN accuracy_NN ._.
+However_RB ,_, relevance_NN feedback_NN requires_VBZ that_IN a_DT user_NN explicitly_RB provides_VBZ feedback_NN information_NN ,_, such_JJ as_IN specifying_VBG the_DT category_NN of_IN the_DT information_NN need_NN or_CC marking_VBG a_DT subset_NN of_IN retrieved_VBN documents_NNS as_IN relevant_JJ documents_NNS ._.
+Since_IN it_PRP forces_VBZ the_DT user_NN to_TO engage_VB additional_JJ activities_NNS while_IN the_DT benefits_NNS are_VBP not_RB always_RB obvious_JJ to_TO the_DT user_NN ,_, a_DT user_NN is_VBZ often_RB reluctant_JJ to_TO provide_VB such_JJ feedback_NN information_NN ._.
+Thus_RB the_DT effectiveness_NN of_IN relevance_NN feedback_NN may_MD be_VB limited_VBN in_IN real_JJ applications_NNS ._.
+For_IN this_DT reason_NN ,_, implicit_JJ feedback_NN has_VBZ attracted_VBN much_JJ attention_NN recently_RB -LSB-_-LRB- ##_CD ,_, ##_CD ,_, ##_CD ,_, ##_CD ,_, ##_CD -RSB-_-RRB- ._.
+In_IN general_JJ ,_, the_DT retrieval_NN results_VBZ using_VBG the_DT user_NN ''_'' s_NNS initial_JJ query_NN may_MD not_RB be_VB satisfactory_JJ ;_: often_RB ,_, the_DT user_NN would_MD need_VB to_TO revise_VB the_DT query_NN to_TO improve_VB the_DT retrieval_NN /_: ranking_JJ accuracy_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+For_IN a_DT complex_NN or_CC difficult_JJ information_NN need_NN ,_, the_DT user_NN may_MD need_VB to_TO modify_VB his_PRP$ /_: her_PRP$ query_NN and_CC view_NN ranked_VBD documents_NNS with_IN many_JJ iterations_NNS before_IN the_DT information_NN need_NN is_VBZ completely_RB satisfied_VBN ._.
+In_IN such_PDT an_DT interactive_JJ retrieval_NN scenario_NN ,_, the_DT information_NN naturally_RB available_JJ to_TO the_DT retrieval_NN system_NN is_VBZ more_JJR than_IN just_RB the_DT current_JJ user_NN query_NN and_CC the_DT document_NN collection_NN -_: in_IN general_JJ ,_, all_PDT the_DT interaction_NN history_NN can_MD be_VB available_JJ to_TO the_DT retrieval_NN system_NN ,_, including_VBG past_JJ queries_NNS ,_, information_NN about_IN which_WDT documents_VBZ the_DT user_NN has_VBZ chosen_VBN to_TO view_VB ,_, and_CC even_RB how_WRB a_DT user_NN has_VBZ read_VBN a_DT document_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, which_WDT part_NN of_IN a_DT document_NN the_DT user_NN spends_VBZ a_DT lot_NN of_IN time_NN in_IN reading_NN -RRB-_-RRB- ._.
+We_PRP define_VBP implicit_JJ feedback_NN broadly_RB as_IN exploiting_VBG all_DT such_JJ naturally_RB available_JJ interaction_NN history_NN to_TO improve_VB retrieval_NN results_NNS ._.
+A_DT major_JJ advantage_NN of_IN implicit_JJ feedback_NN is_VBZ that_IN we_PRP can_MD improve_VB the_DT retrieval_NN accuracy_NN without_IN requiring_VBG any_DT user_NN effort_NN ._.
+For_IN example_NN ,_, if_IN the_DT current_JJ query_NN is_VBZ java_NN ,_, without_IN knowing_VBG any_DT extra_JJ information_NN ,_, it_PRP would_MD be_VB impossible_JJ to_TO know_VB whether_IN it_PRP is_VBZ intended_VBN to_TO mean_VB the_DT Java_NNP programming_NN language_NN or_CC the_DT Java_NNP island_NN in_IN Indonesia_NNP ._.
+As_IN a_DT result_NN ,_, the_DT retrieved_VBN documents_NNS will_MD likely_RB have_VB both_DT kinds_NNS of_IN documents_NNS -_: some_DT may_MD be_VB about_IN the_DT programming_NN language_NN and_CC some_DT may_MD be_VB about_IN the_DT island_NN ._.
+However_RB ,_, any_DT particular_JJ user_NN is_VBZ unlikely_JJ searching_VBG for_IN both_DT types_NNS of_IN documents_NNS ._.
+Such_PDT an_DT ambiguity_NN can_MD be_VB resolved_VBN by_IN exploiting_VBG history_NN information_NN ._.
+For_IN example_NN ,_, if_IN we_PRP know_VBP that_IN the_DT previous_JJ query_NN from_IN the_DT user_NN is_VBZ cgi_JJ programming_NN ,_, it_PRP would_MD strongly_RB suggest_VB that_IN it_PRP is_VBZ the_DT programming_NN language_NN that_IN the_DT user_NN is_VBZ searching_VBG for_IN ._.
+Implicit_JJ feedback_NN was_VBD studied_VBN in_IN several_JJ previous_JJ works_NNS ._.
+In_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ,_, Joachims_JJ explored_VBN how_WRB to_TO capture_VB and_CC exploit_VB the_DT clickthrough_JJ information_NN and_CC demonstrated_VBD that_IN such_JJ implicit_JJ feedback_NN information_NN can_MD indeed_RB improve_VB the_DT search_NN accuracy_NN for_IN a_DT group_NN of_IN people_NNS ._.
+In_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ,_, a_DT simulation_NN study_NN of_IN the_DT effectiveness_NN of_IN different_JJ implicit_JJ feedback_NN algorithms_NNS was_VBD conducted_VBN ,_, and_CC several_JJ retrieval_NN models_NNS designed_VBN for_IN exploiting_VBG clickthrough_JJ information_NN were_VBD proposed_VBN and_CC evaluated_VBN ._.
+In_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ,_, some_DT existing_VBG retrieval_NN algorithms_NNS are_VBP adapted_VBN to_TO improve_VB search_NN results_NNS based_VBN on_IN the_DT browsing_VBG history_NN of_IN a_DT user_NN ._.
+Other_JJ related_JJ work_NN on_IN using_VBG context_NN includes_VBZ personalized_JJ search_NN -LSB-_-LRB- #_# ,_, #_# ,_, #_# ,_, #_# ,_, ##_NN -RSB-_-RRB- ,_, query_NN log_NN analysis_NN -LSB-_-LRB- #_# -RSB-_-RRB- ,_, context_NN factors_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, and_CC implicit_JJ queries_NNS -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+While_IN the_DT previous_JJ work_NN has_VBZ mostly_RB focused_VBN on_IN using_VBG clickthrough_JJ information_NN ,_, in_IN this_DT paper_NN ,_, we_PRP use_VBP both_CC clickthrough_VBP information_NN and_CC preceding_VBG queries_NNS ,_, and_CC focus_VB on_IN developing_VBG new_JJ context-sensitive_JJ language_NN models_NNS for_IN retrieval_NN ._.
+Specifically_RB ,_, we_PRP develop_VBP models_NNS for_IN using_VBG implicit_JJ feedback_NN information_NN such_JJ as_IN query_NN and_CC clickthrough_JJ history_NN of_IN the_DT current_JJ search_NN session_NN to_TO improve_VB retrieval_NN accuracy_NN ._.
+We_PRP use_VBP the_DT KL-divergence_NN retrieval_NN model_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- as_IN the_DT basis_NN and_CC propose_VBP to_TO treat_VB context-sensitive_JJ retrieval_NN as_IN estimating_VBG a_DT query_NN language_NN model_NN based_VBN on_IN the_DT current_JJ query_NN and_CC any_DT search_NN context_NN information_NN ._.
+We_PRP propose_VBP several_JJ statistical_JJ language_NN models_NNS to_TO incorporate_VB query_NN and_CC clickthrough_JJ history_NN into_IN the_DT KL-divergence_NN model_NN ._.
+One_CD challenge_NN in_IN studying_VBG implicit_JJ feedback_NN models_NNS is_VBZ that_IN there_EX does_VBZ not_RB exist_VB any_DT suitable_JJ test_NN collection_NN for_IN evaluation_NN ._.
+We_PRP thus_RB use_VBP the_DT TREC_NN AP_NN data_NNS to_TO create_VB a_DT test_NN collection_NN with_IN implicit_JJ feedback_NN information_NN ,_, which_WDT can_MD be_VB used_VBN to_TO quantitatively_RB evaluate_VB implicit_JJ feedback_NN models_NNS ._.
+To_TO the_DT best_JJS of_IN our_PRP$ knowledge_NN ,_, this_DT is_VBZ the_DT first_JJ test_NN set_VBN for_IN implicit_JJ feedback_NN ._.
+We_PRP evaluate_VBP the_DT proposed_VBN models_NNS using_VBG this_DT data_NN set_NN ._.
+The_DT experimental_JJ results_NNS show_VBP that_IN using_VBG implicit_JJ feedback_NN information_NN ,_, especially_RB the_DT clickthrough_JJ data_NNS ,_, can_MD substantially_RB improve_VB retrieval_NN performance_NN without_IN requiring_VBG additional_JJ effort_NN from_IN the_DT user_NN ._.
+The_DT remaining_VBG sections_NNS are_VBP organized_VBN as_IN follows_VBZ ._.
+In_IN Section_NN #_# ,_, we_PRP attempt_VBP to_TO define_VB the_DT problem_NN of_IN implicit_JJ feedback_NN and_CC introduce_VB some_DT terms_NNS that_IN we_PRP will_MD use_VB later_RB ._.
+In_IN Section_NN #_# ,_, we_PRP propose_VBP several_JJ implicit_JJ feedback_NN models_NNS based_VBN on_IN statistical_JJ language_NN models_NNS ._.
+In_IN Section_NN #_# ,_, we_PRP describe_VBP how_WRB we_PRP create_VBP the_DT data_NNS set_VBN for_IN implicit_JJ feedback_NN experiments_NNS ._.
+In_IN Section_NN #_# ,_, we_PRP evaluate_VBP different_JJ implicit_JJ feedback_NN models_NNS on_IN the_DT created_VBN data_NN set_NN ._.
+Section_NN #_# is_VBZ our_PRP$ conclusions_NNS and_CC future_JJ work_NN ._.
+2_LS ._.
+PROBLEM_NN DEFINITION_NNP There_EX are_VBP two_CD kinds_NNS of_IN context_NN information_NN we_PRP can_MD use_VB for_IN implicit_JJ feedback_NN ._.
+One_CD is_VBZ short-term_JJ context_NN ,_, which_WDT is_VBZ the_DT immediate_JJ surrounding_VBG information_NN which_WDT throws_VBZ light_NN on_IN a_DT user_NN ''_'' s_NNS current_JJ information_NN need_NN in_IN a_DT single_JJ session_NN ._.
+A_DT session_NN can_MD be_VB considered_VBN as_IN a_DT period_NN consisting_VBG of_IN all_DT interactions_NNS for_IN the_DT same_JJ information_NN need_NN ._.
+The_DT category_NN of_IN a_DT user_NN ''_'' s_NNS information_NN need_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, kids_NNS or_CC sports_NNS -RRB-_-RRB- ,_, previous_JJ queries_NNS ,_, and_CC recently_RB viewed_VBD documents_NNS are_VBP all_DT examples_NNS of_IN short-term_JJ context_NN ._.
+Such_JJ information_NN is_VBZ most_RBS directly_RB related_JJ to_TO the_DT current_JJ information_NN need_NN of_IN the_DT user_NN and_CC thus_RB can_MD be_VB expected_VBN to_TO be_VB most_RBS useful_JJ for_IN improving_VBG the_DT current_JJ search_NN ._.
+In_IN general_JJ ,_, short-term_JJ context_NN is_VBZ most_RBS useful_JJ for_IN improving_VBG search_NN in_IN the_DT current_JJ session_NN ,_, but_CC may_MD not_RB be_VB so_RB helpful_JJ for_IN search_NN activities_NNS in_IN a_DT different_JJ session_NN ._.
+The_DT other_JJ kind_NN of_IN context_NN is_VBZ long-term_JJ context_NN ,_, which_WDT refers_VBZ to_TO information_NN such_JJ as_IN a_DT user_NN ''_'' s_NNS education_NN level_NN and_CC general_JJ interest_NN ,_, accumulated_VBN user_NN query_NN history_NN and_CC past_JJ user_NN clickthrough_JJ information_NN ;_: such_JJ information_NN is_VBZ generally_RB stable_JJ for_IN a_DT long_JJ time_NN and_CC is_VBZ often_RB accumulated_VBN over_IN time_NN ._.
+Long-term_JJ context_NN can_MD be_VB applicable_JJ to_TO all_DT sessions_NNS ,_, but_CC may_MD not_RB be_VB as_RB effective_JJ as_IN the_DT short-term_JJ context_NN in_IN improving_VBG search_NN accuracy_NN for_IN a_DT particular_JJ session_NN ._.
+In_IN this_DT paper_NN ,_, we_PRP focus_VBP on_IN the_DT short-term_JJ context_NN ,_, though_IN some_DT of_IN our_PRP$ methods_NNS can_MD also_RB be_VB used_VBN to_TO naturally_RB incorporate_VB some_DT long-term_JJ context_NN ._.
+In_IN a_DT single_JJ search_NN session_NN ,_, a_DT user_NN may_MD interact_VB with_IN the_DT search_NN system_NN several_JJ times_NNS ._.
+During_IN interactions_NNS ,_, the_DT user_NN would_MD continuously_RB modify_VB the_DT query_NN ._.
+Therefore_RB for_IN the_DT current_JJ query_NN Qk_NN -LRB-_-LRB- except_IN for_IN the_DT first_JJ query_NN of_IN a_DT search_NN session_NN -RRB-_-RRB- ,_, there_EX is_VBZ a_DT query_JJ history_NN ,_, HQ_NN =_JJ -LRB-_-LRB- Q1_NN ,_, ..._: ,_, Qk1_NN -RRB-_-RRB- associated_VBN with_IN it_PRP ,_, which_WDT consists_VBZ of_IN the_DT preceding_VBG queries_NNS given_VBN by_IN the_DT same_JJ user_NN in_IN the_DT current_JJ session_NN ._.
+Note_VB that_IN we_PRP assume_VBP that_IN the_DT session_NN boundaries_NNS are_VBP known_VBN in_IN this_DT paper_NN ._.
+In_IN practice_NN ,_, we_PRP need_VBP techniques_NNS to_TO automatically_RB discover_VB session_NN boundaries_NNS ,_, which_WDT have_VBP been_VBN studied_VBN in_IN -LSB-_-LRB- #_# ,_, ##_NN -RSB-_-RRB- ._.
+Traditionally_RB ,_, the_DT retrieval_NN system_NN only_RB uses_VBZ the_DT current_JJ query_NN Qk_NN to_TO do_VB retrieval_NN ._.
+But_CC the_DT short-term_JJ query_NN history_NN clearly_RB may_MD provide_VB useful_JJ clues_NNS about_IN the_DT user_NN ''_'' s_NNS current_JJ information_NN need_NN as_IN seen_VBN in_IN the_DT java_NN example_NN given_VBN in_IN the_DT previous_JJ section_NN ._.
+Indeed_RB ,_, our_PRP$ previous_JJ work_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- has_VBZ shown_VBN that_IN the_DT short-term_JJ query_NN history_NN is_VBZ useful_JJ for_IN improving_VBG retrieval_NN accuracy_NN ._.
+In_IN addition_NN to_TO the_DT query_NN history_NN ,_, there_EX may_MD be_VB other_JJ short-term_JJ context_NN information_NN available_JJ ._.
+For_IN example_NN ,_, a_DT user_NN would_MD presumably_RB frequently_RB click_VBP some_DT documents_NNS to_TO view_VB ._.
+We_PRP refer_VBP to_TO data_NNS associated_VBN with_IN these_DT actions_NNS as_IN clickthrough_JJ history_NN ._.
+The_DT clickthrough_JJ data_NNS may_MD include_VB the_DT title_NN ,_, summary_NN ,_, and_CC perhaps_RB also_RB the_DT content_NN and_CC location_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, the_DT URL_NN -RRB-_-RRB- of_IN the_DT clicked_VBN document_NN ._.
+Although_IN it_PRP is_VBZ not_RB clear_JJ whether_IN a_DT viewed_VBN document_NN is_VBZ actually_RB relevant_JJ to_TO the_DT user_NN ''_'' s_NNS information_NN need_NN ,_, we_PRP may_MD safely_RB assume_VB that_IN the_DT displayed_VBN summary_NN /_: title_NN information_NN about_IN the_DT document_NN is_VBZ attractive_JJ to_TO the_DT user_NN ,_, thus_RB conveys_VBZ information_NN about_IN the_DT user_NN ''_'' s_NNS information_NN need_NN ._.
+Suppose_VB we_PRP concatenate_VBP all_PDT the_DT displayed_VBN text_NN information_NN about_IN a_DT document_NN -LRB-_-LRB- usually_RB title_NN and_CC summary_NN -RRB-_-RRB- together_RB ,_, we_PRP will_MD also_RB have_VB a_DT clicked_VBN summary_NN Ci_NN in_IN each_DT round_NN of_IN retrieval_NN ._.
+In_IN general_JJ ,_, we_PRP may_MD have_VB a_DT history_NN of_IN clicked_VBN summaries_NNS C1_NN ,_, ..._: ,_, Ck1_NN ._.
+We_PRP will_MD also_RB exploit_VB such_JJ clickthrough_JJ history_NN HC_NN =_JJ -LRB-_-LRB- C1_NN ,_, ..._: ,_, Ck1_NN -RRB-_-RRB- to_TO improve_VB our_PRP$ search_NN accuracy_NN for_IN the_DT current_JJ query_NN Qk_NNP ._.
+Previous_JJ work_NN has_VBZ also_RB shown_VBN positive_JJ results_NNS using_VBG similar_JJ clickthrough_JJ information_NN -LSB-_-LRB- ##_CD ,_, ##_CD -RSB-_-RRB- ._.
+Both_DT query_JJ history_NN and_CC clickthrough_JJ history_NN are_VBP implicit_JJ feedback_NN information_NN ,_, which_WDT naturally_RB exists_VBZ in_IN interactive_JJ information_NN retrieval_NN ,_, thus_RB no_DT additional_JJ user_NN effort_NN is_VBZ needed_VBN to_TO collect_VB them_PRP ._.
+In_IN this_DT paper_NN ,_, we_PRP study_VBD how_WRB to_TO exploit_VB such_JJ information_NN -LRB-_-LRB- HQ_NN and_CC HC_NN -RRB-_-RRB- ,_, develop_VB models_NNS to_TO incorporate_VB the_DT query_NN history_NN and_CC clickthrough_JJ history_NN into_IN a_DT retrieval_NN ranking_JJ function_NN ,_, and_CC quantitatively_RB evaluate_VB these_DT models_NNS ._.
+3_LS ._.
+LANGUAGE_NN MODELS_NNS FOR_IN CONTEXTSENSITIVEINFORMATIONRETRIEVAL_NNP Intuitively_NNP ,_, the_DT query_NN history_NN HQ_NN and_CC clickthrough_JJ history_NN HC_NN are_VBP both_DT useful_JJ for_IN improving_VBG search_NN accuracy_NN for_IN the_DT current_JJ query_NN Qk_NNP ._.
+An_DT important_JJ research_NN question_NN is_VBZ how_WRB we_PRP can_MD exploit_VB such_JJ information_NN effectively_RB ._.
+We_PRP propose_VBP to_TO use_VB statistical_JJ language_NN models_NNS to_TO model_VB a_DT user_NN ''_'' s_NNS information_NN need_NN and_CC develop_VB four_CD specific_JJ context-sensitive_JJ language_NN models_NNS to_TO incorporate_VB context_NN information_NN into_IN a_DT basic_JJ retrieval_NN model_NN ._.
+3_LS ._.
+#_# Basic_JJ retrieval_NN model_NN We_PRP use_VBP the_DT Kullback-Leibler_NNP -LRB-_-LRB- KL_NNP -RRB-_-RRB- divergence_NN method_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- as_IN our_PRP$ basic_JJ retrieval_NN method_NN ._.
+According_VBG to_TO this_DT model_NN ,_, the_DT retrieval_NN task_NN involves_VBZ computing_VBG a_DT query_NN language_NN model_NN Q_NNP for_IN a_DT given_VBN query_NN and_CC a_DT document_NN language_NN model_NN D_NN for_IN a_DT document_NN and_CC then_RB computing_VBG their_PRP$ KL_NN divergence_NN D_NN -LRB-_-LRB- Q_NNP |_CD |_NN D_NN -RRB-_-RRB- ,_, which_WDT serves_VBZ as_IN the_DT score_NN of_IN the_DT document_NN ._.
+One_CD advantage_NN of_IN this_DT approach_NN is_VBZ that_IN we_PRP can_MD naturally_RB incorporate_VB the_DT search_NN context_NN as_IN additional_JJ evidence_NN to_TO improve_VB our_PRP$ estimate_NN of_IN the_DT query_NN language_NN model_NN ._.
+Formally_RB ,_, let_VB HQ_NN =_JJ -LRB-_-LRB- Q1_NN ,_, ..._: ,_, Qk1_NN -RRB-_-RRB- be_VB the_DT query_NN history_NN and_CC the_DT current_JJ query_NN be_VB Qk_NNP ._.
+Let_VB HC_NN =_JJ -LRB-_-LRB- C1_NN ,_, ..._: ,_, Ck1_NN -RRB-_-RRB- be_VB the_DT clickthrough_JJ history_NN ._.
+Note_VB that_DT Ci_NN is_VBZ the_DT concatenation_NN of_IN all_DT clicked_VBN documents_NNS ''_'' summaries_NNS in_IN the_DT i-th_JJ round_NN of_IN retrieval_NN since_IN we_PRP may_MD reasonably_RB treat_VB all_PDT these_DT summaries_NNS equally_RB ._.
+Our_PRP$ task_NN is_VBZ to_TO estimate_VB a_DT context_NN query_NN model_NN ,_, which_WDT we_PRP denote_VBP by_IN p_NN -LRB-_-LRB- w_NN |_CD k_NN -RRB-_-RRB- ,_, based_VBN on_IN the_DT current_JJ query_NN Qk_NNP ,_, as_RB well_RB as_IN the_DT query_NN history_NN HQ_NN and_CC clickthrough_JJ history_NN HC_NN ._.
+We_PRP now_RB describe_VBP several_JJ different_JJ language_NN models_NNS for_IN exploiting_VBG HQ_NN and_CC HC_NN to_TO estimate_VB p_NN -LRB-_-LRB- w_NN |_CD k_NN -RRB-_-RRB- ._.
+We_PRP will_MD use_VB c_NN -LRB-_-LRB- w_NN ,_, X_NN -RRB-_-RRB- to_TO denote_VB the_DT count_NN of_IN word_NN w_NN in_IN text_NN X_NN ,_, which_WDT could_MD be_VB either_CC a_DT query_NN or_CC a_DT clicked_VBN document_NN ''_'' s_NNS summary_NN or_CC any_DT other_JJ text_NN ._.
+We_PRP will_MD use_VB |_CD X_NN |_CD to_TO denote_VB the_DT length_NN of_IN text_NN X_NN or_CC the_DT total_JJ number_NN of_IN words_NNS in_IN X_NN ._.
+3_LS ._.
+#_# Fixed_VBN Coefficient_NNP Interpolation_NN -LRB-_-LRB- FixInt_NN -RRB-_-RRB- Our_PRP$ first_JJ idea_NN is_VBZ to_TO summarize_VB the_DT query_NN history_NN HQ_NN with_IN a_DT unigram_JJ language_NN model_NN p_NN -LRB-_-LRB- w_NN |_CD HQ_NN -RRB-_-RRB- and_CC the_DT clickthrough_JJ history_NN HC_NN with_IN another_DT unigram_JJ language_NN model_NN p_NN -LRB-_-LRB- w_NN |_CD HC_NN -RRB-_-RRB- ._.
+Then_RB we_PRP linearly_RB interpolate_VBP these_DT two_CD history_NN models_NNS to_TO obtain_VB the_DT history_NN model_NN p_NN -LRB-_-LRB- w_NN |_CD H_NN -RRB-_-RRB- ._.
+Finally_RB ,_, we_PRP interpolate_VBP the_DT history_NN model_NN p_NN -LRB-_-LRB- w_NN |_CD H_NN -RRB-_-RRB- with_IN the_DT current_JJ query_NN model_NN p_NN -LRB-_-LRB- w_NN |_CD Qk_NN -RRB-_-RRB- ._.
+These_DT models_NNS are_VBP defined_VBN as_IN follows_VBZ ._.
+p_NN -LRB-_-LRB- w_NN |_CD Qi_NNP -RRB-_-RRB- =_JJ c_NN -LRB-_-LRB- w_NN ,_, Qi_NN -RRB-_-RRB- |_CD Qi_NNP |_CD p_NN -LRB-_-LRB- w_NN |_CD HQ_NN -RRB-_-RRB- =_JJ 1_CD k_NN #_# i_FW =_JJ k1_NN i_FW =_JJ #_# p_NN -LRB-_-LRB- w_NN |_CD Qi_NNP -RRB-_-RRB- p_NN -LRB-_-LRB- w_NN |_CD Ci_NN -RRB-_-RRB- =_JJ c_NN -LRB-_-LRB- w_NN ,_, Ci_NN -RRB-_-RRB- |_CD Ci_NNP |_CD p_NN -LRB-_-LRB- w_NN |_CD HC_NN -RRB-_-RRB- =_JJ 1_CD k_NN #_# i_FW =_JJ k1_NN i_FW =_JJ #_# p_NN -LRB-_-LRB- w_NN |_CD Ci_NN -RRB-_-RRB- p_NN -LRB-_-LRB- w_NN |_CD H_NN -RRB-_-RRB- =_JJ p_NN -LRB-_-LRB- w_NN |_CD HC_NN -RRB-_-RRB- +_CC -LRB-_-LRB- #_# -RRB-_-RRB- p_NN -LRB-_-LRB- w_NN |_CD HQ_NN -RRB-_-RRB- p_NN -LRB-_-LRB- w_NN |_CD k_NN -RRB-_-RRB- =_JJ p_NN -LRB-_-LRB- w_NN |_CD Qk_NN -RRB-_-RRB- +_CC -LRB-_-LRB- #_# -RRB-_-RRB- p_NN -LRB-_-LRB- w_NN |_CD H_NN -RRB-_-RRB- where_WRB -LSB-_-LRB- #_# ,_, #_# -RSB-_-RRB- is_VBZ a_DT parameter_NN to_TO control_VB the_DT weight_NN on_IN each_DT history_NN model_NN ,_, and_CC where_WRB -LSB-_-LRB- #_# ,_, #_# -RSB-_-RRB- is_VBZ a_DT parameter_NN to_TO control_VB the_DT weight_NN on_IN the_DT current_JJ query_NN and_CC the_DT history_NN information_NN ._.
+If_IN we_PRP combine_VBP these_DT equations_NNS ,_, we_PRP see_VBP that_IN p_NN -LRB-_-LRB- w_NN |_CD k_NN -RRB-_-RRB- =_JJ p_NN -LRB-_-LRB- w_NN |_CD Qk_NN -RRB-_-RRB- +_CC -LRB-_-LRB- #_# -RRB-_-RRB- -LSB-_-LRB- p_NN -LRB-_-LRB- w_NN |_CD HC_NN -RRB-_-RRB- +_CC -LRB-_-LRB- #_# -RRB-_-RRB- p_NN -LRB-_-LRB- w_NN |_CD HQ_NN -RRB-_-RRB- -RSB-_-RRB- That_DT is_VBZ ,_, the_DT estimated_VBN context_NN query_NN model_NN is_VBZ just_RB a_DT fixed_VBN coefficient_NN interpolation_NN of_IN three_CD models_NNS p_NN -LRB-_-LRB- w_NN |_CD Qk_NN -RRB-_-RRB- ,_, p_NN -LRB-_-LRB- w_NN |_CD HQ_NN -RRB-_-RRB- ,_, and_CC p_NN -LRB-_-LRB- w_NN |_CD HC_NN -RRB-_-RRB- ._.
+3_LS ._.
+#_# Bayesian_JJ Interpolation_NN -LRB-_-LRB- BayesInt_NN -RRB-_-RRB- One_CD possible_JJ problem_NN with_IN the_DT FixInt_NNP approach_NN is_VBZ that_IN the_DT coefficients_NNS ,_, especially_RB ,_, are_VBP fixed_VBN across_IN all_PDT the_DT queries_NNS ._.
+But_CC intuitively_RB ,_, if_IN our_PRP$ current_JJ query_NN Qk_NN is_VBZ very_RB long_RB ,_, we_PRP should_MD trust_VB the_DT current_JJ query_NN more_RBR ,_, whereas_IN if_IN Qk_NNP has_VBZ just_RB one_CD word_NN ,_, it_PRP may_MD be_VB beneficial_JJ to_TO put_VB more_JJR weight_NN on_IN the_DT history_NN ._.
+To_TO capture_VB this_DT intuition_NN ,_, we_PRP treat_VBP p_NN -LRB-_-LRB- w_NN |_CD HQ_NN -RRB-_-RRB- and_CC p_NN -LRB-_-LRB- w_NN |_CD HC_NN -RRB-_-RRB- as_IN Dirichlet_NNP priors_NNS and_CC Qk_NN as_IN the_DT observed_VBN data_NNS to_TO estimate_VB a_DT context_NN query_NN model_NN using_VBG Bayesian_JJ estimator_NN ._.
+The_DT estimated_VBN model_NN is_VBZ given_VBN by_IN p_NN -LRB-_-LRB- w_NN |_CD k_NN -RRB-_-RRB- =_JJ c_NN -LRB-_-LRB- w_NN ,_, Qk_NN -RRB-_-RRB- +_CC p_NN -LRB-_-LRB- w_NN |_CD HQ_NN -RRB-_-RRB- +_CC p_NN -LRB-_-LRB- w_NN |_CD HC_NN -RRB-_-RRB- |_CD Qk_NNP |_CD +_CC +_CC =_JJ |_CD Qk_NNP |_CD |_CD Qk_NNP |_CD +_CC +_CC p_NN -LRB-_-LRB- w_NN |_CD Qk_NN -RRB-_-RRB- +_CC +_CC |_CD Qk_NNP |_CD +_CC +_CC -LSB-_-LRB- +_CC p_NN -LRB-_-LRB- w_NN |_CD HQ_NN -RRB-_-RRB- +_CC +_CC p_NN -LRB-_-LRB- w_NN |_CD HC_NN -RRB-_-RRB- -RSB-_-RRB- where_WRB is_VBZ the_DT prior_JJ sample_NN size_NN for_IN p_NN -LRB-_-LRB- w_NN |_CD HQ_NN -RRB-_-RRB- and_CC is_VBZ the_DT prior_JJ sample_NN size_NN for_IN p_NN -LRB-_-LRB- w_NN |_CD HC_NN -RRB-_-RRB- ._.
+We_PRP see_VBP that_IN the_DT only_JJ difference_NN between_IN BayesInt_NNP and_CC FixInt_NNP is_VBZ the_DT interpolation_NN coefficients_NNS are_VBP now_RB adaptive_JJ to_TO the_DT query_NN length_NN ._.
+Indeed_RB ,_, when_WRB viewing_VBG BayesInt_NNP as_IN FixInt_NNP ,_, we_PRP see_VBP that_IN =_JJ |_CD Qk_NNP |_CD |_CD Qk_NNP |_CD +_CC +_CC ,_, =_JJ +_CC ,_, thus_RB with_IN fixed_VBN and_CC ,_, we_PRP will_MD have_VB a_DT query-dependent_JJ ._.
+Later_RB we_PRP will_MD show_VB that_IN such_PDT an_DT adaptive_JJ empirically_RB performs_VBZ better_JJR than_IN a_DT fixed_VBN ._.
+3_LS ._.
+#_# Online_NNP Bayesian_NNP Updating_NNP -LRB-_-LRB- OnlineUp_NN -RRB-_-RRB- Both_CC FixInt_NN and_CC BayesInt_NN summarize_VBP the_DT history_NN information_NN by_IN averaging_VBG the_DT unigram_JJ language_NN models_NNS estimated_VBN based_VBN on_IN previous_JJ queries_NNS or_CC clicked_VBD summaries_NNS ._.
+This_DT means_VBZ that_IN all_DT previous_JJ queries_NNS are_VBP treated_VBN equally_RB and_CC so_RB are_VBP all_DT clicked_VBD summaries_NNS ._.
+However_RB ,_, as_IN the_DT user_NN interacts_VBZ with_IN the_DT system_NN and_CC acquires_VBZ more_RBR knowledge_NN about_IN the_DT information_NN in_IN the_DT collection_NN ,_, presumably_RB ,_, the_DT reformulated_VBN queries_NNS will_MD become_VB better_RBR and_CC better_RBR ._.
+Thus_RB assigning_VBG decaying_JJ weights_NNS to_TO the_DT previous_JJ queries_NNS so_RB as_IN to_TO trust_VB a_DT recent_JJ query_NN more_RBR than_IN an_DT earlier_JJR query_NN appears_VBZ to_TO be_VB reasonable_JJ ._.
+Interestingly_RB ,_, if_IN we_PRP incrementally_RB update_VBP our_PRP$ belief_NN about_IN the_DT user_NN ''_'' s_NNS information_NN need_NN after_IN seeing_VBG each_DT query_NN ,_, we_PRP could_MD naturally_RB obtain_VB decaying_JJ weights_NNS on_IN the_DT previous_JJ queries_NNS ._.
+Since_IN such_PDT an_DT incremental_JJ online_NN updating_VBG strategy_NN can_MD be_VB used_VBN to_TO exploit_VB any_DT evidence_NN in_IN an_DT interactive_JJ retrieval_NN system_NN ,_, we_PRP present_VBP it_PRP in_IN a_DT more_RBR general_JJ way_NN ._.
+In_IN a_DT typical_JJ retrieval_NN system_NN ,_, the_DT retrieval_NN system_NN responds_VBZ to_TO every_DT new_JJ query_NN entered_VBN by_IN the_DT user_NN by_IN presenting_VBG a_DT ranked_VBN list_NN of_IN documents_NNS ._.
+In_IN order_NN to_TO rank_VB documents_NNS ,_, the_DT system_NN must_MD have_VB some_DT model_NN for_IN the_DT user_NN ''_'' s_NNS information_NN need_NN ._.
+In_IN the_DT KL_NN divergence_NN retrieval_NN model_NN ,_, this_DT means_VBZ that_IN the_DT system_NN must_MD compute_VB a_DT query_NN model_NN whenever_WRB a_DT user_NN enters_VBZ a_DT -LRB-_-LRB- new_JJ -RRB-_-RRB- query_NN ._.
+A_DT principled_JJ way_NN of_IN updating_VBG the_DT query_NN model_NN is_VBZ to_TO use_VB Bayesian_JJ estimation_NN ,_, which_WDT we_PRP discuss_VBP below_IN ._.
+3_LS ._.
+#_# ._.
+#_# Bayesian_JJ updating_VBG We_PRP first_RB discuss_VB how_WRB we_PRP apply_VBP Bayesian_JJ estimation_NN to_TO update_VB a_DT query_NN model_NN in_IN general_JJ ._.
+Let_VB p_NN -LRB-_-LRB- w_NN |_NN -RRB-_-RRB- be_VB our_PRP$ current_JJ query_NN model_NN and_CC T_NN be_VB a_DT new_JJ piece_NN of_IN text_NN evidence_NN observed_VBN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, T_NN can_MD be_VB a_DT query_NN or_CC a_DT clicked_VBN summary_NN -RRB-_-RRB- ._.
+To_TO update_VB the_DT query_NN model_NN based_VBN on_IN T_NN ,_, we_PRP use_VBP to_TO define_VB a_DT Dirichlet_NNP prior_RB parameterized_VBD as_IN Dir_NN -LRB-_-LRB- T_NN p_NN -LRB-_-LRB- w1_NN |_NN -RRB-_-RRB- ,_, ..._: ,_, T_NN p_NN -LRB-_-LRB- wN_NN |_CD -RRB-_-RRB- -RRB-_-RRB- where_WRB T_NN is_VBZ the_DT equivalent_JJ sample_NN size_NN of_IN the_DT prior_JJ ._.
+We_PRP use_VBP Dirichlet_NNP prior_RB because_IN it_PRP is_VBZ a_DT conjugate_NN prior_RB for_IN multinomial_JJ distributions_NNS ._.
+With_IN such_PDT a_DT conjugate_NN prior_RB ,_, the_DT predictive_JJ distribution_NN of_IN -LRB-_-LRB- or_CC equivalently_RB ,_, the_DT mean_NN of_IN the_DT posterior_JJ distribution_NN of_IN is_VBZ given_VBN by_IN p_NN -LRB-_-LRB- w_NN |_NN -RRB-_-RRB- =_JJ c_NN -LRB-_-LRB- w_NN ,_, T_NN -RRB-_-RRB- +_CC T_NN p_NN -LRB-_-LRB- w_NN |_NN -RRB-_-RRB- |_CD T_NN |_NN +_CC T_NN -LRB-_-LRB- #_# -RRB-_-RRB- where_WRB c_NN -LRB-_-LRB- w_NN ,_, T_NN -RRB-_-RRB- is_VBZ the_DT count_NN of_IN w_NN in_IN T_NN and_CC |_NN T_NN |_CD is_VBZ the_DT length_NN of_IN T_NN ._.
+Parameter_NN T_NN indicates_VBZ our_PRP$ confidence_NN in_IN the_DT prior_JJ expressed_VBN in_IN terms_NNS of_IN an_DT equivalent_JJ text_NN sample_NN comparable_JJ with_IN T_NN ._.
+For_IN example_NN ,_, T_NN =_JJ #_# indicates_VBZ that_IN the_DT influence_NN of_IN the_DT prior_JJ is_VBZ equivalent_JJ to_TO adding_VBG one_CD extra_JJ word_NN to_TO T_NN ._.
+3_LS ._.
+#_# ._.
+#_# Sequential_JJ query_NN model_NN updating_VBG We_PRP now_RB discuss_VBP how_WRB we_PRP can_MD update_VB our_PRP$ query_NN model_NN over_IN time_NN during_IN an_DT interactive_JJ retrieval_NN process_NN using_VBG Bayesian_JJ estimation_NN ._.
+In_IN general_JJ ,_, we_PRP assume_VBP that_IN the_DT retrieval_NN system_NN maintains_VBZ a_DT current_JJ query_NN model_NN i_FW at_IN any_DT moment_NN ._.
+As_RB soon_RB as_IN we_PRP obtain_VB some_DT implicit_JJ feedback_NN evidence_NN in_IN the_DT form_NN of_IN a_DT piece_NN of_IN text_NN Ti_NNP ,_, we_PRP will_MD update_VB the_DT query_NN model_NN ._.
+Initially_RB ,_, before_IN we_PRP see_VBP any_DT user_NN query_NN ,_, we_PRP may_MD already_RB have_VB some_DT information_NN about_IN the_DT user_NN ._.
+For_IN example_NN ,_, we_PRP may_MD have_VB some_DT information_NN about_IN what_WP documents_NNS the_DT user_NN has_VBZ viewed_VBN in_IN the_DT past_NN ._.
+We_PRP use_VBP such_JJ information_NN to_TO define_VB a_DT prior_RB on_IN the_DT query_NN model_NN ,_, which_WDT is_VBZ denoted_VBN by_IN #_# ._.
+After_IN we_PRP observe_VBP the_DT first_JJ query_NN Q1_NN ,_, we_PRP can_MD update_VB the_DT query_NN model_NN based_VBN on_IN the_DT new_JJ observed_VBN data_NNS Q1_NN ._.
+The_DT updated_VBN query_NN model_NN #_# can_MD then_RB be_VB used_VBN for_IN ranking_VBG documents_NNS in_IN response_NN to_TO Q1_NN ._.
+As_IN the_DT user_NN views_VBZ some_DT documents_NNS ,_, the_DT displayed_VBN summary_NN text_NN for_IN such_JJ documents_NNS C1_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, clicked_VBD summaries_NNS -RRB-_-RRB- can_MD serve_VB as_IN some_DT new_JJ data_NNS for_IN us_PRP to_TO further_JJ update_VBP the_DT query_NN model_NN to_TO obtain_VB #_# ._.
+As_IN we_PRP obtain_VB the_DT second_JJ query_NN Q2_NN from_IN the_DT user_NN ,_, we_PRP can_MD update_VB #_# to_TO obtain_VB a_DT new_JJ model_NN #_# ._.
+In_IN general_JJ ,_, we_PRP may_MD repeat_VB such_PDT an_DT updating_VBG process_NN to_TO iteratively_RB update_VB the_DT query_NN model_NN ._.
+Clearly_RB ,_, we_PRP see_VBP two_CD types_NNS of_IN updating_VBG :_: -LRB-_-LRB- #_# -RRB-_-RRB- updating_VBG based_VBN on_IN a_DT new_JJ query_NN Qi_NNP ;_: -LRB-_-LRB- #_# -RRB-_-RRB- updating_VBG based_VBN on_IN a_DT new_JJ clicked_VBN summary_NN Ci_NN ._.
+In_IN both_DT cases_NNS ,_, we_PRP can_MD treat_VB the_DT current_JJ model_NN as_IN a_DT prior_JJ of_IN the_DT context_NN query_NN model_NN and_CC treat_VB the_DT new_JJ observed_VBN query_NN or_CC clicked_VBD summary_NN as_IN observed_VBN data_NNS ._.
+Thus_RB we_PRP have_VBP the_DT following_VBG updating_VBG equations_NNS :_: p_NN -LRB-_-LRB- w_NN |_CD i_LS -RRB-_-RRB- =_JJ c_NN -LRB-_-LRB- w_NN ,_, Qi_NN -RRB-_-RRB- +_CC ip_NN -LRB-_-LRB- w_NN |_CD i1_NN -RRB-_-RRB- |_CD Qi_NNP |_NN +_CC i_FW p_NN -LRB-_-LRB- w_NN |_CD i_LS -RRB-_-RRB- =_JJ c_NN -LRB-_-LRB- w_NN ,_, Ci_NN -RRB-_-RRB- +_CC ip_NN -LRB-_-LRB- w_NN |_CD i_LS -RRB-_-RRB- |_SYM Ci_FW |_FW +_CC i_FW where_WRB i_FW is_VBZ the_DT equivalent_JJ sample_NN size_NN for_IN the_DT prior_JJ when_WRB updating_VBG the_DT model_NN based_VBN on_IN a_DT query_NN ,_, while_IN i_FW is_VBZ the_DT equivalent_JJ sample_NN size_NN for_IN the_DT prior_JJ when_WRB updating_VBG the_DT model_NN based_VBN on_IN a_DT clicked_VBN summary_NN ._.
+If_IN we_PRP set_VBD i_FW =_JJ #_# -LRB-_-LRB- or_CC i_FW =_JJ #_# -RRB-_-RRB- we_PRP essentially_RB ignore_VBP the_DT prior_JJ model_NN ,_, thus_RB would_MD start_VB a_DT completely_RB new_JJ query_NN model_NN based_VBN on_IN the_DT query_NN Qi_NNP -LRB-_-LRB- or_CC the_DT clicked_VBN summary_NN Ci_NN -RRB-_-RRB- ._.
+On_IN the_DT other_JJ hand_NN ,_, if_IN we_PRP set_VBD i_FW =_JJ +_CC -LRB-_-LRB- or_CC i_FW =_JJ +_CC -RRB-_-RRB- we_PRP essentially_RB ignore_VBP the_DT observed_VBN query_NN -LRB-_-LRB- or_CC the_DT clicked_VBN summary_NN -RRB-_-RRB- and_CC do_VBP not_RB update_VB our_PRP$ model_NN ._.
+Thus_RB the_DT model_NN remains_VBZ the_DT same_JJ as_IN if_IN we_PRP do_VBP not_RB observe_VB any_DT new_JJ text_NN evidence_NN ._.
+In_IN general_JJ ,_, the_DT parameters_NNS i_FW and_CC i_FW may_MD have_VB different_JJ values_NNS for_IN different_JJ i_LS ._.
+For_IN example_NN ,_, at_IN the_DT very_JJ beginning_NN ,_, we_PRP may_MD have_VB very_RB sparse_JJ query_NN history_NN ,_, thus_RB we_PRP could_MD use_VB a_DT smaller_JJR i_FW ,_, but_CC later_RB as_IN the_DT query_NN history_NN is_VBZ richer_JJR ,_, we_PRP can_MD consider_VB using_VBG a_DT larger_JJR i_LS ._.
+But_CC in_IN our_PRP$ experiments_NNS ,_, unless_IN otherwise_RB stated_VBN ,_, we_PRP set_VBD them_PRP to_TO the_DT same_JJ constants_NNS ,_, i_FW ._.
+e_LS ._.
+,_, i_FW ,_, j_NN ,_, i_FW =_JJ j_NN ,_, i_FW =_JJ j_NN ._.
+Note_VB that_IN we_PRP can_MD take_VB either_CC p_NN -LRB-_-LRB- w_NN |_CD i_LS -RRB-_-RRB- or_CC p_NN -LRB-_-LRB- w_NN |_CD i_LS -RRB-_-RRB- as_IN our_PRP$ context_NN query_NN model_NN for_IN ranking_JJ documents_NNS ._.
+This_DT suggests_VBZ that_IN we_PRP do_VBP not_RB have_VB to_TO wait_VB until_IN a_DT user_NN enters_VBZ a_DT new_JJ query_NN to_TO initiate_VB a_DT new_JJ round_NN of_IN retrieval_NN ;_: instead_RB ,_, as_RB soon_RB as_IN we_PRP collect_VBP clicked_VBN summary_NN Ci_NN ,_, we_PRP can_MD update_VB the_DT query_NN model_NN and_CC use_NN p_NN -LRB-_-LRB- w_NN |_CD i_LS -RRB-_-RRB- to_TO immediately_RB rerank_VB any_DT documents_NNS that_IN a_DT user_NN has_VBZ not_RB yet_RB seen_VBN ._.
+To_TO score_VB documents_NNS after_IN seeing_VBG query_NN Qk_NNP ,_, we_PRP use_VBP p_NN -LRB-_-LRB- w_NN |_CD k_NN -RRB-_-RRB- ,_, i_FW ._.
+e_LS ._.
+,_, p_NN -LRB-_-LRB- w_NN |_CD k_NN -RRB-_-RRB- =_JJ p_NN -LRB-_-LRB- w_NN |_CD k_NN -RRB-_-RRB- 3_CD ._.
+#_# Batch_NN Bayesian_JJ updating_VBG -LRB-_-LRB- BatchUp_NN -RRB-_-RRB- If_IN we_PRP set_VBD the_DT equivalent_JJ sample_NN size_NN parameters_NNS to_TO fixed_VBN constant_JJ ,_, the_DT OnlineUp_NN algorithm_NN would_MD introduce_VB a_DT decaying_JJ factor_NN -_: repeated_VBN interpolation_NN would_MD cause_VB the_DT early_JJ data_NNS to_TO have_VB a_DT low_JJ weight_NN ._.
+This_DT may_MD be_VB appropriate_JJ for_IN the_DT query_NN history_NN as_IN it_PRP is_VBZ reasonable_JJ to_TO believe_VB that_IN the_DT user_NN becomes_VBZ better_JJR and_CC better_JJR at_IN query_NN formulation_NN as_IN time_NN goes_VBZ on_IN ,_, but_CC it_PRP is_VBZ not_RB necessarily_RB appropriate_JJ for_IN the_DT clickthrough_JJ information_NN ,_, especially_RB because_IN we_PRP use_VBP the_DT displayed_VBN summary_NN ,_, rather_RB than_IN the_DT actual_JJ content_NN of_IN a_DT clicked_VBN document_NN ._.
+One_CD way_NN to_TO avoid_VB applying_VBG a_DT decaying_JJ interpolation_NN to_TO the_DT clickthrough_JJ data_NNS is_VBZ to_TO do_VB OnlineUp_NN only_RB for_IN the_DT query_NN history_NN Q_NNP =_JJ -LRB-_-LRB- Q1_NN ,_, ..._: ,_, Qi1_NN -RRB-_-RRB- ,_, but_CC not_RB for_IN the_DT clickthrough_JJ data_NN C_NN ._.
+We_PRP first_RB buffer_VB all_PDT the_DT clickthrough_JJ data_NNS together_RB and_CC use_VB the_DT whole_JJ chunk_NN of_IN clickthrough_JJ data_NNS to_TO update_VB the_DT model_NN generated_VBN through_IN running_VBG OnlineUp_NN on_IN previous_JJ queries_NNS ._.
+The_DT updating_VBG equations_NNS are_VBP as_IN follows_VBZ ._.
+p_NN -LRB-_-LRB- w_NN |_CD i_LS -RRB-_-RRB- =_JJ c_NN -LRB-_-LRB- w_NN ,_, Qi_NN -RRB-_-RRB- +_CC ip_NN -LRB-_-LRB- w_NN |_CD i1_NN -RRB-_-RRB- |_CD Qi_NNP |_NN +_CC i_FW p_NN -LRB-_-LRB- w_NN |_CD i_LS -RRB-_-RRB- =_JJ i1_NN j_NN =_JJ #_# c_NN -LRB-_-LRB- w_NN ,_, Cj_NN -RRB-_-RRB- +_CC ip_NN -LRB-_-LRB- w_NN |_CD i_LS -RRB-_-RRB- i1_NN j_NN =_JJ #_# |_CD Cj_NN |_NN +_CC i_FW where_WRB i_FW has_VBZ the_DT same_JJ interpretation_NN as_IN in_IN OnlineUp_NN ,_, but_CC i_FW now_RB indicates_VBZ to_TO what_WP extent_NN we_PRP want_VBP to_TO trust_VB the_DT clicked_VBN summaries_NNS ._.
+As_IN in_IN OnlineUp_NN ,_, we_PRP set_VBD all_DT i_FW ''_'' s_NNS and_CC i_FW ''_'' s_VBZ to_TO the_DT same_JJ value_NN ._.
+And_CC to_TO rank_VB documents_NNS after_IN seeing_VBG the_DT current_JJ query_NN Qk_NNP ,_, we_PRP use_VBP p_NN -LRB-_-LRB- w_NN |_CD k_NN -RRB-_-RRB- =_JJ p_NN -LRB-_-LRB- w_NN |_CD k_NN -RRB-_-RRB- 4_CD ._.
+DATA_NNP COLLECTION_NNP In_IN order_NN to_TO quantitatively_RB evaluate_VB our_PRP$ models_NNS ,_, we_PRP need_VBP a_DT data_NN set_NN which_WDT includes_VBZ not_RB only_RB a_DT text_NN database_NN and_CC testing_NN topics_NNS ,_, but_CC also_RB query_JJ history_NN and_CC clickthrough_JJ history_NN for_IN each_DT topic_NN ._.
+Since_IN there_EX is_VBZ no_DT such_JJ data_NNS set_VBN available_JJ to_TO us_PRP ,_, we_PRP have_VBP to_TO create_VB one_CD ._.
+There_EX are_VBP two_CD choices_NNS ._.
+One_CD is_VBZ to_TO extract_VB topics_NNS and_CC any_DT associated_VBN query_NN history_NN and_CC clickthrough_JJ history_NN for_IN each_DT topic_NN from_IN the_DT log_NN of_IN a_DT retrieval_NN system_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, search_NN engine_NN -RRB-_-RRB- ._.
+But_CC the_DT problem_NN is_VBZ that_IN we_PRP have_VBP no_DT relevance_NN judgments_NNS on_IN such_JJ data_NNS ._.
+The_DT other_JJ choice_NN is_VBZ to_TO use_VB a_DT TREC_NN data_NN set_NN ,_, which_WDT has_VBZ a_DT text_NN database_NN ,_, topic_NN description_NN and_CC relevance_NN judgment_NN file_NN ._.
+Unfortunately_RB ,_, there_EX are_VBP no_DT query_NN history_NN and_CC clickthrough_JJ history_NN data_NNS ._.
+We_PRP decide_VBP to_TO augment_VB a_DT TREC_NN data_NNS set_VBN by_IN collecting_VBG query_JJ history_NN and_CC clickthrough_JJ history_NN data_NNS ._.
+We_PRP select_VBP TREC_NN AP88_NN ,_, AP89_NN and_CC AP90_NN data_NNS as_IN our_PRP$ text_NN database_NN ,_, because_IN AP_NNP data_NNS has_VBZ been_VBN used_VBN in_IN several_JJ TREC_NN tasks_NNS and_CC has_VBZ relatively_RB complete_JJ judgments_NNS ._.
+There_EX are_VBP altogether_RB ######_RB news_NN articles_NNS and_CC the_DT average_JJ document_NN length_NN is_VBZ ###_CD words_NNS ._.
+Most_JJS articles_NNS have_VBP titles_NNS ._.
+If_IN not_RB ,_, we_PRP select_VBP the_DT first_JJ sentence_NN of_IN the_DT text_NN as_IN the_DT title_NN ._.
+For_IN the_DT preprocessing_NN ,_, we_PRP only_RB do_VBP case_NN folding_JJ and_CC do_VBP not_RB do_VB stopword_JJ removal_NN or_CC stemming_VBG ._.
+We_PRP select_VBP ##_CD relatively_RB difficult_JJ topics_NNS from_IN TREC_NN topics_NNS 1-150_CD ._.
+These_DT ##_CD topics_NNS have_VBP the_DT worst_JJS average_JJ precision_NN performance_NN among_IN TREC_NN topics_NNS 1-150_CD according_VBG to_TO some_DT baseline_NN experiments_NNS using_VBG the_DT KL-Divergence_NN model_NN with_IN Bayesian_JJ prior_JJ smoothing_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+The_DT reason_NN why_WRB we_PRP select_VBP difficult_JJ topics_NNS is_VBZ that_IN the_DT user_NN then_RB would_MD have_VB to_TO have_VB several_JJ interactions_NNS with_IN the_DT retrieval_NN system_NN in_IN order_NN to_TO get_VB satisfactory_JJ results_NNS so_IN that_IN we_PRP can_MD expect_VB to_TO collect_VB a_DT relatively_RB richer_JJR query_NN history_NN and_CC clickthrough_JJ history_NN data_NNS from_IN the_DT user_NN ._.
+In_IN real_JJ applications_NNS ,_, we_PRP may_MD also_RB expect_VB our_PRP$ models_NNS to_TO be_VB most_RBS useful_JJ for_IN such_JJ difficult_JJ topics_NNS ,_, so_RB our_PRP$ data_NNS collection_NN strategy_NN reflects_VBZ the_DT real_JJ world_NN applications_NNS well_RB ._.
+We_PRP index_NN the_DT TREC_NN AP_NN data_NNS set_VBN and_CC set_VBN up_RP a_DT search_NN engine_NN and_CC web_NN interface_NN for_IN TREC_NN AP_NN news_NN articles_NNS ._.
+We_PRP use_VBP #_# subjects_NNS to_TO do_VB experiments_NNS to_TO collect_VB query_JJ history_NN and_CC clickthrough_JJ history_NN data_NNS ._.
+Each_DT subject_NN is_VBZ assigned_VBN ##_CD topics_NNS and_CC given_VBN the_DT topic_NN descriptions_NNS provided_VBN by_IN TREC_NN ._.
+For_IN each_DT topic_NN ,_, the_DT first_JJ query_NN is_VBZ the_DT title_NN of_IN the_DT topic_NN given_VBN in_IN the_DT original_JJ TREC_NN topic_NN description_NN ._.
+After_IN the_DT subject_JJ submits_VBZ the_DT query_NN ,_, the_DT search_NN engine_NN will_MD do_VB retrieval_NN and_CC return_VB a_DT ranked_VBN list_NN of_IN search_NN results_VBZ to_TO the_DT subject_NN ._.
+The_DT subject_NN will_MD browse_VB the_DT results_NNS and_CC maybe_RB click_VB one_CD or_CC more_JJR results_NNS to_TO browse_VB the_DT full_JJ text_NN of_IN article_NN -LRB-_-LRB- s_NNS -RRB-_-RRB- ._.
+The_DT subject_NN may_MD also_RB modify_VB the_DT query_NN to_TO do_VB another_DT search_NN ._.
+For_IN each_DT topic_NN ,_, the_DT subject_JJ composes_VBZ at_IN least_JJS #_# queries_NNS ._.
+In_IN our_PRP$ experiment_NN ,_, only_RB the_DT first_JJ #_# queries_NNS for_IN each_DT topic_NN are_VBP used_VBN ._.
+The_DT user_NN needs_VBZ to_TO select_VB the_DT topic_NN number_NN from_IN a_DT selection_NN menu_NN before_IN submitting_VBG the_DT query_NN to_TO the_DT search_NN engine_NN so_IN that_IN we_PRP can_MD easily_RB detect_VB the_DT session_NN boundary_NN ,_, which_WDT is_VBZ not_RB the_DT focus_NN of_IN our_PRP$ study_NN ._.
+We_PRP use_VBP a_DT relational_NN database_NN to_TO store_VB user_NN interactions_NNS ,_, including_VBG the_DT submitted_VBN queries_NNS and_CC clicked_VBD documents_NNS ._.
+For_IN each_DT query_NN ,_, we_PRP store_VBP the_DT query_NN terms_NNS and_CC the_DT associated_JJ result_NN pages_NNS ._.
+And_CC for_IN each_DT clicked_VBN document_NN ,_, we_PRP store_VBP the_DT summary_NN as_IN shown_VBN on_IN the_DT search_NN result_VBP page_NN ._.
+The_DT summary_NN of_IN the_DT article_NN is_VBZ query_NN dependent_JJ and_CC is_VBZ computed_VBN online_NN using_VBG fixed-length_JJ passage_NN retrieval_NN -LRB-_-LRB- KL_NN divergence_NN model_NN with_IN Bayesian_JJ prior_JJ smoothing_NN -RRB-_-RRB- ._.
+Among_IN ###_CD -LRB-_-LRB- #_# for_IN each_DT of_IN ##_CD topics_NNS -RRB-_-RRB- queries_NNS which_WDT we_PRP study_VB in_IN the_DT experiment_NN ,_, the_DT average_JJ query_NN length_NN is_VBZ #_# ._.
+##_NN words_NNS ._.
+Altogether_RB there_EX are_VBP ##_CD documents_NNS clicked_VBD to_TO view_VB ._.
+So_RB on_IN average_NN ,_, there_EX are_VBP around_IN #_# clicks_VBZ per_IN topic_NN ._.
+The_DT average_JJ length_NN of_IN clicked_VBN summary_NN FixInt_NN BayesInt_NNP OnlineUp_NNP BatchUp_NNP Query_NNP -LRB-_-LRB- =_JJ #_# ._.
+#_# ,_, =_JJ #_# ._.
+#_# -RRB-_-RRB- -LRB-_-LRB- =_JJ #_# ._.
+#_# ,_, =_JJ #_# ._.
+#_# -RRB-_-RRB- -LRB-_-LRB- =_JJ #_# ._.
+#_# ,_, =_JJ ##_NN ._.
+#_# -RRB-_-RRB- -LRB-_-LRB- =_JJ #_# ._.
+#_# ,_, =_JJ ##_NN ._.
+#_# -RRB-_-RRB- MAP_NN pr_NN @_IN 20docs_NNS MAP_NN pr_NN @_IN 20docs_NNS MAP_NN pr_NN @_IN 20docs_NNS MAP_NN pr_NN @_IN 20docs_JJ q1_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_CD q2_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_CD q2_NN +_CC HQ_NN +_CC HC_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NNP Improve_NNP ._.
+#_# ._.
+#_# %_NN -_: #_# ._.
+#_# %_NN ##_CD ._.
+#_# %_NN -2_CD ._.
+#_# %_NN -31_CD ._.
+#_# %_NN -36_CD ._.
+#_# %_NN #_# ._.
+#_# %_NN -4_CD ._.
+#_# %_NN q3_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_CD q3_NN +_CC HQ_NN +_CC HC_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NNP Improve_NNP ##_NN ._.
+#_# %_NN ##_CD ._.
+#_# %_NN ##_CD ._.
+#_# %_NN ##_CD ._.
+#_# %_NN ##_CD ._.
+#_# %_NN ##_CD ._.
+#_# %_NN ##_CD ._.
+#_# %_NN ##_CD ._.
+#_# %_NN q4_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_CD q4_NN +_CC HQ_NN +_CC HC_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NNP Improve_NNP ##_NN ._.
+#_# %_NN ##_CD ._.
+#_# %_NN ##_CD ._.
+#_# %_NN ##_CD ._.
+#_# %_NN ##_CD ._.
+#_# %_NN #_# ._.
+#_# %_NN ##_CD ._.
+#_# %_NN ##_CD ._.
+#_# %_NN Table_NNP #_# :_: Effect_NN of_IN using_VBG query_JJ history_NN and_CC clickthrough_JJ data_NNS for_IN document_NN ranking_NN ._.
+is_VBZ ##_CD ._.
+#_# words_NNS ._.
+Among_IN ##_CD clicked_VBD documents_NNS ,_, ##_CD documents_NNS are_VBP judged_VBN relevant_JJ according_VBG to_TO TREC_NN judgment_NN file_NN ._.
+This_DT data_NN set_NN is_VBZ publicly_RB available_JJ #_# ._.
+5_CD ._.
+EXPERIMENTS_NNS 5_CD ._.
+#_# Experiment_NN design_NN Our_PRP$ major_JJ hypothesis_NN is_VBZ that_IN using_VBG search_NN context_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, query_JJ history_NN and_CC clickthrough_JJ information_NN -RRB-_-RRB- can_MD help_VB improve_VB search_NN accuracy_NN ._.
+In_IN particular_JJ ,_, the_DT search_NN context_NN can_MD provide_VB extra_JJ information_NN to_TO help_VB us_PRP estimate_VB a_DT better_JJR query_NN model_NN than_IN using_VBG just_RB the_DT current_JJ query_NN ._.
+So_RB most_JJS of_IN our_PRP$ experiments_NNS involve_VBP comparing_VBG the_DT retrieval_NN performance_NN using_VBG the_DT current_JJ query_NN only_RB -LRB-_-LRB- thus_RB ignoring_VBG any_DT context_NN -RRB-_-RRB- with_IN that_DT using_VBG the_DT current_JJ query_NN as_RB well_RB as_IN the_DT search_NN context_NN ._.
+Since_IN we_PRP collected_VBD four_CD versions_NNS of_IN queries_NNS for_IN each_DT topic_NN ,_, we_PRP make_VBP such_JJ comparisons_NNS for_IN each_DT version_NN of_IN queries_NNS ._.
+We_PRP use_VBP two_CD performance_NN measures_NNS :_: -LRB-_-LRB- #_# -RRB-_-RRB- Mean_NN Average_JJ Precision_NN -LRB-_-LRB- MAP_NN -RRB-_-RRB- :_: This_DT is_VBZ the_DT standard_JJ non-interpolated_JJ average_JJ precision_NN and_CC serves_VBZ as_IN a_DT good_JJ measure_NN of_IN the_DT overall_JJ ranking_JJ accuracy_NN ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- Precision_NN at_IN ##_CD documents_NNS -LRB-_-LRB- pr_NN @_IN 20docs_NNS -RRB-_-RRB- :_: This_DT measure_NN does_VBZ not_RB average_JJ well_RB ,_, but_CC it_PRP is_VBZ more_RBR meaningful_JJ than_IN MAP_NN and_CC reflects_VBZ the_DT utility_NN for_IN users_NNS who_WP only_RB read_VBP the_DT top_JJ ##_CD documents_NNS ._.
+In_IN all_DT cases_NNS ,_, the_DT reported_VBN figure_NN is_VBZ the_DT average_NN over_IN all_DT of_IN the_DT ##_NN topics_NNS ._.
+We_PRP evaluate_VBP the_DT four_CD models_NNS for_IN exploiting_VBG search_NN context_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, FixInt_NNP ,_, BayesInt_NNP ,_, OnlineUp_NNP ,_, and_CC BatchUp_NN -RRB-_-RRB- ._.
+Each_DT model_NN has_VBZ precisely_RB two_CD parameters_NNS -LRB-_-LRB- and_CC for_IN FixInt_NNP ;_: and_CC for_IN others_NNS -RRB-_-RRB- ._.
+Note_VB that_DT and_CC may_MD need_VB to_TO be_VB interpreted_VBN differently_RB for_IN different_JJ methods_NNS ._.
+We_PRP vary_VBP these_DT parameters_NNS and_CC identify_VB the_DT optimal_JJ performance_NN for_IN each_DT method_NN ._.
+We_PRP also_RB vary_VBP the_DT parameters_NNS to_TO study_VB the_DT sensitivity_NN of_IN our_PRP$ algorithms_NNS to_TO the_DT setting_NN of_IN the_DT parameters_NNS ._.
+5_CD ._.
+#_# Result_NN analysis_NN 5_CD ._.
+#_# ._.
+#_# Overall_JJ effect_NN of_IN search_NN context_NN We_PRP compare_VBP the_DT optimal_JJ performances_NNS of_IN four_CD models_NNS with_IN those_DT using_VBG the_DT current_JJ query_NN only_RB in_IN Table_NNP #_# ._.
+A_DT row_NN labeled_VBN with_IN qi_NN is_VBZ the_DT baseline_NN performance_NN and_CC a_DT row_NN labeled_VBN with_IN qi_NN +_CC HQ_NN +_CC HC_NN is_VBZ the_DT performance_NN of_IN using_VBG search_NN context_NN ._.
+We_PRP can_MD make_VB several_JJ observations_NNS from_IN this_DT table_NN :_: 1_CD ._.
+Comparing_VBG the_DT baseline_NN performances_NNS indicates_VBZ that_IN on_IN average_JJ reformulated_VBN queries_NNS are_VBP better_JJR than_IN the_DT previous_JJ queries_NNS with_IN the_DT performance_NN of_IN q4_NN being_VBG the_DT best_JJS ._.
+Users_NNS generally_RB formulate_VBP better_JJR and_CC better_JJR queries_NNS ._.
+2_LS ._.
+Using_VBG search_NN context_NN generally_RB has_VBZ positive_JJ effect_NN ,_, especially_RB when_WRB the_DT context_NN is_VBZ rich_JJ ._.
+This_DT can_MD be_VB seen_VBN from_IN the_DT fact_NN that_IN the_DT 1_CD http_NN :_: /_: /_: sifaka_FW ._.
+cs_NNS ._.
+uiuc_NN ._.
+edu_FW /_: ir_FW /_: ucair_JJ /_: QCHistory_NN ._.
+zip_NN improvement_NN for_IN q4_NN and_CC q3_NN is_VBZ generally_RB more_RBR substantial_JJ compared_VBN with_IN q2_NN ._.
+Actually_RB ,_, in_IN many_JJ cases_NNS with_IN q2_NN ,_, using_VBG the_DT context_NN may_MD hurt_VB the_DT performance_NN ,_, probably_RB because_IN the_DT history_NN at_IN that_DT point_NN is_VBZ sparse_JJ ._.
+When_WRB the_DT search_NN context_NN is_VBZ rich_JJ ,_, the_DT performance_NN improvement_NN can_MD be_VB quite_RB substantial_JJ ._.
+For_IN example_NN ,_, BatchUp_NN achieves_VBZ 92_CD ._.
+#_# %_NN improvement_NN in_IN the_DT mean_JJ average_JJ precision_NN over_IN q3_NN and_CC 77_CD ._.
+#_# %_NN improvement_NN over_IN q4_NN ._.
+-LRB-_-LRB- The_DT generally_RB low_JJ precisions_NNS also_RB make_VBP the_DT relative_JJ improvement_NN deceptively_RB high_JJ ,_, though_IN ._. -RRB-_-RRB-
+3_LS ._.
+Among_IN the_DT four_CD models_NNS using_VBG search_NN context_NN ,_, the_DT performances_NNS of_IN FixInt_NN and_CC OnlineUp_NN are_VBP clearly_RB worse_JJR than_IN those_DT of_IN BayesInt_NNP and_CC BatchUp_NNP ._.
+Since_IN BayesInt_NNP performs_VBZ better_JJR than_IN FixInt_NNP and_CC the_DT main_JJ difference_NN between_IN BayesInt_NNP and_CC FixInt_NNP is_VBZ that_IN the_DT former_JJ uses_VBZ an_DT adaptive_JJ coefficient_NN for_IN interpolation_NN ,_, the_DT results_NNS suggest_VBP that_IN using_VBG adaptive_JJ coefficient_NN is_VBZ quite_RB beneficial_JJ and_CC a_DT Bayesian_JJ style_NN interpolation_NN makes_VBZ sense_NN ._.
+The_DT main_JJ difference_NN between_IN OnlineUp_NN and_CC BatchUp_NN is_VBZ that_IN OnlineUp_NN uses_VBZ decaying_VBG coefficients_NNS to_TO combine_VB the_DT multiple_JJ clicked_VBD summaries_NNS ,_, while_IN BatchUp_NN simply_RB concatenates_VBZ all_DT clicked_VBD summaries_NNS ._.
+Therefore_RB the_DT fact_NN that_IN BatchUp_NN is_VBZ consistently_RB better_JJR than_IN OnlineUp_NN indicates_VBZ that_IN the_DT weights_NNS for_IN combining_VBG the_DT clicked_VBN summaries_NNS indeed_RB should_MD not_RB be_VB decaying_VBG ._.
+While_IN OnlineUp_NN is_VBZ theoretically_RB appealing_JJ ,_, its_PRP$ performance_NN is_VBZ inferior_JJ to_TO BayesInt_NNP and_CC BatchUp_NNP ,_, likely_RB because_IN of_IN the_DT decaying_JJ coefficient_NN ._.
+Overall_RB ,_, BatchUp_NN appears_VBZ to_TO be_VB the_DT best_JJS method_NN when_WRB we_PRP vary_VBP the_DT parameter_NN settings_NNS ._.
+We_PRP have_VBP two_CD different_JJ kinds_NNS of_IN search_NN context_NN -_: query_NN history_NN and_CC clickthrough_JJ data_NNS ._.
+We_PRP now_RB look_VBP into_IN the_DT contribution_NN of_IN each_DT kind_NN of_IN context_NN ._.
+5_CD ._.
+#_# ._.
+#_# Using_VBG query_JJ history_NN only_RB In_IN each_DT of_IN four_CD models_NNS ,_, we_PRP can_MD turn_VB off_RP the_DT clickthrough_JJ history_NN data_NNS by_IN setting_VBG parameters_NNS appropriately_RB ._.
+This_DT allows_VBZ us_PRP to_TO evaluate_VB the_DT effect_NN of_IN using_VBG query_JJ history_NN alone_RB ._.
+We_PRP use_VBP the_DT same_JJ parameter_NN setting_NN for_IN query_JJ history_NN as_IN in_IN Table_NNP #_# ._.
+The_DT results_NNS are_VBP shown_VBN in_IN Table_NNP #_# ._.
+Here_RB we_PRP see_VBP that_IN in_IN general_JJ ,_, the_DT benefit_NN of_IN using_VBG query_JJ history_NN is_VBZ very_RB limited_VBN with_IN mixed_JJ results_NNS ._.
+This_DT is_VBZ different_JJ from_IN what_WP is_VBZ reported_VBN in_IN a_DT previous_JJ study_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, where_WRB using_VBG query_JJ history_NN is_VBZ consistently_RB helpful_JJ ._.
+Another_DT observation_NN is_VBZ that_IN the_DT context_NN runs_VBZ perform_VB poorly_RB at_IN q2_NN ,_, but_CC generally_RB perform_VB -LRB-_-LRB- slightly_RB -RRB-_-RRB- better_JJR than_IN the_DT baselines_NNS for_IN q3_NN and_CC q4_NN ._.
+This_DT is_VBZ again_RB likely_JJ because_IN at_IN the_DT beginning_VBG the_DT initial_JJ query_NN ,_, which_WDT is_VBZ the_DT title_NN in_IN the_DT original_JJ TREC_NN topic_NN description_NN ,_, may_MD not_RB be_VB a_DT good_JJ query_NN ;_: indeed_RB ,_, on_IN average_NN ,_, performances_NNS of_IN these_DT first-generation_JJ queries_NNS are_VBP clearly_RB poorer_JJR than_IN those_DT of_IN all_DT other_JJ user-formulated_JJ queries_NNS in_IN the_DT later_JJ generations_NNS ._.
+Yet_RB another_DT observation_NN is_VBZ that_IN when_WRB using_VBG query_JJ history_NN only_RB ,_, the_DT BayesInt_NNP model_NN appears_VBZ to_TO be_VB better_JJR than_IN other_JJ models_NNS ._.
+Since_IN the_DT clickthrough_JJ data_NNS is_VBZ ignored_VBN ,_, OnlineUp_NN and_CC BatchUp_NN FixInt_NN BayesInt_NNP OnlineUp_NNP BatchUp_NNP Query_NNP -LRB-_-LRB- =_JJ #_# ._.
+#_# ,_, =_JJ #_# -RRB-_-RRB- -LRB-_-LRB- =_JJ #_# ._.
+#_# ,_, =_JJ #_# -RRB-_-RRB- -LRB-_-LRB- =_JJ #_# ._.
+#_# ,_, =_JJ +_CC -RRB-_-RRB- -LRB-_-LRB- =_JJ #_# ._.
+#_# ,_, =_JJ +_CC -RRB-_-RRB- MAP_NN pr_NN @_IN 20docs_NNS MAP_NN pr_NN @_IN 20docs_NNS MAP_NN pr_NN @_IN 20docs_NNS MAP_NN pr_NN @_IN 20docs_JJ q2_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_CD q2_NN +_CC HQ_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NNP Improve_NNP ._.
+-_: ##_NN ._.
+#_# %_NN -72_CD ._.
+#_# %_NN -0_CD ._.
+#_# %_NN #_# ._.
+#_# %_NN -31_CD ._.
+#_# %_NN -31_CD ._.
+#_# %_NN -8_CD ._.
+#_# %_NN -15_CD ._.
+#_# %_NN q3_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_CD q3_NN +_CC HQ_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NNP Improve_NNP -_: ##_NN ._.
+#_# %_NN -38_CD ._.
+#_# %_NN #_# ._.
+#_# %_NN #_# ._.
+#_# %_NN #_# ._.
+#_# %_NN -10_CD ._.
+#_# %_NN #_# ._.
+#_# %_NN -2_CD ._.
+#_# %_NN q4_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_CD q4_NN +_CC HQ_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NNP Improve_NNP -_: ##_NN ._.
+#_# %_NN -24_CD ._.
+#_# %_NN #_# ._.
+#_# %_NN -0_CD ._.
+#_# %_NN #_# ._.
+#_# %_NN -10_CD ._.
+#_# %_NN #_# ._.
+#_# %_NN -0_CD ._.
+#_# %_NN Table_NNP #_# :_: Effect_NN of_IN using_VBG query_JJ history_NN only_RB for_IN document_NN ranking_NN ._.
+#_# #_# ._.
+#_# #_# #_# #_# #_# #_# #_# #_# #_# #_# q2_NN +_CC HQ_NN MAP_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_CD q3_NN +_CC HQ_NN MAP_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_CD q4_NN +_CC HQ_NN MAP_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NNP Table_NNP #_# :_: Average_JJ Precision_NN of_IN BatchUp_NN using_VBG query_NN history_NN only_RB are_VBP essentially_RB the_DT same_JJ algorithm_NN ._.
+The_DT displayed_VBN results_NNS thus_RB reflect_VBP the_DT variation_NN caused_VBN by_IN parameter_NN ._.
+A_DT smaller_JJR setting_NN of_IN #_# ._.
+#_# is_VBZ seen_VBN better_JJR than_IN a_DT larger_JJR value_NN of_IN #_# ._.
+#_# ._.
+A_DT more_JJR complete_JJ picture_NN of_IN the_DT influence_NN of_IN the_DT setting_NN of_IN can_MD be_VB seen_VBN from_IN Table_NNP #_# ,_, where_WRB we_PRP show_VBP the_DT performance_NN figures_NNS for_IN a_DT wider_JJR range_NN of_IN values_NNS of_IN ._.
+The_DT value_NN of_IN can_MD be_VB interpreted_VBN as_IN how_WRB many_JJ words_NNS we_PRP regard_VBP the_DT query_NN history_NN is_VBZ worth_JJ ._.
+A_DT larger_JJR value_NN thus_RB puts_VBZ more_JJR weight_NN on_IN the_DT history_NN and_CC is_VBZ seen_VBN to_TO hurt_VB the_DT performance_NN more_RBR when_WRB the_DT history_NN information_NN is_VBZ not_RB rich_JJ ._.
+Thus_RB while_IN for_IN q4_NN the_DT best_JJS performance_NN tends_VBZ to_TO be_VB achieved_VBN for_IN -LSB-_-LRB- #_# ,_, #_# -RSB-_-RRB- ,_, only_RB when_WRB =_JJ #_# ._.
+#_# we_PRP see_VBP some_DT small_JJ benefit_NN for_IN q2_NN ._.
+As_IN we_PRP would_MD expect_VB ,_, an_DT excessively_RB large_JJ would_MD hurt_VB the_DT performance_NN in_IN general_JJ ,_, but_CC q2_NN is_VBZ hurt_VBN most_RBS and_CC q4_NN is_VBZ barely_RB hurt_VBN ,_, indicating_VBG that_IN as_IN we_PRP accumulate_VBP more_RBR and_CC more_RBR query_JJ history_NN information_NN ,_, we_PRP can_MD put_VB more_JJR and_CC more_JJR weight_NN on_IN the_DT history_NN information_NN ._.
+This_DT also_RB suggests_VBZ that_IN a_DT better_JJR strategy_NN should_MD probably_RB dynamically_RB adjust_VBP parameters_NNS according_VBG to_TO how_WRB much_JJ history_NN information_NN we_PRP have_VBP ._.
+The_DT mixed_JJ query_NN history_NN results_VBZ suggest_VBP that_IN the_DT positive_JJ effect_NN of_IN using_VBG implicit_JJ feedback_NN information_NN may_MD have_VB largely_RB come_VBN from_IN the_DT use_NN of_IN clickthrough_JJ history_NN ,_, which_WDT is_VBZ indeed_RB true_JJ as_IN we_PRP discuss_VBP in_IN the_DT next_JJ subsection_NN ._.
+5_CD ._.
+#_# ._.
+#_# Using_VBG clickthrough_JJ history_NN only_RB We_PRP now_RB turn_VBP off_RP the_DT query_NN history_NN and_CC only_RB use_VBP the_DT clicked_VBN summaries_NNS plus_CC the_DT current_JJ query_NN ._.
+The_DT results_NNS are_VBP shown_VBN in_IN Table_NNP #_# ._.
+We_PRP see_VBP that_IN the_DT benefit_NN of_IN using_VBG clickthrough_JJ information_NN is_VBZ much_RB more_RBR significant_JJ than_IN that_DT of_IN using_VBG query_JJ history_NN ._.
+We_PRP see_VBP an_DT overall_JJ positive_JJ effect_NN ,_, often_RB with_IN significant_JJ improvement_NN over_IN the_DT baseline_NN ._.
+It_PRP is_VBZ also_RB clear_JJ that_IN the_DT richer_JJR the_DT context_NN data_NNS is_VBZ ,_, the_DT more_JJR improvement_NN using_VBG clicked_VBD summaries_NNS can_MD achieve_VB ._.
+Other_JJ than_IN some_DT occasional_JJ degradation_NN of_IN precision_NN at_IN ##_CD documents_NNS ,_, the_DT improvement_NN is_VBZ fairly_RB consistent_JJ and_CC often_RB quite_RB substantial_JJ ._.
+These_DT results_NNS show_VBP that_IN the_DT clicked_VBN summary_NN text_NN is_VBZ in_IN general_JJ quite_RB useful_JJ for_IN inferring_VBG a_DT user_NN ''_'' s_NNS information_NN need_NN ._.
+Intuitively_RB ,_, using_VBG the_DT summary_NN text_NN ,_, rather_RB than_IN the_DT actual_JJ content_NN of_IN the_DT document_NN ,_, makes_VBZ more_JJR sense_NN ,_, as_IN it_PRP is_VBZ quite_RB possible_JJ that_IN the_DT document_NN behind_IN a_DT seemingly_RB relevant_JJ summary_NN is_VBZ actually_RB non-relevant_JJ ._.
+29_CD out_IN of_IN the_DT ##_NN clicked_VBD documents_NNS are_VBP relevant_JJ ._.
+Updating_VBG the_DT query_NN model_NN based_VBN on_IN such_JJ summaries_NNS would_MD bring_VB up_RP the_DT ranks_NNS of_IN these_DT relevant_JJ documents_NNS ,_, causing_VBG performance_NN improvement_NN ._.
+However_RB ,_, such_JJ improvement_NN is_VBZ really_RB not_RB beneficial_JJ for_IN the_DT user_NN as_IN the_DT user_NN has_VBZ already_RB seen_VBN these_DT relevant_JJ documents_NNS ._.
+To_TO see_VB how_WRB much_JJ improvement_NN we_PRP have_VBP achieved_VBN on_IN improving_VBG the_DT ranks_NNS of_IN the_DT unseen_JJ relevant_JJ documents_NNS ,_, we_PRP exclude_VBP these_DT ##_NNS relevant_JJ documents_NNS from_IN our_PRP$ judgment_NN file_NN and_CC recompute_VB the_DT performance_NN of_IN BayesInt_NNP and_CC the_DT baseline_NN using_VBG the_DT new_JJ judgment_NN file_NN ._.
+The_DT results_NNS are_VBP shown_VBN in_IN Table_NNP #_# ._.
+Note_VB that_IN the_DT performance_NN of_IN the_DT baseline_NN method_NN is_VBZ lower_JJR due_JJ to_TO the_DT removal_NN of_IN the_DT ##_NN relevant_JJ documents_NNS ,_, which_WDT would_MD have_VB been_VBN generally_RB ranked_VBD high_JJ in_IN the_DT results_NNS ._.
+From_IN Table_NNP #_# ,_, we_PRP see_VBP clearly_RB that_IN using_VBG clicked_VBD summaries_NNS also_RB helps_VBZ improve_VB the_DT ranks_NNS of_IN unseen_JJ relevant_JJ documents_NNS significantly_RB ._.
+Query_NNP BayesInt_NNP -LRB-_-LRB- =_JJ #_# ,_, =_JJ #_# ._.
+#_# -RRB-_-RRB- MAP_NN pr_NN @_IN 20docs_JJ q2_NN #_# ._.
+####_NN #_# ._.
+###_CD q2_NN +_CC HC_NN #_# ._.
+####_NN #_# ._.
+###_NNP Improve_NNP ._.
+##_NN ._.
+#_# %_NN #_# %_NN q3_NN #_# ._.
+####_NN #_# ._.
+###_CD q3_NN +_CC HC_NN #_# ._.
+####_NN #_# ._.
+###_NNP Improve_NNP ##_NN ._.
+#_# %_NN ##_CD ._.
+#_# %_NN q4_NN #_# ._.
+####_NN #_# ._.
+###_CD q4_NN +_CC HC_NN #_# ._.
+####_NN #_# ._.
+###_NNP Improve_NNP ##_NN ._.
+#_# %_NN ##_CD ._.
+#_# %_NN Table_NNP #_# :_: BayesInt_NN evaluated_VBN on_IN unseen_JJ relevant_JJ documents_NNS One_CD remaining_VBG question_NN is_VBZ whether_IN the_DT clickthrough_JJ data_NNS is_VBZ still_RB helpful_JJ if_IN none_NN of_IN the_DT clicked_VBN documents_NNS is_VBZ relevant_JJ ._.
+To_TO answer_VB this_DT question_NN ,_, we_PRP took_VBD out_RP the_DT ##_NN relevant_JJ summaries_NNS from_IN our_PRP$ clickthrough_JJ history_NN data_NNS HC_NN to_TO obtain_VB a_DT smaller_JJR set_NN of_IN clicked_VBN summaries_NNS HC_NN ,_, and_CC re-evaluated_VBD the_DT performance_NN of_IN the_DT BayesInt_NNP method_NN using_VBG HC_NN with_IN the_DT same_JJ setting_NN of_IN parameters_NNS as_IN in_IN Table_NNP #_# ._.
+The_DT results_NNS are_VBP shown_VBN in_IN Table_NNP #_# ._.
+We_PRP see_VBP that_IN although_IN the_DT improvement_NN is_VBZ not_RB as_IN substantial_JJ as_IN in_IN Table_NNP #_# ,_, the_DT average_JJ precision_NN is_VBZ improved_VBN across_IN all_DT generations_NNS of_IN queries_NNS ._.
+These_DT results_NNS should_MD be_VB interpreted_VBN as_IN very_RB encouraging_JJ as_IN they_PRP are_VBP based_VBN on_IN only_JJ 62_CD non-relevant_JJ clickthroughs_NNS ._.
+In_IN reality_NN ,_, a_DT user_NN would_MD more_RBR likely_JJ click_VBP some_DT relevant_JJ summaries_NNS ,_, which_WDT would_MD help_VB bring_VB up_RP more_RBR relevant_JJ documents_NNS as_IN we_PRP have_VBP seen_VBN in_IN Table_NNP #_# and_CC Table_NNP #_# ._.
+FixInt_NNP BayesInt_NNP OnlineUp_NNP BatchUp_NNP Query_NNP -LRB-_-LRB- =_JJ #_# ._.
+#_# ,_, =_JJ #_# -RRB-_-RRB- -LRB-_-LRB- =_JJ #_# ,_, =_JJ #_# ._.
+#_# -RRB-_-RRB- -LRB-_-LRB- k_NN =_JJ #_# ._.
+#_# ,_, =_JJ ##_NN ,_, i_FW <_JJR k_NN ,_, i_FW =_JJ +_CC -RRB-_-RRB- -LRB-_-LRB- =_JJ #_# ,_, =_JJ ##_NN -RRB-_-RRB- MAP_NN pr_NN @_IN 20docs_NNS MAP_NN pr_NN @_IN 20docs_NNS MAP_NN pr_NN @_IN 20docs_NNS MAP_NN pr_NN @_IN 20docs_JJ q2_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_CD q2_NN +_CC HC_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NNP Improve_NNP ._.
+#_# ._.
+#_# %_NN -_: #_# ._.
+#_# %_NN #_# ._.
+#_# %_NN -1_CD ._.
+#_# %_NN ##_CD ._.
+#_# %_NN ##_CD ._.
+#_# %_NN ##_CD ._.
+#_# %_NN #_# ._.
+#_# %_NN q3_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+#####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_CD q3_NN +_CC HC_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NNP Improve_NNP ##_NN ._.
+#_# %_NN ##_CD ._.
+#_# %_NN ##_CD ._.
+#_# %_NN ##_CD ._.
+#_# %_NN ##_CD ._.
+#_# %_NN ##_CD ._.
+#_# %_NN ##_CD ._.
+#_# %_NN ##_CD ._.
+#_# %_NN q4_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_CD q4_NN +_CC HC_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NNP Improve_NNP ##_NN ._.
+#_# %_NN ##_CD ._.
+#_# %_NN ##_CD ._.
+#_# %_NN ##_CD ._.
+#_# %_NN ##_CD ._.
+#_# %_NN ##_CD ._.
+#_# %_NN ##_CD ._.
+#_# %_NN #_# ._.
+#_# %_NN Table_NNP #_# :_: Effect_NN of_IN using_VBG clickthrough_JJ data_NNS only_RB for_IN document_NN ranking_NN ._.
+Query_NNP BayesInt_NNP -LRB-_-LRB- =_JJ #_# ,_, =_JJ #_# ._.
+#_# -RRB-_-RRB- MAP_NN pr_NN @_IN 20docs_JJ q2_NN #_# ._.
+####_NN #_# ._.
+####_CD q2_NN +_CC HC_NN #_# ._.
+####_NN #_# ._.
+####_NNP Improve_NNP ._.
+#_# ._.
+#_# %_NN -_: ##_NN ._.
+#_# %_NN q3_NN #_# ._.
+####_NN #_# ._.
+####_CD q3_NN +_CC HC_NN #_# ._.
+####_NN #_# ._.
+####_NNP Improve_NNP ##_NN ._.
+#_# %_NN ##_CD ._.
+#_# %_NN q4_NN #_# ._.
+####_NN #_# ._.
+####_CD q4_NN +_CC HC_NN #_# ._.
+####_NN #_# ._.
+####_NNP Improve_NNP ##_NN ._.
+#_# %_NN -_: #_# ._.
+#_# %_NN Table_NNP #_# :_: Effect_NN of_IN using_VBG only_RB non-relevant_JJ clickthrough_JJ data_NNS 5_CD ._.
+#_# ._.
+#_# Additive_JJ effect_NN of_IN context_NN information_NN By_IN comparing_VBG the_DT results_NNS across_IN Table_NNP #_# ,_, Table_NNP #_# and_CC Table_NNP #_# ,_, we_PRP can_MD see_VB that_IN the_DT benefit_NN of_IN the_DT query_NN history_NN information_NN and_CC that_IN of_IN clickthrough_JJ information_NN are_VBP mostly_RB additive_JJ ,_, i_FW ._.
+e_LS ._.
+,_, combining_VBG them_PRP can_MD achieve_VB better_JJR performance_NN than_IN using_VBG each_DT alone_RB ,_, but_CC most_JJS improvement_NN has_VBZ clearly_RB come_VBN from_IN the_DT clickthrough_JJ information_NN ._.
+In_IN Table_NNP #_# ,_, we_PRP show_VBP this_DT effect_NN for_IN the_DT BatchUp_NN method_NN ._.
+5_CD ._.
+#_# ._.
+#_# Parameter_NN sensitivity_NN All_DT four_CD models_NNS have_VBP two_CD parameters_NNS to_TO control_VB the_DT relative_JJ weights_NNS of_IN HQ_NN ,_, HC_NN ,_, and_CC Qk_NNP ,_, though_IN the_DT parameterization_NN is_VBZ different_JJ from_IN model_NN to_TO model_NN ._.
+In_IN this_DT subsection_NN ,_, we_PRP study_VBP the_DT parameter_NN sensitivity_NN for_IN BatchUp_NNP ,_, which_WDT appears_VBZ to_TO perform_VB relatively_RB better_JJR than_IN others_NNS ._.
+BatchUp_NNP has_VBZ two_CD parameters_NNS and_CC ._.
+We_PRP first_RB look_VB at_IN ._.
+When_WRB is_VBZ set_VBN to_TO #_# ,_, the_DT query_NN history_NN is_VBZ not_RB used_VBN at_IN all_DT ,_, and_CC we_PRP essentially_RB just_RB use_VB the_DT clickthrough_JJ data_NNS combined_VBN with_IN the_DT current_JJ query_NN ._.
+If_IN we_PRP increase_VBP ,_, we_PRP will_MD gradually_RB incorporate_VB more_JJR information_NN from_IN the_DT previous_JJ queries_NNS ._.
+In_IN Table_NNP #_# ,_, we_PRP show_VBP how_WRB the_DT average_JJ precision_NN of_IN BatchUp_NN changes_NNS as_IN we_PRP vary_VBP with_IN fixed_VBN to_TO ##_VB ._.
+#_# ,_, where_WRB the_DT best_JJS performance_NN of_IN BatchUp_NN is_VBZ achieved_VBN ._.
+We_PRP see_VBP that_IN the_DT performance_NN is_VBZ mostly_RB insensitive_JJ to_TO the_DT change_NN of_IN for_IN q3_NN and_CC q4_NN ,_, but_CC is_VBZ decreasing_VBG as_IN increases_NNS for_IN q2_NN ._.
+The_DT pattern_NN is_VBZ also_RB similar_JJ when_WRB we_PRP set_VBD to_TO other_JJ values_NNS ._.
+In_IN addition_NN to_TO the_DT fact_NN that_IN q1_NN is_VBZ generally_RB worse_JJR than_IN q2_NN ,_, q3_NN ,_, and_CC q4_NN ,_, another_DT possible_JJ reason_NN why_WRB the_DT sensitivity_NN is_VBZ lower_JJR for_IN q3_NN and_CC q4_NN may_MD be_VB that_IN we_PRP generally_RB have_VBP more_RBR clickthrough_JJ data_NNS available_JJ for_IN q3_NN and_CC q4_NN than_IN for_IN q2_NN ,_, and_CC the_DT dominating_VBG influence_NN of_IN the_DT clickthrough_JJ data_NNS has_VBZ made_VBN the_DT small_JJ differences_NNS caused_VBN by_IN less_JJR visible_JJ for_IN q3_NN and_CC q4_NN ._.
+The_DT best_JJS performance_NN is_VBZ generally_RB achieved_VBN when_WRB is_VBZ around_IN 2_CD ._.
+#_# ,_, which_WDT means_VBZ that_IN the_DT past_JJ query_NN information_NN is_VBZ as_IN useful_JJ as_IN about_IN #_# words_NNS in_IN the_DT current_JJ query_NN ._.
+Except_IN for_IN q2_NN ,_, there_EX is_VBZ clearly_RB some_DT tradeoff_NN between_IN the_DT current_JJ query_NN and_CC the_DT previous_JJ queries_NNS Query_NNP MAP_NN pr_NN @_IN 20docs_JJ q2_NN #_# ._.
+####_NN #_# ._.
+####_CD q2_NN +_CC HQ_NN #_# ._.
+####_NN #_# ._.
+####_NNP Improve_NNP ._.
+-_: #_# ._.
+#_# %_NN -15_CD ._.
+#_# %_NN q2_NN +_CC HC_NN #_# ._.
+####_NN #_# ._.
+####_NNP Improve_NNP ._.
+##_NN ._.
+#_# %_NN #_# ._.
+#_# %_NN q2_NN +_CC HQ_NN +_CC HC_NN #_# ._.
+####_NN #_# ._.
+####_NNP Improve_NNP ._.
+#_# ._.
+#_# %_NN -_: #_# ._.
+#_# %_NN q3_NN #_# ._.
+####_NN #_# ._.
+####_CD q3_NN +_CC HQ_NN #_# ._.
+####_NN #_# ._.
+####_NNP Improve_NNP #_# ._.
+#_# %_NN -_: #_# ._.
+#_# %_NN q3_NN +_CC HC_NN #_# ._.
+####_NN #_# ._.
+####_NNP Improve_NNP ##_NN ._.
+#_# %_NN ##_CD ._.
+#_# %_NN q3_NN +_CC HQ_NN +_CC HC_NN #_# ._.
+####_NN #_# ._.
+####_NNP Improve_NNP ##_NN ._.
+#_# %_NN ##_CD ._.
+#_# %_NN q4_NN #_# ._.
+####_NN #_# ._.
+####_CD q4_NN +_CC HQ_NN #_# ._.
+####_NN #_# ._.
+####_NNP Improve_NNP #_# ._.
+#_# %_NN -_: #_# ._.
+#_# %_NN q4_NN +_CC HC_NN #_# ._.
+####_NN #_# ._.
+####_NNP Improve_NNP ##_NN ._.
+#_# %_NN #_# ._.
+#_# %_NN q4_NN +_CC HQ_NN +_CC HC_NN #_# ._.
+####_NN #_# ._.
+####_NNP Improve_NNP ##_NN ._.
+#_# %_NN ##_CD ._.
+#_# %_NN Table_NNP #_# :_: Additive_JJ benefit_NN of_IN context_NN information_NN and_CC using_VBG a_DT balanced_JJ combination_NN of_IN them_PRP achieves_VBZ better_JJR performance_NN than_IN using_VBG each_DT of_IN them_PRP alone_RB ._.
+We_PRP now_RB turn_VBP to_TO the_DT other_JJ parameter_NN ._.
+When_WRB is_VBZ set_VBN to_TO #_# ,_, we_PRP only_RB use_VBP the_DT clickthrough_JJ data_NNS ;_: When_WRB is_VBZ set_VBN to_TO +_CC ,_, we_PRP only_RB use_VBP the_DT query_NN history_NN and_CC the_DT current_JJ query_NN ._.
+With_IN set_VBN to_TO #_# ._.
+#_# ,_, where_WRB the_DT best_JJS performance_NN of_IN BatchUp_NN is_VBZ achieved_VBN ,_, we_PRP vary_VBP and_CC show_VBP the_DT results_NNS in_IN Table_NNP #_# ._.
+We_PRP see_VBP that_IN the_DT performance_NN is_VBZ also_RB not_RB very_RB sensitive_JJ when_WRB ##_RB ,_, with_IN the_DT best_JJS performance_NN often_RB achieved_VBD at_IN =_JJ ##_NN ._.
+This_DT means_VBZ that_IN the_DT combined_VBN information_NN of_IN query_NN history_NN and_CC the_DT current_JJ query_NN is_VBZ as_IN useful_JJ as_IN about_IN ##_NN words_NNS in_IN the_DT clickthrough_JJ data_NNS ,_, indicating_VBG that_IN the_DT clickthrough_JJ information_NN is_VBZ highly_RB valuable_JJ ._.
+Overall_RB ,_, these_DT sensitivity_NN results_VBZ show_NN that_IN BatchUp_NN not_RB only_RB performs_VBZ better_JJR than_IN other_JJ methods_NNS ,_, but_CC also_RB is_VBZ quite_RB robust_JJ ._.
+6_CD ._.
+CONCLUSIONS_NNS AND_CC FUTURE_NNS WORK_VBP In_IN this_DT paper_NN ,_, we_PRP have_VBP explored_VBN how_WRB to_TO exploit_VB implicit_JJ feedback_NN information_NN ,_, including_VBG query_JJ history_NN and_CC clickthrough_JJ history_NN within_IN the_DT same_JJ search_NN session_NN ,_, to_TO improve_VB information_NN retrieval_NN performance_NN ._.
+Using_VBG the_DT KL-divergence_NN retrieval_NN model_NN as_IN the_DT basis_NN ,_, we_PRP proposed_VBD and_CC studied_VBD four_CD statistical_JJ language_NN models_NNS for_IN context-sensitive_JJ information_NN retrieval_NN ,_, i_FW ._.
+e_LS ._.
+,_, FixInt_NNP ,_, BayesInt_NNP ,_, OnlineUp_NN and_CC BatchUp_NN ._.
+We_PRP use_VBP TREC_NN AP_NNP Data_NNP to_TO create_VB a_DT test_NN set_VBN #_# #_# #_# #_# #_# #_# #_# #_# #_# #_# ##_CD MAP_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_CD q2_NN +_CC HQ_NN +_CC HC_NN pr_NN @_IN ##_CD #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_RB MAP_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_CD q3_NN +_CC HQ_NN +_CC HC_NN pr_NN @_IN ##_CD #_# ._.
+###_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+###_NN #_# ._.
+####_NN #_# ._.
+###_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_RB MAP_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_CD q4_NN +_CC HQ_NN +_CC HC_NN pr_NN @_IN ##_CD #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NNP Table_NNP #_# :_: Sensitivity_NN of_IN in_IN BatchUp_NNP #_# #_# #_# #_# ##_CD ##_CD ##_CD ###_CD ###_CD ###_CD MAP_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_CD q2_NN +_CC HQ_NN +_CC HC_NN pr_NN @_IN ##_CD #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_RB MAP_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_CD q3_NN +_CC HQ_NN +_CC HC_NN pr_NN @_IN ##_CD #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_RB MAP_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_CD q4_NN +_CC HQ_NN +_CC HC_NN pr_NN @_IN ##_CD #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NNP Table_NNP #_# :_: Sensitivity_NN of_IN in_IN BatchUp_NNP for_IN evaluating_VBG implicit_JJ feedback_NN models_NNS ._.
+Experiment_NN results_NNS show_VBP that_IN using_VBG implicit_JJ feedback_NN ,_, especially_RB clickthrough_JJ history_NN ,_, can_MD substantially_RB improve_VB retrieval_NN performance_NN without_IN requiring_VBG any_DT additional_JJ user_NN effort_NN ._.
+The_DT current_JJ work_NN can_MD be_VB extended_VBN in_IN several_JJ ways_NNS :_: First_NNP ,_, we_PRP have_VBP only_RB explored_VBN some_DT very_RB simple_JJ language_NN models_NNS for_IN incorporating_VBG implicit_JJ feedback_NN information_NN ._.
+It_PRP would_MD be_VB interesting_JJ to_TO develop_VB more_RBR sophisticated_JJ models_NNS to_TO better_RBR exploit_VB query_JJ history_NN and_CC clickthrough_JJ history_NN ._.
+For_IN example_NN ,_, we_PRP may_MD treat_VB a_DT clicked_VBN summary_NN differently_RB depending_VBG on_IN whether_IN the_DT current_JJ query_NN is_VBZ a_DT generalization_NN or_CC refinement_NN of_IN the_DT previous_JJ query_NN ._.
+Second_RB ,_, the_DT proposed_VBN models_NNS can_MD be_VB implemented_VBN in_IN any_DT practical_JJ systems_NNS ._.
+We_PRP are_VBP currently_RB developing_VBG a_DT client-side_JJ personalized_JJ search_NN agent_NN ,_, which_WDT will_MD incorporate_VB some_DT of_IN the_DT proposed_VBN algorithms_NNS ._.
+We_PRP will_MD also_RB do_VB a_DT user_NN study_NN to_TO evaluate_VB effectiveness_NN of_IN these_DT models_NNS in_IN the_DT real_JJ web_NN search_NN ._.
+Finally_RB ,_, we_PRP should_MD further_RB study_VB a_DT general_JJ retrieval_NN framework_NN for_IN sequential_JJ decision_NN making_VBG in_IN interactive_JJ information_NN retrieval_NN and_CC study_NN how_WRB to_TO optimize_VB some_DT of_IN the_DT parameters_NNS in_IN the_DT context-sensitive_JJ retrieval_NN models_NNS ._.
+7_CD ._.
+ACKNOWLEDGMENTS_NNS This_DT material_NN is_VBZ based_VBN in_IN part_NN upon_IN work_NN supported_VBN by_IN the_DT National_NNP Science_NNP Foundation_NNP under_IN award_NN numbers_NNS IIS-0347933_NN and_CC IIS-0428472_NN ._.
+We_PRP thank_VBP the_DT anonymous_JJ reviewers_NNS for_IN their_PRP$ useful_JJ comments_NNS ._.
+8_CD ._.
+REFERENCES_NNS -LSB-_-LRB- #_# -RSB-_-RRB- E_NN ._.
+Adar_NNP and_CC D_NNP ._.
+Karger_NNP ._.
+Haystack_NNP :_: Per-user_JJR information_NN environments_NNS ._.
+In_IN Proceedings_NNP of_IN CIKM_NNP ####_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- J_NN ._.
+Allan_NNP and_CC et_FW al_FW ._.
+Challenges_NNS in_IN information_NN retrieval_NN and_CC language_NN modeling_NN ._.
+Workshop_NNP at_IN University_NNP of_IN Amherst_NNP ,_, 2002_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- K_NNP ._.
+Bharat_NNP ._.
+Searchpad_NNP :_: Explicit_JJ capture_NN of_IN search_NN context_NN to_TO support_VB web_NN search_NN ._.
+In_IN Proceeding_VBG of_IN WWW_NNP ####_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- W_NN ._.
+B_NN ._.
+Croft_NNP ,_, S_NN ._.
+Cronen-Townsend_NNP ,_, and_CC V_NN ._.
+Larvrenko_NNP ._.
+Relevance_NN feedback_NN and_CC personalization_NN :_: A_DT language_NN modeling_NN perspective_NN ._.
+In_IN Proeedings_NNP of_IN Second_NNP DELOS_NNP Workshop_NNP :_: Personalisation_NNP and_CC Recommender_NNP Systems_NNPS in_IN Digital_NNP Libraries_NNPS ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- H_NN ._.
+Cui_NNP ,_, J_NNP ._.
+-_: R_NN ._.
+Wen_NNP ,_, J_NNP ._.
+-_: Y_NN ._.
+Nie_NN ,_, and_CC W_NN ._.
+-_: Y_NN ._.
+Ma_NNP ._.
+Probabilistic_NNP query_NN expansion_NN using_VBG query_NN logs_NNS ._.
+In_IN Proceedings_NNP of_IN WWW_NNP 2002_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- S_NN ._.
+T_NN ._.
+Dumais_NNP ,_, E_NNP ._.
+Cutrell_NNP ,_, R_NN ._.
+Sarin_NNP ,_, and_CC E_NN ._.
+Horvitz_NNP ._.
+Implicit_JJ queries_NNS -LRB-_-LRB- IQ_NNP -RRB-_-RRB- for_IN contextualized_VBN search_NN -LRB-_-LRB- demo_NN description_NN -RRB-_-RRB- ._.
+In_IN Proceedings_NNP of_IN SIGIR_NNP ####_CD ,_, page_NN ###_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- L_NN ._.
+Finkelstein_NNP ,_, E_NNP ._.
+Gabrilovich_NNP ,_, Y_NN ._.
+Matias_NNP ,_, E_NNP ._.
+Rivlin_NNP ,_, Z_NN ._.
+Solan_NNP ,_, G_NNP ._.
+Wolfman_NNP ,_, and_CC E_NN ._.
+Ruppin_NN ._.
+Placing_VBG search_NN in_IN context_NN :_: The_DT concept_NN revisited_VBN ._.
+In_IN Proceedings_NNP of_IN WWW_NNP ####_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- C_NN ._.
+Huang_NNP ,_, L_NNP ._.
+Chien_NNP ,_, and_CC Y_NN ._.
+Oyang_NNP ._.
+Query_NNP session_NN based_VBN term_NN suggestion_NN for_IN interactive_JJ web_NN search_NN ._.
+In_IN Proceedings_NNP of_IN WWW_NNP ####_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- X_NN ._.
+Huang_NNP ,_, F_NN ._.
+Peng_NNP ,_, A_NNP ._.
+An_DT ,_, and_CC D_NN ._.
+Schuurmans_NNS ._.
+Dynamic_NNP web_NN log_NN session_NN identification_NN with_IN statistical_JJ language_NN models_NNS ._.
+Journal_NNP of_IN the_DT American_NNP Society_NNP for_IN Information_NNP Science_NNP and_CC Technology_NNP ,_, ##_CD -LRB-_-LRB- ##_CD -RRB-_-RRB- :_: 1290-1303_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- G_NN ._.
+Jeh_NNP and_CC J_NNP ._.
+Widom_NNP ._.
+Scaling_VBG personalized_JJ web_NN search_NN ._.
+In_IN Proceeding_VBG of_IN WWW_NNP ####_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- T_NN ._.
+Joachims_NNP ._.
+Optimizing_VBG search_NN engines_NNS using_VBG clickthrough_JJ data_NNS ._.
+In_IN Proceedings_NNP of_IN SIGKDD_NNP ####_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- D_NN ._.
+Kelly_NNP and_CC N_NNP ._.
+J_NN ._.
+Belkin_NNP ._.
+Display_VB time_NN as_IN implicit_JJ feedback_NN :_: Understanding_VBG task_NN effects_NNS ._.
+In_IN Proceedings_NNP of_IN SIGIR_NNP ####_CD ,_, 2004_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- D_NN ._.
+Kelly_NNP and_CC J_NNP ._.
+Teevan_NNP ._.
+Implicit_JJ feedback_NN for_IN inferring_VBG user_NN preference_NN ._.
+SIGIR_NNP Forum_NNP ,_, ##_CD -LRB-_-LRB- #_# -RRB-_-RRB- ,_, ####_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+Rocchio_NNP ._.
+Relevance_NN feedback_NN information_NN retrieval_NN ._.
+In_IN The_DT Smart_NNP Retrieval_NNP System-Experiments_NNP in_IN Automatic_NNP Document_NNP Processing_NNP ,_, pages_NNS 313-323_CD ,_, Kansas_NNP City_NNP ,_, MO_NNP ,_, ####_CD ._.
+Prentice-Hall_NNP ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- X_NN ._.
+Shen_VBN and_CC C_NN ._.
+Zhai_NNP ._.
+Exploiting_VBG query_JJ history_NN for_IN document_NN ranking_NN in_IN interactive_JJ information_NN retrieval_NN -LRB-_-LRB- poster_NN -RRB-_-RRB- ._.
+In_IN Proceedings_NNP of_IN SIGIR_NNP ####_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- S_NN ._.
+Sriram_NNP ,_, X_NN ._.
+Shen_NNP ,_, and_CC C_NN ._.
+Zhai_NNP ._.
+A_DT session-based_JJ search_NN engine_NN -LRB-_-LRB- poster_NN -RRB-_-RRB- ._.
+In_IN Proceedings_NNP of_IN SIGIR_NNP ####_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- K_NN ._.
+Sugiyama_NNP ,_, K_NNP ._.
+Hatano_NNP ,_, and_CC M_NN ._.
+Yoshikawa_NNP ._.
+Adaptive_JJ web_NN search_NN based_VBN on_IN user_NN profile_NN constructed_VBN without_IN any_DT effort_NN from_IN users_NNS ._.
+In_IN Proceedings_NNP of_IN WWW_NNP ####_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- R_NN ._.
+W_NN ._.
+White_NNP ,_, J_NNP ._.
+M_NN ._.
+Jose_NNP ,_, C_NNP ._.
+J_NN ._.
+van_NN Rijsbergen_NNP ,_, and_CC I_PRP ._.
+Ruthven_NNP ._.
+A_DT simulated_JJ study_NN of_IN implicit_JJ feedback_NN models_NNS ._.
+In_IN Proceedings_NNP of_IN ECIR_NNP ####_CD ,_, pages_NNS 311-326_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- C_NN ._.
+Zhai_NNP and_CC J_NNP ._.
+Lafferty_NNP ._.
+Model-based_JJ feedback_NN in_IN the_DT KL-divergence_NN retrieval_NN model_NN ._.
+In_IN Proceedings_NNP of_IN CIKM_NNP 2001_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- C_NN ._.
+Zhai_NNP and_CC J_NNP ._.
+Lafferty_NNP ._.
+A_DT study_NN of_IN smoothing_VBG methods_NNS for_IN language_NN models_NNS applied_VBD to_TO ad-hoc_JJ information_NN retrieval_NN ._.
+In_IN Proceedings_NNP of_IN SIGIR_NNP ####_CD ,_, ####_CD ._.

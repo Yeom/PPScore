@@ -1,0 +1,919 @@
+A_DT High-Accuracy_NNP ,_, Low-Cost_NNP Localization_NNP System_NNP for_IN Wireless_NNP Sensor_NNP Networks_NNP Radu_NNP Stoleru_NNP ,_, Tian_NNP He_PRP ,_, John_NNP A_NNP ._.
+Stankovic_NNP ,_, David_NNP Luebke_NNP Department_NNP of_IN Computer_NNP Science_NNP University_NNP of_IN Virginia_NNP ,_, Charlottesville_NNP ,_, VA_NNP #####_CD -LCB-_-LRB- stoleru_NN ,_, tianhe_JJ ,_, stankovic_JJ ,_, luebke_JJ -RCB-_-RRB- @_SYM cs_NNS ._.
+virginia_NN ._.
+edu_NN ABSTRACT_NN The_DT problem_NN of_IN localization_NN of_IN wireless_JJ sensor_NN nodes_NNS has_VBZ long_RB been_VBN regarded_VBN as_IN very_RB difficult_JJ to_TO solve_VB ,_, when_WRB considering_VBG the_DT realities_NNS of_IN real_JJ world_NN environments_NNS ._.
+In_IN this_DT paper_NN ,_, we_PRP formally_RB describe_VBP ,_, design_NN ,_, implement_VB and_CC evaluate_VB a_DT novel_JJ localization_NN system_NN ,_, called_VBN Spotlight_NNP ._.
+Our_PRP$ system_NN uses_VBZ the_DT spatio-temporal_JJ properties_NNS of_IN well_RB controlled_JJ events_NNS in_IN the_DT network_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, light_NN -RRB-_-RRB- ,_, to_TO obtain_VB the_DT locations_NNS of_IN sensor_NN nodes_NNS ._.
+We_PRP demonstrate_VBP that_IN a_DT high_JJ accuracy_NN in_IN localization_NN can_MD be_VB achieved_VBN without_IN the_DT aid_NN of_IN expensive_JJ hardware_NN on_IN the_DT sensor_NN nodes_NNS ,_, as_IN required_VBN by_IN other_JJ localization_NN systems_NNS ._.
+We_PRP evaluate_VBP the_DT performance_NN of_IN our_PRP$ system_NN in_IN deployments_NNS of_IN Mica2_NN and_CC XSM_NN motes_NNS ._.
+Through_IN performance_NN evaluations_NNS of_IN a_DT real_JJ system_NN deployed_VBN outdoors_RB ,_, we_PRP obtain_VBP a_DT 20cm_JJ localization_NN error_NN ._.
+A_DT sensor_NN network_NN ,_, with_IN any_DT number_NN of_IN nodes_NNS ,_, deployed_VBN in_IN a_DT 2500m2_JJ area_NN ,_, can_MD be_VB localized_JJ in_IN under_IN ##_CD minutes_NNS ,_, using_VBG a_DT device_NN that_WDT costs_VBZ less_JJR than_IN $_$ ####_CD ._.
+To_TO the_DT best_JJS of_IN our_PRP$ knowledge_NN ,_, this_DT is_VBZ the_DT first_JJ report_NN of_IN a_DT sub-meter_JJ localization_NN error_NN ,_, obtained_VBN in_IN an_DT outdoor_JJ environment_NN ,_, without_IN equipping_VBG the_DT wireless_JJ sensor_NN nodes_NNS with_IN specialized_VBN ranging_VBG hardware_NN ._.
+Categories_NNS and_CC Subject_NNP Descriptors_NNPS C_NNP ._.
+#_# ._.
+#_# -LSB-_-LRB- Computer-Communications_NNPS Networks_NNP -RSB-_-RRB- :_: Distributed_VBN Systems_NNPS ;_: C_NN ._.
+#_# -LSB-_-LRB- Special-Purpose_NN and_CC Application-Based_NNP Systems_NNPS -RSB-_-RRB- :_: Real-Time_JJ and_CC embedded_JJ systems_NNS ._.
+General_NNP Terms_NNS Algorithms_NNS ,_, Measurement_NNP ,_, Performance_NNP ,_, Design_NNP ,_, Experimentation_NN 1_CD ._.
+INTRODUCTION_NNP Recently_RB ,_, wireless_JJ sensor_NN network_NN systems_NNS have_VBP been_VBN used_VBN in_IN many_JJ promising_JJ applications_NNS including_VBG military_JJ surveillance_NN ,_, habitat_NN monitoring_NN ,_, wildlife_NN tracking_NN etc_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- -LSB-_-LRB- ##_CD -RSB-_-RRB- -LSB-_-LRB- ##_CD -RSB-_-RRB- -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+While_IN many_JJ middleware_JJ services_NNS ,_, to_TO support_VB these_DT applications_NNS ,_, have_VBP been_VBN designed_VBN and_CC implemented_VBN successfully_RB ,_, localization_NN -_: finding_VBG the_DT position_NN of_IN sensor_NN nodes_NNS -_: remains_VBZ one_CD of_IN the_DT most_RBS difficult_JJ research_NN challenges_NNS to_TO be_VB solved_VBN practically_RB ._.
+Since_IN most_JJS emerging_VBG applications_NNS based_VBN on_IN networked_JJ sensor_NN nodes_NNS require_VBP location_NN awareness_NN to_TO assist_VB their_PRP$ operations_NNS ,_, such_JJ as_IN annotating_VBG sensed_VBN data_NNS with_IN location_NN context_NN ,_, it_PRP is_VBZ an_DT indispensable_JJ requirement_NN for_IN a_DT sensor_NN node_NN to_TO be_VB able_JJ to_TO find_VB its_PRP$ own_JJ location_NN ._.
+Many_JJ approaches_NNS have_VBP been_VBN proposed_VBN in_IN the_DT literature_NN -LSB-_-LRB- #_# -RSB-_-RRB- -LSB-_-LRB- #_# -RSB-_-RRB- -LSB-_-LRB- ##_CD -RSB-_-RRB- -LSB-_-LRB- ##_CD -RSB-_-RRB- -LSB-_-LRB- ##_CD -RSB-_-RRB- -LSB-_-LRB- ##_CD -RSB-_-RRB- -LSB-_-LRB- ##_CD -RSB-_-RRB- -LSB-_-LRB- ##_CD -RSB-_-RRB- -LSB-_-LRB- ##_CD -RSB-_-RRB- -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, however_RB it_PRP is_VBZ still_RB not_RB clear_JJ how_WRB these_DT solutions_NNS can_MD be_VB practically_RB and_CC economically_RB deployed_VBN ._.
+An_DT on-board_JJ GPS_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- is_VBZ a_DT typical_JJ high-end_JJ solution_NN ,_, which_WDT requires_VBZ sophisticated_JJ hardware_NN to_TO achieve_VB high_JJ resolution_NN time_NN synchronization_NN with_IN satellites_NNS ._.
+The_DT constraints_NNS on_IN power_NN and_CC cost_NN for_IN tiny_JJ sensor_NN nodes_NNS preclude_VBP this_DT as_IN a_DT viable_JJ solution_NN ._.
+Other_JJ solutions_NNS require_VBP per_IN node_NN devices_NNS that_WDT can_MD perform_VB ranging_VBG among_IN neighboring_VBG nodes_NNS ._.
+The_DT difficulties_NNS of_IN these_DT approaches_NNS are_VBP twofold_RB ._.
+First_RB ,_, under_IN constraints_NNS of_IN form_NN factor_NN and_CC power_NN supply_NN ,_, the_DT effective_JJ ranges_NNS of_IN such_JJ devices_NNS are_VBP very_RB limited_JJ ._.
+For_IN example_NN the_DT effective_JJ range_NN of_IN the_DT ultrasonic_JJ transducers_NNS used_VBN in_IN the_DT Cricket_NNP system_NN is_VBZ less_JJR than_IN #_# meters_NNS when_WRB the_DT sender_NN and_CC receiver_NN are_VBP not_RB facing_VBG each_DT other_JJ -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Second_RB ,_, since_IN most_JJS sensor_NN nodes_NNS are_VBP static_JJ ,_, i_FW ._.
+e_LS ._.
+the_DT location_NN is_VBZ not_RB expected_VBN to_TO change_VB ,_, it_PRP is_VBZ not_RB cost-effective_JJ to_TO equip_VB these_DT sensors_NNS with_IN special_JJ circuitry_NN just_RB for_IN a_DT one-time_JJ localization_NN ._.
+To_TO overcome_VB these_DT limitations_NNS ,_, many_JJ range-free_JJ localization_NN schemes_NNS have_VBP been_VBN proposed_VBN ._.
+Most_JJS of_IN these_DT schemes_NNS estimate_VBP the_DT location_NN of_IN sensor_NN nodes_NNS by_IN exploiting_VBG the_DT radio_NN connectivity_NN information_NN among_IN neighboring_VBG nodes_NNS ._.
+These_DT approaches_NNS eliminate_VBP the_DT need_NN of_IN high-cost_JJ specialized_VBN hardware_NN ,_, at_IN the_DT cost_NN of_IN a_DT less_JJR accurate_JJ localization_NN ._.
+In_IN addition_NN ,_, the_DT radio_NN propagation_NN characteristics_NNS vary_VBP over_IN time_NN and_CC are_VBP environment_NN dependent_JJ ,_, thus_RB imposing_VBG high_JJ calibration_NN costs_NNS for_IN the_DT range-free_JJ localizations_NNS schemes_NNS ._.
+With_IN such_JJ limitations_NNS in_IN mind_NN ,_, this_DT paper_NN addresses_VBZ the_DT following_VBG research_NN challenge_NN :_: How_WRB to_TO reconcile_VB the_DT need_NN for_IN high_JJ accuracy_NN in_IN location_NN estimation_NN with_IN the_DT cost_NN to_TO achieve_VB it_PRP ._.
+Our_PRP$ answer_NN to_TO this_DT challenge_NN is_VBZ a_DT localization_NN system_NN called_VBN Spotlight_NNP ._.
+This_DT system_NN employs_VBZ an_DT asymmetric_JJ architecture_NN ,_, in_IN which_WDT sensor_NN nodes_NNS do_VBP not_RB need_VB any_DT additional_JJ hardware_NN ,_, other_JJ than_IN what_WP they_PRP currently_RB have_VBP ._.
+All_PDT the_DT sophisticated_JJ hardware_NN and_CC computation_NN reside_VBP on_IN a_DT single_JJ Spotlight_NN device_NN ._.
+The_DT Spotlight_NN device_NN uses_VBZ a_DT steerable_JJ laser_NN light_NN source_NN ,_, illuminating_VBG the_DT sensor_NN nodes_NNS placed_VBN within_IN a_DT known_JJ terrain_NN ._.
+We_PRP demonstrate_VBP that_IN this_DT localization_NN is_VBZ much_RB more_RBR accurate_JJ -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, tens_NNS of_IN centimeters_NNS -RRB-_-RRB- than_IN the_DT range-based_JJ localization_NN schemes_NNS and_CC that_IN it_PRP has_VBZ a_DT much_RB longer_RBR effective_JJ range_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, thousands_NNS of_IN meters_NNS -RRB-_-RRB- than_IN the_DT solutions_NNS based_VBN on_IN ultra-sound_JJ /_: acoustic_JJ ranging_VBG ._.
+At_IN the_DT same_JJ time_NN ,_, since_IN only_RB a_DT single_JJ sophisticated_JJ device_NN is_VBZ needed_VBN to_TO localize_VB the_DT whole_JJ network_NN ,_, the_DT amortized_VBN cost_NN is_VBZ much_RB smaller_JJR than_IN the_DT cost_NN to_TO add_VB hardware_NN components_NNS to_TO the_DT individual_JJ sensors_NNS ._.
+2_LS ._.
+RELATED_JJ WORK_VBP In_IN this_DT section_NN ,_, we_PRP discuss_VBP prior_JJ work_NN in_IN localization_NN in_IN two_CD major_JJ categories_NNS :_: the_DT range-based_JJ localization_NN schemes_NNS -LRB-_-LRB- which_WDT use_VBP either_CC expensive_JJ ,_, per_IN node_NN ,_, ranging_VBG devices_NNS for_IN high_JJ accuracy_NN ,_, or_CC less_JJR accurate_JJ ranging_VBG solutions_NNS ,_, as_IN the_DT Received_VBN Signal_NN Strength_NN Indicator_NN -LRB-_-LRB- RSSI_NN -RRB-_-RRB- -RRB-_-RRB- ,_, and_CC the_DT range-free_JJ schemes_NNS ,_, which_WDT use_VBP only_RB connectivity_NN information_NN -LRB-_-LRB- hop-by-hop_NN -RRB-_-RRB- as_IN an_DT indication_NN of_IN proximity_NN among_IN the_DT nodes_NNS ._.
+The_DT localization_NN problem_NN is_VBZ a_DT fundamental_JJ research_NN problem_NN in_IN many_JJ domains_NNS ._.
+In_IN the_DT field_NN of_IN robotics_NNS ,_, it_PRP has_VBZ been_VBN studied_VBN extensively_RB -LSB-_-LRB- #_# -RSB-_-RRB- -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+The_DT reported_VBN localization_NN errors_NNS are_VBP on_IN the_DT order_NN of_IN tens_NNS of_IN centimeters_NNS ,_, when_WRB using_VBG specialized_VBN ranging_VBG hardware_NN ,_, i_FW ._.
+e_LS ._.
+laser_NN range_NN finder_NN or_CC ultrasound_NN ._.
+Due_JJ to_TO the_DT high_JJ cost_NN and_CC non-negligible_JJ form_NN factor_NN of_IN the_DT ranging_VBG hardware_NN ,_, these_DT solutions_NNS can_MD not_RB be_VB simply_RB applied_VBN to_TO sensor_NN networks_NNS ._.
+The_DT RSSI_NNP has_VBZ been_VBN an_DT attractive_JJ solution_NN for_IN estimating_VBG the_DT distance_NN between_IN the_DT sender_NN and_CC the_DT receiver_NN ._.
+The_DT RADAR_NN system_NN -LSB-_-LRB- #_# -RSB-_-RRB- uses_VBZ the_DT RSSI_NN to_TO build_VB a_DT centralized_JJ repository_NN of_IN signal_NN strengths_NNS at_IN various_JJ positions_NNS with_IN respect_NN to_TO a_DT set_NN of_IN beacon_NN nodes_NNS ._.
+The_DT location_NN of_IN a_DT mobile_JJ user_NN is_VBZ estimated_VBN within_IN a_DT few_JJ meters_NNS ._.
+In_IN a_DT similar_JJ approach_NN ,_, MoteTrack_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- distributes_VBZ the_DT reference_NN RSSI_NN values_NNS to_TO the_DT beacon_NN nodes_NNS ._.
+Solutions_NNPS that_WDT use_VBP RSSI_NN and_CC do_VBP not_RB require_VB beacon_NN nodes_NNS have_VBP also_RB been_VBN proposed_VBN -LSB-_-LRB- #_# -RSB-_-RRB- -LSB-_-LRB- ##_CD -RSB-_-RRB- -LSB-_-LRB- ##_CD -RSB-_-RRB- -LSB-_-LRB- ##_CD -RSB-_-RRB- -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+They_PRP all_DT share_VBP the_DT idea_NN of_IN using_VBG a_DT mobile_JJ beacon_NN ._.
+The_DT sensor_NN nodes_NNS that_WDT receive_VBP the_DT beacons_NNS ,_, apply_VBP different_JJ algorithms_NNS for_IN inferring_VBG their_PRP$ location_NN ._.
+In_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ,_, Sichitiu_NNP proposes_VBZ a_DT solution_NN in_IN which_WDT the_DT nodes_NNS that_WDT receive_VBP the_DT beacon_NN construct_NN ,_, based_VBN on_IN the_DT RSSI_NN value_NN ,_, a_DT constraint_NN on_IN their_PRP$ position_NN estimate_NN ._.
+In_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ,_, Priyantha_NNP et_FW al_FW ._.
+propose_VBP MAL_NNP ,_, a_DT localization_NN method_NN in_IN which_WDT a_DT mobile_JJ node_NN -LRB-_-LRB- moving_VBG strategically_RB -RRB-_-RRB- assists_VBZ in_IN measuring_VBG distances_NNS between_IN node_NN pairs_NNS ,_, until_IN the_DT constraints_NNS on_IN distances_NNS generate_VBP a_DT rigid_JJ graph_NN ._.
+In_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ,_, Pathirana_NNP et_FW al_FW ._.
+formulate_VB the_DT localization_NN problem_NN as_IN an_DT on-line_JJ estimation_NN in_IN a_DT nonlinear_JJ dynamic_JJ system_NN and_CC proposes_VBZ a_DT Robust_JJ Extended_NNP Kalman_NNP Filter_NNP for_IN solving_VBG it_PRP ._.
+Elnahrawy_NN -LSB-_-LRB- #_# -RSB-_-RRB- provides_VBZ strong_JJ evidence_NN of_IN inherent_JJ limitations_NNS of_IN localization_NN accuracy_NN using_VBG RSSI_NNP ,_, in_IN indoor_JJ environments_NNS ._.
+A_DT more_RBR precise_JJ ranging_VBG technique_NN uses_VBZ the_DT time_NN difference_NN between_IN a_DT radio_NN signal_NN and_CC an_DT acoustic_JJ wave_NN ,_, to_TO obtain_VB pair_NN wise_JJ distances_NNS between_IN sensor_NN nodes_NNS ._.
+This_DT approach_NN produces_VBZ smaller_JJR localization_NN errors_NNS ,_, at_IN the_DT cost_NN of_IN additional_JJ hardware_NN ._.
+The_DT Cricket_NNP location-support_NN system_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- can_MD achieve_VB a_DT location_NN granularity_NN of_IN tens_NNS of_IN centimeters_NNS with_IN short_JJ range_NN ultrasound_NN transceivers_NNS ._.
+AHLoS_NNP ,_, proposed_VBN by_IN Savvides_NNP et_FW al_FW ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- ,_, employs_VBZ Time_NNP of_IN Arrival_NNP -LRB-_-LRB- ToA_NNP -RRB-_-RRB- ranging_VBG techniques_NNS that_WDT require_VBP extensive_JJ hardware_NN and_CC solving_VBG relatively_RB large_JJ nonlinear_JJ systems_NNS of_IN equations_NNS ._.
+A_DT similar_JJ ToA_NN technique_NN is_VBZ employed_VBN in_IN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+In_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ,_, Simon_NNP et_FW al_FW ._.
+implement_VB a_DT distributed_VBN system_NN -LRB-_-LRB- using_VBG acoustic_JJ ranging_VBG -RRB-_-RRB- which_WDT locates_VBZ a_DT sniper_NN in_IN an_DT urban_JJ terrain_NN ._.
+Acoustic_JJ ranging_VBG for_IN localization_NN is_VBZ also_RB used_VBN by_IN Kwon_NNP et_FW al_FW ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- ._.
+The_DT reported_JJ errors_NNS in_IN localization_NN vary_VBP from_IN #_# ._.
+2m_NN to_TO #_# ._.
+5m_NN ,_, depending_VBG on_IN the_DT type_NN -LRB-_-LRB- centralized_JJ vs_CC ._.
+distributed_VBN -RRB-_-RRB- of_IN the_DT Least_NNP Square_NNP Scaling_VBG algorithm_NN used_VBN ._.
+For_IN wireless_JJ sensor_NN networks_NNS ranging_VBG is_VBZ a_DT difficult_JJ option_NN ._.
+The_DT hardware_NN cost_NN ,_, the_DT energy_NN expenditure_NN ,_, the_DT form_NN factor_NN ,_, the_DT small_JJ range_NN ,_, all_DT are_VBP difficult_JJ compromises_NNS ,_, and_CC it_PRP is_VBZ hard_JJ to_TO envision_VB cheap_JJ ,_, unreliable_JJ and_CC resource-constraint_JJ devices_NNS make_VBP use_NN of_IN range-based_JJ localization_NN solutions_NNS ._.
+However_RB ,_, the_DT high_JJ localization_NN accuracy_NN ,_, achievable_JJ by_IN these_DT schemes_NNS is_VBZ very_RB desirable_JJ ._.
+To_TO overcome_VB the_DT challenges_NNS posed_VBN by_IN the_DT range-based_JJ localization_NN schemes_NNS ,_, when_WRB applied_VBN to_TO sensor_NN networks_NNS ,_, a_DT different_JJ approach_NN has_VBZ been_VBN proposed_VBN and_CC evaluated_VBN in_IN the_DT past_NN ._.
+This_DT approach_NN is_VBZ called_VBN range-free_JJ and_CC it_PRP attempts_VBZ to_TO obtain_VB location_NN information_NN from_IN the_DT proximity_NN to_TO a_DT set_NN of_IN known_JJ beacon_NN nodes_NNS ._.
+Bulusu_NNP et_FW al_FW ._.
+propose_VBP in_IN -LSB-_-LRB- #_# -RSB-_-RRB- a_DT localization_NN scheme_NN ,_, called_VBN Centroid_NNP ,_, in_IN which_WDT each_DT node_NN localizes_VBZ itself_PRP to_TO the_DT centroid_NN of_IN its_PRP$ proximate_JJ beacon_NN nodes_NNS ._.
+In_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ,_, He_PRP et_FW al_FW ._.
+propose_VBP APIT_NNP ,_, a_DT scheme_NN in_IN which_WDT each_DT node_NN decides_VBZ its_PRP$ position_NN based_VBN on_IN the_DT possibility_NN of_IN being_VBG inside_IN or_CC outside_IN of_IN a_DT triangle_NN formed_VBN by_IN any_DT three_CD beacon_NN nodes_NNS heard_VBN by_IN the_DT node_NN ._.
+The_DT Global_JJ Coordinate_JJ System_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, developed_VBD at_IN MIT_NNP ,_, uses_VBZ apriori_NN knowledge_NN of_IN the_DT node_NN density_NN in_IN the_DT network_NN ,_, to_TO estimate_VB the_DT average_JJ hop_NN distance_NN ._.
+The_DT DV_NN -_: *_SYM family_NN of_IN localization_NN schemes_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, uses_VBZ the_DT hop_NN count_NN from_IN known_VBN beacon_NN nodes_NNS to_TO the_DT nodes_NNS in_IN the_DT network_NN to_TO infer_VB the_DT distance_NN ._.
+The_DT majority_NN of_IN range-free_JJ localization_NN schemes_NNS have_VBP been_VBN evaluated_VBN in_IN simulations_NNS ,_, or_CC controlled_VBN environments_NNS ._.
+Several_JJ studies_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- -LSB-_-LRB- ##_CD -RSB-_-RRB- -LSB-_-LRB- ##_CD -RSB-_-RRB- have_VBP emphasized_VBN the_DT challenges_NNS that_IN real_JJ environments_NNS pose_VBP ._.
+Langendoen_NNP and_CC Reijers_NNP present_VBP a_DT detailed_JJ ,_, comparative_JJ study_NN of_IN several_JJ localization_NN schemes_NNS in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ._.
+To_TO the_DT best_JJS of_IN our_PRP$ knowledge_NN ,_, Spotlight_NN is_VBZ the_DT first_JJ range-free_JJ localization_NN scheme_NN that_WDT works_VBZ very_RB well_RB in_IN an_DT outdoor_JJ environment_NN ._.
+Our_PRP$ system_NN requires_VBZ a_DT line_NN of_IN sight_NN between_IN a_DT single_JJ device_NN and_CC the_DT sensor_NN nodes_NNS ,_, and_CC the_DT map_NN of_IN the_DT terrain_NN where_WRB the_DT sensor_NN field_NN is_VBZ located_JJ ._.
+The_DT Spotlight_NN system_NN has_VBZ a_DT long_JJ effective_JJ range_NN -LRB-_-LRB- ####_CD ''_'' s_VBZ meters_NNS -RRB-_-RRB- and_CC does_VBZ not_RB require_VB any_DT infrastructure_NN or_CC additional_JJ hardware_NN for_IN sensor_NN nodes_NNS ._.
+The_DT Spotlight_NN system_NN combines_VBZ the_DT advantages_NNS and_CC does_VBZ not_RB suffer_VB from_IN the_DT disadvantages_NNS of_IN the_DT two_CD localization_NN classes_NNS ._.
+3_LS ._.
+SPOTLIGHT_NN SYSTEM_NN DESIGN_NN The_DT main_JJ idea_NN of_IN the_DT Spotlight_NN localization_NN system_NN is_VBZ to_TO generate_VB controlled_JJ events_NNS in_IN the_DT field_NN where_WRB the_DT sensor_NN nodes_NNS were_VBD deployed_VBN ._.
+An_DT event_NN could_MD be_VB ,_, for_IN example_NN ,_, the_DT presence_NN of_IN light_NN in_IN an_DT area_NN ._.
+Using_VBG the_DT time_NN when_WRB an_DT event_NN is_VBZ perceived_VBN by_IN a_DT sensor_NN node_NN and_CC the_DT spatio-temporal_JJ properties_NNS of_IN the_DT generated_VBN events_NNS ,_, spatial_JJ information_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+location_NN -RRB-_-RRB- regarding_VBG the_DT sensor_NN node_NN can_MD be_VB inferred_VBN ._.
+Figure_NNP #_# ._.
+Localization_NN of_IN a_DT sensor_NN network_NN using_VBG the_DT Spotlight_NN system_NN We_PRP envision_VBP ,_, and_CC depict_VB in_IN Figure_NNP #_# ,_, a_DT sensor_NN network_NN deployment_NN and_CC localization_NN scenario_NN as_IN follows_VBZ :_: wireless_JJ sensor_NN nodes_NNS are_VBP randomly_RB deployed_VBN from_IN an_DT unmanned_JJ aerial_JJ vehicle_NN ._.
+After_IN deployment_NN ,_, the_DT sensor_NN nodes_NNS self-organize_VBP into_IN a_DT network_NN and_CC execute_VB a_DT time-synchronization_NN protocol_NN ._.
+An_DT aerial_JJ vehicle_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+helicopter_NN -RRB-_-RRB- ,_, equipped_VBN with_IN a_DT device_NN ,_, called_VBN Spotlight_NNP ,_, flies_VBZ over_IN the_DT network_NN and_CC generates_VBZ light_JJ events_NNS ._.
+The_DT sensor_NN nodes_NNS detect_VBP the_DT events_NNS and_CC report_VB back_RB to_TO the_DT Spotlight_NN device_NN ,_, through_IN a_DT base_NN station_NN ,_, the_DT timestamps_NNS when_WRB the_DT events_NNS were_VBD detected_VBN ._.
+The_DT Spotlight_NN device_NN computes_VBZ the_DT location_NN of_IN the_DT sensor_NN nodes_NNS ._.
+During_IN the_DT design_NN of_IN our_PRP$ Spotlight_NN system_NN ,_, we_PRP made_VBD the_DT following_VBG assumptions_NNS :_: -_: the_DT sensor_NN network_NN to_TO be_VB localized_JJ is_VBZ connected_VBN and_CC a_DT middleware_NN ,_, able_JJ to_TO forward_RB data_NNS from_IN the_DT sensor_NN nodes_NNS to_TO the_DT Spotlight_NN device_NN ,_, is_VBZ present_JJ ._.
+-_: the_DT aerial_JJ vehicle_NN has_VBZ a_DT very_RB good_JJ knowledge_NN about_IN its_PRP$ position_NN and_CC orientation_NN -LRB-_-LRB- #_# parameters_NNS :_: #_# translation_NN and_CC #_# rigid-body_JJ rotation_NN -RRB-_-RRB- and_CC it_PRP possesses_VBZ the_DT map_NN of_IN the_DT field_NN where_WRB the_DT network_NN was_VBD deployed_VBN ._.
+-_: a_DT powerful_JJ Spotlight_NN device_NN is_VBZ available_JJ and_CC it_PRP is_VBZ able_JJ to_TO generate_VB 14_CD spatially_RB large_JJ events_NNS that_WDT can_MD be_VB detected_VBN by_IN the_DT sensor_NN nodes_NNS ,_, even_RB in_IN the_DT presence_NN of_IN background_NN noise_NN -LRB-_-LRB- daylight_NN -RRB-_-RRB- ._.
+-_: a_DT line_NN of_IN sight_NN between_IN the_DT Spotlight_NN device_NN and_CC sensor_NN nodes_NNS exists_VBZ ._.
+Our_PRP$ assumptions_NNS are_VBP simplifying_VBG assumptions_NNS ,_, meant_VBN to_TO reduce_VB the_DT complexity_NN of_IN the_DT presentation_NN ,_, for_IN clarity_NN ._.
+We_PRP propose_VBP solutions_NNS that_WDT do_VBP not_RB rely_VB on_IN these_DT simplifying_VBG assumptions_NNS ,_, in_IN Section_NN #_# ._.
+In_IN order_NN to_TO formally_RB describe_VB and_CC generalize_VB the_DT Spotlight_NN localization_NN system_NN ,_, we_PRP introduce_VBP the_DT following_JJ definitions_NNS ._.
+3_LS ._.
+#_# Definitions_NNPS and_CC Problem_NNP Formulation_NNP Let_VB ''_'' s_VBZ assume_VB that_IN the_DT space_NN A_NN R3_NN contains_VBZ all_DT sensor_NN nodes_NNS N_NN ,_, and_CC that_IN each_DT node_NN Ni_NN is_VBZ positioned_VBN at_IN pi_NN -LRB-_-LRB- x_NN ,_, y_NN ,_, z_SYM -RRB-_-RRB- ._.
+To_TO obtain_VB pi_NN -LRB-_-LRB- x_NN ,_, y_NN ,_, z_SYM -RRB-_-RRB- ,_, a_DT Spotlight_NN localization_NN system_NN needs_VBZ to_TO support_VB three_CD main_JJ functions_NNS ,_, namely_RB an_DT Event_NNP Distribution_NN Function_NN -LRB-_-LRB- EDF_NN -RRB-_-RRB- E_NN -LRB-_-LRB- t_NN -RRB-_-RRB- ,_, an_DT Event_NNP Detection_NN Function_NN D_NN -LRB-_-LRB- e_LS -RRB-_-RRB- ,_, and_CC a_DT Localization_NN Function_NN L_NN -LRB-_-LRB- Ti_NN -RRB-_-RRB- ._.
+They_PRP are_VBP formally_RB defined_VBN as_IN follows_VBZ :_: Definition_NN #_# :_: An_DT event_NN e_SYM -LRB-_-LRB- t_NN ,_, p_NN -RRB-_-RRB- is_VBZ a_DT detectable_JJ phenomenon_NN that_WDT occurs_VBZ at_IN time_NN t_NN and_CC at_IN point_NN p_NN A_NN ._.
+Examples_NNS of_IN events_NNS are_VBP light_JJ ,_, heat_NN ,_, smoke_NN ,_, sound_NN ,_, etc_FW ._.
+Let_VB Ti_NNP =_JJ -LCB-_-LRB- ti1_NN ,_, ti2_NN ,_, ,_, tin_NN -RCB-_-RRB- be_VB a_DT set_NN of_IN n_NN timestamps_NNS of_IN events_NNS detected_VBN by_IN a_DT node_NN i_FW ._.
+Let_VB T_NN ''_'' =_JJ -LCB-_-LRB- t1_NN ''_'' ,_, t2_NN ''_'' ,_, ,_, tm_NN ''_'' -RCB-_-RRB- be_VB the_DT set_NN of_IN m_NN timestamps_NNS of_IN events_NNS generated_VBN in_IN the_DT sensor_NN field_NN ._.
+Definition_NN #_# :_: The_DT Event_NNP Detection_NN Function_NN D_NN -LRB-_-LRB- e_LS -RRB-_-RRB- defines_VBZ a_DT binary_JJ detection_NN algorithm_NN ._.
+For_IN a_DT given_VBN event_NN e_SYM :_: =_JJ detectednotisEventfalse_NN ,_, detectedisEventtrue_NN ,_, -RRB-_-RRB- -LRB-_-LRB- e_SYM e_SYM eD_NN -LRB-_-LRB- #_# -RRB-_-RRB- Definition_NN #_# :_: The_DT Event_NNP Distribution_NN Function_NN -LRB-_-LRB- EDF_NN -RRB-_-RRB- E_NN -LRB-_-LRB- t_NN -RRB-_-RRB- defines_VBZ the_DT point_NN distribution_NN of_IN events_NNS within_IN A_DT at_IN time_NN t_NN :_: -RCB-_-RRB- -LCB-_-LRB- truepteDApptE_NN =_JJ =_JJ -RRB-_-RRB- -RRB-_-RRB- ,_, -LRB-_-LRB- -LRB-_-LRB- |_CD -RRB-_-RRB- -LRB-_-LRB- -LRB-_-LRB- #_# -RRB-_-RRB- Definition_NN #_# :_: The_DT Localization_NN Function_NN L_NN -LRB-_-LRB- Ti_NN -RRB-_-RRB- defines_VBZ a_DT localization_NN algorithm_NN with_IN input_NN Ti_NNP ,_, a_DT sequence_NN of_IN timestamps_NNS of_IN events_NNS detected_VBN by_IN the_DT node_NN i_FW :_: I_PRP iTt_VBP i_FW tETL_NN =_JJ -RRB-_-RRB- -LRB-_-LRB- -RRB-_-RRB- -LRB-_-LRB- -LRB-_-LRB- #_# -RRB-_-RRB- Figure_NNP #_# ._.
+Spotlight_NN system_NN architecture_NN As_IN shown_VBN in_IN Figure_NNP #_# ,_, the_DT Event_NNP Detection_NN Function_NN D_NN -LRB-_-LRB- e_LS -RRB-_-RRB- is_VBZ supported_VBN by_IN the_DT sensor_NN nodes_NNS ._.
+It_PRP is_VBZ used_VBN to_TO determine_VB whether_IN an_DT external_JJ event_NN happens_VBZ or_CC not_RB ._.
+It_PRP can_MD be_VB implemented_VBN through_IN either_CC a_DT simple_JJ threshold-based_JJ detection_NN algorithm_NN or_CC other_JJ advanced_JJ digital_JJ signal_NN processing_NN techniques_NNS ._.
+The_DT Event_NNP Distribution_NN E_NN -LRB-_-LRB- t_NN -RRB-_-RRB- and_CC Localization_NN Functions_NNS L_NN -LRB-_-LRB- Ti_NN -RRB-_-RRB- are_VBP implemented_VBN by_IN a_DT Spotlight_NN device_NN ._.
+The_DT Localization_NN function_NN is_VBZ an_DT aggregation_NN algorithm_NN which_WDT calculates_VBZ the_DT intersection_NN of_IN multiple_JJ sets_NNS of_IN points_NNS ._.
+The_DT Event_NNP Distribution_NN Function_NN E_NN -LRB-_-LRB- t_NN -RRB-_-RRB- describes_VBZ the_DT distribution_NN of_IN events_NNS over_IN time_NN ._.
+It_PRP is_VBZ the_DT core_NN of_IN the_DT Spotlight_NN system_NN and_CC it_PRP is_VBZ much_RB more_RBR sophisticated_JJ than_IN the_DT other_JJ two_CD functions_NNS ._.
+Due_JJ to_TO the_DT fact_NN that_IN E_NN -LRB-_-LRB- t_NN -RRB-_-RRB- is_VBZ realized_VBN by_IN the_DT Spotlight_NN device_NN ,_, the_DT hardware_NN requirements_NNS for_IN the_DT sensor_NN nodes_NNS remain_VBP minimal_JJ ._.
+With_IN the_DT support_NN of_IN these_DT three_CD functions_NNS ,_, the_DT localization_NN process_NN goes_VBZ as_IN follows_VBZ :_: 1_LS -RRB-_-RRB- A_DT Spotlight_NN device_NN distributes_VBZ events_NNS in_IN the_DT space_NN A_NN over_IN a_DT period_NN of_IN time_NN ._.
+2_LS -RRB-_-RRB- During_IN the_DT event_NN distribution_NN ,_, sensor_NN nodes_NNS record_VBP the_DT time_NN sequence_NN Ti_NN =_JJ -LCB-_-LRB- ti1_NN ,_, ti2_NN ,_, ,_, tin_NN -RCB-_-RRB- at_IN which_WDT they_PRP detect_VBP the_DT events_NNS ._.
+3_LS -RRB-_-RRB- After_IN the_DT event_NN distribution_NN ,_, each_DT sensor_NN node_NN sends_VBZ the_DT detection_NN time_NN sequence_NN back_RB to_TO the_DT Spotlight_NN device_NN ._.
+4_LS -RRB-_-RRB- The_DT Spotlight_NN device_NN estimates_VBZ the_DT location_NN of_IN a_DT sensor_NN node_NN i_FW ,_, using_VBG the_DT time_NN sequence_NN Ti_NN and_CC the_DT known_JJ E_NN -LRB-_-LRB- t_NN -RRB-_-RRB- function_NN ._.
+The_DT Event_NNP Distribution_NN Function_NN E_NN -LRB-_-LRB- t_NN -RRB-_-RRB- is_VBZ the_DT core_NN technique_NN used_VBN in_IN the_DT Spotlight_NN system_NN and_CC we_PRP propose_VBP three_CD designs_NNS for_IN it_PRP ._.
+These_DT designs_NNS have_VBP different_JJ tradeoffs_NNS and_CC the_DT cost_NN comparison_NN is_VBZ presented_VBN in_IN Section_NN #_# ._.
+#_# ._.
+3_LS ._.
+#_# Point_NN Scan_VB Event_NNP Distribution_NN Function_NN To_TO illustrate_VB the_DT basic_JJ functionality_NN of_IN a_DT Spotlight_NN system_NN ,_, we_PRP start_VBP with_IN a_DT simple_JJ sensor_NN system_NN where_WRB a_DT set_NN of_IN nodes_NNS are_VBP placed_VBN along_IN a_DT straight_JJ line_NN -LRB-_-LRB- A_NN =_JJ -LSB-_-LRB- #_# ,_, l_NN -RSB-_-RRB- R_NN -RRB-_-RRB- ._.
+The_DT Spotlight_NN device_NN generates_VBZ point_NN events_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+light_JJ spots_NNS -RRB-_-RRB- along_IN this_DT line_NN with_IN constant_JJ speed_NN s_NNS ._.
+The_DT set_NN of_IN timestamps_NNS of_IN events_NNS detected_VBN by_IN a_DT node_NN i_FW is_VBZ Ti_NN =_JJ -LCB-_-LRB- ti1_NN -RCB-_-RRB- ._.
+The_DT Event_NNP Distribution_NN Function_NN E_NN -LRB-_-LRB- t_NN -RRB-_-RRB- is_VBZ :_: -RCB-_-RRB- -LCB-_-LRB- stpApptE_NN *_NN -RRB-_-RRB- -LRB-_-LRB- =_JJ =_JJ -LRB-_-LRB- #_# -RRB-_-RRB- where_WRB t_NN -LSB-_-LRB- #_# ,_, l_NN /_: s_NNS -RSB-_-RRB- ._.
+The_DT resulting_VBG localization_NN function_NN is_VBZ :_: -RCB-_-RRB- -LCB-_-LRB- sttETL_NNP iii_LS =_JJ =_JJ ##_NN -RRB-_-RRB- -LRB-_-LRB- -RRB-_-RRB- -LRB-_-LRB- -LRB-_-LRB- #_# -RRB-_-RRB- where_WRB D_NN -LRB-_-LRB- e_SYM -LRB-_-LRB- ti1_NN ,_, pi_NN -RRB-_-RRB- -RRB-_-RRB- =_JJ true_JJ for_IN node_NN i_FW positioned_VBN at_IN pi_NN ._.
+The_DT implementation_NN of_IN the_DT Event_NNP Distribution_NN Function_NN E_NN -LRB-_-LRB- t_NN -RRB-_-RRB- is_VBZ straightforward_JJ ._.
+As_IN shown_VBN in_IN Figure_NNP #_# -LRB-_-LRB- a_DT -RRB-_-RRB- ,_, when_WRB a_DT light_JJ source_NN emits_VBZ a_DT beam_NN of_IN light_NN with_IN the_DT angular_JJ speed_NN given_VBN by_IN d_NN s_NNS dt_VBP d_NN S_NN -RRB-_-RRB- -LRB-_-LRB- cos_NNS #_# =_JJ =_JJ ,_, a_DT light_JJ spot_NN event_NN with_IN constant_JJ speed_NN s_NNS is_VBZ generated_VBN along_IN the_DT line_NN situated_VBN at_IN distance_NN d_NN ._.
+Figure_NNP #_# ._.
+The_DT implementation_NN of_IN the_DT Point_NN Scan_VB EDF_NNP The_DT Point_NN Scan_VB EDF_NN can_MD be_VB generalized_VBN to_TO the_DT case_NN where_WRB nodes_NNS are_VBP placed_VBN in_IN a_DT two_CD dimensional_JJ plane_NN R2_NN ._.
+In_IN this_DT case_NN ,_, the_DT Spotlight_NN system_NN progressively_RB scans_VBZ the_DT plane_NN to_TO activate_VB the_DT sensor_NN nodes_NNS ._.
+This_DT scenario_NN is_VBZ depicted_VBN in_IN Figure_NNP #_# -LRB-_-LRB- b_NN -RRB-_-RRB- ._.
+3_LS ._.
+#_# Line_NNP Scan_VB Event_NNP Distribution_NN Function_NN Some_DT devices_NNS ,_, e_LS ._.
+g_NN ._.
+diode_NN lasers_NNS ,_, can_MD generate_VB an_DT entire_JJ line_NN of_IN events_NNS simultaneously_RB ._.
+With_IN these_DT devices_NNS ,_, we_PRP can_MD support_VB the_DT Line_NNP Scan_VB Event_NNP Distributed_VBN Function_NN easily_RB ._.
+We_PRP assume_VBP that_IN the_DT 15_CD sensor_NN nodes_NNS are_VBP placed_VBN in_IN a_DT two_CD dimensional_JJ plane_NN -LRB-_-LRB- A_NN =_JJ -LSB-_-LRB- l_NN x_NN l_NN -RSB-_-RRB- R2_NN -RRB-_-RRB- and_CC that_IN the_DT scanning_NN speed_NN is_VBZ s_NNS ._.
+The_DT set_NN of_IN timestamps_NNS of_IN events_NNS detected_VBN by_IN a_DT node_NN i_FW is_VBZ Ti_NN =_JJ -LCB-_-LRB- ti1_NN ,_, ti2_NN -RCB-_-RRB- ._.
+Figure_NNP #_# ._.
+The_DT implementation_NN of_IN the_DT Line_NNP Scan_VB EDF_NNP The_NNP Line_NNP Scan_VB EDF_NN is_VBZ defined_VBN as_IN follows_VBZ :_: -LRB-_-LRB- -RRB-_-RRB- -LCB-_-LRB- ks_NNS ,_, *_SYM tpl_NN -RSB-_-RRB- -LSB-_-LRB- #_# ,_, kp_NN -LRB-_-LRB- t_NN -RRB-_-RRB- E_NN kkx_NN =_JJ =_JJ -RCB-_-RRB- for_IN t_NN -LSB-_-LRB- #_# ,_, l_NN /_: s_NNS -RSB-_-RRB- and_CC :_: -LRB-_-LRB- -LCB-_-LRB- ls_NNS *_SYM tk_NN ,_, pl_NN -RSB-_-RRB- -LSB-_-LRB- #_# ,_, kp_NN -LRB-_-LRB- t_NN -RRB-_-RRB- E_NN kky_NN =_JJ =_JJ -RRB-_-RRB- -RCB-_-RRB- -LRB-_-LRB- #_# -RRB-_-RRB- for_IN t_NN -LSB-_-LRB- l_NN /_: s_NNS ,_, 2l_JJ /_: s_NNS -RSB-_-RRB- ._.
+U_NNP -RRB-_-RRB- -LRB-_-LRB- -RRB-_-RRB- -LRB-_-LRB- -RRB-_-RRB- -LRB-_-LRB- tEtEtE_NN yx_NN =_JJ We_PRP can_MD localize_VB a_DT node_NN by_IN calculating_VBG the_DT intersection_NN of_IN the_DT two_CD event_NN lines_NNS ,_, as_IN shown_VBN in_IN Figure_NNP #_# ._.
+More_RBR formally_RB :_: I_PRP -RRB-_-RRB- -LRB-_-LRB- -RRB-_-RRB- -LRB-_-LRB- -RRB-_-RRB- -LRB-_-LRB- ##_CD iii_LS tEtETL_NN =_JJ -LRB-_-LRB- #_# -RRB-_-RRB- where_WRB D_NN -LRB-_-LRB- e_SYM -LRB-_-LRB- ti1_NN ,_, pi_NN -RRB-_-RRB- -RRB-_-RRB- =_JJ true_JJ ,_, D_NN -LRB-_-LRB- e_SYM -LRB-_-LRB- ti2_NN ,_, pi_NN -RRB-_-RRB- -RRB-_-RRB- =_JJ true_JJ for_IN node_NN i_FW positioned_VBN at_IN pi_NN ._.
+3_LS ._.
+#_# Area_NNP Cover_NNP Event_NNP Distribution_NN Function_NN Other_JJ devices_NNS ,_, such_JJ as_IN light_JJ projectors_NNS ,_, can_MD generate_VB events_NNS that_WDT cover_VBP an_DT area_NN ._.
+This_DT allows_VBZ the_DT implementation_NN of_IN the_DT Area_NNP Cover_NNP EDF_NNP ._.
+The_DT idea_NN of_IN Area_NNP Cover_NNP EDF_NNP is_VBZ to_TO partition_NN the_DT space_NN A_NN into_IN multiple_JJ sections_NNS and_CC assign_VB a_DT unique_JJ binary_JJ identifier_NN ,_, called_VBN code_NN ,_, to_TO each_DT section_NN ._.
+Let_VB ''_'' s_NNS suppose_VBP that_IN the_DT localization_NN is_VBZ done_VBN within_IN a_DT plane_NN -LRB-_-LRB- A_NN R2_NN -RRB-_-RRB- ._.
+Each_DT section_NN Sk_NN within_IN A_DT has_VBZ a_DT unique_JJ code_NN k_NN ._.
+The_DT Area_NNP Cover_NNP EDF_NNP is_VBZ then_RB defined_VBN as_IN follows_VBZ :_: =_JJ 0iskofbitjthiffalse_NN ,_, 1iskofbitjthiftrue_NN ,_, -RRB-_-RRB- ,_, -LRB-_-LRB- jkBIT_NN -LRB-_-LRB- #_# -RRB-_-RRB- -RCB-_-RRB- -LCB-_-LRB- truetkBITSpptE_NN k_NN =_JJ =_JJ -RRB-_-RRB- ,_, -LRB-_-LRB- -RRB-_-RRB- -LRB-_-LRB- and_CC the_DT corresponding_JJ localization_NN algorithm_NN is_VBZ :_: -LCB-_-LRB- =_JJ =_JJ =_JJ -RRB-_-RRB- -RRB-_-RRB- ,_, -LRB-_-LRB- -LRB-_-LRB- -RRB-_-RRB- -LRB-_-LRB- |_CD -RRB-_-RRB- -LRB-_-LRB- iki_FW TtiftruetkBITSCOGppTL_NN -LRB-_-LRB- #_# -RRB-_-RRB- -RCB-_-RRB- -RRB-_-RRB- `_`` -RRB-_-RRB- ,_, -LRB-_-LRB- -LRB-_-LRB- iTTtiffalsetkBIT_NN =_JJ where_WRB COG_NN -LRB-_-LRB- Sk_NN -RRB-_-RRB- denotes_VBZ the_DT center_NN of_IN gravity_NN of_IN Sk_NN ._.
+We_PRP illustrate_VBP the_DT Area_NNP Cover_NNP EDF_NN with_IN a_DT simple_JJ example_NN ._.
+As_IN shown_VBN in_IN Figure_NNP #_# ,_, the_DT plane_NN A_NN is_VBZ divided_VBN in_IN ##_CD sections_NNS ._.
+Each_DT section_NN Sk_NN has_VBZ a_DT unique_JJ code_NN k_NN ._.
+The_DT Spotlight_NN device_NN distributes_VBZ the_DT events_NNS according_VBG to_TO these_DT codes_NNS :_: at_IN time_NN j_NN a_DT section_NN Sk_NN is_VBZ covered_VBN by_IN an_DT event_NN -LRB-_-LRB- lit_VBN by_IN light_NN -RRB-_-RRB- ,_, if_IN jth_NN bit_NN of_IN k_NN is_VBZ #_# ._.
+A_DT node_NN residing_VBG anywhere_RB in_IN the_DT section_NN Sk_NN is_VBZ localized_JJ at_IN the_DT center_NN of_IN gravity_NN of_IN that_DT section_NN ._.
+For_IN example_NN ,_, nodes_NNS within_IN section_NN ####_CD detect_VB the_DT events_NNS at_IN time_NN T_NN =_JJ -LCB-_-LRB- #_# ,_, #_# -RCB-_-RRB- ._.
+At_IN t_NN =_JJ #_# the_DT section_NN where_WRB each_DT node_NN resides_VBZ can_MD be_VB determined_VBN A_DT more_JJR accurate_JJ localization_NN requires_VBZ a_DT finer_NN partitioning_NN of_IN the_DT plane_NN ,_, hence_RB the_DT number_NN of_IN bits_NNS in_IN the_DT code_NN will_MD increase_VB ._.
+Considering_VBG the_DT noise_NN that_WDT is_VBZ present_JJ in_IN a_DT real_JJ ,_, outdoor_JJ environment_NN ,_, it_PRP is_VBZ easy_JJ to_TO observe_VB that_IN a_DT relatively_RB small_JJ error_NN in_IN detecting_VBG the_DT correct_JJ bit_NN pattern_NN could_MD result_VB in_IN a_DT large_JJ localization_NN error_NN ._.
+Returning_VBG to_TO the_DT example_NN shown_VBN in_IN Figure_NNP #_# ,_, if_IN a_DT sensor_NN node_NN is_VBZ located_JJ in_IN the_DT section_NN with_IN code_NN ####_CD ,_, and_CC due_JJ to_TO the_DT noise_NN ,_, at_IN time_NN t_NN =_JJ #_# ,_, it_PRP thinks_VBZ it_PRP detected_VBD an_DT event_NN ,_, it_PRP will_MD incorrectly_RB conclude_VB that_IN its_PRP$ code_NN is_VBZ ####_CD ,_, and_CC it_PRP positions_VBZ itself_PRP two_CD squares_NNS below_IN its_PRP$ correct_JJ position_NN ._.
+The_DT localization_NN accuracy_NN can_MD deteriorate_VB even_RB further_RB ,_, if_IN multiple_JJ errors_NNS are_VBP present_JJ in_IN the_DT transmission_NN of_IN the_DT code_NN ._.
+A_DT natural_JJ solution_NN to_TO this_DT problem_NN is_VBZ to_TO use_VB error-correcting_JJ codes_NNS ,_, which_WDT greatly_RB reduce_VB the_DT probability_NN of_IN an_DT error_NN ,_, without_IN paying_VBG the_DT price_NN of_IN a_DT re-transmission_NN ,_, or_CC lengthening_VBG the_DT transmission_NN time_NN too_RB much_RB ._.
+Several_JJ error_NN correction_NN schemes_NNS have_VBP been_VBN proposed_VBN in_IN the_DT past_NN ._.
+Two_CD of_IN the_DT most_RBS notable_JJ ones_NNS are_VBP the_DT Hamming_NN -LRB-_-LRB- #_# ,_, #_# -RRB-_-RRB- code_NN and_CC the_DT Golay_NNP -LRB-_-LRB- ##_CD ,_, ##_CD -RRB-_-RRB- code_NN ._.
+Both_DT are_VBP perfect_JJ linear_JJ error_NN correcting_VBG codes_NNS ._.
+The_DT Hamming_JJ coding_VBG scheme_NN can_MD detect_VB up_RP to_TO 2-bit_JJ errors_NNS and_CC correct_JJ 1-bit_JJ errors_NNS ._.
+In_IN the_DT Hamming_NN -LRB-_-LRB- #_# ,_, #_# -RRB-_-RRB- scheme_NN ,_, a_DT message_NN having_VBG #_# bits_NNS of_IN data_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+dddd_NN ,_, where_WRB d_NN is_VBZ a_DT data_NN bit_NN -RRB-_-RRB- is_VBZ transmitted_VBN as_IN a_DT 7-bit_JJ word_NN by_IN adding_VBG #_# error_NN control_NN bits_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+dddpdpp_NN ,_, where_WRB p_NN is_VBZ a_DT parity_NN bit_NN -RRB-_-RRB- ._.
+Figure_NNP #_# ._.
+The_DT steps_NNS of_IN Area_NNP Cover_NNP EDF_NNP ._.
+The_DT events_NNS cover_VBP the_DT shaded_JJ areas_NNS ._.
+The_DT steps_NNS of_IN the_DT Area_NNP Cover_NNP technique_NN ,_, when_WRB using_VBG Hamming_VBG -LRB-_-LRB- #_# ,_, #_# -RRB-_-RRB- scheme_NN are_VBP shown_VBN in_IN Figure_NNP #_# ._.
+Golay_NNP codes_NNS can_MD detect_VB up_RP to_TO 6-bit_JJ errors_NNS and_CC correct_VB up_RP to_TO 3-bit_JJ errors_NNS ._.
+Similar_JJ to_TO Hamming_VBG -LRB-_-LRB- #_# ,_, 4_LS -RRB-_-RRB- ,_, Golay_NNP constructs_NNS a_DT 23-bit_JJ codeword_NN from_IN 12-bit_JJ data_NNS ._.
+Golay_NNP codes_NNS have_VBP been_VBN used_VBN in_IN satellite_NN and_CC spacecraft_NN data_NNS transmission_NN and_CC are_VBP most_RBS suitable_JJ in_IN cases_NNS where_WRB short_JJ codeword_NN lengths_NNS are_VBP desirable_JJ ._.
+Figure_NNP #_# ._.
+The_DT steps_NNS of_IN Area_NNP Cover_NNP EDF_NN with_IN Hamming_NN -LRB-_-LRB- #_# ,_, #_# -RRB-_-RRB- ECC_NN ._.
+The_DT events_NNS cover_VBP the_DT shaded_JJ areas_NNS ._.
+Let_VB ''_'' s_VBZ assume_VB a_DT 1-bit_JJ error_NN probability_NN of_IN #_# ._.
+##_NN ,_, and_CC a_DT 12-bit_JJ message_NN that_WDT needs_VBZ to_TO be_VB transmitted_VBN ._.
+The_DT probability_NN of_IN a_DT failed_VBN transmission_NN is_VBZ thus_RB :_: #_# ._.
+##_NN ,_, if_IN no_DT error_NN detection_NN and_CC correction_NN is_VBZ used_VBN ;_: #_# ._.
+####_NN for_IN the_DT Hamming_VBG scheme_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+more_JJR than_IN 1-bit_JJ error_NN -RRB-_-RRB- ;_: and_CC #_# ._.
+######_NN for_IN the_DT Golay_NNP scheme_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+more_JJR than_IN 3-bit_JJ errors_NNS -RRB-_-RRB- ._.
+Golay_NNP is_VBZ thus_RB ##_JJ times_NNS more_RBR robust_JJ that_IN the_DT Hamming_VBG scheme_NN ,_, which_WDT is_VBZ ##_CD times_NNS more_RBR robust_JJ than_IN the_DT no_DT error_NN correction_NN scheme_NN ._.
+16_CD Considering_VBG that_IN a_DT limited_JJ number_NN of_IN corrections_NNS is_VBZ possible_JJ by_IN any_DT coding_VBG scheme_NN ,_, a_DT natural_JJ question_NN arises_VBZ :_: can_MD we_PRP minimize_VB the_DT localization_NN error_NN when_WRB there_EX are_VBP errors_NNS that_WDT can_MD not_RB be_VB corrected_VBN ?_.
+This_DT can_MD be_VB achieved_VBN by_IN a_DT clever_JJ placement_NN of_IN codes_NNS in_IN the_DT grid_NN ._.
+As_IN shown_VBN in_IN Figure_NNP #_# ,_, the_DT placement_NN A_NN ,_, in_IN the_DT presence_NN of_IN a_DT 1-bit_JJ error_NN has_VBZ a_DT smaller_JJR average_JJ localization_NN error_NN when_WRB compared_VBN to_TO the_DT placement_NN B_NN ._.
+The_DT objective_NN of_IN our_PRP$ code_NN placement_NN strategy_NN is_VBZ to_TO reduce_VB the_DT total_JJ Euclidean_JJ distance_NN between_IN all_DT pairs_NNS of_IN codes_NNS with_IN Hamming_VBG distances_NNS smaller_JJR than_IN K_NN ,_, the_DT largest_JJS number_NN of_IN expected_VBN 1-bit_JJ errors_NNS ._.
+Figure_NNP #_# ._.
+Different_JJ code_NN placement_NN strategies_NNS Formally_RB ,_, a_DT placement_NN is_VBZ represented_VBN by_IN a_DT function_NN P_NN :_: -LSB-_-LRB- #_# ,_, l_NN -RSB-_-RRB- d_NN C_NN ,_, which_WDT assigns_VBZ a_DT code_NN to_TO every_DT coordinate_NN in_IN the_DT d-dimensional_JJ cube_NN of_IN size_NN l_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, in_IN the_DT planar_JJ case_NN ,_, we_PRP place_VBP codes_NNS in_IN a_DT 2dimensional_JJ grid_NN -RRB-_-RRB- ._.
+We_PRP denote_VBP by_IN dE_NN -LRB-_-LRB- i_FW ,_, j_NN -RRB-_-RRB- the_DT Euclidean_JJ distance_NN and_CC by_IN dH_NN -LRB-_-LRB- i_FW ,_, j_NN -RRB-_-RRB- the_DT Hamming_VBG distance_NN between_IN two_CD codes_NNS i_FW and_CC j_FW ._.
+In_IN a_DT noisy_JJ environment_NN ,_, dH_NN -LRB-_-LRB- i_FW ,_, j_NN -RRB-_-RRB- determines_VBZ the_DT crossover_NN probability_NN between_IN the_DT two_CD codes_NNS ._.
+For_IN the_DT case_NN of_IN independent_JJ detections_NNS ,_, the_DT higher_JJR dH_NN -LRB-_-LRB- i_FW ,_, j_NN -RRB-_-RRB- is_VBZ ,_, the_DT lower_JJR the_DT crossover_NN probability_NN will_MD be_VB ._.
+The_DT objective_JJ function_NN is_VBZ defined_VBN as_IN follows_VBZ :_: d_NN Kjid_NN E_NN ljiwherejid_NN H_NN -RSB-_-RRB- ,_, #_# -LSB-_-LRB- ,_, -RCB-_-RRB- -RRB-_-RRB- ,_, -LRB-_-LRB- min_NN -LCB-_-LRB- -RRB-_-RRB- ,_, -LRB-_-LRB- -LRB-_-LRB- ##_NN -RRB-_-RRB- Equation_NN ##_NN is_VBZ a_DT non-linear_JJ and_CC non-convex_JJ programming_NN problem_NN ._.
+In_IN general_JJ ,_, it_PRP is_VBZ analytically_RB hard_JJ to_TO obtain_VB the_DT global_JJ minimum_NN ._.
+To_TO overcome_VB this_DT ,_, we_PRP propose_VBP a_DT Greedy_NNP Placement_NNP method_NN to_TO obtain_VB suboptimal_JJ results_NNS ._.
+In_IN this_DT method_NN we_PRP initialize_VBP the_DT 2-dimensional_JJ grid_NN with_IN codes_NNS ._.
+Then_RB we_PRP swap_VBP the_DT codes_NNS within_IN the_DT grid_NN repeatedly_RB ,_, to_TO minimize_VB the_DT objective_JJ function_NN ._.
+For_IN each_DT swap_NN ,_, we_PRP greedily_RB chose_VBD a_DT pair_NN of_IN codes_NNS ,_, which_WDT can_MD reduce_VB the_DT objective_JJ function_NN -LRB-_-LRB- Equation_NN ##_NN -RRB-_-RRB- the_DT most_JJS ._.
+The_DT proposed_VBN Greedy_NNP Placement_NNP method_NN ends_VBZ when_WRB no_DT swap_NN of_IN codes_NNS can_MD further_RB minimize_VB the_DT objective_JJ function_NN ._.
+For_IN evaluation_NN ,_, we_PRP compared_VBD the_DT average_JJ localization_NN error_NN in_IN the_DT presence_NN of_IN K-bit_JJ error_NN for_IN two_CD strategies_NNS :_: the_DT proposed_VBN Greedy_NNP Placement_NNP and_CC the_DT Row-Major_NNP Placement_NNP -LRB-_-LRB- it_PRP places_VBZ the_DT codes_NNS consecutively_RB in_IN the_DT array_NN ,_, in_IN row-first_NN order_NN -RRB-_-RRB- ._.
+0_CD 0_CD ._.
+#_# 1_CD 1_CD ._.
+#_# 2_CD 2_CD ._.
+#_# 3_CD 3_CD ._.
+#_# 4_CD 4_CD #_# ##_CD ##_CD ##_CD ##_CD ##_CD ##_CD Grid_NNP Size_NN LocalizationError_NN -LSB-_-LRB- gridunit_NN -RSB-_-RRB- Row-major_NN Consecutive_JJ placement_NN Greedy_NNP Placement_NNP Figure_NNP #_# ._.
+Localization_NN error_NN with_IN code_NN placement_NN and_CC no_DT ECC_NN As_IN Figure_NNP #_# shows_NNS ,_, if_IN no_DT error_NN detection_NN /_: correction_NN capability_NN is_VBZ present_JJ and_CC 1-bit_JJ errors_NNS occur_VBP ,_, then_RB our_PRP$ Greedy_NNP Placement_NNP method_NN can_MD reduce_VB the_DT localization_NN error_NN by_IN an_DT average_JJ ##_CD %_NN ,_, when_WRB compared_VBN to_TO the_DT Row-Major_NNP Placement_NNP ._.
+If_IN error_NN detection_NN and_CC correction_NN schemes_NNS are_VBP used_VBN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+Hamming_VBG -LRB-_-LRB- ##_CD ,_, #_# -RRB-_-RRB- and_CC if_IN 3-bit_JJ errors_NNS occur_VBP -LRB-_-LRB- K_NN =_JJ #_# -RRB-_-RRB- then_RB the_DT Greedy_NNP Placement_NNP method_NN reduces_VBZ localization_NN error_NN by_IN ##_CD %_NN ,_, when_WRB compared_VBN to_TO the_DT Row-Major_NNP Placement_NNP ,_, as_IN shown_VBN in_IN Figure_NNP #_# ._.
+If_IN K_NN =_JJ #_# ,_, then_RB there_EX is_VBZ no_DT benefit_NN in_IN using_VBG the_DT Greedy_NNP Placement_NNP method_NN ,_, since_IN the_DT 1-bit_JJ error_NN can_MD be_VB corrected_VBN by_IN the_DT Hamming_VBG scheme_NN ._.
+0_CD 0_CD ._.
+#_# 1_CD 1_CD ._.
+#_# 2_CD 2_CD ._.
+#_# 3_CD 3_CD ._.
+#_# 4_CD 4_CD ._.
+#_# 4_CD #_# ##_CD ##_CD ##_CD ##_CD ##_CD ##_CD Grid_NNP Size_NN LocalizationError_NN -LSB-_-LRB- gridunit_NN -RSB-_-RRB- Row-major_NN Consecutive_JJ placement_NN Greedy_NNP Placement_NNP Figure_NNP #_# ._.
+Localization_NN error_NN with_IN code_NN placement_NN and_CC Hamming_VBG ECC_NN 3_CD ._.
+#_# Event_NNP Distribution_NN Function_NN Analysis_NN Although_IN all_DT three_CD aforementioned_JJ techniques_NNS are_VBP able_JJ to_TO localize_VB the_DT sensor_NN nodes_NNS ,_, they_PRP differ_VBP in_IN the_DT localization_NN time_NN ,_, communication_NN overhead_NN and_CC energy_NN consumed_VBN by_IN the_DT Event_NNP Distribution_NN Function_NN -LRB-_-LRB- let_VB ''_'' s_NNS call_VBP it_PRP Event_NNP Overhead_NN -RRB-_-RRB- ._.
+Let_VB ''_'' s_VBZ assume_VB that_IN all_DT sensor_NN nodes_NNS are_VBP located_JJ in_IN a_DT square_NN with_IN edge_NN size_NN D_NN ,_, and_CC that_IN the_DT Spotlight_NN device_NN can_MD generate_VB N_NN events_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+Point_NN ,_, Line_NNP and_CC Area_NNP Cover_NNP events_NNS -RRB-_-RRB- every_DT second_JJ and_CC that_IN the_DT maximum_NN tolerable_JJ localization_NN error_NN is_VBZ r_NN ._.
+Table_NNP #_# presents_VBZ the_DT execution_NN cost_NN comparison_NN of_IN the_DT three_CD different_JJ Spotlight_NN techniques_NNS ._.
+Table_NNP #_# ._.
+Execution_NN Cost_NN Comparison_NN Criterion_NN Point_NN Scan_VB Line_NNP Scan_VB Area_NNP Cover_NNP Localization_NNP Time_NNP NrD_NN /_: -RRB-_-RRB- /_: -LRB-_-LRB- ##_CD NrD_NN /_: -RRB-_-RRB- /_: #_# -LRB-_-LRB- NDlogr_NN /_: #_# Detections_NNPS #_# #_# logrD_NN #_# Time_NNP Stamps_NNP #_# #_# logrD_NNP Event_NNP Overhead_NN D2_NN 2D2_NN D2_NN logrD_NN /_: #_# Table_NNP #_# indicates_VBZ that_IN the_DT Event_NNP Overhead_NN for_IN the_DT Point_NN Scan_VB method_NN is_VBZ the_DT smallest_JJS -_: it_PRP requires_VBZ a_DT one-time_JJ coverage_NN of_IN the_DT area_NN ,_, hence_RB the_DT D2_NN ._.
+However_RB the_DT Point_NN Scan_VB takes_VBZ a_DT much_RB longer_JJR time_NN than_IN the_DT Area_NNP Cover_NNP technique_NN ,_, which_WDT finishes_VBZ in_IN logrD_NN seconds_NNS ._.
+The_DT Line_NNP Scan_VB method_NN trades_VBZ the_DT Event_NNP Overhead_NN well_RB with_IN the_DT localization_NN time_NN ._.
+By_IN doubling_VBG the_DT Event_NNP Overhead_NN ,_, the_DT Line_NNP Scan_VB method_NN takes_VBZ only_RB r_NN /_: 2D_CD percentage_NN of_IN time_NN to_TO complete_VB ,_, when_WRB compared_VBN with_IN the_DT Point_NN Scan_VB method_NN ._.
+From_IN Table_NNP #_# ,_, it_PRP can_MD be_VB observed_VBN that_IN the_DT execution_NN costs_NNS do_VBP not_RB depend_VB on_IN the_DT number_NN of_IN sensor_NN nodes_NNS to_TO be_VB localized_JJ ._.
+It_PRP is_VBZ important_JJ to_TO remark_VB the_DT ratio_NN Event_NNP Overhead_NN per_IN unit_NN time_NN ,_, which_WDT is_VBZ indicative_JJ of_IN the_DT power_NN requirement_NN for_IN the_DT Spotlight_NN device_NN ._.
+This_DT ratio_NN is_VBZ constant_JJ for_IN the_DT Point_NN Scan_VB -LRB-_-LRB- r2_NN *_SYM N_NN -RRB-_-RRB- while_IN it_PRP grows_VBZ linearly_RB with_IN area_NN ,_, for_IN the_DT Area_NNP Cover_NNP -LRB-_-LRB- D2_NN *_NN N_NN /_: #_# -RRB-_-RRB- ._.
+If_IN the_DT deployment_NN area_NN is_VBZ very_RB large_JJ ,_, the_DT use_NN of_IN the_DT Area_NNP Cover_NNP EDF_NNP is_VBZ prohibitively_RB expensive_JJ ,_, if_IN not_RB impossible_JJ ._.
+For_IN practical_JJ purposes_NNS ,_, the_DT Area_NNP Cover_NNP is_VBZ a_DT viable_JJ solution_NN for_IN small_JJ to_TO medium_NN size_NN networks_NNS ,_, while_IN the_DT Line_NNP Scan_VB works_NNS well_RB for_IN large_JJ networks_NNS ._.
+We_PRP discuss_VBP the_DT implications_NNS of_IN the_DT power_NN requirement_NN for_IN the_DT Spotlight_NN device_NN ,_, and_CC offer_VBP a_DT hybrid_NN solution_NN in_IN Section_NN #_# ._.
+3_LS ._.
+#_# Localization_NN Error_NN Analysis_NN The_DT accuracy_NN of_IN localization_NN with_IN the_DT Spotlight_NN technique_NN depends_VBZ on_IN many_JJ aspects_NNS ._.
+The_DT major_JJ factors_NNS that_WDT were_VBD considered_VBN during_IN the_DT implementation_NN of_IN the_DT system_NN are_VBP discussed_VBN below_IN :_: 17_CD -_: Time_NNP Synchronization_NNP :_: the_DT Spotlight_NN system_NN exchanges_NNS time_NN stamps_NNS between_IN sensor_NN nodes_NNS and_CC the_DT Spotlight_NN device_NN ._.
+It_PRP is_VBZ necessary_JJ for_IN the_DT system_NN to_TO reach_VB consensus_NN on_IN global_JJ time_NN through_IN synchronization_NN ._.
+Due_JJ to_TO the_DT uncertainty_NN in_IN hardware_NN processing_NN and_CC wireless_JJ communication_NN ,_, we_PRP can_MD only_RB confine_VB such_JJ errors_NNS within_IN certain_JJ bounds_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+one_CD jiffy_NN -RRB-_-RRB- ._.
+An_DT imprecise_JJ input_NN to_TO the_DT Localization_NN Function_NN L_NN -LRB-_-LRB- T_NN -RRB-_-RRB- leads_VBZ to_TO an_DT error_NN in_IN node_NN localization_NN ._.
+-_: Uncertainty_NN in_IN Detection_NN :_: the_DT sampling_NN rate_NN of_IN the_DT sensor_NN nodes_NNS is_VBZ finite_JJ ,_, consequently_RB ,_, there_EX will_MD be_VB an_DT unpredictable_JJ delay_NN between_IN the_DT time_NN when_WRB an_DT event_NN is_VBZ truly_RB present_JJ and_CC when_WRB the_DT sensor_NN node_NN detects_VBZ it_PRP ._.
+Lower_JJR sampling_NN rates_NNS will_MD generate_VB larger_JJR localizations_NNS errors_NNS ._.
+-_: Size_NN of_IN the_DT Event_NNP :_: the_DT events_NNS distributed_VBN by_IN the_DT Spotlight_NN device_NN can_MD not_RB be_VB infinitely_RB small_JJ ._.
+If_IN a_DT node_NN detects_VBZ one_CD event_NN ,_, it_PRP is_VBZ hard_JJ for_IN it_PRP to_TO estimate_VB the_DT exact_JJ location_NN of_IN itself_PRP within_IN the_DT event_NN ._.
+-_: Realization_NN of_IN Event_NNP Distribution_NN Function_NN :_: EDF_NN defines_VBZ locations_NNS of_IN events_NNS at_IN time_NN t_NN ._.
+Due_JJ to_TO the_DT limited_JJ accuracy_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+mechanical_JJ imprecision_NN -RRB-_-RRB- ,_, a_DT Spotlight_NN device_NN might_MD generate_VB events_NNS which_WDT locate_VBP differently_RB from_IN where_WRB these_DT events_NNS are_VBP supposed_VBN to_TO be_VB ._.
+It_PRP is_VBZ important_JJ to_TO remark_VB that_IN the_DT localization_NN error_NN is_VBZ independent_JJ of_IN the_DT number_NN of_IN sensor_NN nodes_NNS in_IN the_DT network_NN ._.
+This_DT independence_NN ,_, as_RB well_RB as_IN the_DT aforementioned_JJ independence_NN of_IN the_DT execution_NN cost_NN ,_, indicate_VBP the_DT very_RB good_JJ scalability_NN properties_NNS -LRB-_-LRB- with_IN the_DT number_NN of_IN sensor_NN nodes_NNS ,_, but_CC not_RB with_IN the_DT area_NN of_IN deployment_NN -RRB-_-RRB- that_IN the_DT Spotlight_NN system_NN possesses_VBZ ._.
+4_LS ._.
+SYSTEM_NN IMPLEMENTATION_NN For_IN our_PRP$ performance_NN evaluation_NN we_PRP implemented_VBD two_CD Spotlight_NN systems_NNS ._.
+Using_VBG these_DT two_CD implementations_NNS we_PRP were_VBD able_JJ to_TO investigate_VB the_DT full_JJ spectrum_NN of_IN Event_NNP Distribution_NN techniques_NNS ,_, proposed_VBN in_IN Section_NN #_# ,_, at_IN a_DT reduced_VBN one_CD time_NN cost_NN -LRB-_-LRB- less_JJR than_IN $_$ #_# ,_, ###_CD -RRB-_-RRB- ._.
+The_DT first_JJ implementation_NN ,_, called_VBN Spotlight_NNP ,_, had_VBD a_DT short_JJ range_NN -LRB-_-LRB- 10-20_CD meters_NNS -RRB-_-RRB- ,_, however_RB its_PRP$ capability_NN of_IN generating_VBG the_DT entire_JJ spectrum_NN of_IN EDFs_NNS made_VBD it_PRP very_RB useful_JJ ._.
+We_PRP used_VBD this_DT implementation_NN mainly_RB to_TO investigate_VB the_DT capabilities_NNS of_IN the_DT Spotlight_NN system_NN and_CC tune_VB its_PRP$ performance_NN ._.
+It_PRP was_VBD not_RB intended_VBN to_TO represent_VB the_DT full_JJ solution_NN ,_, but_CC only_RB a_DT scaled_VBN down_RP version_NN of_IN the_DT system_NN ._.
+The_DT second_JJ implementation_NN ,_, the_DT Spotlight_NN system_NN ,_, had_VBD a_DT much_RB longer_JJR range_NN -LRB-_-LRB- as_IN far_RB as_IN 6500m_NN -RRB-_-RRB- ,_, but_CC it_PRP was_VBD limited_VBN in_IN the_DT types_NNS of_IN EDFs_NNS that_IN it_PRP can_MD generate_VB ._.
+The_DT goal_NN of_IN this_DT implementation_NN was_VBD to_TO show_VB how_WRB the_DT Spotlight_NN system_NN works_VBZ in_IN a_DT real_JJ ,_, outdoor_JJ environment_NN ,_, and_CC show_VBP correlations_NNS with_IN the_DT experimental_JJ results_NNS obtained_VBN from_IN the_DT Spotlight_NN system_NN implementation_NN ._.
+In_IN the_DT remaining_VBG part_NN of_IN this_DT section_NN ,_, we_PRP describe_VBP how_WRB we_PRP implemented_VBD the_DT three_CD components_NNS -LRB-_-LRB- Event_NN Distribution_NN ,_, Event_NNP Detection_NN and_CC Localization_NN functions_NNS -RRB-_-RRB- of_IN the_DT Spotlight_NN architecture_NN ,_, and_CC the_DT time_NN synchronization_NN protocol_NN ,_, a_DT key_JJ component_NN of_IN our_PRP$ system_NN ._.
+4_LS ._.
+#_# Spotlight_NNP System_NNP The_NNP first_JJ system_NN we_PRP built_VBD ,_, called_VBN Spotlight_NNP ,_, used_VBN as_IN the_DT Spotlight_NN device_NN ,_, an_DT Infocus_NNP LD530_NNP projector_NN connected_VBN to_TO an_DT IBM_NNP Thinkpad_NNP laptop_NN ._.
+The_DT system_NN is_VBZ shown_VBN in_IN Figure_NNP ##_NNP ._.
+The_DT Event_NNP Distribution_NN Function_NN was_VBD implemented_VBN as_IN a_DT Java_NNP GUI_NNP ._.
+Due_JJ to_TO the_DT stringent_JJ timing_NN requirements_NNS and_CC the_DT delay_NN caused_VBN by_IN the_DT buffering_NN in_IN the_DT windowing_NN system_NN of_IN a_DT PC_NN ,_, we_PRP used_VBD the_DT Full-Screen_NNP Exclusive_NNP Mode_NNP API_NNP provided_VBN by_IN Java2_NN ._.
+This_DT allowed_VBD us_PRP to_TO bypass_VB the_DT windowing_NN system_NN and_CC more_JJR precisely_RB estimate_VB the_DT time_NN when_WRB an_DT event_NN is_VBZ displayed_VBN by_IN the_DT projector_NN ,_, hence_RB a_DT higher_JJR accuracy_NN of_IN timestamps_NNS of_IN events_NNS ._.
+Because_IN of_IN the_DT 50Hz_JJ refresh_NN rate_NN of_IN our_PRP$ projector_NN ,_, there_EX was_VBD still_RB an_DT uncertainty_NN in_IN the_DT time_NN stamping_VBG of_IN the_DT events_NNS of_IN 20msec_NN ._.
+We_PRP explored_VBD the_DT possibility_NN of_IN using_VBG and_CC modifying_VBG the_DT Linux_NNP kernel_NN to_TO expose_VB the_DT vertical_JJ synch_NN -LRB-_-LRB- VSYNCH_NN -RRB-_-RRB- interrupt_VBP ,_, generated_VBN by_IN the_DT displaying_VBG device_NN after_IN each_DT screen_NN refresh_NN ,_, out_IN of_IN the_DT kernel_NN mode_NN ._.
+The_DT performance_NN evaluation_NN results_NNS showed_VBD ,_, however_RB ,_, that_IN this_DT level_NN of_IN accuracy_NN was_VBD not_RB needed_VBN ._.
+The_DT sensor_NN nodes_NNS that_IN we_PRP used_VBD were_VBD Berkeley_NNP Mica2_NNP motes_NNS equipped_VBN with_IN MTS310_NN multi-sensor_JJ boards_NNS from_IN Crossbow_NNP ._.
+This_DT sensor_NN board_NN contains_VBZ a_DT CdSe_NN photo_NN sensor_NN which_WDT can_MD detect_VB the_DT light_NN from_IN the_DT projector_NN ._.
+Figure_NNP ##_NNP ._.
+Spotlight_NN system_NN implementation_NN With_IN this_DT implementation_NN of_IN the_DT Spotlight_NN system_NN ,_, we_PRP were_VBD able_JJ to_TO generate_VB Point_NN ,_, Line_NNP and_CC Area_NNP Scan_VB events_NNS ._.
+4_LS ._.
+#_# Spotlight_NNP System_NNP The_NNP second_JJ Spotlight_NN system_NN we_PRP built_VBD used_VBN ,_, as_IN the_DT Spotlight_NN device_NN ,_, diode_NN lasers_NNS ,_, a_DT computerized_JJ telescope_NN mount_VBP -LRB-_-LRB- Celestron_NNP CG-5GT_NNP ,_, shown_VBN in_IN Figure_NNP ##_CD -RRB-_-RRB- ,_, and_CC an_DT IBM_NNP Thinkpad_NNP laptop_NN ._.
+The_DT laptop_NN was_VBD connected_VBN ,_, through_IN RS232_NN interfaces_NNS ,_, to_TO the_DT telescope_NN mount_VB and_CC to_TO one_CD XSM600CA_NN -LSB-_-LRB- #_# -RSB-_-RRB- mote_NN ,_, acting_VBG as_IN a_DT base_NN station_NN ._.
+The_DT diode_NN lasers_NNS we_PRP used_VBD ranged_VBN in_IN power_NN from_IN 7mW_NN to_TO 35mW_NN ._.
+They_PRP emitted_VBD at_IN 650nm_CD ,_, close_RB to_TO the_DT point_NN of_IN highest_JJS sensitivity_NN for_IN CdSe_NN photosensor_NN ._.
+The_DT diode_NN lasers_NNS were_VBD equipped_VBN with_IN lenses_NNS that_WDT allowed_VBD us_PRP to_TO control_VB the_DT divergence_NN of_IN the_DT beam_NN ._.
+Figure_NNP ##_NNP ._.
+Spotlight_NN system_NN implementation_NN The_DT telescope_NN mount_VBP has_VBZ worm_NN gears_NNS for_IN a_DT smooth_JJ motion_NN and_CC high_JJ precision_NN angular_JJ measurements_NNS ._.
+The_DT two_CD angular_JJ measures_NNS that_IN we_PRP used_VBD were_VBD the_DT ,_, so_RB called_VBN ,_, Alt_NN -LRB-_-LRB- from_IN Altitude_NN -RRB-_-RRB- and_CC Az_NN -LRB-_-LRB- from_IN Azimuth_NNP -RRB-_-RRB- ._.
+In_IN astronomy_NN ,_, the_DT Altitude_NNP of_IN a_DT celestial_JJ object_NN is_VBZ its_PRP$ angular_JJ distance_NN above_IN or_CC below_IN the_DT celestial_JJ horizon_NN ,_, and_CC the_DT Azimuth_NNP is_VBZ the_DT angular_JJ distance_NN of_IN an_DT object_NN eastwards_NNS of_IN the_DT meridian_NN ,_, along_IN the_DT horizon_NN ._.
+18_CD The_DT laptop_NN computer_NN ,_, through_IN a_DT Java_NNP GUI_NNP ,_, controls_VBZ the_DT motion_NN of_IN the_DT telescope_NN mount_VB ,_, orienting_VBG it_PRP such_JJ that_IN a_DT full_JJ Point_NN Scan_VB of_IN an_DT area_NN is_VBZ performed_VBN ,_, similar_JJ to_TO the_DT one_CD described_VBN in_IN Figure_NNP #_# -LRB-_-LRB- b_NN -RRB-_-RRB- ._.
+For_IN each_DT turning_VBG point_NN i_FW ,_, the_DT 3-tuple_JJ -LRB-_-LRB- Alti_JJ and_CC Azi_JJ angles_NNS and_CC the_DT timestamp_NN ti_NN -RRB-_-RRB- is_VBZ recorded_VBN ._.
+The_DT Spotlight_NN system_NN uses_VBZ the_DT timestamp_JJ received_VBN from_IN a_DT sensor_NN node_NN j_NN ,_, to_TO obtain_VB the_DT angular_JJ measures_NNS Altj_NNP and_CC Azj_NNP for_IN its_PRP$ location_NN ._.
+For_IN the_DT sensor_NN nodes_NNS ,_, we_PRP used_VBD XSM_NNP motes_NNS ,_, mainly_RB because_IN of_IN their_PRP$ longer_JJR communication_NN range_NN ._.
+The_DT XSM_NNP mote_NN has_VBZ the_DT photo_NN sensor_NN embedded_VBN in_IN its_PRP$ main_JJ board_NN ._.
+We_PRP had_VBD to_TO make_VB minor_JJ adjustments_NNS to_TO the_DT plastic_JJ housing_NN ,_, in_IN order_NN to_TO expose_VB the_DT photo_NN sensor_NN to_TO the_DT outside_NN ._.
+The_DT same_JJ mote_NN code_NN ,_, written_VBN in_IN nesC_NNP ,_, for_IN TinyOS_NNP ,_, was_VBD used_VBN for_IN both_DT Spotlight_NN and_CC Spotlight_NN system_NN implementations_NNS ._.
+4_LS ._.
+#_# Event_NNP Detection_NN Function_NN D_NN -LRB-_-LRB- t_NN -RRB-_-RRB- The_DT Event_NNP Detection_NN Function_NN aims_VBZ to_TO detect_VB the_DT beginning_NN of_IN an_DT event_NN and_CC record_VB the_DT time_NN when_WRB the_DT event_NN was_VBD observed_VBN ._.
+We_PRP implemented_VBD a_DT very_RB simple_JJ detection_NN function_NN based_VBN on_IN the_DT observed_VBN maximum_NN value_NN ._.
+An_DT event_NN i_FW will_MD be_VB time_NN stamped_JJ with_IN time_NN ti_NNS ,_, if_IN the_DT reading_NN from_IN the_DT photo_NN sensor_NN dti_NN ,_, fulfills_VBZ the_DT condition_NN :_: itdd_NN <_JJR +_CC max_NN where_WRB dmax_NN is_VBZ the_DT maximum_NN value_NN reported_VBN by_IN the_DT photo_NN sensor_NN before_IN ti_NNS and_CC is_VBZ a_DT constant_JJ which_WDT ensures_VBZ that_IN the_DT first_JJ large_JJ detection_NN gives_VBZ the_DT timestamp_NN of_IN the_DT event_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+small_JJ variations_NNS around_IN the_DT first_JJ large_JJ signal_NN are_VBP not_RB considered_VBN -RRB-_-RRB- ._.
+Hence_RB guarantees_VBZ that_IN only_RB sharp_JJ changes_NNS in_IN the_DT detected_VBN value_NN generate_VBP an_DT observed_VBN event_NN ._.
+4_LS ._.
+#_# Localization_NN Function_NN L_NN -LRB-_-LRB- T_NN -RRB-_-RRB- The_DT Localization_NN Function_NN is_VBZ implemented_VBN in_IN the_DT Java_NNP GUI_NNP ._.
+It_PRP matches_VBZ the_DT timestamps_NNS created_VBN by_IN the_DT Event_NNP Distribution_NN Function_NN with_IN those_DT reported_VBN by_IN the_DT sensor_NN nodes_NNS ._.
+The_DT Localization_NN Function_NN for_IN the_DT Point_NN Scan_VB EDF_NN has_VBZ as_IN input_NN a_DT time_NN sequence_NN Ti_NN =_JJ -LCB-_-LRB- t1_NN -RCB-_-RRB- ,_, as_IN reported_VBN by_IN node_NN i_FW ._.
+The_DT function_NN performs_VBZ a_DT simple_JJ search_NN for_IN the_DT event_NN with_IN a_DT timestamp_NN closest_JJS to_TO t1_NN ._.
+If_IN t1_NN is_VBZ constrained_VBN by_IN :_: 11_CD +_CC <_JJR <_JJR nn_NN ee_NN ttt_NN where_WRB en_FW and_CC en_FW +_CC #_# are_VBP two_CD consecutive_JJ events_NNS ,_, then_RB the_DT obtained_VBN location_NN for_IN node_NN i_FW is_VBZ :_: 11_CD ,_, +_CC +_CC =_JJ =_JJ nn_NN ee_NN yyxx_NN The_DT case_NN for_IN the_DT Line_NNP Scan_VB is_VBZ treated_VBN similarly_RB ._.
+The_DT input_NN to_TO the_DT Localization_NN Function_NN is_VBZ the_DT time_NN sequence_NN Ti_NN =_JJ -LCB-_-LRB- t1_NN ,_, t2_NN -RCB-_-RRB- as_IN reported_VBN by_IN node_NN i_FW ._.
+If_IN the_DT reported_VBN timestamps_NNS are_VBP constrained_VBN by_IN :_: 11_CD +_CC <_JJR <_JJR nn_NN ee_NN ttt_NN ,_, and_CC 12_CD +_CC <_JJR <_JJR mm_NN ee_NN ttt_NN where_WRB en_FW and_CC en_FW +_CC #_# are_VBP two_CD consecutive_JJ events_NNS on_IN the_DT horizontal_JJ scan_VB and_CC em_NN and_CC em_NN +_CC #_# are_VBP two_CD consecutive_JJ events_NNS on_IN vertical_JJ scan_VB ,_, then_RB the_DT inferred_VBN location_NN for_IN node_NN i_FW is_VBZ :_: 11_CD ,_, +_CC +_CC =_JJ =_JJ mn_NN ee_NN yyxx_NN The_DT Localization_NN Function_NN for_IN the_DT Area_NNP Cover_NNP EDF_NNP has_VBZ as_IN input_NN a_DT timestamp_JJ set_NN Ti_NN =_JJ -LCB-_-LRB- ti1_NN ,_, ti2_NN ,_, ,_, tin_NN -RCB-_-RRB- of_IN the_DT n_NN events_NNS ,_, detected_VBN by_IN node_NN i_FW ._.
+We_PRP recall_VBP the_DT notation_NN for_IN the_DT set_NN of_IN m_NN timestamps_NNS of_IN events_NNS generated_VBN by_IN the_DT Spotlight_NN device_NN ,_, T_NN ''_'' =_JJ -LCB-_-LRB- t1_NN ''_'' ,_, t2_NN ''_'' ,_, ,_, tm_NN ''_'' -RCB-_-RRB- ._.
+A_DT code_NN di_FW =_JJ di1di2dim_NN is_VBZ then_RB constructed_VBN for_IN each_DT node_NN i_FW ,_, such_JJ that_IN dij_NN =_JJ #_# if_IN tj_NN ''_'' Ti_NNP and_CC dij_NN =_JJ #_# if_IN tj_NN ''_'' Ti_NNP ._.
+The_DT function_NN performs_VBZ a_DT search_NN for_IN an_DT event_NN with_IN an_DT identical_JJ code_NN ._.
+If_IN the_DT following_VBG condition_NN is_VBZ true_JJ :_: nei_NN dd_NN =_JJ where_WRB en_FW is_VBZ an_DT event_NN with_IN code_NN den_NN ,_, then_RB the_DT inferred_VBN location_NN for_IN node_NN i_FW is_VBZ :_: nn_NN ee_NN yyxx_NN =_JJ =_JJ ,_, 4_CD ._.
+#_# Time_NNP Synchronization_NNP The_DT time_NN synchronization_NN in_IN the_DT Spotlight_NN system_NN consists_VBZ of_IN two_CD parts_NNS :_: -_: Synchronization_NN between_IN sensor_NN nodes_NNS :_: This_DT is_VBZ achieved_VBN through_IN the_DT Flooding_NNP Time_NNP Synchronization_NNP Protocol_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+In_IN this_DT protocol_NN ,_, synchronized_VBN nodes_NNS -LRB-_-LRB- the_DT root_NN node_NN is_VBZ the_DT only_JJ synchronized_JJ node_NN at_IN the_DT beginning_NN -RRB-_-RRB- send_VBP time_NN synchronization_NN message_NN to_TO unsynchronized_JJ nodes_NNS ._.
+The_DT sender_NN puts_VBZ the_DT time_NN stamp_NN into_IN the_DT synchronization_NN message_NN right_NN before_IN the_DT bytes_NNS containing_VBG the_DT time_NN stamp_NN are_VBP transmitted_VBN ._.
+Once_RB a_DT receiver_NN gets_VBZ the_DT message_NN ,_, it_PRP follows_VBZ the_DT sender_NN '_POS s_NNS time_NN and_CC performs_VBZ the_DT necessary_JJ calculations_NNS to_TO compensate_VB for_IN the_DT clock_NN drift_NN ._.
+-_: Synchronization_NN between_IN the_DT sensor_NN nodes_NNS and_CC the_DT Spotlight_NN device_NN :_: We_PRP implemented_VBD this_DT part_NN through_IN a_DT two-way_JJ handshaking_NN between_IN the_DT Spotlight_NN device_NN and_CC one_CD node_NN ,_, used_VBN as_IN the_DT base_NN station_NN ._.
+The_DT sensor_NN node_NN is_VBZ attached_VBN to_TO the_DT Spotlight_NN device_NN through_IN a_DT serial_NN interface_NN ._.
+Figure_NNP ##_NNP ._.
+Two-way_JJ synchronization_NN As_IN shown_VBN in_IN Figure_NNP ##_NNP ,_, let_VBD ''_'' s_VBZ assume_VB that_IN the_DT Spotlight_NN device_NN sends_VBZ a_DT synchronization_NN message_NN -LRB-_-LRB- SYNC_NN -RRB-_-RRB- at_IN local_JJ time_NN T1_NN ,_, the_DT sensor_NN node_NN receives_VBZ it_PRP at_IN its_PRP$ local_JJ time_NN T2_NN and_CC acknowledges_VBZ it_PRP at_IN local_JJ time_NN T3_NN -LRB-_-LRB- both_DT T2_NN and_CC T3_NN are_VBP sent_VBN back_RB through_IN ACK_NN -RRB-_-RRB- ._.
+After_IN the_DT Spotlight_NN device_NN receives_VBZ the_DT ACK_NNP ,_, at_IN its_PRP$ local_JJ time_NN T4_NN ,_, the_DT time_NN synchronization_NN can_MD be_VB achieved_VBN as_IN follows_VBZ :_: 2_LS -RRB-_-RRB- -LRB-_-LRB- -RRB-_-RRB- -LRB-_-LRB- ####_CD TTTT_NNP Offset_NNP +_CC =_JJ -LRB-_-LRB- ##_NN -RRB-_-RRB- OffsetTTT_NN spotlightnodeglobal_NN +_CC =_JJ =_JJ We_PRP note_VBP that_IN Equation_NN ##_NN assumes_VBZ that_IN the_DT one_CD trip_NN delays_NNS are_VBP the_DT same_JJ in_IN both_CC directions_NNS ._.
+In_IN practice_NN this_DT does_VBZ not_RB hold_VB well_RB enough_RB ._.
+To_TO improve_VB the_DT performance_NN ,_, we_PRP separate_VBP the_DT handshaking_NN process_NN from_IN the_DT timestamp_NN exchanges_NNS ._.
+The_DT handshaking_NN is_VBZ done_VBN fast_RB ,_, through_IN a_DT #_# byte_FW exchange_NN between_IN the_DT Spotlight_NN device_NN and_CC the_DT sensor_NN node_NN -LRB-_-LRB- the_DT timestamps_NNS are_VBP still_RB recorded_VBN ,_, but_CC not_RB sent_VBN -RRB-_-RRB- ._.
+After_IN this_DT fast_JJ handshaking_NN ,_, the_DT recorded_JJ time_NN stamps_NNS are_VBP exchanged_VBN ._.
+The_DT result_NN indicates_VBZ that_IN this_DT approach_NN can_MD significantly_RB improve_VB the_DT accuracy_NN of_IN time_NN synchronization_NN ._.
+5_CD ._.
+PERFORMANCE_NN EVALUATION_NN In_IN this_DT section_NN we_PRP present_VBP the_DT performance_NN evaluation_NN of_IN the_DT Spotlight_NN systems_NNS when_WRB using_VBG the_DT three_CD event_NN distribution_NN functions_NNS ,_, i_FW ._.
+e_LS ._.
+Point_NN Scan_VB ,_, Line_NNP Scan_VB and_CC Area_NNP Cover_NNP ,_, described_VBN in_IN Section_NN #_# ._.
+19_CD For_IN the_DT Spotlight_NN system_NN we_PRP used_VBD ##_CD Mica2_NN motes_NNS ._.
+The_DT sensor_NN nodes_NNS were_VBD attached_VBN to_TO a_DT vertically_RB positioned_JJ Veltex_NNP board_NN ._.
+By_IN projecting_VBG the_DT light_NN to_TO the_DT sensor_NN nodes_NNS ,_, we_PRP are_VBP able_JJ to_TO generate_VB well_RB controlled_VBN Point_NN ,_, Line_NNP and_CC Area_NNP events_NNS ._.
+The_DT Spotlight_NN device_NN was_VBD able_JJ to_TO generate_VB events_NNS ,_, i_FW ._.
+e_LS ._.
+project_NN light_JJ patterns_NNS ,_, covering_VBG an_DT area_NN of_IN approximate_JJ size_NN 180x140cm2_NN ._.
+The_DT screen_NN resolution_NN for_IN the_DT projector_NN was_VBD 1024x768_CD ,_, and_CC the_DT movement_NN of_IN the_DT Point_NN Scan_VB and_CC Line_NNP Scan_VB techniques_NNS was_VBD done_VBN through_IN increments_NNS -LRB-_-LRB- in_IN the_DT appropriate_JJ direction_NN -RRB-_-RRB- of_IN ##_CD pixels_NNS between_IN events_NNS ._.
+Each_DT experimental_JJ point_NN was_VBD obtained_VBN from_IN ##_CD successive_JJ runs_NNS of_IN the_DT localization_NN procedure_NN ._.
+Each_DT set_NN of_IN ##_CD runs_NNS was_VBD preceded_VBN by_IN a_DT calibration_NN phase_NN ,_, aimed_VBN at_IN estimating_VBG the_DT total_NN delays_NNS -LRB-_-LRB- between_IN the_DT Spotlight_NN device_NN and_CC each_DT sensor_NN node_NN -RRB-_-RRB- in_IN detecting_VBG an_DT event_NN ._.
+During_IN the_DT calibration_NN ,_, we_PRP created_VBD an_DT event_NN covering_VBG the_DT entire_JJ sensor_NN field_NN -LRB-_-LRB- illuminated_VBN the_DT entire_JJ area_NN -RRB-_-RRB- ._.
+The_DT timestamp_NN reported_VBN by_IN each_DT sensor_NN node_NN ,_, in_IN conjunction_NN with_IN the_DT timestamp_NN created_VBN by_IN the_DT Spotlight_NN device_NN were_VBD used_VBN to_TO obtain_VB the_DT time_NN offset_VBN ,_, for_IN each_DT sensor_NN node_NN ._.
+More_RBR sophisticated_JJ calibration_NN procedures_NNS have_VBP been_VBN reported_VBN previously_RB -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+In_IN addition_NN to_TO the_DT time_NN offset_VBN ,_, we_PRP added_VBD a_DT manually_RB configurable_JJ parameter_NN ,_, called_VBN bias_NN ._.
+It_PRP was_VBD used_VBN to_TO best_JJS estimate_NN the_DT center_NN of_IN an_DT event_NN ._.
+Figure_NNP ##_NNP ._.
+Deployment_NN site_NN for_IN the_DT Spotlight_NN system_NN For_IN the_DT Spotlight_NN system_NN evaluation_NN ,_, we_PRP deployed_VBD ##_CD XSM_NNP motes_NNS in_IN a_DT football_NN field_NN ._.
+The_DT site_NN is_VBZ shown_VBN in_IN Figure_NNP ##_NN -LRB-_-LRB- laser_NN beams_NNS are_VBP depicted_VBN with_IN red_JJ arrows_NNS and_CC sensor_NN nodes_NNS with_IN white_JJ dots_NNS -RRB-_-RRB- ._.
+Two_CD sets_NNS of_IN experiments_NNS were_VBD run_VBN ,_, with_IN the_DT Spotlight_NN device_NN positioned_VBD at_IN 46m_NN and_CC at_IN 170m_CD from_IN the_DT sensor_NN field_NN ._.
+The_DT sensor_NN nodes_NNS were_VBD aligned_VBN and_CC the_DT Spotlight_NN device_NN executed_VBD a_DT Point_NN Scan_VB ._.
+The_DT localization_NN system_NN computed_VBD the_DT coordinates_VBZ of_IN the_DT sensor_NN nodes_NNS ,_, and_CC the_DT Spotlight_NN device_NN was_VBD oriented_VBN ,_, through_IN a_DT GoTo_NNP command_NN sent_VBD to_TO the_DT telescope_NN mount_VB ,_, towards_IN the_DT computed_VBN location_NN ._.
+In_IN the_DT initial_JJ stages_NNS of_IN the_DT experiments_NNS ,_, we_PRP manually_RB measured_VBD the_DT localization_NN error_NN ._.
+For_IN our_PRP$ experimental_JJ evaluation_NN ,_, the_DT metrics_NNS of_IN interest_NN were_VBD as_IN follows_VBZ :_: -_: Localization_NN error_NN ,_, defined_VBN as_IN the_DT distance_NN ,_, between_IN the_DT real_JJ location_NN and_CC the_DT one_CD obtained_VBN from_IN the_DT Spotlight_NN system_NN ._.
+-_: Localization_NN duration_NN ,_, defined_VBN as_IN the_DT time_NN span_NN between_IN the_DT first_JJ and_CC last_JJ event_NN ._.
+-_: Localization_NN range_NN ,_, defined_VBN as_IN the_DT maximum_NN distance_NN between_IN the_DT Spotlight_NN device_NN and_CC the_DT sensor_NN nodes_NNS ._.
+-_: A_NN Localization_NN Cost_NN function_NN Cost_NN :_: -LCB-_-LRB- -LCB-_-LRB- localization_NN accuracy_NN -RCB-_-RRB- ,_, -LCB-_-LRB- localization_NN duration_NN -RCB-_-RRB- -RCB-_-RRB- -LSB-_-LRB- #_# ,_, #_# -RSB-_-RRB- quantifies_VBZ the_DT trade-off_NN between_IN the_DT accuracy_NN in_IN localization_NN and_CC the_DT localization_NN duration_NN ._.
+The_DT objective_NN is_VBZ to_TO minimize_VB the_DT Localization_NN Cost_NN function_NN ._.
+By_IN denoting_VBG with_IN ei_NN the_DT localization_NN error_NN for_IN the_DT ith_NN scenario_NN ,_, with_IN di_FW the_DT localization_NN duration_NN for_IN the_DT ith_NN scenario_NN ,_, with_IN max_NN -LRB-_-LRB- e_LS -RRB-_-RRB- the_DT maximum_NN localization_NN error_NN ,_, with_IN max_NN -LRB-_-LRB- d_NN -RRB-_-RRB- the_DT maximum_NN localization_NN duration_NN ,_, and_CC with_IN the_DT importance_NN factor_NN ,_, the_DT Localization_NN Cost_NN function_NN is_VBZ formally_RB defined_VBN as_IN :_: -RRB-_-RRB- max_NN -LRB-_-LRB- -RRB-_-RRB- #_# -LRB-_-LRB- -RRB-_-RRB- max_NN -LRB-_-LRB- -RRB-_-RRB- ,_, -LRB-_-LRB- d_NN d_NN e_SYM e_SYM deCost_FW ii_LS ii_LS +_CC =_SYM -_: Localization_NN Bias_NNP ._.
+This_DT metric_JJ is_VBZ used_VBN to_TO investigate_VB the_DT effectiveness_NN of_IN the_DT calibration_NN procedure_NN ._.
+If_IN ,_, for_IN example_NN ,_, all_DT computed_VBN locations_NNS have_VBP a_DT bias_NN in_IN the_DT west_JJ direction_NN ,_, a_DT calibration_NN factor_NN can_MD be_VB used_VBN to_TO compensate_VB for_IN the_DT difference_NN ._.
+The_DT parameters_NNS that_IN we_PRP varied_VBD during_IN the_DT performance_NN evaluation_NN of_IN our_PRP$ system_NN were_VBD :_: the_DT type_NN of_IN scanning_NN -LRB-_-LRB- Point_NN ,_, Line_NNP and_CC Area_NNP -RRB-_-RRB- ,_, the_DT size_NN of_IN the_DT event_NN ,_, the_DT duration_NN of_IN the_DT event_NN -LRB-_-LRB- for_IN Area_NNP Cover_NNP -RRB-_-RRB- ,_, the_DT scanning_NN speed_NN ,_, the_DT power_NN of_IN the_DT laser_NN and_CC the_DT distance_NN between_IN the_DT Spotlight_NN device_NN and_CC sensor_NN field_NN ,_, to_TO estimate_VB the_DT range_NN of_IN the_DT system_NN ._.
+5_CD ._.
+#_# Point_NN Scan_VB -_: Spotlight_NN system_NN In_IN this_DT experiment_NN ,_, we_PRP investigated_VBD how_WRB the_DT size_NN of_IN the_DT event_NN and_CC the_DT scanning_NN speed_NN affect_VBP the_DT localization_NN error_NN ._.
+Figure_NNP ##_NN shows_VBZ the_DT mean_NN localization_NN errors_NNS with_IN their_PRP$ standard_JJ deviations_NNS ._.
+It_PRP can_MD be_VB observed_VBN ,_, that_IN while_IN the_DT scanning_NN speed_NN ,_, varying_VBG between_IN 35cm_CD /_: sec_NN and_CC 87cm_JJ /_: sec_NN has_VBZ a_DT minor_JJ influence_NN on_IN the_DT localization_NN accuracy_NN ,_, the_DT size_NN of_IN the_DT event_NN has_VBZ a_DT dramatic_JJ effect_NN ._.
+0_CD 2_CD 4_CD 6_CD 8_CD 10_CD 12_CD 14_CD 7_CD ._.
+#_# ##_CD ._.
+#_# ##_CD ._.
+#_# ##_CD ._.
+#_# ##_CD ._.
+#_# ##_CD ._.
+#_# Event_NNP Size_NN -LSB-_-LRB- cm_NN -RSB-_-RRB- Locationerror_NN -LSB-_-LRB- cm_NN -RSB-_-RRB- 87cm_CD /_: sec_JJ 58cm_JJ /_: sec_NN 43cm_CD /_: sec_JJ 35cm_JJ /_: sec_NN Figure_NN ##_NN ._.
+Localization_NN Error_NN vs_CC ._.
+Event_NN Size_NN for_IN the_DT Point_NN Scan_VB EDF_NNP The_DT obtained_VBN localization_NN error_NN varied_VBD from_IN as_RB little_JJ as_IN 2cm_JJ to_TO over_IN 11cm_NN for_IN the_DT largest_JJS event_NN ._.
+This_DT dependence_NN can_MD be_VB explained_VBN by_IN our_PRP$ Event_NNP Detection_NN algorithm_NN :_: the_DT first_JJ detection_NN above_IN a_DT threshold_NN gave_VBD the_DT timestamp_NN for_IN the_DT event_NN ._.
+The_DT duration_NN of_IN the_DT localization_NN scheme_NN is_VBZ shown_VBN in_IN Figure_NNP ##_NNP ._.
+The_DT dependency_NN of_IN the_DT localization_NN duration_NN on_IN the_DT size_NN of_IN the_DT event_NN and_CC scanning_NN speed_NN is_VBZ natural_JJ ._.
+A_DT bigger_JJR event_NN allows_VBZ a_DT reduction_NN in_IN the_DT total_JJ duration_NN of_IN up_RB to_TO ##_CD %_NN ._.
+The_DT localization_NN duration_NN is_VBZ directly_RB proportional_JJ to_TO the_DT scanning_NN speed_NN ,_, as_IN expected_VBN ,_, and_CC depicted_VBN in_IN Figure_NNP ##_NNP ._.
+0_CD 20_CD 40_CD 60_CD 80_CD 100_CD 120_CD 7_CD ._.
+#_# ##_CD ._.
+#_# ##_CD ._.
+#_# ##_CD ._.
+#_# ##_CD ._.
+#_# ##_CD ._.
+#_# Event_NNP Size_NN -LSB-_-LRB- cm_NN -RSB-_-RRB- LocalizationDuration_NN -LSB-_-LRB- sec_NN -RSB-_-RRB- 87cm_CD /_: sec_JJ 58cm_JJ /_: sec_NN 43cm_CD /_: sec_JJ 35cm_JJ /_: sec_NN Figure_NN ##_NN ._.
+Localization_NN Duration_NN vs_CC ._.
+Event_NN Size_NN for_IN the_DT Point_NN Scan_VB EDF_NN 20_CD An_DT interesting_JJ trade-off_NN is_VBZ between_IN the_DT localization_NN accuracy_NN -LRB-_-LRB- usually_RB the_DT most_RBS important_JJ factor_NN -RRB-_-RRB- ,_, and_CC the_DT localization_NN time_NN -LRB-_-LRB- important_JJ in_IN environments_NNS where_WRB stealthiness_NN is_VBZ paramount_JJ -RRB-_-RRB- ._.
+Figure_NNP ##_NN shows_VBZ the_DT Localization_NN Cost_NN function_NN ,_, for_IN =_JJ #_# ._.
+#_# -LRB-_-LRB- accuracy_NN and_CC duration_NN are_VBP equally_RB important_JJ -RRB-_-RRB- ._.
+As_IN shown_VBN in_IN Figure_NNP ##_NNP ,_, it_PRP can_MD be_VB observed_VBN that_IN an_DT event_NN size_NN of_IN approximately_RB 10-15cm_JJ -LRB-_-LRB- depending_VBG on_IN the_DT scanning_NN speed_NN -RRB-_-RRB- minimizes_VBZ our_PRP$ Cost_NN function_NN ._.
+For_IN =_JJ #_# ,_, the_DT same_JJ graph_NN would_MD be_VB a_DT monotonically_RB increasing_VBG function_NN ,_, while_IN for_IN =_JJ #_# ,_, it_PRP would_MD be_VB monotonically_RB decreasing_VBG function_NN ._.
+0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 5_CD ._.
+#_# ##_CD ._.
+#_# ##_CD ._.
+#_# ##_CD ._.
+#_# ##_CD ._.
+#_# ##_CD ._.
+#_# Event_NNP Size_NN -LSB-_-LRB- cm_NN -RSB-_-RRB- LocalizationCost_NN -LSB-_-LRB- %_NN -RSB-_-RRB- 87cm_CD /_: sec_JJ 58cm_JJ /_: sec_NN 43cm_CD /_: sec_JJ 35cm_JJ /_: sec_NN Figure_NN ##_NN ._.
+Localization_NN Cost_NN vs_CC ._.
+Event_NN Size_NN for_IN the_DT Point_NN Scan_VB EDF_NN 5_CD ._.
+#_# Line_NNP Scan_VB -_: Spotlight_NN system_NN In_IN a_DT similar_JJ manner_NN to_TO the_DT Point_NN Scan_VB EDF_NN ,_, for_IN the_DT Line_NNP Scan_VB EDF_NN we_PRP were_VBD interested_JJ in_IN the_DT dependency_NN of_IN the_DT localization_NN error_NN and_CC duration_NN on_IN the_DT size_NN of_IN the_DT event_NN and_CC scanning_NN speed_NN ._.
+We_PRP represent_VBP in_IN Figure_NNP ##_VBD the_DT localization_NN error_NN for_IN different_JJ event_NN sizes_NNS ._.
+It_PRP is_VBZ interesting_JJ to_TO observe_VB the_DT dependency_NN -LRB-_-LRB- concave_NN shape_NN -RRB-_-RRB- of_IN the_DT localization_NN error_NN vs_CC ._.
+the_DT event_NN size_NN ._.
+Moreover_RB ,_, a_DT question_NN that_WDT should_MD arise_VB is_VBZ why_WRB the_DT same_JJ dependency_NN was_VBD not_RB observed_VBN in_IN the_DT case_NN of_IN Point_NN Scan_VB EDF_NN ._.
+0_CD 1_CD 2_CD 3_CD 4_CD 5_CD 6_CD 7_CD 8_CD 9_CD 10_CD 1_CD ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# ##_CD ._.
+#_# ##_CD ._.
+#_# ##_CD ._.
+#_# Event_NNP Size_NN -LSB-_-LRB- cm_NN -RSB-_-RRB- Locationerror_NN -LSB-_-LRB- cm_NN -RSB-_-RRB- 87cm_CD /_: sec_JJ 58cm_JJ /_: sec_NN 43cm_CD /_: sec_JJ 35cm_JJ /_: sec_NN Figure_NN ##_NN ._.
+Localization_NN Error_NN vs_CC ._.
+Event_NN Size_NN for_IN the_DT Line_NNP Scan_VB EDF_NNP The_DT explanation_NN for_IN this_DT concave_NN dependency_NN is_VBZ the_DT existence_NN of_IN a_DT bias_NN in_IN location_NN estimation_NN ._.
+As_IN a_DT reminder_NN ,_, a_DT bias_NN factor_NN was_VBD introduced_VBN in_IN order_NN to_TO best_JJS estimate_NN the_DT central_JJ point_NN of_IN events_NNS that_WDT have_VBP a_DT large_JJ size_NN ._.
+What_WDT Figure_NN ##_NN shows_VBZ is_VBZ the_DT fact_NN that_IN the_DT bias_NN factor_NN was_VBD optimal_JJ for_IN an_DT event_NN size_NN of_IN approximately_RB 7cm_JJ ._.
+For_IN events_NNS smaller_JJR and_CC larger_JJR than_IN this_DT ,_, the_DT bias_NN factor_NN was_VBD too_RB large_JJ ,_, and_CC too_RB small_JJ ,_, respectively_RB ._.
+Thus_RB ,_, it_PRP introduced_VBD biased_VBN errors_NNS in_IN the_DT position_NN estimation_NN ._.
+The_DT reason_NN why_WRB we_PRP did_VBD not_RB observe_VB the_DT same_JJ dependency_NN in_IN the_DT case_NN of_IN the_DT Point_NN Scan_VB EDF_NN was_VBD that_IN we_PRP did_VBD not_RB experiment_NN with_IN event_NN sizes_NNS below_IN 7cm_JJ ,_, due_JJ to_TO the_DT long_JJ time_NN it_PRP would_MD have_VB taken_VBN to_TO scan_VB the_DT entire_JJ field_NN with_IN events_NNS as_IN small_JJ as_IN #_# ._.
+7cm_JJ ._.
+The_DT results_NNS for_IN the_DT localization_NN duration_NN as_IN a_DT function_NN of_IN the_DT size_NN of_IN the_DT event_NN are_VBP shown_VBN in_IN Figure_NNP ##_NNP ._.
+As_IN shown_VBN ,_, the_DT localization_NN duration_NN is_VBZ directly_RB proportional_JJ to_TO the_DT scanning_NN speed_NN ._.
+The_DT size_NN of_IN the_DT event_NN has_VBZ a_DT smaller_JJR influence_NN on_IN the_DT localization_NN duration_NN ._.
+One_PRP can_MD remark_VB the_DT average_JJ localization_NN duration_NN of_IN about_IN 10sec_NN ,_, much_JJ shorter_JJR then_RB the_DT duration_NN obtained_VBN in_IN the_DT Point_NN Scan_VB experiment_NN ._.
+The_DT Localization_NN Cost_NN function_NN dependency_NN on_IN the_DT event_NN size_NN and_CC scanning_NN speed_NN ,_, for_IN =_JJ #_# ._.
+#_# ,_, is_VBZ shown_VBN in_IN Figure_NNP ##_NNP ._.
+The_DT dependency_NN on_IN the_DT scanning_NN speed_NN is_VBZ very_RB small_JJ -LRB-_-LRB- the_DT Cost_NN Function_NN achieves_VBZ a_DT minimum_NN in_IN the_DT same_JJ 4-6cm_JJ range_NN -RRB-_-RRB- ._.
+It_PRP is_VBZ interesting_JJ to_TO note_VB that_IN this_DT 4-6cm_JJ optimal_JJ event_NN size_NN is_VBZ smaller_JJR than_IN the_DT one_CD observed_VBN in_IN the_DT case_NN of_IN Point_NN Scan_VB EDF_NN ._.
+The_DT explanation_NN for_IN this_DT is_VBZ that_IN the_DT smaller_JJR localization_NN duration_NN observed_VBN in_IN the_DT Line_NNP Scan_VB EDF_NN ,_, allowed_VBD a_DT shift_NN -LRB-_-LRB- towards_IN smaller_JJR event_NN sizes_NNS -RRB-_-RRB- in_IN the_DT total_JJ Localization_NN Cost_NN Function_NN ._.
+0_CD 5_CD 10_CD 15_CD 20_CD 1_CD ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# ##_CD ._.
+#_# ##_CD ._.
+#_# ##_CD ._.
+#_# Event_NNP Size_NN -LSB-_-LRB- cm_NN -RSB-_-RRB- LocalizationDuration_NN -LSB-_-LRB- sec_NN -RSB-_-RRB- 87cm_CD /_: sec_JJ 58cm_JJ /_: sec_NN 43cm_CD /_: sec_JJ 35cm_JJ /_: sec_NN Figure_NN ##_NN ._.
+Localization_NN Duration_NN vs_CC ._.
+Event_NN Size_NN for_IN the_DT Line_NNP Scan_VB EDF_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 1_CD ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# ##_CD ._.
+#_# Event_NNP Size_NN -LSB-_-LRB- cm_NN -RSB-_-RRB- LocalizationCost_NN -LSB-_-LRB- %_NN -RSB-_-RRB- 87cm_CD /_: sec_JJ 58cm_JJ /_: sec_NN 43cm_CD /_: sec_JJ 35cm_JJ /_: sec_NN Figure_NN ##_NN ._.
+Cost_NN Function_NN vs_CC ._.
+Event_NN Size_NN for_IN the_DT Line_NNP Scan_VB EDF_NNP During_IN our_PRP$ experiments_NNS with_IN the_DT Line_NNP Scan_VB EDF_NN ,_, we_PRP observed_VBD evidence_NN of_IN a_DT bias_NN in_IN location_NN estimation_NN ._.
+The_DT estimated_VBN locations_NNS for_IN all_DT sensor_NN nodes_NNS exhibited_VBD different_JJ biases_NNS ,_, for_IN different_JJ event_NN sizes_NNS ._.
+For_IN example_NN ,_, for_IN an_DT event_NN size_NN of_IN ##_NN ._.
+5cm_JJ ,_, the_DT estimated_VBN location_NN for_IN sensor_NN nodes_NNS was_VBD to_TO the_DT upper-left_NN size_NN of_IN the_DT actual_JJ location_NN ._.
+This_DT was_VBD equivalent_JJ to_TO an_DT early_JJ detection_NN ,_, since_IN our_PRP$ scanning_NN was_VBD done_VBN from_IN left_VBN to_TO right_JJ and_CC from_IN top_JJ to_TO bottom_NN ._.
+The_DT scanning_NN speed_NN did_VBD not_RB influence_VB the_DT bias_NN ._.
+In_IN order_NN to_TO better_RBR understand_VB the_DT observed_VBN phenomena_NNS ,_, we_PRP analyzed_VBD our_PRP$ data_NNS ._.
+Figure_NNP ##_NN shows_VBZ the_DT bias_NN in_IN the_DT horizontal_JJ direction_NN ,_, for_IN different_JJ event_NN sizes_NNS -LRB-_-LRB- the_DT vertical_JJ bias_NN was_VBD almost_RB identical_JJ ,_, and_CC we_PRP omit_VBP it_PRP ,_, due_JJ to_TO space_NN constraints_NNS -RRB-_-RRB- ._.
+From_IN Figure_NNP ##_NNP ,_, one_CD can_MD observe_VB that_IN the_DT smallest_JJS observed_VBN bias_NN ,_, and_CC hence_RB the_DT most_RBS accurate_JJ positioning_VBG ,_, was_VBD for_IN an_DT event_NN of_IN size_NN 7cm_CD ._.
+These_DT results_NNS are_VBP consistent_JJ with_IN the_DT observed_VBN localization_NN error_NN ,_, shown_VBN in_IN Figure_NNP ##_NNP ._.
+We_PRP also_RB adjusted_VBD the_DT measured_VBN localization_NN error_NN -LRB-_-LRB- shown_VBN in_IN Figure_NNP ##_CD -RRB-_-RRB- for_IN the_DT observed_VBN bias_NN -LRB-_-LRB- shown_VBN in_IN Figure_NNP ##_CD -RRB-_-RRB- ._.
+The_DT results_NNS of_IN an_DT ideal_JJ case_NN of_IN Spotlight_NN Localization_NN system_NN with_IN Line_NNP Scan_VB EDF_NN are_VBP shown_VBN in_IN Figure_NNP ##_NNP ._.
+The_DT errors_NNS are_VBP remarkably_RB small_JJ ,_, varying_VBG between_IN #_# ._.
+1cm_NN and_CC #_# ._.
+8cm_NN ,_, with_IN a_DT general_JJ trend_NN of_IN higher_JJR localization_NN errors_NNS for_IN larger_JJR event_NN sizes_NNS ._.
+21_CD -6_CD -5_CD -4_CD -3_CD -2_CD -1_CD 0_CD 1_CD 2_CD 3_CD 1_CD ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# ##_CD ._.
+#_# ##_CD ._.
+#_# ##_CD ._.
+#_# Event_NNP Size_NN -LSB-_-LRB- cm_NN -RSB-_-RRB- HorizontalBias_NNPS -LSB-_-LRB- cm_NN -RSB-_-RRB- 87cm_CD /_: sec_JJ 58cm_JJ /_: sec_NN 43cm_CD /_: sec_JJ 35cm_JJ /_: sec_NN Figure_NN ##_NN ._.
+Position_NN Estimation_NN Bias_NNP for_IN the_DT Line_NNP Scan_VB EDF_NN 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 1_CD ._.
+#_# 1_CD ._.
+#_# 1_CD ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# ##_CD ._.
+#_# ##_CD ._.
+#_# ##_CD ._.
+#_# Event_NNP Size_NN -LSB-_-LRB- cm_NN -RSB-_-RRB- LocalizationErrorw_NN /_: oBias_NN -LSB-_-LRB- cm_NN -RSB-_-RRB- 87cm_CD /_: sec_JJ 58cm_JJ /_: sec_NN 43cm_CD /_: sec_JJ 35cm_JJ /_: sec_NN Figure_NN ##_NN ._.
+Position_NN Estimation_NN w_VB /_: o_NN Bias_NNP -LRB-_-LRB- ideal_JJ -RRB-_-RRB- ,_, for_IN the_DT Line_NNP Scan_VB EDF_NN 5_CD ._.
+#_# Area_NNP Cover_NNP -_: Spotlight_NN system_NN In_IN this_DT experiment_NN ,_, we_PRP investigated_VBD how_WRB the_DT number_NN of_IN bits_NNS used_VBN to_TO quantify_VB the_DT entire_JJ sensor_NN field_NN ,_, affected_VBD the_DT localization_NN accuracy_NN ._.
+In_IN our_PRP$ first_JJ experiment_NN we_PRP did_VBD not_RB use_VB error_NN correcting_VBG codes_NNS ._.
+The_DT results_NNS are_VBP shown_VBN in_IN Figure_NNP ##_NNP ._.
+0_CD ._.
+#_# 0_CD ._.
+#_# 1_CD ._.
+#_# 1_CD ._.
+#_# 2_CD ._.
+#_# 2_CD ._.
+#_# 3_CD ._.
+#_# 3_CD ._.
+#_# 6_CD #_# ##_CD ##_CD Number_NN of_IN Bits_NNS Locationerror_JJ -LSB-_-LRB- cm_NN -RSB-_-RRB- 20ms_VBZ /_: event_NN 40ms_NNS /_: event_NN 60ms_NNS /_: event_NN 80ms_CD /_: event_NN 100ms_NNS /_: event_NN Figure_NN ##_NN ._.
+Localization_NN Error_NN vs_CC ._.
+Event_NN Size_NN for_IN the_DT Area_NNP Cover_NNP EDF_NNP One_CD can_MD observe_VB a_DT remarkable_JJ accuracy_NN ,_, with_IN localization_NN error_NN on_IN the_DT order_NN of_IN #_# ._.
+3-0_CD ._.
+6cm_JJ ._.
+What_WP is_VBZ important_JJ to_TO observe_VB is_VBZ the_DT variance_NN in_IN the_DT localization_NN error_NN ._.
+In_IN the_DT scenario_NN where_WRB ##_NN bits_NNS were_VBD used_VBN ,_, while_IN the_DT average_JJ error_NN was_VBD very_RB small_JJ ,_, there_EX were_VBD a_DT couple_NN of_IN cases_NNS ,_, where_WRB an_DT incorrect_JJ event_NN detection_NN generated_VBD a_DT larger_JJR than_IN expected_VBN error_NN ._.
+An_DT example_NN of_IN how_WRB this_DT error_NN can_MD occur_VB was_VBD described_VBN in_IN Section_NN #_# ._.
+#_# ._.
+The_DT experimental_JJ results_NNS ,_, presented_VBN in_IN Figure_NNP ##_NNP ,_, emphasize_VBP the_DT need_NN for_IN error_NN correction_NN of_IN the_DT bit_NN patterns_NNS observed_VBN and_CC reported_VBN by_IN the_DT sensor_NN nodes_NNS ._.
+The_DT localization_NN duration_NN results_NNS are_VBP shown_VBN in_IN Figure_NNP ##_NNP ._.
+It_PRP can_MD be_VB observed_VBN that_IN the_DT duration_NN is_VBZ directly_RB proportional_JJ with_IN the_DT number_NN of_IN bits_NNS used_VBN ,_, with_IN total_JJ durations_NNS ranging_VBG from_IN 3sec_CD ,_, for_IN the_DT least_JJS accurate_JJ method_NN ,_, to_TO 6-7sec_JJ for_IN the_DT most_RBS accurate_JJ ._.
+The_DT duration_NN of_IN an_DT event_NN had_VBD a_DT small_JJ influence_NN on_IN the_DT total_JJ localization_NN time_NN ,_, when_WRB considering_VBG the_DT same_JJ scenario_NN -LRB-_-LRB- same_JJ number_NN of_IN bits_NNS for_IN the_DT code_NN -RRB-_-RRB- ._.
+The_DT Cost_NN Function_NN dependency_NN on_IN the_DT number_NN of_IN bits_NNS in_IN the_DT code_NN ,_, for_IN =_JJ #_# ._.
+#_# ,_, is_VBZ shown_VBN in_IN Figure_NNP ##_NNP ._.
+Generally_RB ,_, since_IN the_DT localization_NN duration_NN for_IN the_DT Area_NNP Scan_VB can_MD be_VB extremely_RB small_JJ ,_, a_DT higher_JJR accuracy_NN in_IN the_DT localization_NN is_VBZ desired_VBN ._.
+While_IN the_DT Cost_NN function_NN achieves_VBZ a_DT minimum_NN when_WRB ##_RB bits_NNS are_VBP used_VBN ,_, we_PRP attribute_VBP the_DT slight_JJ increase_NN observed_VBN when_WRB ##_RB bits_NNS were_VBD used_VBN to_TO the_DT two_CD 12bit_JJ scenarios_NNS where_WRB larger_JJR than_IN the_DT expected_JJ errors_NNS were_VBD observed_VBN ,_, namely_RB 6-7mm_JJ -LRB-_-LRB- as_IN shown_VBN in_IN Figure_NNP ##_CD -RRB-_-RRB- ._.
+0_CD 1_CD 2_CD 3_CD 4_CD 5_CD 6_CD 7_CD 8_CD 9_CD 10_CD 6_CD #_# ##_CD ##_CD Number_NN of_IN Bits_NNS LocalizationDuration_NN -LSB-_-LRB- sec_NN -RSB-_-RRB- 20ms_VBZ /_: event_NN 40ms_NNS /_: event_NN 60ms_NNS /_: event_NN 80ms_CD /_: event_NN 100ms_NNS /_: event_NN Figure_NN ##_NN ._.
+Localization_NN Duration_NN vs_CC ._.
+Event_NN Size_NN for_IN the_DT Area_NNP Cover_NNP EDF_NNP 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 4_CD #_# #_# ##_CD ##_CD ##_CD Number_NNP of_IN Bits_NNPS CostFunction_NNP -LSB-_-LRB- %_NN -RSB-_-RRB- 20ms_VBZ /_: event_NN 40ms_NNS /_: event_NN 60ms_NNS /_: event_NN 80ms_CD /_: event_NN 100ms_NNS /_: event_NN Figure_NN ##_NN ._.
+Cost_NN Function_NN vs_CC ._.
+Event_NN Size_NN for_IN the_DT Area_NNP Cover_NNP EDF_NNP -0_CD ._.
+#_# -0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 1_CD ._.
+#_# 1_CD ._.
+#_# 20_CD ##_CD ##_CD ##_CD ###_CD Event_NNP Duration_NNP -LSB-_-LRB- ms_FW /_: event_NN -RSB-_-RRB- Locationerror_NN -LSB-_-LRB- cm_NN -RSB-_-RRB- w_NN /_: o_NN ECC_NN w_NN /_: ECC_NNP Figure_NNP ##_NN ._.
+Localization_NN Error_NN w_NN /_: and_CC w_VB /_: o_NN Error_NN Correction_NN The_DT two_CD problematic_JJ scenarios_NNS -LRB-_-LRB- shown_VBN in_IN Figure_NNP ##_NNP ,_, where_WRB for_IN 12-bit_JJ codes_NNS we_PRP observed_VBD errors_NNS larger_JJR than_IN the_DT event_NN size_NN ,_, due_JJ to_TO errors_NNS in_IN detection_NN -RRB-_-RRB- were_VBD further_JJ explored_VBN by_IN using_VBG error_NN correction_NN codes_NNS ._.
+As_IN described_VBN in_IN Section_NN #_# ._.
+#_# ,_, we_PRP implemented_VBD an_DT extended_JJ Golay_NNP -LRB-_-LRB- ##_CD ,_, ##_CD -RRB-_-RRB- error_NN correction_NN mechanism_NN in_IN our_PRP$ location_NN estimation_NN algorithm_NN ._.
+The_DT experimental_JJ results_NNS are_VBP depicted_VBN in_IN Figure_NNP ##_NNP ,_, and_CC show_VBP a_DT consistent_JJ accuracy_NN ._.
+The_DT scenario_NN without_IN error_NN correction_NN codes_NNS ,_, is_VBZ simply_RB the_DT same_JJ 12-bit_JJ code_NN scenario_NN ,_, shown_VBN in_IN Figure_NNP ##_NNP ._.
+We_PRP only_RB investigated_VBD the_DT 12-bit_JJ scenario_NN ,_, due_JJ to_TO its_PRP$ match_NN with_IN the_DT 12bit_CD data_NNS required_VBN by_IN the_DT Golay_NNP encoding_VBG scheme_NN -LRB-_-LRB- extended_VBN Golay_NNP producing_VBG 24-bit_JJ codewords_NNS -RRB-_-RRB- ._.
+22_CD 5_CD ._.
+#_# Point_NN Scan_VB -_: Spotlight_NN system_NN In_IN this_DT section_NN we_PRP describe_VBP the_DT experiments_NNS performed_VBN at_IN a_DT football_NN stadium_NN ,_, using_VBG our_PRP$ Spotlight_NN system_NN ._.
+The_DT hardware_NN that_IN we_PRP had_VBD available_JJ allowed_VBD us_PRP to_TO evaluate_VB the_DT Point_NN Scan_VB technique_NN of_IN the_DT Spotlight_NN system_NN ._.
+In_IN our_PRP$ evaluation_NN ,_, we_PRP were_VBD interested_JJ to_TO see_VB the_DT performance_NN of_IN the_DT system_NN at_IN different_JJ ranges_NNS ._.
+Figures_NNS ##_CD and_CC ##_CD show_VBP the_DT localization_NN error_NN versus_CC the_DT event_NN size_NN at_IN two_CD different_JJ ranges_NNS :_: 46m_NN and_CC 170m_NN ._.
+Figure_NNP ##_NN shows_VBZ a_DT remarkable_JJ accuracy_NN in_IN localization_NN ._.
+The_DT errors_NNS are_VBP in_IN the_DT centimeter_NN range_NN ._.
+Our_PRP$ initial_JJ ,_, manual_JJ measurements_NNS of_IN the_DT localization_NN error_NN were_VBD most_JJS of_IN the_DT time_NN difficult_JJ to_TO make_VB ,_, since_IN the_DT spot_NN of_IN the_DT laser_NN was_VBD almost_RB perfectly_RB covering_VBG the_DT XSM_NNP mote_NN ._.
+We_PRP are_VBP able_JJ to_TO achieve_VB localization_NN errors_NNS of_IN a_DT few_JJ centimeters_NNS ,_, which_WDT only_RB range-based_JJ localization_NN schemes_NNS are_VBP able_JJ to_TO achieve_VB -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+The_DT observed_VBN dependency_NN on_IN the_DT size_NN of_IN the_DT event_NN is_VBZ similar_JJ to_TO the_DT one_CD observed_VBN in_IN the_DT Spotlight_NN system_NN evaluation_NN ,_, and_CC shown_VBN in_IN Figure_NNP ##_NNP ._.
+This_DT proved_VBD that_IN the_DT Spotlight_NN system_NN is_VBZ a_DT viable_JJ alternative_NN for_IN investigating_VBG complex_JJ EDFs_NNS ,_, without_IN incurring_VBG the_DT costs_NNS for_IN the_DT necessary_JJ hardware_NN ._.
+0_CD 5_CD 10_CD 15_CD 20_CD 25_CD 0_CD #_# ##_CD ##_CD ##_CD ##_CD ##_CD Event_NNP Size_NN -LSB-_-LRB- cm_NN -RSB-_-RRB- LocalizationError_NN -LSB-_-LRB- cm_NN -RSB-_-RRB- 0_CD ._.
+41m_NN /_: sec_NN 0_CD ._.
+81m_NN /_: sec_NN 1_CD ._.
+7m_NN /_: sec_NN Figure_NN ##_NN ._.
+Localization_NN Error_NN vs_CC ._.
+Event_NN Size_NN for_IN Spotlight_NN system_NN at_IN 46m_CD In_IN the_DT experiments_NNS performed_VBN over_IN a_DT much_RB longer_JJR distance_NN between_IN the_DT Spotlight_NN device_NN and_CC sensor_NN network_NN ,_, the_DT average_JJ localization_NN error_NN remains_VBZ very_RB small_JJ ._.
+Localization_NN errors_NNS of_IN 510cm_NN were_VBD measured_VBN ,_, as_IN Figure_NNP ##_NN shows_NNS ._.
+We_PRP were_VBD simply_RB amazed_VBN by_IN the_DT accuracy_NN that_IN the_DT system_NN is_VBZ capable_JJ of_IN ,_, when_WRB considering_VBG that_IN the_DT Spotlight_NN system_NN operated_VBD over_IN the_DT length_NN of_IN a_DT football_NN stadium_NN ._.
+Throughout_IN our_PRP$ experimentation_NN with_IN the_DT Spotlight_NN system_NN ,_, we_PRP have_VBP observed_VBN localization_NN errors_NNS that_WDT were_VBD simply_RB offsets_NNS of_IN real_JJ locations_NNS ._.
+Since_IN the_DT same_JJ phenomenon_NN was_VBD observed_VBN when_WRB experimenting_VBG with_IN the_DT Spotlight_NN system_NN ,_, we_PRP believe_VBP that_IN with_IN auto-calibration_NN ,_, the_DT localization_NN error_NN can_MD be_VB further_JJ reduced_VBN ._.
+0_CD 5_CD 10_CD 15_CD 20_CD 25_CD 6_CD ##_NN ##_CD Event_NNP Size_NN -LSB-_-LRB- cm_NN -RSB-_-RRB- LocalizationError_NN -LSB-_-LRB- cm_NN -RSB-_-RRB- 0_CD ._.
+7m_NN /_: sec_NN 1_CD ._.
+4m_NN /_: sec_NN 3m_NN /_: sec_NN Figure_NN ##_NN ._.
+Localization_NN Error_NN vs_CC ._.
+Event_NN Size_NN for_IN Spotlight_NN system_NN at_IN 170m_CD The_DT time_NN required_VBN for_IN localization_NN using_VBG the_DT Spotlight_NN system_NN with_IN a_DT Point_NN Scan_VB EDF_NN ,_, is_VBZ given_VBN by_IN :_: t_NN =_JJ -LRB-_-LRB- L_NN *_SYM l_NN -RRB-_-RRB- /_: -LRB-_-LRB- s_NNS *_SYM Es_NNS -RRB-_-RRB- ,_, where_WRB L_NN and_CC l_NN are_VBP the_DT dimensions_NNS of_IN the_DT sensor_NN network_NN field_NN ,_, s_NNS is_VBZ the_DT scanning_NN speed_NN ,_, and_CC Es_NNS is_VBZ the_DT size_NN of_IN the_DT event_NN ._.
+Figure_NNP ##_NN shows_VBZ the_DT time_NN for_IN localizing_VBG a_DT sensor_NN network_NN deployed_VBN in_IN an_DT area_NN of_IN size_NN of_IN a_DT football_NN field_NN using_VBG the_DT Spotlight_NN system_NN ._.
+Here_RB we_PRP ignore_VBP the_DT message_NN propagation_NN time_NN ,_, from_IN the_DT sensor_NN nodes_NNS to_TO the_DT Spotlight_NN device_NN ._.
+From_IN Figure_NNP ##_VBP it_PRP can_MD be_VB observed_VBN that_IN the_DT very_RB small_JJ localization_NN errors_NNS are_VBP prohibitively_RB expensive_JJ in_IN the_DT case_NN of_IN the_DT Point_NN Scan_VB ._.
+When_WRB localization_NN errors_NNS of_IN up_RB to_TO 1m_NN are_VBP tolerable_JJ ,_, localization_NN duration_NN can_MD be_VB as_RB low_JJ as_IN #_# minutes_NNS ._.
+Localization_NN durations_NNS of_IN 5-10_CD minutes_NNS ,_, and_CC localization_NN errors_NNS of_IN 1m_NN are_VBP currently_RB state_NN of_IN art_NN in_IN the_DT realm_NN of_IN range-free_JJ localization_NN schemes_NNS ._.
+And_CC these_DT results_NNS are_VBP achieved_VBN by_IN using_VBG the_DT Point_NN Scan_VB scheme_NN ,_, which_WDT required_VBD the_DT highest_JJS Localization_NN Time_NN ,_, as_IN it_PRP was_VBD shown_VBN in_IN Table_NNP #_# ._.
+0_CD 5_CD 10_CD 15_CD 20_CD 25_CD 30_CD 35_CD 40_CD 0_CD ##_CD ##_CD ##_CD ###_CD ###_CD ###_CD Event_NNP Size_NN -LSB-_-LRB- cm_NN -RSB-_-RRB- LocalizationTime_NN -LSB-_-LRB- min_NN -RSB-_-RRB- 3m_NN /_: sec_FW 6m_FW /_: sec_NN 9m_NN /_: sec_NN Figure_NN ##_NN ._.
+Localization_NN Time_NNP vs_CC ._.
+Event_NN Size_NN for_IN Spotlight_NN system_NN One_CD important_JJ characteristic_NN of_IN the_DT Spotlight_NN system_NN is_VBZ its_PRP$ range_NN ._.
+The_DT two_CD most_RBS important_JJ factors_NNS are_VBP the_DT sensitivity_NN of_IN the_DT photosensor_NN and_CC the_DT power_NN of_IN the_DT Spotlight_NN source_NN ._.
+We_PRP were_VBD interested_JJ in_IN measuring_VBG the_DT range_NN of_IN our_PRP$ Spotlight_NN system_NN ,_, considering_VBG our_PRP$ capabilities_NNS -LRB-_-LRB- MTS310_NN sensor_NN board_NN and_CC inexpensive_JJ ,_, $_$ 12_CD -_: $_$ ##_CD ,_, diode_NN laser_NN -RRB-_-RRB- ._.
+As_IN a_DT result_NN ,_, we_PRP measured_VBD the_DT intensity_NN of_IN the_DT laser_NN beam_NN ,_, having_VBG the_DT same_JJ focus_NN ,_, at_IN different_JJ distances_NNS ._.
+The_DT results_NNS are_VBP shown_VBN in_IN Figure_NNP ##_NNP ._.
+950_CD 1000_CD 1050_CD 1100_CD 0_CD ##_CD ###_CD ###_CD ###_CD Distance_NNP -LSB-_-LRB- m_NN -RSB-_-RRB- Intensity_NN -LSB-_-LRB- ADCcount_NN -RSB-_-RRB- 35mW_NN 7mW_NN Figure_NN ##_NN ._.
+Localization_NN Range_NNP for_IN the_DT Spotlight_NN system_NN From_IN Figure_NNP ##_NNP ,_, it_PRP can_MD be_VB observed_VBN that_IN only_RB a_DT minor_JJ decrease_NN in_IN the_DT intensity_NN occurs_VBZ ,_, due_JJ to_TO absorption_NN and_CC possibly_RB our_PRP$ imperfect_JJ focusing_VBG of_IN the_DT laser_NN beam_NN ._.
+A_DT linear_JJ fit_NN of_IN the_DT experimental_JJ data_NN shows_VBZ that_IN distances_NNS of_IN up_RB to_TO 6500m_VB can_MD be_VB achieved_VBN ._.
+While_IN we_PRP do_VBP not_RB expect_VB atmospheric_JJ conditions_NNS ,_, over_IN large_JJ distances_NNS ,_, to_TO be_VB similar_JJ to_TO our_PRP$ 200m_JJ evaluation_NN ,_, there_EX is_VBZ strong_JJ evidence_NN that_IN distances_NNS -LRB-_-LRB- i_FW ._.
+e_LS ._.
+altitude_NN -RRB-_-RRB- of_IN 1000-2000m_NN can_MD easily_RB be_VB achieved_VBN ._.
+The_DT angle_NN between_IN the_DT laser_NN beam_NN and_CC the_DT vertical_JJ should_MD be_VB minimized_VBN -LRB-_-LRB- less_JJR than_IN ##_CD -RRB-_-RRB- ,_, as_IN it_PRP reduces_VBZ the_DT difference_NN between_IN the_DT beam_NN cross-section_NN -LRB-_-LRB- event_NN size_NN -RRB-_-RRB- and_CC the_DT actual_JJ projection_NN of_IN the_DT beam_NN on_IN the_DT ground_NN ._.
+In_IN a_DT similar_JJ manner_NN ,_, we_PRP were_VBD interested_JJ in_IN finding_VBG out_RP the_DT maximum_NN size_NN of_IN an_DT event_NN ,_, that_WDT can_MD be_VB generated_VBN by_IN a_DT COTS_NNP laser_NN and_CC that_DT is_VBZ detectable_JJ by_IN the_DT existing_VBG photosensor_NN ._.
+For_IN this_DT ,_, we_PRP 23_CD varied_VBD the_DT divergence_NN of_IN the_DT laser_NN beam_NN and_CC measured_VBD the_DT light_JJ intensity_NN ,_, as_IN given_VBN by_IN the_DT ADC_NNP count_NN ._.
+The_DT results_NNS are_VBP shown_VBN in_IN Figure_NNP ##_NNP ._.
+It_PRP can_MD be_VB observed_VBN that_IN for_IN the_DT less_RBR powerful_JJ laser_NN ,_, an_DT event_NN size_NN of_IN #_# ._.
+5m_NN is_VBZ the_DT limit_NN ._.
+For_IN the_DT more_RBR powerful_JJ laser_NN ,_, the_DT event_NN size_NN can_MD be_VB as_RB high_JJ as_IN 4m_NN ._.
+Through_IN our_PRP$ extensive_JJ performance_NN evaluation_NN results_VBZ ,_, we_PRP have_VBP shown_VBN that_IN the_DT Spotlight_NN system_NN is_VBZ a_DT feasible_JJ ,_, highly_RB accurate_JJ ,_, low_JJ cost_NN solution_NN for_IN localization_NN of_IN wireless_JJ sensor_NN networks_NNS ._.
+From_IN our_PRP$ experience_NN with_IN sources_NNS of_IN laser_NN radiation_NN ,_, we_PRP believe_VBP that_IN for_IN small_JJ and_CC medium_NN size_NN sensor_NN network_NN deployments_NNS ,_, in_IN areas_NNS of_IN less_JJR than_IN ##_CD ,_, 000m2_NN ,_, the_DT Area_NNP Cover_NNP scheme_NN is_VBZ a_DT viable_JJ solution_NN ._.
+For_IN large_JJ size_NN sensor_NN network_NN deployments_NNS ,_, the_DT Line_NNP Scan_VB ,_, or_CC an_DT incremental_JJ use_NN of_IN the_DT Area_NNP Cover_NNP are_VBP very_RB good_JJ options_NNS ._.
+0_CD 200_CD 400_CD 600_CD 800_CD 1000_CD 1200_CD 0_CD ##_CD ###_CD ###_CD ###_CD Event_NNP Size_NN -LSB-_-LRB- cm_NN -RSB-_-RRB- Intensity_NN -LSB-_-LRB- ADCcount_NN -RSB-_-RRB- 35mW_NN 7mW_NN Figure_NN ##_NN ._.
+Detectable_JJ Event_NN Sizes_NNS that_WDT can_MD be_VB generated_VBN by_IN COTS_NNS lasers_NNS 6_CD ._.
+OPTIMIZATIONS_NN /_: LESSONS_NNS LEARNED_VBD 6_CD ._.
+#_# Distributed_VBN Spotlight_NNP System_NNP The_NNP proposed_VBD design_NN and_CC the_DT implementation_NN of_IN the_DT Spotlight_NN system_NN can_MD be_VB considered_VBN centralized_JJ ,_, due_JJ to_TO the_DT gathering_NN of_IN the_DT sensor_NN data_NNS and_CC the_DT execution_NN of_IN the_DT Localization_NN Function_NN L_NN -LRB-_-LRB- t_NN -RRB-_-RRB- by_IN the_DT Spotlight_NN device_NN ._.
+We_PRP show_VBP that_IN this_DT design_NN can_MD easily_RB be_VB transformed_VBN into_IN a_DT distributed_VBN one_CD ,_, by_IN offering_VBG two_CD solutions_NNS ._.
+One_CD idea_NN is_VBZ to_TO disseminate_VB in_IN the_DT network_NN ,_, information_NN about_IN the_DT path_NN of_IN events_NNS ,_, generated_VBN by_IN the_DT EDF_NN -LRB-_-LRB- similar_JJ to_TO an_DT equation_NN ,_, describing_VBG a_DT path_NN -RRB-_-RRB- ,_, and_CC let_VB the_DT sensor_NN nodes_NNS execute_VBP the_DT Localization_NN Function_NN ._.
+For_IN example_NN ,_, in_IN the_DT Line_NNP Scan_VB scenario_NN ,_, if_IN the_DT starting_VBG and_CC ending_VBG points_NNS for_IN the_DT horizontal_JJ and_CC vertical_JJ scans_NNS ,_, and_CC the_DT times_NNS they_PRP were_VBD reached_VBN ,_, are_VBP propagated_VBN in_IN the_DT network_NN ,_, then_RB any_DT sensor_NN in_IN the_DT network_NN can_MD obtain_VB its_PRP$ location_NN -LRB-_-LRB- assuming_VBG a_DT constant_JJ scanning_NN speed_NN -RRB-_-RRB- ._.
+A_DT second_JJ solution_NN is_VBZ to_TO use_VB anchor_NN nodes_NNS which_WDT know_VBP their_PRP$ positions_NNS ._.
+In_IN the_DT case_NN of_IN Line_NNP Scan_VB ,_, if_IN three_CD anchors_NNS are_VBP present_JJ ,_, after_IN detecting_VBG the_DT presence_NN of_IN the_DT two_CD events_NNS ,_, the_DT anchors_NNS flood_NN the_DT network_NN with_IN their_PRP$ locations_NNS and_CC times_NNS of_IN detection_NN ._.
+Using_VBG the_DT same_JJ simple_JJ formulas_NNS as_IN in_IN the_DT previous_JJ scheme_NN ,_, all_DT sensor_NN nodes_NNS can_MD infer_VB their_PRP$ positions_NNS ._.
+6_CD ._.
+#_# Localization_NN Overhead_NN Reduction_NN Another_DT requirement_NN imposed_VBN by_IN the_DT Spotlight_NN system_NN design_NN ,_, is_VBZ the_DT use_NN of_IN a_DT time_NN synchronization_NN protocol_NN between_IN the_DT Spotlight_NN device_NN and_CC the_DT sensor_NN network_NN ._.
+Relaxing_VBG this_DT requirement_NN and_CC imposing_VBG only_RB a_DT time_NN synchronization_NN protocol_NN among_IN sensor_NN nodes_NNS is_VBZ a_DT very_RB desirable_JJ objective_NN ._.
+The_DT idea_NN is_VBZ to_TO use_VB the_DT knowledge_NN that_IN the_DT Spotlight_NN device_NN has_VBZ about_IN the_DT speed_NN with_IN which_WDT the_DT scanning_NN of_IN the_DT sensor_NN field_NN takes_VBZ place_NN ._.
+If_IN the_DT scanning_NN speed_NN is_VBZ constant_JJ -LRB-_-LRB- let_VB ''_'' s_NNS call_VBP it_PRP s_VBZ -RRB-_-RRB- ,_, then_RB the_DT time_NN difference_NN -LRB-_-LRB- let_VB ''_'' s_NNS call_VBP it_PRP t_NN -RRB-_-RRB- between_IN the_DT event_NN detections_NNS of_IN two_CD sensor_NN nodes_NNS is_VBZ ,_, in_IN fact_NN ,_, an_DT accurate_JJ measure_NN of_IN the_DT range_NN between_IN them_PRP :_: d_NN =_JJ s_NNS *_SYM t_NN ._.
+Hence_RB ,_, the_DT Spotlight_NN system_NN can_MD be_VB used_VBN for_IN accurate_JJ ranging_VBG of_IN the_DT distance_NN between_IN any_DT pair_NN of_IN sensor_NN nodes_NNS ._.
+An_DT important_JJ observation_NN is_VBZ that_IN this_DT ranging_VBG technique_NN does_VBZ not_RB suffer_VB from_IN limitations_NNS of_IN others_NNS :_: small_JJ range_NN and_CC directionality_NN for_IN ultrasound_NN ,_, or_CC irregularity_NN ,_, fading_JJ and_CC multipath_JJ for_IN Received_VBN Signal_NN Strength_NN Indicator_NN -LRB-_-LRB- RSSI_NN -RRB-_-RRB- ._.
+After_IN the_DT ranges_NNS between_IN nodes_NNS have_VBP been_VBN determined_VBN -LRB-_-LRB- either_CC in_IN a_DT centralized_JJ or_CC distributed_VBN manner_NN -RRB-_-RRB- graph_NN embedding_NN algorithms_NNS can_MD be_VB used_VBN for_IN a_DT realization_NN of_IN a_DT rigid_JJ graph_NN ,_, describing_VBG the_DT sensor_NN network_NN topology_NN ._.
+6_CD ._.
+#_# Dynamic_NNP Event_NNP Distribution_NN Function_NN E_NN -LRB-_-LRB- t_NN -RRB-_-RRB- Another_DT system_NN optimization_NN is_VBZ for_IN environments_NNS where_WRB the_DT sensor_NN node_NN density_NN is_VBZ not_RB uniform_JJ ._.
+One_CD disadvantage_NN of_IN the_DT Line_NNP Scan_VB technique_NN ,_, when_WRB compared_VBN to_TO the_DT Area_NNP Cover_NNP ,_, is_VBZ the_DT localization_NN time_NN ._.
+An_DT idea_NN is_VBZ to_TO use_VB two_CD scans_NNS :_: one_CD which_WDT uses_VBZ a_DT large_JJ event_NN size_NN -LRB-_-LRB- hence_RB larger_JJR localization_NN errors_NNS -RRB-_-RRB- ,_, followed_VBN by_IN a_DT second_JJ scan_VB in_IN which_WDT the_DT event_NN size_NN changes_NNS dynamically_RB ._.
+The_DT first_JJ scan_VB is_VBZ used_VBN for_IN identifying_VBG the_DT areas_NNS with_IN a_DT higher_JJR density_NN of_IN sensor_NN nodes_NNS ._.
+The_DT second_JJ scan_VB uses_VBZ a_DT larger_JJR event_NN in_IN areas_NNS where_WRB the_DT sensor_NN node_NN density_NN is_VBZ low_JJ and_CC a_DT smaller_JJR event_NN in_IN areas_NNS with_IN a_DT higher_JJR sensor_NN node_NN density_NN ._.
+A_DT dynamic_JJ EDF_NN can_MD also_RB be_VB used_VBN when_WRB it_PRP is_VBZ very_RB difficult_JJ to_TO meet_VB the_DT power_NN requirements_NNS for_IN the_DT Spotlight_NN device_NN -LRB-_-LRB- imposed_VBN by_IN the_DT use_NN of_IN the_DT Area_NNP Cover_NNP scheme_NN in_IN a_DT very_RB large_JJ area_NN -RRB-_-RRB- ._.
+In_IN this_DT scenario_NN ,_, a_DT hybrid_NN scheme_NN can_MD be_VB used_VBN :_: the_DT first_JJ scan_VB -LRB-_-LRB- Point_NN Scan_VB -RRB-_-RRB- is_VBZ performed_VBN quickly_RB ,_, with_IN a_DT very_RB large_JJ event_NN size_NN ,_, and_CC it_PRP is_VBZ meant_VBN to_TO identify_VB ,_, roughly_RB ,_, the_DT location_NN of_IN the_DT sensor_NN network_NN ._.
+Subsequent_JJ Area_NN Cover_NNP scans_VBZ will_MD be_VB executed_VBN on_IN smaller_JJR portions_NNS of_IN the_DT network_NN ,_, until_IN the_DT entire_JJ deployment_NN area_NN is_VBZ localized_JJ ._.
+6_CD ._.
+#_# Stealthiness_NNPS Our_PRP$ implementation_NN of_IN the_DT Spotlight_NN system_NN used_VBN visible_JJ light_NN for_IN creating_VBG events_NNS ._.
+Using_VBG the_DT system_NN during_IN the_DT daylight_NN or_CC in_IN a_DT room_NN well_RB lit_VBD ,_, poses_VBZ challenges_NNS due_JJ to_TO the_DT solar_JJ or_CC fluorescent_JJ lamp_NN radiation_NN ,_, which_WDT generate_VBP a_DT strong_JJ background_NN noise_NN ._.
+The_DT alternative_NN ,_, which_WDT we_PRP used_VBD in_IN our_PRP$ performance_NN evaluations_NNS ,_, was_VBD to_TO use_VB the_DT system_NN in_IN a_DT dark_JJ room_NN -LRB-_-LRB- Spotlight_NN system_NN -RRB-_-RRB- or_CC during_IN the_DT night_NN -LRB-_-LRB- Spotlight_NN system_NN -RRB-_-RRB- ._.
+While_IN using_VBG the_DT Spotlight_NN system_NN during_IN the_DT night_NN is_VBZ a_DT good_JJ solution_NN for_IN environments_NNS where_WRB stealthiness_NN is_VBZ not_RB important_JJ -LRB-_-LRB- e_LS ._.
+g_NN ._.
+environmental_JJ sciences_NNS -RRB-_-RRB- for_IN others_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+military_JJ applications_NNS -RRB-_-RRB- ,_, divulging_VBG the_DT presence_NN and_CC location_NN of_IN a_DT sensor_NN field_NN ,_, could_MD seriously_RB compromise_VB the_DT efficacy_NN of_IN the_DT system_NN ._.
+Figure_NNP ##_NNP ._.
+Fluorescent_JJ Light_NN Spectra_NNP -LRB-_-LRB- top_JJ -RRB-_-RRB- ,_, Spectral_JJ Response_NN for_IN CdSe_NN cells_NNS -LRB-_-LRB- bottom_NN -RRB-_-RRB- A_DT solution_NN to_TO this_DT problem_NN ,_, which_WDT we_PRP experimented_VBD with_IN in_IN the_DT Spotlight_NN system_NN ,_, was_VBD to_TO use_VB an_DT optical_JJ filter_NN on_IN top_NN of_IN the_DT light_JJ 24_CD sensor_NN ._.
+The_DT spectral_JJ response_NN of_IN a_DT CdSe_NN photo_NN sensor_NN spans_VBZ almost_RB the_DT entire_JJ visible_JJ domain_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, with_IN a_DT peak_NN at_IN about_IN 700nm_NN -LRB-_-LRB- Figure_NN 31-bottom_JJ -RRB-_-RRB- ._.
+As_IN shown_VBN in_IN Figure_NNP 31-top_JJ ,_, the_DT fluorescent_JJ light_NN has_VBZ no_DT significant_JJ components_NNS above_IN 700nm_NN ._.
+Hence_RB ,_, a_DT simple_JJ red_JJ filter_NN -LRB-_-LRB- Schott_NN RG-630_NN -RRB-_-RRB- ,_, which_WDT transmits_VBZ all_DT light_JJ with_IN wavelength_NN approximately_RB above_IN 630nm_NN ,_, coupled_VBN with_IN an_DT Event_NNP Distribution_NN Function_NN that_WDT generates_VBZ events_NNS with_IN wavelengths_NNS above_IN the_DT same_JJ threshold_NN ,_, would_MD allow_VB the_DT use_NN of_IN the_DT system_NN when_WRB a_DT fluorescent_JJ light_NN is_VBZ present_JJ ._.
+A_DT solution_NN for_IN the_DT Spotlight_NN system_NN to_TO be_VB stealthy_JJ at_IN night_NN ,_, is_VBZ to_TO use_VB a_DT source_NN of_IN infra-red_JJ radiation_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+laser_NN -RRB-_-RRB- emitting_VBG in_IN the_DT range_NN -LSB-_-LRB- ###_CD ,_, ####_CD -RSB-_-RRB- nm_NN ._.
+For_IN a_DT daylight_NN use_NN of_IN the_DT Spotlight_NN system_NN ,_, the_DT challenge_NN is_VBZ to_TO overcome_VB the_DT strong_JJ background_NN of_IN the_DT natural_JJ light_NN ._.
+A_DT solution_NN we_PRP are_VBP considering_VBG is_VBZ the_DT use_NN of_IN a_DT narrow-band_JJ optical_JJ filter_NN ,_, centered_VBN at_IN the_DT wavelength_NN of_IN the_DT laser_NN radiation_NN ._.
+The_DT feasibility_NN and_CC the_DT cost-effectiveness_NN of_IN this_DT solution_NN remain_VBP to_TO be_VB proven_VBN ._.
+6_CD ._.
+#_# Network_NNP Deployed_NNP in_IN Unknown_JJ Terrain_NN A_DT further_JJ generalization_NN is_VBZ when_WRB the_DT map_NN of_IN the_DT terrain_NN where_WRB the_DT sensor_NN network_NN was_VBD deployed_VBN is_VBZ unknown_JJ ._.
+While_IN this_DT is_VBZ highly_RB unlikely_JJ for_IN many_JJ civil_JJ applications_NNS of_IN wireless_JJ sensor_NN network_NN technologies_NNS ,_, it_PRP is_VBZ not_RB difficult_JJ to_TO imagine_VB military_JJ applications_NNS where_WRB the_DT sensor_NN network_NN is_VBZ deployed_VBN in_IN a_DT hostile_NN and_CC unknown_JJ terrain_NN ._.
+A_DT solution_NN to_TO this_DT problem_NN is_VBZ a_DT system_NN that_WDT uses_VBZ two_CD Spotlight_NN devices_NNS ,_, or_CC equivalently_RB ,_, the_DT use_NN of_IN the_DT same_JJ device_NN from_IN two_CD distinct_JJ positions_NNS ,_, executing_VBG ,_, from_IN each_DT of_IN them_PRP ,_, a_DT complete_JJ localization_NN procedure_NN ._.
+In_IN this_DT scheme_NN ,_, the_DT position_NN of_IN the_DT sensor_NN node_NN is_VBZ uniquely_RB determined_VBN by_IN the_DT intersection_NN of_IN the_DT two_CD location_NN directions_NNS obtained_VBN by_IN the_DT system_NN ._.
+The_DT relative_JJ localization_NN -LRB-_-LRB- for_IN each_DT pair_NN of_IN Spotlight_NN devices_NNS -RRB-_-RRB- will_MD require_VB an_DT accurate_JJ knowledge_NN of_IN the_DT #_# translation_NN and_CC #_# rigid-body_JJ rotation_NN parameters_NNS for_IN Spotlight_NN ''_'' s_NNS position_NN and_CC orientation_NN -LRB-_-LRB- as_IN mentioned_VBN in_IN Section_NN #_# -RRB-_-RRB- ._.
+This_DT generalization_NN is_VBZ also_RB applicable_JJ to_TO scenarios_NNS where_WRB ,_, due_JJ to_TO terrain_NN variations_NNS ,_, there_EX is_VBZ no_DT single_JJ aerial_JJ point_NN with_IN a_DT direct_JJ line_NN of_IN sight_NN to_TO all_DT sensor_NN nodes_NNS ,_, e_LS ._.
+g_NN ._.
+hilly_JJ terrain_NN ._.
+By_IN executing_VBG the_DT localization_NN procedure_NN from_IN different_JJ aerial_JJ points_NNS ,_, the_DT probability_NN of_IN establishing_VBG a_DT line_NN of_IN sight_NN with_IN all_PDT the_DT nodes_NNS ,_, increases_NNS ._.
+For_IN some_DT military_JJ scenarios_NNS -LSB-_-LRB- #_# -RSB-_-RRB- -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, where_WRB open_JJ terrain_NN is_VBZ prevalent_JJ ,_, the_DT existence_NN of_IN a_DT line_NN of_IN sight_NN is_VBZ not_RB a_DT limiting_VBG factor_NN ._.
+In_IN light_NN of_IN this_DT ,_, the_DT Spotlight_NN system_NN can_MD not_RB be_VB used_VBN in_IN forests_NNS or_CC indoor_JJ environments_NNS ._.
+7_CD ._.
+CONCLUSIONS_NNS AND_CC FUTURE_NNS WORK_VBP In_IN this_DT paper_NN we_PRP presented_VBD the_DT design_NN ,_, implementation_NN and_CC evaluation_NN of_IN a_DT localization_NN system_NN for_IN wireless_JJ sensor_NN networks_NNS ,_, called_VBN Spotlight_NNP ._.
+Our_PRP$ localization_NN solution_NN does_VBZ not_RB require_VB any_DT additional_JJ hardware_NN for_IN the_DT sensor_NN nodes_NNS ,_, other_JJ than_IN what_WP already_RB exists_VBZ ._.
+All_PDT the_DT complexity_NN of_IN the_DT system_NN is_VBZ encapsulated_VBN into_IN a_DT single_JJ Spotlight_NN device_NN ._.
+Our_PRP$ localization_NN system_NN is_VBZ reusable_JJ ,_, i_FW ._.
+e_LS ._.
+the_DT costs_NNS can_MD be_VB amortized_VBN through_IN several_JJ deployments_NNS ,_, and_CC its_PRP$ performance_NN is_VBZ not_RB affected_VBN by_IN the_DT number_NN of_IN sensor_NN nodes_NNS in_IN the_DT network_NN ._.
+Our_PRP$ experimental_JJ results_NNS ,_, obtained_VBN from_IN a_DT real_JJ system_NN deployed_VBN outdoors_RB ,_, show_VBP that_IN the_DT localization_NN error_NN is_VBZ less_JJR than_IN 20cm_CD ._.
+This_DT error_NN is_VBZ currently_RB state_NN of_IN art_NN ,_, even_RB for_IN range-based_JJ localization_NN systems_NNS and_CC it_PRP is_VBZ ##_CD %_NN smaller_JJR than_IN the_DT error_NN obtained_VBN when_WRB using_VBG GPS_NNP devices_NNS or_CC when_WRB the_DT manual_JJ deployment_NN of_IN sensor_NN nodes_NNS is_VBZ a_DT feasible_JJ option_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+As_IN future_JJ work_NN ,_, we_PRP would_MD like_VB to_TO explore_VB the_DT self-calibration_NN and_CC self-tuning_NN of_IN the_DT Spotlight_NN system_NN ._.
+The_DT accuracy_NN of_IN the_DT system_NN can_MD be_VB further_RB improved_VBN if_IN the_DT distribution_NN of_IN the_DT event_NN ,_, instead_RB of_IN a_DT single_JJ timestamp_NN ,_, is_VBZ reported_VBN ._.
+A_DT generalization_NN could_MD be_VB obtained_VBN by_IN reformulating_VBG the_DT problem_NN as_IN an_DT angular_JJ estimation_NN problem_NN that_WDT provides_VBZ the_DT building_NN blocks_VBZ for_IN more_JJR general_JJ localization_NN techniques_NNS ._.
+8_CD ._.
+ACKNOWLEDGEMENTS_NNS This_DT work_NN was_VBD supported_VBN by_IN the_DT DARPA_NNP IXO_NNP office_NN ,_, under_IN the_DT NEST_NN project_NN -LRB-_-LRB- grant_NN number_NN F336616-01-C-1905_NN -RRB-_-RRB- and_CC by_IN the_DT NSF_NNP grant_NN CCR-0098269_NN ._.
+We_PRP would_MD like_VB to_TO thank_VB S_NN ._.
+Cornwell_NNP for_IN allowing_VBG us_PRP to_TO run_VB experiments_NNS in_IN the_DT stadium_NN ,_, M_NN ._.
+Klopf_NNP for_IN his_PRP$ assistance_NN with_IN optics_NNS ,_, and_CC anonymous_JJ reviewers_NNS and_CC our_PRP$ shepherd_NN ,_, Koen_NNP Langendoen_NNP ,_, for_IN their_PRP$ valuable_JJ feedback_NN ._.
+9_CD ._.
+REFERENCES_NNS -LSB-_-LRB- #_# -RSB-_-RRB- A_DT ._.
+Arora_NNP ,_, P_NN ._.
+Dutta_NNP ,_, S_NN ._.
+Bapat_NNP ,_, V_NNP ._.
+Kulathumani_NNP ,_, H_NN ._.
+Zhang_NNP ,_, V_NNP ._.
+Naik_NNP ,_, V_NNP ._.
+Mittal_NNP ,_, H_NN ._.
+Cao_NNP ,_, M_NN ._.
+Demirbas_NNP ,_, M_NN ._.
+Gouda_NNP ,_, Y_NN ._.
+Choi_NNP ,_, T_NN ._.
+Herman_NNP ,_, S_NN ._.
+Kulharni_NNP ,_, U_NNP ._.
+Arumugam_NNP ,_, M_NN ._.
+Nesterenko_NNP ,_, A_NNP ._.
+Vora_NNP ,_, M_NN ._.
+Miyashita_NNP ,_, A_NNP Line_NNP in_IN the_DT Sand_NNP :_: A_NNP Wireless_NNP Sensor_NNP Network_NNP for_IN Target_NN Detection_NN ,_, Classification_NN and_CC Tracking_NNP ,_, in_IN Computer_NNP Networks_NNP ##_NN -LRB-_-LRB- #_# -RRB-_-RRB- ,_, ####_NN ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- P_NN ._.
+Bahl_NNP ,_, V_NNP ._.
+N_NN ._.
+Padmanabhan_NNP ,_, RADAR_NNP :_: An_DT In-Building_JJ RFbased_JJ User_NN Location_NNP and_CC Tracking_NNP System_NNP ,_, in_IN Proceedings_NNP of_IN Infocom_NNP ,_, ####_CD -LSB-_-LRB- #_# -RSB-_-RRB- M_NN ._.
+Broxton_NNP ,_, J_NNP ._.
+Lifton_NNP ,_, J_NNP ._.
+Paradiso_NNP ,_, Localizing_VBG a_DT Sensor_NNP Network_NNP via_IN Collaborative_NNP Processing_NNP of_IN Global_NNP Stimuli_NNP ,_, in_IN Proceedings_NNP of_IN EWSN_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- N_NN ._.
+Bulusu_NNP ,_, J_NNP ._.
+Heidemann_NNP ,_, D_NNP ._.
+Estrin_NNP ,_, GPS-less_JJ Low_JJ Cost_NN Outdoor_JJ Localization_NN for_IN Very_RB Small_JJ Devices_NNPS ,_, in_IN IEEE_NNP Personal_NNP Communications_NNP Magazine_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- P_NN ._.
+Corke_NNP ,_, R_NN ._.
+Peterson_NNP ,_, D_NNP ._.
+Rus_NN ,_, Networked_NNP Robots_NNP :_: Flying_NNP Robot_NNP Navigation_NNP Using_VBG a_DT Sensor_NNP Net_NN ,_, in_IN ISSR_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- L_NN ._.
+Doherty_NNP ,_, L_NNP ._.
+E_NN ._.
+Ghaoui_NNP ,_, K_NNP ._.
+Pister_NNP ,_, Convex_NNP Position_NN Estimation_NN in_IN Wireless_NNP Sensor_NNP Networks_NNP ,_, in_IN Proceedings_NNP of_IN Infocom_NNP ,_, ####_CD -LSB-_-LRB- #_# -RSB-_-RRB- P_NN ._.
+Dutta_NNP ,_, M_NN ._.
+Grimmer_JJR ,_, A_DT ._.
+Arora_NNP ,_, S_NN ._.
+Bibyk_NNP ,_, D_NNP ._.
+Culler_NNP ,_, Design_NN of_IN a_DT Wireless_NNP Sensor_NNP Network_NNP Platform_NNP for_IN Detecting_NNP Rare_NNP ,_, Random_NNP ,_, and_CC Ephemeral_NNP Events_NNS ,_, in_IN Proceedings_NNP of_IN IPSN_NNP ,_, 2005_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- E_NN ._.
+Elnahrawy_NNP ,_, X_NN ._.
+Li_NNP ,_, R_NN ._.
+Martin_NNP ,_, The_DT Limits_NNS of_IN Localization_NN using_VBG RSSI_NNP ,_, in_IN Proceedings_NNP of_IN SECON_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- D_NN ._.
+Fox_NNP ,_, W_NNP ._.
+Burgard_NNP ,_, S_NN ._.
+Thrun_NNP ,_, Markov_NNP Localization_NN for_IN Mobile_NNP Robots_NNP in_IN Dynamic_NNP Environments_NNS ,_, in_IN Journal_NNP of_IN Artificial_NNP Intelligence_NNP Research_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- D_NN ._.
+Fox_NNP ,_, W_NNP ._.
+Burgard_NNP ,_, F_NN ._.
+Dellaert_NNP ,_, S_NN ._.
+Thrun_NNP ,_, Monte_NNP Carlo_NNP Localization_NNP :_: Efficient_JJ Position_NN Estimation_NN for_IN Mobile_NNP Robots_NNP ,_, in_IN Conference_NN on_IN Artificial_NNP Intelligence_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- D_NN ._.
+Ganesan_NNP ,_, B_NN ._.
+Krishnamachari_NNP ,_, A_NNP ._.
+Woo_NNP ,_, D_NNP ._.
+Culler_NNP ,_, D_NNP ._.
+Estrin_NNP ,_, S_NN ._.
+Wicker_NN ,_, Complex_NN Behaviour_NNP at_IN Scale_NNP :_: An_DT Experimental_JJ Study_NN of_IN Low_NNP Power_NNP Wireless_NNP Sensor_NNP Networks_NNP ,_, in_IN Technical_NNP Report_NNP ,_, UCLA-TR_NNP 01-0013_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- T_NN ._.
+He_PRP ,_, S_NN ._.
+Krishnamurthy_NNP ,_, J_NNP ._.
+A_DT ._.
+Stankovic_NNP ,_, T_NN ._.
+Abdelzaher_NNP ,_, L_NNP ._.
+Luo_NNP ,_, R_NN ._.
+Stoleru_NNP ,_, T_NN ._.
+Yan_NNP ,_, L_NNP ._.
+Gu_NNP ,_, J_NNP ._.
+Hui_NNP ,_, B_NN ._.
+Krogh_NNP ,_, An_DT Energy-Efficient_JJ Surveillance_NNP System_NNP Using_VBG Wireless_NNP Sensor_NNP Networks_NNP ,_, in_IN Proceedings_NNP of_IN Mobisys_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- T_NN ._.
+He_PRP ,_, C_NN ._.
+Huang_NNP ,_, B_NN ._.
+Blum_NNP ,_, J_NNP ._.
+A_DT ._.
+Stankovic_NNP ,_, T_NN ._.
+Abdelzaher_NNP ,_, Range-Free_NNP Localization_NNP Schemes_NNS for_IN Large_JJ Scale_NNP Sensor_NNP Networks_NNP in_IN Proceedings_NNP of_IN Mobicom_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- L_NN ._.
+Hu_NNP ,_, D_NNP ._.
+Evans_NNP ,_, Localization_NN for_IN Mobile_NNP Sensor_NNP Networks_NNP ,_, in_IN Proceedings_NNP of_IN Mobicom_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Y_NN ._.
+Kwon_NNP ,_, K_NNP ._.
+Mechitov_NNP ,_, S_NN ._.
+Sundresh_NNP ,_, W_NNP ._.
+Kim_NNP ,_, G_NNP ._.
+Agha_NNP ,_, Resilient_NNP Localization_NNP for_IN Sensor_NNP Networks_NNP in_IN Outdoor_NNP Environments_NNS ,_, UIUC_NNP Technical_NNP Report_NNP ,_, ####_CD ._.
+25_CD -LSB-_-LRB- ##_CD -RSB-_-RRB- K_NNP ._.
+Langendoen_NNP ,_, N_NNP ._.
+Reijers_NNP ,_, Distributed_VBN Localization_NN in_IN Wireless_NNP Sensor_NNP Networks_NNP ,_, A_DT Comparative_JJ Study_NN ,_, in_IN Computer_NNP Networks_NNP vol_NN ._.
+##_NN ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- K_NN ._.
+Lorincz_NNP ,_, M_NN ._.
+Welsh_NNP ,_, MoteTrack_NNP :_: A_NNP Robust_NNP ,_, Decentralized_NNP Approach_NNP to_TO RF-Based_JJ Location_NNP Tracking_NNP ,_, in_IN Proceedings_NNP of_IN Intl_NNP ._.
+Workshop_NNP on_IN Location_NNP and_CC Context-Awareness_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- M_NN ._.
+Maroti_NNP ,_, B_NN ._.
+Kusy_NNP ,_, G_NNP ._.
+Simon_NNP ,_, A_NNP ._.
+Ledeczi_NNP ,_, The_DT Flooding_NN Time_NNP Synchronization_NNP Protocol_NNP ,_, in_IN Proceedings_NNP of_IN Sensys_NNPS ,_, 2004_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- D_NN ._.
+Moore_NNP ,_, J_NNP ._.
+Leonard_NNP ,_, D_NNP ._.
+Rus_NN ,_, S_NN ._.
+Teller_NNP ,_, Robust_NNP Distributed_VBD Network_NNP Localization_NN with_IN Noisy_JJ Range_NNP Measurements_NNS in_IN Proceedings_NNP of_IN Sensys_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- R_NN ._.
+Nagpal_NNP ,_, H_NN ._.
+Shrobe_NNP ,_, J_NNP ._.
+Bachrach_NNP ,_, Organizing_NNP a_DT Global_JJ Coordinate_JJ System_NN for_IN Local_JJ Information_NN on_IN an_DT Adhoc_NNP Sensor_NNP Network_NNP ,_, in_IN A_DT ._.
+I_PRP Memo_VBP ####_CD ._.
+MIT_NNP A_NNP ._.
+I_PRP ._.
+Laboratory_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- D_NN ._.
+Niculescu_NNP ,_, B_NN ._.
+Nath_NNP ,_, DV-based_JJ Positioning_NN in_IN Adhoc_NNP Networks_NNP in_IN Telecommunication_NNP Systems_NNPS ,_, vol_NN ._.
+##_NN ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- E_NN ._.
+Osterweil_NNP ,_, T_NN ._.
+Schoellhammer_NNP ,_, M_NN ._.
+Rahimi_NNP ,_, M_NN ._.
+Wimbrow_NNP ,_, T_NN ._.
+Stathopoulos_NNP ,_, L_NNP ._.
+Girod_NNP ,_, M_NN ._.
+Mysore_NNP ,_, A_NNP ._.
+Wu_NNP ,_, D_NNP ._.
+Estrin_NNP ,_, The_DT Extensible_NNP Sensing_NNP System_NNP ,_, CENS-UCLA_NNP poster_NN ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- B_NN ._.
+W_NN ._.
+Parkinson_NNP ,_, J_NNP ._.
+Spilker_NNP ,_, Global_NNP Positioning_NNP System_NNP :_: theory_NN and_CC applications_NNS ,_, in_IN Progress_NNP in_IN Aeronautics_NNP and_CC Astronautics_NNP ,_, vol_NN ._.
+###_NN ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- P_NN ._.
+N_NN ._.
+Pathirana_NNP ,_, N_NNP ._.
+Bulusu_NNP ,_, A_NNP ._.
+Savkin_NNP ,_, S_NN ._.
+Jha_NNP ,_, Node_NNP Localization_NNP Using_VBG Mobile_NNP Robots_NNP in_IN Delay-Tolerant_NNP Sensor_NNP Networks_NNP ,_, in_IN Transactions_NNS on_IN Mobile_NNP Computing_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- N_NN ._.
+Priyantha_NNP ,_, A_NNP ._.
+Chakaborty_NNP ,_, H_NN ._.
+Balakrishnan_NNP ,_, The_DT Cricket_NNP Location-support_NNP System_NNP ,_, in_IN Proceedings_NNP of_IN MobiCom_NNP ,_, 2000_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- N_NN ._.
+Priyantha_NNP ,_, H_NN ._.
+Balakrishnan_NNP ,_, E_NNP ._.
+Demaine_NNP ,_, S_NN ._.
+Teller_NNP ,_, Mobile-Assisted_NNP Topology_NNP Generation_NNP for_IN Auto-Localization_NNP in_IN Sensor_NNP Networks_NNP ,_, in_IN Proceedings_NNP of_IN Infocom_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- A_DT ._.
+Savvides_NNP ,_, C_NNP ._.
+Han_NNP ,_, M_NN ._.
+Srivastava_NNP ,_, Dynamic_NNP Fine-grained_JJ localization_NN in_IN Adhoc_NNP Networks_NNP of_IN Sensors_NNP ,_, in_IN Proceedings_NNP of_IN MobiCom_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Y_NN ._.
+Shang_NNP ,_, W_NNP ._.
+Ruml_NNP ,_, Improved_VBN MDS-Based_JJ Localization_NN ,_, in_IN Proceedings_NNP of_IN Infocom_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- M_NN ._.
+Sichitiu_NNP ,_, V_NNP ._.
+Ramadurai_NNP ,_, Localization_NN of_IN Wireless_NNP Sensor_NNP Networks_NNP with_IN a_DT Mobile_NNP Beacon_NNP ,_, in_IN Proceedings_NNP of_IN MASS_NNP ,_, 2004_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- G_NN ._.
+Simon_NNP ,_, M_NN ._.
+Maroti_NNP ,_, A_NNP ._.
+Ledeczi_NNP ,_, G_NNP ._.
+Balogh_NNP ,_, B_NN ._.
+Kusy_NNP ,_, A_NNP ._.
+Nadas_NNP ,_, G_NNP ._.
+Pap_NN ,_, J_NN ._.
+Sallai_NNP ,_, Sensor_NNP Network-Base_NNP Countersniper_NNP System_NNP ,_, in_IN Proceedings_NNP of_IN Sensys_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- R_NN ._.
+Stoleru_NNP ,_, T_NN ._.
+He_PRP ,_, J_NNP ._.
+A_DT ._.
+Stankovic_NNP ,_, Walking_VBG GPS_NNS :_: A_DT Practical_NNP Solution_NN for_IN Localization_NN in_IN Manually_RB Deployed_VBN Wireless_NNP Sensor_NNP Networks_NNP ,_, in_IN Proceedings_NNP of_IN EmNetS_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- R_NN ._.
+Stoleru_NNP ,_, J_NNP ._.
+A_DT ._.
+Stankovic_NNP ,_, Probability_NNP Grid_NNP :_: A_NNP Location_NNP Estimation_NNP Scheme_NNP for_IN Wireless_NNP Sensor_NNP Networks_NNP ,_, in_IN Proceedings_NNP of_IN SECON_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- R_NN ._.
+Szewczyk_NNP ,_, A_NNP ._.
+Mainwaring_NNP ,_, J_NNP ._.
+Polastre_NNP ,_, J_NNP ._.
+Anderson_NNP ,_, D_NNP ._.
+Culler_NNP ,_, An_DT Analysis_NN of_IN a_DT Large_JJ Scale_NNP Habitat_NNP Monitoring_VBG Application_NN ,_, in_IN Proceedings_NNP of_IN Sensys_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- K_NN ._.
+Whitehouse_NNP ,_, A_NNP ._.
+Woo_NNP ,_, C_NNP ._.
+Karlof_NNP ,_, F_NN ._.
+Jiang_NNP ,_, D_NNP ._.
+Culler_NNP ,_, The_DT Effects_NNS of_IN Ranging_VBG Noise_NN on_IN Multi-hop_JJ Localization_NN :_: An_DT Empirical_JJ Study_NN ,_, in_IN Proceedings_NNP of_IN IPSN_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- K_NN ._.
+Whitehouse_NNP ,_, D_NNP ._.
+Culler_NNP ,_, Calibration_NNP as_IN Parameter_NNP Estimation_NNP in_IN Sensor_NNP Networks_NNP ,_, in_IN Proceedings_NNP of_IN WSNA_NNP ,_, 2002_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- P_NN ._.
+Zhang_NNP ,_, C_NNP ._.
+Sadler_NNP ,_, S_NN ._.
+A_DT ._.
+Lyon_NNP ,_, M_NN ._.
+Martonosi_NNP ,_, Hardware_NNP Design_NNP Experiences_NNS in_IN ZebraNet_NNP ,_, in_IN Proceedings_NNP of_IN Sensys_NNPS ,_, 2004_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Selco_NNP Products_NNPS Co_NNP ._.
+Construction_NN and_CC Characteristics_NNS of_IN CdS_NN Cells_NNS ,_, product_NN datasheet_NN ,_, ####_CD 26_CD

@@ -1,0 +1,661 @@
+Robust_JJ Classification_NN of_IN Rare_NNP Queries_NNPS Using_VBG Web_NN Knowledge_NN Andrei_NNP Broder_NNP ,_, Marcus_NNP Fontoura_NNP ,_, Evgeniy_NNP Gabrilovich_NNP ,_, Amruta_NNP Joshi_NNP ,_, Vanja_NNP Josifovski_NNP ,_, Tong_NNP Zhang_NNP Yahoo_NNP !_.
+Research_NNP ,_, ####_CD Mission_NNP College_NNP Blvd_NNP ,_, Santa_NNP Clara_NNP ,_, CA_NNP #####_CD -LCB-_-LRB- broder_NN |_CD marcusf_NN |_CD gabr_NN |_NN amrutaj_NN |_CD vanjaj_NN |_NN tzhang_NN -RCB-_-RRB- @_SYM yahoo-inc_NN ._.
+com_NN ABSTRACT_NN We_PRP propose_VBP a_DT methodology_NN for_IN building_VBG a_DT practical_JJ robust_JJ query_NN classification_NN system_NN that_WDT can_MD identify_VB thousands_NNS of_IN query_NN classes_NNS with_IN reasonable_JJ accuracy_NN ,_, while_IN dealing_VBG in_IN realtime_NN with_IN the_DT query_NN volume_NN of_IN a_DT commercial_JJ web_NN search_NN engine_NN ._.
+We_PRP use_VBP a_DT blind_JJ feedback_NN technique_NN :_: given_VBN a_DT query_NN ,_, we_PRP determine_VBP its_PRP$ topic_NN by_IN classifying_VBG the_DT web_NN search_NN results_VBZ retrieved_VBN by_IN the_DT query_NN ._.
+Motivated_VBN by_IN the_DT needs_NNS of_IN search_NN advertising_NN ,_, we_PRP primarily_RB focus_VBP on_IN rare_JJ queries_NNS ,_, which_WDT are_VBP the_DT hardest_JJS from_IN the_DT point_NN of_IN view_NN of_IN machine_NN learning_NN ,_, yet_RB in_IN aggregation_NN account_NN for_IN a_DT considerable_JJ fraction_NN of_IN search_NN engine_NN traffic_NN ._.
+Empirical_JJ evaluation_NN confirms_VBZ that_IN our_PRP$ methodology_NN yields_VBZ a_DT considerably_RB higher_JJR classification_NN accuracy_NN than_IN previously_RB reported_VBN ._.
+We_PRP believe_VBP that_IN the_DT proposed_VBN methodology_NN will_MD lead_VB to_TO better_JJR matching_NN of_IN online_JJ ads_NNS to_TO rare_JJ queries_NNS and_CC overall_JJ to_TO a_DT better_JJR user_NN experience_NN ._.
+Categories_NNS and_CC Subject_NNP Descriptors_NNPS H_NN ._.
+#_# ._.
+#_# -LSB-_-LRB- Information_NNP Storage_NNP and_CC Retrieval_NNP -RSB-_-RRB- :_: Information_NNP Search_VB and_CC Retrieval_NNP -_: relevance_NN feedback_NN ,_, search_NN process_NN General_NNP Terms_NNS Algorithms_NNS ,_, Measurement_NNP ,_, Performance_NNP ,_, Experimentation_NN 1_CD ._.
+INTRODUCTION_NN In_IN its_PRP$ ##_CD year_NN lifetime_NN ,_, web_NN search_NN had_VBD grown_VBN tremendously_RB :_: it_PRP has_VBZ simultaneously_RB become_VB a_DT factor_NN in_IN the_DT daily_JJ life_NN of_IN maybe_RB a_DT billion_CD people_NNS and_CC at_IN the_DT same_JJ time_NN an_DT eight_CD billion_CD dollar_NN industry_NN fueled_VBN by_IN web_NN advertising_NN ._.
+One_CD thing_NN ,_, however_RB ,_, has_VBZ remained_VBN constant_JJ :_: people_NNS use_VBP very_RB short_JJ queries_NNS ._.
+Various_JJ studies_NNS estimate_VBP the_DT average_JJ length_NN of_IN a_DT search_NN query_NN between_IN #_# ._.
+#_# and_CC #_# ._.
+#_# words_NNS ,_, which_WDT by_IN all_DT accounts_NNS can_MD carry_VB only_RB a_DT small_JJ amount_NN of_IN information_NN ._.
+Commercial_JJ search_NN engines_NNS do_VBP a_DT remarkably_RB good_JJ job_NN in_IN interpreting_VBG these_DT short_JJ strings_NNS ,_, but_CC they_PRP are_VBP not_RB -LRB-_-LRB- yet_RB !_. -RRB-_-RRB-
+omniscient_JJ ._.
+Therefore_RB ,_, using_VBG additional_JJ external_JJ knowledge_NN to_TO augment_VB the_DT queries_NNS can_MD go_VB a_DT long_JJ way_NN in_IN improving_VBG the_DT search_NN results_VBZ and_CC the_DT user_NN experience_NN ._.
+At_IN the_DT same_JJ time_NN ,_, better_JJR understanding_NN of_IN query_NN meaning_NN has_VBZ the_DT potential_NN of_IN boosting_VBG the_DT economic_JJ underpinning_NN of_IN Web_NN search_NN ,_, namely_RB ,_, online_JJ advertising_NN ,_, via_IN the_DT sponsored_VBN search_NN mechanism_NN that_WDT places_VBZ relevant_JJ advertisements_NNS alongside_IN search_NN results_NNS ._.
+For_IN instance_NN ,_, knowing_VBG that_IN the_DT query_NN SD450_NN is_VBZ about_IN cameras_NNS while_IN nc4200_NN is_VBZ about_IN laptops_NNS can_MD obviously_RB lead_VB to_TO more_JJR focused_JJ advertisements_NNS even_RB if_IN no_DT advertiser_NN has_VBZ specifically_RB bidden_VBN on_IN these_DT particular_JJ queries_NNS ._.
+In_IN this_DT study_NN we_PRP present_VBP a_DT methodology_NN for_IN query_NN classification_NN ,_, where_WRB our_PRP$ aim_NN is_VBZ to_TO classify_VB queries_NNS onto_IN a_DT commercial_JJ taxonomy_NN of_IN web_NN queries_NNS with_IN approximately_RB ####_CD nodes_NNS ._.
+Given_VBN such_JJ classifications_NNS ,_, one_PRP can_MD directly_RB use_VB them_PRP to_TO provide_VB better_JJR search_NN results_VBZ as_RB well_RB as_IN more_JJR focused_VBD ads_NNS ._.
+The_DT problem_NN of_IN query_NN classification_NN is_VBZ extremely_RB difficult_JJ owing_NN to_TO the_DT brevity_NN of_IN queries_NNS ._.
+Observe_VB ,_, however_RB ,_, that_IN in_IN many_JJ cases_NNS a_DT human_JJ looking_VBG at_IN a_DT search_NN query_NN and_CC the_DT search_NN query_NN results_VBZ does_VBZ remarkably_RB well_RB in_IN making_VBG sense_NN of_IN it_PRP ._.
+Of_IN course_NN ,_, the_DT sheer_JJ volume_NN of_IN search_NN queries_NNS does_VBZ not_RB lend_VB itself_PRP to_TO human_JJ supervision_NN ,_, and_CC therefore_RB we_PRP need_VBP alternate_JJ sources_NNS of_IN knowledge_NN about_IN the_DT world_NN ._.
+For_IN instance_NN ,_, in_IN the_DT example_NN above_IN ,_, SD450_NN brings_VBZ pages_NNS about_IN Canon_NNP cameras_NNS ,_, while_IN nc4200_NN brings_VBZ pages_NNS about_IN Compaq_NNP laptops_NNS ,_, hence_RB to_TO a_DT human_JJ the_DT intent_NN is_VBZ quite_RB clear_JJ ._.
+Search_VB engines_NNS index_NN colossal_JJ amounts_NNS of_IN information_NN ,_, and_CC as_IN such_JJ can_MD be_VB viewed_VBN as_IN very_RB comprehensive_JJ repositories_NNS of_IN knowledge_NN ._.
+Following_VBG the_DT heuristic_NN described_VBN above_IN ,_, we_PRP propose_VBP to_TO use_VB the_DT search_NN results_VBZ themselves_PRP to_TO gain_VB additional_JJ insights_NNS for_IN query_NN interpretation_NN ._.
+To_TO this_DT end_NN ,_, we_PRP employ_VBP the_DT pseudo_NN relevance_NN feedback_NN paradigm_NN ,_, and_CC assume_VB the_DT top_JJ search_NN results_VBZ to_TO be_VB relevant_JJ to_TO the_DT query_NN ._.
+Certainly_RB ,_, not_RB all_DT results_NNS are_VBP equally_RB relevant_JJ ,_, and_CC thus_RB we_PRP use_VBP elaborate_JJ voting_NN schemes_NNS in_IN order_NN to_TO obtain_VB reliable_JJ knowledge_NN about_IN the_DT query_NN ._.
+For_IN the_DT purpose_NN of_IN this_DT study_NN we_PRP first_RB dispatch_VBP the_DT given_VBN query_NN to_TO a_DT general_JJ web_NN search_NN engine_NN ,_, and_CC collect_VB a_DT number_NN of_IN the_DT highest-scoring_JJ URLs_NNS ._.
+We_PRP crawl_VBP the_DT Web_NN pages_NNS pointed_VBN by_IN these_DT URLs_NNS ,_, and_CC classify_VB these_DT pages_NNS ._.
+Finally_RB ,_, we_PRP use_VBP these_DT result-page_JJ classifications_NNS to_TO classify_VB the_DT original_JJ query_NN ._.
+Our_PRP$ empirical_JJ evaluation_NN confirms_VBZ that_IN using_VBG Web_NN search_NN results_VBZ in_IN this_DT manner_NN yields_NNS substantial_JJ improvements_NNS in_IN the_DT accuracy_NN of_IN query_NN classification_NN ._.
+Note_VB that_IN in_IN a_DT practical_JJ implementation_NN of_IN our_PRP$ methodology_NN within_IN a_DT commercial_JJ search_NN engine_NN ,_, all_DT indexed_VBD pages_NNS can_MD be_VB pre-classified_JJ using_VBG the_DT normal_JJ text-processing_NN and_CC indexing_NN pipeline_NN ._.
+Thus_RB ,_, at_IN run-time_NN we_PRP only_RB need_VBP to_TO run_VB the_DT voting_NN procedure_NN ,_, without_IN doing_VBG any_DT crawling_NN or_CC classification_NN ._.
+This_DT additional_JJ overhead_NN is_VBZ minimal_JJ ,_, and_CC therefore_RB the_DT use_NN of_IN search_NN results_VBZ to_TO improve_VB query_NN classification_NN is_VBZ entirely_RB feasible_JJ in_IN run-time_NN ._.
+Another_DT important_JJ aspect_NN of_IN our_PRP$ work_NN lies_VBZ in_IN the_DT choice_NN of_IN queries_NNS ._.
+The_DT volume_NN of_IN queries_NNS in_IN today_NN ''_'' s_VBZ search_NN engines_NNS follows_VBZ the_DT familiar_JJ power_NN law_NN ,_, where_WRB a_DT few_JJ queries_NNS appear_VBP very_RB often_RB while_IN most_JJS queries_NNS appear_VBP only_RB a_DT few_JJ times_NNS ._.
+While_IN individual_JJ queries_NNS in_IN this_DT long_JJ tail_NN are_VBP rare_JJ ,_, together_RB they_PRP account_VBP for_IN a_DT considerable_JJ mass_NN of_IN all_DT searches_NNS ._.
+Furthermore_RB ,_, the_DT aggregate_JJ volume_NN of_IN such_JJ queries_NNS provides_VBZ a_DT substantial_JJ opportunity_NN for_IN income_NN through_IN on-line_JJ advertising_NN ._.
+#_# Searching_NN and_CC advertising_NN platforms_NNS can_MD be_VB trained_VBN to_TO yield_VB good_JJ results_NNS for_IN frequent_JJ queries_NNS ,_, including_VBG auxiliary_JJ data_NNS such_JJ as_IN maps_NNS ,_, shortcuts_NNS to_TO related_JJ structured_JJ information_NN ,_, successful_JJ ads_NNS ,_, and_CC so_RB on_IN ._.
+However_RB ,_, the_DT tail_NN queries_NNS simply_RB do_VBP not_RB have_VB enough_JJ occurrences_NNS to_TO allow_VB statistical_JJ learning_NN on_IN a_DT per-query_JJ basis_NN ._.
+Therefore_RB ,_, we_PRP need_VBP to_TO aggregate_NN such_JJ queries_NNS in_IN some_DT way_NN ,_, and_CC to_TO reason_NN at_IN the_DT level_NN of_IN aggregated_JJ query_NN clusters_NNS ._.
+A_DT natural_JJ choice_NN for_IN such_JJ aggregation_NN is_VBZ to_TO classify_VB the_DT queries_NNS into_IN a_DT topical_JJ taxonomy_NN ._.
+Knowing_VBG which_WDT taxonomy_NN nodes_NNS are_VBP most_RBS relevant_JJ to_TO the_DT given_VBN query_NN will_MD aid_VB us_PRP to_TO provide_VB the_DT same_JJ type_NN of_IN support_NN for_IN rare_JJ queries_NNS as_IN for_IN frequent_JJ queries_NNS ._.
+Consequently_RB ,_, in_IN this_DT work_NN we_PRP focus_VBP on_IN the_DT classification_NN of_IN rare_JJ queries_NNS ,_, whose_WP$ correct_JJ classification_NN is_VBZ likely_JJ to_TO be_VB particularly_RB beneficial_JJ ._.
+Early_JJ studies_NNS in_IN query_NN interpretation_NN focused_VBD on_IN query_NN augmentation_NN through_IN external_JJ dictionaries_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+More_RBR recent_JJ studies_NNS -LSB-_-LRB- ##_NNS ,_, ##_NN -RSB-_-RRB- also_RB attempted_VBD to_TO gather_VB some_DT additional_JJ knowledge_NN from_IN the_DT Web_NN ._.
+However_RB ,_, these_DT studies_NNS had_VBD a_DT number_NN of_IN shortcomings_NNS ,_, which_WDT we_PRP overcome_VBP in_IN this_DT paper_NN ._.
+Specifically_RB ,_, earlier_JJR works_NNS in_IN the_DT field_NN used_VBN very_RB small_JJ query_NN classification_NN taxonomies_NNS of_IN only_RB a_DT few_JJ dozens_NNS of_IN nodes_NNS ,_, which_WDT do_VBP not_RB allow_VB ample_JJ specificity_NN for_IN online_JJ advertising_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+They_PRP also_RB used_VBD a_DT separate_JJ ancillary_JJ taxonomy_NN for_IN Web_NN documents_NNS ,_, so_RB that_IN an_DT extra_JJ level_NN of_IN indirection_NN had_VBD to_TO be_VB employed_VBN to_TO establish_VB the_DT correspondence_NN between_IN the_DT ancillary_JJ and_CC the_DT main_JJ taxonomies_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+The_DT main_JJ contributions_NNS of_IN this_DT paper_NN are_VBP as_IN follows_VBZ ._.
+First_RB ,_, we_PRP build_VBP the_DT query_NN classifier_NN directly_RB for_IN the_DT target_NN taxonomy_NN ,_, instead_RB of_IN using_VBG a_DT secondary_JJ auxiliary_JJ structure_NN ;_: this_DT greatly_RB simplifies_VBZ taxonomy_NN maintenance_NN and_CC development_NN ._.
+The_DT taxonomy_NN used_VBN in_IN this_DT work_NN is_VBZ two_CD orders_NNS of_IN magnitude_NN larger_JJR than_IN that_DT used_VBN in_IN prior_JJ studies_NNS ._.
+The_DT empirical_JJ evaluation_NN demonstrates_VBZ that_IN our_PRP$ methodology_NN for_IN using_VBG external_JJ knowledge_NN achieves_VBZ greater_JJR improvements_NNS than_IN those_DT previously_RB reported_VBN ._.
+Since_IN our_PRP$ taxonomy_NN is_VBZ considerably_RB larger_JJR ,_, the_DT classification_NN problem_NN we_PRP face_VBP is_VBZ much_RB more_RBR difficult_JJ ,_, making_VBG the_DT improvements_NNS we_PRP achieve_VBP particularly_RB notable_JJ ._.
+We_PRP also_RB report_VBP the_DT results_NNS of_IN a_DT thorough_JJ empirical_JJ study_NN of_IN different_JJ voting_NN schemes_NNS and_CC different_JJ depths_NNS of_IN knowledge_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, using_VBG search_NN summaries_NNS vs_CC ._.
+entire_JJ crawled_VBD pages_NNS -RRB-_-RRB- ._.
+We_PRP found_VBD that_IN crawling_VBG the_DT search_NN results_VBZ yields_NNS deeper_JJR knowledge_NN and_CC leads_VBZ to_TO greater_JJR improvements_NNS than_IN mere_JJ summaries_NNS ._.
+This_DT result_NN is_VBZ in_IN contrast_NN with_IN prior_JJ findings_NNS in_IN query_NN classification_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, but_CC is_VBZ supported_VBN by_IN research_NN in_IN mainstream_NN text_NN classification_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+2_LS ._.
+METHODOLOGY_NN Our_PRP$ methodology_NN has_VBZ two_CD main_JJ phases_NNS ._.
+In_IN the_DT first_JJ phase_NN ,_, 1_CD In_IN the_DT above_JJ examples_NNS ,_, SD450_NN and_CC nc4200_NN represent_VBP fairly_RB old_JJ gadget_NN models_NNS ,_, and_CC hence_RB there_EX are_VBP advertisers_NNS placing_VBG ads_NNS on_IN these_DT queries_NNS ._.
+However_RB ,_, in_IN this_DT paper_NN we_PRP mainly_RB deal_VBP with_IN rare_JJ queries_NNS which_WDT are_VBP extremely_RB difficult_JJ to_TO match_VB to_TO relevant_JJ ads_NNS ._.
+we_PRP construct_VBP a_DT document_NN classifier_NN for_IN classifying_VBG search_NN results_VBZ into_IN the_DT same_JJ taxonomy_NN into_IN which_WDT queries_NNS are_VBP to_TO be_VB classified_VBN ._.
+In_IN the_DT second_JJ phase_NN ,_, we_PRP develop_VBP a_DT query_NN classifier_NN that_WDT invokes_VBZ the_DT document_NN classifier_NN on_IN search_NN results_NNS ,_, and_CC uses_VBZ the_DT latter_JJ to_TO perform_VB query_NN classification_NN ._.
+2_LS ._.
+#_# Building_VBG the_DT document_NN classifier_NN In_IN this_DT work_NN we_PRP used_VBD a_DT commercial_JJ classification_NN taxonomy_NN of_IN approximately_RB ####_CD nodes_NNS used_VBN in_IN a_DT major_JJ US_NNP search_NN engine_NN ._.
+Human_JJ editors_NNS populated_VBD the_DT taxonomy_NN nodes_NNS with_IN labeled_VBN examples_NNS that_IN we_PRP used_VBD as_IN training_NN instances_NNS to_TO learn_VB a_DT document_NN classifier_NN in_IN phase_NN #_# ._.
+Given_VBN a_DT taxonomy_NN of_IN this_DT size_NN ,_, the_DT computational_JJ efficiency_NN of_IN classification_NN is_VBZ a_DT major_JJ issue_NN ._.
+Few_JJ machine_NN learning_VBG algorithms_NNS can_MD efficiently_RB handle_VB so_RB many_JJ different_JJ classes_NNS ,_, each_DT having_VBG hundreds_NNS of_IN training_NN examples_NNS ._.
+Suitable_JJ candidates_NNS include_VBP the_DT nearest_JJS neighbor_NN and_CC the_DT Naive_JJ Bayes_NNP classifier_NN -LSB-_-LRB- #_# -RSB-_-RRB- ,_, as_RB well_RB as_IN prototype_NN formation_NN methods_NNS such_JJ as_IN Rocchio_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- or_CC centroid-based_JJ -LSB-_-LRB- #_# -RSB-_-RRB- classifiers_NNS ._.
+A_DT recent_JJ study_NN -LSB-_-LRB- #_# -RSB-_-RRB- showed_VBD centroid-based_JJ classifiers_NNS to_TO be_VB both_CC effective_JJ and_CC efficient_JJ for_IN large-scale_JJ taxonomies_NNS and_CC consequently_RB ,_, we_PRP used_VBD a_DT centroid_JJ classifier_NN in_IN this_DT work_NN ._.
+2_LS ._.
+#_# Query_NNP classification_NN by_IN search_NN Having_VBG developed_VBN a_DT document_NN classifier_NN for_IN the_DT query_NN taxonomy_NN ,_, we_PRP now_RB turn_VBP to_TO the_DT problem_NN of_IN obtaining_VBG a_DT classification_NN for_IN a_DT given_VBN query_NN based_VBN on_IN the_DT initial_JJ search_NN results_VBZ it_PRP yields_VBZ ._.
+Let_VB ''_'' s_VBZ assume_VB that_IN there_EX is_VBZ a_DT set_NN of_IN documents_NNS D_NN =_JJ d1_NN ..._: dm_NN indexed_VBN by_IN a_DT search_NN engine_NN ._.
+The_DT search_NN engine_NN can_MD then_RB be_VB represented_VBN by_IN a_DT function_NN f_FW =_JJ similarity_NN -LRB-_-LRB- q_NN ,_, d_NN -RRB-_-RRB- that_WDT quantifies_VBZ the_DT affinity_NN between_IN a_DT query_NN q_NN and_CC a_DT document_NN d_NN ._.
+Examples_NNS of_IN such_JJ affinity_NN scores_NNS used_VBN in_IN this_DT paper_NN are_VBP rank-the_JJ rank_NN of_IN the_DT document_NN in_IN the_DT ordered_VBN list_NN of_IN search_NN results_NNS ;_: static_JJ score-the_JJ score_NN of_IN the_DT goodness_NN of_IN the_DT page_NN regardless_RB of_IN the_DT query_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, PageRank_NN -RRB-_-RRB- ;_: and_CC dynamic_JJ score-the_JJ closeness_NN of_IN the_DT query_NN and_CC the_DT document_NN ._.
+Query_NNP classification_NN is_VBZ determined_VBN by_IN first_JJ evaluating_VBG conditional_JJ probabilities_NNS of_IN all_DT possible_JJ classes_NNS P_NN -LRB-_-LRB- Cj_NN |_CD q_NN -RRB-_-RRB- ,_, and_CC then_RB selecting_VBG the_DT alternative_NN with_IN the_DT highest_JJS probability_NN Cmax_NN =_JJ arg_NN maxCj_NN C_NN P_NN -LRB-_-LRB- Cj_NN |_CD q_NN -RRB-_-RRB- ._.
+Our_PRP$ goal_NN is_VBZ to_TO estimate_VB the_DT conditional_JJ probability_NN of_IN each_DT possible_JJ class_NN using_VBG the_DT search_NN results_VBZ initially_RB returned_VBN by_IN the_DT query_NN ._.
+We_PRP use_VBP the_DT following_VBG formula_NN that_WDT incorporates_VBZ classifications_NNS of_IN individual_JJ search_NN results_NNS :_: P_NN -LRB-_-LRB- Cj_NN |_CD q_NN -RRB-_-RRB- =_JJ dD_NN P_NN -LRB-_-LRB- Cj_NN |_CD q_NN ,_, d_NN -RRB-_-RRB- P_NN -LRB-_-LRB- d_NN |_CD q_NN -RRB-_-RRB- =_JJ dD_NN P_NN -LRB-_-LRB- q_JJ |_NN Cj_NN ,_, d_NN -RRB-_-RRB- P_NN -LRB-_-LRB- q_JJ |_NN d_NN -RRB-_-RRB- P_NN -LRB-_-LRB- Cj_NN |_CD d_NN -RRB-_-RRB- P_NN -LRB-_-LRB- d_NN |_CD q_NN -RRB-_-RRB- ._.
+We_PRP assume_VBP that_IN P_NN -LRB-_-LRB- q_JJ |_NN Cj_NN ,_, d_NN -RRB-_-RRB- P_NN -LRB-_-LRB- q_JJ |_NN d_NN -RRB-_-RRB- ,_, that_WDT is_VBZ ,_, a_DT probability_NN of_IN a_DT query_NN given_VBN a_DT document_NN can_MD be_VB determined_VBN without_IN knowing_VBG the_DT class_NN of_IN the_DT query_NN ._.
+This_DT is_VBZ the_DT case_NN for_IN the_DT majority_NN of_IN queries_NNS that_WDT are_VBP unambiguous_JJ ._.
+Counter_NNP examples_NNS are_VBP queries_NNS like_VB ''_'' jaguar_NN ''_'' -LRB-_-LRB- animal_NN and_CC car_NN brand_NN -RRB-_-RRB- or_CC ''_'' apple_NN ''_'' -LRB-_-LRB- fruit_NN and_CC computer_NN manufacturer_NN -RRB-_-RRB- ,_, but_CC such_JJ ambiguous_JJ queries_NNS can_MD not_RB be_VB classified_VBN by_IN definition_NN ,_, and_CC usually_RB consists_VBZ of_IN common_JJ words_NNS ._.
+In_IN this_DT work_NN we_PRP concentrate_VBP on_IN rare_JJ queries_NNS ,_, that_IN tend_VBP to_TO contain_VB rare_JJ words_NNS ,_, be_VB longer_RBR ,_, and_CC match_NN fewer_JJR documents_NNS ;_: consequently_RB in_IN our_PRP$ setting_VBG this_DT assumption_NN mostly_RB holds_VBZ ._.
+Using_VBG this_DT assumption_NN ,_, we_PRP can_MD write_VB P_NN -LRB-_-LRB- Cj_NN |_CD q_NN -RRB-_-RRB- =_JJ dD_NN P_NN -LRB-_-LRB- Cj_NN |_CD d_NN -RRB-_-RRB- P_NN -LRB-_-LRB- d_NN |_CD q_NN -RRB-_-RRB- ._.
+The_DT conditional_JJ probability_NN of_IN a_DT classification_NN for_IN a_DT given_VBN document_NN P_NN -LRB-_-LRB- Cj_NN |_CD d_NN -RRB-_-RRB- is_VBZ estimated_VBN using_VBG the_DT output_NN of_IN the_DT document_NN classifier_NN -LRB-_-LRB- section_NN #_# ._.
+#_# -RRB-_-RRB- ._.
+While_IN P_NN -LRB-_-LRB- d_NN |_CD q_NN -RRB-_-RRB- is_VBZ harder_JJR to_TO compute_VB ,_, we_PRP consider_VBP the_DT underlying_VBG relevance_NN model_NN for_IN ranking_JJ documents_NNS given_VBN a_DT query_NN ._.
+This_DT issue_NN is_VBZ further_JJ explored_VBN in_IN the_DT next_JJ section_NN ._.
+2_LS ._.
+#_# Classification-based_JJ relevance_NN model_NN In_IN order_NN to_TO describe_VB a_DT formal_JJ relationship_NN of_IN classification_NN and_CC ad_NN placement_NN -LRB-_-LRB- or_CC search_NN -RRB-_-RRB- ,_, we_PRP consider_VBP a_DT model_NN for_IN using_VBG classification_NN to_TO determine_VB ads_NNS -LRB-_-LRB- or_CC search_NN -RRB-_-RRB- relevance_NN ._.
+Let_VB a_DT be_VB an_DT ad_NN and_CC q_VB be_VB a_DT query_NN ,_, we_PRP denote_VBP by_IN R_NN -LRB-_-LRB- a_DT ,_, q_NN -RRB-_-RRB- the_DT relevance_NN of_IN a_DT to_TO q_VB ._.
+This_DT number_NN indicates_VBZ how_WRB relevant_JJ the_DT ad_NN a_DT is_VBZ to_TO query_VB q_NN ,_, and_CC can_MD be_VB used_VBN to_TO rank_VB ads_NNS a_DT for_IN a_DT given_VBN query_NN q_NN ._.
+In_IN this_DT paper_NN ,_, we_PRP consider_VBP the_DT following_VBG approximation_NN of_IN relevance_NN function_NN :_: R_NN -LRB-_-LRB- a_DT ,_, q_NN -RRB-_-RRB- RC_NN -LRB-_-LRB- a_DT ,_, q_NN -RRB-_-RRB- =_JJ Cj_NN C_NN w_NN -LRB-_-LRB- Cj_NN -RRB-_-RRB- s_NNS -LRB-_-LRB- Cj_NN ,_, a_DT -RRB-_-RRB- s_NNS -LRB-_-LRB- Cj_NN ,_, q_NN -RRB-_-RRB- ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- The_DT right_JJ hand-side_NN expresses_VBZ how_WRB we_PRP use_VBP the_DT classification_NN scheme_NN C_NN to_TO rank_VB ads_NNS ,_, where_WRB s_NNS -LRB-_-LRB- c_NN ,_, a_DT -RRB-_-RRB- is_VBZ a_DT scoring_VBG function_NN that_IN specifies_VBZ how_WRB likely_JJ a_DT is_VBZ in_IN class_NN c_NN ,_, and_CC s_NNS -LRB-_-LRB- c_NN ,_, q_NN -RRB-_-RRB- is_VBZ a_DT scoring_VBG function_NN that_IN specifies_VBZ how_WRB likely_JJ q_NN is_VBZ in_IN class_NN c_NN ._.
+The_DT value_NN w_NN -LRB-_-LRB- c_NN -RRB-_-RRB- is_VBZ a_DT weighting_NN term_NN for_IN category_NN c_NN ,_, indicating_VBG the_DT importance_NN of_IN category_NN c_NN in_IN the_DT relevance_NN formula_NN ._.
+This_DT relevance_NN function_NN is_VBZ an_DT adaptation_NN of_IN the_DT traditional_JJ word-based_JJ retrieval_NN rules_NNS ._.
+For_IN example_NN ,_, we_PRP may_MD let_VB categories_NNS be_VB the_DT words_NNS in_IN the_DT vocabulary_NN ._.
+We_PRP take_VBP s_NNS -LRB-_-LRB- Cj_NN ,_, a_DT -RRB-_-RRB- as_IN the_DT word_NN counts_NNS of_IN Cj_NN in_IN a_DT ,_, s_NNS -LRB-_-LRB- Cj_NN ,_, q_NN -RRB-_-RRB- as_IN the_DT word_NN counts_NNS of_IN Cj_NN in_IN q_NN ,_, and_CC w_NN -LRB-_-LRB- Cj_NN -RRB-_-RRB- as_IN the_DT IDF_NNP term_NN weighting_NN for_IN word_NN Cj_NN ._.
+With_IN such_JJ choices_NNS ,_, the_DT method_NN given_VBN by_IN -LRB-_-LRB- #_# -RRB-_-RRB- becomes_VBZ the_DT standard_JJ TFIDF_NN retrieval_NN rule_NN ._.
+If_IN we_PRP take_VBP s_NNS -LRB-_-LRB- Cj_NN ,_, a_DT -RRB-_-RRB- =_JJ P_NN -LRB-_-LRB- Cj_NN |_CD a_DT -RRB-_-RRB- ,_, s_NNS -LRB-_-LRB- Cj_NN ,_, q_NN -RRB-_-RRB- =_JJ P_NN -LRB-_-LRB- Cj_NN |_CD q_NN -RRB-_-RRB- ,_, and_CC w_NN -LRB-_-LRB- Cj_NN -RRB-_-RRB- =_JJ #_# /_: P_NN -LRB-_-LRB- Cj_NN -RRB-_-RRB- ,_, and_CC assume_VB that_DT q_NN and_CC a_DT are_VBP independently_RB generated_VBN given_VBN a_DT hidden_JJ concept_NN C_NN ,_, then_RB we_PRP have_VBP RC_NN -LRB-_-LRB- a_DT ,_, q_NN -RRB-_-RRB- =_JJ Cj_NN C_NN P_NN -LRB-_-LRB- Cj_NN |_CD a_DT -RRB-_-RRB- P_NN -LRB-_-LRB- Cj_NN |_CD q_NN -RRB-_-RRB- /_: P_NN -LRB-_-LRB- Cj_NN -RRB-_-RRB- =_JJ Cj_NN C_NN P_NN -LRB-_-LRB- Cj_NN |_CD a_DT -RRB-_-RRB- P_NN -LRB-_-LRB- q_NN |_CD Cj_NN -RRB-_-RRB- /_: P_NN -LRB-_-LRB- q_NN -RRB-_-RRB- =_JJ P_NN -LRB-_-LRB- q_JJ |_NN a_DT -RRB-_-RRB- /_: P_NN -LRB-_-LRB- q_NN -RRB-_-RRB- ._.
+That_DT is_VBZ ,_, the_DT ads_NNS are_VBP ranked_VBN according_VBG to_TO P_NN -LRB-_-LRB- q_JJ |_NN a_DT -RRB-_-RRB- ._.
+This_DT relevance_NN model_NN has_VBZ been_VBN employed_VBN in_IN various_JJ statistical_JJ language_NN modeling_NN techniques_NNS for_IN information_NN retrieval_NN ._.
+The_DT intuition_NN can_MD be_VB described_VBN as_IN follows_VBZ ._.
+We_PRP assume_VBP that_IN a_DT person_NN searches_VBZ an_DT ad_NN a_DT by_IN constructing_VBG a_DT query_NN q_NN :_: the_DT person_NN first_RB picks_VBZ a_DT concept_NN Cj_NN according_VBG to_TO the_DT weights_NNS P_NN -LRB-_-LRB- Cj_NN |_CD a_DT -RRB-_-RRB- ,_, and_CC then_RB constructs_NNS a_DT query_NN q_NN with_IN probability_NN P_NN -LRB-_-LRB- q_NN |_CD Cj_NN -RRB-_-RRB- based_VBN on_IN the_DT concept_NN Cj_NN ._.
+For_IN this_DT query_NN generation_NN process_NN ,_, the_DT ads_NNS can_MD be_VB ranked_VBN based_VBN on_IN how_WRB likely_JJ the_DT observed_VBN query_NN is_VBZ generated_VBN from_IN each_DT ad_NN ._.
+It_PRP should_MD be_VB mentioned_VBN that_IN in_IN our_PRP$ case_NN ,_, each_DT query_NN and_CC ad_NN can_MD have_VB multiple_JJ categories_NNS ._.
+For_IN simplicity_NN ,_, we_PRP denote_VBP by_IN Cj_NN a_DT random_JJ variable_JJ indicating_VBG whether_IN q_NN belongs_VBZ to_TO category_NN Cj_NN ._.
+We_PRP use_VBP P_NN -LRB-_-LRB- Cj_NN |_CD q_NN -RRB-_-RRB- to_TO denote_VB the_DT probability_NN of_IN q_JJ belonging_VBG to_TO category_NN Cj_NN ._.
+Here_RB the_DT sum_NN Cj_NN C_NN P_NN -LRB-_-LRB- Cj_NN |_CD q_NN -RRB-_-RRB- may_MD not_RB equal_VB to_TO one_CD ._.
+We_PRP then_RB consider_VBP the_DT following_VBG ranking_JJ formula_NN :_: RC_NN -LRB-_-LRB- a_DT ,_, q_NN -RRB-_-RRB- =_JJ Cj_NN C_NN P_NN -LRB-_-LRB- Cj_NN |_CD a_DT -RRB-_-RRB- P_NN -LRB-_-LRB- Cj_NN |_CD q_NN -RRB-_-RRB- ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- We_PRP assume_VBP the_DT estimation_NN of_IN P_NN -LRB-_-LRB- Cj_NN |_CD a_DT -RRB-_-RRB- is_VBZ based_VBN on_IN an_DT existing_VBG text-categorization_NN system_NN -LRB-_-LRB- which_WDT is_VBZ known_VBN -RRB-_-RRB- ._.
+Thus_RB ,_, we_PRP only_RB need_VBP to_TO obtain_VB estimates_NNS of_IN P_NN -LRB-_-LRB- Cj_NN |_CD q_NN -RRB-_-RRB- for_IN each_DT query_NN q_NN ._.
+Equation_NN -LRB-_-LRB- #_# -RRB-_-RRB- is_VBZ the_DT ad_NN relevance_NN model_NN that_IN we_PRP consider_VBP in_IN this_DT paper_NN ,_, with_IN unknown_JJ parameters_NNS P_NN -LRB-_-LRB- Cj_NN |_CD q_NN -RRB-_-RRB- for_IN each_DT query_NN q_NN ._.
+In_IN order_NN to_TO obtain_VB their_PRP$ estimates_NNS ,_, we_PRP use_VBP search_NN results_NNS from_IN major_JJ US_NNP search_NN engines_NNS ,_, where_WRB we_PRP assume_VBP that_IN the_DT ranking_JJ formula_NN in_IN -LRB-_-LRB- #_# -RRB-_-RRB- gives_VBZ good_JJ ranking_NN for_IN search_NN ._.
+That_DT is_VBZ ,_, top_JJ results_NNS ranked_VBD by_IN search_NN engines_NNS should_MD also_RB be_VB ranked_VBN high_JJ by_IN this_DT formula_NN ._.
+Therefore_RB given_VBN a_DT query_NN q_NN ,_, and_CC top_JJ K_NN result_VBP pages_NNS d1_NN -LRB-_-LRB- q_NN -RRB-_-RRB- ,_, ..._: ,_, dK_NN -LRB-_-LRB- q_NN -RRB-_-RRB- from_IN a_DT major_JJ search_NN engine_NN ,_, we_PRP fit_VBP parameters_NNS P_NN -LRB-_-LRB- Cj_NN |_CD q_NN -RRB-_-RRB- so_RB that_IN RC_NN -LRB-_-LRB- di_FW -LRB-_-LRB- q_NN -RRB-_-RRB- ,_, q_NN -RRB-_-RRB- have_VBP high_JJ scores_NNS for_IN i_FW =_JJ #_# ,_, ..._: ,_, K_NNP ._.
+It_PRP is_VBZ worth_JJ mentioning_VBG that_DT using_VBG this_DT method_NN we_PRP can_MD only_RB compute_VB relative_JJ strength_NN of_IN P_NN -LRB-_-LRB- Cj_NN |_CD q_NN -RRB-_-RRB- ,_, but_CC not_RB the_DT scale_NN ,_, because_IN scale_NN does_VBZ not_RB affect_VB ranking_NN ._.
+Moreover_RB ,_, it_PRP is_VBZ possible_JJ that_IN the_DT parameters_NNS estimated_VBN may_MD be_VB of_IN the_DT form_NN g_NN -LRB-_-LRB- P_NN -LRB-_-LRB- Cj_NN |_CD q_NN -RRB-_-RRB- -RRB-_-RRB- for_IN some_DT monotone_NN function_NN g_NN -LRB-_-LRB- -RRB-_-RRB- of_IN the_DT actually_RB conditional_JJ probability_NN g_NN -LRB-_-LRB- P_NN -LRB-_-LRB- Cj_NN |_CD q_NN -RRB-_-RRB- -RRB-_-RRB- ._.
+Although_IN this_DT may_MD change_VB the_DT meaning_NN of_IN the_DT unknown_JJ parameters_NNS that_IN we_PRP estimate_VBP ,_, it_PRP does_VBZ not_RB affect_VB the_DT quality_NN of_IN using_VBG the_DT formula_NN to_TO rank_VB ads_NNS ._.
+Nor_CC does_VBZ it_PRP affect_VB query_NN classification_NN with_IN appropriately_RB chosen_VBN thresholds_NNS ._.
+In_IN what_WDT follows_VBZ ,_, we_PRP consider_VBP two_CD methods_NNS to_TO compute_VB the_DT classification_NN information_NN P_NN -LRB-_-LRB- Cj_NN |_CD q_NN -RRB-_-RRB- ._.
+2_LS ._.
+#_# The_DT voting_NN method_NN We_PRP would_MD like_VB to_TO compute_VB P_NN -LRB-_-LRB- Cj_NN |_CD q_NN -RRB-_-RRB- so_RB that_IN RC_NN -LRB-_-LRB- di_FW -LRB-_-LRB- q_NN -RRB-_-RRB- ,_, q_NN -RRB-_-RRB- are_VBP high_JJ for_IN i_FW =_JJ #_# ,_, ..._: ,_, K_NNP and_CC RC_NNP -LRB-_-LRB- d_NN ,_, q_NN -RRB-_-RRB- are_VBP low_JJ for_IN a_DT random_JJ document_NN d_NN ._.
+Assume_VB that_IN the_DT vector_NN -LSB-_-LRB- P_NN -LRB-_-LRB- Cj_NN |_CD d_NN -RRB-_-RRB- -RSB-_-RRB- Cj_NN C_NN is_VBZ random_JJ for_IN an_DT average_JJ document_NN ,_, then_RB the_DT condition_NN that_WDT Cj_NN C_NN P_NN -LRB-_-LRB- Cj_NN |_CD q_NN -RRB-_-RRB- #_# is_VBZ small_JJ implies_VBZ that_IN RC_NN -LRB-_-LRB- d_NN ,_, q_NN -RRB-_-RRB- is_VBZ also_RB small_JJ averaged_VBD over_IN d_NN ._.
+Thus_RB ,_, a_DT natural_JJ method_NN is_VBZ to_TO maximize_VB K_NNP i_FW =_JJ #_# wiRC_NN -LRB-_-LRB- di_FW -LRB-_-LRB- q_NN -RRB-_-RRB- ,_, q_NN -RRB-_-RRB- subject_NN to_TO Cj_NN C_NN P_NN -LRB-_-LRB- Cj_NN |_CD q_NN -RRB-_-RRB- #_# being_VBG small_JJ ,_, where_WRB wi_NN are_VBP weights_NNS associated_VBN with_IN each_DT rank_NN i_FW :_: max_NN -LSB-_-LRB- P_NN -LRB-_-LRB- |_CD q_NN -RRB-_-RRB- -RSB-_-RRB- #_# K_NNP K_NNP i_FW =_JJ #_# wi_FW Cj_FW C_NN P_NN -LRB-_-LRB- Cj_NN |_CD di_FW -LRB-_-LRB- q_NN -RRB-_-RRB- -RRB-_-RRB- P_NN -LRB-_-LRB- Cj_NN |_CD q_NN -RRB-_-RRB- Cj_NN C_NN P_NN -LRB-_-LRB- Cj_NN |_CD q_NN -RRB-_-RRB- #_# ,_, where_WRB we_PRP assume_VBP K_NN i_FW =_JJ #_# wi_NN =_JJ #_# ,_, and_CC >_JJR #_# is_VBZ a_DT tuning_NN regularization_NN parameter_NN ._.
+The_DT optimal_JJ solution_NN is_VBZ P_NN -LRB-_-LRB- Cj_NN |_CD q_NN -RRB-_-RRB- =_JJ 1_CD 2_CD K_NN i_FW =_JJ #_# wiP_NN -LRB-_-LRB- Cj_NN |_CD di_FW -LRB-_-LRB- q_NN -RRB-_-RRB- -RRB-_-RRB- ._.
+Since_IN both_DT P_NN -LRB-_-LRB- Cj_NN |_CD di_FW -LRB-_-LRB- q_NN -RRB-_-RRB- -RRB-_-RRB- and_CC P_NN -LRB-_-LRB- Cj_NN |_CD q_NN -RRB-_-RRB- belong_VBP to_TO -LSB-_-LRB- #_# ,_, #_# -RSB-_-RRB- ,_, we_PRP may_MD just_RB take_VB =_JJ #_# ._.
+#_# to_TO align_VB the_DT scale_NN ._.
+In_IN the_DT experiment_NN ,_, we_PRP will_MD simply_RB take_VB uniform_JJ weights_NNS wi_NN ._.
+A_DT more_RBR complex_JJ strategy_NN is_VBZ to_TO let_VB w_NN depend_VB on_IN d_NN as_RB well_RB :_: P_NN -LRB-_-LRB- Cj_NN |_CD q_NN -RRB-_-RRB- =_JJ d_NN w_NN -LRB-_-LRB- d_NN ,_, q_NN -RRB-_-RRB- g_NN -LRB-_-LRB- P_NN -LRB-_-LRB- Cj_NN |_CD d_NN -RRB-_-RRB- -RRB-_-RRB- ,_, where_WRB g_NN -LRB-_-LRB- x_NN -RRB-_-RRB- is_VBZ a_DT certain_JJ transformation_NN of_IN x_NN ._.
+In_IN this_DT general_JJ formulation_NN ,_, w_NN -LRB-_-LRB- d_NN ,_, q_NN -RRB-_-RRB- may_MD depend_VB on_IN factors_NNS other_JJ than_IN the_DT rank_NN of_IN d_NN in_IN the_DT search_NN engine_NN results_VBZ for_IN q_NN ._.
+For_IN example_NN ,_, it_PRP may_MD be_VB a_DT function_NN of_IN r_NN -LRB-_-LRB- d_NN ,_, q_NN -RRB-_-RRB- where_WRB r_NN -LRB-_-LRB- d_NN ,_, q_NN -RRB-_-RRB- is_VBZ the_DT relevance_NN score_NN returned_VBN by_IN the_DT underlying_VBG search_NN engine_NN ._.
+Moreover_RB ,_, if_IN we_PRP are_VBP given_VBN a_DT set_NN of_IN hand-labeled_JJ training_NN category_NN /_: query_NN pairs_NNS -LRB-_-LRB- C_NN ,_, q_NN -RRB-_-RRB- ,_, then_RB both_CC the_DT weights_NNS w_NN -LRB-_-LRB- d_NN ,_, q_NN -RRB-_-RRB- and_CC the_DT transformation_NN g_NN -LRB-_-LRB- -RRB-_-RRB- can_MD be_VB learned_VBN using_VBG standard_JJ classification_NN techniques_NNS ._.
+2_LS ._.
+#_# Discriminative_JJ classification_NN We_PRP can_MD treat_VB the_DT problem_NN of_IN estimating_VBG P_NN -LRB-_-LRB- Cj_NN |_CD q_NN -RRB-_-RRB- as_IN a_DT classification_NN problem_NN ,_, where_WRB for_IN each_DT q_NN ,_, we_PRP label_VBP di_FW -LRB-_-LRB- q_NN -RRB-_-RRB- for_IN i_FW =_JJ #_# ,_, ..._: ,_, K_NNP as_IN positive_JJ data_NNS ,_, and_CC the_DT remaining_VBG documents_NNS as_IN negative_JJ data_NNS ._.
+That_DT is_VBZ ,_, we_PRP assign_VBP label_NN yi_NN -LRB-_-LRB- q_NN -RRB-_-RRB- =_JJ #_# for_IN di_FW -LRB-_-LRB- q_NN -RRB-_-RRB- when_WRB i_FW K_NN ,_, and_CC label_NN yi_NN -LRB-_-LRB- q_NN -RRB-_-RRB- =_JJ #_# for_IN di_FW -LRB-_-LRB- q_NN -RRB-_-RRB- when_WRB i_FW >_JJR K_NN ._.
+In_IN this_DT setting_NN ,_, the_DT classification_NN scoring_VBG rule_NN for_IN a_DT document_NN di_FW -LRB-_-LRB- q_NN -RRB-_-RRB- is_VBZ linear_JJ ._.
+Let_VB xi_NN -LRB-_-LRB- q_NN -RRB-_-RRB- =_JJ -LSB-_-LRB- P_NN -LRB-_-LRB- Cj_NN |_CD di_FW -LRB-_-LRB- q_NN -RRB-_-RRB- -RRB-_-RRB- -RSB-_-RRB- ,_, and_CC w_NN =_JJ -LSB-_-LRB- P_NN -LRB-_-LRB- Cj_NN |_CD q_NN -RRB-_-RRB- -RSB-_-RRB- ,_, then_RB Cj_NN C_NN P_NN -LRB-_-LRB- Cj_NN |_CD q_NN -RRB-_-RRB- P_NN -LRB-_-LRB- Cj_NN |_CD di_FW -LRB-_-LRB- q_NN -RRB-_-RRB- -RRB-_-RRB- =_JJ wxi_NN -LRB-_-LRB- q_NN -RRB-_-RRB- ._.
+The_DT values_NNS P_NN -LRB-_-LRB- Cj_NN |_CD d_NN -RRB-_-RRB- are_VBP the_DT features_NNS for_IN the_DT linear_JJ classifier_NN ,_, and_CC -LSB-_-LRB- P_NN -LRB-_-LRB- Cj_NN |_CD d_NN -RRB-_-RRB- -RSB-_-RRB- is_VBZ the_DT weight_NN vector_NN ,_, which_WDT can_MD be_VB computed_VBN using_VBG any_DT linear_JJ classification_NN method_NN ._.
+In_IN this_DT paper_NN ,_, we_PRP consider_VBP estimating_VBG w_NN using_VBG logistic_JJ regression_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- as_IN follows_VBZ :_: P_NN -LRB-_-LRB- |_CD q_NN -RRB-_-RRB- =_JJ arg_NN minw_NN i_FW ln_FW -LRB-_-LRB- #_# +_CC ewxi_NN -LRB-_-LRB- q_NN -RRB-_-RRB- yi_NN -LRB-_-LRB- q_NN -RRB-_-RRB- -RRB-_-RRB- ._.
+0_CD 200_CD 400_CD 600_CD 800_CD 1000_CD 1200_CD 1400_CD 1600_CD 1800_CD 2000_CD 0_CD #_# #_# #_# #_# #_# #_# #_# #_# #_# ##_SYM Numberofcategories_NNPS Taxonomy_NN level_NN Figure_NN #_# :_: Number_NN of_IN categories_NNS by_IN level_NN 3_CD ._.
+EVALUATION_NN In_IN this_DT section_NN ,_, we_PRP evaluate_VBP our_PRP$ methodology_NN that_IN uses_VBZ Web_NN search_NN results_VBZ for_IN improving_VBG query_NN classification_NN ._.
+3_LS ._.
+#_# Taxonomy_NNP Our_PRP$ choice_NN of_IN taxonomy_NN was_VBD guided_VBN by_IN a_DT Web_NN advertising_NN application_NN ._.
+Since_IN we_PRP want_VBP the_DT classes_NNS to_TO be_VB useful_JJ for_IN matching_VBG ads_NNS to_TO queries_NNS ,_, the_DT taxonomy_NN needs_VBZ to_TO be_VB elaborate_JJ enough_JJ to_TO facilitate_VB ample_JJ classification_NN specificity_NN ._.
+For_IN example_NN ,_, classifying_VBG all_DT medical_JJ queries_NNS into_IN one_CD node_NN will_MD likely_RB result_VB in_IN poor_JJ ad_NN matching_NN ,_, as_IN both_DT sore_JJ foot_NN and_CC flu_NN queries_NNS will_MD end_VB up_RP in_IN the_DT same_JJ node_NN ._.
+The_DT ads_NNS appropriate_JJ for_IN these_DT two_CD queries_NNS are_VBP ,_, however_RB ,_, very_RB different_JJ ._.
+To_TO avoid_VB such_JJ situations_NNS ,_, the_DT taxonomy_NN needs_VBZ to_TO provide_VB sufficient_JJ discrimination_NN between_IN common_JJ commercial_JJ topics_NNS ._.
+Therefore_RB ,_, in_IN this_DT paper_NN we_PRP employ_VBP an_DT elaborate_JJ taxonomy_NN of_IN approximately_RB ####_CD nodes_NNS ,_, arranged_VBN in_IN a_DT hierarchy_NN with_IN median_JJ depth_NN #_# and_CC maximum_JJ depth_NN #_# ._.
+Figure_NNP #_# shows_VBZ the_DT distribution_NN of_IN categories_NNS by_IN taxonomy_NN levels_NNS ._.
+Human_JJ editors_NNS populated_VBD the_DT taxonomy_NN with_IN labeled_VBN queries_NNS -LRB-_-LRB- approx_RB ._.
+150_CD queries_NNS per_IN node_NN -RRB-_-RRB- ,_, which_WDT were_VBD used_VBN as_IN a_DT training_NN set_NN ;_: a_DT small_JJ fraction_NN of_IN queries_NNS have_VBP been_VBN assigned_VBN to_TO more_JJR than_IN one_CD category_NN ._.
+3_LS ._.
+#_# Digression_NNP :_: the_DT basics_NNS of_IN sponsored_VBN search_NN To_TO discuss_VB our_PRP$ set_NN of_IN evaluation_NN queries_NNS ,_, we_PRP need_VBP a_DT brief_JJ introduction_NN to_TO some_DT basic_JJ concepts_NNS of_IN Web_NN advertising_NN ._.
+Sponsored_VBN search_NN -LRB-_-LRB- or_CC paid_VBN search_NN -RRB-_-RRB- advertising_NN is_VBZ placing_VBG textual_JJ ads_NNS on_IN the_DT result_NN pages_NNS of_IN web_NN search_NN engines_NNS ,_, with_IN ads_NNS being_VBG driven_VBN by_IN the_DT originating_VBG query_NN ._.
+All_DT major_JJ search_NN engines_NNS -LRB-_-LRB- Google_NNP ,_, Yahoo_NNP !_.
+,_, and_CC MSN_NNP -RRB-_-RRB- support_NN such_JJ ads_NNS and_CC act_VBP simultaneously_RB as_IN a_DT search_NN engine_NN and_CC an_DT ad_NN agency_NN ._.
+These_DT textual_JJ ads_NNS are_VBP characterized_VBN by_IN one_CD or_CC more_JJR bid_NN phrases_NNS representing_VBG those_DT queries_NNS where_WRB the_DT advertisers_NNS would_MD like_VB to_TO have_VB their_PRP$ ad_NN displayed_VBD ._.
+-LRB-_-LRB- The_DT name_NN bid_NN phrase_NN comes_VBZ from_IN the_DT fact_NN that_IN advertisers_NNS bid_VBD various_JJ amounts_NNS to_TO secure_VB their_PRP$ position_NN in_IN the_DT tower_NN of_IN ads_NNS associated_VBN to_TO a_DT query_NN ._.
+A_DT discussion_NN of_IN bidding_NN and_CC placement_NN mechanisms_NNS is_VBZ beyond_IN the_DT scope_NN of_IN this_DT paper_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+However_RB ,_, many_JJ searches_NNS do_VBP not_RB explicitly_RB use_VB phrases_NNS that_WDT someone_NN bids_NNS on_IN ._.
+Consequently_RB ,_, advertisers_NNS also_RB buy_VBP broad_JJ matches_NNS ,_, that_DT is_VBZ ,_, they_PRP pay_VBP to_TO place_VB their_PRP$ advertisements_NNS on_IN queries_NNS that_WDT constitute_VBP some_DT modification_NN of_IN the_DT desired_VBN bid_NN phrase_NN ._.
+In_IN broad_JJ match_NN ,_, several_JJ syntactic_NN modifications_NNS can_MD be_VB applied_VBN to_TO the_DT query_NN to_TO match_VB it_PRP to_TO the_DT bid_NN phrase_NN ,_, e_LS ._.
+g_NN ._.
+,_, dropping_VBG or_CC adding_VBG words_NNS ,_, synonym_NN substitution_NN ,_, etc_FW ._.
+These_DT transformations_NNS are_VBP based_VBN on_IN rules_NNS and_CC dictionaries_NNS ._.
+As_IN advertisers_NNS tend_VBP to_TO cover_VB high-volume_JJ and_CC high-revenue_JJ queries_NNS ,_, broad-match_NN queries_NNS fall_VBP into_IN the_DT tail_NN of_IN the_DT distribution_NN with_IN respect_NN to_TO both_DT volume_NN and_CC revenue_NN ._.
+3_LS ._.
+#_# Data_NNS sets_VBZ We_PRP used_VBD two_CD representative_JJ sets_NNS of_IN ####_CD queries_NNS ._.
+Both_DT sets_NNS contain_VBP queries_NNS that_WDT can_MD not_RB be_VB directly_RB matched_VBN to_TO advertisements_NNS ,_, that_DT is_VBZ ,_, none_NN of_IN the_DT queries_NNS contains_VBZ a_DT bid_NN phrase_NN -LRB-_-LRB- this_DT means_VBZ we_PRP eliminated_VBD practically_RB all_DT popular_JJ queries_NNS -RRB-_-RRB- ._.
+The_DT first_JJ set_NN of_IN queries_NNS can_MD be_VB matched_VBN to_TO at_IN least_JJS one_CD ad_NN using_VBG broad_JJ match_NN as_IN described_VBN above_IN ._.
+Queries_NNS in_IN the_DT second_JJ set_NN can_MD not_RB be_VB matched_VBN even_RB by_IN broad_JJ match_NN ,_, and_CC therefore_RB the_DT search_NN engine_NN used_VBN in_IN our_PRP$ study_NN does_VBZ not_RB currently_RB display_VBP any_DT advertising_NN for_IN them_PRP ._.
+In_IN a_DT sense_NN ,_, these_DT are_VBP even_RB more_RBR rare_JJ queries_NNS and_CC further_RB away_RB from_IN common_JJ queries_NNS ._.
+As_IN a_DT measure_NN of_IN query_NN rarity_NN ,_, we_PRP estimated_VBD their_PRP$ frequency_NN in_IN a_DT month_NN worth_NN of_IN query_NN logs_NNS for_IN a_DT major_JJ US_NNP search_NN engine_NN ;_: the_DT median_JJ frequency_NN was_VBD #_# for_IN queries_NNS in_IN Set_VB #_# and_CC #_# for_IN queries_NNS in_IN Set_VB #_# ._.
+The_DT queries_NNS in_IN the_DT two_CD sets_NNS differ_VBP in_IN their_PRP$ classification_NN difficulty_NN ._.
+In_IN fact_NN ,_, queries_NNS in_IN Set_VB #_# are_VBP difficult_JJ to_TO interpret_VB even_RB for_IN human_JJ evaluators_NNS ._.
+Queries_NNS in_IN Set_VB #_# have_VBP on_IN average_JJ 3_CD ._.
+##_NN words_NNS ,_, with_IN the_DT longest_JJS one_CD having_VBG ##_CD words_NNS ;_: queries_NNS in_IN Set_VB #_# have_VBP on_IN average_JJ #_# ._.
+##_NN words_NNS ,_, with_IN the_DT longest_JJS query_NN of_IN ##_CD words_NNS ._.
+Recent_JJ studies_NNS estimate_VBP the_DT average_JJ length_NN of_IN web_NN queries_NNS to_TO be_VB just_RB under_IN #_# words2_NN ,_, which_WDT is_VBZ lower_JJR than_IN in_IN our_PRP$ test_NN sets_NNS ._.
+As_IN another_DT measure_NN of_IN query_NN difficulty_NN ,_, we_PRP measured_VBD the_DT fraction_NN of_IN queries_NNS that_WDT contain_VBP quotation_NN marks_NNS ,_, as_IN the_DT latter_JJ assist_VB query_NN interpretation_NN by_IN meaningfully_RB grouping_VBG the_DT words_NNS ._.
+Only_RB #_# %_NN queries_NNS in_IN Set_VB #_# and_CC ##_CD %_NN in_IN Set_VB #_# contained_VBD quotation_NN marks_NNS ._.
+3_LS ._.
+#_# Methodology_NNP and_CC evaluation_NN metrics_NNS The_DT two_CD sets_NNS of_IN queries_NNS were_VBD classified_VBN into_IN the_DT target_NN taxonomy_NN using_VBG the_DT techniques_NNS presented_VBN in_IN section_NN #_# ._.
+Based_VBN on_IN the_DT confidence_NN values_NNS assigned_VBN ,_, the_DT top_JJ #_# classes_NNS for_IN each_DT query_NN were_VBD presented_VBN to_TO human_JJ evaluators_NNS ._.
+These_DT evaluators_NNS were_VBD trained_VBN editorial_NN staff_NN who_WP possessed_VBD knowledge_NN about_IN the_DT taxonomy_NN ._.
+The_DT editors_NNS considered_VBN every_DT queryclass_NN pair_NN ,_, and_CC rated_VBD them_PRP on_IN the_DT scale_NN #_# to_TO #_# ,_, with_IN #_# meaning_VBG the_DT classification_NN is_VBZ highly_RB relevant_JJ and_CC #_# meaning_VBG it_PRP is_VBZ irrelevant_JJ for_IN the_DT query_NN ._.
+About_IN #_# ._.
+#_# %_NN queries_NNS in_IN Set_VB #_# and_CC 5_CD ._.
+#_# %_NN queries_NNS in_IN Set_VB #_# were_VBD judged_VBN to_TO be_VB unclassifiable_JJ -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, random_JJ strings_NNS of_IN characters_NNS -RRB-_-RRB- ,_, and_CC were_VBD consequently_RB excluded_VBN from_IN evaluation_NN ._.
+To_TO compute_VB evaluation_NN metrics_NNS ,_, we_PRP treated_VBD classifications_NNS with_IN ratings_NNS #_# and_CC #_# to_TO be_VB correct_JJ ,_, and_CC those_DT with_IN ratings_NNS #_# and_CC #_# to_TO be_VB incorrect_JJ ._.
+We_PRP used_VBD standard_JJ evaluation_NN metrics_NNS :_: precision_NN ,_, recall_NN and_CC F1_NN ._.
+In_IN what_WDT follows_VBZ ,_, we_PRP plot_VBP precision-recall_JJ graphs_NNS for_IN all_PDT the_DT experiments_NNS ._.
+For_IN comparison_NN with_IN other_JJ published_VBN studies_NNS ,_, we_PRP also_RB report_VBP precision_NN and_CC F1_NN values_NNS corresponding_VBG to_TO complete_VB recall_NN -LRB-_-LRB- R_NN =_JJ #_# -RRB-_-RRB- ._.
+Owing_VBG to_TO the_DT lack_NN of_IN space_NN ,_, we_PRP only_RB show_VBP graphs_NNS for_IN query_JJ Set_VB #_# ;_: however_RB ,_, we_PRP show_VBP the_DT numerical_JJ results_NNS for_IN both_DT sets_NNS in_IN the_DT tables_NNS ._.
+3_LS ._.
+#_# Results_NNS We_PRP compared_VBD our_PRP$ method_NN to_TO a_DT baseline_NN query_NN classifier_NN that_WDT does_VBZ not_RB use_VB any_DT external_JJ knowledge_NN ._.
+Our_PRP$ baseline_NN classifier_NN expanded_VBD queries_NNS using_VBG standard_JJ query_NN expansion_NN techniques_NNS ,_, grouped_VBD their_PRP$ terms_NNS using_VBG a_DT phrase_NN recognizer_NN ,_, boosted_VBD certain_JJ phrases_NNS in_IN the_DT query_NN based_VBN on_IN their_PRP$ statistical_JJ properties_NNS ,_, and_CC performed_VBN classification_NN using_VBG the_DT 2_CD http_NN :_: /_: /_: www_NN ._.
+rankstat_NN ._.
+com_NN /_: html_NN /_: en_IN /_: seo-news1-most-peopleuse-2-word-phrases-in-search-engines_NNS ._.
+html_NN 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 1_CD 1_CD ._.
+##_NN ._.
+##_NN ._.
+##_NN ._.
+##_NN ._.
+##_NN ._.
+##_NN ._.
+##_NN ._.
+##_NN ._.
+##_NN ._.
+#_# Precision_NNP Recall_VB Baseline_NNP Engine_NNP A_NNP full-page_JJ Engine_NNP A_NNP summary_NN Engine_NNP B_NNP full-page_JJ Engine_NNP B_NN summary_NN Figure_NN #_# :_: The_DT effect_NN of_IN external_JJ knowledge_NN nearest-neighbor_NN approach_NN ._.
+This_DT baseline_NN classifier_NN is_VBZ actually_RB a_DT production_NN version_NN of_IN the_DT query_NN classifier_NN running_VBG in_IN a_DT major_JJ US_NNP search_NN engine_NN ._.
+In_IN our_PRP$ experiments_NNS ,_, we_PRP varied_VBD values_NNS of_IN pertinent_JJ parameters_NNS that_WDT characterize_VBP the_DT exact_JJ way_NN of_IN using_VBG search_NN results_NNS ._.
+In_IN what_WDT follows_VBZ ,_, we_PRP start_VBP with_IN the_DT general_JJ assessment_NN of_IN the_DT effect_NN of_IN using_VBG Web_NN search_NN results_NNS ._.
+We_PRP then_RB proceed_VB to_TO exploring_VBG more_RBR refined_JJ techniques_NNS ,_, such_JJ as_IN using_VBG only_RB search_NN summaries_NNS versus_CC actually_RB crawling_VBG the_DT returned_VBN URLs_NNS ._.
+We_PRP also_RB experimented_VBD with_IN using_VBG different_JJ numbers_NNS of_IN search_NN results_VBZ per_IN query_NN ,_, as_RB well_RB as_IN with_IN varying_VBG the_DT number_NN of_IN classifications_NNS considered_VBN for_IN each_DT search_NN result_NN ._.
+For_IN lack_NN of_IN space_NN ,_, we_PRP only_RB show_VBP graphs_NNS for_IN Set_VB #_# queries_NNS and_CC omit_VB the_DT graphs_NNS for_IN Set_VB #_# queries_NNS ,_, which_WDT exhibit_VBP similar_JJ phenomena_NNS ._.
+3_LS ._.
+#_# ._.
+#_# The_DT effect_NN of_IN external_JJ knowledge_NN Queries_NNS by_IN themselves_PRP are_VBP very_RB short_JJ and_CC difficult_JJ to_TO classify_VB ._.
+We_PRP use_VBP top_JJ search_NN engine_NN results_VBZ for_IN collecting_VBG background_NN knowledge_NN for_IN queries_NNS ._.
+We_PRP employed_VBD two_CD major_JJ US_NNP search_NN engines_NNS ,_, and_CC used_VBD their_PRP$ results_NNS in_IN two_CD ways_NNS ,_, either_CC only_RB summaries_NNS or_CC the_DT full_JJ text_NN of_IN crawled_VBN result_NN pages_NNS ._.
+Figure_NNP #_# and_CC Table_NNP #_# show_VBP that_IN such_JJ extra_JJ knowledge_NN considerably_RB improves_VBZ classification_NN accuracy_NN ._.
+Interestingly_RB ,_, we_PRP found_VBD that_IN search_NN engine_NN A_NN performs_VBZ consistently_RB better_RBR with_IN full-page_JJ text_NN ,_, while_IN search_NN engine_NN B_NN performs_VBZ better_JJR when_WRB summaries_NNS are_VBP used_VBN ._.
+Engine_NNP Context_NNP Prec_NNP ._.
+F1_NN Prec_NN ._.
+F1_NN Set_VB #_# Set_VB #_# Set_VB #_# Set_VB #_# A_DT full-page_JJ #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+###_NN #_# ._.
+###_NN B_NN full-page_JJ #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN A_NN summary_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN B_NN summary_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NNP Baseline_NNP #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_RB Table_NNP #_# :_: The_DT effect_NN of_IN using_VBG external_JJ knowledge_NN 3_CD ._.
+#_# ._.
+#_# Aggregation_NN techniques_NNS There_EX are_VBP two_CD major_JJ ways_NNS to_TO use_VB search_NN results_NNS as_IN additional_JJ knowledge_NN ._.
+First_RB ,_, individual_JJ results_NNS can_MD be_VB classified_VBN separately_RB ,_, with_IN subsequent_JJ voting_NN among_IN individual_JJ classifications_NNS ._.
+Alternatively_RB ,_, individual_JJ search_NN results_NNS can_MD be_VB bundled_VBN together_RB as_IN one_CD meta-document_NN and_CC classified_VBN as_IN such_JJ using_VBG the_DT document_NN classifier_NN ._.
+Figure_NNP #_# presents_VBZ the_DT results_NNS of_IN these_DT two_CD approaches_NNS When_WRB full-text_JJ pages_NNS are_VBP used_VBN ,_, the_DT technique_NN using_VBG individual_JJ classifications_NNS of_IN search_NN results_VBZ evidently_RB outperforms_VBZ the_DT bundling_VBG approach_NN by_IN a_DT wide_JJ margin_NN ._.
+However_RB ,_, in_IN the_DT case_NN of_IN summaries_NNS ,_, bundling_VBG together_RB is_VBZ found_VBN to_TO be_VB consistently_RB better_JJR than_IN individual_JJ classification_NN ._.
+This_DT is_VBZ because_IN summaries_NNS by_IN themselves_PRP are_VBP too_RB short_JJ to_TO be_VB classified_VBN correctly_RB individually_RB ,_, but_CC when_WRB bundled_VBN together_RB they_PRP are_VBP much_RB more_RBR stable_JJ ._.
+0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 1_CD 1_CD ._.
+##_NN ._.
+##_NN ._.
+##_NN ._.
+##_NN ._.
+##_NN ._.
+##_NN ._.
+##_NN ._.
+##_NN ._.
+##_NN ._.
+#_# Precision_NNP Recall_VB Baseline_NNP Bundled_NNP full-page_JJ Voting_NNP full-page_JJ Bundled_VBN summary_NN Voting_NNP summary_NN Figure_NN #_# :_: Voting_NNP vs_CC ._.
+Bundling_VBG 3_CD ._.
+#_# ._.
+#_# Full_JJ page_NN text_NN vs_CC ._.
+summary_NN To_TO summarize_VB the_DT two_CD preceding_VBG sections_NNS ,_, background_NN knowledge_NN for_IN each_DT query_NN is_VBZ obtained_VBN by_IN using_VBG either_CC the_DT full-page_JJ text_NN or_CC only_RB the_DT summaries_NNS of_IN the_DT top_JJ search_NN results_NNS ._.
+Full_JJ page_NN text_NN was_VBD found_VBN to_TO be_VB more_RBR in_IN conjunction_NN with_IN voted_VBD classification_NN ,_, while_IN summaries_NNS were_VBD found_VBN to_TO be_VB useful_JJ when_WRB bundled_VBN together_RB ._.
+The_DT best_JJS results_NNS overall_JJ were_VBD obtained_VBN with_IN full-page_JJ results_NNS classified_VBN individually_RB ,_, with_IN subsequent_JJ voting_NN used_VBN to_TO determine_VB the_DT final_JJ query_NN classification_NN ._.
+This_DT observation_NN differs_VBZ from_IN findings_NNS by_IN Shen_NNP et_FW al_FW ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- ,_, who_WP found_VBD summaries_NNS to_TO be_VB more_RBR useful_JJ ._.
+We_PRP attribute_VBP this_DT distinction_NN to_TO the_DT fact_NN that_IN the_DT queries_NNS we_PRP used_VBD in_IN this_DT study_NN are_VBP tail_JJ ones_NNS ,_, which_WDT are_VBP rare_JJ and_CC difficult_JJ to_TO classify_VB ._.
+3_LS ._.
+#_# ._.
+#_# Varying_JJ the_DT number_NN of_IN classes_NNS per_IN search_NN result_VBP We_PRP also_RB varied_VBD the_DT number_NN of_IN classifications_NNS per_IN search_NN result_NN ,_, i_FW ._.
+e_LS ._.
+,_, each_DT result_NN was_VBD permitted_VBN to_TO have_VB either_CC #_# ,_, #_# ,_, or_CC 5_CD classes_NNS ._.
+Figure_NNP #_# shows_VBZ the_DT corresponding_JJ precision-recall_JJ graphs_NNS for_IN both_DT full-page_JJ and_CC summary-only_JJ settings_NNS ._.
+As_IN can_MD be_VB readily_RB seen_VBN ,_, all_DT three_CD variants_NNS produce_VBP very_RB similar_JJ results_NNS ._.
+However_RB ,_, the_DT precision-recall_JJ curve_NN for_IN the_DT 1-class_JJ experiment_NN has_VBZ higher_JJR fluctuations_NNS ._.
+Using_VBG #_# classes_NNS per_IN search_NN result_VBP yields_NNS a_DT more_RBR stable_JJ curve_NN ,_, while_IN with_IN #_# classes_NNS per_IN result_VBP the_DT precision-recall_JJ curve_NN is_VBZ very_RB smooth_JJ ._.
+Thus_RB ,_, as_IN we_PRP increase_VBP the_DT number_NN of_IN classes_NNS per_IN result_NN ,_, we_PRP observe_VBP higher_JJR stability_NN in_IN query_NN classification_NN ._.
+3_LS ._.
+#_# ._.
+#_# Varying_JJ the_DT number_NN of_IN search_NN results_NNS obtained_VBN We_PRP also_RB experimented_VBD with_IN different_JJ numbers_NNS of_IN search_NN results_VBZ per_IN query_NN ._.
+Figure_NNP #_# and_CC Table_NNP #_# present_VB the_DT results_NNS of_IN this_DT experiment_NN ._.
+In_IN line_NN with_IN our_PRP$ intuition_NN ,_, we_PRP observed_VBD that_IN classification_NN accuracy_NN steadily_RB rises_VBZ as_IN we_PRP increase_VBP the_DT number_NN of_IN search_NN results_NNS used_VBN from_IN ##_CD to_TO ##_CD ,_, with_IN a_DT slight_JJ drop_NN as_IN we_PRP continue_VBP to_TO use_VB even_RB more_RBR results_NNS -LRB-_-LRB- ##_NNS -RRB-_-RRB- ._.
+This_DT is_VBZ because_IN using_VBG too_RB few_JJ search_NN results_VBZ provides_VBZ too_RB little_JJ external_JJ knowledge_NN ,_, while_IN using_VBG too_RB many_JJ results_NNS introduces_VBZ extra_JJ noise_NN ._.
+Using_VBG paired_JJ t-test_NN ,_, we_PRP assessed_VBD the_DT statistical_JJ significance_NN 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 1_CD 1_CD ._.
+##_NN ._.
+##_NN ._.
+##_NN ._.
+##_NN ._.
+##_NN ._.
+##_NN ._.
+##_NN ._.
+##_NN ._.
+##_NN ._.
+#_# Precision_NNP Recall_VB Baseline_NN 1_CD class_NN full-page_JJ 3_CD classes_NNS full-page_JJ 5_CD classes_NNS full-page_JJ 1_CD class_NN summary_NN 3_CD classes_NNS summary_NN 5_CD classes_NNS summary_NN Figure_NN #_# :_: Varying_JJ the_DT number_NN of_IN classes_NNS per_IN page_NN 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 1_CD 1_CD ._.
+##_NN ._.
+##_NN ._.
+##_NN ._.
+##_NN ._.
+##_NN ._.
+##_NN ._.
+##_NN ._.
+##_NN ._.
+##_NN ._.
+#_# Precision_NNP Recall_VB 10_CD 20_CD 30_CD 40_CD 50_CD Baseline_NNP Figure_NNP #_# :_: Varying_JJ the_DT number_NN of_IN results_NNS per_IN query_NN of_IN the_DT improvements_NNS due_JJ to_TO our_PRP$ methodology_NN versus_CC the_DT baseline_NN ._.
+We_PRP found_VBD the_DT results_NNS to_TO be_VB highly_RB significant_JJ -LRB-_-LRB- p_NN <_JJR 0_CD ._.
+####_NN -RRB-_-RRB- ,_, thus_RB confirming_VBG the_DT value_NN of_IN external_JJ knowledge_NN for_IN query_NN classification_NN ._.
+3_LS ._.
+#_# Voting_NNP versus_CC alternative_JJ methods_NNS As_IN explained_VBN in_IN Section_NN #_# ._.
+#_# ,_, one_CD may_MD use_VB several_JJ methods_NNS to_TO classify_VB queries_NNS from_IN search_NN engine_NN results_VBZ based_VBN on_IN our_PRP$ relevance_NN model_NN ._.
+As_IN we_PRP have_VBP seen_VBN ,_, the_DT voting_NN method_NN works_VBZ quite_RB well_RB ._.
+In_IN this_DT section_NN ,_, we_PRP compare_VBP the_DT performance_NN of_IN voting_VBG top-ten_JJ search_NN results_VBZ to_TO the_DT following_VBG two_CD methods_NNS :_: A_DT :_: Discriminative_JJ learning_NN of_IN query-classification_NN based_VBN on_IN logistic_JJ regression_NN ,_, described_VBN in_IN Section_NN #_# ._.
+#_# ._.
+B_NN :_: Learning_NNP weights_NNS based_VBN on_IN quality_NN score_NN returned_VBN by_IN a_DT search_NN engine_NN ._.
+We_PRP discretize_VBP the_DT quality_NN score_NN s_NNS -LRB-_-LRB- d_NN ,_, q_NN -RRB-_-RRB- of_IN a_DT query_NN /_: document_NN pair_NN into_IN -LCB-_-LRB- high_JJ ,_, medium_NN ,_, low_JJ -RCB-_-RRB- ,_, and_CC learn_VB the_DT three_CD weights_NNS w_VBP on_IN a_DT set_NN of_IN training_NN queries_NNS ,_, and_CC test_VB the_DT performance_NN on_IN holdout_NN queries_NNS ._.
+The_DT classification_NN formula_NN ,_, as_IN explained_VBN at_IN the_DT end_NN of_IN Section_NN #_# ._.
+#_# ,_, is_VBZ P_NN -LRB-_-LRB- Cj_NN |_CD q_NN -RRB-_-RRB- =_JJ d_NN w_NN -LRB-_-LRB- s_NNS -LRB-_-LRB- d_NN ,_, q_NN -RRB-_-RRB- -RRB-_-RRB- P_NN -LRB-_-LRB- Cj_NN |_CD d_NN -RRB-_-RRB- ._.
+Method_NN B_NN requires_VBZ a_DT training_NN /_: testing_NN split_NN ._.
+Neither_DT voting_NN nor_CC method_NN A_NN requires_VBZ such_PDT a_DT split_NN ;_: however_RB ,_, for_IN consistency_NN ,_, we_PRP randomly_RB draw_VBP 50-50_CD training_NN /_: testing_NN splits_VBZ for_IN ten_CD times_NNS ,_, and_CC report_VB the_DT mean_NN performance_NN standard_JJ deviation_NN on_IN the_DT test-split_NN for_IN all_DT three_CD methods_NNS ._.
+For_IN this_DT experiment_NN ,_, instead_RB of_IN precision_NN and_CC recall_NN ,_, we_PRP use_VBP DCG-k_NN -LRB-_-LRB- k_NN =_JJ #_# ,_, #_# -RRB-_-RRB- ,_, popular_JJ in_IN search_NN engine_NN evaluation_NN ._.
+The_DT DCG_NN -LRB-_-LRB- discounted_JJ cumulated_JJ gain_NN -RRB-_-RRB- metric_JJ ,_, described_VBN in_IN -LSB-_-LRB- #_# -RSB-_-RRB- ,_, is_VBZ a_DT ranking_JJ measure_NN where_WRB the_DT system_NN is_VBZ asked_VBN to_TO rank_VB a_DT set_NN of_IN candidates_NNS -LRB-_-LRB- in_IN Number_NNP of_IN results_NNS Precision_NNP F1_NN baseline_NN #_# ._.
+###_NN #_# ._.
+###_RB 10_CD #_# ._.
+###_NN #_# ._.
+###_RB 20_CD #_# ._.
+###_NN #_# ._.
+###_RB 30_CD #_# ._.
+###_NN #_# ._.
+###_RB 40_CD #_# ._.
+###_NN #_# ._.
+###_RB 50_CD #_# ._.
+###_NN #_# ._.
+###_RB Table_NNP #_# :_: Varying_JJ the_DT number_NN of_IN search_NN results_VBZ our_PRP$ case_NN ,_, judged_VBN categories_NNS for_IN each_DT query_NN -RRB-_-RRB- ,_, and_CC computes_VBZ for_IN each_DT query_NN q_NN :_: DCGk_NN -LRB-_-LRB- q_NN -RRB-_-RRB- =_JJ k_NN i_FW =_JJ #_# g_NN -LRB-_-LRB- Ci_NN -LRB-_-LRB- q_NN -RRB-_-RRB- -RRB-_-RRB- /_: log2_NN -LRB-_-LRB- i_FW +_CC #_# -RRB-_-RRB- ,_, where_WRB Ci_NN -LRB-_-LRB- q_NN -RRB-_-RRB- is_VBZ the_DT i-th_JJ category_NN for_IN query_NN q_NN ranked_VBD by_IN the_DT system_NN ,_, and_CC g_NN -LRB-_-LRB- Ci_NN -RRB-_-RRB- is_VBZ the_DT grade_NN of_IN Ci_NNP :_: we_PRP assign_VBP grade_NN of_IN 10_CD ,_, #_# ,_, #_# ,_, #_# to_TO the_DT 4-point_JJ judgment_NN scale_NN described_VBN earlier_JJR to_TO compute_VB DCG_NNP ._.
+The_DT decaying_JJ choice_NN of_IN log2_NN -LRB-_-LRB- i_FW +_CC #_# -RRB-_-RRB- is_VBZ conventional_JJ ,_, which_WDT does_VBZ not_RB have_VB particular_JJ importance_NN ._.
+The_DT overall_JJ DCG_NN of_IN a_DT system_NN is_VBZ the_DT averaged_VBN DCG_NN over_IN queries_NNS ._.
+We_PRP use_VBP this_DT metric_JJ instead_RB of_IN precision_NN /_: recall_NN in_IN this_DT experiment_NN because_IN it_PRP can_MD directly_RB handle_VB multi-grade_JJ output_NN ._.
+Therefore_RB as_IN a_DT single_JJ metric_JJ ,_, it_PRP is_VBZ convenient_JJ for_IN comparing_VBG the_DT methods_NNS ._.
+Note_VB that_DT precision_NN /_: recall_NN curves_NNS used_VBN in_IN the_DT earlier_JJR sections_NNS yield_VBP some_DT additional_JJ insights_NNS not_RB immediately_RB apparent_JJ from_IN the_DT DCG_NNP numbers_NNS ._.
+Set_VB #_# Method_NNP DCG-1_NN DCG-5_NN Oracle_NNP #_# ._.
+##_NN #_# ._.
+##_NN ##_CD ._.
+##_NN #_# ._.
+##_NN Voting_NNP #_# ._.
+##_NN #_# ._.
+##_NN ##_CD ._.
+##_NN #_# ._.
+##_NNP Method_NNP A_NNP #_# ._.
+##_NN #_# ._.
+##_NN ##_CD ._.
+##_NN #_# ._.
+##_NN Method_NN B_NN #_# ._.
+##_NN #_# ._.
+##_NN ##_CD ._.
+##_NN #_# ._.
+##_JJ Set_VB #_# Method_NNP DCG-1_NN DCG-5_NN Oracle_NNP #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN Voting_NNP #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NNP Method_NNP A_NNP #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN Method_NN B_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_RB Table_NNP #_# :_: Voting_NNP and_CC alternative_JJ methods_NNS Results_NNS from_IN our_PRP$ experiments_NNS are_VBP given_VBN in_IN Table_NNP #_# ._.
+The_DT oracle_NN method_NN is_VBZ the_DT best_JJS ranking_NN of_IN categories_NNS for_IN each_DT query_NN after_IN seeing_VBG human_JJ judgments_NNS ._.
+It_PRP can_MD not_RB be_VB achieved_VBN by_IN any_DT realistic_JJ algorithm_NN ,_, but_CC is_VBZ included_VBN here_RB as_IN an_DT absolute_JJ upper_JJ bound_VBN on_IN DCG_NNP performance_NN ._.
+The_DT simple_JJ voting_NN method_NN performs_VBZ very_RB well_RB in_IN our_PRP$ experiments_NNS ._.
+The_DT more_RBR complicated_JJ methods_NNS may_MD lead_VB to_TO moderate_JJ performance_NN gain_NN -LRB-_-LRB- especially_RB method_NN A_NN ,_, which_WDT uses_VBZ discriminative_JJ training_NN in_IN Section_NN #_# ._.
+#_# -RRB-_-RRB- ._.
+However_RB ,_, both_DT methods_NNS are_VBP computationally_RB more_RBR costly_JJ ,_, and_CC the_DT potential_JJ gain_NN is_VBZ minor_JJ enough_RB to_TO be_VB neglected_VBN ._.
+This_DT means_VBZ that_IN as_IN a_DT simple_JJ method_NN ,_, voting_NN is_VBZ quite_RB effective_JJ ._.
+We_PRP can_MD observe_VB that_IN method_NN B_NN ,_, which_WDT uses_VBZ quality_NN score_NN returned_VBN by_IN a_DT search_NN engine_NN to_TO adjust_VB importance_NN weights_NNS of_IN returned_VBN pages_NNS for_IN a_DT query_NN ,_, does_VBZ not_RB yield_VB appreciable_JJ improvement_NN ._.
+This_DT implies_VBZ that_IN putting_VBG equal_JJ weights_NNS -LRB-_-LRB- voting_NN -RRB-_-RRB- performs_VBZ similarly_RB as_IN putting_VBG higher_JJR weights_NNS to_TO higher_JJR quality_NN documents_NNS and_CC lower_JJR weights_NNS to_TO lower_JJR quality_NN documents_NNS -LRB-_-LRB- method_NN B_NN -RRB-_-RRB- ,_, at_IN least_JJS for_IN the_DT top_JJ search_NN results_NNS ._.
+It_PRP may_MD be_VB possible_JJ to_TO improve_VB this_DT method_NN by_IN including_VBG other_JJ page-features_NNS that_WDT can_MD differentiate_VB top-ranked_JJ search_NN results_NNS ._.
+However_RB ,_, the_DT effectiveness_NN will_MD require_VB further_JJ investigation_NN which_WDT we_PRP did_VBD not_RB test_NN ._.
+We_PRP may_MD also_RB observe_VB that_IN the_DT performance_NN on_IN Set_VB #_# is_VBZ lower_JJR than_IN that_DT on_IN Set_VB #_# ,_, which_WDT means_VBZ queries_NNS in_IN Set_VB #_# are_VBP harder_JJR than_IN those_DT in_IN Set_VB #_# ._.
+3_LS ._.
+#_# Failure_NN analysis_NN We_PRP scrutinized_VBD the_DT cases_NNS when_WRB external_JJ knowledge_NN did_VBD not_RB improve_VB query_NN classification_NN ,_, and_CC identified_VBD three_CD main_JJ causes_NNS for_IN such_JJ lack_NN of_IN improvement_NN ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- Queries_NNS containing_VBG random_JJ strings_NNS ,_, such_JJ as_IN telephone_NN numbers_NNS -_: these_DT queries_NNS do_VBP not_RB yield_VB coherent_JJ search_NN results_NNS ,_, and_CC so_IN the_DT latter_NN can_MD not_RB help_VB classification_NN -LRB-_-LRB- around_IN #_# %_NN of_IN queries_NNS were_VBD of_IN this_DT kind_NN -RRB-_-RRB- ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- Queries_NNS that_WDT yield_VBP no_DT search_NN results_VBZ at_IN all_DT ;_: there_EX were_VBD #_# %_NN such_JJ queries_NNS in_IN Set_VB #_# and_CC ##_CD %_NN in_IN Set_VB #_# ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- Queries_NNPS corresponding_VBG to_TO recent_JJ events_NNS ,_, for_IN which_WDT the_DT search_NN engine_NN did_VBD not_RB yet_RB have_VB ample_JJ coverage_NN -LRB-_-LRB- around_IN #_# %_NN of_IN queries_NNS -RRB-_-RRB- ._.
+One_CD notable_JJ example_NN of_IN such_JJ queries_NNS are_VBP entire_JJ names_NNS of_IN news_NN articles-if_NN the_DT exact_JJ article_NN has_VBZ not_RB yet_RB been_VBN indexed_VBN by_IN the_DT search_NN engine_NN ,_, search_NN results_NNS are_VBP likely_JJ to_TO be_VB of_IN little_JJ use_NN ._.
+4_LS ._.
+RELATED_JJ WORK_VBP Even_RB though_IN the_DT average_JJ length_NN of_IN search_NN queries_NNS is_VBZ steadily_RB increasing_VBG over_IN time_NN ,_, a_DT typical_JJ query_NN is_VBZ still_RB shorter_JJR than_IN 3_CD words_NNS ._.
+Consequently_RB ,_, many_JJ researchers_NNS studied_VBN possible_JJ ways_NNS to_TO enhance_VB queries_NNS with_IN additional_JJ information_NN ._.
+One_CD important_JJ direction_NN in_IN enhancing_VBG queries_NNS is_VBZ through_IN query_NN expansion_NN ._.
+This_DT can_MD be_VB done_VBN either_CC using_VBG electronic_JJ dictionaries_NNS and_CC thesauri_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, or_CC via_IN relevance_NN feedback_NN techniques_NNS that_WDT make_VBP use_NN of_IN a_DT few_JJ top-scoring_JJ search_NN results_NNS ._.
+Early_JJ work_NN in_IN information_NN retrieval_NN concentrated_VBD on_IN manually_RB reviewing_VBG the_DT returned_VBN results_NNS -LSB-_-LRB- ##_NNS ,_, ##_NN -RSB-_-RRB- ._.
+However_RB ,_, the_DT sheer_JJ volume_NN of_IN queries_NNS nowadays_RB does_VBZ not_RB lend_VB itself_PRP to_TO manual_JJ supervision_NN ,_, and_CC hence_RB subsequent_JJ works_NNS focused_VBD on_IN blind_JJ relevance_NN feedback_NN ,_, which_WDT basically_RB assumes_VBZ top_JJ returned_VBD results_NNS to_TO be_VB relevant_JJ -LSB-_-LRB- ##_CD ,_, ##_CD ,_, #_# ,_, ##_NN -RSB-_-RRB- ._.
+More_RBR recently_RB ,_, studies_NNS in_IN query_NN augmentation_NN focused_VBD on_IN classification_NN of_IN queries_NNS ,_, assuming_VBG such_JJ classifications_NNS to_TO be_VB beneficial_JJ for_IN more_JJR focused_JJ query_NN interpretation_NN ._.
+Indeed_RB ,_, Kowalczyk_NNP et_FW al_FW ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- found_VBD that_IN using_VBG query_NN classes_NNS improved_VBD the_DT performance_NN of_IN document_NN retrieval_NN ._.
+Studies_NNS in_IN the_DT field_NN pursue_VB different_JJ approaches_NNS for_IN obtaining_VBG additional_JJ information_NN about_IN the_DT queries_NNS ._.
+Beitzel_NNP et_FW al_FW ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- used_VBN semi-supervised_JJ learning_NN as_RB well_RB as_IN unlabeled_JJ data_NNS -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+Gravano_NNP et_FW al_FW ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- classified_VBN queries_NNS with_IN respect_NN to_TO geographic_JJ locality_NN in_IN order_NN to_TO determine_VB whether_IN their_PRP$ intent_NN is_VBZ local_JJ or_CC global_JJ ._.
+The_DT ####_CD KDD_NNP Cup_NNP on_IN web_NN query_NN classification_NN inspired_VBD yet_RB another_DT line_NN of_IN research_NN ,_, which_WDT focused_VBD on_IN enriching_VBG queries_NNS using_VBG Web_NN search_NN engines_NNS and_CC directories_NNS -LSB-_-LRB- ##_CD ,_, ##_CD ,_, ##_CD ,_, 9_CD ,_, ##_CD -RSB-_-RRB- ._.
+The_DT KDD_NNP task_NN specification_NN provided_VBD a_DT small_JJ taxonomy_NN -LRB-_-LRB- ##_CD nodes_NNS -RRB-_-RRB- along_IN with_IN a_DT set_NN of_IN labeled_VBN queries_NNS ,_, and_CC posed_VBD a_DT challenge_NN to_TO use_VB this_DT training_NN data_NNS to_TO build_VB a_DT query_NN classifier_NN ._.
+Several_JJ teams_NNS used_VBD the_DT Web_NN to_TO enrich_VB the_DT queries_NNS and_CC provide_VB more_JJR context_NN for_IN classification_NN ._.
+The_DT main_JJ research_NN questions_NNS of_IN this_DT approach_NN the_DT are_VBP -LRB-_-LRB- #_# -RRB-_-RRB- how_WRB to_TO build_VB a_DT document_NN classifier_NN ,_, -LRB-_-LRB- #_# -RRB-_-RRB- how_WRB to_TO translate_VB its_PRP$ classifications_NNS into_IN the_DT target_NN taxonomy_NN ,_, and_CC -LRB-_-LRB- #_# -RRB-_-RRB- how_WRB to_TO determine_VB the_DT query_NN class_NN based_VBN on_IN document_NN classifications_NNS ._.
+The_DT winning_VBG solution_NN of_IN the_DT KDD_NNP Cup_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- proposed_VBN using_VBG an_DT ensemble_NN of_IN classifiers_NNS in_IN conjunction_NN with_IN searching_VBG multiple_JJ search_NN engines_NNS ._.
+To_TO address_VB issue_NN -LRB-_-LRB- #_# -RRB-_-RRB- above_IN ,_, their_PRP$ solution_NN used_VBD the_DT Open_NNP Directory_NNP Project_NNP -LRB-_-LRB- ODP_NNP -RRB-_-RRB- to_TO produce_VB an_DT ODP-based_JJ document_NN classifier_NN ._.
+The_DT ODP_NN hierarchy_NN was_VBD then_RB mapped_VBN into_IN the_DT target_NN taxonomy_NN using_VBG word_NN matches_NNS at_IN individual_JJ nodes_NNS ._.
+A_DT document_NN classifier_NN was_VBD built_VBN for_IN the_DT target_NN taxonomy_NN by_IN using_VBG the_DT pages_NNS in_IN the_DT ODP_NN taxonomy_NN that_WDT appear_VBP in_IN the_DT nodes_NNS mapped_VBN to_TO the_DT particular_JJ target_NN node_NN ._.
+Thus_RB ,_, Web_NN documents_NNS were_VBD first_JJ classified_VBN with_IN respect_NN to_TO the_DT ODP_NN hierarchy_NN ,_, and_CC their_PRP$ classifications_NNS were_VBD subsequently_RB mapped_VBN to_TO the_DT target_NN taxonomy_NN for_IN query_NN classification_NN ._.
+Compared_VBN to_TO this_DT approach_NN ,_, we_PRP solved_VBD the_DT problem_NN of_IN document_NN classification_NN directly_RB in_IN the_DT target_NN taxonomy_NN by_IN using_VBG the_DT queries_NNS to_TO produce_VB document_NN classifier_NN as_IN described_VBN in_IN Section_NN #_# ._.
+This_DT simplifies_VBZ the_DT process_NN and_CC removes_VBZ the_DT need_NN for_IN mapping_NN between_IN taxonomies_NNS ._.
+This_DT also_RB streamlines_VBZ taxonomy_NN maintenance_NN and_CC development_NN ._.
+Using_VBG this_DT approach_NN ,_, we_PRP were_VBD able_JJ to_TO achieve_VB good_JJ performance_NN in_IN a_DT very_RB large_JJ scale_NN taxonomy_NN ._.
+We_PRP also_RB evaluated_VBD a_DT few_JJ alternatives_NNS how_WRB to_TO combine_VB individual_JJ document_NN classifications_NNS when_WRB actually_RB classifying_VBG the_DT query_NN ._.
+In_IN a_DT follow-up_JJ paper_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, Shen_NNP et_FW al_FW ._.
+proposed_VBN a_DT framework_NN for_IN query_NN classification_NN based_VBN on_IN bridging_VBG between_IN two_CD taxonomies_NNS ._.
+In_IN this_DT approach_NN ,_, the_DT problem_NN of_IN not_RB having_VBG a_DT document_NN classifier_NN for_IN web_NN results_NNS is_VBZ solved_VBN by_IN using_VBG a_DT training_NN set_NN available_JJ for_IN documents_NNS with_IN a_DT different_JJ taxonomy_NN ._.
+For_IN this_DT ,_, an_DT intermediate_JJ taxonomy_NN with_IN a_DT training_NN set_NN -LRB-_-LRB- ODP_NN -RRB-_-RRB- is_VBZ used_VBN ._.
+Then_RB several_JJ schemes_NNS are_VBP tried_VBN that_IN establish_VB a_DT correspondence_NN between_IN the_DT taxonomies_NNS or_CC allow_VB for_IN mapping_NN of_IN the_DT training_NN set_VBN from_IN the_DT intermediate_JJ taxonomy_NN to_TO the_DT target_NN taxonomy_NN ._.
+As_IN opposed_VBN to_TO this_DT ,_, we_PRP built_VBD a_DT document_NN classifier_NN for_IN the_DT target_NN taxonomy_NN directly_RB ,_, without_IN using_VBG documents_NNS from_IN an_DT intermediate_JJ taxonomy_NN ._.
+While_IN we_PRP were_VBD not_RB able_JJ to_TO directly_RB compare_VB the_DT results_NNS due_JJ to_TO the_DT use_NN of_IN different_JJ taxonomies_NNS -LRB-_-LRB- we_PRP used_VBD a_DT much_JJ larger_JJR taxonomy_NN -RRB-_-RRB- ,_, our_PRP$ precision_NN and_CC recall_NN results_NNS are_VBP consistently_RB higher_JJR even_RB over_IN the_DT hardest_RBS query_JJ set_NN ._.
+5_CD ._.
+CONCLUSIONS_NNS Query_JJ classification_NN is_VBZ an_DT important_JJ information_NN retrieval_NN task_NN ._.
+Accurate_JJ classification_NN of_IN search_NN queries_NNS is_VBZ likely_JJ to_TO benefit_VB a_DT number_NN of_IN higher-level_JJ tasks_NNS such_JJ as_IN Web_NN search_NN and_CC ad_NN matching_NN ._.
+Since_IN search_NN queries_NNS are_VBP usually_RB short_JJ ,_, by_IN themselves_PRP they_PRP usually_RB carry_VBP insufficient_JJ information_NN for_IN adequate_JJ classification_NN accuracy_NN ._.
+To_TO address_VB this_DT problem_NN ,_, we_PRP proposed_VBD a_DT methodology_NN for_IN using_VBG search_NN results_VBZ as_IN a_DT source_NN of_IN external_JJ knowledge_NN ._.
+To_TO this_DT end_NN ,_, we_PRP send_VBP the_DT query_NN to_TO a_DT search_NN engine_NN ,_, and_CC assume_VB that_IN a_DT plurality_NN of_IN the_DT highestranking_VBG search_NN results_NNS are_VBP relevant_JJ to_TO the_DT query_NN ._.
+Classifying_VBG these_DT results_NNS then_RB allows_VBZ us_PRP to_TO classify_VB the_DT original_JJ query_NN with_IN substantially_RB higher_JJR accuracy_NN ._.
+The_DT results_NNS of_IN our_PRP$ empirical_JJ evaluation_NN definitively_RB confirmed_VBD that_IN using_VBG the_DT Web_NN as_IN a_DT repository_NN of_IN world_NN knowledge_NN contributes_VBZ valuable_JJ information_NN about_IN the_DT query_NN ,_, and_CC aids_NNS in_IN its_PRP$ correct_JJ classification_NN ._.
+Notably_RB ,_, our_PRP$ method_NN exhibits_VBZ significantly_RB higher_JJR accuracy_NN than_IN methods_NNS described_VBN in_IN prior_JJ studies3_NN Compared_VBD to_TO prior_JJ studies_NNS ,_, our_PRP$ approach_NN does_VBZ not_RB require_VB any_DT auxiliary_JJ taxonomy_NN ,_, and_CC we_PRP produce_VBP a_DT query_NN classifier_NN directly_RB for_IN the_DT target_NN taxonomy_NN ._.
+Furthermore_RB ,_, the_DT taxonomy_NN used_VBN in_IN this_DT study_NN is_VBZ approximately_RB 2_CD orders_NNS of_IN magnitude_NN larger_JJR than_IN that_DT used_VBN in_IN prior_JJ works_NNS ._.
+We_PRP also_RB experimented_VBD with_IN different_JJ values_NNS of_IN parameters_NNS that_WDT characterize_VBP our_PRP$ method_NN ._.
+When_WRB using_VBG search_NN results_NNS ,_, one_PRP can_MD either_RB use_VB only_RB summaries_NNS of_IN the_DT results_NNS provided_VBN by_IN 3_CD Since_IN the_DT field_NN of_IN query_NN classification_NN does_VBZ not_RB yet_RB have_VB established_VBN and_CC agreed_VBN upon_IN benchmarks_NNS ,_, direct_JJ comparison_NN of_IN results_NNS is_VBZ admittedly_RB tricky_JJ ._.
+the_DT search_NN engine_NN ,_, or_CC actually_RB crawl_VBP the_DT results_NNS pages_NNS for_IN even_RB deeper_JJR knowledge_NN ._.
+Overall_RB ,_, query_NN classification_NN performance_NN was_VBD the_DT best_JJS when_WRB using_VBG the_DT full_JJ crawled_VBD pages_NNS -LRB-_-LRB- Table_NNP #_# -RRB-_-RRB- ._.
+These_DT results_NNS are_VBP consistent_JJ with_IN prior_JJ studies_NNS -LSB-_-LRB- #_# -RSB-_-RRB- ,_, which_WDT found_VBD that_IN using_VBG full_JJ crawled_VBD pages_NNS is_VBZ superior_JJ for_IN document_NN classification_NN than_IN using_VBG only_RB brief_JJ summaries_NNS ._.
+Our_PRP$ findings_NNS ,_, however_RB ,_, are_VBP different_JJ from_IN those_DT reported_VBN by_IN Shen_NNP et_FW al_FW ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- ,_, who_WP found_VBD summaries_NNS to_TO yield_VB better_JJR results_NNS ._.
+We_PRP attribute_VBP our_PRP$ observations_NNS to_TO using_VBG a_DT more_RBR elaborate_JJ voting_NN scheme_NN among_IN the_DT classifications_NNS of_IN individual_JJ search_NN results_NNS ,_, as_RB well_RB as_IN to_TO using_VBG a_DT more_RBR difficult_JJ set_NN of_IN rare_JJ queries_NNS ._.
+In_IN this_DT study_NN we_PRP used_VBD two_CD major_JJ search_NN engines_NNS ,_, A_DT and_CC B_NN ._.
+Interestingly_RB ,_, we_PRP found_VBD notable_JJ distinctions_NNS in_IN the_DT quality_NN of_IN their_PRP$ output_NN ._.
+Notably_RB ,_, for_IN engine_NN A_NN the_DT overall_JJ results_NNS were_VBD better_RB when_WRB using_VBG the_DT full_JJ crawled_VBD pages_NNS of_IN the_DT search_NN results_VBZ ,_, while_IN for_IN engine_NN B_NN it_PRP seems_VBZ to_TO be_VB more_RBR beneficial_JJ to_TO use_VB the_DT summaries_NNS of_IN results_NNS ._.
+This_DT implies_VBZ that_IN while_IN the_DT quality_NN of_IN search_NN results_NNS returned_VBN by_IN engine_NN A_NN is_VBZ apparently_RB better_RB ,_, engine_NN B_NN does_VBZ a_DT better_JJR work_NN in_IN summarizing_VBG the_DT pages_NNS ._.
+We_PRP also_RB found_VBD that_IN the_DT best_JJS results_NNS were_VBD obtained_VBN by_IN using_VBG full_JJ crawled_VBD pages_NNS and_CC performing_VBG voting_NN among_IN their_PRP$ individual_JJ classifications_NNS ._.
+For_IN a_DT classifier_NN that_WDT is_VBZ external_JJ to_TO the_DT search_NN engine_NN ,_, retrieving_VBG full_JJ pages_NNS may_MD be_VB prohibitively_RB costly_JJ ,_, in_IN which_WDT case_NN one_NN might_MD prefer_VB to_TO use_VB summaries_NNS to_TO gain_VB computational_JJ efficiency_NN ._.
+On_IN the_DT other_JJ hand_NN ,_, for_IN the_DT owners_NNS of_IN a_DT search_NN engine_NN ,_, full_JJ page_NN classification_NN is_VBZ much_RB more_RBR efficient_JJ ,_, since_IN it_PRP is_VBZ easy_JJ to_TO preprocess_VB all_DT indexed_VBN pages_NNS by_IN classifying_VBG them_PRP once_IN onto_IN the_DT -LRB-_-LRB- fixed_VBN -RRB-_-RRB- taxonomy_NN ._.
+Then_RB ,_, page_NN classifications_NNS are_VBP obtained_VBN as_IN part_NN of_IN the_DT meta-data_NN associated_VBN with_IN each_DT search_NN result_NN ,_, and_CC query_NN classification_NN can_MD be_VB nearly_RB instantaneous_JJ ._.
+When_WRB using_VBG summaries_NNS it_PRP appears_VBZ that_IN better_JJR results_NNS are_VBP obtained_VBN by_IN first_JJ concatenating_VBG individual_JJ summaries_NNS into_IN a_DT meta-document_NN ,_, and_CC then_RB using_VBG its_PRP$ classification_NN as_IN a_DT whole_NN ._.
+We_PRP believe_VBP the_DT reason_NN for_IN this_DT observation_NN is_VBZ that_IN summaries_NNS are_VBP short_JJ and_CC inherently_RB noisier_JJR ,_, and_CC hence_RB their_PRP$ aggregation_NN helps_VBZ to_TO correctly_RB identify_VB the_DT main_JJ theme_NN ._.
+Consistent_JJ with_IN our_PRP$ intuition_NN ,_, using_VBG too_RB few_JJ search_NN results_VBZ yields_NNS useful_JJ but_CC insufficient_JJ knowledge_NN ,_, and_CC using_VBG too_RB many_JJ search_NN results_VBZ leads_VBZ to_TO inclusion_NN of_IN marginally_RB relevant_JJ Web_NN pages_NNS ._.
+The_DT best_JJS results_NNS were_VBD obtained_VBN when_WRB using_VBG ##_CD top_JJ search_NN hits_NNS ._.
+In_IN this_DT work_NN ,_, we_PRP first_RB classify_VB search_NN results_NNS ,_, and_CC then_RB use_VB their_PRP$ classifications_NNS directly_RB to_TO classify_VB the_DT original_JJ query_NN ._.
+Alternatively_RB ,_, one_PRP can_MD use_VB the_DT classifications_NNS of_IN search_NN results_VBZ as_IN features_NNS in_IN order_NN to_TO learn_VB a_DT second-level_JJ classifier_NN ._.
+In_IN Section_NN #_# ._.
+#_# ,_, we_PRP did_VBD some_DT preliminary_JJ experiments_NNS in_IN this_DT direction_NN ,_, and_CC found_VBD that_IN learning_VBG such_PDT a_DT secondary_JJ classifier_NN did_VBD not_RB yield_VB considerably_RB advantages_NNS ._.
+We_PRP plan_VBP to_TO further_RB investigate_VB this_DT direction_NN in_IN our_PRP$ future_JJ work_NN ._.
+It_PRP is_VBZ also_RB essential_JJ to_TO note_VB that_IN implementing_VBG our_PRP$ methodology_NN incurs_VBZ little_JJ overhead_NN ._.
+If_IN the_DT search_NN engine_NN classifies_VBZ crawled_VBN pages_NNS during_IN indexing_NN ,_, then_RB at_IN query_NN time_NN we_PRP only_RB need_VBP to_TO fetch_VB these_DT classifications_NNS and_CC do_VBP the_DT voting_NN ._.
+To_TO conclude_VB ,_, we_PRP believe_VBP our_PRP$ methodology_NN for_IN using_VBG Web_NN search_NN results_VBZ holds_VBZ considerable_JJ promise_NN for_IN substantially_RB improving_VBG the_DT accuracy_NN of_IN Web_NN search_NN queries_NNS ._.
+This_DT is_VBZ particularly_RB important_JJ for_IN rare_JJ queries_NNS ,_, for_IN which_WDT little_JJ perquery_JJ learning_NN can_MD be_VB done_VBN ,_, and_CC in_IN this_DT study_NN we_PRP proved_VBD that_IN such_JJ scarceness_NN of_IN information_NN could_MD be_VB addressed_VBN by_IN leveraging_VBG the_DT knowledge_NN found_VBN on_IN the_DT Web_NN ._.
+We_PRP believe_VBP our_PRP$ findings_NNS will_MD have_VB immediate_JJ applications_NNS to_TO improving_VBG the_DT handling_NN of_IN rare_JJ queries_NNS ,_, both_DT for_IN improving_VBG the_DT search_NN results_VBZ as_RB well_RB as_IN yielding_VBG better_JJR matched_VBN advertisements_NNS ._.
+In_IN our_PRP$ further_JJ research_NN we_PRP also_RB plan_VBP to_TO make_VB use_NN of_IN session_NN information_NN in_IN order_NN to_TO leverage_NN knowledge_NN about_IN previous_JJ queries_NNS to_TO better_RBR classify_VB subsequent_JJ ones_NNS ._.
+6_CD ._.
+REFERENCES_NNS -LSB-_-LRB- #_# -RSB-_-RRB- S_NN ._.
+Beitzel_NNP ,_, E_NNP ._.
+Jensen_NNP ,_, O_NNP ._.
+Frieder_NNP ,_, D_NNP ._.
+Grossman_NNP ,_, D_NNP ._.
+Lewis_NNP ,_, A_NNP ._.
+Chowdhury_NNP ,_, and_CC A_NN ._.
+Kolcz_NNP ._.
+Automatic_NNP web_NN query_NN classification_NN using_VBG labeled_VBN and_CC unlabeled_JJ training_NN data_NNS ._.
+In_IN Proceedings_NNP of_IN SIGIR_NNP ''_'' ##_NN ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- S_NN ._.
+Beitzel_NNP ,_, E_NNP ._.
+Jensen_NNP ,_, O_NNP ._.
+Frieder_NNP ,_, D_NNP ._.
+Lewis_NNP ,_, A_NNP ._.
+Chowdhury_NNP ,_, and_CC A_NN ._.
+Kolcz_NNP ._.
+Improving_NN automatic_JJ query_NN classification_NN via_IN semi-supervised_JJ learning_NN ._.
+In_IN Proceedings_NNP of_IN ICDM_NNP ''_'' ##_NN ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- R_NN ._.
+Duda_NNP and_CC P_NN ._.
+Hart_NNP ._.
+Pattern_NN Classification_NN and_CC Scene_NN Analysis_NN ._.
+John_NNP Wiley_NNP and_CC Sons_NNPS ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- E_NN ._.
+Efthimiadis_NNP and_CC P_NN ._.
+Biron_NNP ._.
+UCLA-Okapi_NN at_IN TREC-2_NN :_: Query_NNP expansion_NN experiments_NNS ._.
+In_IN TREC-2_NN ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- E_NN ._.
+Gabrilovich_NNP and_CC S_NN ._.
+Markovitch_NNP ._.
+Feature_NN generation_NN for_IN text_NN categorization_NN using_VBG world_NN knowledge_NN ._.
+In_IN IJCAI_NNP ''_'' ##_NN ,_, pages_NNS 1048-1053_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- L_NN ._.
+Gravano_NNP ,_, V_NNP ._.
+Hatzivassiloglou_NNP ,_, and_CC R_NN ._.
+Lichtenstein_NNP ._.
+Categorizing_VBG web_NN queries_NNS according_VBG to_TO geographical_JJ locality_NN ._.
+In_IN CIKM_NN ''_'' ##_NN ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- E_NN ._.
+Han_NNP and_CC G_NNP ._.
+Karypis_NNP ._.
+Centroid-based_JJ document_NN classification_NN :_: Analysis_NN and_CC experimental_JJ results_NNS ._.
+In_IN PKDD_NN ''_'' ##_NN ,_, September_NNP ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- K_NNP ._.
+Jarvelin_NNP and_CC J_NNP ._.
+Kekalainen_NNP ._.
+IR_NN evaluation_NN methods_NNS for_IN retrieving_VBG highly_RB relevant_JJ documents_NNS ._.
+In_IN SIGIR_NN ''_'' ##_NN ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- Z_NN ._.
+Kardkovacs_NNP ,_, D_NNP ._.
+Tikk_NNP ,_, and_CC Z_NN ._.
+Bansaghi_NNP ._.
+The_DT ferrety_JJ algorithm_NN for_IN the_DT KDD_NNP Cup_NNP ####_CD problem_NN ._.
+In_IN SIGKDD_NNP Explorations_NNPS ,_, volume_NN #_# ._.
+ACM_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- P_NN ._.
+Kowalczyk_NNP ,_, I_PRP ._.
+Zukerman_NNP ,_, and_CC M_NN ._.
+Niemann_NNP ._.
+Analyzing_VBG the_DT effect_NN of_IN query_NN class_NN on_IN document_NN retrieval_NN performance_NN ._.
+In_IN Proc_NNP ._.
+Australian_JJ Conf_NNP ._.
+on_IN AI_NNP ,_, pages_NNS 550-561_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Y_NN ._.
+Li_NNP ,_, Z_NN ._.
+Zheng_NNP ,_, and_CC H_NN ._.
+Dai_NNP ._.
+KDD_NNP CUP-2005_NNP report_NN :_: Facing_VBG a_DT great_JJ challenge_NN ._.
+In_IN SIGKDD_NNP Explorations_NNPS ,_, volume_NN #_# ,_, pages_NNS 91-99_CD ._.
+ACM_NNP ,_, December_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- M_NN ._.
+Mitra_NNP ,_, A_NNP ._.
+Singhal_NNP ,_, and_CC C_NN ._.
+Buckley_NNP ._.
+Improving_NN automatic_JJ query_NN expansion_NN ._.
+In_IN SIGIR_NN ''_'' ##_NN ,_, pages_NNS 206-214_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- M_NN ._.
+Moran_NNP and_CC B_NNP ._.
+Hunt_NNP ._.
+Search_VB Engine_NNP Marketing_NNP ,_, Inc_NNP ._.
+:_: Driving_VBG Search_VB Traffic_NNP to_TO Your_PRP$ Company_NN ''_'' s_NNS Web_NN Site_NN ._.
+Prentice_NNP Hall_NNP ,_, Upper_NNP Saddle_NNP River_NNP ,_, NJ_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- S_NN ._.
+Robertson_NNP ,_, S_NN ._.
+Walker_NNP ,_, S_NN ._.
+Jones_NNP ,_, M_NN ._.
+Hancock-Beaulieu_NNP ,_, and_CC M_NN ._.
+Gatford_NNP ._.
+Okapi_NNP at_IN TREC-3_NN ._.
+In_IN TREC-3_NN ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+Rocchio_NNP ._.
+Relevance_NN feedback_NN in_IN information_NN retrieval_NN ._.
+In_IN The_DT SMART_NNP Retrieval_NNP System_NNP :_: Experiments_NNS in_IN Automatic_NNP Document_NNP Processing_NNP ,_, pages_NNS 313-323_CD ._.
+Prentice_NNP Hall_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- G_NN ._.
+Salton_NNP and_CC C_NNP ._.
+Buckley_NNP ._.
+Improving_NN retrieval_NN performance_NN by_IN relevance_NN feedback_NN ._.
+JASIS_NNP ,_, ##_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 288-297_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- T_NN ._.
+Santner_NNP and_CC D_NNP ._.
+Duffy_NN ._.
+The_DT Statistical_JJ Analysis_NN of_IN Discrete_NNP Data_NNP ._.
+Springer-Verlag_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- D_NN ._.
+Shen_NNP ,_, R_NN ._.
+Pan_NNP ,_, J_NNP ._.
+Sun_NNP ,_, J_NNP ._.
+Pan_NNP ,_, K_NNP ._.
+Wu_NNP ,_, J_NNP ._.
+Yin_NNP ,_, and_CC Q_NNP ._.
+Yang_NNP ._.
+Q2C_NN @_SYM UST_NNP :_: Our_PRP$ winning_VBG solution_NN to_TO query_VB classification_NN in_IN KDDCUP_NNP ####_CD ._.
+In_IN SIGKDD_NNP Explorations_NNPS ,_, volume_NN #_# ,_, pages_NNS 100-110_CD ._.
+ACM_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- D_NN ._.
+Shen_NNP ,_, R_NN ._.
+Pan_NNP ,_, J_NNP ._.
+Sun_NNP ,_, J_NNP ._.
+Pan_NNP ,_, K_NNP ._.
+Wu_NNP ,_, J_NNP ._.
+Yin_NNP ,_, and_CC Q_NNP ._.
+Yang_NNP ._.
+Query_NNP enrichment_NN for_IN web-query_JJ classification_NN ._.
+ACM_NNP TOIS_NNP ,_, ##_CD :_: 320-352_CD ,_, July_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- D_NN ._.
+Shen_NNP ,_, J_NNP ._.
+Sun_NNP ,_, Q_NNP ._.
+Yang_NNP ,_, and_CC Z_NN ._.
+Chen_NNP ._.
+Building_NN bridges_NNS for_IN web_NN query_NN classification_NN ._.
+In_IN SIGIR_NN ''_'' ##_NN ,_, pages_NNS 131-138_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- D_NN ._.
+Vogel_NNP ,_, S_NN ._.
+Bickel_NNP ,_, P_NN ._.
+Haider_NNP ,_, R_NN ._.
+Schimpfky_NNP ,_, P_NN ._.
+Siemen_NNP ,_, S_NN ._.
+Bridges_NNP ,_, and_CC T_NN ._.
+Scheffer_NNP ._.
+Classifying_VBG search_NN engine_NN queries_NNS using_VBG the_DT web_NN as_IN background_NN knowledge_NN ._.
+In_IN SIGKDD_NNP Explorations_NNPS ,_, volume_NN #_# ._.
+ACM_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- E_NN ._.
+Voorhees_NNP ._.
+Query_NNP expansion_NN using_VBG lexical-semantic_JJ relations_NNS ._.
+In_IN SIGIR_NN ''_'' ##_NN ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+Xu_NN and_CC W_NN ._.
+Bruce_NNP Croft_NNP ._.
+Improving_NN the_DT effectiveness_NN of_IN information_NN retrieval_NN with_IN local_JJ context_NN analysis_NN ._.
+ACM_NNP TOIS_NNP ,_, ##_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 79-112_CD ,_, ####_CD ._.

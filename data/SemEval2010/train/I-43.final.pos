@@ -1,0 +1,461 @@
+Dynamics_NNP Based_VBD Control_NN with_IN an_DT Application_NN to_TO Area-Sweeping_NNP Problems_NNS Zinovi_NNP Rabinovich_NNP Engineering_NNP and_CC Computer_NNP Science_NNP Hebrew_NNP University_NNP of_IN Jerusalem_NNP Jerusalem_NNP ,_, Israel_NNP nomad_NNP @_IN cs_NNS ._.
+huji_NNS ._.
+ac_NN ._.
+il_NN Jeffrey_NNP S_NN ._.
+Rosenschein_NNP Engineering_NNP and_CC Computer_NNP Science_NNP Hebrew_NNP University_NNP of_IN Jerusalem_NNP Jerusalem_NNP ,_, Israel_NNP jeff_NN @_IN cs_NNS ._.
+huji_NNS ._.
+ac_NN ._.
+il_NN Gal_NN A_NN ._.
+Kaminka_FW The_DT MAVERICK_NNP Group_NNP Department_NNP of_IN Computer_NNP Science_NNP Bar_NNP Ilan_NNP University_NNP ,_, Israel_NNP galk_NN @_IN cs_NNS ._.
+biu_NN ._.
+ac_NN ._.
+il_NN ABSTRACT_NN In_IN this_DT paper_NN we_PRP introduce_VBP Dynamics_NNP Based_VBD Control_NN -LRB-_-LRB- DBC_NN -RRB-_-RRB- ,_, an_DT approach_NN to_TO planning_NN and_CC control_NN of_IN an_DT agent_NN in_IN stochastic_JJ environments_NNS ._.
+Unlike_IN existing_VBG approaches_NNS ,_, which_WDT seek_VBP to_TO optimize_VB expected_VBN rewards_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, in_IN Partially_RB Observable_JJ Markov_NNP Decision_NNP Problems_NNS -LRB-_-LRB- POMDPs_NNS -RRB-_-RRB- -RRB-_-RRB- ,_, DBC_NN optimizes_VBZ system_NN behavior_NN towards_IN specified_VBN system_NN dynamics_NNS ._.
+We_PRP show_VBP that_IN a_DT recently_RB developed_VBN planning_NN and_CC control_NN approach_NN ,_, Extended_NNP Markov_NNP Tracking_NNP -LRB-_-LRB- EMT_NNP -RRB-_-RRB- is_VBZ an_DT instantiation_NN of_IN DBC_NNP ._.
+EMT_NN employs_VBZ greedy_JJ action_NN selection_NN to_TO provide_VB an_DT efficient_JJ control_NN algorithm_NN in_IN Markovian_JJ environments_NNS ._.
+We_PRP exploit_VBP this_DT efficiency_NN in_IN a_DT set_NN of_IN experiments_NNS that_WDT applied_VBD multitarget_JJ EMT_NN to_TO a_DT class_NN of_IN area-sweeping_JJ problems_NNS -LRB-_-LRB- searching_VBG for_IN moving_VBG targets_NNS -RRB-_-RRB- ._.
+We_PRP show_VBP that_IN such_JJ problems_NNS can_MD be_VB naturally_RB defined_VBN and_CC efficiently_RB solved_VBD using_VBG the_DT DBC_NNP framework_NN ,_, and_CC its_PRP$ EMT_NNP instantiation_NN ._.
+Categories_NNS and_CC Subject_NNP Descriptors_NNS I_PRP ._.
+#_# ._.
+#_# -LSB-_-LRB- Problem_NNP Solving_VBG ,_, Control_NNP Methods_NNS ,_, and_CC Search_VB -RSB-_-RRB- :_: Control_NNP Theory_NNP ;_: I_PRP ._.
+#_# ._.
+#_# -LSB-_-LRB- Robotics_NNS -RSB-_-RRB- ;_: I_PRP ._.
+#_# ._.
+##_NN -LSB-_-LRB- Distributed_VBN Artificial_NNP Intelligence_NNP -RSB-_-RRB- :_: Intelligent_JJ Agents_NNS General_NNP Terms_NNS Algorithms_NNS ,_, Theory_NNP 1_CD ._.
+INTRODUCTION_NNP Planning_NNP and_CC control_JJ constitutes_VBZ a_DT central_JJ research_NN area_NN in_IN multiagent_JJ systems_NNS and_CC artificial_JJ intelligence_NN ._.
+In_IN recent_JJ years_NNS ,_, Partially_RB Observable_JJ Markov_NNP Decision_NNP Processes_NNP -LRB-_-LRB- POMDPs_NNS -RRB-_-RRB- -LSB-_-LRB- ##_CD -RSB-_-RRB- have_VBP become_VBN a_DT popular_JJ formal_JJ basis_NN for_IN planning_NN in_IN stochastic_JJ environments_NNS ._.
+In_IN this_DT framework_NN ,_, the_DT planning_NN and_CC control_NN problem_NN is_VBZ often_RB addressed_VBN by_IN imposing_VBG a_DT reward_NN function_NN ,_, and_CC computing_VBG a_DT policy_NN -LRB-_-LRB- of_IN choosing_VBG actions_NNS -RRB-_-RRB- that_WDT is_VBZ optimal_JJ ,_, in_IN the_DT sense_NN that_IN it_PRP will_MD result_VB in_IN the_DT highest_JJS expected_VBN utility_NN ._.
+While_IN theoretically_RB attractive_JJ ,_, the_DT complexity_NN of_IN optimally_RB solving_VBG a_DT POMDP_NN is_VBZ prohibitive_JJ -LSB-_-LRB- #_# ,_, #_# -RSB-_-RRB- ._.
+We_PRP take_VBP an_DT alternative_JJ view_NN of_IN planning_NN in_IN stochastic_JJ environments_NNS ._.
+We_PRP do_VBP not_RB use_VB a_DT -LRB-_-LRB- state-based_JJ -RRB-_-RRB- reward_NN function_NN ,_, but_CC instead_RB optimize_VB over_IN a_DT different_JJ criterion_NN ,_, a_DT transition-based_JJ specification_NN of_IN the_DT desired_VBN system_NN dynamics_NNS ._.
+The_DT idea_NN here_RB is_VBZ to_TO view_VB planexecution_NN as_IN a_DT process_NN that_WDT compels_VBZ a_DT -LRB-_-LRB- stochastic_JJ -RRB-_-RRB- system_NN to_TO change_VB ,_, and_CC a_DT plan_NN as_IN a_DT dynamic_JJ process_NN that_WDT shapes_VBZ that_IN change_NN according_VBG to_TO desired_VBN criteria_NNS ._.
+We_PRP call_VBP this_DT general_JJ planning_NN framework_NN Dynamics_NNP Based_VBD Control_NN -LRB-_-LRB- DBC_NN -RRB-_-RRB- ._.
+In_IN DBC_NNP ,_, the_DT goal_NN of_IN a_DT planning_NN -LRB-_-LRB- or_CC control_NN -RRB-_-RRB- process_NN becomes_VBZ to_TO ensure_VB that_IN the_DT system_NN will_MD change_VB in_IN accordance_NN with_IN specific_JJ -LRB-_-LRB- potentially_RB stochastic_JJ -RRB-_-RRB- target_NN dynamics_NNS ._.
+As_IN actual_JJ system_NN behavior_NN may_MD deviate_VB from_IN that_DT which_WDT is_VBZ specified_VBN by_IN target_NN dynamics_NNS -LRB-_-LRB- due_JJ to_TO the_DT stochastic_JJ nature_NN of_IN the_DT system_NN -RRB-_-RRB- ,_, planning_NN in_IN such_JJ environments_NNS needs_VBZ to_TO be_VB continual_JJ -LSB-_-LRB- #_# -RSB-_-RRB- ,_, in_IN a_DT manner_NN similar_JJ to_TO classical_JJ closed-loop_JJ controllers_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Here_RB ,_, optimality_NN is_VBZ measured_VBN in_IN terms_NNS of_IN probability_NN of_IN deviation_NN magnitudes_NNS ._.
+In_IN this_DT paper_NN ,_, we_PRP present_VBP the_DT structure_NN of_IN Dynamics_NNP Based_VBD Control_NN ._.
+We_PRP show_VBP that_IN the_DT recently_RB developed_VBN Extended_NNP Markov_NNP Tracking_NNP -LRB-_-LRB- EMT_NNP -RRB-_-RRB- approach_NN -LSB-_-LRB- ##_CD ,_, ##_CD ,_, ##_CD -RSB-_-RRB- is_VBZ subsumed_VBN by_IN DBC_NNP ,_, with_IN EMT_NN employing_VBG greedy_JJ action_NN selection_NN ,_, which_WDT is_VBZ a_DT specific_JJ parameterization_NN among_IN the_DT options_NNS possible_JJ within_IN DBC_NNP ._.
+EMT_NN is_VBZ an_DT efficient_JJ instantiation_NN of_IN DBC_NNP ._.
+To_TO evaluate_VB DBC_NNP ,_, we_PRP carried_VBD out_RP a_DT set_NN of_IN experiments_NNS applying_VBG multi-target_JJ EMT_NN to_TO the_DT Tag_NN Game_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ;_: this_DT is_VBZ a_DT variant_NN on_IN the_DT area_NN sweeping_JJ problem_NN ,_, where_WRB an_DT agent_NN is_VBZ trying_VBG to_TO tag_VB a_DT moving_VBG target_NN -LRB-_-LRB- quarry_NN -RRB-_-RRB- whose_WP$ position_NN is_VBZ not_RB known_VBN with_IN certainty_NN ._.
+Experimental_JJ data_NNS demonstrates_VBZ that_IN even_RB with_IN a_DT simple_JJ model_NN of_IN the_DT environment_NN and_CC a_DT simple_JJ design_NN of_IN target_NN dynamics_NNS ,_, high_JJ success_NN rates_NNS can_MD be_VB produced_VBN both_CC in_IN catching_VBG the_DT quarry_NN ,_, and_CC in_IN surprising_JJ the_DT quarry_NN -LRB-_-LRB- as_RB expressed_VBN by_IN the_DT observed_VBN entropy_NN of_IN the_DT controlled_JJ agent_NN ''_'' s_NNS position_NN -RRB-_-RRB- ._.
+The_DT paper_NN is_VBZ organized_VBN as_IN follows_VBZ ._.
+In_IN Section_NN #_# we_PRP motivate_VBP DBC_NNP using_VBG area-sweeping_JJ problems_NNS ,_, and_CC discuss_VBP related_JJ work_NN ._.
+Section_NN #_# introduces_VBZ the_DT Dynamics_NNP Based_VBD Control_NN -LRB-_-LRB- DBC_NN -RRB-_-RRB- structure_NN ,_, and_CC its_PRP$ specialization_NN to_TO Markovian_JJ environments_NNS ._.
+This_DT is_VBZ followed_VBN by_IN a_DT review_NN of_IN the_DT Extended_NNP Markov_NNP Tracking_NNP -LRB-_-LRB- EMT_NNP -RRB-_-RRB- approach_NN as_IN a_DT DBC-structured_JJ control_NN regimen_NNS in_IN Section_NN #_# ._.
+That_DT section_NN also_RB discusses_VBZ the_DT limitations_NNS of_IN EMT-based_JJ control_NN relative_JJ to_TO the_DT general_JJ DBC_NN framework_NN ._.
+Experimental_JJ settings_NNS and_CC results_NNS are_VBP then_RB presented_VBN in_IN Section_NN #_# ._.
+Section_NN #_# provides_VBZ a_DT short_JJ discussion_NN of_IN the_DT overall_JJ approach_NN ,_, and_CC Section_NN #_# gives_VBZ some_DT concluding_VBG remarks_NNS and_CC directions_NNS for_IN future_JJ work_NN ._.
+790_CD 978-81-904262-7-5_CD -LRB-_-LRB- RPS_NN -RRB-_-RRB- c_NN ####_CD IFAAMAS_NN 2_CD ._.
+MOTIVATION_NN AND_CC RELATED_JJ WORK_VBP Many_JJ real-life_JJ scenarios_NNS naturally_RB have_VBP a_DT stochastic_JJ target_NN dynamics_NNS specification_NN ,_, especially_RB those_DT domains_NNS where_WRB there_EX exists_VBZ no_DT ultimate_JJ goal_NN ,_, but_CC rather_RB system_NN behavior_NN -LRB-_-LRB- with_IN specific_JJ properties_NNS -RRB-_-RRB- that_WDT has_VBZ to_TO be_VB continually_RB supported_VBN ._.
+For_IN example_NN ,_, security_NN guards_NNS perform_VBP persistent_JJ sweeps_NNS of_IN an_DT area_NN to_TO detect_VB any_DT sign_NN of_IN intrusion_NN ._.
+Cunning_JJ thieves_NNS will_MD attempt_VB to_TO track_VB these_DT sweeps_NNS ,_, and_CC time_NN their_PRP$ operation_NN to_TO key_JJ points_NNS of_IN the_DT guards_NNS ''_'' motion_NN ._.
+It_PRP is_VBZ thus_RB advisable_JJ to_TO make_VB the_DT guards_NNS ''_'' motion_NN dynamics_NNS appear_VBP irregular_JJ and_CC random_JJ ._.
+Recent_JJ work_NN by_IN Paruchuri_NNP et_FW al_FW ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- has_VBZ addressed_VBN such_JJ randomization_NN in_IN the_DT context_NN of_IN single-agent_JJ and_CC distributed_VBN POMDPs_NNS ._.
+The_DT goal_NN in_IN that_DT work_NN was_VBD to_TO generate_VB policies_NNS that_WDT provide_VBP a_DT measure_NN of_IN action-selection_NN randomization_NN ,_, while_IN maintaining_VBG rewards_NNS within_IN some_DT acceptable_JJ levels_NNS ._.
+Our_PRP$ focus_NN differs_VBZ from_IN this_DT work_NN in_IN that_DT DBC_NN does_VBZ not_RB optimize_VB expected_VBN rewards-indeed_NN we_PRP do_VBP not_RB consider_VB rewards_NNS at_IN all-but_JJ instead_RB maintains_VBZ desired_VBN dynamics_NNS -LRB-_-LRB- including_VBG ,_, but_CC not_RB limited_VBN to_TO ,_, randomization_NN -RRB-_-RRB- ._.
+The_DT Game_NN of_IN Tag_NN is_VBZ another_DT example_NN of_IN the_DT applicability_NN of_IN the_DT approach_NN ._.
+It_PRP was_VBD introduced_VBN in_IN the_DT work_NN by_IN Pineau_NNP et_FW al_FW ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- ._.
+There_EX are_VBP two_CD agents_NNS that_WDT can_MD move_VB about_IN an_DT area_NN ,_, which_WDT is_VBZ divided_VBN into_IN a_DT grid_NN ._.
+The_DT grid_NN may_MD have_VB blocked_VBN cells_NNS -LRB-_-LRB- holes_NNS -RRB-_-RRB- into_IN which_WDT no_DT agent_NN can_MD move_VB ._.
+One_CD agent_NN -LRB-_-LRB- the_DT hunter_NN -RRB-_-RRB- seeks_VBZ to_TO move_VB into_IN a_DT cell_NN occupied_VBN by_IN the_DT other_JJ -LRB-_-LRB- the_DT quarry_NN -RRB-_-RRB- ,_, such_JJ that_IN they_PRP are_VBP co-located_JJ -LRB-_-LRB- this_DT is_VBZ a_DT successful_JJ tag_NN -RRB-_-RRB- ._.
+The_DT quarry_NN seeks_VBZ to_TO avoid_VB the_DT hunter_NN agent_NN ,_, and_CC is_VBZ always_RB aware_JJ of_IN the_DT hunter_NN ''_'' s_NNS position_NN ,_, but_CC does_VBZ not_RB know_VB how_WRB the_DT hunter_NN will_MD behave_VB ,_, which_WDT opens_VBZ up_RP the_DT possibility_NN for_IN a_DT hunter_NN to_TO surprise_VB the_DT prey_NN ._.
+The_DT hunter_NN knows_VBZ the_DT quarry_NN ''_'' s_NNS probabilistic_JJ law_NN of_IN motion_NN ,_, but_CC does_VBZ not_RB know_VB its_PRP$ current_JJ location_NN ._.
+Tag_NN is_VBZ an_DT instance_NN of_IN a_DT family_NN of_IN area-sweeping_NN -LRB-_-LRB- pursuit-evasion_NN -RRB-_-RRB- problems_NNS ._.
+In_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ,_, the_DT hunter_NN modeled_VBD the_DT problem_NN using_VBG a_DT POMDP_NN ._.
+A_DT reward_NN function_NN was_VBD defined_VBN ,_, to_TO reflect_VB the_DT desire_NN to_TO tag_VB the_DT quarry_NN ,_, and_CC an_DT action_NN policy_NN was_VBD computed_VBN to_TO optimize_VB the_DT reward_NN collected_VBN over_IN time_NN ._.
+Due_JJ to_TO the_DT intractable_JJ complexity_NN of_IN determining_VBG the_DT optimal_JJ policy_NN ,_, the_DT action_NN policy_NN computed_VBN in_IN that_DT paper_NN was_VBD essentially_RB an_DT approximation_NN ._.
+In_IN this_DT paper_NN ,_, instead_RB of_IN formulating_VBG a_DT reward_NN function_NN ,_, we_PRP use_VBP EMT_NN to_TO solve_VB the_DT problem_NN ,_, by_IN directly_RB specifying_VBG the_DT target_NN dynamics_NNS ._.
+In_IN fact_NN ,_, any_DT search_NN problem_NN with_IN randomized_VBN motion_NN ,_, the_DT socalled_JJ class_NN of_IN area_NN sweeping_JJ problems_NNS ,_, can_MD be_VB described_VBN through_IN specification_NN of_IN such_JJ target_NN system_NN dynamics_NNS ._.
+Dynamics_NNP Based_VBD Control_NNP provides_VBZ a_DT natural_JJ approach_NN to_TO solving_VBG these_DT problems_NNS ._.
+3_LS ._.
+DYNAMICS_NNS BASED_NN CONTROL_NNP The_DT specification_NN of_IN Dynamics_NNP Based_VBD Control_NN -LRB-_-LRB- DBC_NN -RRB-_-RRB- can_MD be_VB broken_VBN into_IN three_CD interacting_VBG levels_NNS :_: Environment_NNP Design_NNP Level_NNP ,_, User_NN Level_NN ,_, and_CC Agent_NNP Level_NNP ._.
+Environment_NNP Design_NNP Level_NNP is_VBZ concerned_VBN with_IN the_DT formal_JJ specification_NN and_CC modeling_NN of_IN the_DT environment_NN ._.
+For_IN example_NN ,_, this_DT level_NN would_MD specify_VB the_DT laws_NNS of_IN physics_NN within_IN the_DT system_NN ,_, and_CC set_VBD its_PRP$ parameters_NNS ,_, such_JJ as_IN the_DT gravitation_NN constant_NN ._.
+User_NN Level_NN in_IN turn_NN relies_VBZ on_IN the_DT environment_NN model_NN produced_VBN by_IN Environment_NNP Design_NNP to_TO specify_VB the_DT target_NN system_NN dynamics_NNS it_PRP wishes_VBZ to_TO observe_VB ._.
+The_DT User_NN Level_NN also_RB specifies_VBZ the_DT estimation_NN or_CC learning_VBG procedure_NN for_IN system_NN dynamics_NNS ,_, and_CC the_DT measure_NN of_IN deviation_NN ._.
+In_IN the_DT museum_NN guard_NN scenario_NN above_IN ,_, these_DT would_MD correspond_VB to_TO a_DT stochastic_JJ sweep_NN schedule_NN ,_, and_CC a_DT measure_NN of_IN relative_JJ surprise_NN between_IN the_DT specified_VBN and_CC actual_JJ sweeping_JJ ._.
+Agent_NNP Level_NNP in_IN turn_NN combines_VBZ the_DT environment_NN model_NN from_IN the_DT Environment_NNP Design_NN level_NN ,_, the_DT dynamics_NNS estimation_NN procedure_NN ,_, the_DT deviation_NN measure_NN and_CC the_DT target_NN dynamics_NNS specification_NN from_IN User_NN Level_NN ,_, to_TO produce_VB a_DT sequence_NN of_IN actions_NNS that_WDT create_VBP system_NN dynamics_NNS as_IN close_JJ as_IN possible_JJ to_TO the_DT targeted_VBN specification_NN ._.
+As_IN we_PRP are_VBP interested_JJ in_IN the_DT continual_JJ development_NN of_IN a_DT stochastic_JJ system_NN ,_, such_JJ as_IN happens_VBZ in_IN classical_JJ control_NN theory_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- and_CC continual_JJ planning_NN -LSB-_-LRB- #_# -RSB-_-RRB- ,_, as_RB well_RB as_IN in_IN our_PRP$ example_NN of_IN museum_NN sweeps_NNS ,_, the_DT question_NN becomes_VBZ how_WRB the_DT Agent_NNP Level_NNP is_VBZ to_TO treat_VB the_DT deviation_NN measurements_NNS over_IN time_NN ._.
+To_TO this_DT end_NN ,_, we_PRP use_VBP a_DT probability_NN threshold-that_NN is_VBZ ,_, we_PRP would_MD like_VB the_DT Agent_NNP Level_NNP to_TO maximize_VB the_DT probability_NN that_IN the_DT deviation_NN measure_NN will_MD remain_VB below_IN a_DT certain_JJ threshold_NN ._.
+Specific_JJ action_NN selection_NN then_RB depends_VBZ on_IN system_NN formalization_NN ._.
+One_CD possibility_NN would_MD be_VB to_TO create_VB a_DT mixture_NN of_IN available_JJ system_NN trends_NNS ,_, much_RB like_IN that_DT which_WDT happens_VBZ in_IN Behavior-Based_JJ Robotic_JJ architectures_NNS -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+The_DT other_JJ alternative_NN would_MD be_VB to_TO rely_VB on_IN the_DT estimation_NN procedure_NN provided_VBN by_IN the_DT User_NN Level-to_NN utilize_VBP the_DT Environment_NN Design_NN Level_NN model_NN of_IN the_DT environment_NN to_TO choose_VB actions_NNS ,_, so_RB as_IN to_TO manipulate_VB the_DT dynamics_NNS estimator_NN into_IN believing_VBG that_IN a_DT certain_JJ dynamics_NNS has_VBZ been_VBN achieved_VBN ._.
+Notice_NNP that_IN this_DT manipulation_NN is_VBZ not_RB direct_JJ ,_, but_CC via_IN the_DT environment_NN ._.
+Thus_RB ,_, for_IN strong_JJ enough_JJ estimator_NN algorithms_NNS ,_, successful_JJ manipulation_NN would_MD mean_VB a_DT successful_JJ simulation_NN of_IN the_DT specified_VBN target_NN dynamics_NNS -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, beyond_IN discerning_JJ via_IN the_DT available_JJ sensory_JJ input_NN -RRB-_-RRB- ._.
+DBC_NN levels_NNS can_MD also_RB have_VB a_DT back-flow_NN of_IN information_NN -LRB-_-LRB- see_VB Figure_NNP #_# -RRB-_-RRB- ._.
+For_IN instance_NN ,_, the_DT Agent_NNP Level_NNP could_MD provide_VB data_NNS about_IN target_NN dynamics_NNS feasibility_NN ,_, allowing_VBG the_DT User_NN Level_NN to_TO modify_VB the_DT requirement_NN ,_, perhaps_RB focusing_VBG on_IN attainable_JJ features_NNS of_IN system_NN behavior_NN ._.
+Data_NNS would_MD also_RB be_VB available_JJ about_IN the_DT system_NN response_NN to_TO different_JJ actions_NNS performed_VBN ;_: combined_VBN with_IN a_DT dynamics_NNS estimator_NN defined_VBN by_IN the_DT User_NN Level_NN ,_, this_DT can_MD provide_VB an_DT important_JJ tool_NN for_IN the_DT environment_NN model_NN calibration_NN at_IN the_DT Environment_NNP Design_NNP Level_NNP ._.
+UserEnv_NNP ._.
+Design_NN Agent_NNP Model_NNP Ideal_NNP Dynamics_NNP Estimator_NNP Estimator_NNP Dynamics_NNP Feasibility_NNP System_NNP Response_NNP Data_NNP Figure_NNP #_# :_: Data_NN flow_NN of_IN the_DT DBC_NNP framework_NN Extending_VBG upon_IN the_DT idea_NN of_IN Actor-Critic_JJ algorithms_NNS -LSB-_-LRB- #_# -RSB-_-RRB- ,_, DBC_NNP data_NNS flow_NN can_MD provide_VB a_DT good_JJ basis_NN for_IN the_DT design_NN of_IN a_DT learning_NN algorithm_NN ._.
+For_IN example_NN ,_, the_DT User_NN Level_NN can_MD operate_VB as_IN an_DT exploratory_JJ device_NN for_IN a_DT learning_NN algorithm_NN ,_, inferring_VBG an_DT ideal_JJ dynamics_NNS target_NN from_IN the_DT environment_NN model_NN at_IN hand_NN that_WDT would_MD expose_VB and_CC verify_VB most_RBS critical_JJ features_NNS of_IN system_NN behavior_NN ._.
+In_IN this_DT case_NN ,_, feasibility_NN and_CC system_NN response_NN data_NNS from_IN the_DT Agent_NNP Level_NNP would_MD provide_VB key_JJ information_NN for_IN an_DT environment_NN model_NN update_VBP ._.
+In_IN fact_NN ,_, the_DT combination_NN of_IN feasibility_NN and_CC response_NN data_NNS can_MD provide_VB a_DT basis_NN for_IN the_DT application_NN of_IN strong_JJ learning_NN algorithms_NNS such_JJ as_IN EM_NN -LSB-_-LRB- #_# ,_, #_# -RSB-_-RRB- ._.
+3_LS ._.
+#_# DBC_NNP for_IN Markovian_NNP Environments_NNP For_IN a_DT Partially_RB Observable_JJ Markovian_NNP Environment_NNP ,_, DBC_NNP can_MD be_VB specified_VBN in_IN a_DT more_RBR rigorous_JJ manner_NN ._.
+Notice_NNP how_WRB DBC_NNP discards_VBZ rewards_NNS ,_, and_CC replaces_VBZ it_PRP by_IN another_DT optimality_NN criterion_NN -LRB-_-LRB- structural_JJ differences_NNS are_VBP summarized_VBN in_IN Table_NNP #_# -RRB-_-RRB- :_: Environment_NNP Design_NNP level_NN is_VBZ to_TO specify_VB a_DT tuple_NN ,_, where_WRB :_: -_: S_NN is_VBZ the_DT set_NN of_IN all_DT possible_JJ environment_NN states_NNS ;_: -_: s0_NN is_VBZ the_DT initial_JJ state_NN of_IN the_DT environment_NN -LRB-_-LRB- which_WDT can_MD also_RB be_VB viewed_VBN as_IN a_DT probability_NN distribution_NN over_IN S_NN -RRB-_-RRB- ;_: The_DT Sixth_NNP Intl_NNP ._.
+Joint_NNP Conf_NNP ._.
+on_IN Autonomous_NNP Agents_NNPS and_CC Multi-Agent_NNP Systems_NNP -LRB-_-LRB- AAMAS_NNP ##_CD -RRB-_-RRB- ###_SYM -_: A_NN is_VBZ the_DT set_NN of_IN all_DT possible_JJ actions_NNS applicable_JJ in_IN the_DT environment_NN ;_: -_: T_NN is_VBZ the_DT environment_NN ''_'' s_NNS probabilistic_JJ transition_NN function_NN :_: T_NN :_: S_NN A_NN -LRB-_-LRB- S_NN -RRB-_-RRB- ._.
+That_DT is_VBZ ,_, T_NN -LRB-_-LRB- s_NNS |_VBP a_DT ,_, s_NNS -RRB-_-RRB- is_VBZ the_DT probability_NN that_IN the_DT environment_NN will_MD move_VB from_IN state_NN s_NNS to_TO state_NN s_NNS under_IN action_NN a_DT ;_: -_: O_NN is_VBZ the_DT set_NN of_IN all_DT possible_JJ observations_NNS ._.
+This_DT is_VBZ what_WP the_DT sensor_NN input_NN would_MD look_VB like_IN for_IN an_DT outside_JJ observer_NN ;_: -_: is_VBZ the_DT observation_NN probability_NN function_NN :_: :_: S_NN A_DT S_NN -LRB-_-LRB- O_NN -RRB-_-RRB- ._.
+That_DT is_VBZ ,_, -LRB-_-LRB- o_NN |_CD s_NNS ,_, a_DT ,_, s_NNS -RRB-_-RRB- is_VBZ the_DT probability_NN that_IN one_CD will_MD observe_VB o_NN given_VBN that_IN the_DT environment_NN has_VBZ moved_VBN from_IN state_NN s_NNS to_TO state_NN s_NNS under_IN action_NN a_DT ._.
+User_NN Level_NN ,_, in_IN the_DT case_NN of_IN Markovian_JJ environment_NN ,_, operates_VBZ on_IN the_DT set_NN of_IN system_NN dynamics_NNS described_VBN by_IN a_DT family_NN of_IN conditional_JJ probabilities_NNS F_NN =_JJ -LCB-_-LRB- :_: S_NN A_NN -LRB-_-LRB- S_NN -RRB-_-RRB- -RCB-_-RRB- ._.
+Thus_RB specification_NN of_IN target_NN dynamics_NNS can_MD be_VB expressed_VBN by_IN q_NN F_NN ,_, and_CC the_DT learning_NN or_CC tracking_NN algorithm_NN can_MD be_VB represented_VBN as_IN a_DT function_NN L_NN :_: O_NN -LRB-_-LRB- AO_JJ -RRB-_-RRB- F_NN ;_: that_DT is_VBZ ,_, it_PRP maps_VBZ sequences_NNS of_IN observations_NNS and_CC actions_NNS performed_VBN so_RB far_RB into_IN an_DT estimate_NN F_NN of_IN system_NN dynamics_NNS ._.
+There_EX are_VBP many_JJ possible_JJ variations_NNS available_JJ at_IN the_DT User_NN Level_NN to_TO define_VB divergence_NN between_IN system_NN dynamics_NNS ;_: several_JJ of_IN them_PRP are_VBP :_: -_: Trace_NNP distance_NN or_CC L1_NN distance_NN between_IN two_CD distributions_NNS p_NN and_CC q_RB defined_VBN by_IN D_NN -LRB-_-LRB- p_NN -LRB-_-LRB- -RRB-_-RRB- ,_, q_NN -LRB-_-LRB- -RRB-_-RRB- -RRB-_-RRB- =_JJ 1_CD 2_CD x_NN |_NN p_NN -LRB-_-LRB- x_NN -RRB-_-RRB- q_NN -LRB-_-LRB- x_NN -RRB-_-RRB- |_SYM -_: Fidelity_NNP measure_NN of_IN distance_NN F_NN -LRB-_-LRB- p_NN -LRB-_-LRB- -RRB-_-RRB- ,_, q_NN -LRB-_-LRB- -RRB-_-RRB- -RRB-_-RRB- =_JJ x_CC p_NN -LRB-_-LRB- x_NN -RRB-_-RRB- q_NN -LRB-_-LRB- x_NN -RRB-_-RRB- -_: Kullback-Leibler_NN divergence_NN DKL_NN -LRB-_-LRB- p_NN -LRB-_-LRB- -RRB-_-RRB- q_NN -LRB-_-LRB- -RRB-_-RRB- -RRB-_-RRB- =_JJ x_CC p_NN -LRB-_-LRB- x_NN -RRB-_-RRB- log_NN p_NN -LRB-_-LRB- x_NN -RRB-_-RRB- q_NN -LRB-_-LRB- x_NN -RRB-_-RRB- Notice_NNP that_IN the_DT latter_JJ two_CD are_VBP not_RB actually_RB metrics_NNS over_IN the_DT space_NN of_IN possible_JJ distributions_NNS ,_, but_CC nevertheless_RB have_VBP meaningful_JJ and_CC important_JJ interpretations_NNS ._.
+For_IN instance_NN ,_, KullbackLeibler_NN divergence_NN is_VBZ an_DT important_JJ tool_NN of_IN information_NN theory_NN -LSB-_-LRB- #_# -RSB-_-RRB- that_WDT allows_VBZ one_CD to_TO measure_VB the_DT price_NN of_IN encoding_VBG an_DT information_NN source_NN governed_VBN by_IN q_NN ,_, while_IN assuming_VBG that_IN it_PRP is_VBZ governed_VBN by_IN p_NN ._.
+The_DT User_NN Level_NN also_RB defines_VBZ the_DT threshold_NN of_IN dynamics_NNS deviation_NN probability_NN ._.
+Agent_NNP Level_NNP is_VBZ then_RB faced_VBN with_IN a_DT problem_NN of_IN selecting_VBG a_DT control_NN signal_NN function_NN a_DT to_TO satisfy_VB a_DT minimization_NN problem_NN as_IN follows_VBZ :_: a_DT =_JJ arg_NN min_NN a_DT Pr_NN -LRB-_-LRB- d_NN -LRB-_-LRB- a_DT ,_, q_NN -RRB-_-RRB- >_JJR -RRB-_-RRB- where_WRB d_NN -LRB-_-LRB- a_DT ,_, q_NN -RRB-_-RRB- is_VBZ a_DT random_JJ variable_JJ describing_VBG deviation_NN of_IN the_DT dynamics_NNS estimate_VBP a_DT ,_, created_VBN by_IN L_NN under_IN control_NN signal_NN a_DT ,_, from_IN the_DT ideal_JJ dynamics_NNS q_VBP ._.
+Implicit_NN in_IN this_DT minimization_NN problem_NN is_VBZ that_IN L_NN is_VBZ manipulated_VBN via_IN the_DT environment_NN ,_, based_VBN on_IN the_DT environment_NN model_NN produced_VBN by_IN the_DT Environment_NNP Design_NNP Level_NNP ._.
+3_LS ._.
+#_# DBC_NNP View_NNP of_IN the_DT State_NNP Space_NNP It_PRP is_VBZ important_JJ to_TO note_VB the_DT complementary_JJ view_NN that_IN DBC_NN and_CC POMDPs_NNS take_VBP on_IN the_DT state_NN space_NN of_IN the_DT environment_NN ._.
+POMDPs_NNS regard_VBP state_NN as_IN a_DT stationary_JJ snap-shot_NN of_IN the_DT environment_NN ;_: whatever_WDT attributes_NNS of_IN state_NN sequencing_NN one_CD seeks_VBZ are_VBP reached_VBN through_IN properties_NNS of_IN the_DT control_NN process_NN ,_, in_IN this_DT case_NN reward_NN accumulation_NN ._.
+This_DT can_MD be_VB viewed_VBN as_IN if_IN the_DT sequencing_NN of_IN states_NNS and_CC the_DT attributes_NNS of_IN that_DT sequencing_NN are_VBP only_RB introduced_VBN by_IN and_CC for_IN the_DT controlling_VBG mechanism-the_JJ POMDP_NN policy_NN ._.
+DBC_NN concentrates_VBZ on_IN the_DT underlying_VBG principle_NN of_IN state_NN sequencing_NN ,_, the_DT system_NN dynamics_NNS ._.
+DBC_NNP ''_'' s_VBZ target_NN dynamics_NNS specification_NN can_MD use_VB the_DT environment_NN ''_'' s_NNS state_NN space_NN as_IN a_DT means_NN to_TO describe_VB ,_, discern_VB ,_, and_CC preserve_VB changes_NNS that_WDT occur_VBP within_IN the_DT system_NN ._.
+As_IN a_DT result_NN ,_, DBC_NNP has_VBZ a_DT greater_JJR ability_NN to_TO express_VB state_NN sequencing_NN properties_NNS ,_, which_WDT are_VBP grounded_VBN in_IN the_DT environment_NN model_NN and_CC its_PRP$ state_NN space_NN definition_NN ._.
+For_IN example_NN ,_, consider_VB the_DT task_NN of_IN moving_VBG through_IN rough_JJ terrain_NN towards_IN a_DT goal_NN and_CC reaching_VBG it_PRP as_IN fast_RB as_IN possible_JJ ._.
+POMDPs_NNS would_MD encode_VB terrain_NN as_IN state_NN space_NN points_NNS ,_, while_IN speed_NN would_MD be_VB ensured_VBN by_IN negative_JJ reward_NN for_IN every_DT step_NN taken_VBN without_IN reaching_VBG the_DT goalaccumulating_VBG higher_JJR reward_NN can_MD be_VB reached_VBN only_RB by_IN faster_JJR motion_NN ._.
+Alternatively_RB ,_, the_DT state_NN space_NN could_MD directly_RB include_VB the_DT notion_NN of_IN speed_NN ._.
+For_IN POMDPs_NNS ,_, this_DT would_MD mean_VB that_IN the_DT same_JJ concept_NN is_VBZ encoded_VBN twice_RB ,_, in_IN some_DT sense_NN :_: directly_RB in_IN the_DT state_NN space_NN ,_, and_CC indirectly_RB within_IN reward_NN accumulation_NN ._.
+Now_RB ,_, even_RB if_IN the_DT reward_NN function_NN would_MD encode_VB more_RBR ,_, and_CC finer_NN ,_, details_NNS of_IN the_DT properties_NNS of_IN motion_NN ,_, the_DT POMDP_NN solution_NN will_MD have_VB to_TO search_VB in_IN a_DT much_JJ larger_JJR space_NN of_IN policies_NNS ,_, while_IN still_RB being_VBG guided_VBN by_IN the_DT implicit_JJ concept_NN of_IN the_DT reward_NN accumulation_NN procedure_NN ._.
+On_IN the_DT other_JJ hand_NN ,_, the_DT tactical_JJ target_NN expression_NN of_IN variations_NNS and_CC correlations_NNS between_IN position_NN and_CC speed_NN of_IN motion_NN is_VBZ now_RB grounded_VBN in_IN the_DT state_NN space_NN representation_NN ._.
+In_IN this_DT situation_NN ,_, any_DT further_JJ constraints_NNS ,_, e_LS ._.
+g_NN ._.
+,_, smoothness_NN of_IN motion_NN ,_, speed_NN limits_NNS in_IN different_JJ locations_NNS ,_, or_CC speed_NN reductions_NNS during_IN sharp_JJ turns_NNS ,_, are_VBP explicitly_RB and_CC uniformly_RB expressed_VBN by_IN the_DT tactical_JJ target_NN ,_, and_CC can_MD result_VB in_IN faster_JJR and_CC more_RBR effective_JJ action_NN selection_NN by_IN a_DT DBC_NNP algorithm_NN ._.
+4_LS ._.
+EMT-BASED_NN CONTROL_NNP AS_NNP A_NNP DBC_NNP Recently_RB ,_, a_DT control_NN algorithm_NN was_VBD introduced_VBN called_VBN EMT-based_JJ Control_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, which_WDT instantiates_VBZ the_DT DBC_NNP framework_NN ._.
+Although_IN it_PRP provides_VBZ an_DT approximate_JJ greedy_JJ solution_NN in_IN the_DT DBC_NNP sense_NN ,_, initial_JJ experiments_NNS using_VBG EMT-based_JJ control_NN have_VBP been_VBN encouraging_JJ -LSB-_-LRB- ##_CD ,_, 15_CD -RSB-_-RRB- ._.
+EMT-based_JJ control_NN is_VBZ based_VBN on_IN the_DT Markovian_JJ environment_NN definition_NN ,_, as_IN in_IN the_DT case_NN with_IN POMDPs_NNS ,_, but_CC its_PRP$ User_NN and_CC Agent_NNP Levels_NNS are_VBP of_IN the_DT Markovian_NNP DBC_NNP type_NN of_IN optimality_NN ._.
+User_NN Level_NN of_IN EMT-based_JJ control_NN defines_VBZ a_DT limited-case_JJ target_NN system_NN dynamics_NNS independent_JJ of_IN action_NN :_: qEMT_NN :_: S_NN -LRB-_-LRB- S_NN -RRB-_-RRB- ._.
+It_PRP then_RB utilizes_VBZ the_DT Kullback-Leibler_NNP divergence_NN measure_NN to_TO compose_VB a_DT momentary_JJ system_NN dynamics_NNS estimator-the_JJ Extended_NNP Markov_NNP Tracking_NNP -LRB-_-LRB- EMT_NNP -RRB-_-RRB- algorithm_NN ._.
+The_DT algorithm_NN keeps_VBZ a_DT system_NN dynamics_NNS estimate_VBP t_NN EMT_NN that_WDT is_VBZ capable_JJ of_IN explaining_VBG recent_JJ change_NN in_IN an_DT auxiliary_JJ Bayesian_JJ system_NN state_NN estimator_NN from_IN pt1_NN to_TO pt_VB ,_, and_CC updates_NNS it_PRP conservatively_RB using_VBG Kullback-Leibler_NNP divergence_NN ._.
+Since_IN t_NN EMT_NN and_CC pt1_NN ,_, t_NN are_VBP respectively_RB the_DT conditional_JJ and_CC marginal_JJ probabilities_NNS over_IN the_DT system_NN ''_'' s_NNS state_NN space_NN ,_, explanation_NN simply_RB means_VBZ that_IN pt_NN -LRB-_-LRB- s_NNS -RRB-_-RRB- =_JJ s_NNS t_NN EMT_NN -LRB-_-LRB- s_NNS |_VBP s_NNS -RRB-_-RRB- pt1_NN -LRB-_-LRB- s_NNS -RRB-_-RRB- ,_, and_CC the_DT dynamics_NNS estimate_VBP update_VBP is_VBZ performed_VBN by_IN solving_VBG a_DT 792_CD The_DT Sixth_NNP Intl_NNP ._.
+Joint_NNP Conf_NNP ._.
+on_IN Autonomous_NNP Agents_NNPS and_CC Multi-Agent_NNP Systems_NNP -LRB-_-LRB- AAMAS_NNP ##_CD -RRB-_-RRB- Table_NNP #_# :_: Structure_NN of_IN POMDP_NN vs_CC ._.
+Dynamics-Based_NNP Control_NNP in_IN Markovian_NNP Environment_NNP Level_NNP Approach_NNP MDP_NN Markovian_JJ DBC_NNP Environment_NNP ,_, where_WRB S_NN -_: set_NN of_IN states_NNS A_DT -_: set_NN of_IN actions_NNS Design_NN T_NN :_: S_NN A_NN -LRB-_-LRB- S_NN -RRB-_-RRB- -_: transition_NN O_NN -_: observation_NN set_NN :_: S_NN A_DT S_NN -LRB-_-LRB- O_NN -RRB-_-RRB- User_NN r_NN :_: S_NN A_DT S_NN R_NN q_NN :_: S_NN A_NN -LRB-_-LRB- S_NN -RRB-_-RRB- F_NN -LRB-_-LRB- -RRB-_-RRB- r_NN L_NN -LRB-_-LRB- o1_NN ,_, ..._: ,_, ot_NN -RRB-_-RRB- r_SYM -_: reward_NN function_NN q_SYM -_: ideal_JJ dynamics_NNS F_NN -_: reward_NN remodeling_NN L_NN -_: dynamics_NNS estimator_NN -_: threshold_NN Agent_NNP =_JJ arg_NN max_NN E_NN -LSB-_-LRB- t_NN rt_NN -RSB-_-RRB- =_JJ arg_NN min_NN Prob_NNP -LRB-_-LRB- d_NN -LRB-_-LRB- q_NN -RRB-_-RRB- >_JJR -RRB-_-RRB- minimization_NN problem_NN :_: t_NN EMT_NN =_JJ H_NN -LSB-_-LRB- pt_NN ,_, pt1_NN ,_, t1_NN EMT_NN -RSB-_-RRB- =_JJ arg_NN min_NN DKL_NN -LRB-_-LRB- pt1_NN t1_NN EMT_NN pt1_NN -RRB-_-RRB- s_NNS ._.
+t_NN ._.
+pt_NN -LRB-_-LRB- s_NNS -RRB-_-RRB- =_JJ s_NNS -LRB-_-LRB- pt1_NN -RRB-_-RRB- -LRB-_-LRB- s_NNS ,_, s_NNS -RRB-_-RRB- pt1_NN -LRB-_-LRB- s_NNS -RRB-_-RRB- =_JJ s_NNS -LRB-_-LRB- pt1_NN -RRB-_-RRB- -LRB-_-LRB- s_NNS ,_, s_NNS -RRB-_-RRB- Agent_NNP Level_NNP in_IN EMT-based_JJ control_NN is_VBZ suboptimal_JJ with_IN respect_NN to_TO DBC_NN -LRB-_-LRB- though_IN it_PRP remains_VBZ within_IN the_DT DBC_NNP framework_NN -RRB-_-RRB- ,_, performing_VBG greedy_JJ action_NN selection_NN based_VBN on_IN prediction_NN of_IN EMT_NN ''_'' s_NNS reaction_NN ._.
+The_DT prediction_NN is_VBZ based_VBN on_IN the_DT environment_NN model_NN provided_VBN by_IN the_DT Environment_NNP Design_NN level_NN ,_, so_RB that_IN if_IN we_PRP denote_VBP by_IN Ta_NNP the_DT environment_NN ''_'' s_NNS transition_NN function_NN limited_VBN to_TO action_NN a_DT ,_, and_CC pt1_NN is_VBZ the_DT auxiliary_JJ Bayesian_JJ system_NN state_NN estimator_NN ,_, then_RB the_DT EMT-based_JJ control_NN choice_NN is_VBZ described_VBN by_IN a_DT =_JJ arg_NN min_NN aA_NN DKL_NN -LRB-_-LRB- H_NN -LSB-_-LRB- Ta_NN pt_NN ,_, pt_NN ,_, t_NN EMT_NN -RSB-_-RRB- qEMT_NN pt1_NN -RRB-_-RRB- Note_VBP that_IN this_DT follows_VBZ the_DT Markovian_JJ DBC_NN framework_NN precisely_RB :_: the_DT rewarding_JJ optimality_NN of_IN POMDPs_NNS is_VBZ discarded_VBN ,_, and_CC in_IN its_PRP$ place_NN a_DT dynamics_NNS estimator_NN -LRB-_-LRB- EMT_NN in_IN this_DT case_NN -RRB-_-RRB- is_VBZ manipulated_VBN via_IN action_NN effects_NNS on_IN the_DT environment_NN to_TO produce_VB an_DT estimate_NN close_NN to_TO the_DT specified_VBN target_NN system_NN dynamics_NNS ._.
+Yet_RB as_IN we_PRP mentioned_VBD ,_, naive_JJ EMTbased_JJ control_NN is_VBZ suboptimal_JJ in_IN the_DT DBC_NNP sense_NN ,_, and_CC has_VBZ several_JJ additional_JJ limitations_NNS that_WDT do_VBP not_RB exist_VB in_IN the_DT general_JJ DBC_NN framework_NN -LRB-_-LRB- discussed_VBN in_IN Section_NN #_# ._.
+#_# -RRB-_-RRB- ._.
+4_LS ._.
+#_# Multi-Target_JJ EMT_NN At_IN times_NNS ,_, there_EX may_MD exist_VB several_JJ behavioral_JJ preferences_NNS ._.
+For_IN example_NN ,_, in_IN the_DT case_NN of_IN museum_NN guards_NNS ,_, some_DT art_NN items_NNS are_VBP more_RBR heavily_RB guarded_VBN ,_, requiring_VBG that_IN the_DT guards_NNS stay_VBP more_RBR often_RB in_IN their_PRP$ close_JJ vicinity_NN ._.
+On_IN the_DT other_JJ hand_NN ,_, no_DT corner_NN of_IN the_DT museum_NN is_VBZ to_TO be_VB left_VBN unchecked_JJ ,_, which_WDT demands_VBZ constant_JJ motion_NN ._.
+Successful_JJ museum_NN security_NN would_MD demand_VB that_IN the_DT guards_NNS adhere_VBP to_TO ,_, and_CC balance_NN ,_, both_DT of_IN these_DT behaviors_NNS ._.
+For_IN EMT-based_JJ control_NN ,_, this_DT would_MD mean_VB facing_VBG several_JJ tactical_JJ targets_NNS -LCB-_-LRB- qk_NN -RCB-_-RRB- K_NNP k_NN =_JJ #_# ,_, and_CC the_DT question_NN becomes_VBZ how_WRB to_TO merge_VB and_CC balance_VB them_PRP ._.
+A_DT balancing_NN mechanism_NN can_MD be_VB applied_VBN to_TO resolve_VB this_DT issue_NN ._.
+Note_VB that_DT EMT-based_JJ control_NN ,_, while_IN selecting_VBG an_DT action_NN ,_, creates_VBZ a_DT preference_NN vector_NN over_IN the_DT set_NN of_IN actions_NNS based_VBN on_IN their_PRP$ predicted_VBN performance_NN with_IN respect_NN to_TO a_DT given_VBN target_NN ._.
+If_IN these_DT preference_NN vectors_NNS are_VBP normalized_VBN ,_, they_PRP can_MD be_VB combined_VBN into_IN a_DT single_JJ unified_JJ preference_NN ._.
+This_DT requires_VBZ replacement_NN of_IN standard_JJ EMT-based_JJ action_NN selection_NN by_IN the_DT algorithm_NN below_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- :_: Given_VBN :_: -_: a_DT set_NN of_IN target_NN dynamics_NNS -LCB-_-LRB- qk_NN -RCB-_-RRB- K_NNP k_NN =_JJ #_# ,_, -_: vector_NN of_IN weights_NNS w_NN -LRB-_-LRB- k_NN -RRB-_-RRB- Select_NNP action_NN as_IN follows_VBZ -_: For_IN each_DT action_NN a_DT A_DT predict_VBP the_DT future_JJ state_NN distribution_NN pa_NN t_NN +_CC #_# =_JJ Ta_NN pt_NN ;_: -_: For_IN each_DT action_NN ,_, compute_VB Da_NN =_JJ H_NN -LRB-_-LRB- pa_NN t_NN +_CC #_# ,_, pt_NN ,_, PDt_NN -RRB-_-RRB- -_: For_IN each_DT a_DT A_NN and_CC qk_NN tactical_JJ target_NN ,_, denote_VBP V_NN -LRB-_-LRB- a_DT ,_, k_NN -RRB-_-RRB- =_JJ DKL_NN -LRB-_-LRB- Da_NN qk_NN -RRB-_-RRB- pt_NN ._.
+Let_VB Vk_NNP -LRB-_-LRB- a_DT -RRB-_-RRB- =_JJ #_# Zk_NN V_NN -LRB-_-LRB- a_DT ,_, k_NN -RRB-_-RRB- ,_, where_WRB Zk_NN =_JJ aA_NN V_NN -LRB-_-LRB- a_DT ,_, k_NN -RRB-_-RRB- is_VBZ a_DT normalization_NN factor_NN ._.
+-_: Select_NNP a_DT =_JJ arg_NN min_NN a_DT k_NN k_NN =_JJ #_# w_FW -LRB-_-LRB- k_NN -RRB-_-RRB- Vk_NN -LRB-_-LRB- a_DT -RRB-_-RRB- The_DT weights_NNS vector_NN w_NN =_JJ -LRB-_-LRB- w1_NN ,_, ..._: ,_, wK_NN -RRB-_-RRB- allows_VBZ the_DT additional_JJ tuning_NN of_IN importance_NN among_IN target_NN dynamics_NNS without_IN the_DT need_NN to_TO redesign_VB the_DT targets_NNS themselves_PRP ._.
+This_DT balancing_NN method_NN is_VBZ also_RB seamlessly_RB integrated_VBN into_IN the_DT EMT-based_JJ control_NN flow_NN of_IN operation_NN ._.
+4_LS ._.
+#_# EMT-based_JJ Control_NN Limitations_NNPS EMT-based_JJ control_NN is_VBZ a_DT sub-optimal_JJ -LRB-_-LRB- in_IN the_DT DBC_NNP sense_NN -RRB-_-RRB- representative_NN of_IN the_DT DBC_NNP structure_NN ._.
+It_PRP limits_VBZ the_DT User_NN by_IN forcing_VBG EMT_NN to_TO be_VB its_PRP$ dynamic_JJ tracking_NN algorithm_NN ,_, and_CC replaces_VBZ Agent_NNP optimization_NN by_IN greedy_JJ action_NN selection_NN ._.
+This_DT kind_NN of_IN combination_NN ,_, however_RB ,_, is_VBZ common_JJ for_IN on-line_JJ algorithms_NNS ._.
+Although_IN further_JJ development_NN of_IN EMT-based_JJ controllers_NNS is_VBZ necessary_JJ ,_, evidence_NN so_RB far_RB suggests_VBZ that_IN even_RB the_DT simplest_JJS form_NN of_IN the_DT algorithm_NN possesses_VBZ a_DT great_JJ deal_NN of_IN power_NN ,_, and_CC displays_VBZ trends_NNS that_WDT are_VBP optimal_JJ in_IN the_DT DBC_NNP sense_NN of_IN the_DT word_NN ._.
+There_EX are_VBP two_CD further_JJ ,_, EMT-specific_JJ ,_, limitations_NNS to_TO EMT-based_JJ control_NN that_WDT are_VBP evident_JJ at_IN this_DT point_NN ._.
+Both_DT already_RB have_VBP partial_JJ solutions_NNS and_CC are_VBP subjects_NNS of_IN ongoing_JJ research_NN ._.
+The_DT first_JJ limitation_NN is_VBZ the_DT problem_NN of_IN negative_JJ preference_NN ._.
+In_IN the_DT POMDP_NN framework_NN for_IN example_NN ,_, this_DT is_VBZ captured_VBN simply_RB ,_, through_IN The_DT Sixth_NNP Intl_NNP ._.
+Joint_NNP Conf_NNP ._.
+on_IN Autonomous_NNP Agents_NNPS and_CC Multi-Agent_NNP Systems_NNP -LRB-_-LRB- AAMAS_NNP ##_CD -RRB-_-RRB- ###_VBP the_DT appearance_NN of_IN values_NNS with_IN different_JJ signs_NNS within_IN the_DT reward_NN structure_NN ._.
+For_IN EMT-based_JJ control_NN ,_, however_RB ,_, negative_JJ preference_NN means_VBZ that_IN one_CD would_MD like_VB to_TO avoid_VB a_DT certain_JJ distribution_NN over_IN system_NN development_NN sequences_NNS ;_: EMT-based_JJ control_NN ,_, however_RB ,_, concentrates_VBZ on_IN getting_VBG as_RB close_RB as_IN possible_JJ to_TO a_DT distribution_NN ._.
+Avoidance_NNP is_VBZ thus_RB unnatural_JJ in_IN native_JJ EMT-based_JJ control_NN ._.
+The_DT second_JJ limitation_NN comes_VBZ from_IN the_DT fact_NN that_IN standard_JJ environment_NN modeling_NN can_MD create_VB pure_JJ sensory_JJ actions-actions_NNS that_WDT do_VBP not_RB change_VB the_DT state_NN of_IN the_DT world_NN ,_, and_CC differ_VBP only_RB in_IN the_DT way_NN observations_NNS are_VBP received_VBN and_CC the_DT quality_NN of_IN observations_NNS received_VBN ._.
+Since_IN the_DT world_NN state_NN does_VBZ not_RB change_VB ,_, EMT-based_JJ control_NN would_MD not_RB be_VB able_JJ to_TO differentiate_VB between_IN different_JJ sensory_JJ actions_NNS ._.
+Notice_NNP that_IN both_DT of_IN these_DT limitations_NNS of_IN EMT-based_JJ control_NN are_VBP absent_JJ from_IN the_DT general_JJ DBC_NN framework_NN ,_, since_IN it_PRP may_MD have_VB a_DT tracking_NN algorithm_NN capable_JJ of_IN considering_VBG pure_JJ sensory_JJ actions_NNS and_CC ,_, unlike_IN Kullback-Leibler_NN divergence_NN ,_, a_DT distribution_NN deviation_NN measure_NN that_WDT is_VBZ capable_JJ of_IN dealing_VBG with_IN negative_JJ preference_NN ._.
+5_CD ._.
+EMT_NNP PLAYING_NNP TAG_NN The_DT Game_NN of_IN Tag_NN was_VBD first_RB introduced_VBN in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ._.
+It_PRP is_VBZ a_DT single_JJ agent_NN problem_NN of_IN capturing_VBG a_DT quarry_NN ,_, and_CC belongs_VBZ to_TO the_DT class_NN of_IN area_NN sweeping_JJ problems_NNS ._.
+An_DT example_NN domain_NN is_VBZ shown_VBN in_IN Figure_NNP #_# ._.
+0_CD ##_CD #_# #_# #_# #_# 7_CD #_# ##_CD ##_CD ##_CD 161514_CD 17_CD ##_CD ##_CD 2221_CD 23_CD 9_CD 11Q_NN A_NN 20_CD Figure_NNP #_# :_: Tag_NN domain_NN ;_: an_DT agent_NN -LRB-_-LRB- A_NN -RRB-_-RRB- attempts_VBZ to_TO seek_VB and_CC capture_VB a_DT quarry_NN -LRB-_-LRB- Q_NNP -RRB-_-RRB- The_DT Game_NN of_IN Tag_NN extremely_RB limits_VBZ the_DT agent_NN ''_'' s_NNS perception_NN ,_, so_RB that_IN the_DT agent_NN is_VBZ able_JJ to_TO detect_VB the_DT quarry_NN only_RB if_IN they_PRP are_VBP co-located_VBN in_IN the_DT same_JJ cell_NN of_IN the_DT grid_NN world_NN ._.
+In_IN the_DT classical_JJ version_NN of_IN the_DT game_NN ,_, co-location_NN leads_VBZ to_TO a_DT special_JJ observation_NN ,_, and_CC the_DT Tag_NN ''_'' action_NN can_MD be_VB performed_VBN ._.
+We_PRP slightly_RB modify_VB this_DT setting_NN :_: the_DT moment_NN that_IN both_DT agents_NNS occupy_VBP the_DT same_JJ cell_NN ,_, the_DT game_NN ends_VBZ ._.
+As_IN a_DT result_NN ,_, both_CC the_DT agent_NN and_CC its_PRP$ quarry_NN have_VBP the_DT same_JJ motion_NN capability_NN ,_, which_WDT allows_VBZ them_PRP to_TO move_VB in_IN four_CD directions_NNS ,_, North_NNP ,_, South_NNP ,_, East_NNP ,_, and_CC West_NNP ._.
+These_DT form_VBP a_DT formal_JJ space_NN of_IN actions_NNS within_IN a_DT Markovian_JJ environment_NN ._.
+The_DT state_NN space_NN of_IN the_DT formal_JJ Markovian_JJ environment_NN is_VBZ described_VBN by_IN the_DT cross-product_NN of_IN the_DT agent_NN and_CC quarry_NN ''_'' s_NNS positions_NNS ._.
+For_IN Figure_NNP #_# ,_, it_PRP would_MD be_VB S_NN =_JJ -LCB-_-LRB- s0_NN ,_, ..._: ,_, s23_NN -RCB-_-RRB- -LCB-_-LRB- s0_NN ,_, ..._: ,_, s23_NN -RCB-_-RRB- ._.
+The_DT effects_NNS of_IN an_DT action_NN taken_VBN by_IN the_DT agent_NN are_VBP deterministic_JJ ,_, but_CC the_DT environment_NN in_IN general_JJ has_VBZ a_DT stochastic_JJ response_NN due_JJ to_TO the_DT motion_NN of_IN the_DT quarry_NN ._.
+With_IN probability_NN q0_NN 1_CD it_PRP stays_VBZ put_VBN ,_, and_CC with_IN probability_NN #_# q0_CD it_PRP moves_VBZ to_TO an_DT adjacent_JJ cell_NN further_RB away_RB from_IN the_DT 1_CD In_IN our_PRP$ experiments_NNS this_DT was_VBD taken_VBN to_TO be_VB q0_NN =_JJ #_# ._.
+#_# ._.
+agent_NN ._.
+So_RB for_IN the_DT instance_NN shown_VBN in_IN Figure_NNP #_# and_CC q0_NN =_JJ #_# ._.
+#_# :_: P_NN -LRB-_-LRB- Q_NNP =_JJ s9_NN |_CD Q_NNP =_JJ s9_NN ,_, A_NN =_JJ s11_NN -RRB-_-RRB- =_JJ #_# ._.
+#_# P_NN -LRB-_-LRB- Q_NNP =_JJ s2_NN |_CD Q_NNP =_JJ s9_NN ,_, A_NN =_JJ s11_NN -RRB-_-RRB- =_JJ #_# ._.
+#_# P_NN -LRB-_-LRB- Q_NNP =_JJ s8_NN |_CD Q_NNP =_JJ s9_NN ,_, A_NN =_JJ s11_NN -RRB-_-RRB- =_JJ #_# ._.
+#_# P_NN -LRB-_-LRB- Q_NNP =_JJ s14_NN |_CD Q_NNP =_JJ s9_NN ,_, A_NN =_JJ s11_NN -RRB-_-RRB- =_JJ #_# ._.
+#_# Although_IN the_DT evasive_JJ behavior_NN of_IN the_DT quarry_NN is_VBZ known_VBN to_TO the_DT agent_NN ,_, the_DT quarry_NN ''_'' s_NNS position_NN is_VBZ not_RB ._.
+The_DT only_JJ sensory_JJ information_NN available_JJ to_TO the_DT agent_NN is_VBZ its_PRP$ own_JJ location_NN ._.
+We_PRP use_VBP EMT_NN and_CC directly_RB specify_VB the_DT target_NN dynamics_NNS ._.
+For_IN the_DT Game_NN of_IN Tag_NN ,_, we_PRP can_MD easily_RB formulate_VB three_CD major_JJ trends_NNS :_: catching_VBG the_DT quarry_NN ,_, staying_VBG mobile_JJ ,_, and_CC stalking_VBG the_DT quarry_NN ._.
+This_DT results_VBZ in_IN the_DT following_VBG three_CD target_NN dynamics_NNS :_: Tcatch_NNP -LRB-_-LRB- At_IN +_CC #_# =_SYM si_FW |_FW Qt_NN =_JJ sj_NN ,_, At_IN =_JJ sa_NN -RRB-_-RRB- 1_CD si_NN =_JJ sj_NN 0_CD otherwise_RB Tmobile_NNP -LRB-_-LRB- At_IN +_CC #_# =_SYM si_FW |_FW Qt_NN =_JJ so_RB ,_, At_IN =_JJ sj_NN -RRB-_-RRB- 0_CD si_NN =_JJ sj_NN 1_CD otherwise_RB Tstalk_NN -LRB-_-LRB- At_IN +_CC #_# =_SYM si_FW |_FW Qt_NN =_JJ so_RB ,_, At_IN =_JJ sj_NN -RRB-_-RRB- #_# dist_NN -LRB-_-LRB- si_NN ,_, so_RB -RRB-_-RRB- Note_VBP that_IN none_NN of_IN the_DT above_JJ targets_NNS are_VBP directly_RB achievable_JJ ;_: for_IN instance_NN ,_, if_IN Qt_NN =_JJ s9_NN and_CC At_IN =_JJ s11_NN ,_, there_EX is_VBZ no_DT action_NN that_WDT can_MD move_VB the_DT agent_NN to_TO At_IN +_CC #_# =_JJ s9_NN as_IN required_VBN by_IN the_DT Tcatch_NNP target_NN dynamics_NNS ._.
+We_PRP ran_VBD several_JJ experiments_NNS to_TO evaluate_VB EMT_NN performance_NN in_IN the_DT Tag_NN Game_NN ._.
+Three_CD configurations_NNS of_IN the_DT domain_NN shown_VBN in_IN Figure_NNP #_# were_VBD used_VBN ,_, each_DT posing_VBG a_DT different_JJ challenge_NN to_TO the_DT agent_NN due_JJ to_TO partial_JJ observability_NN ._.
+In_IN each_DT setting_NN ,_, a_DT set_NN of_IN ####_CD runs_NNS was_VBD performed_VBN with_IN a_DT time_NN limit_NN of_IN ###_CD steps_NNS ._.
+In_IN every_DT run_NN ,_, the_DT initial_JJ position_NN of_IN both_CC the_DT agent_NN and_CC its_PRP$ quarry_NN was_VBD selected_VBN at_IN random_JJ ;_: this_DT means_VBZ that_IN as_IN far_RB as_IN the_DT agent_NN was_VBD concerned_VBN ,_, the_DT quarry_NN ''_'' s_NNS initial_JJ position_NN was_VBD uniformly_RB distributed_VBN over_IN the_DT entire_JJ domain_NN cell_NN space_NN ._.
+We_PRP also_RB used_VBD two_CD variations_NNS of_IN the_DT environment_NN observability_NN function_NN ._.
+In_IN the_DT first_JJ version_NN ,_, observability_NN function_NN mapped_VBD all_DT joint_JJ positions_NNS of_IN hunter_NN and_CC quarry_NN into_IN the_DT position_NN of_IN the_DT hunter_NN as_IN an_DT observation_NN ._.
+In_IN the_DT second_JJ ,_, only_RB those_DT joint_JJ positions_NNS in_IN which_WDT hunter_NN and_CC quarry_NN occupied_VBD different_JJ locations_NNS were_VBD mapped_VBN into_IN the_DT hunter_NN ''_'' s_NNS location_NN ._.
+The_DT second_JJ version_NN in_IN fact_NN utilized_VBD and_CC expressed_VBD the_DT fact_NN that_IN once_RB hunter_NN and_CC quarry_NN occupy_VBP the_DT same_JJ cell_NN the_DT game_NN ends_VBZ ._.
+The_DT results_NNS of_IN these_DT experiments_NNS are_VBP shown_VBN in_IN Table_NNP #_# ._.
+Balancing_VBG -LSB-_-LRB- ##_CD -RSB-_-RRB- the_DT catch_NN ,_, move_NN ,_, and_CC stalk_NN target_NN dynamics_NNS described_VBN in_IN the_DT previous_JJ section_NN by_IN the_DT weight_NN vector_NN -LSB-_-LRB- #_# ._.
+#_# ,_, #_# ._.
+#_# ,_, #_# ._.
+#_# -RSB-_-RRB- ,_, EMT_NN produced_VBD stable_JJ performance_NN in_IN all_DT three_CD domains_NNS ._.
+Although_IN direct_JJ comparisons_NNS are_VBP difficult_JJ to_TO make_VB ,_, the_DT EMT_NNP performance_NN displayed_VBD notable_JJ efficiency_NN vis_FW -_: `_`` a-vis_IN the_DT POMDP_NN approach_NN ._.
+In_IN spite_NN of_IN a_DT simple_JJ and_CC inefficient_JJ Matlab_NNP implementation_NN of_IN the_DT EMT_NNP algorithm_NN ,_, the_DT decision_NN time_NN for_IN any_DT given_JJ step_NN averaged_VBD significantly_RB below_IN #_# second_JJ in_IN all_DT experiments_NNS ._.
+For_IN the_DT irregular_JJ open_JJ arena_NN domain_NN ,_, which_WDT proved_VBD to_TO be_VB the_DT most_RBS difficult_JJ ,_, ####_JJ experiment_NN runs_VBZ bounded_VBN by_IN ###_CD steps_NNS each_DT ,_, a_DT total_NN of_IN #####_CD steps_NNS ,_, were_VBD completed_VBN in_IN slightly_RB under_IN #_# hours_NNS ._.
+That_DT is_VBZ ,_, over_IN #_# ###_CD online_JJ steps_NNS took_VBD an_DT order_NN of_IN magnitude_NN less_JJR time_NN than_IN the_DT offline_JJ computation_NN of_IN POMDP_NN policy_NN in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ._.
+The_DT significance_NN of_IN this_DT differential_JJ is_VBZ made_VBN even_RB more_RBR prominent_JJ by_IN the_DT fact_NN that_IN ,_, should_MD the_DT environment_NN model_NN parameters_NNS change_VBP ,_, the_DT online_JJ nature_NN of_IN EMT_NN would_MD allow_VB it_PRP to_TO maintain_VB its_PRP$ performance_NN time_NN ,_, while_IN the_DT POMDP_NN policy_NN would_MD need_VB to_TO be_VB recomputed_VBN ,_, requiring_VBG yet_RB again_RB a_DT large_JJ overhead_NN of_IN computation_NN ._.
+We_PRP also_RB tested_VBD the_DT behavior_NN cell_NN frequency_NN entropy_NN ,_, empirical_JJ measures_NNS from_IN trial_NN data_NNS ._.
+As_IN Figure_NNP #_# and_CC Figure_NNP #_# show_VBP ,_, empir794_JJ The_DT Sixth_NNP Intl_NNP ._.
+Joint_NNP Conf_NNP ._.
+on_IN Autonomous_NNP Agents_NNPS and_CC Multi-Agent_NNP Systems_NNP -LRB-_-LRB- AAMAS_NNP ##_CD -RRB-_-RRB- A_DT Q_NNP Q_NNP A_NNP 0_CD #_# #_# #_# #_# 5_CD #_# #_# #_# #_# 10_CD ##_CD ##_CD 13_CD ##_CD ##_NN 16_CD ##_CD ##_NN A_DT Q_NNP Figure_NNP #_# :_: These_DT configurations_NNS of_IN the_DT Tag_NN Game_NN space_NN were_VBD used_VBN :_: a_DT -RRB-_-RRB- multiple_JJ dead-end_JJ ,_, b_NN -RRB-_-RRB- irregular_JJ open_JJ arena_NN ,_, c_NN -RRB-_-RRB- circular_JJ corridor_NN Table_NNP #_# :_: Performance_NNP of_IN the_DT EMT-based_JJ solution_NN in_IN three_CD Tag_NN Game_NN domains_NNS and_CC two_CD observability_NN models_NNS :_: I_PRP -RRB-_-RRB- omniposition_NN quarry_NN ,_, II_CD -RRB-_-RRB- quarry_NN is_VBZ not_RB at_IN hunter_NN ''_'' s_NNS position_NN Model_NNP Domain_NN Capture_NN %_NN E_NN -LRB-_-LRB- Steps_NNS -RRB-_-RRB- Time_NNP /_: Step_NN I_PRP Dead-ends_VBZ ###_CD ##_CD ._.
+#_# ##_CD -LRB-_-LRB- mSec_NN -RRB-_-RRB- Arena_NN ##_NN ._.
+#_# ##_CD ._.
+#_# ###_CD -LRB-_-LRB- mSec_NN -RRB-_-RRB- Circle_NNP ##_CD ._.
+#_# ##_CD ._.
+#_# ###_CD -LRB-_-LRB- mSec_NN -RRB-_-RRB- II_CD Dead-ends_NNS ###_RB ##_VBP ._.
+#_# ##_CD -LRB-_-LRB- mSec_NN -RRB-_-RRB- Arena_NN ##_NN ._.
+#_# ##_CD ._.
+##_CD ###_CD -LRB-_-LRB- mSec_NN -RRB-_-RRB- Circle_NNP ##_CD ._.
+#_# ##_CD ._.
+##_CD ###_CD -LRB-_-LRB- mSec_NN -RRB-_-RRB- ical_JJ entropy_NN grows_VBZ with_IN the_DT length_NN of_IN interaction_NN ._.
+For_IN runs_NNS where_WRB the_DT quarry_NN was_VBD not_RB captured_VBN immediately_RB ,_, the_DT entropy_NN reaches_VBZ between_IN #_# ._.
+##_NN and_CC #_# ._.
+###_NN for_IN different_JJ runs_NNS and_CC scenarios_NNS ._.
+As_IN the_DT agent_NN actively_RB seeks_VBZ the_DT quarry_NN ,_, the_DT entropy_NN never_RB reaches_VBZ its_PRP$ maximum_NN ._.
+One_CD characteristic_NN of_IN the_DT entropy_NN graph_NN for_IN the_DT open_JJ arena_NN scenario_NN particularly_RB caught_VBD our_PRP$ attention_NN in_IN the_DT case_NN of_IN the_DT omniposition_NN quarry_NN observation_NN model_NN ._.
+Near_IN the_DT maximum_NN limit_NN of_IN trial_NN length_NN -LRB-_-LRB- ###_CD steps_NNS -RRB-_-RRB- ,_, entropy_NN suddenly_RB dropped_VBD ._.
+Further_JJ analysis_NN of_IN the_DT data_NNS showed_VBD that_IN under_IN certain_JJ circumstances_NNS ,_, a_DT fluctuating_VBG behavior_NN occurs_VBZ in_IN which_WDT the_DT agent_NN faces_VBZ equally_RB viable_JJ versions_NNS of_IN quarry-following_JJ behavior_NN ._.
+Since_IN the_DT EMT_NNP algorithm_NN has_VBZ greedy_JJ action_NN selection_NN ,_, and_CC the_DT state_NN space_NN does_VBZ not_RB encode_VB any_DT form_NN of_IN commitment_NN -LRB-_-LRB- not_RB even_RB speed_VB or_CC acceleration_NN -RRB-_-RRB- ,_, the_DT agent_NN is_VBZ locked_VBN within_IN a_DT small_JJ portion_NN of_IN cells_NNS ._.
+It_PRP is_VBZ essentially_RB attempting_VBG to_TO simultaneously_RB follow_VB several_JJ courses_NNS of_IN action_NN ,_, all_DT of_IN which_WDT are_VBP consistent_JJ with_IN the_DT target_NN dynamics_NNS ._.
+This_DT behavior_NN did_VBD not_RB occur_VB in_IN our_PRP$ second_JJ observation_NN model_NN ,_, since_IN it_PRP significantly_RB reduced_VBD the_DT set_NN of_IN eligible_JJ courses_NNS of_IN action-essentially_RB contributing_VBG to_TO tie-breaking_JJ among_IN them_PRP ._.
+6_CD ._.
+DISCUSSION_NN The_DT design_NN of_IN the_DT EMT_NN solution_NN for_IN the_DT Tag_NN Game_NN exposes_VBZ the_DT core_NN difference_NN in_IN approach_NN to_TO planning_NN and_CC control_NN between_IN EMT_NNP or_CC DBC_NNP ,_, on_IN the_DT one_CD hand_NN ,_, and_CC the_DT more_JJR familiar_JJ POMDP_NN approach_NN ,_, on_IN the_DT other_JJ ._.
+POMDP_NN defines_VBZ a_DT reward_NN structure_NN to_TO optimize_VB ,_, and_CC influences_VBZ system_NN dynamics_NNS indirectly_RB through_IN that_DT optimization_NN ._.
+EMT_NN discards_VBZ any_DT reward_NN scheme_NN ,_, and_CC instead_RB measures_NNS and_CC influences_VBZ system_NN dynamics_NNS directly_RB ._.
+2_CD Entropy_NNP was_VBD calculated_VBN using_VBG log_NN base_NN equal_JJ to_TO the_DT number_NN of_IN possible_JJ locations_NNS within_IN the_DT domain_NN ;_: this_DT properly_RB scales_NNS entropy_JJ expression_NN into_IN the_DT range_NN -LSB-_-LRB- #_# ,_, #_# -RSB-_-RRB- for_IN all_DT domains_NNS ._.
+Thus_RB for_IN the_DT Tag_NN Game_NN ,_, we_PRP did_VBD not_RB search_VB for_IN a_DT reward_NN function_NN that_WDT would_MD encode_VB and_CC express_VB our_PRP$ preference_NN over_IN the_DT agent_NN ''_'' s_NNS behavior_NN ,_, but_CC rather_RB directly_RB set_VBN three_CD -LRB-_-LRB- heuristic_NN -RRB-_-RRB- behavior_NN preferences_NNS as_IN the_DT basis_NN for_IN target_NN dynamics_NNS to_TO be_VB maintained_VBN ._.
+Experimental_JJ data_NNS shows_VBZ that_IN these_DT targets_NNS need_VBP not_RB be_VB directly_RB achievable_JJ via_IN the_DT agent_NN ''_'' s_NNS actions_NNS ._.
+However_RB ,_, the_DT ratio_NN between_IN EMT_NNP performance_NN and_CC achievability_NN of_IN target_NN dynamics_NNS remains_VBZ to_TO be_VB explored_VBN ._.
+The_DT tag_NN game_NN experiment_NN data_NNS also_RB revealed_VBD the_DT different_JJ emphasis_NN DBC_NN and_CC POMDPs_NN place_NN on_IN the_DT formulation_NN of_IN an_DT environment_NN state_NN space_NN ._.
+POMDPs_NNS rely_VBP entirely_RB on_IN the_DT mechanism_NN of_IN reward_NN accumulation_NN maximization_NN ,_, i_FW ._.
+e_LS ._.
+,_, formation_NN of_IN the_DT action_NN selection_NN procedure_NN to_TO achieve_VB necessary_JJ state_NN sequencing_NN ._.
+DBC_NNP ,_, on_IN the_DT other_JJ hand_NN ,_, has_VBZ two_CD sources_NNS of_IN sequencing_NN specification_NN :_: through_IN the_DT properties_NNS of_IN an_DT action_NN selection_NN procedure_NN ,_, and_CC through_IN direct_JJ specification_NN within_IN the_DT target_NN dynamics_NNS ._.
+The_DT importance_NN of_IN the_DT second_JJ source_NN was_VBD underlined_VBN by_IN the_DT Tag_NN Game_NN experiment_NN data_NNS ,_, in_IN which_WDT the_DT greedy_JJ EMT_NN algorithm_NN ,_, applied_VBD to_TO a_DT POMDP-type_JJ state_NN space_NN specification_NN ,_, failed_VBD ,_, since_IN target_NN description_NN over_IN such_PDT a_DT state_NN space_NN was_VBD incapable_JJ of_IN encoding_VBG the_DT necessary_JJ behavior_NN tendencies_NNS ,_, e_LS ._.
+g_NN ._.
+,_, tie-breaking_JJ and_CC commitment_NN to_TO directed_VBN motion_NN ._.
+The_DT structural_JJ differences_NNS between_IN DBC_NNP -LRB-_-LRB- and_CC EMT_NN in_IN particular_JJ -RRB-_-RRB- ,_, and_CC POMDPs_NNS ,_, prohibits_VBZ direct_JJ performance_NN comparison_NN ,_, and_CC places_VBZ them_PRP on_IN complementary_JJ tracks_NNS ,_, each_DT within_IN a_DT suitable_JJ niche_NN ._.
+For_IN instance_NN ,_, POMDPs_NNS could_MD be_VB seen_VBN as_IN a_DT much_RB more_JJR natural_JJ formulation_NN of_IN economic_JJ sequential_JJ decision-making_JJ problems_NNS ,_, while_IN EMT_NN is_VBZ a_DT better_JJR fit_NN for_IN continual_JJ demand_NN for_IN stochastic_JJ change_NN ,_, as_IN happens_VBZ in_IN many_JJ robotic_JJ or_CC embodied-agent_JJ problems_NNS ._.
+The_DT complementary_JJ properties_NNS of_IN POMDPs_NNS and_CC EMT_NN can_MD be_VB further_JJ exploited_VBN ._.
+There_EX is_VBZ recent_JJ interest_NN in_IN using_VBG POMDPs_NNS in_IN hybrid_NN solutions_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, in_IN which_WDT the_DT POMDPs_NNS can_MD be_VB used_VBN together_RP with_IN other_JJ control_JJ approaches_NNS to_TO provide_VB results_NNS not_RB easily_RB achievable_JJ with_IN either_CC approach_NN by_IN itself_PRP ._.
+DBC_NNP can_MD be_VB an_DT effective_JJ partner_NN in_IN such_JJ a_DT hybrid_NN solution_NN ._.
+For_IN instance_NN ,_, POMDPs_NNS have_VBP prohibitively_RB large_JJ off-line_JJ time_NN requirements_NNS for_IN policy_NN computation_NN ,_, but_CC can_MD be_VB readily_RB used_VBN in_IN simpler_JJR settings_NNS to_TO expose_VB beneficial_JJ behavioral_JJ trends_NNS ;_: this_DT can_MD serve_VB as_IN a_DT form_NN of_IN target_NN dynamics_NNS that_WDT are_VBP provided_VBN to_TO EMT_NNP in_IN a_DT larger_JJR domain_NN for_IN on-line_JJ operation_NN ._.
+7_CD ._.
+CONCLUSIONS_NNS AND_CC FUTURE_NNS WORK_VBP In_IN this_DT paper_NN ,_, we_PRP have_VBP presented_VBN a_DT novel_JJ perspective_NN on_IN the_DT process_NN of_IN planning_NN and_CC control_NN in_IN stochastic_JJ environments_NNS ,_, in_IN the_DT form_NN of_IN the_DT Dynamics_NNP Based_VBD Control_NN -LRB-_-LRB- DBC_NN -RRB-_-RRB- framework_NN ._.
+DBC_NNP formulates_VBZ the_DT task_NN of_IN planning_NN as_IN support_NN of_IN a_DT specified_VBN target_NN system_NN dynamics_NNS ,_, which_WDT describes_VBZ the_DT necessary_JJ properties_NNS of_IN change_NN within_IN the_DT environment_NN ._.
+Optimality_NN of_IN DBC_NNP plans_NNS of_IN action_NN are_VBP measured_VBN The_DT Sixth_NNP Intl_NNP ._.
+Joint_NNP Conf_NNP ._.
+on_IN Autonomous_NNP Agents_NNPS and_CC Multi-Agent_NNP Systems_NNP -LRB-_-LRB- AAMAS_NNP ##_CD -RRB-_-RRB- ###_CD 0_CD ##_CD ##_CD ##_CD ##_CD ###_CD 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 1_CD Steps_VBZ Entropy_NNP Deadends_NNP 0_CD ##_CD ##_CD ##_CD ##_CD ###_CD 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 1_CD Steps_VBZ Entropy_NNP Arena_NNP 0_CD ##_CD ##_CD ##_CD ##_CD ###_CD 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 1_CD Steps_VBZ Entropy_NNP Circle_NNP Figure_NNP #_# :_: Observation_NNP Model_NNP I_PRP :_: Omniposition_NN quarry_NN ._.
+Entropy_JJ development_NN with_IN length_NN of_IN Tag_NN Game_NN for_IN the_DT three_CD experiment_NN scenarios_NNS :_: a_DT -RRB-_-RRB- multiple_JJ dead-end_JJ ,_, b_NN -RRB-_-RRB- irregular_JJ open_JJ arena_NN ,_, c_NN -RRB-_-RRB- circular_JJ corridor_NN ._.
+0_CD ##_CD ##_CD ##_CD ##_CD ##_CD ##_NN 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 1_CD Steps_VBZ Entropy_NNP Deadends_NNP 0_CD ##_CD ##_CD ##_CD ##_CD ###_CD 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 1_CD Steps_VBZ Entropy_NNP Arena_NNP 0_CD ##_CD ##_CD ##_CD ##_CD ###_CD 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 1_CD Steps_VBZ Entropy_NNP Circle_NNP Figure_NNP #_# :_: Observation_NNP Model_NNP II_NNP :_: quarry_NN not_RB observed_VBN at_IN hunter_NN ''_'' s_NNS position_NN ._.
+Entropy_JJ development_NN with_IN length_NN of_IN Tag_NN Game_NN for_IN the_DT three_CD experiment_NN scenarios_NNS :_: a_DT -RRB-_-RRB- multiple_JJ dead-end_JJ ,_, b_NN -RRB-_-RRB- irregular_JJ open_JJ arena_NN ,_, c_NN -RRB-_-RRB- circular_JJ corridor_NN ._.
+with_IN respect_NN to_TO the_DT deviation_NN of_IN actual_JJ system_NN dynamics_NNS from_IN the_DT target_NN dynamics_NNS ._.
+We_PRP show_VBP that_IN a_DT recently_RB developed_VBN technique_NN of_IN Extended_NNP Markov_NNP Tracking_NNP -LRB-_-LRB- EMT_NNP -RRB-_-RRB- -LSB-_-LRB- ##_CD -RSB-_-RRB- is_VBZ an_DT instantiation_NN of_IN DBC_NNP ._.
+In_IN fact_NN ,_, EMT_NN can_MD be_VB seen_VBN as_IN a_DT specific_JJ case_NN of_IN DBC_NN parameterization_NN ,_, which_WDT employs_VBZ a_DT greedy_JJ action_NN selection_NN procedure_NN ._.
+Since_IN EMT_NN exhibits_VBZ the_DT key_JJ features_NNS of_IN the_DT general_JJ DBC_NN framework_NN ,_, as_RB well_RB as_IN polynomial_JJ time_NN complexity_NN ,_, we_PRP used_VBD the_DT multitarget_JJ version_NN of_IN EMT_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- to_TO demonstrate_VB that_IN the_DT class_NN of_IN area_NN sweeping_JJ problems_NNS naturally_RB lends_VBZ itself_PRP to_TO dynamics-based_JJ descriptions_NNS ,_, as_IN instantiated_VBN by_IN our_PRP$ experiments_NNS in_IN the_DT Tag_NN Game_NN domain_NN ._.
+As_IN enumerated_VBN in_IN Section_NN #_# ._.
+#_# ,_, EMT_NNP has_VBZ a_DT number_NN of_IN limitations_NNS ,_, such_JJ as_IN difficulty_NN in_IN dealing_VBG with_IN negative_JJ dynamic_JJ preference_NN ._.
+This_DT prevents_VBZ direct_JJ application_NN of_IN EMT_NN to_TO such_JJ problems_NNS as_IN Rendezvous-Evasion_NNP Games_NNPS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, -LSB-_-LRB- #_# -RSB-_-RRB- -RRB-_-RRB- ._.
+However_RB ,_, DBC_NNP in_IN general_JJ has_VBZ no_DT such_JJ limitations_NNS ,_, and_CC readily_RB enables_VBZ the_DT formulation_NN of_IN evasion_NN games_NNS ._.
+In_IN future_JJ work_NN ,_, we_PRP intend_VBP to_TO proceed_VB with_IN the_DT development_NN of_IN dynamics-based_JJ controllers_NNS for_IN these_DT problems_NNS ._.
+8_CD ._.
+ACKNOWLEDGMENT_NNP The_NNP work_NN of_IN the_DT first_JJ two_CD authors_NNS was_VBD partially_RB supported_VBN by_IN Israel_NNP Science_NNP Foundation_NNP grant_NN #_# ###_CD /_: ##_CD ,_, and_CC the_DT third_JJ author_NN was_VBD partially_RB supported_VBN by_IN a_DT grant_NN from_IN Israel_NNP ''_'' s_VBZ Ministry_NNP of_IN Science_NNP and_CC Technology_NNP ._.
+9_CD ._.
+REFERENCES_NNS -LSB-_-LRB- #_# -RSB-_-RRB- R_NN ._.
+C_NN ._.
+Arkin_NNP ._.
+Behavior-Based_JJ Robotics_NNS ._.
+MIT_NNP Press_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- J_NN ._.
+A_DT ._.
+Bilmes_NNS ._.
+A_DT gentle_JJ tutorial_NN of_IN the_DT EM_NNP algorithm_NN and_CC its_PRP$ application_NN to_TO parameter_NN estimation_NN for_IN Gaussian_JJ mixture_NN and_CC Hidden_NNP Markov_NNP Models_NNS ._.
+Technical_NNP Report_NNP TR-97-021_NN ,_, Department_NNP of_IN Electrical_JJ Engeineering_NN and_CC Computer_NN Science_NN ,_, University_NNP of_IN California_NNP at_IN Berkeley_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- T_NN ._.
+M_NN ._.
+Cover_NNP and_CC J_NNP ._.
+A_DT ._.
+Thomas_NNP ._.
+Elements_NNS of_IN information_NN theory_NN ._.
+Wiley_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- M_NN ._.
+E_NN ._.
+desJardins_NNS ,_, E_NN ._.
+H_NN ._.
+Durfee_NNP ,_, C_NNP ._.
+L_NN ._.
+Ortiz_NNP ,_, and_CC M_NN ._.
+J_NN ._.
+Wolverton_NNP ._.
+A_DT survey_NN of_IN research_NN in_IN distributed_VBN ,_, continual_JJ planning_NN ._.
+AI_NNP Magazine_NNP ,_, #_# :_: 13-22_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- V_NN ._.
+R_NN ._.
+Konda_NNP and_CC J_NNP ._.
+N_NN ._.
+Tsitsiklis_NNP ._.
+Actor-Critic_JJ algorithms_NNS ._.
+SIAM_NNP Journal_NNP on_IN Control_NNP and_CC Optimization_NNP ,_, 42_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 1143-1166_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- W_NN ._.
+S_NN ._.
+Lim_NNP ._.
+A_DT rendezvous-evasion_NN game_NN on_IN discrete_JJ locations_NNS with_IN joint_JJ randomization_NN ._.
+Advances_NNS in_IN Applied_NNP Probability_NNP ,_, 29_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 1004-1017_CD ,_, December_NNP ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- M_NN ._.
+L_NN ._.
+Littman_NNP ,_, T_NN ._.
+L_NN ._.
+Dean_NNP ,_, and_CC L_NN ._.
+P_NN ._.
+Kaelbling_NN ._.
+On_IN the_DT complexity_NN of_IN solving_VBG Markov_NNP decision_NN problems_NNS ._.
+In_IN Proceedings_NNP of_IN the_DT 11th_JJ Annual_JJ Conference_NN on_IN Uncertainty_NN in_IN Artificial_NNP Intelligence_NNP -LRB-_-LRB- UAI-95_NN -RRB-_-RRB- ,_, pages_NNS 394-402_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- O_NN ._.
+Madani_NNP ,_, S_NN ._.
+Hanks_NNP ,_, and_CC A_NN ._.
+Condon_NNP ._.
+On_IN the_DT undecidability_NN of_IN probabilistic_JJ planning_NN and_CC related_JJ stochastic_JJ optimization_NN problems_NNS ._.
+Artificial_JJ Intelligence_NNP Journal_NNP ,_, ###_CD -LRB-_-LRB- 1-2_CD -RRB-_-RRB- :_: 5-34_CD ,_, July_NNP ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- R_NN ._.
+M_NN ._.
+Neal_NNP and_CC G_NNP ._.
+E_NN ._.
+Hinton_NNP ._.
+A_DT view_NN of_IN the_DT EM_NNP algorithm_NN 796_CD The_DT Sixth_NNP Intl_NNP ._.
+Joint_NNP Conf_NNP ._.
+on_IN Autonomous_NNP Agents_NNPS and_CC Multi-Agent_NNP Systems_NNP -LRB-_-LRB- AAMAS_NNP ##_CD -RRB-_-RRB- that_WDT justifies_VBZ incremental_JJ ,_, sparse_JJ ,_, and_CC other_JJ variants_NNS ._.
+In_IN M_NN ._.
+I_PRP ._.
+Jordan_NNP ,_, editor_NN ,_, Learning_NNP in_IN Graphical_NNP Models_NNS ,_, pages_NNS 355-368_CD ._.
+Kluwer_NNP Academic_NNP Publishers_NNPS ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- P_NN ._.
+Paruchuri_NNP ,_, M_NN ._.
+Tambe_NNP ,_, F_NN ._.
+Ordonez_NNP ,_, and_CC S_NN ._.
+Kraus_NNP ._.
+Security_NN in_IN multiagent_JJ systems_NNS by_IN policy_NN randomization_NN ._.
+In_IN Proceeding_VBG of_IN AAMAS_NNP ####_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+Pineau_NNP ,_, G_NNP ._.
+Gordon_NNP ,_, and_CC S_NN ._.
+Thrun_NNP ._.
+Point-based_JJ value_NN iteration_NN :_: An_DT anytime_RB algorithm_NN for_IN pomdps_NNS ._.
+In_IN International_NNP Joint_NNP Conference_NNP on_IN Artificial_NNP Intelligence_NNP -LRB-_-LRB- IJCAI_NNP -RRB-_-RRB- ,_, pages_NNS 1025-1032_CD ,_, August_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- M_NN ._.
+L_NN ._.
+Puterman_NNP ._.
+Markov_NNP Decision_NNP Processes_NNP ._.
+Wiley_NNP Series_NNP in_IN Probability_NNP and_CC Mathematical_NNP Statistics_NNPS :_: Applied_NNP Probability_NNP and_CC Statistics_NNPS Section_NNP ._.
+Wiley-Interscience_NNP Publication_NNP ,_, New_NNP York_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Z_NN ._.
+Rabinovich_NNP and_CC J_NNP ._.
+S_NN ._.
+Rosenschein_NNP ._.
+Extended_NNP Markov_NNP Tracking_VBG with_IN an_DT application_NN to_TO control_VB ._.
+In_IN The_DT Workshop_NNP on_IN Agent_NNP Tracking_NNP :_: Modeling_VBG Other_JJ Agents_NNS from_IN Observations_NNS ,_, at_IN the_DT Third_NNP International_NNP Joint_NNP Conference_NNP on_IN Autonomous_NNP Agents_NNPS and_CC Multiagent_NNP Systems_NNPS ,_, pages_NNS 95-100_CD ,_, New-York_NNP ,_, July_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Z_NN ._.
+Rabinovich_NNP and_CC J_NNP ._.
+S_NN ._.
+Rosenschein_NNP ._.
+Multiagent_JJ coordination_NN by_IN Extended_NNP Markov_NNP Tracking_NNP ._.
+In_IN The_DT Fourth_JJ International_NNP Joint_NNP Conference_NNP on_IN Autonomous_NNP Agents_NNPS and_CC Multiagent_NNP Systems_NNPS ,_, pages_NNS 431-438_CD ,_, Utrecht_NNP ,_, The_DT Netherlands_NNP ,_, July_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Z_NN ._.
+Rabinovich_NNP and_CC J_NNP ._.
+S_NN ._.
+Rosenschein_NNP ._.
+On_IN the_DT response_NN of_IN EMT-based_JJ control_NN to_TO interacting_VBG targets_NNS and_CC models_NNS ._.
+In_IN The_DT Fifth_NNP International_NNP Joint_NNP Conference_NNP on_IN Autonomous_NNP Agents_NNPS and_CC Multiagent_NNP Systems_NNPS ,_, pages_NNS 465-470_CD ,_, Hakodate_NNP ,_, Japan_NNP ,_, May_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- R_NN ._.
+F_NN ._.
+Stengel_NNP ._.
+Optimal_JJ Control_NN and_CC Estimation_NN ._.
+Dover_NNP Publications_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- M_NN ._.
+Tambe_NNP ,_, E_NNP ._.
+Bowring_NNP ,_, H_NN ._.
+Jung_NNP ,_, G_NNP ._.
+Kaminka_NNP ,_, R_NN ._.
+Maheswaran_NNP ,_, J_NNP ._.
+Marecki_NNP ,_, J_NNP ._.
+Modi_NNP ,_, R_NN ._.
+Nair_NNP ,_, J_NNP ._.
+Pearce_NNP ,_, P_NN ._.
+Paruchuri_NNP ,_, D_NNP ._.
+Pynadath_NNP ,_, P_NN ._.
+Scerri_NNP ,_, N_NNP ._.
+Schurr_NNP ,_, and_CC P_NN ._.
+Varakantham_NNP ._.
+Conflicts_NNS in_IN teamwork_NN :_: Hybrids_NNS to_TO the_DT The_DT Sixth_NNP Intl_NNP ._.
+Joint_NNP Conf_NNP ._.
+on_IN Autonomous_NNP Agents_NNPS and_CC Multi-Agent_NNP Systems_NNP -LRB-_-LRB- AAMAS_NNP ##_CD -RRB-_-RRB- ###_CD

@@ -1,0 +1,456 @@
+A_DT Framework_NN for_IN Architecting_VBG Peer-to-Peer_NNP Receiver-driven_NNP Overlays_NNP Reza_NNP Rejaie_NNP Department_NNP of_IN Computer_NNP Science_NNP University_NNP of_IN Oregon_NNP reza_NN @_IN cs_NNS ._.
+uoregon_NN ._.
+edu_NN Shad_NNP Stafford_NNP Department_NNP of_IN Computer_NNP Science_NNP University_NNP of_IN Oregon_NNP staffors_NNS @_IN cs_NNS ._.
+uoregon_NN ._.
+edu_NN ABSTRACT_NN This_DT paper_NN presents_VBZ a_DT simple_JJ and_CC scalable_JJ framework_NN for_IN architecting_VBG peer-to-peer_JJ overlays_NNS called_VBN Peer-to-peer_NNP Receiverdriven_NNP Overlay_NNP -LRB-_-LRB- or_CC PRO_FW -RRB-_-RRB- ._.
+PRO_FW is_VBZ designed_VBN for_IN non-interactive_JJ streaming_NN applications_NNS and_CC its_PRP$ primary_JJ design_NN goal_NN is_VBZ to_TO maximize_VB delivered_VBN bandwidth_NN -LRB-_-LRB- and_CC thus_RB delivered_VBN quality_NN -RRB-_-RRB- to_TO peers_NNS with_IN heterogeneous_JJ and_CC asymmetric_JJ bandwidth_NN ._.
+To_TO achieve_VB this_DT goal_NN ,_, PRO_FW adopts_VBZ a_DT receiver-driven_JJ approach_NN where_WRB each_DT receiver_NN -LRB-_-LRB- or_CC participating_VBG peer_VBP -RRB-_-RRB- -LRB-_-LRB- i_LS -RRB-_-RRB- independently_RB discovers_VBZ other_JJ peers_NNS in_IN the_DT overlay_NN through_IN gossiping_VBG ,_, and_CC -LRB-_-LRB- ii_LS -RRB-_-RRB- selfishly_RB determines_VBZ the_DT best_JJS subset_NN of_IN parent_NN peers_NNS through_IN which_WDT to_TO connect_VB to_TO the_DT overlay_NN to_TO maximize_VB its_PRP$ own_JJ delivered_VBN bandwidth_NN ._.
+Participating_VBG peers_NNS form_VBP an_DT unstructured_JJ overlay_NN which_WDT is_VBZ inherently_RB robust_JJ to_TO high_JJ churn_VBP rate_NN ._.
+Furthermore_RB ,_, each_DT receiver_NN leverages_VBZ congestion_NN controlled_JJ bandwidth_NN from_IN its_PRP$ parents_NNS as_IN implicit_JJ signal_NN to_TO detect_VB and_CC react_VB to_TO long-term_JJ changes_NNS in_IN network_NN or_CC overlay_NN condition_NN without_IN any_DT explicit_JJ coordination_NN with_IN other_JJ participating_VBG peers_NNS ._.
+Independent_JJ parent_NN selection_NN by_IN individual_JJ peers_NNS dynamically_RB converge_VBP to_TO an_DT efficient_JJ overlay_NN structure_NN ._.
+Categories_NNS and_CC Subject_NNP Descriptors_NNPS :_: C_NN ._.
+#_# ._.
+#_# -LSB-_-LRB- ComputerCommunication_NNP Networks_NNP -RSB-_-RRB- :_: Distributed_VBN Systems_NNP General_NNP Terms_NNS :_: Design_NN ,_, Measurement_NN 1_CD ._.
+INTRODUCTION_NNP Limited_NNP deployment_NN of_IN IP_NNP multicast_NNP has_VBZ motivated_VBN a_DT new_JJ distribution_NN paradigm_NN over_IN the_DT Internet_NN based_VBN on_IN overlay_NN networks_NNS where_WRB a_DT group_NN of_IN participating_VBG end-systems_NNS -LRB-_-LRB- or_CC peers_NNS -RRB-_-RRB- form_VBP an_DT overlay_NN structure_NN and_CC actively_RB participate_VB in_IN distribution_NN of_IN content_NN without_IN any_DT special_JJ support_NN from_IN the_DT network_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, -LSB-_-LRB- #_# -RSB-_-RRB- -RRB-_-RRB- ._.
+Since_IN overlay_NN structures_NNS are_VBP layered_VBN over_IN the_DT best-effort_JJS Internet_NN ,_, any_DT approach_NN for_IN constructing_VBG overlay_NN should_MD address_VB the_DT following_VBG fundamental_JJ challenges_NNS :_: -LRB-_-LRB- i_LS -RRB-_-RRB- Scalability_NN with_IN the_DT number_NN of_IN participating_VBG peers_NNS ,_, -LRB-_-LRB- ii_LS -RRB-_-RRB- Robustness_NN to_TO dynamics_NNS of_IN peer_VBP participation_NN ,_, -LRB-_-LRB- iii_LS -RRB-_-RRB- Adaptation_NN to_TO variations_NNS of_IN network_NN bandwidth_NN ,_, and_CC -LRB-_-LRB- iv_LS -RRB-_-RRB- Accommodating_VBG heterogeneity_NN and_CC asymmetry_NN of_IN bandwidth_NN connectivity_NN among_IN participating_VBG peers_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Coping_VBG with_IN bandwidth_NN variations_NNS ,_, heterogeneity_NN and_CC asymmetry_NN are_VBP particularly_RB important_JJ in_IN design_NN of_IN peer-to-peer_JJ overlay_NN for_IN streaming_NN applications_NNS because_IN delivered_VBN quality_NN to_TO each_DT peer_VB is_VBZ directly_RB determined_VBN by_IN its_PRP$ bandwidth_NN connectivity_NN to_TO -LRB-_-LRB- other_JJ peer_VBP -LRB-_-LRB- s_NNS -RRB-_-RRB- on_IN -RRB-_-RRB- the_DT overlay_NN ._.
+This_DT paper_NN presents_VBZ a_DT simple_JJ framework_NN for_IN architecting_VBG Peer-to-peer_NN Receiver-driven_JJ Overlay_NN ,_, called_VBN PRO_FW ._.
+PRO_FW can_MD accommodate_VB a_DT spectrum_NN of_IN non-interactive_JJ streaming_NN applications_NNS ranging_VBG from_IN playback_NN to_TO lecture-mode_JJ live_JJ sessions_NNS ._.
+The_DT main_JJ design_NN philosophy_NN in_IN PRO_FW is_VBZ that_IN each_DT peer_VBP should_MD be_VB allowed_VBN to_TO independently_RB and_CC selfishly_RB determine_VB the_DT best_JJS way_NN to_TO connect_VB to_TO the_DT overlay_NN in_IN order_NN to_TO maximize_VB its_PRP$ own_JJ delivered_VBN quality_NN ._.
+Toward_IN this_DT end_NN ,_, each_DT peer_VBP can_MD connect_VB to_TO the_DT overlay_NN topology_NN at_IN multiple_JJ points_NNS -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, receive_VBP content_NN through_IN multiple_JJ parent_NN peers_NNS -RRB-_-RRB- ._.
+Therefore_RB ,_, participating_VBG peers_NNS form_VBP an_DT unstructured_JJ overlay_NN that_WDT can_MD gracefully_RB cope_VB with_IN high_JJ churn_VBP rate_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+Furthermore_RB ,_, having_VBG multiple_JJ parent_NN peers_NNS accommodates_VBZ bandwidth_NN heterogeneity_NN and_CC asymmetry_NN while_IN improves_VBZ resiliency_NN against_IN dynamics_NNS of_IN peer_VBP participation_NN ._.
+PRO_FW consists_VBZ of_IN two_CD key_JJ components_NNS :_: -LRB-_-LRB- i_LS -RRB-_-RRB- Gossip-based_JJ Peer_NNP Discovery_NNP :_: Each_DT peer_VBP periodically_RB exchanges_NNS message_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, gossips_NNS -RRB-_-RRB- with_IN other_JJ known_JJ peers_NNS to_TO progressively_RB learn_VB about_IN a_DT subset_NN of_IN participating_VBG peers_NNS in_IN the_DT overlay_NN that_WDT are_VBP likely_JJ to_TO be_VB good_JJ parents_NNS ._.
+Gossiping_VBG provides_VBZ a_DT scalable_JJ and_CC efficient_JJ approach_NN to_TO peer_VB discovery_NN in_IN unstructured_JJ peer-to-peer_JJ networks_NNS that_WDT can_MD be_VB customized_VBN to_TO guide_VB direction_NN of_IN discovery_NN towards_IN peers_NNS with_IN desired_VBN properties_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, peers_NNS with_IN shorter_JJR distance_NN or_CC higher_JJR bandwidth_NN -RRB-_-RRB- ._.
+-LRB-_-LRB- ii_LS -RRB-_-RRB- Receiver-driven_JJ Parent_NNP Selection_NN :_: Given_VBN the_DT collected_VBN information_NN about_IN other_JJ participating_VBG peers_NNS by_IN gossiping_VBG mechanism_NN ,_, each_DT peer_VBP -LRB-_-LRB- or_CC receiver_NN -RRB-_-RRB- gradually_RB improves_VBZ its_PRP$ own_JJ delivered_VBN quality_NN by_IN dynamically_RB selecting_VBG a_DT proper_JJ subset_NN of_IN parent_NN peers_NNS that_WDT collectively_RB maximize_VBP provided_VBN bandwidth_NN to_TO the_DT receiver_NN ._.
+Since_IN the_DT available_JJ bandwidth_NN from_IN different_JJ participating_VBG peers_NNS to_TO a_DT receiver_NN -LRB-_-LRB- and_CC possible_JJ correlation_NN among_IN them_PRP -RRB-_-RRB- can_MD be_VB measured_VBN only_RB at_IN that_DT receiver_NN ,_, a_DT receiver-driven_JJ approach_NN is_VBZ the_DT natural_JJ solution_NN to_TO maximize_VB available_JJ bandwidth_NN to_TO heterogeneous_JJ peers_NNS ._.
+Furthermore_RB ,_, the_DT available_JJ bandwidth_NN from_IN parent_NN peers_NNS serves_VBZ as_IN an_DT implicit_JJ signal_NN for_IN a_DT receiver_NN to_TO detect_VB and_CC react_VB to_TO changes_NNS in_IN network_NN or_CC overlay_NN condition_NN without_IN any_DT explicit_JJ coordination_NN with_IN other_JJ participating_VBG peers_NNS ._.
+Independent_JJ parent_NN selection_NN by_IN individual_JJ peers_NNS leads_VBZ to_TO an_DT efficient_JJ overlay_NN that_WDT maximizes_VBZ delivered_VBN quality_NN to_TO each_DT peer_VB ._.
+PRO_FW incorporates_VBZ 42_CD several_JJ damping_VBG functions_NNS to_TO ensure_VB stability_NN of_IN the_DT overlay_NN despite_IN uncoordinated_JJ actions_NNS by_IN different_JJ peers_NNS ._.
+PRO_FW is_VBZ part_NN of_IN a_DT larger_JJR architecture_NN that_IN we_PRP have_VBP developed_VBN for_IN peer-to-peer_JJ streaming_NN ._.
+In_IN our_PRP$ earlier_JJR work_NN ,_, we_PRP developed_VBD a_DT mechanism_NN called_VBN PALS_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- that_WDT enables_VBZ a_DT receiver_NN to_TO stream_NN layered_VBD structured_JJ content_NN from_IN a_DT given_VBN set_NN of_IN congestion_NN controlled_JJ senders_NNS ._.
+Thus_RB ,_, PRO_FW and_CC PALS_NNS are_VBP both_DT receiver-driven_JJ but_CC complement_NN each_DT other_JJ ._.
+More_RBR specifically_RB ,_, PRO_FW determines_VBZ a_DT proper_JJ subset_NN of_IN parent_NN peers_NNS that_WDT collectively_RB maximize_VBP delivered_VBN bandwidth_NN to_TO each_DT receiver_NN whereas_IN PALS_NNS coordinates_VBZ in-time_JJ streaming_NN of_IN different_JJ segments_NNS of_IN multimedia_NNS content_NN from_IN these_DT parents_NNS despite_IN unpredictable_JJ variations_NNS in_IN their_PRP$ available_JJ bandwidth_NN ._.
+This_DT division_NN of_IN functionality_NN provides_VBZ a_DT great_JJ deal_NN of_IN flexibility_NN because_IN it_PRP decouples_VBZ overlay_NN construction_NN from_IN delivery_NN mechanism_NN ._.
+In_IN this_DT paper_NN ,_, we_PRP primarily_RB focus_VBP on_IN the_DT overlay_NN construction_NN mechanism_NN ,_, or_CC PRO_FW ._.
+The_DT rest_NN of_IN this_DT paper_NN is_VBZ organized_VBN as_IN follows_VBZ :_: In_IN Section_NN 2_CD ,_, we_PRP revisit_VBP the_DT problem_NN of_IN overlay_NN construction_NN for_IN peerto-peer_JJ streaming_NN and_CC identify_VB its_PRP$ two_CD key_JJ components_NNS and_CC explore_VB their_PRP$ design_NN space_NN ._.
+We_PRP illustrate_VBP the_DT differences_NNS between_IN PRO_FW and_CC previous_JJ solutions_NNS ,_, and_CC justify_VB our_PRP$ design_NN choices_NNS ._.
+We_PRP present_VBP our_PRP$ proposed_VBN framework_NN in_IN Section_NN #_# ._.
+In_IN Sections_NNS #_# and_CC #_# ,_, the_DT key_JJ components_NNS of_IN our_PRP$ framework_NN are_VBP described_VBN in_IN further_JJ detail_NN ._.
+Finally_RB ,_, Section_NN #_# concludes_VBZ the_DT paper_NN and_CC presents_VBZ our_PRP$ future_JJ plans_NNS ._.
+2_LS ._.
+REVISITING_VBG THE_DT PROBLEM_NN Constructing_VBG a_DT peer-to-peer_JJ overlay_NN for_IN streaming_NN applications_NNS should_MD not_RB only_RB accommodate_VB global_JJ design_NN goals_NNS such_JJ as_IN scalability_NN and_CC resilience_NN but_CC also_RB satisfy_VB the_DT local_JJ design_NN goal_NN of_IN maximizing_VBG delivered_VBN quality_NN to_TO individual_JJ peers_NNS #_# ._.
+More_RBR specifically_RB ,_, delivered_VBN quality_NN of_IN streaming_NN content_NN to_TO each_DT peer_VB should_MD be_VB proportional_JJ to_TO its_PRP$ incoming_JJ access_NN link_NN bandwidth_NN ._.
+Achieving_VBG these_DT goals_NNS is_VBZ particularly_RB challenging_JJ because_IN participating_VBG peers_NNS often_RB exhibit_VBP heterogeneity_NN and_CC asymmetry_NN in_IN their_PRP$ bandwidth_NN connectivity_NN ._.
+Solutions_NNPS for_IN constructing_VBG peer-to-peer_JJ overlays_NNS often_RB require_VBP two_CD key_JJ mechanisms_NNS to_TO be_VB implemented_VBN at_IN each_DT peer_VBP :_: Peer_VB Discovery_NNP -LRB-_-LRB- PD_NN -RRB-_-RRB- and_CC Parent_NNP Selection_NN -LRB-_-LRB- PS_NNP -RRB-_-RRB- ._.
+The_DT PD_NN mechanism_NN enables_VBZ each_DT peer_VBP to_TO learn_VB about_IN other_JJ participating_VBG peers_NNS in_IN the_DT overlay_NN ._.
+Information_NN about_IN other_JJ peers_NNS are_VBP used_VBN by_IN the_DT PS_NNP mechanism_NN at_IN each_DT peer_VBP to_TO determine_VB proper_JJ parent_NN peers_NNS through_IN which_WDT it_PRP should_MD connect_VB to_TO the_DT overlay_NN ._.
+The_DT collective_JJ behavior_NN of_IN PD_NN and_CC PS_NNP mechanisms_NNS at_IN all_DT participating_VBG peers_NNS leads_VBZ to_TO an_DT overlay_NN structure_NN that_WDT achieves_VBZ the_DT above_JJ design_NN goals_NNS ._.
+There_EX has_VBZ been_VBN a_DT wealth_NN of_IN previous_JJ research_NN that_WDT explored_VBD design_NN space_NN of_IN the_DT PD_NN and_CC PS_NNP mechanisms_NNS as_IN follows_VBZ :_: Peer_VB Discovery_NNP :_: In_IN structured_JJ peer-to-peer_NN networks_NNS ,_, the_DT existing_VBG structure_NN enables_VBZ each_DT peer_VBP to_TO find_VB other_JJ participating_VBG peers_NNS in_IN a_DT scalable_JJ fashion_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, -LSB-_-LRB- #_# -RSB-_-RRB- -RRB-_-RRB- ._.
+However_RB ,_, structured_JJ peer-to-peer_NN networks_NNS may_MD not_RB be_VB robust_JJ against_IN high_JJ churn_VBP rate_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+In_IN contrast_NN ,_, unstructured_JJ peer-to-peer_NN networks_NNS can_MD gracefully_RB accommodate_VB high_JJ churn_VBP rate_NN -LSB-_-LRB- #_# -RSB-_-RRB- but_CC require_VBP a_DT separate_JJ peer_VBP discovery_NN mechanism_NN ._.
+Meshfirst_JJ approaches_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, -LSB-_-LRB- #_# ,_, #_# -RSB-_-RRB- -RRB-_-RRB- that_WDT require_VBP each_DT peer_VBP to_TO know_VB about_IN all_DT other_JJ participating_VBG peers_NNS as_RB well_RB as_IN centralized_JJ approaches_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, -LSB-_-LRB- ##_CD -RSB-_-RRB- -RRB-_-RRB- to_TO peer_VB discovery_NN exhibit_VBP limited_JJ scalability_NN ._.
+NICE_JJ -LSB-_-LRB- #_# -RSB-_-RRB- leverages_VBZ a_DT hierarchal_JJ structure_NN to_TO achieve_VB 1_CD It_PRP is_VBZ worth_JJ clarifying_VBG that_IN our_PRP$ design_NN goal_NN is_VBZ different_JJ from_IN common_JJ goals_NNS in_IN building_VBG application-level_JJ multicast_JJ trees_NNS -LSB-_-LRB- #_# -RSB-_-RRB- -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, minimizing_VBG stretch_NN and_CC stress_NN -RRB-_-RRB- ._.
+scalability_NN but_CC each_DT peer_VBP only_RB knows_VBZ about_IN a_DT group_NN of_IN closeby_JJ peers_NNS who_WP may_MD not_RB be_VB good_JJ parents_NNS -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, may_MD not_RB provide_VB sufficient_JJ bandwidth_NN -RRB-_-RRB- ._.
+Parent_NNP Selection_NN :_: We_PRP examine_VBP two_CD key_JJ aspects_NNS of_IN parent_NN selections_NNS :_: -LRB-_-LRB- i_LS -RRB-_-RRB- Selection_NN Criteria_NNS :_: There_EX are_VBP two_CD main_JJ criteria_NNS for_IN parent_NN selections_NNS :_: relative_JJ delay_NN and_CC available_JJ bandwidth_NN between_IN two_CD peers_NNS ._.
+Relative_JJ delay_NN between_IN any_DT two_CD peers_NNS can_MD be_VB estimated_VBN in_IN a_DT scalable_JJ fashion_NN with_IN one_CD of_IN the_DT existing_VBG landmark-based_JJ solutions_NNS such_JJ as_IN Global_JJ Network_NNP Positioning_NN -LRB-_-LRB- GNP_NNP -RRB-_-RRB- -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+However_RB ,_, estimating_VBG available_JJ bandwidth_NN between_IN two_CD peers_NNS requires_VBZ end-to-end_JJ measurement_NN ._.
+Using_VBG available_JJ bandwidth_NN as_IN criteria_NNS for_IN parent_NN selection_NN does_VBZ not_RB scale_NN for_IN two_CD reasons_NNS :_: First_NNP ,_, to_TO cope_VB with_IN dynamics_NNS of_IN bandwidth_NN variations_NNS ,_, each_DT peer_VBP requires_VBZ to_TO periodically_RB estimate_VB the_DT available_JJ bandwidth_NN from_IN all_DT other_JJ peers_NNS through_IN measurement_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, -LSB-_-LRB- #_# -RSB-_-RRB- -RRB-_-RRB- ._.
+Second_RB ,_, the_DT probability_NN of_IN interference_NN among_IN different_JJ measurements_NNS grows_VBZ with_IN the_DT number_NN of_IN peers_NNS in_IN an_DT overlay_NN -LRB-_-LRB- similar_JJ to_TO joint_JJ experiment_NN in_IN RLM_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- -RRB-_-RRB- ._.
+Most_JJS of_IN the_DT previous_JJ solutions_NNS adopted_VBD the_DT idea_NN of_IN application_NN level_NN multicast_NN and_CC used_VBN delay_NN as_IN the_DT main_JJ selection_NN criteria_NNS ._.
+Participating_VBG peers_NNS cooperatively_RB run_VBP a_DT distributed_VBN algorithm_NN to_TO organize_VB themselves_PRP into_IN a_DT source-rooted_JJ tree_NN structure_NN in_IN order_NN to_TO minimize_VB either_CC overall_JJ delay_NN across_IN all_DT branches_NNS of_IN the_DT tree_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, -LSB-_-LRB- #_# -RSB-_-RRB- -RRB-_-RRB- ,_, or_CC delay_NN between_IN source_NN and_CC each_DT receiver_NN peer_VBP -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, -LSB-_-LRB- ##_CD -RSB-_-RRB- -RRB-_-RRB- ._.
+While_IN these_DT parent_NN selection_NN strategies_NNS minimize_VBP associated_VBN network_NN load_NN ,_, they_PRP may_MD not_RB provide_VB sufficient_JJ bandwidth_NN to_TO individual_JJ peers_NNS because_IN delay_NN is_VBZ often_RB not_RB a_DT good_JJ indicator_NN for_IN available_JJ bandwidth_NN between_IN two_CD peers_NNS -LSB-_-LRB- ##_NNS ,_, ##_NN -RSB-_-RRB- ._.
+The_DT key_JJ issue_NN is_VBZ that_IN minimizing_VBG overall_JJ delay_NN -LRB-_-LRB- global_JJ design_NN goal_NN -RRB-_-RRB- and_CC maximizing_VBG delivered_VBN bandwidth_NN to_TO each_DT peer_VB -LRB-_-LRB- local_JJ design_NN goal_NN -RRB-_-RRB- could_MD easily_RB be_VB in_IN conflict_NN ._.
+More_RBR specifically_RB ,_, parent_NN peers_NNS with_IN longer_JJR relative_JJ distance_NN may_MD provide_VB higher_JJR bandwidth_NN than_IN close-by_JJ parents_NNS ._.
+This_DT suggests_VBZ that_IN there_EX might_MD exist_VB a_DT tradeoff_NN between_IN maximizing_VBG provided_VBN bandwidth_NN to_TO each_DT peer_VB and_CC minimizing_VBG overall_JJ delay_NN across_IN the_DT overlay_NN ._.
+-LRB-_-LRB- ii_LS -RRB-_-RRB- Single_JJ vs_CC Multiple_JJ Parents_NNS :_: A_DT single_JJ tree_NN structure_NN for_IN the_DT overlay_NN -LRB-_-LRB- where_WRB each_DT peer_VBP has_VBZ a_DT single_JJ parent_NN -RRB-_-RRB- is_VBZ inherently_RB unable_JJ to_TO accommodate_VB peers_NNS with_IN heterogeneous_JJ and_CC asymmetric_JJ bandwidth_NN ._.
+A_DT common_JJ approach_NN to_TO accommodating_VBG bandwidth_NN heterogeneity_NN is_VBZ to_TO use_VB layer_NN structured_JJ content_NN -LRB-_-LRB- either_CC layered_JJ or_CC multiple_JJ description_NN encodings_NNS -RRB-_-RRB- and_CC allow_VB each_DT receiver_NN to_TO have_VB multiple_JJ parents_NNS ._.
+This_DT approach_NN could_MD accommodate_VB heterogeneity_NN but_CC it_PRP introduces_VBZ several_JJ new_JJ challenges_NNS ._.
+First_RB ,_, parent_NN selection_NN strategy_NN should_MD be_VB determined_VBN based_VBN on_IN location_NN of_IN a_DT bottleneck_NN ._.
+If_IN the_DT bottleneck_NN is_VBZ at_IN the_DT -LRB-_-LRB- outgoing_JJ -RRB-_-RRB- access_NN links_NNS of_IN parent_NN peers_NNS #_# ,_, then_RB a_DT receiver_NN should_MD simply_RB look_VB for_IN more_JJR parents_NNS ._.
+However_RB ,_, when_WRB the_DT bottleneck_NN is_VBZ else_RB where_WRB in_IN the_DT network_NN ,_, a_DT receiver_NN should_MD select_VB parents_NNS with_IN a_DT diverse_JJ set_NN of_IN paths_NNS -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, utilize_VBP different_JJ network_NN paths_NNS -RRB-_-RRB- ._.
+In_IN practice_NN ,_, a_DT combination_NN of_IN these_DT cases_NNS might_MD simultaneously_RB exist_VB among_IN participating_VBG peers_NNS -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+Second_RB ,_, streaming_NN a_DT single_JJ content_NN from_IN multiple_JJ senders_NNS is_VBZ challenging_VBG for_IN two_CD reasons_NNS :_: 1_LS -RRB-_-RRB- This_DT requires_VBZ tight_JJ coordination_NN among_IN senders_NNS to_TO determine_VB overall_JJ delivered_VBN quality_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, number_NN of_IN layers_NNS -RRB-_-RRB- and_CC decide_VB which_WDT sender_NN is_VBZ responsible_JJ for_IN delivery_NN of_IN each_DT segment_NN ._.
+#_# -RRB-_-RRB- Delivered_VBN segments_NNS from_IN different_JJ senders_NNS should_MD arrive_VB before_IN their_PRP$ playout_JJ times_NNS despite_IN uncorrelated_JJ vari2_NN if_IN bottleneck_NN is_VBZ at_IN the_DT receiver_NN ''_'' s_NNS access_NN link_NN ,_, then_RB provided_VBD bandwidth_NN to_TO the_DT receiver_NN is_VBZ already_RB maximized_VBN ._.
+43_CD ations_NNS in_IN -LRB-_-LRB- congestion_NN controlled_VBN -RRB-_-RRB- bandwidth_NN from_IN different_JJ senders_NNS ._.
+This_DT also_RB implies_VBZ that_IN those_DT solutions_NNS that_WDT build_VBP multi-parent_JJ overlay_NN structure_NN but_CC do_VBP not_RB explicitly_RB ensure_VB in-time_JJ delivery_NN of_IN individual_JJ segments_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, -LSB-_-LRB- #_# ,_, ##_NN -RSB-_-RRB- -RRB-_-RRB- may_MD not_RB be_VB able_JJ to_TO support_VB streaming_NN applications_NNS ._.
+One_CD approach_NN to_TO build_VB a_DT multi-parent_JJ overlay_NN is_VBZ to_TO organize_VB participating_VBG peers_NNS into_IN different_JJ trees_NNS where_WRB each_DT layer_NN of_IN the_DT stream_NN is_VBZ sent_VBN to_TO a_DT separate_JJ tree_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, -LSB-_-LRB- #_# ,_, ##_NN -RSB-_-RRB- -RRB-_-RRB- ._.
+Each_DT peer_VBP can_MD maximize_VB its_PRP$ quality_NN by_IN participating_VBG in_IN a_DT proper_JJ number_NN of_IN trees_NNS ._.
+This_DT approach_NN raises_VBZ several_JJ issues_NNS :_: #_# -RRB-_-RRB- the_DT provided_VBN bandwidth_NN to_TO peers_NNS in_IN each_DT tree_NN is_VBZ limited_VBN by_IN minimum_JJ uplink_JJ bandwidth_NN among_IN upstream_JJ peers_NNS on_IN that_DT tree_NN ._.
+In_IN the_DT presence_NN of_IN bandwidth_NN asymmetry_NN ,_, this_DT could_MD easily_RB limit_VB delivered_VBN bandwidth_NN on_IN each_DT tree_NN below_IN the_DT required_VBN bandwidth_NN for_IN a_DT single_JJ layer_NN ,_, #_# -RRB-_-RRB- it_PRP is_VBZ not_RB feasible_JJ to_TO build_VB separate_JJ trees_NNS that_WDT are_VBP all_DT optimal_JJ for_IN a_DT single_JJ selection_NN criteria_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, overall_JJ delay_NN -RRB-_-RRB- ,_, ._.
+#_# -RRB-_-RRB- connections_NNS across_IN different_JJ trees_NNS are_VBP likely_JJ to_TO compete_VB for_IN available_JJ bandwidth_NN on_IN a_DT single_JJ bottleneck3_NN ._.
+We_PRP conclude_VBP that_IN a_DT practical_JJ solution_NN for_IN peer-topeer_JJ streaming_NN applications_NNS should_MD incorporate_VB the_DT following_VBG design_NN properties_NNS :_: -LRB-_-LRB- i_LS -RRB-_-RRB- it_PRP should_MD use_VB an_DT unstructured_JJ ,_, multiparent_JJ peer-to-peer_NNS overlay_NN ,_, -LRB-_-LRB- ii_LS -RRB-_-RRB- it_PRP should_MD provide_VB a_DT scalable_JJ peer_VBP discovery_NN mechanism_NN that_WDT enables_VBZ each_DT peer_VBP to_TO find_VB its_PRP$ good_JJ parents_NNS efficiently_RB ,_, -LRB-_-LRB- iii_LS -RRB-_-RRB- it_PRP should_MD detect_VB -LRB-_-LRB- and_CC possibly_RB avoid_VB -RRB-_-RRB- any_DT shared_JJ bottleneck_NN among_IN different_JJ connections_NNS in_IN the_DT overlay_NN ,_, and_CC -LRB-_-LRB- iv_LS -RRB-_-RRB- it_PRP should_MD deploy_VB congestion_NN controlled_JJ connections_NNS but_CC ensure_VB in-time_JJ arrival_NN of_IN delivered_VBN segments_NNS to_TO each_DT receiver_NN ._.
+In_IN the_DT next_JJ section_NN ,_, we_PRP explain_VBP how_WRB PRO_FW incorporates_VBZ all_PDT the_DT above_JJ design_NN properties_NNS ._.
+3_LS ._.
+P2P_NN RECEIVER-DRIVEN_NN OVERLAY_NN Assumptions_NNS :_: We_PRP assume_VBP that_IN each_DT peer_VBP can_MD estimate_VB the_DT relative_JJ distance_NN between_IN any_DT two_CD peers_NNS using_VBG the_DT GNP_NNP mechanism_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Furthermore_RB ,_, each_DT peer_VBP knows_VBZ the_DT incoming_JJ and_CC outgoing_JJ bandwidth_NN of_IN its_PRP$ access_NN link_NN ._.
+Each_DT peer_VBP uses_VBZ the_DT PALS_NNS mechanism_NN to_TO stream_NN content_NN from_IN multiple_JJ parent_NN peers_NNS ._.
+All_DT connections_NNS are_VBP congestion_NN controlled_VBN by_IN senders_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, -LSB-_-LRB- ##_CD -RSB-_-RRB- -RRB-_-RRB- ._.
+To_TO accommodate_VB peer_VB bandwidth_NN heterogeneity_NN ,_, we_PRP assume_VBP that_IN the_DT content_NN has_VBZ a_DT layered_JJ representation_NN ._.
+In_IN other_JJ words_NNS ,_, with_IN proper_JJ adjustment_NN ,_, the_DT framework_NN should_MD work_VB with_IN both_DT layered_JJ and_CC multipledescription_JJ encodings_NNS ._.
+Participating_VBG peers_NNS have_VBP heterogeneous_JJ and_CC asymmetric_JJ bandwidth_NN connectivity_NN ._.
+Furthermore_RB ,_, peers_NNS may_MD join_VB and_CC leave_VB in_IN an_DT arbitrary_JJ fashion_NN ._.
+Overview_NN :_: In_IN PRO_FW ,_, each_DT peer_VBP -LRB-_-LRB- or_CC receiver_NN -RRB-_-RRB- progressively_RB searches_NNS for_IN a_DT subset_NN of_IN parents_NNS that_WDT collectively_RB maximize_VBP delivered_VBN bandwidth_NN and_CC minimize_VB overall_JJ delay_NN from_IN all_DT parents_NNS to_TO the_DT receiver_NN ._.
+Such_PDT a_DT subset_NN of_IN parents_NNS may_MD change_VB over_IN time_NN as_IN some_DT parents_NNS join_VB -LRB-_-LRB- or_CC leave_VB -RRB-_-RRB- the_DT overlay_NN ,_, or_CC available_JJ bandwidth_NN from_IN current_JJ parents_NNS significantly_RB changes_NNS ._.
+Note_VB that_IN each_DT peer_VBP can_MD be_VB both_CC receiver_NN and_CC parent_NN at_IN the_DT same_JJ time_NN #_# ._.
+Each_DT receiver_NN periodically_RB exchanges_NNS messages_NNS -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, gossips_NNS -RRB-_-RRB- with_IN other_JJ peers_NNS in_IN the_DT overlay_NN to_TO learn_VB about_IN those_DT participating_VBG peers_NNS that_WDT are_VBP potentially_RB good_JJ parents_NNS ._.
+Potentially_RB good_JJ parents_NNS for_IN a_DT receiver_NN are_VBP identified_VBN based_VBN on_IN their_PRP$ relative_JJ utility_NN for_IN the_DT receiver_NN ._.
+The_DT utility_NN of_IN a_DT parent_NN peer_VBP pi_NN for_IN a_DT receiver_NN pj_NN is_VBZ a_DT function_NN of_IN their_PRP$ relative_JJ network_NN distance_NN -LRB-_-LRB- delij_NN -RRB-_-RRB- and_CC the_DT outgoing_JJ access_NN link_NN bandwidth_NN of_IN the_DT parent_NN -LRB-_-LRB- outbwi_NN -RRB-_-RRB- ,_, -LRB-_-LRB- i_LS ._.
+e_LS ._.
+,_, U_NNP -LRB-_-LRB- pi_NNP ,_, pj_NN -RRB-_-RRB- 3_CD These_DT multi-tree_JJ approaches_NNS often_RB do_VBP not_RB use_VB congestion_NN control_NN for_IN each_DT connection_NN ._.
+4_CD Throughout_IN this_DT paper_NN we_PRP use_VBP receiver_NN and_CC parent_NN as_IN short_JJ form_NN for_IN receiver_NN peer_VBP and_CC parent_NN peer_VBP ._.
+=_JJ f_FW -LRB-_-LRB- delij_NN ,_, outbwi_NN -RRB-_-RRB- -RRB-_-RRB- ._.
+Using_VBG parents_NNS ''_'' access_NN link_NN bandwidth_NN instead_RB of_IN available_JJ bandwidth_NN has_VBZ several_JJ advantages_NNS :_: -LRB-_-LRB- i_LS -RRB-_-RRB- outgoing_JJ bandwidth_NN is_VBZ an_DT upper_JJ bound_VBN for_IN available_JJ bandwidth_NN from_IN a_DT parent_NN ._.
+Therefore_RB ,_, it_PRP enables_VBZ the_DT receiver_NN to_TO roughly_RB classify_VB different_JJ parents_NNS ._.
+-LRB-_-LRB- ii_LS -RRB-_-RRB- estimating_NN available_JJ bandwidth_NN requires_VBZ end-to-end_JJ measurement_NN and_CC such_JJ a_DT solution_NN does_VBZ not_RB scale_NN with_IN the_DT number_NN of_IN peers_NNS ,_, and_CC more_RBR importantly_RB ,_, -LRB-_-LRB- iii_LS -RRB-_-RRB- given_VBN a_DT utility_NN function_NN ,_, this_DT approach_NN enables_VBZ any_DT peer_VB in_IN the_DT overlay_NN to_TO estimate_VB relative_JJ utility_NN of_IN any_DT other_JJ two_CD peers_NNS ._.
+Each_DT receiver_NN only_RB maintains_VBZ information_NN about_IN a_DT fixed_VBN -LRB-_-LRB- and_CC relatively_RB small_JJ -RRB-_-RRB- number_NN of_IN promising_JJ parent_NN peers_NNS in_IN its_PRP$ local_JJ image_NN ._.
+The_DT local_JJ image_NN at_IN each_DT receiver_NN is_VBZ dynamically_RB updated_VBN with_IN new_JJ gossip_NN messages_NNS as_IN other_JJ peers_NNS join_VBP /_: leave_VB the_DT overlay_NN ._.
+Each_DT peer_VBP selects_VBZ a_DT new_JJ parent_NN in_IN a_DT demand-driven_JJ fashion_NN in_IN order_NN to_TO minimize_VB the_DT number_NN of_IN end-to-end_JJ bandwidth_NN measurements_NNS ,_, and_CC thus_RB improve_VB scalability_NN ._.
+When_WRB a_DT receiver_NN needs_VBZ a_DT new_JJ parent_NN ,_, its_PRP$ PS_NNP mechanism_NN randomly_RB selects_VBZ a_DT peer_VB from_IN its_PRP$ local_JJ image_NN where_WRB probability_NN of_IN selecting_VBG a_DT peer_VBP directly_RB depends_VBZ on_IN its_PRP$ utility_NN ._.
+Then_RB ,_, the_DT actual_JJ properties_NNS -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, available_JJ bandwidth_NN and_CC delay_NN -RRB-_-RRB- of_IN the_DT selected_VBN parent_NN are_VBP verified_VBN through_IN passive_NN measurement_NN ._.
+Toward_IN this_DT end_NN ,_, the_DT selected_VBN parent_NN is_VBZ added_VBN to_TO the_DT parent_NN list_NN which_WDT triggers_VBZ PALS_NNS to_TO request_NN content_NN from_IN this_DT parent_NN ._.
+Figure_NNP #_# depicts_VBZ the_DT interactions_NNS between_IN PD_NN and_CC PS_NNP mechanisms_NNS ._.
+In_IN PRO_FW ,_, each_DT receiver_NN leverages_VBZ congestion_NN controlled_JJ bandwidth_NN from_IN its_PRP$ parents_NNS as_IN an_DT implicit_JJ signal_NN to_TO detect_VB two_CD events_NNS :_: -LRB-_-LRB- i_LS -RRB-_-RRB- any_DT measurable_JJ shared_JJ bottleneck_NN among_IN connections_NNS from_IN different_JJ parents_NNS ,_, and_CC -LRB-_-LRB- ii_LS -RRB-_-RRB- any_DT change_NN in_IN network_NN or_CC overlay_NN conditions_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, departure_NN or_CC arrival_NN of_IN other_JJ close-by_JJ peers_NNS -RRB-_-RRB- ._.
+Figure_NNP #_# shows_VBZ part_NN of_IN an_DT overlay_NN to_TO illustrate_VB this_DT feature_NN ._.
+Each_DT receiver_NN continuously_RB monitors_VBZ available_JJ bandwidth_NN from_IN all_DT its_PRP$ parents_NNS ._.
+Receiver_NN p0_NN initially_RB has_VBZ only_RB p1_RB as_IN a_DT parent_NN ._.
+When_WRB p0_NN adds_VBZ a_DT new_JJ parent_NN -LRB-_-LRB- p2_NN -RRB-_-RRB- ,_, the_DT receiver_NN examines_VBZ the_DT smoothed_VBN available_JJ bandwidth_NN from_IN p1_NN and_CC p2_NN and_CC any_DT measurable_JJ correlation_NN between_IN them_PRP ._.
+If_IN the_DT available_JJ bandwidth_NN from_IN p1_NN decreases_VBZ after_IN p2_NN is_VBZ added_VBN ,_, the_DT receiver_NN can_MD conclude_VB that_IN these_DT two_CD parents_NNS are_VBP behind_IN the_DT same_JJ bottleneck_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, link_NN L0_NN -RRB-_-RRB- ._.
+We_PRP note_VBP that_IN paths_NNS from_IN two_CD parents_NNS might_MD have_VB some_DT overlap_VBP that_IN does_VBZ not_RB include_VB any_DT bottleneck_NN ._.
+Assume_VB another_DT receiver_NN p3_NN selects_VBZ p1_NN as_IN a_DT parent_NN and_CC thus_RB competes_VBZ with_IN receiver_NN p0_NN for_IN available_JJ bandwidth_NN on_IN link_NN L1_NN ._.
+Suppose_VB that_DT L1_NN becomes_VBZ a_DT bottleneck_NN and_CC the_DT connection_NN between_IN p1_NN to_TO p3_NN obtains_VBZ a_DT significantly_RB higher_JJR share_NN of_IN L1_NN ''_'' s_NNS bandwidth_NN than_IN connection_NN between_IN p1_NN to_TO p0_NN ._.
+This_DT change_NN in_IN available_JJ bandwidth_NN from_IN p1_NN serves_VBZ as_IN a_DT signal_NN for_IN p0_NN ._.
+Whenever_NNP a_DT receiver_NN detects_VBZ such_PDT a_DT drop_NN in_IN bandwidth_NN ,_, it_PRP waits_VBZ for_IN a_DT random_JJ period_NN of_IN time_NN -LRB-_-LRB- proportional_JJ to_TO the_DT available_JJ bandwidth_NN -RRB-_-RRB- and_CC then_RB drops_VBZ Source_NN Peer_NNP Disc_NNP ._.
+Peer_VB Selec_NNP ._.
+gossip_NN Exam_NN ._.
+a_DT New_NNP Parent_NNP Criteriafor_NNP PeerDiscovery_NNP Update_NNP LocalImage_NNP oftheOverlay_NNP Unknown_JJ peers_NNS in_IN the_DT overlay_NN Known_VBN peers_NNS in_IN the_DT overlay_NN Select_NNP Internal_NNP Components_NNP of_IN Receiver_NNP Peer_NNP Receiver_NNP Peer_NNP Figure_NNP #_# :_: Interactions_NNS between_IN PD_NN and_CC PS_NNP mechanisms_NNS through_IN local_JJ image_NN 44_CD P1_NN P3_NN P0_NN L0_NN L1_NN L3_NN Overlay_NN connection_NN Network_NNP Path_NN P2_NN L2_NN P1_NN P3_NN P0_NN L0_NN L1_NN L3_NN P2_NN L2_NN Initial_JJ Overlay_NNP Reshaped_NNP Overlay_NNP Figure_NNP #_# :_: Using_VBG congestion_NN controlled_JJ bandwidth_NN as_IN signal_NN to_TO reshape_VB the_DT overlay_NN the_DT corresponding_JJ parent_NN if_IN its_PRP$ bandwidth_NN remains_VBZ low_JJ -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+Therefore_RB ,_, the_DT receiver_NN with_IN a_DT higher_JJR bandwidth_NN connectivity_NN -LRB-_-LRB- p3_NN -RRB-_-RRB- is_VBZ more_RBR likely_JJ to_TO keep_VB p1_NN as_IN parent_NN whereas_IN p0_NN may_MD examine_VB other_JJ parents_NNS with_IN higher_JJR bandwidth_NN including_VBG p3_NN ._.
+The_DT congestion_NN controlled_VBN bandwidth_NN signals_NNS the_DT receiver_NN to_TO properly_RB reshape_VB the_DT overlay_NN ._.
+We_PRP present_VBP a_DT summary_NN of_IN key_JJ features_NNS and_CC limitations_NNS of_IN PRO_FW in_IN the_DT next_JJ two_CD sections_NNS ._.
+Table_NNP #_# summarizes_VBZ our_PRP$ notation_NN throughout_IN this_DT paper_NN ._.
+Main_NNP Features_NNPS :_: Gossiping_VBG provides_VBZ a_DT scalable_JJ approach_NN to_TO peer_VB discovery_NN because_IN each_DT peer_VBP does_VBZ not_RB require_VB global_JJ knowledge_NN about_IN all_DT group_NN members_NNS ,_, and_CC its_PRP$ generated_VBN traffic_NN can_MD be_VB controlled_VBN ._.
+The_DT PD_NN mechanism_NN actively_RB participates_VBZ in_IN peer_VBP selection_NN by_IN identifying_VBG peers_NNS for_IN the_DT local_JJ image_NN which_WDT limits_VBZ the_DT possible_JJ choices_NNS of_IN parents_NNS for_IN the_DT PS_NNP mechanism_NN ._.
+PRO_FW constructs_NNS a_DT multi-parent_JJ ,_, unstructured_JJ overlay_NN ._.
+But_CC PRO_FW does_VBZ not_RB have_VB the_DT same_JJ limitations_NNS that_WDT exist_VBP in_IN multi-tree_JJ approaches_NNS because_IN it_PRP allows_VBZ each_DT receiver_NN to_TO independently_RB micro-manage_VB its_PRP$ parents_NNS to_TO maximize_VB its_PRP$ overall_JJ bandwidth_NN based_VBN on_IN local_JJ information_NN ._.
+PRO_FW conducts_VBZ passive_JJ measurement_NN not_RB only_RB to_TO determine_VB available_JJ bandwidth_NN from_IN a_DT parent_NN but_CC also_RB to_TO detect_VB any_DT shared_JJ bottleneck_NN between_IN paths_NNS from_IN different_JJ parents_NNS ._.
+Furthermore_RB ,_, by_IN selecting_VBG a_DT new_JJ parent_NN from_IN the_DT local_JJ image_NN ,_, PRO_FW increases_VBZ the_DT probability_NN of_IN finding_VBG a_DT good_JJ parent_NN in_IN each_DT selection_NN ,_, and_CC thus_RB significantly_RB decreases_VBZ number_NN of_IN required_VBN measurements_NNS which_WDT in_IN turn_NN improves_VBZ scalability_NN ._.
+PRO_FW can_MD gracefully_RB accommodate_VB bandwidth_NN heterogeneity_NN and_CC asymmetry_NN among_IN peers_NNS since_IN PALS_NNS is_VBZ able_JJ to_TO manage_VB delivery_NN of_IN content_NN from_IN a_DT group_NN of_IN parents_NNS with_IN different_JJ bandwidth_NN ._.
+Limitations_NNPS and_CC Challenges_NNS :_: The_DT main_JJ hypothesis_NN in_IN our_PRP$ framework_NN is_VBZ that_IN the_DT best_JJS subset_NN of_IN parents_NNS for_IN each_DT receiver_NN are_VBP likely_JJ to_TO be_VB part_NN of_IN its_PRP$ local_JJ image_NN i_FW ._.
+e_LS ._.
+,_, PD_NN mechanism_NN can_MD find_VB the_DT best_JJS parents_NNS ._.
+Whenever_NNP this_DT condition_NN is_VBZ not_RB satisfied_JJ ,_, either_CC a_DT receiver_NN may_MD not_RB be_VB able_JJ to_TO maximize_VB its_PRP$ overall_JJ bandwidth_NN or_CC resulting_VBG overlay_NN may_MD not_RB be_VB efficient_JJ ._.
+Table_NNP #_# :_: Notation_NNP used_VBD throughout_IN the_DT paper_NN Symbol_NN Definition_NN ._.
+pi_NN Peer_NN i_FW inbwi_FW Incoming_JJ access_NN link_NN BW_NN for_IN pi_NN outbwi_NN Outgoing_JJ access_NN link_NN BW_NN for_IN pi_NN min_NN nopi_JJ Min_NN ._.
+No_DT of_IN parents_NNS for_IN pi_NN max_NN nopi_JJ Max_NN ._.
+No_DT of_IN parents_NNS for_IN pi_NN nopi_NN -LRB-_-LRB- t_NN -RRB-_-RRB- No_DT of_IN active_JJ parents_NNS for_IN pi_NN at_IN time_NN t_NN img_NN sz_NN Size_NN of_IN local_JJ image_NN at_IN each_DT peer_VBP sgm_NN Size_NN of_IN gossip_NN message_NN delij_NN Estimated_VBN delay_NN between_IN pi_NN and_CC pj_NN Clearly_RB ,_, properties_NNS of_IN the_DT selected_VBN utility_NN function_NN as_RB well_RB as_IN accuracy_NN of_IN estimated_VBN parameters_NNS -LRB-_-LRB- in_IN particular_JJ using_VBG outgoing_JJ bandwidth_NN instead_RB of_IN available_JJ bandwidth_NN -RRB-_-RRB- determine_VBP properties_NNS of_IN the_DT local_JJ image_NN at_IN each_DT peer_VBP which_WDT in_IN turn_NN affects_VBZ performance_NN of_IN the_DT framework_NN in_IN some_DT scenarios_NNS ._.
+In_IN these_DT cases_NNS ,_, the_DT utility_NN value_NN may_MD not_RB effectively_RB guide_VB the_DT search_NN process_NN in_IN identifying_VBG good_JJ parents_NNS which_WDT increases_VBZ the_DT average_JJ convergence_NN time_NN until_IN each_DT peer_VBP finds_VBZ a_DT good_JJ subset_NN of_IN parents_NNS ._.
+Similar_JJ to_TO many_JJ other_JJ adaptive_JJ mechanisms_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, -LSB-_-LRB- ##_CD -RSB-_-RRB- -RRB-_-RRB- ,_, the_DT parent_NN selection_NN mechanism_NN should_MD address_VB the_DT fundamental_JJ tradeoff_NN between_IN responsiveness_NN and_CC stability_NN ._.
+Finally_RB ,_, the_DT congestion_NN controlled_VBN bandwidth_NN from_IN parent_NN peers_NNS may_MD not_RB provide_VB a_DT measurable_JJ signal_NN to_TO detect_VB a_DT shared_JJ bottleneck_NN when_WRB level_NN of_IN multiplexing_VBG is_VBZ high_JJ at_IN the_DT bottleneck_NN link_NN ._.
+However_RB ,_, this_DT is_VBZ not_RB a_DT major_JJ limitation_NN since_IN the_DT negative_JJ impact_NN of_IN a_DT shared_JJ bottleneck_NN in_IN these_DT cases_NNS is_VBZ minimal_JJ ._.
+All_PDT the_DT above_JJ limitations_NNS are_VBP in_IN part_NN due_JJ to_TO the_DT simplicity_NN of_IN our_PRP$ framework_NN and_CC would_MD adversely_RB affect_VB its_PRP$ performance_NN ._.
+However_RB ,_, we_PRP believe_VBP that_IN this_DT is_VBZ a_DT reasonable_JJ design_NN tradeoff_NN since_IN simplicity_NN is_VBZ one_CD of_IN our_PRP$ key_JJ design_NN goals_NNS ._.
+In_IN the_DT following_VBG sections_NNS ,_, we_PRP describe_VBP the_DT two_CD key_JJ components_NNS of_IN our_PRP$ framework_NN in_IN further_JJ details_NNS ._.
+4_LS ._.
+GOSSIP-BASED_JJ PEER_NN DISCOVERY_NN Peer_NN discovery_NN at_IN each_DT receiver_NN is_VBZ basically_RB a_DT search_NN among_IN all_DT participating_VBG peers_NNS in_IN the_DT overlay_NN for_IN a_DT certain_JJ number_NN -LRB-_-LRB- img_NN sz_NN -RRB-_-RRB- of_IN peers_NNS with_IN the_DT highest_JJS relative_JJ utility_NN ._.
+PRO_FW adopts_VBZ a_DT gossip-like_JJ -LSB-_-LRB- ##_CD -RSB-_-RRB- approach_NN to_TO peer_VB discovery_NN ._.
+Gossiping_VBG -LRB-_-LRB- or_CC rumor_NN spreading_NN -RRB-_-RRB- has_VBZ been_VBN frequently_RB used_VBN as_IN a_DT scalable_JJ alternative_NN to_TO flooding_NN that_WDT gradually_RB spreads_VBZ information_NN among_IN a_DT group_NN of_IN peers_NNS ._.
+However_RB ,_, we_PRP use_VBP gossiping_VBG as_IN a_DT search_NN mechanism_NN -LSB-_-LRB- #_# -RSB-_-RRB- for_IN finding_VBG promising_JJ parents_NNS since_IN it_PRP has_VBZ two_CD appealing_JJ properties_NNS -LRB-_-LRB- i_LS -RRB-_-RRB- the_DT volume_NN of_IN exchanged_VBN messages_NNS can_MD be_VB controlled_VBN ,_, and_CC -LRB-_-LRB- ii_LS -RRB-_-RRB- the_DT gossip-based_JJ information_NN exchange_NN can_MD be_VB customized_VBN to_TO leverage_NN relative_JJ utility_NN values_NNS to_TO improve_VB search_NN efficiency_NN ._.
+The_DT gossip_NN mechanism_NN works_VBZ as_IN follow_VB :_: each_DT peer_VBP maintains_VBZ a_DT local_JJ image_NN that_WDT contains_VBZ up_RP to_TO img_VB sz_NN records_NNS where_WRB each_DT record_NN represents_VBZ the_DT following_VBG information_NN for_IN a_DT previously_RB discovered_VBN peer_VBP pi_NN in_IN the_DT overlay_NN :_: #_# -RRB-_-RRB- IP_NNP address_NN ,_, #_# -RRB-_-RRB- GNP_NNP coordinates_VBZ ,_, #_# -RRB-_-RRB- number_NN of_IN received_VBN layers_NNS ,_, #_# -RRB-_-RRB- timestamp_NN when_WRB the_DT record_NN was_VBD last_JJ generated_VBN by_IN a_DT peer_VBP ,_, #_# -RRB-_-RRB- outbwi_NN and_CC 6_CD -RRB-_-RRB- inbwi_NN ._.
+To_TO bootstrap_VB the_DT discovery_NN process_NN ,_, a_DT new_JJ receiver_NN needs_VBZ to_TO learn_VB about_IN a_DT handful_NN of_IN other_JJ participating_VBG peers_NNS in_IN the_DT overlay_NN ._.
+This_DT information_NN can_MD be_VB obtained_VBN from_IN the_DT original_JJ server_NN -LRB-_-LRB- or_CC a_DT well-known_JJ rendezvous_NN point_NN -RRB-_-RRB- ._.
+The_DT server_NN should_MD implement_VB a_DT strategy_NN for_IN selecting_VBG the_DT initial_JJ peers_NNS that_WDT are_VBP provided_VBN to_TO each_DT new_JJ receiver_NN ._.
+We_PRP call_VBP this_DT the_DT initial_JJ parent_NN selection_NN mechanism_NN ._.
+Once_RB the_DT initial_JJ set_NN of_IN peers_NNS are_VBP known_VBN ,_, each_DT peer_VBP pi_NN periodically_RB invokes_VBZ a_DT target_NN selection_NN mechanism_NN to_TO determine_VB a_DT target_NN peer_VBP -LRB-_-LRB- pj_NN -RRB-_-RRB- from_IN its_PRP$ local_JJ image_NN for_IN gossip_NN ._.
+Given_VBN a_DT utility_NN function_NN ,_, peer_VBP pi_NN uses_VBZ a_DT content_JJ selection_NN strategy_NN to_TO select_VB sgm_NN records_NNS -LRB-_-LRB- or_CC smaller_JJR number_NN when_WRB sgm_NN records_NNS are_VBP not_RB available_JJ -RRB-_-RRB- from_IN its_PRP$ local_JJ image_NN that_WDT are_VBP most_RBS useful_JJ for_IN pj_NN and_CC send_VB those_DT records_NNS to_TO pj_NN ._.
+In_IN response_NN ,_, pj_NN follows_VBZ the_DT same_JJ steps_NNS and_CC replies_VBZ with_IN a_DT gossip_NN message_NN that_WDT includes_VBZ sgm_NN records_NNS from_IN its_PRP$ local_JJ image_NN that_WDT are_VBP most_RBS useful_JJ for_IN pi_NN ,_, i_FW ._.
+e_LS ._.
+,_, bidirectional_JJ gossip_NN ._.
+When_WRB a_DT gossip_NN message_NN arrives_VBZ at_IN each_DT peer_VBP ,_, an_DT image_NN maintenance_NN scheme_NN integrates_VBZ new_JJ records_NNS into_IN the_DT current_JJ local_JJ image_NN and_CC discards_VBZ excess_JJ records_NNS such_JJ that_IN certain_JJ property_NN of_IN the_DT local_JJ image_NN is_VBZ improved_VBN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, increase_NN overall_JJ utility_NN of_IN peers_NNS in_IN the_DT image_NN -RRB-_-RRB- Aggregate_JJ performance_NN of_IN 45_CD a_DT gossip_NN mechanism_NN can_MD be_VB presented_VBN by_IN two_CD average_JJ metrics_NNS and_CC their_PRP$ distribution_NN among_IN peers_NNS :_: -LRB-_-LRB- i_LS -RRB-_-RRB- Average_JJ Convergence_NN Time_NN :_: average_JJ number_NN of_IN gossip_NN messages_NNS until_IN all_DT peers_NNS in_IN an_DT overlay_NN reach_VBP their_PRP$ final_JJ images_NNS ,_, and_CC -LRB-_-LRB- ii_LS -RRB-_-RRB- Average_JJ Efficiency_NN Ratio_NN :_: average_JJ ratio_NN of_IN unique_JJ records_NNS to_TO the_DT total_JJ number_NN of_IN received_VBN records_NNS by_IN each_DT peer_VBP ._.
+We_PRP have_VBP been_VBN exploring_VBG the_DT design_NN space_NN of_IN four_CD key_JJ components_NNS of_IN the_DT gossip_NN mechanism_NN ._.
+Frequency_NN and_CC size_NN of_IN gossip_NN messages_NNS determine_VBP average_JJ freshness_NN of_IN local_JJ images_NNS ._.
+Currently_RB ,_, the_DT server_NN randomly_RB selects_VBZ the_DT initial_JJ parents_NNS from_IN its_PRP$ local_JJ image_NN for_IN each_DT new_JJ peer_VBP ._.
+Target_NN Selection_NN :_: Target_NN selection_NN randomly_RB picks_VBZ a_DT peer_VB from_IN the_DT current_JJ image_NN to_TO evenly_RB obtain_VB information_NN from_IN different_JJ areas_NNS of_IN the_DT overlay_NN and_CC speed_VB up_RP discovery_NN ._.
+Content_NN Selection_NN :_: peer_VB pk_NN determines_VBZ relative_JJ utility_NN of_IN all_PDT the_DT peers_NNS -LRB-_-LRB- pj_NN -RRB-_-RRB- in_IN its_PRP$ local_JJ image_NN for_IN target_NN peer_VBP pi_NN ,_, and_CC then_RB randomly_RB selects_VBZ sgm_NN peers_NNS to_TO prepare_VB a_DT gossip_NN message_NN for_IN pi_NN ._.
+However_RB ,_, probability_NN of_IN selecting_VBG a_DT peer_VBP directly_RB depends_VBZ on_IN its_PRP$ utility_NN ._.
+This_DT approach_NN is_VBZ biased_VBN towards_IN peers_NNS with_IN higher_JJR utility_NN but_CC its_PRP$ randomness_NN tend_VB to_TO reduce_VB number_NN of_IN duplicate_VB records_NNS in_IN different_JJ gossip_NN message_NN from_IN one_CD peer_VBP -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, improves_VBZ efficiency_NN -RRB-_-RRB- ._.
+A_DT potential_JJ drawback_NN of_IN this_DT approach_NN is_VBZ the_DT increase_NN in_IN convergence_NN time_NN ._.
+We_PRP plan_VBP to_TO examine_VB more_RBR efficient_JJ information_NN sharing_VBG schemes_NNS such_JJ as_IN bloom_NN filters_NNS -LSB-_-LRB- #_# -RSB-_-RRB- in_IN our_PRP$ future_JJ work_NN ._.
+PRO_FW uses_VBZ joint-ranking_JJ -LSB-_-LRB- ##_CD -RSB-_-RRB- to_TO determine_VB relative_JJ utility_NN of_IN a_DT parent_NN for_IN a_DT receiver_NN ._.
+Given_VBN a_DT collection_NN of_IN peers_NNS in_IN a_DT local_JJ image_NN of_IN pk_NN ,_, the_DT jointranking_NN scheme_NN ranks_VBZ all_PDT the_DT peers_NNS once_RB based_VBN on_IN their_PRP$ outgoing_JJ bandwidth_NN ,_, and_CC then_RB based_VBN on_IN their_PRP$ estimated_VBN delay_NN from_IN a_DT target_NN peer_VBP pi_NN ._.
+The_DT utility_NN of_IN peer_VB pj_NN -LRB-_-LRB- U_NN -LRB-_-LRB- pj_NN ,_, pi_NN -RRB-_-RRB- -RRB-_-RRB- is_VBZ inversely_RB proportional_JJ to_TO the_DT sum_NN of_IN pj_NN ''_'' s_NNS ranks_NNS in_IN both_DT rankings_NNS ._.
+Values_NNS for_IN each_DT property_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, bandwidth_NN and_CC delay_NN -RRB-_-RRB- of_IN various_JJ peers_NNS are_VBP divided_VBN into_IN multiple_JJ ranges_NNS -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, bins_NNS -RRB-_-RRB- where_WRB all_DT peers_NNS within_IN each_DT range_NN are_VBP assumed_VBN to_TO have_VB the_DT same_JJ value_NN for_IN that_DT property_NN ._.
+This_DT binning_JJ scheme_NN minimizes_VBZ the_DT sensitivity_NN to_TO minor_JJ differences_NNS in_IN delay_NN or_CC bandwidth_NN among_IN different_JJ peers_NNS ._.
+Image_NN maintenance_NN :_: Image_NN maintenance_NN mechanism_NN evicts_VBZ extra_JJ records_NNS -LRB-_-LRB- beyond_IN img_NN sz_NN -RRB-_-RRB- that_WDT satisfy_VBP one_CD of_IN the_DT following_JJ conditions_NNS :_: -LRB-_-LRB- i_LS -RRB-_-RRB- represent_VBP peers_NNS with_IN the_DT lower_JJR utility_NN ,_, -LRB-_-LRB- ii_LS -RRB-_-RRB- represent_VBP peers_NNS that_WDT were_VBD already_RB dropped_VBN by_IN the_DT PS_NNP mechanism_NN due_JJ to_TO poor_JJ performance_NN and_CC -LRB-_-LRB- iii_LS -RRB-_-RRB- have_VBP a_DT timestamp_JJ older_JJR than_IN a_DT threshold_NN ._.
+This_DT approach_NN attempts_VBZ to_TO balance_VB image_NN quality_NN -LRB-_-LRB- in_IN terms_NNS of_IN overall_JJ utility_NN of_IN existing_VBG peers_NNS -RRB-_-RRB- and_CC its_PRP$ freshness_NN ._.
+Note_VB that_IN the_DT gossip_NN mechanism_NN can_MD discover_VB any_DT peer_VB in_IN the_DT overlay_NN as_RB long_RB as_IN reachability_NN is_VBZ provided_VBN through_IN overlap_VBP among_IN local_JJ images_NNS at_IN different_JJ peers_NNS ._.
+The_DT higher_JJR the_DT amount_NN of_IN overlap_VBP ,_, the_DT higher_JJR the_DT efficiency_NN of_IN discovery_NN ,_, and_CC the_DT higher_JJR the_DT robustness_NN of_IN the_DT overlay_NN to_TO dynamics_NNS of_IN peer_VBP participations_NNS ._.
+The_DT amount_NN of_IN overlap_VBP among_IN images_NNS depends_VBZ on_IN both_CC the_DT size_NN and_CC shape_NN of_IN the_DT local_JJ images_NNS at_IN each_DT peer_VBP ._.
+The_DT shape_NN of_IN the_DT local_JJ image_NN is_VBZ a_DT function_NN of_IN the_DT deployed_VBN utility_NN function_NN ._.
+Joint-ranking_JJ utility_NN gives_VBZ the_DT same_JJ weight_NN to_TO delay_VB and_CC bandwidth_NN ._.
+Delay_VB tends_VBZ to_TO bias_NN selection_NN towards_IN near-by_JJ peers_NNS whereas_IN outgoing_JJ bandwidth_NN introduces_VBZ some_DT degree_NN of_IN randomness_NN in_IN location_NN of_IN selected_VBN peers_NNS ._.
+Therefore_RB ,_, the_DT resulting_VBG local_JJ images_NNS should_MD exhibit_VB a_DT sufficient_JJ degree_NN of_IN overlap_VBP ._.
+5_CD ._.
+PARENT_NN SELECTION_NN The_DT PS_NNP mechanism_NN at_IN each_DT peer_VBP is_VBZ essentially_RB a_DT progressive_JJ search_NN within_IN the_DT local_JJ image_NN for_IN a_DT subset_NN of_IN parent_NN peers_NNS such_JJ that_IN the_DT following_VBG design_NN goals_NNS are_VBP achieved_VBN :_: -LRB-_-LRB- i_LS -RRB-_-RRB- maximizing_VBG delivered_VBN bandwidth_NN #_# ,_, -LRB-_-LRB- ii_LS -RRB-_-RRB- minimizing_VBG the_DT total_JJ delay_NN from_IN all_DT parents_NNS to_TO the_DT receiver_NN ,_, and_CC -LRB-_-LRB- iii_LS -RRB-_-RRB- maximizing_VBG diversity_NN of_IN paths_NNS from_IN parents_NNS -LRB-_-LRB- whenever_WRB it_PRP is_VBZ feasible_JJ -RRB-_-RRB- ._.
+Whenever_NNP these_DT goals_NNS are_VBP in_IN conflict_NN ,_, a_DT receiver_NN optimizes_VBZ the_DT goal_NN with_IN the_DT highest_JJS priority_NN ._.
+Currently_RB ,_, our_PRP$ framework_NN does_VBZ not_RB directly_RB consider_VB diversity_NN of_IN paths_NNS from_IN different_JJ parents_NNS as_IN a_DT criteria_NNS for_IN parent_NN selection_NN ._.
+However_RB ,_, the_DT indirect_JJ effect_NN of_IN shared_JJ path_NN among_IN parents_NNS is_VBZ addressed_VBN because_IN of_IN its_PRP$ potential_JJ impact_NN on_IN available_JJ bandwidth_NN from_IN a_DT parent_NN when_WRB two_CD or_CC more_JJR parents_NNS are_VBP behind_IN the_DT same_JJ bottleneck_NN ._.
+The_DT number_NN of_IN active_JJ parents_NNS -LRB-_-LRB- nopi_NNS -LRB-_-LRB- t_NN -RRB-_-RRB- -RRB-_-RRB- for_IN each_DT receiver_NN should_MD be_VB within_IN a_DT configured_JJ range_NN -LSB-_-LRB- min_NN nop_NN ,_, max_NN nop_NN -RSB-_-RRB- ._.
+Each_DT receiver_NN tries_VBZ to_TO maximize_VB its_PRP$ delivered_VBN bandwidth_NN with_IN the_DT minimum_JJ number_NN of_IN parents_NNS ._.
+If_IN this_DT goal_NN can_MD not_RB be_VB achieved_VBN after_IN evaluation_NN of_IN a_DT certain_JJ number_NN of_IN new_JJ parents_NNS ,_, the_DT receiver_NN will_MD gradually_RB increase_VB its_PRP$ number_NN of_IN parents_NNS ._.
+This_DT flexibility_NN is_VBZ important_JJ in_IN order_NN to_TO utilize_VB available_JJ bandwidth_NN from_IN low_JJ bandwidth_NN parents_NNS ,_, i_FW ._.
+e_LS ._.
+,_, cope_VB with_IN bandwidth_NN heterogeneity_NN ._.
+min_NN nop_NN determines_VBZ minimum_JJ degree_NN of_IN resilience_NN to_TO parent_NN departure_NN ,_, and_CC minimum_JJ level_NN of_IN path_NN diversity_NN -LRB-_-LRB- whenever_WRB diverse_JJ paths_NNS are_VBP available_JJ -RRB-_-RRB- ._.
+The_DT number_NN of_IN children_NNS for_IN each_DT peer_VBP should_MD not_RB be_VB limited_VBN ._.
+Instead_RB ,_, each_DT peer_VB only_RB limits_VBZ maximum_NN outgoing_JJ bandwidth_NN that_IN it_PRP is_VBZ able_JJ -LRB-_-LRB- or_CC willing_JJ -RRB-_-RRB- to_TO provide_VB to_TO its_PRP$ children_NNS ._.
+This_DT allows_VBZ child_NN peers_NNS to_TO compete_VB for_IN congestion_NN controlled_JJ bandwidth_NN from_IN a_DT parent_NN which_WDT motivates_VBZ child_NN peers_NNS with_IN poor_JJ bandwidth_NN connectivity_NN to_TO look_VB for_IN other_JJ parents_NNS -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, properly_RB reshape_VBP the_DT overlay_NN -RRB-_-RRB- ._.
+Design_NN of_IN a_DT PS_NNP mechanism_NN should_MD address_VB three_CD main_JJ questions_NNS as_IN follows_VBZ :_: 1_LS -RRB-_-RRB- When_WRB should_MD a_DT new_JJ parent_NN be_VB selected_VBN ?_.
+There_EX is_VBZ a_DT fundamental_JJ tradeoff_NN between_IN responsiveness_NN of_IN a_DT receiver_NN to_TO changes_NNS in_IN network_NN conditions_NNS -LRB-_-LRB- or_CC convergence_NN time_NN after_IN a_DT change_NN -RRB-_-RRB- and_CC stability_NN of_IN the_DT overlay_NN ._.
+PRO_FW adopts_VBZ a_DT conservative_JJ approach_NN where_WRB each_DT peer_VBP selects_VBZ a_DT new_JJ parent_NN in_IN a_DT demand-driven_JJ fashion_NN ._.
+This_DT should_MD significantly_RB reduce_VB number_NN of_IN new_JJ parent_NN selections_NNS ,_, which_WDT in_IN turn_NN improves_VBZ scalability_NN -LRB-_-LRB- by_IN minimizing_VBG the_DT interference_NN caused_VBN by_IN new_JJ connections_NNS -RRB-_-RRB- and_CC stability_NN of_IN the_DT overlay_NN structure_NN ._.
+A_DT new_JJ parent_NN is_VBZ selected_VBN in_IN the_DT following_VBG scenarios_NNS :_: -LRB-_-LRB- i_LS -RRB-_-RRB- Initial_JJ Phase_NN :_: when_WRB a_DT new_JJ peer_VBP joins_VBZ the_DT overlay_NN ,_, it_PRP periodically_RB adds_VBZ a_DT new_JJ parent_NN until_IN it_PRP has_VBZ min_NN nop_JJ parents_NNS ._.
+-LRB-_-LRB- ii_LS -RRB-_-RRB- Replacing_VBG a_DT Poorly-Performing_NNP Parent_NNP :_: when_WRB available_JJ bandwidth_NN from_IN an_DT existing_VBG parent_NN is_VBZ significantly_RB reduced_VBN for_IN a_DT long_JJ time_NN or_CC a_DT parent_NN leaves_VBZ the_DT session_NN ,_, the_DT receiver_NN can_MD select_VB another_DT peer_VB after_IN a_DT random_JJ delay_NN ._.
+Each_DT receiver_NN selects_VBZ a_DT random_JJ delay_NN proportional_JJ to_TO its_PRP$ available_JJ bandwidth_NN from_IN the_DT parent_NN peer_VBP -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+This_DT approach_NN dampens_VBZ potential_JJ oscillation_NN in_IN the_DT overlay_NN while_IN increasing_VBG the_DT chance_NN for_IN receivers_NNS with_IN higher_JJR bandwidth_NN connectivity_NN to_TO keep_VB a_DT parent_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, properly_RB reshapes_VBZ the_DT overlay_NN -RRB-_-RRB- ._.
+-LRB-_-LRB- iii_LS -RRB-_-RRB- Improvement_NN in_IN Performance_NNP :_: when_WRB it_PRP is_VBZ likely_JJ that_IN a_DT new_JJ parent_NN would_MD significantly_RB improve_VB a_DT non-optimized_JJ aspect_NN of_IN performance_NN -LRB-_-LRB- increase_NN the_DT bandwidth_NN or_CC decrease_VB the_DT delay_NN -RRB-_-RRB- ._.
+This_DT strategy_NN allows_VBZ gradual_JJ improvement_NN of_IN the_DT parent_NN subset_NN as_IN new_JJ peers_NNS are_VBP discovered_VBN -LRB-_-LRB- or_CC joined_VBN -RRB-_-RRB- the_DT overlay_NN ._.
+The_DT available_JJ information_NN for_IN each_DT peer_VBP in_IN the_DT image_NN is_VBZ used_VBN as_IN a_DT heuristic_NN to_TO predict_VB performance_NN of_IN a_DT new_JJ peer_VBP ._.
+Such_PDT an_DT improvement_NN should_MD be_VB examined_VBN infrequently_RB ._.
+A_DT hysteresis_NN mechanism_NN 5_CD The_DT target_NN bandwidth_NN is_VBZ the_DT lower_JJR value_NN between_IN maximum_NN stream_NN bandwidth_NN and_CC receiver_NN ''_'' s_NNS incoming_JJ bandwidth_NN ._.
+46_CD is_VBZ implemented_VBN in_IN scenario_NN -LRB-_-LRB- ii_LS -RRB-_-RRB- and_CC -LRB-_-LRB- iii_LS -RRB-_-RRB- to_TO dampen_VB any_DT potential_JJ oscillation_NN in_IN the_DT overlay_NN ._.
+2_LS -RRB-_-RRB- Which_WDT peer_VBP should_MD be_VB selected_VBN as_IN a_DT new_JJ parent_NN ?_.
+At_IN any_DT point_NN of_IN time_NN ,_, peers_NNS in_IN the_DT local_JJ image_NN are_VBP the_DT best_JJS known_JJ candidate_NN peers_NNS to_TO serve_VB as_IN parent_NN ._.
+In_IN PRO_FW ,_, each_DT receiver_NN randomly_RB selects_VBZ a_DT parent_NN from_IN its_PRP$ current_JJ image_NN where_WRB the_DT probability_NN of_IN selecting_VBG a_DT parent_NN is_VBZ proportional_JJ to_TO its_PRP$ utility_NN ._.
+Deploying_VBG this_DT selection_NN strategy_NN by_IN all_DT peers_NNS lead_VBP to_TO proportional_JJ utilization_NN of_IN outgoing_JJ bandwidth_NN of_IN all_DT peers_NNS without_IN making_VBG the_DT selection_NN heavily_RB biased_VBN towards_IN high_JJ bandwidth_NN peers_NNS ._.
+This_DT approach_NN -LRB-_-LRB- similar_JJ to_TO -LSB-_-LRB- #_# -RSB-_-RRB- -RRB-_-RRB- leverages_VBZ heterogeneity_NN among_IN peers_NNS since_IN number_NN of_IN children_NNS for_IN each_DT peer_VBP is_VBZ proportional_JJ to_TO its_PRP$ outgoing_JJ bandwidth_NN ._.
+3_LS -RRB-_-RRB- How_WRB should_MD a_DT new_JJ parent_NN be_VB examined_VBN ?_.
+Each_DT receiver_NN continuously_RB monitors_VBZ available_JJ bandwidth_NN from_IN all_DT parents_NNS and_CC potential_JJ correlation_NN between_IN bandwidth_NN of_IN two_CD or_CC more_JJR connections_NNS as_IN signal_NN for_IN shared_JJ bottleneck_NN ._.
+The_DT degree_NN of_IN such_JJ correlation_NN also_RB reveals_VBZ the_DT level_NN of_IN multiplexing_VBG at_IN the_DT bottleneck_NN link_NN ,_, and_CC could_MD serve_VB as_IN an_DT indicator_NN for_IN separating_VBG remote_JJ bottlenecks_NNS from_IN a_DT local_JJ one_CD ._.
+Such_PDT a_DT monitoring_NN should_MD use_VB average_JJ bandwidth_NN of_IN each_DT flow_NN over_IN a_DT relatively_RB long_JJ time_NN scale_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, hundreds_NNS of_IN RTT_NN -RRB-_-RRB- to_TO filter_NN out_RP any_DT transient_JJ variations_NNS in_IN bandwidth_NN ._.
+To_TO avoid_VB selecting_VBG a_DT poorly-performing_JJ parent_NN in_IN the_DT near_JJ future_NN ,_, the_DT receiver_NN associates_VBZ a_DT timer_NN to_TO each_DT parent_NN and_CC exponentially_RB backs_VBZ off_RP the_DT timer_NN after_IN each_DT failed_VBD experience_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+After_IN the_DT initial_JJ phase_NN ,_, each_DT receiver_NN maintains_VBZ a_DT fixed_JJ number_NN of_IN parents_NNS at_IN any_DT point_NN of_IN time_NN -LRB-_-LRB- nopi_NN -LRB-_-LRB- t_NN -RRB-_-RRB- -RRB-_-RRB- ._.
+Thus_RB ,_, a_DT new_JJ parent_NN should_MD replace_VB one_CD of_IN the_DT active_JJ parents_NNS ._.
+However_RB ,_, to_TO ensure_VB monotonic_JJ improvement_NN in_IN overall_JJ performance_NN of_IN active_JJ parents_NNS ,_, a_DT new_JJ parent_NN is_VBZ always_RB added_VBN before_IN one_CD of_IN the_DT existing_VBG parents_NNS is_VBZ dropped_VBN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, a_DT receiver_NN can_MD temporarily_RB have_VB one_CD extra_JJ parent_NN -RRB-_-RRB- ._.
+Given_VBN the_DT available_JJ bandwidth_NN from_IN all_DT parents_NNS -LRB-_-LRB- including_VBG the_DT new_JJ one_CD -RRB-_-RRB- and_CC possible_JJ correlation_NN among_IN them_PRP ,_, a_DT receiver_NN can_MD use_VB one_CD of_IN the_DT following_VBG criteria_NNS to_TO drop_VB a_DT parent_NN :_: -LRB-_-LRB- i_LS -RRB-_-RRB- to_TO maximize_VB the_DT bandwidth_NN ,_, the_DT receiver_NN can_MD drop_VB the_DT parent_NN that_WDT contributes_VBZ minimum_JJ bandwidth_NN ,_, -LRB-_-LRB- ii_LS -RRB-_-RRB- to_TO maximize_VB path_NN diversity_NN among_IN connections_NNS from_IN parents_NNS ,_, the_DT receiver_NN should_MD drop_VB the_DT parent_NN that_WDT is_VBZ located_JJ behind_IN the_DT same_JJ bottleneck_NN with_IN the_DT largest_JJS number_NN of_IN active_JJ parents_NNS and_CC contributes_VBZ minimum_JJ bandwidth_NN among_IN them_PRP ._.
+Finally_RB ,_, if_IN the_DT aggregate_NN bandwidth_NN from_IN all_DT parents_NNS remains_VBZ below_IN the_DT required_VBN bandwidth_NN after_IN examining_VBG certain_JJ number_NN of_IN new_JJ parents_NNS -LRB-_-LRB- and_CC nopi_NN -LRB-_-LRB- t_NN -RRB-_-RRB- <_JJR max_NN nop_NN -RRB-_-RRB- ,_, the_DT receiver_NN can_MD increase_VB the_DT total_JJ number_NN of_IN parents_NNS by_IN one_CD ._.
+6_CD ._.
+CONCLUSIONS_NNS AND_CC FUTURE_NNS WORK_VBP In_IN this_DT paper_NN ,_, we_PRP presented_VBD a_DT simple_JJ receiver-driven_JJ framework_NN for_IN architecting_VBG peer-to-pee_JJ overlay_NN structures_NNS called_VBN PRO_FW ._.
+PRO_FW allows_VBZ each_DT peer_VBP to_TO selfishly_RB and_CC independently_RB determine_VB the_DT best_JJS way_NN to_TO connect_VB to_TO the_DT overlay_NN to_TO maximize_VB its_PRP$ performance_NN ._.
+Therefore_RB ,_, PRO_FW should_MD be_VB able_JJ to_TO maximize_VB delivered_VBN quality_NN to_TO peers_NNS with_IN heterogeneous_JJ and_CC asymmetric_JJ bandwidth_NN connectivity_NN ._.
+Both_DT peer_VBP discovery_NN and_CC peer_VB selection_NN in_IN this_DT framework_NN are_VBP scalable_JJ ._.
+Furthermore_RB ,_, PRO_FW uses_VBZ congestion_NN controlled_JJ bandwidth_NN as_IN an_DT implicit_JJ signal_NN to_TO detect_VB shared_JJ bottleneck_NN among_IN existing_VBG parents_NNS as_RB well_RB as_IN changes_NNS in_IN network_NN or_CC overlay_NN conditions_NNS to_TO properly_RB reshape_VB the_DT structure_NN ._.
+We_PRP described_VBD the_DT basic_JJ framework_NN and_CC its_PRP$ key_JJ components_NNS ,_, and_CC sketched_VBD our_PRP$ strawman_NN solutions_NNS ._.
+This_DT is_VBZ a_DT starting_VBG point_NN for_IN our_PRP$ work_NN on_IN PRO_FW ._.
+We_PRP are_VBP currently_RB evaluating_VBG various_JJ aspects_NNS of_IN this_DT framework_NN via_IN simulation_NN ,_, and_CC exploring_VBG the_DT design_NN space_NN of_IN key_JJ components_NNS ._.
+We_PRP are_VBP also_RB prototyping_VBG this_DT framework_NN to_TO conduct_VB real-world_JJ experiments_NNS on_IN the_DT Planet-Lab_NNP in_IN a_DT near_JJ future_NN ._.
+7_CD ._.
+REFERENCES_NNS -LSB-_-LRB- #_# -RSB-_-RRB- A_DT ._.
+Akella_NNP ,_, S_NN ._.
+Seshan_NNP ,_, and_CC A_NN ._.
+Shaikh_NNP ._.
+An_DT empirical_JJ evaluation_NN of_IN wide-area_JJ internet_NN bottlenecks_NNS ._.
+In_IN Internet_NNP Measurement_NNP Conference_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- S_NN ._.
+Banerjee_NNP ,_, B_NN ._.
+Bhattacharjee_NNP ,_, and_CC C_NN ._.
+Kommareddy_NNP ._.
+Scalable_JJ application_NN layer_NN multicast_NN ._.
+In_IN ACM_NNP SIGCOMM_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- J_NN ._.
+Byers_NNP ,_, J_NNP ._.
+Considine_NNP ,_, M_NN ._.
+Mitzenmacher_NNP ,_, and_CC S_NN ._.
+Rost_NNP ._.
+Informed_JJ Content_NN Delivery_NN Across_IN Adaptive_JJ Overlay_NNP Networks_NNP ._.
+In_IN ACM_NNP SIGCOMM_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- M_NN ._.
+Castro_NNP ,_, P_NN ._.
+Druschel_NNP ,_, A_NNP ._.
+-_: M_NN ._.
+Kermarrec_NNP ,_, A_NNP ._.
+R_NN ._.
+A_DT ._.
+Nandi_NNP ,_, and_CC A_NN ._.
+Singh_NNP ._.
+SplitStream_NNP :_: High-bandwidth_JJ content_JJ distribution_NN in_IN a_DT cooperative_JJ environment_NN ._.
+In_IN ACM_NNP SOSP_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- Y_NN ._.
+Chawathe_NNP ,_, S_NN ._.
+Ratnasamy_NNP ,_, L_NNP ._.
+Breslau_NNP ,_, N_NNP ._.
+Lanham_NNP ,_, and_CC S_NN ._.
+Shenker_NNP ._.
+Making_VBG gnutella-like_JJ p2p_NN systems_NNS scalable_JJ ._.
+In_IN ACM_NNP SIGCOMM_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- Y_NN ._.
+Chu_NNP ,_, S_NN ._.
+G_NN ._.
+Rao_NNP ,_, S_NN ._.
+Seshan_NNP ,_, and_CC H_NN ._.
+Zhang_NNP ._.
+Enabling_VBG conferencing_VBG applications_NNS on_IN the_DT internet_NN using_VBG an_DT overlay_NN multicast_JJ architecture_NN ._.
+In_IN ACM_NNP SIGCOMM_NNP ,_, 2001_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- Y_NN ._.
+Chu_NNP ,_, S_NN ._.
+G_NN ._.
+Rao_NNP ,_, and_CC H_NN ._.
+Zhang_NNP ._.
+A_DT case_NN for_IN end-system_JJ multicast_NN ._.
+In_IN ACM_NNP SIGMETRICS_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- S_NN ._.
+Floyd_NNP ,_, V_NNP ._.
+Jacobson_NNP ,_, C_NNP ._.
+Liu_NNP ,_, S_NN ._.
+McCanne_NNP ,_, and_CC L_NN ._.
+Zhang_NNP ._.
+Reliable_JJ Multicast_NNP Framework_NNP for_IN Light-Weight_NNP Sessions_NNP and_CC Application_NN Level_NN Framing_NN ._.
+ACM_NNP /_: IEEE_NNP Transactions_NNS on_IN Networking_NN ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- M_NN ._.
+Harchol-Balter_NNP ,_, F_NN ._.
+T_NN ._.
+Leighton_NNP ,_, and_CC D_NN ._.
+Lewin_NNP ._.
+Resource_NNP discovery_NN in_IN distributed_VBN networks_NNS ._.
+In_IN Symposium_NNP on_IN Principles_NNS of_IN Distributed_VBN Computing_NNP ,_, pages_NNS 229-237_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- S_NN ._.
+Hedetniemi_NNP ,_, S_NN ._.
+Hedetniemi_NNP ,_, and_CC A_NN ._.
+Liestman_NNP ._.
+A_DT Survey_NN of_IN Gossiping_NNP and_CC Broadcasting_NNP in_IN Communication_NNP Networks_NNP ._.
+In_IN Networks_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- D_NN ._.
+Kostic_NNP ,_, A_NNP ._.
+Rodriguez_NNP ,_, J_NNP ._.
+Albrecht_NNP ,_, and_CC A_NN ._.
+Vahdat_NNP ._.
+Bullet_NN :_: High_JJ bandwidth_NN data_NNS dissemination_NN using_VBG an_DT overlay_NN mesh_NN ._.
+In_IN SOSP_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- K_NN ._.
+Lakshminarayanan_NNP and_CC V_NNP ._.
+N_NN ._.
+Padmanabhan_NNP ._.
+Some_DT findings_NNS on_IN the_DT network_NN performance_NN of_IN broadband_NN hosts_NNS ._.
+In_IN Internet_NNP Measurement_NNP Conference_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- S_NN ._.
+McCanne_NNP ,_, V_NNP ._.
+Jacobson_NNP ,_, and_CC M_NN ._.
+Vettereli_NNP ._.
+Receiver-driven_JJ layered_JJ multicast_NN ._.
+In_IN ACM_NNP SIGCOMM_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- T_NN ._.
+S_NN ._.
+E_NN ._.
+Ng_NN ,_, Y_NN ._.
+Chu_NNP ,_, S_NN ._.
+G_NN ._.
+Rao_NNP ,_, K_NNP ._.
+Sripanidkulchai_NNP ,_, and_CC H_NN ._.
+Zhang_NNP ._.
+Measurement-based_JJ optimization_NN techniques_NNS for_IN bandwidth-demanding_JJ peer-to-peer_NN systems_NNS ._.
+In_IN IEEE_NNP INFOCOM_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- T_NN ._.
+S_NN ._.
+E_NN ._.
+Ng_NN and_CC H_NN ._.
+Zhang_NNP ._.
+Predicting_VBG internet_NN network_NN distance_NN with_IN coordinates-based_JJ approaches_NNS ._.
+In_IN IEEE_NNP INFOCOM_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- V_NN ._.
+N_NN ._.
+Padmanabhan_NNP ,_, H_NN ._.
+J_NN ._.
+Wang_NNP ,_, and_CC P_NN ._.
+A_DT ._.
+Chou_NNP ._.
+Resilient_JJ peer-to-peer_JJ streaming_NN ._.
+In_IN IEEE_NNP ICNP_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- R_NN ._.
+Rejaie_NNP ,_, M_NN ._.
+Handley_NNP ,_, and_CC D_NN ._.
+Estrin_NNP ._.
+RAP_NN :_: An_DT end-to-end_JJ rate-based_JJ congestion_NN control_NN mechanism_NN for_IN realtime_NN streams_NNS in_IN the_DT internet_NN ._.
+In_IN IEEE_NNP INFOCOM_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- R_NN ._.
+Rejaie_NN and_CC A_NN ._.
+Ortega_NNP ._.
+PALS_NNS :_: Peer-to-Peer_NNP Adaptive_NNP Layered_NNP Streaming_VBG ._.
+In_IN NOSSDAV_NN ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- S_NN ._.
+Saroiu_NNP ,_, P_NN ._.
+K_NN ._.
+Gummadi_NNP ,_, and_CC S_NN ._.
+D_NN ._.
+Gribble_NNP ._.
+Measurement_NN study_NN of_IN peer-to-peer_JJ file_NN system_NN sharing_NN ._.
+In_IN SPIE_NNP MMCN_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- D_NN ._.
+A_DT ._.
+Tran_NNP ,_, K_NNP ._.
+A_DT ._.
+Hua_NNP ,_, and_CC T_NN ._.
+Do_VB ._.
+Zigzag_NNP :_: An_DT efficient_JJ peer-to-peer_NN scheme_NN for_IN media_NNS streaming_NN ._.
+In_IN IEEE_NNP INFOCOM_NNP ,_, ####_CD ._.
+47_CD

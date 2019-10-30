@@ -1,0 +1,583 @@
+The_DT Impact_NN of_IN Caching_NN on_IN Search_VB Engines_NNP Ricardo_NNP Baeza-Yates1_NN rbaeza_NN @_IN acm_NN ._.
+org_RB Aristides_NNP Gionis1_NN gionis_VBZ @_SYM yahoo-inc_NN ._.
+com_NN Flavio_NNP Junqueira1_NN fpj_NN @_IN yahoo-inc_NN ._.
+com_NN Vanessa_NNP Murdock1_NN vmurdock_NN @_IN yahoo-inc_NN ._.
+com_NN Vassilis_NNP Plachouras1_NNP vassilis_VBZ @_SYM yahoo-inc_NN ._.
+com_NN Fabrizio_NNP Silvestri2_NNP f_LS ._.
+silvestri_NN @_SYM isti_NNS ._.
+cnr_NN ._.
+it_PRP 1_CD Yahoo_NNP !_.
+Research_NNP Barcelona_NNP #_# ISTI_SYM -_: CNR_NN Barcelona_NNP ,_, SPAIN_NNP Pisa_NNP ,_, ITALY_NNP ABSTRACT_NN In_IN this_DT paper_NN we_PRP study_VBP the_DT trade-offs_NNS in_IN designing_VBG efficient_JJ caching_VBG systems_NNS for_IN Web_NN search_NN engines_NNS ._.
+We_PRP explore_VBP the_DT impact_NN of_IN different_JJ approaches_NNS ,_, such_JJ as_IN static_JJ vs_CC ._.
+dynamic_JJ caching_NN ,_, and_CC caching_NN query_NN results_VBZ vs_CC ._.
+caching_VBG posting_VBG lists_NNS ._.
+Using_VBG a_DT query_NN log_NN spanning_VBG a_DT whole_JJ year_NN we_PRP explore_VBP the_DT limitations_NNS of_IN caching_NN and_CC we_PRP demonstrate_VBP that_IN caching_VBG posting_VBG lists_NNS can_MD achieve_VB higher_JJR hit_NN rates_NNS than_IN caching_VBG query_NN answers_NNS ._.
+We_PRP propose_VBP a_DT new_JJ algorithm_NN for_IN static_JJ caching_NN of_IN posting_VBG lists_NNS ,_, which_WDT outperforms_VBZ previous_JJ methods_NNS ._.
+We_PRP also_RB study_VB the_DT problem_NN of_IN finding_VBG the_DT optimal_JJ way_NN to_TO split_VB the_DT static_JJ cache_NN between_IN answers_NNS and_CC posting_VBG lists_NNS ._.
+Finally_RB ,_, we_PRP measure_VB how_WRB the_DT changes_NNS in_IN the_DT query_NN log_NN affect_VBP the_DT effectiveness_NN of_IN static_JJ caching_NN ,_, given_VBN our_PRP$ observation_NN that_IN the_DT distribution_NN of_IN the_DT queries_NNS changes_NNS slowly_RB over_IN time_NN ._.
+Our_PRP$ results_NNS and_CC observations_NNS are_VBP applicable_JJ to_TO different_JJ levels_NNS of_IN the_DT data-access_JJ hierarchy_NN ,_, for_IN instance_NN ,_, for_IN a_DT memory_NN /_: disk_NN layer_NN or_CC a_DT broker_NN /_: remote_JJ server_NN layer_NN ._.
+Categories_NNS and_CC Subject_NNP Descriptors_NNPS H_NN ._.
+#_# ._.
+#_# -LSB-_-LRB- Information_NNP Storage_NNP and_CC Retrieval_NNP -RSB-_-RRB- :_: Information_NNP Search_VB and_CC Retrieval_NNP -_: Search_VB process_NN ;_: H_NN ._.
+#_# ._.
+#_# -LSB-_-LRB- Information_NNP Storage_NNP and_CC Retrieval_NNP -RSB-_-RRB- :_: Systems_NNP and_CC Software_NNP -_: Distributed_VBN systems_NNS ,_, Performance_NNP evaluation_NN -LRB-_-LRB- efficiency_NN and_CC effectiveness_NN -RRB-_-RRB- General_JJ Terms_NNS Algorithms_NNS ,_, Experimentation_NN 1_CD ._.
+INTRODUCTION_NNP Millions_NNPS of_IN queries_NNS are_VBP submitted_VBN daily_JJ to_TO Web_NN search_NN engines_NNS ,_, and_CC users_NNS have_VBP high_JJ expectations_NNS of_IN the_DT quality_NN and_CC speed_NN of_IN the_DT answers_NNS ._.
+As_IN the_DT searchable_JJ Web_NN becomes_VBZ larger_JJR and_CC larger_JJR ,_, with_IN more_JJR than_IN ##_CD billion_CD pages_NNS to_TO index_NN ,_, evaluating_VBG a_DT single_JJ query_NN requires_VBZ processing_VBG large_JJ amounts_NNS of_IN data_NNS ._.
+In_IN such_PDT a_DT setting_NN ,_, to_TO achieve_VB a_DT fast_JJ response_NN time_NN and_CC to_TO increase_VB the_DT query_NN throughput_NN ,_, using_VBG a_DT cache_NN is_VBZ crucial_JJ ._.
+The_DT primary_JJ use_NN of_IN a_DT cache_NN memory_NN is_VBZ to_TO speedup_VB computation_NN by_IN exploiting_VBG frequently_RB or_CC recently_RB used_VBN data_NNS ,_, although_IN reducing_VBG the_DT workload_NN to_TO back-end_JJ servers_NNS is_VBZ also_RB a_DT major_JJ goal_NN ._.
+Caching_VBG can_MD be_VB applied_VBN at_IN different_JJ levels_NNS with_IN increasing_VBG response_NN latencies_NNS or_CC processing_NN requirements_NNS ._.
+For_IN example_NN ,_, the_DT different_JJ levels_NNS may_MD correspond_VB to_TO the_DT main_JJ memory_NN ,_, the_DT disk_NN ,_, or_CC resources_NNS in_IN a_DT local_JJ or_CC a_DT wide_JJ area_NN network_NN ._.
+The_DT decision_NN of_IN what_WP to_TO cache_NN is_VBZ either_CC off-line_JJ -LRB-_-LRB- static_JJ -RRB-_-RRB- or_CC online_NN -LRB-_-LRB- dynamic_NN -RRB-_-RRB- ._.
+A_DT static_JJ cache_NN is_VBZ based_VBN on_IN historical_JJ information_NN and_CC is_VBZ periodically_RB updated_VBN ._.
+A_DT dynamic_JJ cache_NN replaces_VBZ entries_NNS according_VBG to_TO the_DT sequence_NN of_IN requests_NNS ._.
+When_WRB a_DT new_JJ request_NN arrives_VBZ ,_, the_DT cache_NN system_NN decides_VBZ whether_IN to_TO evict_VB some_DT entry_NN from_IN the_DT cache_NN in_IN the_DT case_NN of_IN a_DT cache_NN miss_VBP ._.
+Such_JJ online_NN decisions_NNS are_VBP based_VBN on_IN a_DT cache_NN policy_NN ,_, and_CC several_JJ different_JJ policies_NNS have_VBP been_VBN studied_VBN in_IN the_DT past_NN ._.
+For_IN a_DT search_NN engine_NN ,_, there_EX are_VBP two_CD possible_JJ ways_NNS to_TO use_VB a_DT cache_NN memory_NN :_: Caching_VBG answers_NNS :_: As_IN the_DT engine_NN returns_VBZ answers_NNS to_TO a_DT particular_JJ query_NN ,_, it_PRP may_MD decide_VB to_TO store_VB these_DT answers_NNS to_TO resolve_VB future_JJ queries_NNS ._.
+Caching_VBG terms_NNS :_: As_IN the_DT engine_NN evaluates_VBZ a_DT particular_JJ query_NN ,_, it_PRP may_MD decide_VB to_TO store_VB in_IN memory_NN the_DT posting_VBG lists_NNS of_IN the_DT involved_VBN query_NN terms_NNS ._.
+Often_RB the_DT whole_JJ set_NN of_IN posting_VBG lists_NNS does_VBZ not_RB fit_VB in_IN memory_NN ,_, and_CC consequently_RB ,_, the_DT engine_NN has_VBZ to_TO select_VB a_DT small_JJ set_NN to_TO keep_VB in_IN memory_NN and_CC speed_VB up_RP query_NN processing_NN ._.
+Returning_VBG an_DT answer_NN to_TO a_DT query_NN that_WDT already_RB exists_VBZ in_IN the_DT cache_NN is_VBZ more_RBR efficient_JJ than_IN computing_VBG the_DT answer_NN using_VBG cached_JJ posting_VBG lists_NNS ._.
+On_IN the_DT other_JJ hand_NN ,_, previously_RB unseen_JJ queries_NNS occur_VBP more_RBR often_RB than_IN previously_RB unseen_JJ terms_NNS ,_, implying_VBG a_DT higher_JJR miss_VBP rate_NN for_IN cached_VBN answers_NNS ._.
+Caching_NN of_IN posting_VBG lists_NNS has_VBZ additional_JJ challenges_NNS ._.
+As_IN posting_VBG lists_NNS have_VBP variable_JJ size_NN ,_, caching_VBG them_PRP dynamically_RB is_VBZ not_RB very_RB efficient_JJ ,_, due_JJ to_TO the_DT complexity_NN in_IN terms_NNS of_IN efficiency_NN and_CC space_NN ,_, and_CC the_DT skewed_JJ distribution_NN of_IN the_DT query_NN stream_NN ,_, as_IN shown_VBN later_RB ._.
+Static_JJ caching_NN of_IN posting_VBG lists_NNS poses_VBZ even_RB more_RBR challenges_NNS :_: when_WRB deciding_VBG which_WDT terms_NNS to_TO cache_NN one_CD faces_VBZ the_DT trade-off_NN between_IN frequently_RB queried_VBN terms_NNS and_CC terms_NNS with_IN small_JJ posting_VBG lists_NNS that_WDT are_VBP space_NN efficient_JJ ._.
+Finally_RB ,_, before_IN deciding_VBG to_TO adopt_VB a_DT static_JJ caching_NN policy_NN the_DT query_NN stream_NN should_MD be_VB analyzed_VBN to_TO verify_VB that_IN its_PRP$ characteristics_NNS do_VBP not_RB change_VB rapidly_RB over_IN time_NN ._.
+Broker_NNP Static_JJ caching_VBG posting_VBG lists_NNS Dynamic_NNP /_: Static_JJ cached_JJ answers_NNS Local_JJ query_NN processor_NN Disk_NN Next_JJ caching_NN level_NN Local_JJ network_NN access_NN Remote_JJ network_NN access_NN Figure_NN #_# :_: One_CD caching_NN level_NN in_IN a_DT distributed_VBN search_NN architecture_NN ._.
+In_IN this_DT paper_NN we_PRP explore_VBP the_DT trade-offs_NNS in_IN the_DT design_NN of_IN each_DT cache_NN level_NN ,_, showing_VBG that_IN the_DT problem_NN is_VBZ the_DT same_JJ and_CC only_RB a_DT few_JJ parameters_NNS change_VBP ._.
+In_IN general_JJ ,_, we_PRP assume_VBP that_IN each_DT level_NN of_IN caching_NN in_IN a_DT distributed_VBN search_NN architecture_NN is_VBZ similar_JJ to_TO that_DT shown_VBN in_IN Figure_NNP #_# ._.
+We_PRP use_VBP a_DT query_NN log_NN spanning_VBG a_DT whole_JJ year_NN to_TO explore_VB the_DT limitations_NNS of_IN dynamically_RB caching_VBG query_NN answers_NNS or_CC posting_VBG lists_NNS for_IN query_NN terms_NNS ._.
+More_RBR concretely_RB ,_, our_PRP$ main_JJ conclusions_NNS are_VBP that_IN :_: Caching_VBG query_NN answers_NNS results_VBZ in_IN lower_JJR hit_NN ratios_NNS compared_VBN to_TO caching_NN of_IN posting_VBG lists_NNS for_IN query_NN terms_NNS ,_, but_CC it_PRP is_VBZ faster_RBR because_IN there_EX is_VBZ no_DT need_NN for_IN query_NN evaluation_NN ._.
+We_PRP provide_VBP a_DT framework_NN for_IN the_DT analysis_NN of_IN the_DT trade-off_NN between_IN static_JJ caching_NN of_IN query_NN answers_NNS and_CC posting_VBG lists_NNS ;_: Static_JJ caching_NN of_IN terms_NNS can_MD be_VB more_RBR effective_JJ than_IN dynamic_JJ caching_VBG with_IN ,_, for_IN example_NN ,_, LRU_NNP ._.
+We_PRP provide_VBP algorithms_NNS based_VBN on_IN the_DT Knapsack_NNP problem_NN for_IN selecting_VBG the_DT posting_VBG lists_NNS to_TO put_VB in_RP a_DT static_JJ cache_NN ,_, and_CC we_PRP show_VBP improvements_NNS over_IN previous_JJ work_NN ,_, achieving_VBG a_DT hit_NN ratio_NN over_IN ##_CD %_NN ;_: Changes_NNS of_IN the_DT query_JJ distribution_NN over_IN time_NN have_VBP little_JJ impact_NN on_IN static_JJ caching_NN ._.
+The_DT remainder_NN of_IN this_DT paper_NN is_VBZ organized_VBN as_IN follows_VBZ ._.
+Sections_NNS #_# and_CC #_# summarize_VB related_JJ work_NN and_CC characterize_VBP the_DT data_NNS sets_NNS we_PRP use_VBP ._.
+Section_NN #_# discusses_VBZ the_DT limitations_NNS of_IN dynamic_JJ caching_NN ._.
+Sections_NNS #_# and_CC #_# introduce_VB algorithms_NNS for_IN caching_VBG posting_VBG lists_NNS ,_, and_CC a_DT theoretical_JJ framework_NN for_IN the_DT analysis_NN of_IN static_JJ caching_NN ,_, respectively_RB ._.
+Section_NN #_# discusses_VBZ the_DT impact_NN of_IN changes_NNS in_IN the_DT query_JJ distribution_NN on_IN static_JJ caching_NN ,_, and_CC Section_NN #_# provides_VBZ concluding_VBG remarks_NNS ._.
+2_LS ._.
+RELATED_JJ WORK_VBP There_EX is_VBZ a_DT large_JJ body_NN of_IN work_NN devoted_VBN to_TO query_VB optimization_NN ._.
+Buckley_NNP and_CC Lewit_NNP -LSB-_-LRB- #_# -RSB-_-RRB- ,_, in_IN one_CD of_IN the_DT earliest_JJS works_NNS ,_, take_VB a_DT term-at-a-time_JJ approach_NN to_TO deciding_VBG when_WRB inverted_VBN lists_NNS need_VBP not_RB be_VB further_RB examined_VBN ._.
+More_RBR recent_JJ examples_NNS demonstrate_VBP that_IN the_DT top_JJ k_NN documents_NNS for_IN a_DT query_NN can_MD be_VB returned_VBN without_IN the_DT need_NN for_IN evaluating_VBG the_DT complete_JJ set_NN of_IN posting_VBG lists_NNS -LSB-_-LRB- #_# ,_, #_# ,_, ##_NN -RSB-_-RRB- ._.
+Although_IN these_DT approaches_NNS seek_VBP to_TO improve_VB query_NN processing_NN efficiency_NN ,_, they_PRP differ_VBP from_IN our_PRP$ current_JJ work_NN in_IN that_IN they_PRP do_VBP not_RB consider_VB caching_NN ._.
+They_PRP may_MD be_VB considered_VBN separate_JJ and_CC complementary_JJ to_TO a_DT cache-based_JJ approach_NN ._.
+Raghavan_NNP and_CC Sever_VB -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, in_IN one_CD of_IN the_DT first_JJ papers_NNS on_IN exploiting_VBG user_NN query_NN history_NN ,_, propose_VBP using_VBG a_DT query_NN base_NN ,_, built_VBN upon_IN a_DT set_NN of_IN persistent_JJ optimal_JJ queries_NNS submitted_VBN in_IN the_DT past_NN ,_, to_TO improve_VB the_DT retrieval_NN effectiveness_NN for_IN similar_JJ future_JJ queries_NNS ._.
+Markatos_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- shows_VBZ the_DT existence_NN of_IN temporal_JJ locality_NN in_IN queries_NNS ,_, and_CC compares_VBZ the_DT performance_NN of_IN different_JJ caching_NN policies_NNS ._.
+Based_VBN on_IN the_DT observations_NNS of_IN Markatos_NNP ,_, Lempel_NNP and_CC Moran_NNP propose_VBP a_DT new_JJ caching_NN policy_NN ,_, called_VBN Probabilistic_NNP Driven_NNP Caching_NNP ,_, by_IN attempting_VBG to_TO estimate_VB the_DT probability_NN distribution_NN of_IN all_DT possible_JJ queries_NNS submitted_VBN to_TO a_DT search_NN engine_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+Fagni_NNP et_FW al_FW ._.
+follow_VB Markatos_NNP ''_'' work_NN by_IN showing_VBG that_IN combining_VBG static_JJ and_CC dynamic_JJ caching_NN policies_NNS together_RB with_IN an_DT adaptive_JJ prefetching_JJ policy_NN achieves_VBZ a_DT high_JJ hit_NN ratio_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+Different_JJ from_IN our_PRP$ work_NN ,_, they_PRP consider_VBP caching_VBG and_CC prefetching_VBG of_IN pages_NNS of_IN results_NNS ._.
+As_IN systems_NNS are_VBP often_RB hierarchical_JJ ,_, there_EX has_VBZ also_RB been_VBN some_DT effort_NN on_IN multi-level_JJ architectures_NNS ._.
+Saraiva_NNP et_FW al_FW ._.
+propose_VBP a_DT new_JJ architecture_NN for_IN Web_NN search_NN engines_NNS using_VBG a_DT two-level_JJ dynamic_JJ caching_NN system_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Their_PRP$ goal_NN for_IN such_JJ systems_NNS has_VBZ been_VBN to_TO improve_VB response_NN time_NN for_IN hierarchical_JJ engines_NNS ._.
+In_IN their_PRP$ architecture_NN ,_, both_CC levels_NNS use_VBP an_DT LRU_NN eviction_NN policy_NN ._.
+They_PRP find_VBP that_IN the_DT second-level_JJ cache_NN can_MD effectively_RB reduce_VB disk_NN traffic_NN ,_, thus_RB increasing_VBG the_DT overall_JJ throughput_NN ._.
+Baeza-Yates_NNPS and_CC Saint-Jean_NNP propose_VBP a_DT three-level_JJ index_NN organization_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+Long_NNP and_CC Suel_NNP propose_VBP a_DT caching_NN system_NN structured_VBN according_VBG to_TO three_CD different_JJ levels_NNS -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+The_DT intermediate_JJ level_NN contains_VBZ frequently_RB occurring_VBG pairs_NNS of_IN terms_NNS and_CC stores_NNS the_DT intersections_NNS of_IN the_DT corresponding_JJ inverted_JJ lists_NNS ._.
+These_DT last_JJ two_CD papers_NNS are_VBP related_JJ to_TO ours_JJ in_IN that_IN they_PRP exploit_VBP different_JJ caching_NN strategies_NNS at_IN different_JJ levels_NNS of_IN the_DT memory_NN hierarchy_NN ._.
+Finally_RB ,_, our_PRP$ static_JJ caching_VBG algorithm_NN for_IN posting_VBG lists_NNS in_IN Section_NN #_# uses_VBZ the_DT ratio_NN frequency_NN /_: size_NN in_IN order_NN to_TO evaluate_VB the_DT goodness_NN of_IN an_DT item_NN to_TO cache_NN ._.
+Similar_JJ ideas_NNS have_VBP been_VBN used_VBN in_IN the_DT context_NN of_IN file_NN caching_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, Web_NN caching_NN -LSB-_-LRB- #_# -RSB-_-RRB- ,_, and_CC even_RB caching_NN of_IN posting_VBG lists_NNS -LSB-_-LRB- #_# -RSB-_-RRB- ,_, but_CC in_IN all_DT cases_NNS in_IN a_DT dynamic_JJ setting_NN ._.
+To_TO the_DT best_JJS of_IN our_PRP$ knowledge_NN we_PRP are_VBP the_DT first_JJ to_TO use_VB this_DT approach_NN for_IN static_JJ caching_NN of_IN posting_VBG lists_NNS ._.
+3_LS ._.
+DATA_NNP CHARACTERIZATION_NNP Our_PRP$ data_NNS consists_VBZ of_IN a_DT crawl_NN of_IN documents_NNS from_IN the_DT UK_NNP domain_NN ,_, and_CC query_NN logs_NNS of_IN one_CD year_NN of_IN queries_NNS submitted_VBN to_TO http_VB :_: /_: /_: www_NN ._.
+yahoo_NN ._.
+co_NN ._.
+uk_NN from_IN November_NNP ####_CD to_TO November_NNP 2006_CD ._.
+In_IN our_PRP$ logs_NNS ,_, ##_CD %_NN of_IN the_DT total_JJ volume_NN of_IN queries_NNS are_VBP unique_JJ ._.
+The_DT average_JJ query_NN length_NN is_VBZ #_# ._.
+#_# terms_NNS ,_, with_IN the_DT longest_JJS query_NN having_VBG ###_CD terms_NNS ._.
+1e-07_JJ 1e-06_JJ 1e-05_NN 1e-04_NN 0_CD ._.
+###_NN 0_CD ._.
+##_NN 0_CD ._.
+#_# 1_CD 1e-08_CD 1e-07_JJ 1e-06_JJ 1e-05_NN 1e-04_NN #_# ._.
+###_NN #_# ._.
+##_NN #_# ._.
+#_# #_# Frequency_NN -LRB-_-LRB- normalized_VBN -RRB-_-RRB- Frequency_NN rank_NN -LRB-_-LRB- normalized_VBN -RRB-_-RRB- Figure_NNP #_# :_: The_DT distribution_NN of_IN queries_NNS -LRB-_-LRB- bottom_JJ curve_NN -RRB-_-RRB- and_CC query_NN terms_NNS -LRB-_-LRB- middle_JJ curve_NN -RRB-_-RRB- in_IN the_DT query_NN log_NN ._.
+The_DT distribution_NN of_IN document_NN frequencies_NNS of_IN terms_NNS in_IN the_DT UK-2006_NN dataset_NN -LRB-_-LRB- upper_JJ curve_NN -RRB-_-RRB- ._.
+Figure_NNP #_# shows_VBZ the_DT distributions_NNS of_IN queries_NNS -LRB-_-LRB- lower_JJR curve_NN -RRB-_-RRB- ,_, and_CC query_NN terms_NNS -LRB-_-LRB- middle_JJ curve_NN -RRB-_-RRB- ._.
+The_DT x-axis_NN represents_VBZ the_DT normalized_VBN frequency_NN rank_NN of_IN the_DT query_NN or_CC term_NN ._.
+-LRB-_-LRB- The_DT most_RBS frequent_JJ query_NN appears_VBZ closest_JJS to_TO the_DT y-axis_NN ._. -RRB-_-RRB-
+The_DT y-axis_NN is_VBZ Table_NNP #_# :_: Statistics_NNS of_IN the_DT UK-2006_NN sample_NN ._.
+UK-2006_NN sample_NN statistics_NNS #_# of_IN documents_NNS #_# ,_, ###_CD ,_, ###_CD #_# of_IN terms_NNS #_# ,_, ###_CD ,_, ###_CD #_# of_IN tokens_NNS #_# ,_, ###_CD ,_, ###_CD ,_, ###_CD the_DT normalized_VBN frequency_NN for_IN a_DT given_VBN query_NN -LRB-_-LRB- or_CC term_NN -RRB-_-RRB- ._.
+As_IN expected_VBN ,_, the_DT distribution_NN of_IN query_NN frequencies_NNS and_CC query_NN term_NN frequencies_NNS follow_VBP power_NN law_NN distributions_NNS ,_, with_IN slope_NN of_IN #_# ._.
+##_NN and_CC #_# ._.
+##_NN ,_, respectively_RB ._.
+In_IN this_DT figure_NN ,_, the_DT query_NN frequencies_NNS were_VBD computed_VBN as_IN they_PRP appear_VBP in_IN the_DT logs_NNS with_IN no_DT normalization_NN for_IN case_NN or_CC white_JJ space_NN ._.
+The_DT query_NN terms_NNS -LRB-_-LRB- middle_JJ curve_NN -RRB-_-RRB- have_VBP been_VBN normalized_VBN for_IN case_NN ,_, as_IN have_VBP the_DT terms_NNS in_IN the_DT document_NN collection_NN ._.
+The_DT document_NN collection_NN that_IN we_PRP use_VBP for_IN our_PRP$ experiments_NNS is_VBZ a_DT summary_NN of_IN the_DT UK_NNP domain_NN crawled_VBD in_IN May_NNP ####_CD ._.
+#_# This_DT summary_NN corresponds_VBZ to_TO a_DT maximum_NN of_IN ###_CD crawled_VBD documents_NNS per_IN host_NN ,_, using_VBG a_DT breadth_NN first_RB crawling_VBG strategy_NN ,_, comprising_VBG 15GB_NN ._.
+The_DT distribution_NN of_IN document_NN frequencies_NNS of_IN terms_NNS in_IN the_DT collection_NN follows_VBZ a_DT power_NN law_NN distribution_NN with_IN slope_NN #_# ._.
+##_NN -LRB-_-LRB- upper_JJ curve_NN in_IN Figure_NNP #_# -RRB-_-RRB- ._.
+The_DT statistics_NNS of_IN the_DT collection_NN are_VBP shown_VBN in_IN Table_NNP #_# ._.
+We_PRP measured_VBD the_DT correlation_NN between_IN the_DT document_NN frequency_NN of_IN terms_NNS in_IN the_DT collection_NN and_CC the_DT number_NN of_IN queries_NNS that_WDT contain_VBP a_DT particular_JJ term_NN in_IN the_DT query_NN log_NN to_TO be_VB #_# ._.
+###_NN ._.
+A_DT scatter_NN plot_NN for_IN a_DT random_JJ sample_NN of_IN terms_NNS is_VBZ shown_VBN in_IN Figure_NNP #_# ._.
+In_IN this_DT experiment_NN ,_, terms_NNS have_VBP been_VBN converted_VBN to_TO lower_JJR case_NN in_IN both_CC the_DT queries_NNS and_CC the_DT documents_NNS so_IN that_IN the_DT frequencies_NNS will_MD be_VB comparable_JJ ._.
+1e-07_JJ 1e-06_JJ 1e-05_NN 1e-04_NN 0_CD ._.
+###_NN 0_CD ._.
+##_NN 0_CD ._.
+#_# 1_CD 1e-06_JJ 1e-05_NN 1e-04_NN #_# ._.
+###_NN #_# ._.
+##_NN #_# ._.
+#_# #_# Queryfrequency_NNP Document_NNP frequency_NN Figure_NN #_# :_: Normalized_VBN scatter_NN plot_NN of_IN document-term_NN frequencies_NNS vs_CC ._.
+query-term_JJ frequencies_NNS ._.
+4_LS ._.
+CACHING_VBG OF_IN QUERIES_NNS AND_CC TERMS_NNS Caching_VBG relies_VBZ upon_IN the_DT assumption_NN that_IN there_EX is_VBZ locality_NN in_IN the_DT stream_NN of_IN requests_NNS ._.
+That_DT is_VBZ ,_, there_EX must_MD be_VB sufficient_JJ repetition_NN in_IN the_DT stream_NN of_IN requests_NNS and_CC within_IN intervals_NNS of_IN time_NN that_WDT enable_VBP a_DT cache_NN memory_NN of_IN reasonable_JJ size_NN to_TO be_VB effective_JJ ._.
+In_IN the_DT query_NN log_NN we_PRP used_VBD ,_, ##_CD %_NN of_IN the_DT unique_JJ queries_NNS are_VBP singleton_JJ queries_NNS ,_, and_CC ##_CD %_NN are_VBP singleton_JJ queries_NNS out_IN of_IN the_DT whole_JJ volume_NN ._.
+Thus_RB ,_, out_IN of_IN all_DT queries_NNS in_IN the_DT stream_NN composing_VBG the_DT query_NN log_NN ,_, the_DT upper_JJ threshold_NN on_IN hit_NN ratio_NN is_VBZ 56_CD %_NN ._.
+This_DT is_VBZ because_IN only_RB ##_CD %_NN of_IN all_PDT the_DT queries_NNS comprise_VBP queries_NNS that_WDT have_VBP multiple_JJ occurrences_NNS ._.
+It_PRP is_VBZ important_JJ to_TO observe_VB ,_, however_RB ,_, that_IN not_RB all_DT queries_NNS in_IN this_DT ##_CD %_NN can_MD be_VB cache_NN hits_NNS because_IN of_IN compulsory_JJ misses_VBZ ._.
+A_DT compulsory_JJ miss_VBP 1_CD The_DT collection_NN is_VBZ available_JJ from_IN the_DT University_NNP of_IN Milan_NNP :_: http_NN :_: /_: /_: law_NN ._.
+dsi_NN ._.
+unimi_NN ._.
+it_PRP /_: ._.
+URL_NN retrieved_VBD ##_CD /_: ####_CD ._.
+0_CD 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 1_CD 240_CD ###_CD ###_CD ###_CD ###_CD ###_CD ###_CD Numberofelements_NNP Bin_NNP number_NN Total_JJ terms_NNS Terms_NNS diff_VBP Total_JJ queries_NNS Unique_JJ queries_NNS Unique_JJ terms_NNS Query_NNP diff_VBD Figure_NNP #_# :_: Arrival_JJ rate_NN for_IN both_DT terms_NNS and_CC queries_NNS ._.
+happens_VBZ when_WRB the_DT cache_NN receives_VBZ a_DT query_NN for_IN the_DT first_JJ time_NN ._.
+This_DT is_VBZ different_JJ from_IN capacity_NN misses_VBZ ,_, which_WDT happen_VBP due_JJ to_TO space_NN constraints_NNS on_IN the_DT amount_NN of_IN memory_NN the_DT cache_NN uses_VBZ ._.
+If_IN we_PRP consider_VBP a_DT cache_NN with_IN infinite_JJ memory_NN ,_, then_RB the_DT hit_NN ratio_NN is_VBZ ##_CD %_NN ._.
+Note_VB that_DT for_IN an_DT infinite_JJ cache_NN there_EX are_VBP no_DT capacity_NN misses_VBZ ._.
+As_IN we_PRP mentioned_VBD before_RB ,_, another_DT possibility_NN is_VBZ to_TO cache_NN the_DT posting_VBG lists_NNS of_IN terms_NNS ._.
+Intuitively_RB ,_, this_DT gives_VBZ more_JJR freedom_NN in_IN the_DT utilization_NN of_IN the_DT cache_NN content_NN to_TO respond_VB to_TO queries_NNS because_IN cached_JJ terms_NNS might_MD form_VB a_DT new_JJ query_NN ._.
+On_IN the_DT other_JJ hand_NN ,_, they_PRP need_VBP more_JJR space_NN ._.
+As_IN opposed_VBN to_TO queries_NNS ,_, the_DT fraction_NN of_IN singleton_NN terms_NNS in_IN the_DT total_JJ volume_NN of_IN terms_NNS is_VBZ smaller_JJR ._.
+In_IN our_PRP$ query_NN log_NN ,_, only_RB 4_CD %_NN of_IN the_DT terms_NNS appear_VBP once_RB ,_, but_CC this_DT accounts_NNS for_IN ##_CD %_NN of_IN the_DT vocabulary_NN of_IN query_NN terms_NNS ._.
+We_PRP show_VBP in_IN Section_NN #_# that_WDT caching_VBD a_DT small_JJ fraction_NN of_IN terms_NNS ,_, while_IN accounting_VBG for_IN terms_NNS appearing_VBG in_IN many_JJ documents_NNS ,_, is_VBZ potentially_RB very_RB effective_JJ ._.
+Figure_NNP #_# shows_VBZ several_JJ graphs_NNS corresponding_VBG to_TO the_DT normalized_VBN arrival_NN rate_NN for_IN different_JJ cases_NNS using_VBG days_NNS as_IN bins_NNS ._.
+That_DT is_VBZ ,_, we_PRP plot_VBP the_DT normalized_VBN number_NN of_IN elements_NNS that_WDT appear_VBP in_IN a_DT day_NN ._.
+This_DT graph_NN shows_VBZ only_RB a_DT period_NN of_IN ###_CD days_NNS ,_, and_CC we_PRP normalize_VBP the_DT values_NNS by_IN the_DT maximum_NN value_NN observed_VBN throughout_IN the_DT whole_JJ period_NN of_IN the_DT query_NN log_NN ._.
+Total_JJ queries_NNS and_CC Total_JJ terms_NNS correspond_VBP to_TO the_DT total_JJ volume_NN of_IN queries_NNS and_CC terms_NNS ,_, respectively_RB ._.
+Unique_JJ queries_NNS and_CC Unique_JJ terms_NNS correspond_VBP to_TO the_DT arrival_NN rate_NN of_IN unique_JJ queries_NNS and_CC terms_NNS ._.
+Finally_RB ,_, Query_NNP diff_NN and_CC Terms_NNS diff_VBP correspond_VBP to_TO the_DT difference_NN between_IN the_DT curves_NNS for_IN total_JJ and_CC unique_JJ ._.
+In_IN Figure_NNP #_# ,_, as_IN expected_VBN ,_, the_DT volume_NN of_IN terms_NNS is_VBZ much_RB higher_JJR than_IN the_DT volume_NN of_IN queries_NNS ._.
+The_DT difference_NN between_IN the_DT total_JJ number_NN of_IN terms_NNS and_CC the_DT number_NN of_IN unique_JJ terms_NNS is_VBZ much_RB larger_JJR than_IN the_DT difference_NN between_IN the_DT total_JJ number_NN of_IN queries_NNS and_CC the_DT number_NN of_IN unique_JJ queries_NNS ._.
+This_DT observation_NN implies_VBZ that_IN terms_NNS repeat_NN significantly_RB more_RBR than_IN queries_NNS ._.
+If_IN we_PRP use_VBP smaller_JJR bins_NNS ,_, say_VBP of_IN one_CD hour_NN ,_, then_RB the_DT ratio_NN of_IN unique_JJ to_TO volume_NN is_VBZ higher_JJR for_IN both_DT terms_NNS and_CC queries_NNS because_IN it_PRP leaves_VBZ less_JJR room_NN for_IN repetition_NN ._.
+We_PRP also_RB estimated_VBD the_DT workload_NN using_VBG the_DT document_NN frequency_NN of_IN terms_NNS as_IN a_DT measure_NN of_IN how_WRB much_JJ work_NN a_DT query_NN imposes_VBZ on_IN a_DT search_NN engine_NN ._.
+We_PRP found_VBD that_IN it_PRP follows_VBZ closely_RB the_DT arrival_NN rate_NN for_IN terms_NNS shown_VBN in_IN Figure_NNP #_# ._.
+To_TO demonstrate_VB the_DT effect_NN of_IN a_DT dynamic_JJ cache_NN on_IN the_DT query_NN frequency_NN distribution_NN of_IN Figure_NNP #_# ,_, we_PRP plot_VBP the_DT same_JJ frequency_NN graph_NN ,_, but_CC now_RB considering_VBG the_DT frequency_NN of_IN queries_NNS Figure_NNP #_# :_: Frequency_NN graph_NN after_IN LRU_NNP cache_NN ._.
+after_IN going_VBG through_IN an_DT LRU_NNP cache_NN ._.
+On_IN a_DT cache_NN miss_VBP ,_, an_DT LRU_NNP cache_NN decides_VBZ upon_IN an_DT entry_NN to_TO evict_VB using_VBG the_DT information_NN on_IN the_DT recency_NN of_IN queries_NNS ._.
+In_IN this_DT graph_NN ,_, the_DT most_RBS frequent_JJ queries_NNS are_VBP not_RB the_DT same_JJ queries_NNS that_WDT were_VBD most_RBS frequent_JJ before_IN the_DT cache_NN ._.
+It_PRP is_VBZ possible_JJ that_IN queries_NNS that_WDT are_VBP most_RBS frequent_JJ after_IN the_DT cache_NN have_VBP different_JJ characteristics_NNS ,_, and_CC tuning_NN the_DT search_NN engine_NN to_TO queries_NNS frequent_JJ before_IN the_DT cache_NN may_MD degrade_VB performance_NN for_IN non-cached_JJ queries_NNS ._.
+The_DT maximum_JJ frequency_NN after_IN caching_VBG is_VBZ less_JJR than_IN #_# %_NN of_IN the_DT maximum_JJ frequency_NN before_IN the_DT cache_NN ,_, thus_RB showing_VBG that_IN the_DT cache_NN is_VBZ very_RB effective_JJ in_IN reducing_VBG the_DT load_NN of_IN frequent_JJ queries_NNS ._.
+If_IN we_PRP re-rank_VBP the_DT queries_NNS according_VBG to_TO after-cache_JJ frequency_NN ,_, the_DT distribution_NN is_VBZ still_RB a_DT power_NN law_NN ,_, but_CC with_IN a_DT much_RB smaller_JJR value_NN for_IN the_DT highest_JJS frequency_NN ._.
+When_WRB discussing_VBG the_DT effectiveness_NN of_IN dynamically_RB caching_VBG ,_, an_DT important_JJ metric_NN is_VBZ cache_NN miss_VB rate_NN ._.
+To_TO analyze_VB the_DT cache_NN miss_VBP rate_NN for_IN different_JJ memory_NN constraints_NNS ,_, we_PRP use_VBP the_DT working_VBG set_NN model_NN -LSB-_-LRB- #_# ,_, ##_NN -RSB-_-RRB- ._.
+A_DT working_VBG set_NN ,_, informally_RB ,_, is_VBZ the_DT set_NN of_IN references_NNS that_IN an_DT application_NN or_CC an_DT operating_NN system_NN is_VBZ currently_RB working_VBG with_IN ._.
+The_DT model_NN uses_VBZ such_JJ sets_NNS in_IN a_DT strategy_NN that_IN tries_VBZ to_TO capture_VB the_DT temporal_JJ locality_NN of_IN references_NNS ._.
+The_DT working_VBG set_NN strategy_NN then_RB consists_VBZ in_IN keeping_VBG in_IN memory_NN only_RB the_DT elements_NNS that_WDT are_VBP referenced_VBN in_IN the_DT previous_JJ steps_NNS of_IN the_DT input_NN sequence_NN ,_, where_WRB is_VBZ a_DT configurable_JJ parameter_NN corresponding_VBG to_TO the_DT window_NN size_NN ._.
+Originally_RB ,_, working_VBG sets_NNS have_VBP been_VBN used_VBN for_IN page_NN replacement_NN algorithms_NNS of_IN operating_VBG systems_NNS ,_, and_CC considering_VBG such_JJ a_DT strategy_NN in_IN the_DT context_NN of_IN search_NN engines_NNS is_VBZ interesting_JJ for_IN three_CD reasons_NNS ._.
+First_RB ,_, it_PRP captures_VBZ the_DT amount_NN of_IN locality_NN of_IN queries_NNS and_CC terms_NNS in_IN a_DT sequence_NN of_IN queries_NNS ._.
+Locality_NN in_IN this_DT case_NN refers_VBZ to_TO the_DT frequency_NN of_IN queries_NNS and_CC terms_NNS in_IN a_DT window_NN of_IN time_NN ._.
+If_IN many_JJ queries_NNS appear_VBP multiple_JJ times_NNS in_IN a_DT window_NN ,_, then_RB locality_NN is_VBZ high_JJ ._.
+Second_RB ,_, it_PRP enables_VBZ an_DT oine_NN analysis_NN of_IN the_DT expected_VBN miss_VBP rate_NN given_VBN different_JJ memory_NN constraints_NNS ._.
+Third_NNP ,_, working_VBG sets_NNS capture_VBP aspects_NNS of_IN efficient_JJ caching_VBG algorithms_NNS such_JJ as_IN LRU_NNP ._.
+LRU_NNP assumes_VBZ that_IN references_NNS farther_RBR in_IN the_DT past_NN are_VBP less_RBR likely_JJ to_TO be_VB referenced_VBN in_IN the_DT present_JJ ,_, which_WDT is_VBZ implicit_JJ in_IN the_DT concept_NN of_IN working_VBG sets_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Figure_NNP #_# plots_NNS the_DT miss_VBP rate_NN for_IN different_JJ working_VBG set_VBN sizes_NNS ,_, and_CC we_PRP consider_VBP working_VBG sets_NNS of_IN both_DT queries_NNS and_CC terms_NNS ._.
+The_DT working_VBG set_NN sizes_NNS are_VBP normalized_VBN against_IN the_DT total_JJ number_NN of_IN queries_NNS in_IN the_DT query_NN log_NN ._.
+In_IN the_DT graph_NN for_IN queries_NNS ,_, there_EX is_VBZ a_DT sharp_JJ decay_NN until_IN approximately_RB #_# ._.
+##_NN ,_, and_CC the_DT rate_NN at_IN which_WDT the_DT miss_VBP rate_NN drops_NNS decreases_VBZ as_IN we_PRP increase_VBP the_DT size_NN of_IN the_DT working_VBG set_NN over_IN #_# ._.
+##_NN ._.
+Finally_RB ,_, the_DT minimum_JJ value_NN it_PRP reaches_VBZ is_VBZ ##_CD %_NN miss_VBP rate_NN ,_, not_RB shown_VBN in_IN the_DT figure_NN as_IN we_PRP have_VBP cut_VBN the_DT tail_NN of_IN the_DT curve_NN for_IN presentation_NN purposes_NNS ._.
+0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 1_CD 0_CD #_# ._.
+##_NN #_# ._.
+#_# #_# ._.
+##_NN #_# ._.
+#_# Missrate_NNP Normalized_NNP working_VBG set_VBN size_NN Queries_NNS Terms_NNS Figure_NNP #_# :_: Miss_NNP rate_NN as_IN a_DT function_NN of_IN the_DT working_VBG set_NN size_NN ._.
+1_CD ##_CD ###_CD ####_CD #####_CD ######_CD 1e_NN +_CC ##_CD Frequency_NN Distance_NNP Figure_NNP #_# :_: Distribution_NN of_IN distances_NNS expressed_VBN in_IN terms_NNS of_IN distinct_JJ queries_NNS ._.
+Compared_VBN to_TO the_DT query_NN curve_NN ,_, we_PRP observe_VBP that_IN the_DT minimum_NN miss_VBP rate_NN for_IN terms_NNS is_VBZ substantially_RB smaller_JJR ._.
+The_DT miss_VBP rate_NN also_RB drops_VBZ sharply_RB on_IN values_NNS up_IN to_TO #_# ._.
+##_NN ,_, and_CC it_PRP decreases_VBZ minimally_RB for_IN higher_JJR values_NNS ._.
+The_DT minimum_JJ value_NN ,_, however_RB ,_, is_VBZ slightly_RB over_IN ##_CD %_NN ,_, which_WDT is_VBZ much_RB smaller_JJR than_IN the_DT minimum_JJ value_NN for_IN the_DT sequence_NN of_IN queries_NNS ._.
+This_DT implies_VBZ that_IN with_IN such_PDT a_DT policy_NN it_PRP is_VBZ possible_JJ to_TO achieve_VB over_IN ##_CD %_NN hit_NN rate_NN ,_, if_IN we_PRP consider_VBP caching_VBG dynamically_RB posting_VBG lists_NNS for_IN terms_NNS as_IN opposed_VBN to_TO caching_VBG answers_NNS for_IN queries_NNS ._.
+This_DT result_NN does_VBZ not_RB consider_VB the_DT space_NN required_VBN for_IN each_DT unit_NN stored_VBN in_IN the_DT cache_NN memory_NN ,_, or_CC the_DT amount_NN of_IN time_NN it_PRP takes_VBZ to_TO put_VB together_RP a_DT response_NN to_TO a_DT user_NN query_NN ._.
+We_PRP analyze_VBP these_DT issues_NNS more_RBR carefully_RB later_RB in_IN this_DT paper_NN ._.
+It_PRP is_VBZ interesting_JJ also_RB to_TO observe_VB the_DT histogram_NN of_IN Figure_NNP #_# ,_, which_WDT is_VBZ an_DT intermediate_JJ step_NN in_IN the_DT computation_NN of_IN the_DT miss_VBP rate_NN graph_NN ._.
+It_PRP reports_VBZ the_DT distribution_NN of_IN distances_NNS between_IN repetitions_NNS of_IN the_DT same_JJ frequent_JJ query_NN ._.
+The_DT distance_NN in_IN the_DT plot_NN is_VBZ measured_VBN in_IN the_DT number_NN of_IN distinct_JJ queries_NNS separating_VBG a_DT query_NN and_CC its_PRP$ repetition_NN ,_, and_CC it_PRP considers_VBZ only_RB queries_NNS appearing_VBG at_IN least_JJS ##_CD times_NNS ._.
+From_IN Figures_NNS #_# and_CC #_# ,_, we_PRP conclude_VBP that_IN even_RB if_IN we_PRP set_VBD the_DT size_NN of_IN the_DT query_NN answers_NNS cache_NN to_TO a_DT relatively_RB large_JJ number_NN of_IN entries_NNS ,_, the_DT miss_VBP rate_NN is_VBZ high_JJ ._.
+Thus_RB ,_, caching_VBG the_DT posting_VBG lists_NNS of_IN terms_NNS has_VBZ the_DT potential_JJ to_TO improve_VB the_DT hit_NN ratio_NN ._.
+This_DT is_VBZ what_WP we_PRP explore_VBP next_JJ ._.
+5_CD ._.
+CACHING_VBG POSTING_VBG LISTS_NNS The_DT previous_JJ section_NN shows_VBZ that_IN caching_VBG posting_VBG lists_NNS can_MD obtain_VB a_DT higher_JJR hit_NN rate_NN compared_VBN to_TO caching_VBG query_NN answers_NNS ._.
+In_IN this_DT section_NN we_PRP study_VBP the_DT problem_NN of_IN how_WRB to_TO select_VB posting_VBG lists_NNS to_TO place_VB on_IN a_DT certain_JJ amount_NN of_IN available_JJ memory_NN ,_, assuming_VBG that_IN the_DT whole_JJ index_NN is_VBZ larger_JJR than_IN the_DT amount_NN of_IN memory_NN available_JJ ._.
+The_DT posting_VBG lists_NNS have_VBP variable_JJ size_NN -LRB-_-LRB- in_IN fact_NN ,_, their_PRP$ size_NN distribution_NN follows_VBZ a_DT power_NN law_NN -RRB-_-RRB- ,_, so_IN it_PRP is_VBZ beneficial_JJ for_IN a_DT caching_NN policy_NN to_TO consider_VB the_DT sizes_NNS of_IN the_DT posting_VBG lists_NNS ._.
+We_PRP consider_VBP both_DT dynamic_JJ and_CC static_JJ caching_NN ._.
+For_IN dynamic_JJ caching_NN ,_, we_PRP use_VBP two_CD well-known_JJ policies_NNS ,_, LRU_NNP and_CC LFU_NNP ,_, as_RB well_RB as_IN a_DT modified_VBN algorithm_NN that_WDT takes_VBZ posting-list_JJ size_NN into_IN account_NN ._.
+Before_IN discussing_VBG the_DT static_JJ caching_NN strategies_NNS ,_, we_PRP introduce_VBP some_DT notation_NN ._.
+We_PRP use_VBP fq_NN -LRB-_-LRB- t_NN -RRB-_-RRB- to_TO denote_VB the_DT query-term_JJ frequency_NN of_IN a_DT term_NN t_NN ,_, that_WDT is_VBZ ,_, the_DT number_NN of_IN queries_NNS containing_VBG t_NN in_IN the_DT query_NN log_NN ,_, and_CC fd_NN -LRB-_-LRB- t_NN -RRB-_-RRB- to_TO denote_VB the_DT document_NN frequency_NN of_IN t_NN ,_, that_WDT is_VBZ ,_, the_DT number_NN of_IN documents_NNS in_IN the_DT collection_NN in_IN which_WDT the_DT term_NN t_NN appears_VBZ ._.
+The_DT first_JJ strategy_NN we_PRP consider_VBP is_VBZ the_DT algorithm_NN proposed_VBN by_IN Baeza-Yates_NNP and_CC Saint-Jean_NNP -LSB-_-LRB- #_# -RSB-_-RRB- ,_, which_WDT consists_VBZ in_IN selecting_VBG the_DT posting_VBG lists_NNS of_IN the_DT terms_NNS with_IN the_DT highest_JJS query-term_JJ frequencies_NNS fq_NN -LRB-_-LRB- t_NN -RRB-_-RRB- ._.
+We_PRP call_VBP this_DT algorithm_NN Qtf_NN ._.
+We_PRP observe_VBP that_IN there_EX is_VBZ a_DT trade-off_NN between_IN fq_NN -LRB-_-LRB- t_NN -RRB-_-RRB- and_CC fd_NN -LRB-_-LRB- t_NN -RRB-_-RRB- ._.
+Terms_NNS with_IN high_JJ fq_NN -LRB-_-LRB- t_NN -RRB-_-RRB- are_VBP useful_JJ to_TO keep_VB in_IN the_DT cache_NN because_IN they_PRP are_VBP queried_VBN often_RB ._.
+On_IN the_DT other_JJ hand_NN ,_, terms_NNS with_IN high_JJ fd_NN -LRB-_-LRB- t_NN -RRB-_-RRB- are_VBP not_RB good_JJ candidates_NNS because_IN they_PRP correspond_VBP to_TO long_JJ posting_VBG lists_NNS and_CC consume_VBP a_DT substantial_JJ amount_NN of_IN space_NN ._.
+In_IN fact_NN ,_, the_DT problem_NN of_IN selecting_VBG the_DT best_JJS posting_VBG lists_NNS for_IN the_DT static_JJ cache_NN corresponds_VBZ to_TO the_DT standard_JJ Knapsack_NN problem_NN :_: given_VBN a_DT knapsack_NN of_IN fixed_VBN capacity_NN ,_, and_CC a_DT set_NN of_IN n_NN items_NNS ,_, such_JJ as_IN the_DT i-th_JJ item_NN has_VBZ value_NN ci_NN and_CC size_NN si_NNS ,_, select_VBP the_DT set_NN of_IN items_NNS that_WDT fit_VBP in_IN the_DT knapsack_NN and_CC maximize_VB the_DT overall_JJ value_NN ._.
+In_IN our_PRP$ case_NN ,_, value_NN corresponds_VBZ to_TO fq_NN -LRB-_-LRB- t_NN -RRB-_-RRB- and_CC size_NN corresponds_VBZ to_TO fd_NN -LRB-_-LRB- t_NN -RRB-_-RRB- ._.
+Thus_RB ,_, we_PRP employ_VBP a_DT simple_JJ algorithm_NN for_IN the_DT knapsack_NN problem_NN ,_, which_WDT is_VBZ selecting_VBG the_DT posting_VBG lists_NNS of_IN the_DT terms_NNS with_IN the_DT highest_JJS values_NNS of_IN the_DT ratio_NN fq_NN -LRB-_-LRB- t_NN -RRB-_-RRB- fd_NN -LRB-_-LRB- t_NN -RRB-_-RRB- ._.
+We_PRP call_VBP this_DT algorithm_NN QtfDf_NN ._.
+We_PRP tried_VBD other_JJ variations_NNS considering_VBG query_NN frequencies_NNS instead_RB of_IN term_NN frequencies_NNS ,_, but_CC the_DT gain_NN was_VBD minimal_JJ compared_VBN to_TO the_DT complexity_NN added_VBD ._.
+In_IN addition_NN to_TO the_DT above_JJ two_CD static_JJ algorithms_NNS we_PRP consider_VBP the_DT following_VBG algorithms_NNS for_IN dynamic_JJ caching_NN :_: LRU_NNP :_: A_NNP standard_JJ LRU_NNP algorithm_NN ,_, but_CC many_JJ posting_VBG lists_NNS might_MD need_VB to_TO be_VB evicted_VBN -LRB-_-LRB- in_IN order_NN of_IN least-recent_JJ usage_NN -RRB-_-RRB- until_IN there_EX is_VBZ enough_JJ space_NN in_IN the_DT memory_NN to_TO place_VB the_DT currently_RB accessed_VBN posting_VBG list_NN ;_: LFU_NNP :_: A_NNP standard_JJ LFU_NNP algorithm_NN -LRB-_-LRB- eviction_NN of_IN the_DT leastfrequently_RB used_VBN -RRB-_-RRB- ,_, with_IN the_DT same_JJ modification_NN as_IN the_DT LRU_NNP ;_: Dyn-QtfDf_NN :_: A_DT dynamic_JJ version_NN of_IN the_DT QtfDf_NN algorithm_NN ;_: evict_VB from_IN the_DT cache_NN the_DT term_NN -LRB-_-LRB- s_NNS -RRB-_-RRB- with_IN the_DT lowest_JJS fq_NN -LRB-_-LRB- t_NN -RRB-_-RRB- fd_NN -LRB-_-LRB- t_NN -RRB-_-RRB- ratio_NN ._.
+The_DT performance_NN of_IN all_PDT the_DT above_JJ algorithms_NNS for_IN ##_NN weeks_NNS of_IN the_DT query_NN log_NN and_CC the_DT UK_NNP dataset_NNP are_VBP shown_VBN in_IN Figure_NNP #_# ._.
+Performance_NNP is_VBZ measured_VBN with_IN hit_NN rate_NN ._.
+The_DT cache_NN size_NN is_VBZ measured_VBN as_IN a_DT fraction_NN of_IN the_DT total_JJ space_NN required_VBN to_TO store_VB the_DT posting_VBG lists_NNS of_IN all_DT terms_NNS ._.
+For_IN the_DT dynamic_JJ algorithms_NNS ,_, we_PRP load_VBP the_DT cache_NN with_IN terms_NNS in_IN order_NN of_IN fq_NN -LRB-_-LRB- t_NN -RRB-_-RRB- and_CC we_PRP let_VBD the_DT cache_NN warm_JJ up_RP for_IN #_# million_CD queries_NNS ._.
+For_IN the_DT static_JJ algorithms_NNS ,_, we_PRP assume_VBP complete_JJ knowledge_NN of_IN the_DT frequencies_NNS fq_NN -LRB-_-LRB- t_NN -RRB-_-RRB- ,_, that_WDT is_VBZ ,_, we_PRP estimate_VBP fq_NN -LRB-_-LRB- t_NN -RRB-_-RRB- from_IN the_DT whole_JJ query_NN stream_NN ._.
+As_IN we_PRP show_VBP in_IN Section_NN #_# the_DT results_NNS do_VBP not_RB change_VB much_RB if_IN we_PRP compute_VBP the_DT query-term_JJ frequencies_NNS using_VBG the_DT first_JJ #_# or_CC #_# weeks_NNS of_IN the_DT query_NN log_NN and_CC measure_VB the_DT hit_NN rate_NN on_IN the_DT rest_NN ._.
+0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 1_CD 0_CD ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# Hitrate_NNP Cache_NNP size_NN Caching_NN posting_VBG lists_NNS static_JJ QTF_NN /_: DF_NNP LRU_NNP LFU_NNP Dyn-QTF_NNP /_: DF_NN QTF_NN Figure_NN #_# :_: Hit_VBN rate_NN of_IN different_JJ strategies_NNS for_IN caching_VBG posting_VBG lists_NNS ._.
+The_DT most_RBS important_JJ observation_NN from_IN our_PRP$ experiments_NNS is_VBZ that_IN the_DT static_JJ QtfDf_NN algorithm_NN has_VBZ a_DT better_RB hit_VBN rate_NN than_IN all_PDT the_DT dynamic_JJ algorithms_NNS ._.
+An_DT important_JJ benefit_NN a_DT static_JJ cache_NN is_VBZ that_IN it_PRP requires_VBZ no_DT eviction_NN and_CC it_PRP is_VBZ hence_RB more_RBR efficient_JJ when_WRB evaluating_VBG queries_NNS ._.
+However_RB ,_, if_IN the_DT characteristics_NNS of_IN the_DT query_NN traffic_NN change_NN frequently_RB over_IN time_NN ,_, then_RB it_PRP requires_VBZ re-populating_VBG the_DT cache_NN often_RB or_CC there_RB will_MD be_VB a_DT significant_JJ impact_NN on_IN hit_NN rate_NN ._.
+6_CD ._.
+ANALYSIS_NN OF_IN STATIC_JJ CACHING_VBG In_IN this_DT section_NN we_PRP provide_VBP a_DT detailed_JJ analysis_NN for_IN the_DT problem_NN of_IN deciding_VBG whether_IN it_PRP is_VBZ preferable_JJ to_TO cache_NN query_NN answers_NNS or_CC cache_NN posting_VBG lists_NNS ._.
+Our_PRP$ analysis_NN takes_VBZ into_IN account_NN the_DT impact_NN of_IN caching_NN between_IN two_CD levels_NNS of_IN the_DT data-access_JJ hierarchy_NN ._.
+It_PRP can_MD either_RB be_VB applied_VBN at_IN the_DT memory_NN /_: disk_NN layer_NN or_CC at_IN a_DT server_NN /_: remote_JJ server_NN layer_NN as_IN in_IN the_DT architecture_NN we_PRP discussed_VBD in_IN the_DT introduction_NN ._.
+Using_VBG a_DT particular_JJ system_NN model_NN ,_, we_PRP obtain_VBP estimates_NNS for_IN the_DT parameters_NNS required_VBN by_IN our_PRP$ analysis_NN ,_, which_WDT we_PRP subsequently_RB use_VBP to_TO decide_VB the_DT optimal_JJ trade-off_NN between_IN caching_NN query_NN answers_NNS and_CC caching_VBG posting_VBG lists_NNS ._.
+6_CD ._.
+#_# Analytical_NNP Model_NNP Let_VB M_NN be_VB the_DT size_NN of_IN the_DT cache_NN measured_VBN in_IN answer_NN units_NNS -LRB-_-LRB- the_DT cache_NN can_MD store_VB M_NN query_NN answers_NNS -RRB-_-RRB- ._.
+Assume_VB that_IN all_DT posting_VBG lists_NNS are_VBP of_IN the_DT same_JJ length_NN L_NN ,_, measured_VBN in_IN answer_NN units_NNS ._.
+We_PRP consider_VBP the_DT following_VBG two_CD cases_NNS :_: -LRB-_-LRB- A_NN -RRB-_-RRB- a_DT cache_NN that_WDT stores_NNS only_RB precomputed_VBD answers_NNS ,_, and_CC -LRB-_-LRB- B_NN -RRB-_-RRB- a_DT cache_NN that_WDT stores_NNS only_RB posting_VBG lists_NNS ._.
+In_IN the_DT first_JJ case_NN ,_, Nc_NN =_JJ M_NN answers_NNS fit_VBP in_IN the_DT cache_NN ,_, while_IN in_IN the_DT second_JJ case_NN Np_NN =_JJ M_NN /_: L_NN posting_VBG lists_NNS fit_VBP in_IN the_DT cache_NN ._.
+Thus_RB ,_, Np_NN =_JJ Nc_NN /_: L_NN ._.
+Note_VB that_IN although_IN posting_VBG lists_NNS require_VBP more_JJR space_NN ,_, we_PRP can_MD combine_VB terms_NNS to_TO evaluate_VB more_JJR queries_NNS -LRB-_-LRB- or_CC partial_JJ queries_NNS -RRB-_-RRB- ._.
+For_IN case_NN -LRB-_-LRB- A_NN -RRB-_-RRB- ,_, suppose_VBP that_IN a_DT query_NN answer_NN in_IN the_DT cache_NN can_MD be_VB evaluated_VBN in_IN #_# time_NN unit_NN ._.
+For_IN case_NN -LRB-_-LRB- B_NN -RRB-_-RRB- ,_, assume_VB that_IN if_IN the_DT posting_VBG lists_NNS of_IN the_DT terms_NNS of_IN a_DT query_NN are_VBP in_IN the_DT cache_NN then_RB the_DT results_NNS can_MD be_VB computed_VBN in_IN TR1_NN time_NN units_NNS ,_, while_IN if_IN the_DT posting_VBG lists_NNS are_VBP not_RB in_IN the_DT cache_NN then_RB the_DT results_NNS can_MD be_VB computed_VBN in_IN TR2_NN time_NN units_NNS ._.
+Of_IN course_NN TR2_NN >_JJR TR1_NN ._.
+Now_RB we_PRP want_VBP to_TO compare_VB the_DT time_NN to_TO answer_VB a_DT stream_NN of_IN Q_NNP queries_NNS in_IN both_DT cases_NNS ._.
+Let_VB Vc_NNP -LRB-_-LRB- Nc_NNP -RRB-_-RRB- be_VB the_DT volume_NN of_IN the_DT most_RBS frequent_JJ Nc_NN queries_NNS ._.
+Then_RB ,_, for_IN case_NN -LRB-_-LRB- A_NN -RRB-_-RRB- ,_, we_PRP have_VBP an_DT overall_JJ time_NN TCA_NN =_JJ Vc_NN -LRB-_-LRB- Nc_NN -RRB-_-RRB- +_CC TR2_NN -LRB-_-LRB- Q_NNP Vc_NNP -LRB-_-LRB- Nc_NNP -RRB-_-RRB- -RRB-_-RRB- ._.
+Similarly_RB ,_, for_IN case_NN -LRB-_-LRB- B_NN -RRB-_-RRB- ,_, let_VB Vp_NN -LRB-_-LRB- Np_NN -RRB-_-RRB- be_VB the_DT number_NN of_IN computable_JJ queries_NNS ._.
+Then_RB we_PRP have_VBP overall_JJ time_NN TP_NN L_NN =_JJ TR1Vp_NN -LRB-_-LRB- Np_NN -RRB-_-RRB- +_CC TR2_NN -LRB-_-LRB- Q_NNP Vp_NNP -LRB-_-LRB- Np_NNP -RRB-_-RRB- -RRB-_-RRB- ._.
+We_PRP want_VBP to_TO check_VB under_IN which_WDT conditions_NNS we_PRP have_VBP TP_NN L_NN <_JJR TCA_CD ._.
+We_PRP have_VBP TP_NN L_NN TCA_NN =_JJ -LRB-_-LRB- TR2_NN #_# -RRB-_-RRB- Vc_NN -LRB-_-LRB- Nc_NN -RRB-_-RRB- -LRB-_-LRB- TR2_NN TR1_NN -RRB-_-RRB- Vp_NN -LRB-_-LRB- Np_NN -RRB-_-RRB- >_JJR #_# ._.
+Figure_NNP #_# shows_VBZ the_DT values_NNS of_IN Vp_NN and_CC Vc_NN for_IN our_PRP$ data_NNS ._.
+We_PRP can_MD see_VB that_IN caching_VBG answers_NNS saturates_VBZ faster_JJR and_CC for_IN this_DT particular_JJ data_NNS there_EX is_VBZ no_DT additional_JJ benefit_NN from_IN using_VBG more_JJR than_IN ##_CD %_NN of_IN the_DT index_NN space_NN for_IN caching_VBG answers_NNS ._.
+As_IN the_DT query_JJ distribution_NN is_VBZ a_DT power_NN law_NN with_IN parameter_NN >_JJR #_# ,_, the_DT i-th_JJ most_RBS frequent_JJ query_NN appears_VBZ with_IN probability_NN proportional_JJ to_TO #_# i_LS ._.
+Therefore_RB ,_, the_DT volume_NN Vc_NN -LRB-_-LRB- n_NN -RRB-_-RRB- ,_, which_WDT is_VBZ the_DT total_JJ number_NN of_IN the_DT n_NN most_RBS frequent_JJ queries_NNS ,_, is_VBZ Vc_NN -LRB-_-LRB- n_NN -RRB-_-RRB- =_JJ V0_NN n_NN i_FW =_JJ #_# Q_NNP i_FW =_JJ nQ_NN -LRB-_-LRB- #_# <_JJR n_NN <_VBG #_# -RRB-_-RRB- ._.
+We_PRP know_VBP that_IN Vp_NN -LRB-_-LRB- n_NN -RRB-_-RRB- grows_VBZ faster_JJR than_IN Vc_NN -LRB-_-LRB- n_NN -RRB-_-RRB- and_CC assume_VB ,_, based_VBN on_IN experimental_JJ results_NNS ,_, that_IN the_DT relation_NN is_VBZ of_IN the_DT form_NN Vp_NN -LRB-_-LRB- n_NN -RRB-_-RRB- =_JJ k_NN Vc_NN -LRB-_-LRB- n_NN -RRB-_-RRB- ._.
+In_IN the_DT worst_JJS case_NN ,_, for_IN a_DT large_JJ cache_NN ,_, #_# ._.
+That_DT is_VBZ ,_, both_DT techniques_NNS will_MD cache_NN a_DT constant_JJ fraction_NN of_IN the_DT overall_JJ query_NN volume_NN ._.
+Then_RB caching_VBG posting_VBG lists_NNS makes_VBZ sense_NN only_RB if_IN L_NN -LRB-_-LRB- TR2_NN #_# -RRB-_-RRB- k_NN -LRB-_-LRB- TR2_NN TR1_NN -RRB-_-RRB- >_JJR #_# ._.
+If_IN we_PRP use_VBP compression_NN ,_, we_PRP have_VBP L_NN TR1_NN ._.
+According_VBG to_TO the_DT experiments_NNS that_IN we_PRP show_VBP later_RB ,_, compression_NN is_VBZ always_RB better_JJR ._.
+For_IN a_DT small_JJ cache_NN ,_, we_PRP are_VBP interested_JJ in_IN the_DT transient_JJ behavior_NN and_CC then_RB >_JJR #_# ,_, as_IN computed_VBN from_IN our_PRP$ data_NNS ._.
+In_IN this_DT case_NN there_EX will_MD always_RB be_VB a_DT point_NN where_WRB TP_NN L_NN >_JJR TCA_NNP for_IN a_DT large_JJ number_NN of_IN queries_NNS ._.
+In_IN reality_NN ,_, instead_RB of_IN filling_VBG the_DT cache_NN only_RB with_IN answers_NNS or_CC only_RB with_IN posting_VBG lists_NNS ,_, a_DT better_JJR strategy_NN will_MD be_VB to_TO divide_VB the_DT total_JJ cache_NN space_NN into_IN cache_NN for_IN answers_NNS and_CC cache_NN for_IN posting_VBG lists_NNS ._.
+In_IN such_PDT a_DT case_NN ,_, there_EX will_MD be_VB some_DT queries_NNS that_WDT could_MD be_VB answered_VBN by_IN both_CC parts_NNS of_IN the_DT cache_NN ._.
+As_IN the_DT answer_NN cache_NN is_VBZ faster_RBR ,_, it_PRP will_MD be_VB the_DT first_JJ choice_NN for_IN answering_VBG those_DT queries_NNS ._.
+Let_VB QNc_NNP and_CC QNp_NNP be_VB the_DT set_NN of_IN queries_NNS that_WDT can_MD be_VB answered_VBN by_IN the_DT cached_VBN answers_NNS and_CC the_DT cached_VBN posting_VBG lists_NNS ,_, respectively_RB ._.
+Then_RB ,_, the_DT overall_JJ time_NN is_VBZ T_NN =_JJ Vc_NN -LRB-_-LRB- Nc_NN -RRB-_-RRB- +_CC TR1V_NN -LRB-_-LRB- QNp_NN QNc_NN -RRB-_-RRB- +_CC TR2_NN -LRB-_-LRB- QV_NN -LRB-_-LRB- QNp_NN QNc_NN -RRB-_-RRB- -RRB-_-RRB- ,_, where_WRB Np_NN =_JJ -LRB-_-LRB- M_NN Nc_NN -RRB-_-RRB- /_: L_NN ._.
+Finding_VBG the_DT optimal_JJ division_NN of_IN the_DT cache_NN in_IN order_NN to_TO minimize_VB the_DT overall_JJ retrieval_NN time_NN is_VBZ a_DT difficult_JJ problem_NN to_TO solve_VB analytically_RB ._.
+In_IN Section_NN #_# ._.
+#_# we_PRP use_VBP simulations_NNS to_TO derive_VB optimal_JJ cache_NN trade-offs_NNS for_IN particular_JJ implementation_NN examples_NNS ._.
+6_CD ._.
+#_# Parameter_NNP Estimation_NNP We_PRP now_RB use_VBP a_DT particular_JJ implementation_NN of_IN a_DT centralized_JJ system_NN and_CC the_DT model_NN of_IN a_DT distributed_VBN system_NN as_IN examples_NNS from_IN which_WDT we_PRP estimate_VBP the_DT parameters_NNS of_IN the_DT analysis_NN from_IN the_DT previous_JJ section_NN ._.
+We_PRP perform_VBP the_DT experiments_NNS using_VBG an_DT optimized_VBN version_NN of_IN Terrier_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- for_IN both_DT indexing_NN documents_NNS and_CC processing_NN queries_NNS ,_, on_IN a_DT single_JJ machine_NN with_IN a_DT Pentium_NNP #_# at_IN 2GHz_NN and_CC 1GB_NN of_IN RAM_NNP ._.
+We_PRP indexed_VBD the_DT documents_NNS from_IN the_DT UK-2006_NN dataset_NN ,_, without_IN removing_VBG stop_NN words_NNS or_CC applying_VBG stemming_VBG ._.
+The_DT posting_VBG lists_NNS in_IN the_DT inverted_JJ file_NN consist_VBP of_IN pairs_NNS of_IN document_NN identifier_NN and_CC term_NN frequency_NN ._.
+We_PRP compress_VBP the_DT document_NN identifier_NN gaps_NNS using_VBG Elias_NNP gamma_NN encoding_NN ,_, and_CC the_DT 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 1_CD 0_CD #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# Queryvolume_NNP Space_NNP precomputed_VBD answers_NNS posting_VBG lists_NNS Figure_NNP #_# :_: Cache_NNP saturation_NN as_IN a_DT function_NN of_IN size_NN ._.
+Table_NNP #_# :_: Ratios_NNS between_IN the_DT average_JJ time_NN to_TO evaluate_VB a_DT query_NN and_CC the_DT average_JJ time_NN to_TO return_VB cached_JJ answers_NNS -LRB-_-LRB- centralized_VBN and_CC distributed_VBN case_NN -RRB-_-RRB- ._.
+Centralized_JJ system_NN TR1_NN TR2_NN TR1_NN TR2_NN Full_JJ evaluation_NN ###_CD ####_CD ###_CD ####_CD Partial_JJ evaluation_NN ##_CD ####_CD ###_CD ###_CD LAN_NN system_NN TRL_NN 1_CD TRL_NN 2_CD TR_NN L_NN 1_CD TR_NN L_NN 2_CD Full_JJ evaluation_NN ###_CD ####_CD ###_CD ####_CD Partial_JJ evaluation_NN ###_CD ####_CD ###_CD ###_CD WAN_NNP system_NN TRW_NNP 1_CD TRW_NN 2_CD TR_NN W_NN 1_CD TR_NN W_NN 2_CD Full_JJ evaluation_NN ####_CD ####_CD ####_CD ####_CD Partial_JJ evaluation_NN ####_CD ####_CD ####_CD ####_CD term_NN frequencies_NNS in_IN documents_NNS using_VBG unary_JJ encoding_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+The_DT size_NN of_IN the_DT inverted_JJ file_NN is_VBZ #_# ,_, 189Mb_NNP ._.
+A_DT stored_VBN answer_NN requires_VBZ ####_CD bytes_NNS ,_, and_CC an_DT uncompressed_JJ posting_VBG takes_VBZ #_# bytes_NNS ._.
+From_IN Table_NNP #_# ,_, we_PRP obtain_VBP L_NN =_JJ -LRB-_-LRB- #_# #_# of_IN postings_NNS -RRB-_-RRB- 1264_CD #_# of_IN terms_NNS =_JJ #_# ._.
+##_NN and_CC L_NN =_JJ Inverted_JJ file_NN size_NN 1264_CD #_# of_IN terms_NNS =_JJ #_# ._.
+##_NN ._.
+We_PRP estimate_VBP the_DT ratio_NN TR_NN =_JJ T_NN /_: Tc_NN between_IN the_DT average_JJ time_NN T_NN it_PRP takes_VBZ to_TO evaluate_VB a_DT query_NN and_CC the_DT average_JJ time_NN Tc_NN it_PRP takes_VBZ to_TO return_VB a_DT stored_VBN answer_NN for_IN the_DT same_JJ query_NN ,_, in_IN the_DT following_JJ way_NN ._.
+Tc_NN is_VBZ measured_VBN by_IN loading_VBG the_DT answers_NNS for_IN ###_CD ,_, ###_CD queries_NNS in_IN memory_NN ,_, and_CC answering_VBG the_DT queries_NNS from_IN memory_NN ._.
+The_DT average_JJ time_NN is_VBZ Tc_NN =_JJ #_# ._.
+069ms_NNS ._.
+T_NN is_VBZ measured_VBN by_IN processing_VBG the_DT same_JJ ###_NN ,_, ###_CD queries_NNS -LRB-_-LRB- the_DT first_JJ 10_CD ,_, ###_CD queries_NNS are_VBP used_VBN to_TO warm-up_NN the_DT system_NN -RRB-_-RRB- ._.
+For_IN each_DT query_NN ,_, we_PRP remove_VBP stop_VB words_NNS ,_, if_IN there_EX are_VBP at_IN least_JJS three_CD remaining_VBG terms_NNS ._.
+The_DT stop_NN words_NNS correspond_VBP to_TO the_DT terms_NNS with_IN a_DT frequency_NN higher_JJR than_IN the_DT number_NN of_IN documents_NNS in_IN the_DT index_NN ._.
+We_PRP use_VBP a_DT document-at-a-time_JJ approach_NN to_TO retrieve_VB documents_NNS containing_VBG all_DT query_NN terms_NNS ._.
+The_DT only_JJ disk_NN access_NN required_VBN during_IN query_NN processing_NN is_VBZ for_IN reading_VBG compressed_VBN posting_VBG lists_NNS from_IN the_DT inverted_JJ file_NN ._.
+We_PRP perform_VBP both_CC full_JJ and_CC partial_JJ evaluation_NN of_IN answers_NNS ,_, because_IN some_DT queries_NNS are_VBP likely_JJ to_TO retrieve_VB a_DT large_JJ number_NN of_IN documents_NNS ,_, and_CC only_RB a_DT fraction_NN of_IN the_DT retrieved_VBN documents_NNS will_MD be_VB seen_VBN by_IN users_NNS ._.
+In_IN the_DT partial_JJ evaluation_NN of_IN queries_NNS ,_, we_PRP terminate_VBP the_DT processing_NN after_IN matching_VBG ##_NN ,_, ###_CD documents_NNS ._.
+The_DT estimated_JJ ratios_NNS TR_NN are_VBP presented_VBN in_IN Table_NNP #_# ._.
+Figure_NNP ##_NN shows_VBZ for_IN a_DT sample_NN of_IN queries_NNS the_DT workload_NN of_IN the_DT system_NN with_IN partial_JJ query_NN evaluation_NN and_CC compressed_VBN posting_VBG lists_NNS ._.
+The_DT x-axis_JJ corresponds_VBZ to_TO the_DT total_JJ time_NN the_DT system_NN spends_VBZ processing_VBG a_DT particular_JJ query_NN ,_, and_CC the_DT vertical_JJ axis_NN corresponds_VBZ to_TO the_DT sum_NN tq_NN fq_NN fd_NN -LRB-_-LRB- t_NN -RRB-_-RRB- ._.
+Notice_NNP that_IN the_DT total_JJ number_NN of_IN postings_NNS of_IN the_DT query-terms_NNS does_VBZ not_RB necessarily_RB provide_VB an_DT accurate_JJ estimate_NN of_IN the_DT workload_NN imposed_VBN on_IN the_DT system_NN by_IN a_DT query_NN -LRB-_-LRB- which_WDT is_VBZ the_DT case_NN for_IN full_JJ evaluation_NN and_CC uncompressed_JJ lists_NNS -RRB-_-RRB- ._.
+0_CD 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 1_CD 0_CD #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# Totalpostingstoprocessquery_NNP -LRB-_-LRB- normalized_VBN -RRB-_-RRB- Total_JJ time_NN to_TO process_NN query_NN -LRB-_-LRB- normalized_VBN -RRB-_-RRB- Partial_JJ processing_NN of_IN compressed_VBN postings_NNS query_VBP len_NN =_JJ #_# query_NN len_NN in_IN -LSB-_-LRB- #_# ,_, #_# -RSB-_-RRB- query_NN len_NN in_IN -LSB-_-LRB- #_# ,_, #_# -RSB-_-RRB- query_NN len_NN >_JJR #_# Figure_NNP ##_CD :_: Workload_NNP for_IN partial_JJ query_NN evaluation_NN with_IN compressed_VBN posting_VBG lists_NNS ._.
+The_DT analysis_NN of_IN the_DT previous_JJ section_NN also_RB applies_VBZ to_TO a_DT distributed_VBN retrieval_NN system_NN in_IN one_CD or_CC multiple_JJ sites_NNS ._.
+Suppose_VB that_IN a_DT document_NN partitioned_VBD distributed_VBN system_NN is_VBZ running_VBG on_IN a_DT cluster_NN of_IN machines_NNS interconnected_VBN with_IN a_DT local_JJ area_NN network_NN -LRB-_-LRB- LAN_NN -RRB-_-RRB- in_IN one_CD site_NN ._.
+The_DT broker_NN receives_VBZ queries_NNS and_CC broadcasts_NNS them_PRP to_TO the_DT query_NN processors_NNS ,_, which_WDT answer_VBP the_DT queries_NNS and_CC return_VB the_DT results_NNS to_TO the_DT broker_NN ._.
+Finally_RB ,_, the_DT broker_NN merges_VBZ the_DT received_VBN answers_NNS and_CC generates_VBZ the_DT final_JJ set_NN of_IN answers_NNS -LRB-_-LRB- we_PRP assume_VBP that_IN the_DT time_NN spent_VBN on_IN merging_VBG results_NNS is_VBZ negligible_JJ -RRB-_-RRB- ._.
+The_DT difference_NN between_IN the_DT centralized_JJ architecture_NN and_CC the_DT document_NN partition_NN architecture_NN is_VBZ the_DT extra_JJ communication_NN between_IN the_DT broker_NN and_CC the_DT query_NN processors_NNS ._.
+Using_VBG ICMP_NN pings_NNS on_IN a_DT 100Mbps_JJ LAN_NN ,_, we_PRP have_VBP measured_VBN that_IN sending_VBG the_DT query_NN from_IN the_DT broker_NN to_TO the_DT query_NN processors_NNS which_WDT send_VBP an_DT answer_NN of_IN #_# ,_, ###_CD bytes_NNS back_RB to_TO the_DT broker_NN takes_VBZ on_RP average_JJ #_# ._.
+615ms_NNS ._.
+Hence_RB ,_, TRL_NN =_JJ TR_NN +_CC #_# ._.
+615ms_NNS /_: #_# ._.
+069ms_NN =_JJ TR_NN +_CC #_# ._.
+In_IN the_DT case_NN when_WRB the_DT broker_NN and_CC the_DT query_NN processors_NNS are_VBP in_IN different_JJ sites_NNS connected_VBN with_IN a_DT wide_JJ area_NN network_NN -LRB-_-LRB- WAN_NN -RRB-_-RRB- ,_, we_PRP estimated_VBD that_IN broadcasting_VBG the_DT query_NN from_IN the_DT broker_NN to_TO the_DT query_NN processors_NNS and_CC getting_VBG back_RP an_DT answer_NN of_IN #_# ,_, ###_CD bytes_NNS takes_VBZ on_RP average_JJ 329ms_NNS ._.
+Hence_RB ,_, TRW_NN =_JJ TR_NN +_CC 329ms_NNS /_: #_# ._.
+069ms_NN =_JJ TR_NN +_CC ####_CD ._.
+6_CD ._.
+#_# Simulation_NNP Results_NNS We_PRP now_RB address_VBP the_DT problem_NN of_IN finding_VBG the_DT optimal_JJ tradeoff_NN between_IN caching_NN query_NN answers_NNS and_CC caching_VBG posting_VBG lists_NNS ._.
+To_TO make_VB the_DT problem_NN concrete_NN we_PRP assume_VBP a_DT fixed_JJ budget_NN M_NN on_IN the_DT available_JJ memory_NN ,_, out_IN of_IN which_WDT x_CC units_NNS are_VBP used_VBN for_IN caching_VBG query_NN answers_NNS and_CC M_NN x_NN for_IN caching_VBG posting_VBG lists_NNS ._.
+We_PRP perform_VBP simulations_NNS and_CC compute_VB the_DT average_JJ response_NN time_NN as_IN a_DT function_NN of_IN x_NN ._.
+Using_VBG a_DT part_NN of_IN the_DT query_NN log_NN as_IN training_NN data_NNS ,_, we_PRP first_RB allocate_VB in_IN the_DT cache_NN the_DT answers_NNS to_TO the_DT most_RBS frequent_JJ queries_NNS that_WDT fit_VBP in_IN space_NN x_NN ,_, and_CC then_RB we_PRP use_VBP the_DT rest_NN of_IN the_DT memory_NN to_TO cache_NN posting_VBG lists_NNS ._.
+For_IN selecting_VBG posting_VBG lists_NNS we_PRP use_VBP the_DT QtfDf_NN algorithm_NN ,_, applied_VBD to_TO the_DT training_NN query_NN log_NN but_CC excluding_VBG the_DT queries_NNS that_WDT have_VBP already_RB been_VBN cached_VBN ._.
+In_IN Figure_NNP ##_NNP ,_, we_PRP plot_VBP the_DT simulated_JJ response_NN time_NN for_IN a_DT centralized_JJ system_NN as_IN a_DT function_NN of_IN x_NN ._.
+For_IN the_DT uncompressed_JJ index_NN we_PRP use_VBP M_NN =_JJ 1GB_NN ,_, and_CC for_IN the_DT compressed_VBN index_NN we_PRP use_VBP M_NN =_JJ #_# ._.
+5GB_NN ._.
+In_IN the_DT case_NN of_IN the_DT configuration_NN that_WDT uses_VBZ partial_JJ query_NN evaluation_NN with_IN compressed_VBN posting_VBG lists_NNS ,_, the_DT lowest_JJS response_NN time_NN is_VBZ achieved_VBN when_WRB #_# ._.
+15GB_NN out_IN of_IN the_DT 0_CD ._.
+5GB_NN is_VBZ allocated_VBN for_IN storing_VBG answers_NNS for_IN queries_NNS ._.
+We_PRP obtained_VBD similar_JJ trends_NNS in_IN the_DT results_NNS for_IN the_DT LAN_NN setting_NN ._.
+Figure_NNP ##_NN shows_VBZ the_DT simulated_JJ workload_NN for_IN a_DT distributed_VBN system_NN across_IN a_DT WAN_NNP ._.
+In_IN this_DT case_NN ,_, the_DT total_JJ amount_NN of_IN memory_NN is_VBZ split_VBN between_IN the_DT broker_NN ,_, which_WDT holds_VBZ the_DT cached_VBN 400_CD 500_CD 600_CD 700_CD 800_CD 900_CD 1000_CD 1100_CD 1200_CD 0_CD #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# Averageresponsetime_NNP Space_NNP -LRB-_-LRB- GB_NNP -RRB-_-RRB- Simulated_JJ workload_NN --_: single_JJ machine_NN full_JJ /_: uncompr_JJ /_: #_# G_NN partial_JJ /_: uncompr_JJ /_: #_# G_NN full_JJ /_: compr_NN /_: #_# ._.
+#_# G_NN partial_JJ /_: compr_NN /_: #_# ._.
+#_# G_NN Figure_NN ##_CD :_: Optimal_JJ division_NN of_IN the_DT cache_NN in_IN a_DT server_NN ._.
+3000_CD 3500_CD 4000_CD 4500_CD 5000_CD 5500_CD 6000_CD 0_CD #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# Averageresponsetime_NNP Space_NNP -LRB-_-LRB- GB_NNP -RRB-_-RRB- Simulated_JJ workload_NN --_: WAN_NNP full_JJ /_: uncompr_JJ /_: #_# G_NN partial_JJ /_: uncompr_JJ /_: #_# G_NN full_JJ /_: compr_NN /_: #_# ._.
+#_# G_NN partial_JJ /_: compr_NN /_: #_# ._.
+#_# G_NN Figure_NN ##_CD :_: Optimal_JJ division_NN of_IN the_DT cache_NN when_WRB the_DT next_JJ level_NN requires_VBZ WAN_NNP access_NN ._.
+answers_NNS of_IN queries_NNS ,_, and_CC the_DT query_NN processors_NNS ,_, which_WDT hold_VBP the_DT cache_NN of_IN posting_VBG lists_NNS ._.
+According_VBG to_TO the_DT figure_NN ,_, the_DT difference_NN between_IN the_DT configurations_NNS of_IN the_DT query_NN processors_NNS is_VBZ less_RBR important_JJ because_IN the_DT network_NN communication_NN overhead_NN increases_VBZ the_DT response_NN time_NN substantially_RB ._.
+When_WRB using_VBG uncompressed_JJ posting_VBG lists_NNS ,_, the_DT optimal_JJ allocation_NN of_IN memory_NN corresponds_VBZ to_TO using_VBG approximately_RB ##_CD %_NN of_IN the_DT memory_NN for_IN caching_VBG query_NN answers_NNS ._.
+This_DT is_VBZ explained_VBN by_IN the_DT fact_NN that_IN there_EX is_VBZ no_DT need_NN for_IN network_NN communication_NN when_WRB the_DT query_NN can_MD be_VB answered_VBN by_IN the_DT cache_NN at_IN the_DT broker_NN ._.
+7_CD ._.
+EFFECT_NN OF_IN THE_DT QUERY_NN DYNAMICS_NN For_IN our_PRP$ query_NN log_NN ,_, the_DT query_JJ distribution_NN and_CC query-term_JJ distribution_NN change_NN slowly_RB over_IN time_NN ._.
+To_TO support_VB this_DT claim_NN ,_, we_PRP first_RB assess_VB how_WRB topics_NNS change_VBP comparing_VBG the_DT distribution_NN of_IN queries_NNS from_IN the_DT first_JJ week_NN in_IN June_NNP ,_, ####_CD ,_, to_TO the_DT distribution_NN of_IN queries_NNS for_IN the_DT remainder_NN of_IN ####_NN that_WDT did_VBD not_RB appear_VB in_IN the_DT first_JJ week_NN in_IN June_NNP ._.
+We_PRP found_VBD that_IN a_DT very_RB small_JJ percentage_NN of_IN queries_NNS are_VBP new_JJ queries_NNS ._.
+The_DT majority_NN of_IN queries_NNS that_WDT appear_VBP in_IN a_DT given_VBN week_NN repeat_NN in_IN the_DT following_VBG weeks_NNS for_IN the_DT next_JJ six_CD months_NNS ._.
+We_PRP then_RB compute_VBP the_DT hit_NN rate_NN of_IN a_DT static_JJ cache_NN of_IN ###_CD ,_, ###_CD answers_NNS trained_VBN over_IN a_DT period_NN of_IN two_CD weeks_NNS -LRB-_-LRB- Figure_NN ##_NN -RRB-_-RRB- ._.
+We_PRP report_VBP hit_VBN rate_NN hourly_JJ for_IN #_# days_NNS ,_, starting_VBG from_IN 5pm_JJ ._.
+We_PRP observe_VBP that_IN the_DT hit_NN rate_NN reaches_VBZ its_PRP$ highest_JJS value_NN during_IN the_DT night_NN -LRB-_-LRB- around_IN midnight_NN -RRB-_-RRB- ,_, whereas_IN around_IN 2-3pm_JJ it_PRP reaches_VBZ its_PRP$ minimum_NN ._.
+After_IN a_DT small_JJ decay_NN in_IN hit_NN rate_NN values_NNS ,_, the_DT hit_NN rate_NN stabilizes_VBZ between_IN #_# ._.
+##_NN ,_, and_CC #_# ._.
+##_NN for_IN the_DT entire_JJ week_NN ,_, suggesting_VBG that_IN the_DT static_JJ cache_NN is_VBZ effective_JJ for_IN a_DT whole_JJ week_NN after_IN the_DT training_NN period_NN ._.
+0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+#_# 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ##_CD ##_CD ##_CD ##_CD ###_CD ###_CD ###_CD ###_CD Hit-rate_JJ Time_NNP Hits_VBZ on_IN the_DT frequent_JJ queries_NNS of_IN distances_NNS Figure_NNP ##_CD :_: Hourly_NNP hit_VBD rate_NN for_IN a_DT static_JJ cache_NN holding_VBG 128_CD ,_, ###_CD answers_NNS during_IN the_DT period_NN of_IN a_DT week_NN ._.
+The_DT static_JJ cache_NN of_IN posting_VBG lists_NNS can_MD be_VB periodically_RB recomputed_VBN ._.
+To_TO estimate_VB the_DT time_NN interval_NN in_IN which_WDT we_PRP need_VBP to_TO recompute_VB the_DT posting_VBG lists_NNS on_IN the_DT static_JJ cache_NN we_PRP need_VBP to_TO consider_VB an_DT efficiency_NN /_: quality_NN trade-off_NN :_: using_VBG too_RB short_RB a_DT time_NN interval_NN might_MD be_VB prohibitively_RB expensive_JJ ,_, while_IN recomputing_VBG the_DT cache_NN too_RB infrequently_RB might_MD lead_VB to_TO having_VBG an_DT obsolete_JJ cache_NN not_RB corresponding_VBG to_TO the_DT statistical_JJ characteristics_NNS of_IN the_DT current_JJ query_NN stream_NN ._.
+We_PRP measured_VBD the_DT effect_NN on_IN the_DT QtfDf_NN algorithm_NN of_IN the_DT changes_NNS in_IN a_DT 15-week_JJ query_NN stream_NN -LRB-_-LRB- Figure_NN ##_NN -RRB-_-RRB- ._.
+We_PRP compute_VBP the_DT query_NN term_NN frequencies_NNS over_IN the_DT whole_JJ stream_NN ,_, select_JJ which_WDT terms_NNS to_TO cache_NN ,_, and_CC then_RB compute_VB the_DT hit_NN rate_NN on_IN the_DT whole_JJ query_NN stream_NN ._.
+This_DT hit_NN rate_NN is_VBZ as_IN an_DT upper_JJ bound_VBN ,_, and_CC it_PRP assumes_VBZ perfect_JJ knowledge_NN of_IN the_DT query_NN term_NN frequencies_NNS ._.
+To_TO simulate_VB a_DT realistic_JJ scenario_NN ,_, we_PRP use_VBP the_DT first_JJ #_# -LRB-_-LRB- #_# -RRB-_-RRB- weeks_NNS of_IN the_DT query_NN stream_NN for_IN computing_VBG query_NN term_NN frequencies_NNS and_CC the_DT following_VBG #_# -LRB-_-LRB- ##_CD -RRB-_-RRB- weeks_NNS to_TO estimate_VB the_DT hit_NN rate_NN ._.
+As_IN Figure_NNP ##_NN shows_VBZ ,_, the_DT hit_NN rate_NN decreases_NNS by_IN less_JJR than_IN #_# %_NN ._.
+The_DT high_JJ correlation_NN among_IN the_DT query_NN term_NN frequencies_NNS during_IN different_JJ time_NN periods_NNS explains_VBZ the_DT graceful_JJ adaptation_NN of_IN the_DT static_JJ caching_NN algorithms_NNS to_TO the_DT future_JJ query_NN stream_NN ._.
+Indeed_RB ,_, the_DT pairwise_JJ correlation_NN among_IN all_DT possible_JJ 3-week_JJ periods_NNS of_IN the_DT 15-week_JJ query_NN stream_NN is_VBZ over_IN ##_CD ._.
+#_# %_NN ._.
+8_CD ._.
+CONCLUSIONS_NNS Caching_VBG is_VBZ an_DT effective_JJ technique_NN in_IN search_NN engines_NNS for_IN improving_VBG response_NN time_NN ,_, reducing_VBG the_DT load_NN on_IN query_NN processors_NNS ,_, and_CC improving_VBG network_NN bandwidth_NN utilization_NN ._.
+We_PRP present_VBP results_NNS on_IN both_DT dynamic_JJ and_CC static_JJ caching_NN ._.
+Dynamic_NNP caching_NN of_IN queries_NNS has_VBZ limited_VBN effectiveness_NN due_JJ to_TO the_DT high_JJ number_NN of_IN compulsory_JJ misses_VBZ caused_VBN by_IN the_DT number_NN of_IN unique_JJ or_CC infrequent_JJ queries_NNS ._.
+Our_PRP$ results_NNS show_VBP that_IN in_IN our_PRP$ UK_NNP log_NN ,_, the_DT minimum_NN miss_VBP rate_NN is_VBZ ##_CD %_NN using_VBG a_DT working_VBG set_NN strategy_NN ._.
+Caching_VBG terms_NNS is_VBZ more_RBR effective_JJ with_IN respect_NN to_TO miss_VB rate_NN ,_, achieving_VBG values_NNS as_RB low_JJ as_IN ##_CD %_NN ._.
+We_PRP also_RB propose_VBP a_DT new_JJ algorithm_NN for_IN static_JJ caching_NN of_IN posting_VBG lists_NNS that_WDT outperforms_VBZ previous_JJ static_JJ caching_NN algorithms_NNS as_RB well_RB as_IN dynamic_JJ algorithms_NNS such_JJ as_IN LRU_NNP and_CC LFU_NNP ,_, obtaining_VBG hit_NN rate_NN values_NNS that_WDT are_VBP over_IN ##_CD %_NN higher_JJR compared_VBN these_DT strategies_NNS ._.
+We_PRP present_VBP a_DT framework_NN for_IN the_DT analysis_NN of_IN the_DT trade-off_NN between_IN caching_NN query_NN results_NNS and_CC caching_VBG posting_VBG lists_NNS ,_, and_CC we_PRP simulate_VBP different_JJ types_NNS of_IN architectures_NNS ._.
+Our_PRP$ results_NNS show_VBP that_IN for_IN centralized_VBN and_CC LAN_NN environments_NNS ,_, there_EX is_VBZ an_DT optimal_JJ allocation_NN of_IN caching_VBG query_NN results_NNS and_CC caching_NN of_IN posting_VBG lists_NNS ,_, while_IN for_IN WAN_NNP scenarios_NNS in_IN which_WDT network_NN time_NN prevails_VBZ it_PRP is_VBZ more_RBR important_JJ to_TO cache_NN query_NN results_NNS ._.
+0_CD ._.
+##_NN 0_CD ._.
+#_# 0_CD ._.
+##_NN 0_CD ._.
+#_# 0_CD ._.
+##_NN 0_CD ._.
+#_# 0_CD ._.
+##_NN 0_CD ._.
+#_# 0_CD ._.
+##_NN 0_CD ._.
+#_# 0_CD ._.
+##_NN 0_CD ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# Hitrate_NNP Cache_NNP size_NN Dynamics_NNP of_IN static_JJ QTF_NN /_: DF_NN caching_NN policy_NN perfect_JJ knowledge_NN 6-week_JJ training_NN 3-week_JJ training_NN Figure_NN ##_CD :_: Impact_NN of_IN distribution_NN changes_NNS on_IN the_DT static_JJ caching_NN of_IN posting_VBG lists_NNS ._.
+9_CD ._.
+REFERENCES_NNS -LSB-_-LRB- #_# -RSB-_-RRB- V_NN ._.
+N_NN ._.
+Anh_NNP and_CC A_NNP ._.
+Moffat_NNP ._.
+Pruned_VBN query_NN evaluation_NN using_VBG pre-computed_JJ impacts_NNS ._.
+In_IN ACM_NNP CIKM_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- R_NN ._.
+A_DT ._.
+Baeza-Yates_NNS and_CC F_NN ._.
+Saint-Jean_NNP ._.
+A_DT three_CD level_NN search_NN engine_NN index_NN based_VBN in_IN query_NN log_NN distribution_NN ._.
+In_IN SPIRE_NN ,_, 2003_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- C_NN ._.
+Buckley_NNP and_CC A_NNP ._.
+F_NN ._.
+Lewit_NNP ._.
+Optimization_NN of_IN inverted_JJ vector_NN searches_NNS ._.
+In_IN ACM_JJ SIGIR_NN ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- S_NN ._.
+Buttcher_NNP and_CC C_NNP ._.
+L_NN ._.
+A_DT ._.
+Clarke_NNP ._.
+A_DT document-centric_JJ approach_NN to_TO static_JJ index_NN pruning_NN in_IN text_NN retrieval_NN systems_NNS ._.
+In_IN ACM_NNP CIKM_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- P_NN ._.
+Cao_NNP and_CC S_NN ._.
+Irani_NNP ._.
+Cost-aware_JJ WWW_NNP proxy_NN caching_NN algorithms_NNS ._.
+In_IN USITS_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- P_NN ._.
+Denning_NNP ._.
+Working_VBG sets_NNS past_JJ and_CC present_JJ ._.
+IEEE_NNP Trans_NNP ._.
+on_IN Software_NNP Engineering_NNP ,_, SE-6_NNP -LRB-_-LRB- #_# -RRB-_-RRB- :_: 64-84_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- T_NN ._.
+Fagni_NNP ,_, R_NN ._.
+Perego_NNP ,_, F_NN ._.
+Silvestri_NNP ,_, and_CC S_NN ._.
+Orlando_NNP ._.
+Boosting_VBG the_DT performance_NN of_IN web_NN search_NN engines_NNS :_: Caching_NN and_CC prefetching_VBG query_NN results_NNS by_IN exploiting_VBG historical_JJ usage_NN data_NNS ._.
+ACM_NNP Trans_NNP ._.
+Inf_NNP ._.
+Syst_NNP ._.
+,_, ##_NN -LRB-_-LRB- #_# -RRB-_-RRB- :_: 51-78_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- R_NN ._.
+Lempel_NN and_CC S_NN ._.
+Moran_NNP ._.
+Predictive_JJ caching_NN and_CC prefetching_NN of_IN query_NN results_VBZ in_IN search_NN engines_NNS ._.
+In_IN WWW_NNP ,_, 2003_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- X_NN ._.
+Long_NNP and_CC T_NN ._.
+Suel_NNP ._.
+Three-level_JJ caching_NN for_IN efficient_JJ query_NN processing_NN in_IN large_JJ web_NN search_NN engines_NNS ._.
+In_IN WWW_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- E_NN ._.
+P_NN ._.
+Markatos_NNP ._.
+On_IN caching_VBG search_NN engine_NN query_NN results_NNS ._.
+Computer_NNP Communications_NNPS ,_, ##_NN -LRB-_-LRB- #_# -RRB-_-RRB- :_: 137-143_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- I_PRP ._.
+Ounis_NNP ,_, G_NNP ._.
+Amati_NNP ,_, V_NNP ._.
+Plachouras_NNP ,_, B_NN ._.
+He_PRP ,_, C_NN ._.
+Macdonald_NNP ,_, and_CC C_NN ._.
+Lioma_NN ._.
+Terrier_NNP :_: A_NNP High_NNP Performance_NNP and_CC Scalable_NNP Information_NNP Retrieval_NNP Platform_NNP ._.
+In_IN SIGIR_NNP Workshop_NNP on_IN Open_NNP Source_NNP Information_NNP Retrieval_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- V_NN ._.
+V_NN ._.
+Raghavan_NNP and_CC H_NNP ._.
+Sever_VB ._.
+On_IN the_DT reuse_NN of_IN past_JJ optimal_JJ queries_NNS ._.
+In_IN ACM_JJ SIGIR_NN ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- P_NN ._.
+C_NN ._.
+Saraiva_NNP ,_, E_NNP ._.
+S_NN ._.
+de_IN Moura_NNP ,_, N_NNP ._.
+Ziviani_NNP ,_, W_NNP ._.
+Meira_NNP ,_, R_NN ._.
+Fonseca_NNP ,_, and_CC B_NN ._.
+Riberio-Neto_NNP ._.
+Rank-preserving_JJ two-level_JJ caching_NN for_IN scalable_JJ search_NN engines_NNS ._.
+In_IN ACM_JJ SIGIR_NN ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- D_NN ._.
+R_NN ._.
+Slutz_NNP and_CC I_PRP ._.
+L_NN ._.
+Traiger_NNP ._.
+A_DT note_NN on_IN the_DT calculation_NN of_IN average_JJ working_VBG set_VBN size_NN ._.
+Communications_NNPS of_IN the_DT ACM_NNP ,_, 17_CD -LRB-_-LRB- ##_CD -RRB-_-RRB- :_: 563-565_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- T_NN ._.
+Strohman_NNP ,_, H_NN ._.
+Turtle_NNP ,_, and_CC W_NN ._.
+B_NN ._.
+Croft_NNP ._.
+Optimization_NN strategies_NNS for_IN complex_JJ queries_NNS ._.
+In_IN ACM_JJ SIGIR_NN ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- I_PRP ._.
+H_NN ._.
+Witten_NNP ,_, T_NN ._.
+C_NN ._.
+Bell_NNP ,_, and_CC A_NN ._.
+Moffat_NNP ._.
+Managing_VBG Gigabytes_NNP :_: Compressing_NNP and_CC Indexing_NN Documents_NNS and_CC Images_NNS ._.
+John_NNP Wiley_NNP &_CC Sons_NNP ,_, Inc_NNP ._.
+,_, NY_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- N_NN ._.
+E_NN ._.
+Young_NNP ._.
+On-line_JJ file_NN caching_NN ._.
+Algorithmica_NNP ,_, 33_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 371-383_CD ,_, ####_CD ._.

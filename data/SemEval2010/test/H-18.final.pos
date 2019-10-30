@@ -1,0 +1,665 @@
+Topic_NN Segmentation_NN with_IN Shared_VBN Topic_NNP Detection_NN and_CC Alignment_NN of_IN Multiple_JJ Documents_NNS Bingjun_NNP Sun_NNP *_SYM ,_, Prasenjit_NNP Mitra_NNP *_SYM ,_, Hongyuan_NNP Zha_NNP ,_, C_NNP ._.
+Lee_NNP Giles_NNP *_SYM ,_, John_NNP Yen_NNP *_SYM *_SYM Department_NNP of_IN Computer_NNP Science_NNP and_CC Engineering_NNP College_NNP of_IN Information_NNP Sciences_NNP and_CC Technology_NNP The_DT Pennsylvania_NNP State_NNP University_NNP University_NNP Park_NNP ,_, PA_NN #####_CD College_NNP of_IN Computing_NNP The_DT Georgia_NNP Institute_NNP of_IN Technology_NNP Atlanta_NNP ,_, GA_NNP #####_CD *_SYM bsun_FW @_SYM cse_NN ._.
+psu_NN ._.
+edu_NN ,_, -LCB-_-LRB- pmitra_NN ,_, giles_NNS ,_, jyen_JJ -RCB-_-RRB- @_IN ist_NN ._.
+psu_NN ._.
+edu_NN ,_, zha_NN @_IN cc_NN ._.
+gatech_NN ._.
+edu_NN ABSTRACT_NN Topic_NN detection_NN and_CC tracking_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- and_CC topic_NN segmentation_NN -LSB-_-LRB- ##_NN -RSB-_-RRB- play_VBP an_DT important_JJ role_NN in_IN capturing_VBG the_DT local_JJ and_CC sequential_JJ information_NN of_IN documents_NNS ._.
+Previous_JJ work_NN in_IN this_DT area_NN usually_RB focuses_VBZ on_IN single_JJ documents_NNS ,_, although_IN similar_JJ multiple_JJ documents_NNS are_VBP available_JJ in_IN many_JJ domains_NNS ._.
+In_IN this_DT paper_NN ,_, we_PRP introduce_VBP a_DT novel_JJ unsupervised_JJ method_NN for_IN shared_VBN topic_NN detection_NN and_CC topic_NN segmentation_NN of_IN multiple_JJ similar_JJ documents_NNS based_VBN on_IN mutual_JJ information_NN -LRB-_-LRB- MI_NN -RRB-_-RRB- and_CC weighted_JJ mutual_JJ information_NN -LRB-_-LRB- WMI_NN -RRB-_-RRB- that_WDT is_VBZ a_DT combination_NN of_IN MI_NNP and_CC term_NN weights_NNS ._.
+The_DT basic_JJ idea_NN is_VBZ that_IN the_DT optimal_JJ segmentation_NN maximizes_VBZ MI_NNP -LRB-_-LRB- or_CC WMI_NN -RRB-_-RRB- ._.
+Our_PRP$ approach_NN can_MD detect_VB shared_JJ topics_NNS among_IN documents_NNS ._.
+It_PRP can_MD find_VB the_DT optimal_JJ boundaries_NNS in_IN a_DT document_NN ,_, and_CC align_VB segments_NNS among_IN documents_NNS at_IN the_DT same_JJ time_NN ._.
+It_PRP also_RB can_MD handle_VB single-document_JJ segmentation_NN as_IN a_DT special_JJ case_NN of_IN the_DT multi-document_JJ segmentation_NN and_CC alignment_NN ._.
+Our_PRP$ methods_NNS can_MD identify_VB and_CC strengthen_VB cue_NN terms_NNS that_WDT can_MD be_VB used_VBN for_IN segmentation_NN and_CC partially_RB remove_VB stop_VB words_NNS by_IN using_VBG term_NN weights_NNS based_VBN on_IN entropy_NN learned_VBD from_IN multiple_JJ documents_NNS ._.
+Our_PRP$ experimental_JJ results_NNS show_VBP that_IN our_PRP$ algorithm_NN works_VBZ well_RB for_IN the_DT tasks_NNS of_IN single-document_JJ segmentation_NN ,_, shared_VBN topic_NN detection_NN ,_, and_CC multi-document_JJ segmentation_NN ._.
+Utilizing_VBG information_NN from_IN multiple_JJ documents_NNS can_MD tremendously_RB improve_VB the_DT performance_NN of_IN topic_NN segmentation_NN ,_, and_CC using_VBG WMI_NNP is_VBZ even_RB better_JJR than_IN using_VBG MI_NNP for_IN the_DT multi-document_JJ segmentation_NN ._.
+Categories_NNS and_CC Subject_NNP Descriptors_NNPS H_NN ._.
+#_# ._.
+#_# -LSB-_-LRB- Information_NNP Storage_NNP and_CC Retrieval_NNP -RSB-_-RRB- :_: Information_NNP Search_VB and_CC Retrieval-Clustering_NN ;_: H_NN ._.
+#_# ._.
+#_# -LSB-_-LRB- Information_NNP Storage_NNP and_CC Retrieval_NNP -RSB-_-RRB- :_: Content_NNP Analysis_NNP and_CC IndexingLinguistic_NNP processing_NN ;_: I_PRP ._.
+#_# ._.
+#_# -LSB-_-LRB- Artificial_NNP Intelligence_NNP -RSB-_-RRB- :_: Natural_JJ Language_NN Processing-Text_NN analysis_NN ;_: I_PRP ._.
+#_# ._.
+#_# -LSB-_-LRB- Pattern_NNP Recognition_NN -RSB-_-RRB- :_: Clustering-Algorithms_NNS ;_: Similarity_NN measures_NNS General_NNP Terms_NNS Algorithms_NNS ,_, Design_NN ,_, Experimentation_NN 1_CD ._.
+INTRODUCTION_NNP Many_JJ researchers_NNS have_VBP worked_VBN on_IN topic_NN detection_NN and_CC tracking_NN -LRB-_-LRB- TDT_NN -RRB-_-RRB- -LSB-_-LRB- ##_CD -RSB-_-RRB- and_CC topic_NN segmentation_NN during_IN the_DT past_JJ decade_NN ._.
+Topic_NN segmentation_NN intends_VBZ to_TO identify_VB the_DT boundaries_NNS in_IN a_DT document_NN with_IN the_DT goal_NN to_TO capture_VB the_DT latent_JJ topical_JJ structure_NN ._.
+Topic_NN segmentation_NN tasks_NNS usually_RB fall_VBP into_IN two_CD categories_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- :_: text_NN stream_NN segmentation_NN where_WRB topic_NN transition_NN is_VBZ identified_VBN ,_, and_CC coherent_JJ document_NN segmentation_NN in_IN which_WDT documents_NNS are_VBP split_VBN into_IN sub-topics_NNS ._.
+The_DT former_JJ category_NN has_VBZ applications_NNS in_IN automatic_JJ speech_NN recognition_NN ,_, while_IN the_DT latter_JJ one_CD has_VBZ more_JJR applications_NNS such_JJ as_IN partial-text_NN query_NN of_IN long_JJ documents_NNS in_IN information_NN retrieval_NN ,_, text_NN summary_NN ,_, and_CC quality_NN measurement_NN of_IN multiple_JJ documents_NNS ._.
+Previous_JJ research_NN in_IN connection_NN with_IN TDT_NN falls_VBZ into_IN the_DT former_JJ category_NN ,_, targeted_VBN on_IN topic_NN tracking_NN of_IN broadcast_NN speech_NN data_NNS and_CC newswire_NN text_NN ,_, while_IN the_DT latter_JJ category_NN has_VBZ not_RB been_VBN studied_VBN very_RB well_RB ._.
+Traditional_JJ approaches_NNS perform_VBP topic_NN segmentation_NN on_IN documents_NNS one_CD at_IN a_DT time_NN -LSB-_-LRB- ##_CD ,_, ##_CD ,_, #_# -RSB-_-RRB- ._.
+Most_JJS of_IN them_PRP perform_VBP badly_RB in_IN subtle_JJ tasks_NNS like_IN coherent_JJ document_NN segmentation_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Often_RB ,_, end-users_NNS seek_VBP documents_NNS that_WDT have_VBP the_DT similar_JJ content_NN ._.
+Search_VB engines_NNS ,_, like_IN ,_, Google_NNP ,_, provide_VBP links_NNS to_TO obtain_VB similar_JJ pages_NNS ._.
+At_IN a_DT finer_NN granularity_NN ,_, users_NNS may_MD actually_RB be_VB looking_VBG to_TO obtain_VB sections_NNS of_IN a_DT document_NN similar_JJ to_TO a_DT particular_JJ section_NN that_WDT presumably_RB discusses_VBZ a_DT topic_NN of_IN the_DT users_NNS interest_NN ._.
+Thus_RB ,_, the_DT extension_NN of_IN topic_NN segmentation_NN from_IN single_JJ documents_NNS to_TO identifying_VBG similar_JJ segments_NNS from_IN multiple_JJ similar_JJ documents_NNS with_IN the_DT same_JJ topic_NN is_VBZ a_DT natural_JJ and_CC necessary_JJ direction_NN ,_, and_CC multi-document_JJ topic_NN segmentation_NN is_VBZ expected_VBN to_TO have_VB a_DT better_JJR performance_NN since_IN more_JJR information_NN is_VBZ utilized_VBN ._.
+Traditional_JJ approaches_NNS using_VBG similarity_NN measurement_NN based_VBN on_IN term_NN frequency_NN generally_RB have_VBP the_DT same_JJ assumption_NN that_IN similar_JJ vocabulary_NN tends_VBZ to_TO be_VB in_IN a_DT coherent_JJ topic_NN segment_NN -LSB-_-LRB- ##_CD ,_, ##_CD ,_, #_# -RSB-_-RRB- ._.
+However_RB ,_, they_PRP usually_RB suffer_VBP the_DT issue_NN of_IN identifying_VBG stop_NN words_NNS ._.
+For_IN example_NN ,_, additional_JJ document-dependent_JJ stop_NN words_NNS are_VBP removed_VBN together_RB with_IN the_DT generic_JJ stop_NN words_NNS in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ._.
+There_EX are_VBP two_CD reasons_NNS that_IN we_PRP do_VBP not_RB remove_VB stop_VB words_NNS directly_RB ._.
+First_RB ,_, identifying_VBG stop_NN words_NNS is_VBZ another_DT issue_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- that_WDT requires_VBZ estimation_NN in_IN each_DT domain_NN ._.
+Removing_VBG common_JJ stop_NN words_NNS may_MD result_VB in_IN the_DT loss_NN of_IN useful_JJ information_NN in_IN a_DT specific_JJ domain_NN ._.
+Second_RB ,_, even_RB though_IN stop_NN words_NNS can_MD be_VB identified_VBN ,_, hard_JJ classification_NN of_IN stop_NN words_NNS and_CC nonstop_JJ words_NNS can_MD not_RB represent_VB the_DT gradually_RB changing_VBG amount_NN of_IN information_NN content_NN of_IN each_DT word_NN ._.
+We_PRP employ_VBP a_DT soft_JJ classification_NN using_VBG term_NN weights_NNS ._.
+In_IN this_DT paper_NN ,_, we_PRP view_VBP the_DT problem_NN of_IN topic_NN segmentation_NN as_IN an_DT optimization_NN issue_NN using_VBG information_NN theoretic_JJ techniques_NNS to_TO find_VB the_DT optimal_JJ boundaries_NNS of_IN a_DT document_NN given_VBN the_DT number_NN of_IN text_NN segments_NNS so_RB as_IN to_TO minimize_VB the_DT loss_NN of_IN mutual_JJ information_NN -LRB-_-LRB- MI_NN -RRB-_-RRB- -LRB-_-LRB- or_CC a_DT weighted_JJ mutual_JJ information_NN -LRB-_-LRB- WMI_NN -RRB-_-RRB- -RRB-_-RRB- after_IN segmentation_NN and_CC alignment_NN ._.
+This_DT is_VBZ equal_JJ to_TO maximizing_VBG the_DT MI_NNP -LRB-_-LRB- or_CC WMI_NN -RRB-_-RRB- ._.
+The_DT MI_NNP focuses_VBZ on_IN measuring_VBG the_DT difference_NN among_IN segments_NNS whereas_IN previous_JJ research_NN focused_VBD on_IN finding_VBG the_DT similarity_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+cosine_NN distance_NN -RRB-_-RRB- of_IN segments_NNS -LSB-_-LRB- ##_CD ,_, ##_CD ,_, #_# -RSB-_-RRB- ._.
+Topic_NN alignment_NN of_IN multiple_JJ similar_JJ documents_NNS can_MD be_VB achieved_VBN by_IN clustering_NN sentences_NNS on_IN the_DT same_JJ topic_NN into_IN the_DT same_JJ cluster_NN ._.
+Single-document_JJ topic_NN segmentation_NN is_VBZ just_RB a_DT special_JJ case_NN of_IN the_DT multi-document_JJ topic_NN segmentation_NN and_CC alignment_NN problem_NN ._.
+Terms_NNS can_MD be_VB co-clustered_VBN as_IN in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- at_IN the_DT same_JJ time_NN ,_, given_VBN the_DT number_NN of_IN clusters_NNS ,_, but_CC our_PRP$ experimental_JJ results_NNS show_VBP that_IN this_DT method_NN results_VBZ in_IN a_DT worse_JJR segmentation_NN ._.
+Usually_RB ,_, human_JJ readers_NNS can_MD identify_VB topic_NN transition_NN based_VBN on_IN cue_NN words_NNS ,_, and_CC can_MD ignore_VB stop_VB words_NNS ._.
+Inspired_VBN by_IN this_DT ,_, we_PRP give_VBP each_DT term_NN -LRB-_-LRB- or_CC term_NN cluster_NN -RRB-_-RRB- a_DT weight_NN based_VBN on_IN entropy_NN among_IN different_JJ documents_NNS and_CC different_JJ segments_NNS of_IN documents_NNS ._.
+Not_RB only_RB can_MD this_DT approach_NN increase_VB the_DT contribution_NN of_IN cue_NN words_NNS ,_, but_CC it_PRP can_MD also_RB decrease_VB the_DT effect_NN of_IN common_JJ stop_NN words_NNS ,_, noisy_JJ word_NN ,_, and_CC document-dependent_JJ stop_NN words_NNS ._.
+These_DT words_NNS are_VBP common_JJ in_IN a_DT document_NN ._.
+Many_JJ methods_NNS based_VBN on_IN sentence_NN similarity_NN require_VBP that_IN these_DT words_NNS are_VBP removed_VBN before_IN topic_NN segmentation_NN can_MD be_VB performed_VBN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Our_PRP$ results_NNS in_IN Figure_NNP #_# show_VBP that_IN term_NN weights_NNS are_VBP useful_JJ for_IN multi-document_JJ topic_NN segmentation_NN and_CC alignment_NN ._.
+The_DT major_JJ contribution_NN of_IN this_DT paper_NN is_VBZ that_IN it_PRP introduces_VBZ a_DT novel_JJ method_NN for_IN topic_NN segmentation_NN using_VBG MI_NNP and_CC shows_VBZ that_IN this_DT method_NN performs_VBZ better_JJR than_IN previously_RB used_VBN criteria_NNS ._.
+Also_RB ,_, we_PRP have_VBP addressed_VBN the_DT problem_NN of_IN topic_NN segmentation_NN and_CC alignment_NN across_IN multiple_JJ documents_NNS ,_, whereas_IN most_JJS existing_VBG research_NN focused_VBD on_IN segmentation_NN of_IN single_JJ documents_NNS ._.
+Multi-document_JJ segmentation_NN and_CC alignment_NN can_MD utilize_VB information_NN from_IN similar_JJ documents_NNS and_CC improves_VBZ the_DT performance_NN of_IN topic_NN segmentation_NN greatly_RB ._.
+Obviously_RB ,_, our_PRP$ approach_NN can_MD handle_VB single_JJ documents_NNS as_IN a_DT special_JJ case_NN when_WRB multiple_JJ documents_NNS are_VBP unavailable_JJ ._.
+It_PRP can_MD detect_VB shared_JJ topics_NNS among_IN documents_NNS to_TO judge_VB if_IN they_PRP are_VBP multiple_JJ documents_NNS on_IN the_DT same_JJ topic_NN ._.
+We_PRP also_RB introduce_VB the_DT new_JJ criterion_NN of_IN WMI_NN based_VBN on_IN term_NN weights_NNS learned_VBD from_IN multiple_JJ similar_JJ documents_NNS ,_, which_WDT can_MD improve_VB performance_NN of_IN topic_NN segmentation_NN further_RB ._.
+We_PRP propose_VBP an_DT iterative_JJ greedy_JJ algorithm_NN based_VBN on_IN dynamic_JJ programming_NN and_CC show_VBP that_IN it_PRP works_VBZ well_RB in_IN practice_NN ._.
+Some_DT of_IN our_PRP$ prior_JJ work_NN is_VBZ in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ._.
+The_DT rest_NN of_IN this_DT paper_NN is_VBZ organized_VBN as_IN follows_VBZ :_: In_IN Section_NN #_# ,_, we_PRP review_VBP related_JJ work_NN ._.
+Section_NN #_# contains_VBZ a_DT formulation_NN of_IN the_DT problem_NN of_IN topic_NN segmentation_NN and_CC alignment_NN of_IN multiple_JJ documents_NNS with_IN term_NN co-clustering_NN ,_, a_DT review_NN of_IN the_DT criterion_NN of_IN MI_NNP for_IN clustering_NN ,_, and_CC finally_RB an_DT introduction_NN to_TO WMI_NNP ._.
+In_IN Section_NN #_# ,_, we_PRP first_RB propose_VBP the_DT iterative_JJ greedy_JJ algorithm_NN of_IN topic_NN segmentation_NN and_CC alignment_NN with_IN term_NN co-clustering_NN ,_, and_CC then_RB describe_VBP how_WRB the_DT algorithm_NN can_MD be_VB optimized_VBN by_IN usFigure_NN #_# :_: Illustration_NN of_IN multi-document_JJ segmentation_NN and_CC alignment_NN ._.
+ing_VBG dynamic_JJ programming_NN ._.
+In_IN Section_NN #_# ,_, experiments_NNS about_IN single-document_JJ segmentation_NN ,_, shared_VBN topic_NN detection_NN ,_, and_CC multi-document_JJ segmentation_NN are_VBP described_VBN ,_, and_CC results_NNS are_VBP presented_VBN and_CC discussed_VBN to_TO evaluate_VB the_DT performance_NN of_IN our_PRP$ algorithm_NN ._.
+Conclusions_NNS and_CC some_DT future_JJ directions_NNS of_IN the_DT research_NN work_NN are_VBP discussed_VBN in_IN Section_NN #_# ._.
+2_LS ._.
+PREVIOUS_JJ WORK_VBP Generally_RB ,_, the_DT existing_VBG approaches_NNS to_TO text_NN segmentation_NN fall_NN into_IN two_CD categories_NNS :_: supervised_JJ learning_NN -LSB-_-LRB- ##_CD ,_, ##_CD ,_, ##_CD -RSB-_-RRB- and_CC unsupervised_JJ learning_NN -LSB-_-LRB- #_# ,_, ##_NN ,_, #_# ,_, #_# ,_, ##_NN ,_, ##_NN ,_, ##_NN -RSB-_-RRB- ._.
+Supervised_VBN learning_VBG usually_RB has_VBZ good_JJ performance_NN ,_, since_IN it_PRP learns_VBZ functions_NNS from_IN labelled_VBN training_NN sets_NNS ._.
+However_RB ,_, often_RB getting_VBG large_JJ training_NN sets_NNS with_IN manual_JJ labels_NNS on_IN document_NN sentences_NNS is_VBZ prohibitively_RB expensive_JJ ,_, so_RB unsupervised_JJ approaches_NNS are_VBP desired_VBN ._.
+Some_DT models_NNS consider_VBP dependence_NN between_IN sentences_NNS and_CC sections_NNS ,_, such_JJ as_IN Hidden_NNP Markov_NNP Model_NNP -LSB-_-LRB- #_# ,_, ##_NN -RSB-_-RRB- ,_, Maximum_NNP Entropy_NNP Markov_NNP Model_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, and_CC Conditional_JJ Random_NNP Fields_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, while_IN many_JJ other_JJ approaches_NNS are_VBP based_VBN on_IN lexical_JJ cohesion_NN or_CC similarity_NN of_IN sentences_NNS -LSB-_-LRB- #_# ,_, #_# ,_, ##_NN ,_, 25_CD ,_, ##_CD -RSB-_-RRB- ._.
+Some_DT approaches_NNS also_RB focus_VBP on_IN cue_NN words_NNS as_IN hints_NNS of_IN topic_NN transitions_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+While_IN some_DT existing_VBG methods_NNS only_RB consider_VBP information_NN in_IN single_JJ documents_NNS -LSB-_-LRB- #_# ,_, ##_NN -RSB-_-RRB- ,_, others_NNS utilize_VBP multiple_JJ documents_NNS -LSB-_-LRB- ##_NNS ,_, ##_NN -RSB-_-RRB- ._.
+There_EX are_VBP not_RB many_JJ works_NNS in_IN the_DT latter_JJ category_NN ,_, even_RB though_IN the_DT performance_NN of_IN segmentation_NN is_VBZ expected_VBN to_TO be_VB better_RBR with_IN utilization_NN of_IN information_NN from_IN multiple_JJ documents_NNS ._.
+Previous_JJ research_NN studied_VBN methods_NNS to_TO find_VB shared_JJ topics_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- and_CC topic_NN segmentation_NN and_CC summarization_NN between_IN just_RB a_DT pair_NN of_IN documents_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Text_VB classification_NN and_CC clustering_NN is_VBZ a_DT related_JJ research_NN area_NN which_WDT categorizes_VBZ documents_NNS into_IN groups_NNS using_VBG supervised_JJ or_CC unsupervised_JJ methods_NNS ._.
+Topical_JJ classification_NN or_CC clustering_NN is_VBZ an_DT important_JJ direction_NN in_IN this_DT area_NN ,_, especially_RB co-clustering_NN of_IN documents_NNS and_CC terms_NNS ,_, such_JJ as_IN LSA_NN -LSB-_-LRB- #_# -RSB-_-RRB- ,_, PLSA_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, and_CC approaches_VBZ based_VBN on_IN distances_NNS and_CC bipartite_JJ graph_NN partitioning_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- or_CC maximum_NN MI_NN -LSB-_-LRB- #_# ,_, ##_NN -RSB-_-RRB- ,_, or_CC maximum_NN entropy_NN -LSB-_-LRB- #_# ,_, ##_NN -RSB-_-RRB- ._.
+Criteria_NNS of_IN these_DT approaches_NNS can_MD be_VB utilized_VBN in_IN the_DT issue_NN of_IN topic_NN segmentation_NN ._.
+Some_DT of_IN those_DT methods_NNS have_VBP been_VBN extended_VBN into_IN the_DT area_NN of_IN topic_NN segmentation_NN ,_, such_JJ as_IN PLSA_NN -LSB-_-LRB- #_# -RSB-_-RRB- and_CC maximum_NN entropy_NN -LSB-_-LRB- #_# -RSB-_-RRB- ,_, but_CC to_TO our_PRP$ best_JJS knowledge_NN ,_, using_VBG MI_NNP for_IN topic_NN segmentation_NN has_VBZ not_RB been_VBN studied_VBN ._.
+3_LS ._.
+PROBLEM_NN FORMULATION_NN Our_PRP$ goal_NN is_VBZ to_TO segment_NN documents_NNS and_CC align_VB the_DT segments_NNS across_IN documents_NNS -LRB-_-LRB- Figure_NN #_# -RRB-_-RRB- ._.
+Let_VB T_NN be_VB the_DT set_NN of_IN terms_NNS -LCB-_-LRB- t1_NN ,_, t2_NN ,_, ..._: ,_, tl_NN -RCB-_-RRB- ,_, which_WDT appear_VBP in_IN the_DT unlabelled_JJ set_NN of_IN documents_NNS D_NN =_JJ -LCB-_-LRB- d1_NN ,_, d2_NN ,_, ..._: ,_, dm_NN -RCB-_-RRB- ._.
+Let_VB Sd_NNP be_VB the_DT set_NN of_IN sentences_NNS for_IN document_NN d_NN D_NN ,_, i_FW ._.
+e_LS ._.
+-LCB-_-LRB- s1_NN ,_, s2_NN ,_, ..._: ,_, snd_NN -RCB-_-RRB- ._.
+We_PRP have_VBP a_DT 3D_NN matrix_NN of_IN term_NN frequency_NN ,_, in_IN which_WDT the_DT three_CD dimensions_NNS are_VBP random_JJ variables_NNS of_IN D_NN ,_, Sd_NN ,_, and_CC T_NN ._.
+Sd_NN actually_RB is_VBZ a_DT random_JJ vector_NN including_VBG a_DT random_JJ variable_NN for_IN each_DT d_NN D_NN ._.
+The_DT term_NN frequency_NN can_MD be_VB used_VBN to_TO estimate_VB the_DT joint_JJ probability_NN distribution_NN P_NN -LRB-_-LRB- D_NN ,_, Sd_NN ,_, T_NN -RRB-_-RRB- ,_, which_WDT is_VBZ p_NN -LRB-_-LRB- t_NN ,_, d_NN ,_, s_NNS -RRB-_-RRB- =_JJ T_NN -LRB-_-LRB- t_NN ,_, d_NN ,_, s_NNS -RRB-_-RRB- /_: ND_NN ,_, where_WRB T_NN -LRB-_-LRB- t_NN ,_, d_NN ,_, s_NNS -RRB-_-RRB- is_VBZ the_DT number_NN of_IN t_NN in_IN d_NN ''_'' s_NNS sentence_NN s_NNS and_CC ND_NN is_VBZ the_DT total_JJ number_NN of_IN terms_NNS in_IN D_NN ._.
+S_NN represents_VBZ the_DT set_NN of_IN segments_NNS -LCB-_-LRB- s1_NN ,_, s2_NN ,_, ..._: ,_, sp_NN -RCB-_-RRB- after_IN segmentation_NN and_CC alignment_NN among_IN multiple_JJ documents_NNS ,_, where_WRB the_DT number_NN of_IN segments_NNS |_VBP S_NN |_NN =_JJ p_NN ._.
+A_DT segment_NN si_NN of_IN document_NN d_NN is_VBZ a_DT sequence_NN of_IN adjacent_JJ sentences_NNS in_IN d_NN ._.
+Since_IN for_IN different_JJ documents_NNS si_NNS may_MD discuss_VB different_JJ sub-topics_NNS ,_, our_PRP$ goal_NN is_VBZ to_TO cluster_VB adjacent_JJ sentences_NNS in_IN each_DT document_NN into_IN segments_NNS ,_, and_CC align_VB similar_JJ segments_NNS among_IN documents_NNS ,_, so_RB that_IN for_IN different_JJ documents_NNS si_FW is_VBZ about_IN the_DT same_JJ sub-topic_JJ ._.
+The_DT goal_NN is_VBZ to_TO find_VB the_DT optimal_JJ topic_NN segmentation_NN and_CC alignment_NN mapping_NN Segd_NN -LRB-_-LRB- si_NN -RRB-_-RRB- :_: -LCB-_-LRB- s1_NN ,_, s2_NN ,_, ..._: ,_, snd_NN -RCB-_-RRB- -LCB-_-LRB- s1_NN ,_, s2_NN ,_, ..._: ,_, sp_NN -RCB-_-RRB- and_CC Alid_NN -LRB-_-LRB- si_NN -RRB-_-RRB- :_: -LCB-_-LRB- s1_NN ,_, s2_NN ,_, ..._: ,_, sp_NN -RCB-_-RRB- -LCB-_-LRB- s1_NN ,_, s2_NN ,_, ..._: ,_, sp_NN -RCB-_-RRB- ,_, for_IN all_DT d_NN D_NN ,_, where_WRB si_NN is_VBZ ith_JJ segment_NN with_IN the_DT constraint_NN that_WDT only_RB adjacent_JJ sentences_NNS can_MD be_VB mapped_VBN to_TO the_DT same_JJ segment_NN ,_, i_FW ._.
+e_LS ._.
+for_IN d_NN ,_, -LCB-_-LRB- si_FW ,_, si_FW +_CC #_# ,_, ..._: ,_, sj_NN -RCB-_-RRB- -LCB-_-LRB- sq_NN -RCB-_-RRB- ,_, where_WRB q_RB -LCB-_-LRB- #_# ,_, ..._: ,_, p_NN -RCB-_-RRB- ,_, where_WRB p_NN is_VBZ the_DT segment_NN number_NN ,_, and_CC if_IN i_FW >_JJR j_NN ,_, then_RB for_IN d_NN ,_, sq_NN is_VBZ missing_VBG ._.
+After_IN segmentation_NN and_CC alignment_NN ,_, random_JJ vector_NN Sd_NN becomes_VBZ an_DT aligned_VBN random_JJ variable_JJ S_NN ._.
+Thus_RB ,_, P_NN -LRB-_-LRB- D_NN ,_, Sd_NN ,_, T_NN -RRB-_-RRB- becomes_VBZ P_NN -LRB-_-LRB- D_NN ,_, S_NN ,_, T_NN -RRB-_-RRB- ._.
+Term_NN co-clustering_NN is_VBZ a_DT technique_NN that_WDT has_VBZ been_VBN employed_VBN -LSB-_-LRB- ##_CD -RSB-_-RRB- to_TO improve_VB the_DT accuracy_NN of_IN document_NN clustering_NN ._.
+We_PRP evaluate_VBP the_DT effect_NN of_IN it_PRP for_IN topic_NN segmentation_NN ._.
+A_DT term_NN t_NN is_VBZ mapped_VBN to_TO exactly_RB one_CD term_NN cluster_NN ._.
+Term_NN co-clustering_NN involves_VBZ simultaneously_RB finding_VBG the_DT optimal_JJ term_NN clustering_NN mapping_NN Clu_NN -LRB-_-LRB- t_NN -RRB-_-RRB- :_: -LCB-_-LRB- t1_NN ,_, t2_NN ,_, ..._: ,_, tl_NN -RCB-_-RRB- -LCB-_-LRB- t1_NN ,_, t2_NN ,_, ..._: ,_, tk_NN -RCB-_-RRB- ,_, where_WRB k_NN l_NN ,_, l_NN is_VBZ the_DT total_JJ number_NN of_IN words_NNS in_IN all_PDT the_DT documents_NNS ,_, and_CC k_NN is_VBZ the_DT number_NN of_IN clusters_NNS ._.
+4_LS ._.
+METHODOLOGY_NN We_PRP now_RB describe_VBP a_DT novel_JJ algorithm_NN which_WDT can_MD handle_VB singledocument_NN segmentation_NN ,_, shared_VBN topic_NN detection_NN ,_, and_CC multidocument_NN segmentation_NN and_CC alignment_NN based_VBN on_IN MI_NNP or_CC WMI_NNP ._.
+4_LS ._.
+#_# Mutual_NNP Information_NNP MI_NNP I_NN -LRB-_-LRB- X_NN ;_: Y_NN -RRB-_-RRB- is_VBZ a_DT quantity_NN to_TO measure_VB the_DT amount_NN of_IN information_NN which_WDT is_VBZ contained_VBN in_IN two_CD or_CC more_JJR random_JJ variables_NNS -LSB-_-LRB- #_# ,_, ##_NN -RSB-_-RRB- ._.
+For_IN the_DT case_NN of_IN two_CD random_JJ variables_NNS ,_, we_PRP have_VBP I_PRP -LRB-_-LRB- X_NN ;_: Y_NN -RRB-_-RRB- =_JJ xX_NN yY_NN p_NN -LRB-_-LRB- x_NN ,_, y_NN -RRB-_-RRB- log_NN p_NN -LRB-_-LRB- x_NN ,_, y_NN -RRB-_-RRB- p_NN -LRB-_-LRB- x_NN -RRB-_-RRB- p_NN -LRB-_-LRB- y_NN -RRB-_-RRB- ,_, -LRB-_-LRB- #_# -RRB-_-RRB- Obviously_RB ,_, when_WRB random_JJ variables_NNS X_NN and_CC Y_NN are_VBP independent_JJ ,_, I_PRP -LRB-_-LRB- X_NN ;_: Y_NN -RRB-_-RRB- =_JJ #_# ._.
+Thus_RB ,_, intuitively_RB ,_, the_DT value_NN of_IN MI_NNP depends_VBZ on_IN how_WRB random_JJ variables_NNS are_VBP dependent_JJ on_IN each_DT other_JJ ._.
+The_DT optimal_JJ co-clustering_NN is_VBZ the_DT mapping_NN Clux_NN :_: X_NN X_NN and_CC Cluy_NNP :_: Y_NN Y_NN that_WDT minimizes_VBZ the_DT loss_NN :_: I_CD -LRB-_-LRB- X_NN ;_: Y_NN -RRB-_-RRB- I_NN -LRB-_-LRB- X_NN ;_: Y_NN -RRB-_-RRB- ,_, which_WDT is_VBZ equal_JJ to_TO maximizing_VBG I_PRP -LRB-_-LRB- X_NN ;_: Y_NN -RRB-_-RRB- ._.
+This_DT is_VBZ the_DT criterion_NN of_IN MI_NNP for_IN clustering_NN ._.
+In_IN the_DT case_NN of_IN topic_NN segmentation_NN ,_, the_DT two_CD random_JJ variables_NNS are_VBP the_DT term_NN variable_JJ T_NN and_CC the_DT segment_NN variable_JJ S_NN ,_, and_CC each_DT sample_NN is_VBZ an_DT occurrence_NN of_IN a_DT term_NN T_NN =_JJ t_NN in_IN a_DT particular_JJ segment_NN S_NN =_JJ s_NNS ._.
+I_PRP -LRB-_-LRB- T_NN ;_: S_NN -RRB-_-RRB- is_VBZ used_VBN to_TO measure_VB how_WRB dependent_JJ T_NN and_CC S_NN are_VBP ._.
+However_RB ,_, I_NN -LRB-_-LRB- T_NN ;_: S_NN -RRB-_-RRB- can_MD not_RB be_VB computed_VBN for_IN documents_NNS before_IN segmentation_NN ,_, since_IN we_PRP do_VBP not_RB have_VB a_DT set_NN of_IN S_NN due_JJ to_TO the_DT fact_NN that_IN sentences_NNS of_IN Document_NNP d_NN ,_, si_FW Sd_FW ,_, is_VBZ not_RB aligned_VBN with_IN other_JJ documents_NNS ._.
+Thus_RB ,_, instead_RB of_IN minimizing_VBG the_DT loss_NN of_IN MI_NNP ,_, we_PRP can_MD maximize_VB MI_NNP after_IN topic_NN segmentation_NN ,_, computed_VBN as_IN :_: I_CD -LRB-_-LRB- T_NN ;_: S_NN -RRB-_-RRB- =_JJ t_NN T_NN s_NNS S_NN p_NN -LRB-_-LRB- t_NN ,_, s_NNS -RRB-_-RRB- log_VBP p_NN -LRB-_-LRB- t_NN ,_, s_NNS -RRB-_-RRB- p_NN -LRB-_-LRB- t_NN -RRB-_-RRB- p_NN -LRB-_-LRB- s_NNS -RRB-_-RRB- ,_, -LRB-_-LRB- #_# -RRB-_-RRB- where_WRB p_NN -LRB-_-LRB- t_NN ,_, s_NNS -RRB-_-RRB- are_VBP estimated_VBN by_IN the_DT term_NN frequency_NN tf_NN of_IN Term_NNP Cluster_NNP t_NN and_CC Segment_NN s_NNS in_IN the_DT training_NN set_NN D_NN ._.
+Note_VB that_DT here_RB a_DT segment_NN s_VBZ includes_VBZ sentences_NNS about_IN the_DT the_DT same_JJ topic_NN among_IN all_DT documents_NNS ._.
+The_DT optimal_JJ solution_NN is_VBZ the_DT mapping_NN Clut_NN :_: T_NN T_NN ,_, Segd_NNP :_: Sd_NN S_NN ,_, and_CC Alid_NNP :_: S_NN S_NN ,_, which_WDT maximizes_VBZ I_PRP -LRB-_-LRB- T_NN ;_: S_NN -RRB-_-RRB- ._.
+4_LS ._.
+#_# Weighted_NNP Mutual_NNP Information_NNP In_IN topic_NN segmentation_NN and_CC alignment_NN of_IN multiple_JJ documents_NNS ,_, if_IN P_NN -LRB-_-LRB- D_NN ,_, S_NN ,_, T_NN -RRB-_-RRB- is_VBZ known_VBN ,_, based_VBN on_IN the_DT marginal_JJ distributions_NNS P_NN -LRB-_-LRB- D_NN |_VBN T_NN -RRB-_-RRB- and_CC P_NN -LRB-_-LRB- S_NN |_CD T_NN -RRB-_-RRB- for_IN each_DT term_NN t_NN T_NN ,_, we_PRP can_MD categorize_VB terms_NNS into_IN four_CD types_NNS in_IN the_DT data_NNS set_NN :_: Common_JJ stop_NN words_NNS are_VBP common_JJ both_CC along_IN the_DT dimensions_NNS of_IN documents_NNS and_CC segments_NNS ._.
+Document-dependent_JJ stop_NN words_NNS that_WDT depends_VBZ on_IN the_DT personal_JJ writing_NN style_NN are_VBP common_JJ only_RB along_IN the_DT dimension_NN of_IN segments_NNS for_IN some_DT documents_NNS ._.
+Cue_NN words_NNS are_VBP the_DT most_RBS important_JJ elements_NNS for_IN segmentation_NN ._.
+They_PRP are_VBP common_JJ along_IN the_DT dimension_NN of_IN documents_NNS only_RB for_IN the_DT same_JJ segment_NN ,_, and_CC they_PRP are_VBP not_RB common_JJ along_IN the_DT dimensions_NNS of_IN segments_NNS ._.
+Noisy_JJ words_NNS are_VBP other_JJ words_NNS which_WDT are_VBP not_RB common_JJ along_IN both_DT dimensions_NNS ._.
+Entropy_NNP based_VBN on_IN P_NN -LRB-_-LRB- D_NN |_VBN T_NN -RRB-_-RRB- and_CC P_NN -LRB-_-LRB- S_NN |_CD T_NN -RRB-_-RRB- can_MD be_VB used_VBN to_TO identify_VB different_JJ types_NNS of_IN terms_NNS ._.
+To_TO reinforce_VB the_DT contribution_NN of_IN cue_NN words_NNS in_IN the_DT MI_NNP computation_NN ,_, and_CC simultaneously_RB reduce_VB the_DT effect_NN of_IN the_DT other_JJ three_CD types_NNS of_IN words_NNS ,_, similar_JJ as_IN the_DT idea_NN of_IN the_DT tf-idf_JJ weight_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, we_PRP use_VBP entropies_NNS of_IN each_DT term_NN along_IN the_DT dimensions_NNS of_IN document_NN D_NN and_CC segment_NN S_NN ,_, i_FW ._.
+e_LS ._.
+ED_NN -LRB-_-LRB- t_NN -RRB-_-RRB- and_CC ES_NN -LRB-_-LRB- t_NN -RRB-_-RRB- ,_, to_TO compute_VB the_DT weight_NN ._.
+A_DT cue_NN word_NN usually_RB has_VBZ a_DT large_JJ value_NN of_IN ED_NN -LRB-_-LRB- t_NN -RRB-_-RRB- but_CC a_DT small_JJ value_NN of_IN ES_NN -LRB-_-LRB- t_NN -RRB-_-RRB- ._.
+We_PRP introduce_VBP term_NN weights_NNS -LRB-_-LRB- or_CC term_NN cluster_NN weights_NNS -RRB-_-RRB- wt_JJ =_JJ -LRB-_-LRB- ED_NN -LRB-_-LRB- t_NN -RRB-_-RRB- maxt_NN T_NN -LRB-_-LRB- ED_NN -LRB-_-LRB- t_NN -RRB-_-RRB- -RRB-_-RRB- -RRB-_-RRB- a_DT -LRB-_-LRB- #_# ES_NN -LRB-_-LRB- t_NN -RRB-_-RRB- maxt_NN T_NN -LRB-_-LRB- ES_NN -LRB-_-LRB- t_NN -RRB-_-RRB- -RRB-_-RRB- -RRB-_-RRB- b_NN ,_, -LRB-_-LRB- #_# -RRB-_-RRB- where_WRB ED_NNP -LRB-_-LRB- t_NN -RRB-_-RRB- =_JJ dD_NN p_NN -LRB-_-LRB- d_NN |_CD t_NN -RRB-_-RRB- log_NN |_NN D_NN |_CD 1_CD p_NN -LRB-_-LRB- d_NN |_CD t_NN -RRB-_-RRB- ,_, ES_NN -LRB-_-LRB- t_NN -RRB-_-RRB- =_JJ s_NNS S_NN p_NN -LRB-_-LRB- s_NNS |_VBP t_NN -RRB-_-RRB- log_NN |_CD S_NN |_NN 1_CD p_NN -LRB-_-LRB- s_NNS |_VBP t_NN -RRB-_-RRB- ,_, and_CC a_DT >_JJR #_# and_CC b_NN >_JJR #_# are_VBP powers_NNS to_TO adjust_VB term_NN weights_NNS ._.
+Usually_RB a_DT =_JJ #_# and_CC b_NN =_JJ #_# as_IN default_NN ,_, and_CC maxt_NN T_NN -LRB-_-LRB- ED_NN -LRB-_-LRB- t_NN -RRB-_-RRB- -RRB-_-RRB- and_CC maxt_NN T_NN -LRB-_-LRB- ES_NN -LRB-_-LRB- t_NN -RRB-_-RRB- -RRB-_-RRB- are_VBP used_VBN to_TO normalize_VB the_DT entropy_NN values_NNS ._.
+Term_NN cluster_NN weights_NNS are_VBP used_VBN to_TO adjust_VB p_NN -LRB-_-LRB- t_NN ,_, s_NNS -RRB-_-RRB- ,_, pw_NN -LRB-_-LRB- t_NN ,_, s_NNS -RRB-_-RRB- =_JJ wtp_NN -LRB-_-LRB- t_NN ,_, s_NNS -RRB-_-RRB- t_NN T_NN ;_: s_NNS S_NN wtp_NN -LRB-_-LRB- t_NN ,_, s_NNS -RRB-_-RRB- ,_, -LRB-_-LRB- #_# -RRB-_-RRB- and_CC Iw_NN -LRB-_-LRB- T_NN ;_: S_NN -RRB-_-RRB- =_JJ t_NN T_NN s_NNS S_NN pw_NN -LRB-_-LRB- t_NN ,_, s_NNS -RRB-_-RRB- log_VBP pw_NN -LRB-_-LRB- t_NN ,_, s_NNS -RRB-_-RRB- pw_NN -LRB-_-LRB- t_NN -RRB-_-RRB- pw_NN -LRB-_-LRB- s_NNS -RRB-_-RRB- ,_, -LRB-_-LRB- #_# -RRB-_-RRB- where_WRB pw_NN -LRB-_-LRB- t_NN -RRB-_-RRB- and_CC pw_NN -LRB-_-LRB- s_NNS -RRB-_-RRB- are_VBP marginal_JJ distributions_NNS of_IN pw_NN -LRB-_-LRB- t_NN ,_, s_NNS -RRB-_-RRB- ._.
+However_RB ,_, since_IN we_PRP do_VBP not_RB know_VB either_CC the_DT term_NN weights_NNS or_CC P_NN -LRB-_-LRB- D_NN ,_, S_NN ,_, T_NN -RRB-_-RRB- ,_, we_PRP need_VBP to_TO estimate_VB them_PRP ,_, but_CC wt_JJ depends_VBZ on_IN p_NN -LRB-_-LRB- s_NNS |_VBP t_NN -RRB-_-RRB- and_CC S_NN ,_, while_IN S_NN and_CC p_NN -LRB-_-LRB- s_NNS |_VBP t_NN -RRB-_-RRB- also_RB depend_VB on_IN wt_JJ that_WDT is_VBZ still_RB unknown_JJ ._.
+Thus_RB ,_, an_DT iterative_JJ algorithm_NN is_VBZ required_VBN to_TO estimate_VB term_NN weights_NNS wt_JJ and_CC find_VB the_DT best_JJS segmentation_NN and_CC alignment_NN to_TO optimize_VB the_DT objective_JJ function_NN Iw_NN concurrently_RB ._.
+After_IN a_DT document_NN is_VBZ segmented_JJ into_IN sentences_NNS Input_NNP :_: Joint_NNP probability_NN distribution_NN P_NN -LRB-_-LRB- D_NN ,_, Sd_NN ,_, T_NN -RRB-_-RRB- ,_, number_NN of_IN text_NN segments_NNS p_NN -LCB-_-LRB- #_# ,_, #_# ,_, ..._: ,_, max_NN -LRB-_-LRB- sd_NN -RRB-_-RRB- -RCB-_-RRB- ,_, number_NN of_IN term_NN clusters_NNS k_NN -LCB-_-LRB- #_# ,_, #_# ,_, ..._: ,_, l_NN -RCB-_-RRB- -LRB-_-LRB- if_IN k_NN =_JJ l_NN ,_, no_DT term_NN co-clustering_NN required_VBN -RRB-_-RRB- ,_, and_CC weight_NN type_NN w_NN -LCB-_-LRB- #_# ,_, #_# -RCB-_-RRB- ,_, indicating_VBG to_TO use_VB I_PRP or_CC Iw_NNP ,_, respectively_RB ._.
+Output_NN :_: Mapping_NN Clu_NN ,_, Seg_NNP ,_, Ali_NNP ,_, and_CC term_NN weights_NNS wt_JJ ._.
+Initialization_NN :_: 0_CD ._.
+i_FW =_JJ #_# ._.
+Initialize_VB Clu_NNP -LRB-_-LRB- #_# -RRB-_-RRB- t_NN ,_, Seg_NNP -LRB-_-LRB- #_# -RRB-_-RRB- d_NN ,_, and_CC Ali_NNP -LRB-_-LRB- #_# -RRB-_-RRB- d_NN ;_: Initialize_VB w_NN -LRB-_-LRB- #_# -RRB-_-RRB- t_NN using_VBG Equation_NN -LRB-_-LRB- #_# -RRB-_-RRB- if_IN w_NN =_JJ #_# ;_: Stage_NN #_# :_: 1_CD ._.
+If_IN |_NN D_NN |_NN =_JJ #_# ,_, k_NN =_JJ l_NN ,_, and_CC w_NN =_JJ #_# ,_, check_VB all_DT sequential_JJ segmentations_NNS of_IN d_NN into_IN p_NN segments_NNS and_CC find_VB the_DT best_JJS one_CD Segd_NN -LRB-_-LRB- s_NNS -RRB-_-RRB- =_JJ argmaxsI_NN -LRB-_-LRB- T_NN ;_: S_NN -RRB-_-RRB- ,_, and_CC return_NN Segd_NN ;_: otherwise_RB ,_, if_IN w_NN =_JJ #_# and_CC k_NN =_JJ l_NN ,_, go_VB to_TO #_# ._.
+#_# ;_: Stage_NN #_# :_: 2_CD ._.
+#_# If_IN k_NN <_JJR l_NN ,_, for_IN each_DT term_NN t_NN ,_, find_VB the_DT best_JJS cluster_NN t_NN as_IN Clu_NN -LRB-_-LRB- i_FW +_CC #_# -RRB-_-RRB- -LRB-_-LRB- t_NN -RRB-_-RRB- =_JJ argmaxtI_NN -LRB-_-LRB- T_NN ;_: S_NN -LRB-_-LRB- i_LS -RRB-_-RRB- -RRB-_-RRB- based_VBN on_IN Seg_NNP -LRB-_-LRB- i_LS -RRB-_-RRB- and_CC Ali_NNP -LRB-_-LRB- i_LS -RRB-_-RRB- ;_: 2_LS ._.
+#_# For_IN each_DT d_NN ,_, check_VB all_DT sequential_JJ segmentations_NNS of_IN d_NN into_IN p_NN segments_NNS with_IN mapping_VBG s_NNS s_NNS s_NNS ,_, and_CC find_VB the_DT best_JJS one_CD Ali_NNP -LRB-_-LRB- i_FW +_CC #_# -RRB-_-RRB- d_NN -LRB-_-LRB- Seg_NN -LRB-_-LRB- i_FW +_CC #_# -RRB-_-RRB- d_NN -LRB-_-LRB- s_NNS -RRB-_-RRB- -RRB-_-RRB- =_JJ argmaxsI_NN -LRB-_-LRB- T_NN -LRB-_-LRB- i_FW +_CC #_# -RRB-_-RRB- ;_: S_NN -RRB-_-RRB- based_VBN on_IN Clu_NN -LRB-_-LRB- i_FW +_CC #_# -RRB-_-RRB- -LRB-_-LRB- t_NN -RRB-_-RRB- if_IN k_NN <_JJR l_NN or_CC Clu_NN -LRB-_-LRB- #_# -RRB-_-RRB- -LRB-_-LRB- t_NN -RRB-_-RRB- if_IN k_NN =_JJ l_NN ;_: 2_LS ._.
+#_# i_FW +_CC +_CC ._.
+If_IN Clu_NNP ,_, Seg_NNP ,_, or_CC Ali_NNP changed_VBD ,_, go_VB to_TO #_# ._.
+#_# ;_: otherwise_RB ,_, if_IN w_NN =_JJ #_# ,_, return_VB Clu_NNP -LRB-_-LRB- i_LS -RRB-_-RRB- ,_, Seg_NNP -LRB-_-LRB- i_LS -RRB-_-RRB- ,_, and_CC Ali_NNP -LRB-_-LRB- i_LS -RRB-_-RRB- ;_: else_RB j_NN =_JJ #_# ,_, go_VB to_TO #_# ._.
+#_# ;_: Stage_NN #_# :_: 3_CD ._.
+#_# Update_NNP w_NN -LRB-_-LRB- i_FW +_CC j_FW +_CC #_# -RRB-_-RRB- t_NN based_VBN on_IN Seg_NNP -LRB-_-LRB- i_FW +_CC j_FW -RRB-_-RRB- ,_, Ali_NNP -LRB-_-LRB- i_FW +_CC j_FW -RRB-_-RRB- ,_, and_CC Clu_NNP -LRB-_-LRB- i_LS -RRB-_-RRB- using_VBG Equation_NN -LRB-_-LRB- #_# -RRB-_-RRB- ;_: 3_LS ._.
+#_# For_IN each_DT d_NN ,_, check_VB all_DT sequential_JJ segmentations_NNS of_IN d_NN into_IN p_NN segments_NNS with_IN mapping_VBG s_NNS s_NNS s_NNS ,_, and_CC find_VB the_DT best_JJS one_CD Ali_NNP -LRB-_-LRB- i_FW +_CC j_FW +_CC #_# -RRB-_-RRB- d_NN -LRB-_-LRB- Seg_NN -LRB-_-LRB- i_FW +_CC j_FW +_CC #_# -RRB-_-RRB- d_NN -LRB-_-LRB- s_NNS -RRB-_-RRB- -RRB-_-RRB- =_JJ argmaxsIw_NN -LRB-_-LRB- T_NN -LRB-_-LRB- i_LS -RRB-_-RRB- ;_: S_NN -RRB-_-RRB- based_VBN on_IN Clu_NNP -LRB-_-LRB- i_LS -RRB-_-RRB- and_CC w_NN -LRB-_-LRB- i_FW +_CC j_FW +_CC #_# -RRB-_-RRB- t_NN ;_: 3_LS ._.
+#_# j_NN +_CC +_CC ._.
+If_IN Iw_NN -LRB-_-LRB- T_NN ;_: S_NN -RRB-_-RRB- changes_NNS ,_, go_VB to_TO step_VB #_# ;_: otherwise_RB ,_, stop_VB and_CC return_VB Clu_NNP -LRB-_-LRB- i_LS -RRB-_-RRB- ,_, Seg_NNP -LRB-_-LRB- i_FW +_CC j_FW -RRB-_-RRB- ,_, Ali_NNP -LRB-_-LRB- i_FW +_CC j_FW -RRB-_-RRB- ,_, and_CC w_NN -LRB-_-LRB- i_FW +_CC j_FW -RRB-_-RRB- t_NN ;_: Figure_NNP #_# :_: Algorithm_NNP :_: Topic_NN segmentation_NN and_CC alignment_NN based_VBN on_IN MI_NNP or_CC WMI_NNP ._.
+and_CC each_DT sentence_NN is_VBZ segmented_JJ into_IN words_NNS ,_, each_DT word_NN is_VBZ stemmed_VBN ._.
+Then_RB the_DT joint_JJ probability_NN distribution_NN P_NN -LRB-_-LRB- D_NN ,_, Sd_NN ,_, T_NN -RRB-_-RRB- can_MD be_VB estimated_VBN ._.
+Finally_RB ,_, this_DT distribution_NN can_MD be_VB used_VBN to_TO compute_VB MI_NNP in_IN our_PRP$ algorithm_NN ._.
+4_LS ._.
+#_# Iterative_NNP Greedy_NNP Algorithm_NNP Our_PRP$ goal_NN is_VBZ to_TO maximize_VB the_DT objective_JJ function_NN ,_, I_NN -LRB-_-LRB- T_NN ;_: S_NN -RRB-_-RRB- or_CC Iw_NN -LRB-_-LRB- T_NN ;_: S_NN -RRB-_-RRB- ,_, which_WDT can_MD measure_VB the_DT dependence_NN of_IN term_NN occurrences_NNS in_IN different_JJ segments_NNS ._.
+Generally_RB ,_, first_RB we_PRP do_VBP not_RB know_VB the_DT estimate_NN term_NN weights_NNS ,_, which_WDT depend_VBP on_IN the_DT optimal_JJ topic_NN segmentation_NN and_CC alignment_NN ,_, and_CC term_NN clusters_NNS ._.
+Moreover_RB ,_, this_DT problem_NN is_VBZ NP-hard_JJ -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, even_RB though_IN if_IN we_PRP know_VBP the_DT term_NN weights_NNS ._.
+Thus_RB ,_, an_DT iterative_JJ greedy_JJ algorithm_NN is_VBZ desired_VBN to_TO find_VB the_DT best_JJS solution_NN ,_, even_RB though_IN probably_RB only_RB local_JJ maxima_NNS are_VBP reached_VBN ._.
+We_PRP present_VBP the_DT iterative_JJ greedy_JJ algorithm_NN in_IN Figure_NNP #_# to_TO find_VB a_DT local_JJ maximum_NN of_IN I_NN -LRB-_-LRB- T_NN ;_: S_NN -RRB-_-RRB- or_CC Iw_NN -LRB-_-LRB- T_NN ;_: S_NN -RRB-_-RRB- with_IN simultaneous_JJ term_NN weight_NN estimation_NN ._.
+This_DT algorithm_NN can_MD is_VBZ iterative_JJ and_CC greedy_JJ for_IN multi-document_JJ cases_NNS or_CC single-document_JJ cases_NNS with_IN term_NN weight_NN estimation_NN and_CC /_: or_CC term_NN co-clustering_NN ._.
+Otherwise_RB ,_, since_IN it_PRP is_VBZ just_RB a_DT one_CD step_NN algorithm_NN to_TO solve_VB the_DT task_NN of_IN single-document_JJ segmentation_NN -LSB-_-LRB- #_# ,_, ##_NN ,_, ##_NN -RSB-_-RRB- ,_, the_DT global_JJ maximum_NN of_IN MI_NNP is_VBZ guaranteed_VBN ._.
+We_PRP will_MD show_VB later_RB that_IN term_NN co-clustering_NN reduces_VBZ the_DT accuracy_NN of_IN the_DT results_NNS and_CC is_VBZ not_RB necessary_JJ ,_, and_CC for_IN singledocument_NN segmentation_NN ,_, term_NN weights_NNS are_VBP also_RB not_RB required_VBN ._.
+4_LS ._.
+#_# ._.
+#_# Initialization_NNP In_IN Step_NN #_# ,_, the_DT initial_JJ term_NN clustering_NN Clut_NN and_CC topic_NN segmentation_NN and_CC alignment_NN Segd_NN and_CC Alid_NN are_VBP important_JJ to_TO avoid_VB local_JJ maxima_NNS and_CC reduce_VB the_DT number_NN of_IN iterations_NNS ._.
+First_RB ,_, a_DT good_JJ guess_NN of_IN term_NN weights_NNS can_MD be_VB made_VBN by_IN using_VBG the_DT distributions_NNS of_IN term_NN frequency_NN along_IN sentences_NNS for_IN each_DT document_NN and_CC averaging_VBG them_PRP to_TO get_VB the_DT initial_JJ values_NNS of_IN wt_JJ :_: wt_JJ =_JJ -LRB-_-LRB- ED_NN -LRB-_-LRB- t_NN -RRB-_-RRB- maxt_NN T_NN -LRB-_-LRB- ED_NN -LRB-_-LRB- t_NN -RRB-_-RRB- -RRB-_-RRB- -RRB-_-RRB- -LRB-_-LRB- #_# ES_NN -LRB-_-LRB- t_NN -RRB-_-RRB- maxt_NN T_NN -LRB-_-LRB- ES_NN -LRB-_-LRB- t_NN -RRB-_-RRB- -RRB-_-RRB- -RRB-_-RRB- ,_, -LRB-_-LRB- #_# -RRB-_-RRB- where_WRB ES_NN -LRB-_-LRB- t_NN -RRB-_-RRB- =_JJ 1_CD |_CD Dt_NNP |_CD dDt_NN -LRB-_-LRB- #_# sSd_NN p_NN -LRB-_-LRB- s_NNS |_VBP t_NN -RRB-_-RRB- log_NN |_CD Sd_NNP |_CD 1_CD p_NN -LRB-_-LRB- s_NNS |_VBP t_NN -RRB-_-RRB- -RRB-_-RRB- ,_, where_WRB Dt_NN is_VBZ the_DT set_NN of_IN documents_NNS which_WDT contain_VBP Term_NN t_NN ._.
+Then_RB ,_, for_IN the_DT initial_JJ segmentation_NN Seg_NNP -LRB-_-LRB- #_# -RRB-_-RRB- ,_, we_PRP can_MD simply_RB segment_NN documents_NNS equally_RB by_IN sentences_NNS ._.
+Or_CC we_PRP can_MD find_VB the_DT optimal_JJ segmentation_NN just_RB for_IN each_DT document_NN d_NN which_WDT maximizes_VBZ the_DT WMI_NNP ,_, Seg_NNP -LRB-_-LRB- #_# -RRB-_-RRB- d_NN =_JJ argmaxsIw_NN -LRB-_-LRB- T_NN ;_: S_NN -RRB-_-RRB- ,_, where_WRB w_NN =_JJ w_NN -LRB-_-LRB- #_# -RRB-_-RRB- t_NN ._.
+For_IN the_DT initial_JJ alignment_NN Ali_NNP -LRB-_-LRB- #_# -RRB-_-RRB- ,_, we_PRP can_MD first_RB assume_VB that_IN the_DT order_NN of_IN segments_NNS for_IN each_DT d_NN is_VBZ the_DT same_JJ ._.
+For_IN the_DT initial_JJ term_NN clustering_NN Clu_NN -LRB-_-LRB- #_# -RRB-_-RRB- ,_, first_JJ cluster_NN labels_NNS can_MD be_VB set_VBN randomly_RB ,_, and_CC after_IN the_DT first_JJ time_NN of_IN Step_NN #_# ,_, a_DT good_JJ initial_JJ term_NN clustering_NN is_VBZ obtained_VBN ._.
+4_LS ._.
+#_# ._.
+#_# Different_JJ Cases_NNS After_IN initialization_NN ,_, there_EX are_VBP three_CD stages_NNS for_IN different_JJ cases_NNS ._.
+Totally_RB there_EX are_VBP eight_CD cases_NNS ,_, |_NN D_NN |_NN =_JJ #_# or_CC |_NN D_NN |_CD >_JJR #_# ,_, k_NN =_JJ l_NN or_CC k_NN <_JJR l_NN ,_, w_NN =_JJ #_# or_CC w_NN =_JJ #_# ._.
+Single_JJ document_NN segmentation_NN without_IN term_NN clustering_NN and_CC term_NN weight_NN estimation_NN -LRB-_-LRB- |_NN D_NN |_NN =_JJ #_# ,_, k_NN =_JJ l_NN ,_, w_NN =_JJ #_# -RRB-_-RRB- only_RB requires_VBZ Stage_NN #_# -LRB-_-LRB- Step_NN #_# -RRB-_-RRB- ._.
+If_IN term_NN clustering_NN is_VBZ required_VBN -LRB-_-LRB- k_NN <_JJR l_NN -RRB-_-RRB- ,_, Stage_NN #_# -LRB-_-LRB- Step_NN #_# ._.
+#_# ,_, #_# ._.
+#_# ,_, and_CC #_# ._.
+#_# -RRB-_-RRB- is_VBZ executed_VBN iteratively_RB ._.
+If_IN term_NN weight_NN estimation_NN is_VBZ required_VBN -LRB-_-LRB- w_NN =_JJ #_# -RRB-_-RRB- ,_, Stage_NN #_# -LRB-_-LRB- Step_NN #_# ._.
+#_# ,_, #_# ._.
+#_# ,_, and_CC #_# ._.
+#_# -RRB-_-RRB- is_VBZ executed_VBN iteratively_RB ._.
+If_IN both_DT are_VBP required_VBN -LRB-_-LRB- k_NN <_JJR l_NN ,_, w_NN =_JJ #_# -RRB-_-RRB- ,_, Stage_NN #_# and_CC #_# run_VB one_CD after_IN the_DT other_JJ ._.
+For_IN multi-document_JJ segmentation_NN without_IN term_NN clustering_NN and_CC term_NN weight_NN estimation_NN -LRB-_-LRB- |_NN D_NN |_CD >_JJR #_# ,_, k_NN =_JJ l_NN ,_, w_NN =_JJ #_# -RRB-_-RRB- ,_, only_RB iteration_NN of_IN Step_NN #_# ._.
+#_# and_CC #_# ._.
+#_# are_VBP required_VBN ._.
+At_IN Stage_NNP #_# ,_, the_DT global_JJ maximum_NN can_MD be_VB found_VBN based_VBN on_IN I_NN -LRB-_-LRB- T_NN ;_: S_NN -RRB-_-RRB- using_VBG dynamic_JJ programming_NN in_IN Section_NN #_# ._.
+#_# ._.
+Simultaneously_RB finding_VBG a_DT good_JJ term_NN clustering_NN and_CC estimated_VBN term_NN weights_NNS is_VBZ impossible_JJ ,_, since_IN when_WRB moving_VBG a_DT term_NN to_TO a_DT new_JJ term_NN cluster_NN to_TO maximize_VB Iw_NN -LRB-_-LRB- T_NN ;_: S_NN -RRB-_-RRB- ,_, we_PRP do_VBP not_RB know_VB that_IN the_DT weight_NN of_IN this_DT term_NN should_MD be_VB the_DT one_CD of_IN the_DT new_JJ cluster_NN or_CC the_DT old_JJ cluster_NN ._.
+Thus_RB ,_, we_PRP first_RB do_VBP term_NN clustering_NN at_IN Stage_NN 2_CD ,_, and_CC then_RB estimate_VB term_NN weights_NNS at_IN Stage_NNP #_# ._.
+At_IN Stage_NNP #_# ,_, Step_NN #_# ._.
+#_# is_VBZ to_TO find_VB the_DT best_JJS term_NN clustering_NN and_CC Step_NN #_# ._.
+#_# is_VBZ to_TO find_VB the_DT best_JJS segmentation_NN ._.
+This_DT cycle_NN is_VBZ repeated_VBN to_TO find_VB a_DT local_JJ maximum_NN based_VBN on_IN MI_NNP I_PRP until_IN it_PRP converges_VBZ ._.
+The_DT two_CD steps_NNS are_VBP :_: -LRB-_-LRB- #_# -RRB-_-RRB- based_VBN on_IN current_JJ term_NN clustering_NN Clut_NNP ,_, for_IN each_DT document_NN d_NN ,_, the_DT algorithm_NN segments_NNS all_PDT the_DT sentences_NNS Sd_NNP into_IN p_NN segments_NNS sequentially_RB -LRB-_-LRB- some_DT segments_NNS may_MD be_VB empty_JJ -RRB-_-RRB- ,_, and_CC put_VBD them_PRP into_IN the_DT p_NN segments_NNS S_NN of_IN the_DT whole_JJ training_NN set_NN D_NN -LRB-_-LRB- all_DT possible_JJ cases_NNS of_IN different_JJ segmentation_NN Segd_NN and_CC alignment_NN Alid_NN are_VBP checked_VBN -RRB-_-RRB- to_TO find_VB the_DT optimal_JJ case_NN ,_, and_CC -LRB-_-LRB- #_# -RRB-_-RRB- based_VBN on_IN the_DT current_JJ segmentation_NN and_CC alignment_NN ,_, for_IN each_DT term_NN t_NN ,_, the_DT algorithm_NN finds_VBZ the_DT best_JJS term_NN cluster_NN of_IN t_NN based_VBN on_IN the_DT current_JJ segmentation_NN Segd_NN and_CC alignment_NN Alid_NN ._.
+After_IN finding_VBG a_DT good_JJ term_NN clustering_NN ,_, term_NN weights_NNS are_VBP estimated_VBN if_IN w_NN =_JJ #_# ._.
+At_IN Stage_NNP #_# ,_, similar_JJ as_IN Stage_NNP #_# ,_, Step_NN #_# ._.
+#_# is_VBZ term_NN weight_NN re-estimation_NN and_CC Step_NN #_# ._.
+#_# is_VBZ to_TO find_VB a_DT better_JJR segmentation_NN ._.
+They_PRP are_VBP repeated_VBN to_TO find_VB a_DT local_JJ maximum_NN based_VBN on_IN WMI_NNP Iw_NNP until_IN it_PRP converges_VBZ ._.
+However_RB ,_, if_IN the_DT term_NN clustering_NN in_IN Stage_NNP #_# is_VBZ not_RB accurate_JJ ,_, then_RB the_DT term_NN weight_NN estimation_NN at_IN Stage_NNP #_# may_MD have_VB a_DT bad_JJ result_NN ._.
+Finally_RB ,_, at_IN Step_NN #_# ._.
+#_# ,_, this_DT algorithm_NN converges_VBZ and_CC return_VB the_DT output_NN ._.
+This_DT algorithm_NN can_MD handle_VB both_DT single-document_NN and_CC multi-document_JJ segmentation_NN ._.
+It_PRP also_RB can_MD detect_VB shared_JJ topics_NNS among_IN documents_NNS by_IN checking_VBG the_DT proportion_NN of_IN overlapped_JJ sentences_NNS on_IN the_DT same_JJ topics_NNS ,_, as_IN described_VBN in_IN Sec_NNP #_# ._.
+#_# ._.
+4_LS ._.
+#_# Algorithm_NNP Optimization_NNP In_IN many_JJ previous_JJ works_NNS on_IN segmentation_NN ,_, dynamic_JJ programming_NN is_VBZ a_DT technique_NN used_VBN to_TO maximize_VB the_DT objective_JJ function_NN ._.
+Similarly_RB ,_, at_IN Step_NN #_# ,_, #_# ._.
+#_# ,_, and_CC #_# ._.
+#_# of_IN our_PRP$ algorithm_NN ,_, we_PRP can_MD use_VB dynamic_JJ programming_NN ._.
+For_IN Stage_NN #_# ,_, using_VBG dynamic_JJ programming_NN can_MD still_RB find_VB the_DT global_JJ optimum_NN ,_, but_CC for_IN Stage_NN #_# and_CC Stage_NNP #_# ,_, we_PRP can_MD only_RB find_VB the_DT optimum_NN for_IN each_DT step_NN of_IN topic_NN segmentation_NN and_CC alignment_NN of_IN a_DT document_NN ._.
+Here_RB we_PRP only_RB show_VBP the_DT dynamic_JJ programming_NN for_IN Step_NN #_# ._.
+#_# using_VBG WMI_NN -LRB-_-LRB- Step_NN #_# and_CC #_# ._.
+#_# are_VBP similar_JJ but_CC they_PRP can_MD use_VB either_CC I_PRP or_CC Iw_NN -RRB-_-RRB- ._.
+There_EX are_VBP two_CD cases_NNS that_WDT are_VBP not_RB shown_VBN in_IN the_DT algorithm_NN in_IN Figure_NNP #_# :_: -LRB-_-LRB- a_LS -RRB-_-RRB- single-document_JJ segmentation_NN or_CC multi-document_JJ segmentation_NN with_IN the_DT same_JJ sequential_JJ order_NN of_IN segments_NNS ,_, where_WRB alignment_NN is_VBZ not_RB required_VBN ,_, and_CC -LRB-_-LRB- b_LS -RRB-_-RRB- multi-document_JJ segmentation_NN with_IN different_JJ sequential_JJ orders_NNS of_IN segments_NNS ,_, where_WRB alignment_NN is_VBZ necessary_JJ ._.
+The_DT alignment_NN mapping_NN function_NN of_IN the_DT former_JJ case_NN is_VBZ simply_RB just_RB Alid_NN -LRB-_-LRB- si_NN -RRB-_-RRB- =_JJ si_NNS ,_, while_IN for_IN the_DT latter_JJ one_CD ''_'' s_VBZ alignment_NN mapping_NN function_NN Alid_NN -LRB-_-LRB- si_NN -RRB-_-RRB- =_JJ sj_NN ,_, i_FW and_CC j_FW may_MD be_VB different_JJ ._.
+The_DT computational_JJ steps_NNS for_IN the_DT two_CD cases_NNS are_VBP listed_VBN below_IN :_: Case_NNP #_# -LRB-_-LRB- no_DT alignment_NN -RRB-_-RRB- :_: For_IN each_DT document_NN d_NN :_: -LRB-_-LRB- #_# -RRB-_-RRB- Compute_VB pw_NN -LRB-_-LRB- t_NN -RRB-_-RRB- ,_, partial_JJ pw_NN -LRB-_-LRB- t_NN ,_, s_NNS -RRB-_-RRB- and_CC partial_JJ pw_NN -LRB-_-LRB- s_NNS -RRB-_-RRB- without_IN counting_VBG sentences_NNS from_IN d_NN ._.
+Then_RB put_VBN sentences_NNS from_IN i_FW to_TO j_VB into_IN Part_NNP k_NN ,_, and_CC compute_VB partial_JJ WMI_NNP PIw_NNP -LRB-_-LRB- T_NN ;_: sk_NN -LRB-_-LRB- si_NN ,_, si_NN +_CC #_# ,_, ..._: ,_, sj_NN -RRB-_-RRB- -RRB-_-RRB- t_NN T_NN pw_NN -LRB-_-LRB- t_NN ,_, sk_NN -RRB-_-RRB- log_NN pw_NN -LRB-_-LRB- t_NN ,_, sk_NN -RRB-_-RRB- pw_NN -LRB-_-LRB- t_NN -RRB-_-RRB- pw_NN -LRB-_-LRB- sk_NN -RRB-_-RRB- ,_, where_WRB Alid_NN -LRB-_-LRB- si_NN ,_, si_NN +_CC #_# ,_, ..._: ,_, sj_NN -RRB-_-RRB- =_JJ k_NN ,_, k_NN -LCB-_-LRB- #_# ,_, #_# ,_, ..._: ,_, p_NN -RCB-_-RRB- ,_, #_# i_FW j_FW nd_NN ,_, and_CC Segd_NN -LRB-_-LRB- sq_NN -RRB-_-RRB- =_JJ sk_NN for_IN all_DT i_FW q_FW j_FW ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- Let_VB M_NN -LRB-_-LRB- sm_NN ,_, #_# -RRB-_-RRB- =_JJ PIw_NN -LRB-_-LRB- T_NN ;_: s1_NN -LRB-_-LRB- s1_NN ,_, s2_NN ,_, ..._: ,_, sm_NN -RRB-_-RRB- -RRB-_-RRB- ._.
+Then_RB M_NN -LRB-_-LRB- sm_NN ,_, L_NN -RRB-_-RRB- =_JJ maxi_NN -LSB-_-LRB- M_NN -LRB-_-LRB- si1_NN ,_, L_NN #_# -RRB-_-RRB- +_CC PIw_NN -LRB-_-LRB- T_NN ;_: sL_NN -LRB-_-LRB- si_NN ,_, ..._: ,_, sm_NN -RRB-_-RRB- -RRB-_-RRB- -RSB-_-RRB- ,_, where_WRB #_# m_NN nd_NN ,_, #_# <_JJR L_NN <_JJR p_NN ,_, #_# i_FW m_NN +_CC #_# ,_, and_CC when_WRB i_FW >_JJR m_NN ,_, no_DT sentences_NNS are_VBP put_VBN into_IN sk_NN when_WRB compute_VB PIw_NNP -LRB-_-LRB- note_NN PIw_NN -LRB-_-LRB- T_NN ;_: s_NNS -LRB-_-LRB- si_NNS ,_, ..._: ,_, sm_NN -RRB-_-RRB- -RRB-_-RRB- =_JJ #_# for_IN single-document_JJ segmentation_NN -RRB-_-RRB- ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- Finally_RB M_NN -LRB-_-LRB- snd_NN ,_, p_NN -RRB-_-RRB- =_JJ maxi_NN -LSB-_-LRB- M_NN -LRB-_-LRB- si1_NN ,_, p_NN #_# -RRB-_-RRB- +_CC PIw_NN -LRB-_-LRB- T_NN ;_: sp_NN -LRB-_-LRB- si_NN ,_, ..._: ,_, snd_NN -RRB-_-RRB- -RRB-_-RRB- -RSB-_-RRB- ,_, where_WRB #_# i_FW nd_FW +_CC #_# ._.
+The_DT optimal_JJ Iw_NN is_VBZ found_VBN and_CC the_DT corresponding_JJ segmentation_NN is_VBZ the_DT best_JJS ._.
+Case_NNP #_# -LRB-_-LRB- alignment_NN required_VBN -RRB-_-RRB- :_: For_IN each_DT document_NN d_NN :_: -LRB-_-LRB- #_# -RRB-_-RRB- Compute_VB pw_NN -LRB-_-LRB- t_NN -RRB-_-RRB- ,_, partial_JJ pw_NN -LRB-_-LRB- t_NN ,_, s_NNS -RRB-_-RRB- ,_, and_CC partial_JJ pw_NN -LRB-_-LRB- s_NNS -RRB-_-RRB- ,_, and_CC PIw_NNP -LRB-_-LRB- T_NN ;_: sk_NN -LRB-_-LRB- si_NN ,_, si_NN +_CC #_# ,_, ..._: ,_, sj_NN -RRB-_-RRB- -RRB-_-RRB- similarly_RB as_IN Case_NNP #_# ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- Let_VB M_NN -LRB-_-LRB- sm_NN ,_, #_# ,_, k_NN -RRB-_-RRB- =_JJ PIw_NN -LRB-_-LRB- T_NN ;_: sk_NN -LRB-_-LRB- s1_NN ,_, s2_NN ,_, ..._: ,_, sm_NN -RRB-_-RRB- -RRB-_-RRB- ,_, where_WRB k_NN -LCB-_-LRB- #_# ,_, #_# ,_, ..._: ,_, p_NN -RCB-_-RRB- ._.
+Then_RB M_NN -LRB-_-LRB- sm_NN ,_, L_NN ,_, kL_NN -RRB-_-RRB- =_JJ maxi_NN ,_, j_NN -LSB-_-LRB- M_NN -LRB-_-LRB- si1_NN ,_, L_NN 1_CD ,_, kL_NN /_: j_NN -RRB-_-RRB- +_CC PIw_NN -LRB-_-LRB- T_NN ;_: sAlid_NN -LRB-_-LRB- sL_NN -RRB-_-RRB- =_JJ j_NN -LRB-_-LRB- si_NN ,_, si_NN +_CC #_# ,_, ..._: ,_, sm_NN -RRB-_-RRB- -RRB-_-RRB- -RSB-_-RRB- ,_, where_WRB #_# m_NN nd_NN ,_, #_# <_JJR L_NN <_JJR p_NN ,_, #_# i_FW m_NN +_CC #_# ,_, kL_NNP Set_VB -LRB-_-LRB- p_NN ,_, L_NN -RRB-_-RRB- ,_, which_WDT is_VBZ the_DT set_NN of_IN all_DT p_NN !_.
+L_NN !_.
+-LRB-_-LRB- pL_NN -RRB-_-RRB- !_.
+combinations_NNS of_IN L_NN segments_NNS chosen_VBN from_IN all_DT p_NN segments_NNS ,_, j_NN kL_NN ,_, the_DT set_NN of_IN L_NN segments_NNS chosen_VBN from_IN all_DT p_NN segments_NNS ,_, and_CC kL_NN /_: j_NN is_VBZ the_DT combination_NN of_IN L_NN #_# segments_NNS in_IN kL_NN except_IN Segment_NN j_NN ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- Finally_RB ,_, M_NN -LRB-_-LRB- snd_NN ,_, p_NN ,_, kp_NN -RRB-_-RRB- =_JJ maxi_NN ,_, j_NN -LSB-_-LRB- M_NN -LRB-_-LRB- si1_NN ,_, p_NN #_# ,_, kp_NN /_: j_NN -RRB-_-RRB- +_CC PIw_NN -LRB-_-LRB- T_NN ;_: sAlid_NN -LRB-_-LRB- sL_NN -RRB-_-RRB- =_JJ j_NN -LRB-_-LRB- si_NN ,_, si_NN +_CC #_# ,_, ..._: ,_, snd_NN -RRB-_-RRB- -RRB-_-RRB- -RSB-_-RRB- ,_, where_WRB kp_NN is_VBZ just_RB the_DT combination_NN of_IN all_DT p_NN segments_NNS and_CC #_# i_FW nd_FW +_CC #_# ,_, which_WDT is_VBZ the_DT optimal_JJ Iw_NN and_CC the_DT corresponding_JJ segmentation_NN is_VBZ the_DT best_JJS ._.
+The_DT steps_NNS of_IN Case_NNP #_# and_CC #_# are_VBP similar_JJ ,_, except_IN in_IN Case_NNP #_# ,_, alignment_NN is_VBZ considered_VBN in_IN addition_NN to_TO segmentation_NN ._.
+First_RB ,_, basic_JJ items_NNS of_IN probability_NN for_IN computing_VBG Iw_NN are_VBP computed_VBN excluding_VBG Doc_NN d_NN ,_, and_CC then_RB partial_JJ WMI_NN by_IN putting_VBG every_DT possible_JJ sequential_JJ segment_NN -LRB-_-LRB- including_VBG empty_JJ segment_NN -RRB-_-RRB- of_IN d_NN into_IN every_DT segment_NN of_IN the_DT set_NN ._.
+Second_RB ,_, the_DT optimal_JJ sum_NN of_IN PIw_NNP for_IN L_NNP segments_NNS and_CC the_DT leftmost_JJS m_NN sentences_NNS ,_, M_NN -LRB-_-LRB- sm_NN ,_, L_NN -RRB-_-RRB- ,_, is_VBZ found_VBN ._.
+Finally_RB ,_, the_DT maximal_JJ WMI_NN is_VBZ found_VBN among_IN different_JJ sums_NNS of_IN M_NN -LRB-_-LRB- sm_NN ,_, p_NN #_# -RRB-_-RRB- and_CC PIw_NNP for_IN Segment_NNP p_NN ._.
+5_CD ._.
+EXPERIMENTS_NNS In_IN this_DT section_NN ,_, single-document_JJ segmentation_NN ,_, shared_VBN topic_NN detection_NN ,_, and_CC multi-document_JJ segmentation_NN will_MD be_VB tested_VBN ._.
+Different_JJ hyper_JJ parameters_NNS of_IN our_PRP$ method_NN are_VBP studied_VBN ._.
+For_IN convenience_NN ,_, we_PRP refer_VBP to_TO the_DT method_NN using_VBG I_PRP as_IN MIk_NNP if_IN w_NN =_JJ #_# ,_, and_CC Iw_NNP as_IN WMIk_NNP if_IN w_NN =_JJ #_# or_CC as_IN WMIk_NN if_IN w_NN =_JJ #_# ,_, where_WRB k_NN is_VBZ the_DT number_NN of_IN term_NN clusters_NNS ,_, and_CC if_IN k_NN =_JJ l_NN ,_, where_WRB l_NN is_VBZ the_DT total_JJ number_NN of_IN terms_NNS ,_, then_RB no_DT term_NN clustering_NN is_VBZ required_VBN ,_, i_FW ._.
+e_LS ._.
+MIl_NN and_CC WMIl_NN ._.
+5_CD ._.
+#_# Single-document_JJ Segmentation_NN 5_CD ._.
+#_# ._.
+#_# Test_NNP Data_NNP and_CC Evaluation_NN The_DT first_JJ data_NN set_NN we_PRP tested_VBD is_VBZ a_DT synthetic_JJ one_CD used_VBN in_IN previous_JJ research_NN -LSB-_-LRB- #_# ,_, ##_NN ,_, ##_NN -RSB-_-RRB- and_CC many_JJ other_JJ papers_NNS ._.
+It_PRP has_VBZ 700_CD samples_NNS ._.
+Each_DT is_VBZ a_DT concatenation_NN of_IN ten_CD segments_NNS ._.
+Each_DT segment_NN is_VBZ the_DT first_JJ n_NN sentence_NN selected_VBN randomly_RB from_IN the_DT Brown_JJ corpus_NN ,_, which_WDT is_VBZ supposed_VBN to_TO have_VB a_DT different_JJ topic_NN from_IN each_DT other_JJ ._.
+Currently_RB ,_, the_DT best_JJS results_NNS on_IN this_DT data_NN set_NN is_VBZ achieved_VBN by_IN Ji_NNP et_NNP ._.
+al_NNP ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- ._.
+To_TO compare_VB the_DT performance_NN of_IN our_PRP$ methods_NNS ,_, the_DT criterion_NN used_VBN widely_RB in_IN previous_JJ research_NN is_VBZ applied_VBN ,_, instead_RB of_IN the_DT unbiased_JJ criterion_NN introduced_VBN in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ._.
+It_PRP chooses_VBZ a_DT pair_NN of_IN words_NNS randomly_RB ._.
+If_IN they_PRP are_VBP in_IN different_JJ segments_NNS -LRB-_-LRB- different_JJ -RRB-_-RRB- for_IN the_DT real_JJ segmentation_NN -LRB-_-LRB- real_JJ -RRB-_-RRB- ,_, but_CC predicted_VBD -LRB-_-LRB- pred_VBN -RRB-_-RRB- as_IN in_IN the_DT same_JJ segment_NN ,_, it_PRP is_VBZ a_DT miss_VBP ._.
+If_IN they_PRP are_VBP in_IN the_DT same_JJ segment_NN -LRB-_-LRB- same_JJ -RRB-_-RRB- ,_, but_CC predicted_VBD as_IN in_IN different_JJ segments_NNS ,_, it_PRP is_VBZ a_DT false_JJ alarm_NN ._.
+Thus_RB ,_, the_DT error_NN rate_NN is_VBZ computed_VBN using_VBG the_DT following_JJ equation_NN :_: p_NN -LRB-_-LRB- err_VB |_CD real_JJ ,_, pred_JJ -RRB-_-RRB- =_JJ p_NN -LRB-_-LRB- miss_VB |_RB real_JJ ,_, pred_JJ ,_, diff_JJ -RRB-_-RRB- p_NN -LRB-_-LRB- diff_NN |_CD real_JJ -RRB-_-RRB- +_CC p_NN -LRB-_-LRB- false_JJ alarm_NN |_CD real_JJ ,_, pred_JJ ,_, same_JJ -RRB-_-RRB- p_NN -LRB-_-LRB- same_JJ |_NN real_JJ -RRB-_-RRB- ._.
+5_CD ._.
+#_# ._.
+#_# Experiment_NNP Results_NNS We_PRP tested_VBD the_DT case_NN when_WRB the_DT number_NN of_IN segments_NNS is_VBZ known_VBN ._.
+Table_NNP #_# shows_VBZ the_DT results_NNS of_IN our_PRP$ methods_NNS with_IN different_JJ hyper_JJ parameter_NN values_NNS and_CC three_CD previous_JJ approaches_NNS ,_, C99_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, U00_NN -LSB-_-LRB- #_# -RSB-_-RRB- ,_, and_CC ADDP03_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, on_IN this_DT data_NN set_NN when_WRB the_DT segment_NN number_NN is_VBZ known_VBN ._.
+In_IN WMI_NNP for_IN single-document_JJ segmentation_NN ,_, the_DT term_NN weights_NNS are_VBP computed_VBN as_IN follows_VBZ :_: wt_JJ =_JJ 1ES_NN -LRB-_-LRB- t_NN -RRB-_-RRB- /_: maxt_JJ T_NN -LRB-_-LRB- ES_NN -LRB-_-LRB- t_NN -RRB-_-RRB- -RRB-_-RRB- ._.
+For_IN this_DT case_NN ,_, our_PRP$ methods_NNS MIl_NN and_CC WMIl_NN both_CC outperform_VBP all_PDT the_DT previous_JJ approaches_NNS ._.
+We_PRP compared_VBD our_PRP$ methods_NNS with_IN ADDP03using_NN one-sample_JJ one-sided_JJ t-test_NN and_CC p-values_NNS are_VBP shown_VBN in_IN Table_NNP #_# ._.
+From_IN the_DT p-values_NNS ,_, we_PRP can_MD see_VB that_IN mostly_RB the_DT differences_NNS are_VBP very_RB Table_NNP #_# :_: Average_JJ Error_NN Rates_NNS of_IN Single-document_JJ Segmentation_NN Given_VBN Segment_NNP Numbers_NNP Known_VBN Range_NNP of_IN n_NN 3-11_CD 3-5_CD 6-8_CD 9-11_CD Sample_NNP size_NN ###_CD ###_CD ###_CD ###_CD C99_NN ##_CD %_NN ##_CD %_NN ##_CD %_NN #_# %_NN U00_NN ##_CD %_NN #_# %_NN #_# %_NN #_# %_NN ADDP03_NN #_# ._.
+#_# %_NN #_# ._.
+#_# %_NN #_# ._.
+#_# %_NN #_# ._.
+#_# %_NN MIl_NN #_# ._.
+##_CD %_NN #_# ._.
+##_CD %_NN #_# ._.
+##_CD %_NN #_# ._.
+##_CD %_NN WMIl_NN #_# ._.
+##_CD %_NN #_# ._.
+##_CD %_NN #_# ._.
+##_CD %_NN #_# ._.
+##_CD %_NN MI100_NN #_# ._.
+##_CD %_NN ##_CD ._.
+##_CD %_NN #_# ._.
+##_CD %_NN #_# ._.
+##_CD %_NN Table_NNP #_# :_: Single-document_JJ Segmentation_NN :_: P-values_NNS of_IN T-test_NN on_IN Error_NNP Rates_NNP Range_NNP of_IN n_NN 3-11_CD 3-5_CD 6-8_CD 9-11_CD ADDP03_NN ,_, MIl_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_CD ADDP03_NN ,_, WMIl_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN MIl_NN ,_, WMIl_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN significant_JJ ._.
+We_PRP also_RB compare_VBP the_DT error_NN rates_NNS between_IN our_PRP$ two_CD methods_NNS using_VBG two-sample_JJ two-sided_JJ t-test_NN to_TO check_VB the_DT hypothesis_NN that_IN they_PRP are_VBP equal_JJ ._.
+We_PRP can_MD not_RB reject_VB the_DT hypothesis_NN that_IN they_PRP are_VBP equal_JJ ,_, so_IN the_DT difference_NN are_VBP not_RB significant_JJ ,_, even_RB though_IN all_PDT the_DT error_NN rates_NNS for_IN MIl_NN are_VBP smaller_JJR than_IN WMIl_NN ._.
+However_RB ,_, we_PRP can_MD conclude_VB that_IN term_NN weights_NNS contribute_VBP little_JJ in_IN single-document_JJ segmentation_NN ._.
+The_DT results_NNS also_RB show_VBP that_IN MI_NNP using_VBG term_NN co-clustering_NN -LRB-_-LRB- k_NN =_JJ ###_CD -RRB-_-RRB- decreases_VBZ the_DT performance_NN ._.
+We_PRP tested_VBD different_JJ number_NN of_IN term_NN clusters_NNS ,_, and_CC found_VBD that_IN the_DT performance_NN becomes_VBZ better_JJR when_WRB the_DT cluster_NN number_NN increases_VBZ to_TO reach_VB l_NN ._.
+WMIk_NN <_JJR l_NN has_VBZ similar_JJ results_NNS that_IN we_PRP did_VBD not_RB show_VB in_IN the_DT table_NN ._.
+As_IN mentioned_VBN before_RB ,_, using_VBG MI_NNP may_MD be_VB inconsistent_JJ on_IN optimal_JJ boundaries_NNS given_VBN different_JJ numbers_NNS of_IN segments_NNS ._.
+This_DT situation_NN occurs_VBZ especially_RB when_WRB the_DT similarities_NNS among_IN segments_NNS are_VBP quite_RB different_JJ ,_, i_FW ._.
+e_LS ._.
+some_DT transitions_NNS are_VBP very_RB obvious_JJ ,_, while_IN others_NNS are_VBP not_RB ._.
+This_DT is_VBZ because_IN usually_RB a_DT document_NN is_VBZ a_DT hierarchical_JJ structure_NN instead_RB of_IN only_RB a_DT sequential_JJ structure_NN ._.
+When_WRB the_DT segments_NNS are_VBP not_RB at_IN the_DT same_JJ level_NN ,_, this_DT situation_NN may_MD occur_VB ._.
+Thus_RB ,_, a_DT hierarchical_JJ topic_NN segmentation_NN approach_NN is_VBZ desired_VBN ,_, and_CC the_DT structure_NN highly_RB depends_VBZ on_IN the_DT number_NN of_IN segments_NNS for_IN each_DT internal_JJ node_NN and_CC the_DT stop_NN criteria_NNS of_IN splitting_NN ._.
+For_IN this_DT data_NN set_NN of_IN singledocument_NN segmentation_NN ,_, since_IN it_PRP is_VBZ just_RB a_DT synthetic_JJ set_NN ,_, which_WDT is_VBZ just_RB a_DT concatenation_NN of_IN several_JJ segments_NNS about_IN different_JJ topics_NNS ,_, it_PRP is_VBZ reasonable_JJ that_IN approaches_NNS simply_RB based_VBN on_IN term_NN frequency_NN have_VBP a_DT good_JJ performance_NN ._.
+Usually_RB for_IN the_DT tasks_NNS of_IN segmenting_VBG coherent_JJ documents_NNS for_IN sub-topics_NNS ,_, the_DT effectiveness_NN decreases_VBZ much_RB ._.
+5_CD ._.
+#_# Shared_VBN Topic_NNP Detection_NN 5_CD ._.
+#_# ._.
+#_# Test_NNP Data_NNP and_CC Evaluation_NN The_DT second_JJ data_NN set_NN contains_VBZ ##_CD news_NN articles_NNS from_IN Google_NNP News_NNP ._.
+There_EX are_VBP eight_CD topics_NNS and_CC each_DT has_VBZ ##_CD articles_NNS ._.
+We_PRP randomly_RB split_VBD the_DT set_VBN into_IN subsets_NNS with_IN different_JJ document_NN numbers_NNS and_CC each_DT subset_NN has_VBZ all_DT eight_CD topics_NNS ._.
+We_PRP compare_VBP our_PRP$ approach_NN MIl_NN and_CC WMIl_NN with_IN LDA_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+LDA_NNP treats_VBZ a_DT document_NN in_IN the_DT data_NNS set_VBN as_IN a_DT bag_NN of_IN words_NNS ,_, finds_VBZ its_PRP$ distribution_NN on_IN topics_NNS ,_, and_CC its_PRP$ major_JJ topic_NN ._.
+MIl_NN and_CC WMIl_NN views_NNS each_DT sentence_NN as_IN a_DT bag_NN of_IN words_NNS and_CC tag_NN it_PRP with_IN a_DT topic_NN label_NN ._.
+Then_RB for_IN each_DT pair_NN of_IN documents_NNS ,_, LDA_NNP determines_VBZ if_IN they_PRP are_VBP on_IN the_DT same_JJ topic_NN ,_, while_IN MIl_NN and_CC Table_NNP #_# :_: Shared_VBN Topic_NNP Detection_NN :_: Average_JJ Error_NN Rates_NNS for_IN Different_JJ Numbers_NNS of_IN Documents_NNS in_IN Each_DT Subset_NNP #_# Doc_NNP ##_NNP ##_VBD ##_CD ##_CD LDA_NNP #_# ._.
+##_CD %_NN ##_CD ._.
+##_CD %_NN #_# ._.
+##_CD %_NN #_# ._.
+##_CD %_NN MIl_NN ,_, =_JJ #_# ._.
+#_# #_# ._.
+##_CD %_NN #_# ._.
+##_CD %_NN #_# ._.
+##_CD %_NN #_# ._.
+#_# %_NN WMIl_NN ,_, =_JJ #_# ._.
+#_# ##_CD ._.
+#_# %_NN #_# ._.
+##_CD %_NN #_# ._.
+##_CD %_NN #_# ._.
+#_# %_NN WMIl_NN check_NN whether_IN the_DT proportion_NN overlapped_VBD sentences_NNS on_IN the_DT same_JJ topic_NN is_VBZ larger_JJR than_IN the_DT adjustable_JJ threshold_NN ._.
+That_DT is_VBZ ,_, in_IN MIl_NN and_CC WMIl_NN ,_, for_IN a_DT pair_NN of_IN documents_NNS d_NN ,_, d_NN ,_, if_IN -LSB-_-LRB- sSd_NN ,_, s_VBZ Sd_NN 1_CD -LRB-_-LRB- topics_NNS =_JJ topics_NNS -RRB-_-RRB- /_: min_NN -LRB-_-LRB- |_CD Sd_NN |_NN ,_, |_CD Sd_NN |_NN -RRB-_-RRB- -RSB-_-RRB- >_JJR ,_, where_WRB Sd_NN is_VBZ the_DT set_NN of_IN sentences_NNS of_IN d_NN ,_, and_CC |_CD Sd_NN |_NN is_VBZ the_DT number_NN of_IN sentences_NNS of_IN d_NN ,_, then_RB d_NN and_CC d_NN have_VBP the_DT shared_VBN topic_NN ._.
+For_IN a_DT pair_NN of_IN documents_NNS selected_VBN randomly_RB ,_, the_DT error_NN rate_NN is_VBZ computed_VBN using_VBG the_DT following_JJ equation_NN :_: p_NN -LRB-_-LRB- err_VB |_CD real_JJ ,_, pred_JJ -RRB-_-RRB- =_JJ p_NN -LRB-_-LRB- miss_VB |_RB real_JJ ,_, pred_JJ ,_, same_JJ -RRB-_-RRB- p_NN -LRB-_-LRB- same_JJ |_NN real_JJ -RRB-_-RRB- +_CC p_NN -LRB-_-LRB- false_JJ alarm_NN |_CD real_JJ ,_, pred_JJ ,_, diff_JJ -RRB-_-RRB- p_NN -LRB-_-LRB- diff_NN |_CD real_JJ -RRB-_-RRB- ,_, where_WRB a_DT miss_VBP means_NNS if_IN they_PRP have_VBP the_DT same_JJ topic_NN -LRB-_-LRB- same_JJ -RRB-_-RRB- for_IN the_DT real_JJ case_NN -LRB-_-LRB- real_JJ -RRB-_-RRB- ,_, but_CC predicted_VBD -LRB-_-LRB- pred_VBN -RRB-_-RRB- as_IN on_IN the_DT same_JJ topic_NN ._.
+If_IN they_PRP are_VBP on_IN different_JJ topics_NNS -LRB-_-LRB- diff_NN -RRB-_-RRB- ,_, but_CC predicted_VBD as_IN on_IN the_DT same_JJ topic_NN ,_, it_PRP is_VBZ a_DT false_JJ alarm_NN ._.
+5_CD ._.
+#_# ._.
+#_# Experiment_NNP Results_NNS The_DT results_NNS are_VBP shown_VBN in_IN Table_NNP #_# ._.
+If_IN most_JJS documents_NNS have_VBP different_JJ topics_NNS ,_, in_IN WMIl_NNP ,_, the_DT estimation_NN of_IN term_NN weights_NNS in_IN Equation_NN -LRB-_-LRB- #_# -RRB-_-RRB- is_VBZ not_RB correct_VB ._.
+Thus_RB ,_, WMIl_NN is_VBZ not_RB expected_VBN to_TO have_VB a_DT better_JJR performance_NN than_IN MIl_NN ,_, when_WRB most_RBS documents_NNS have_VBP different_JJ topics_NNS ._.
+When_WRB there_EX are_VBP fewer_JJR documents_NNS in_IN a_DT subset_NN with_IN the_DT same_JJ number_NN of_IN topics_NNS ,_, more_JJR documents_NNS have_VBP different_JJ topics_NNS ,_, so_RB WMIl_NN is_VBZ more_RBR worse_JJR than_IN MIl_NN ._.
+We_PRP can_MD see_VB that_IN for_IN most_JJS cases_NNS MIl_NNP has_VBZ a_DT better_JJR -LRB-_-LRB- or_CC at_IN least_JJS similar_JJ -RRB-_-RRB- performance_NN than_IN LDA_NNP ._.
+After_IN shared_VBN topic_NN detection_NN ,_, multi-document_JJ segmentation_NN of_IN documents_NNS with_IN the_DT shared_JJ topics_NNS is_VBZ able_JJ to_TO be_VB executed_VBN ._.
+5_CD ._.
+#_# Multi-document_JJ Segmentation_NN 5_CD ._.
+#_# ._.
+#_# Test_NNP Data_NNP and_CC Evaluation_NN For_IN multi-document_JJ segmentation_NN and_CC alignment_NN ,_, our_PRP$ goal_NN is_VBZ to_TO identify_VB these_DT segments_NNS about_IN the_DT same_JJ topic_NN among_IN multiple_JJ similar_JJ documents_NNS with_IN shared_JJ topics_NNS ._.
+Using_VBG Iw_NN is_VBZ expected_VBN to_TO perform_VB better_JJR than_IN I_PRP ,_, since_IN without_IN term_NN weights_NNS the_DT result_NN is_VBZ affected_VBN seriously_RB by_IN document-dependent_JJ stop_NN words_NNS and_CC noisy_JJ words_NNS which_WDT depends_VBZ on_IN the_DT personal_JJ writing_NN style_NN ._.
+It_PRP is_VBZ more_RBR likely_JJ to_TO treat_VB the_DT same_JJ segments_NNS of_IN different_JJ documents_NNS as_IN different_JJ segments_NNS under_IN the_DT effect_NN of_IN document-dependent_JJ stop_NN words_NNS and_CC noisy_JJ words_NNS ._.
+Term_NN weights_NNS can_MD reduce_VB the_DT effect_NN of_IN document-dependent_JJ stop_NN words_NNS and_CC noisy_JJ words_NNS by_IN giving_VBG cue_NN terms_NNS more_RBR weights_NNS ._.
+The_DT data_NNS set_VBN for_IN multi-document_JJ segmentation_NN and_CC alignment_NN has_VBZ ###_CD samples_NNS and_CC ####_CD sentences_NNS totally_RB ._.
+Each_DT is_VBZ the_DT introduction_NN part_NN of_IN a_DT lab_NN report_NN selected_VBN from_IN the_DT course_NN of_IN Biol_NNP 240W_NNP ,_, Pennsylvania_NNP State_NNP University_NNP ._.
+Each_DT sample_NN has_VBZ two_CD segments_NNS ,_, introduction_NN of_IN plant_NN hormones_NNS and_CC the_DT content_NN in_IN the_DT lab_NN ._.
+The_DT length_NN range_NN of_IN samples_NNS is_VBZ from_IN two_CD to_TO ##_CD sentences_NNS ._.
+Some_DT samples_NNS only_RB have_VBP one_CD part_NN and_CC some_DT have_VBP a_DT reverse_JJ order_NN the_DT these_DT two_CD segments_NNS ._.
+It_PRP is_VBZ not_RB hard_JJ to_TO identify_VB the_DT boundary_NN between_IN two_CD segments_NNS for_IN human_JJ ._.
+We_PRP labelled_VBD each_DT sentence_NN manually_RB for_IN evaluation_NN ._.
+The_DT criterion_NN of_IN evaluation_NN is_VBZ just_RB using_VBG the_DT proportion_NN of_IN the_DT number_NN of_IN sentences_NNS with_IN wrong_JJ predicted_VBN segment_NN labels_NNS in_IN the_DT total_JJ number_NN of_IN sentences_NNS in_IN the_DT whole_JJ training_NN Table_NNP #_# :_: Average_JJ Error_NN Rates_NNS of_IN Multi-document_JJ Segmentation_NNP Given_VBN Segment_NNP Numbers_NNP Known_VBN #_# Doc_NNP MIl_NNP WMIl_NNP k_NN MIk_NNP WMIk_NNP 102_CD #_# ._.
+##_CD %_NN #_# ._.
+##_CD %_NN ###_CD #_# ._.
+##_CD %_NN #_# ._.
+##_CD %_NN 51_CD #_# ._.
+##_CD %_NN #_# ._.
+##_CD %_NN ###_CD ##_NN ._.
+##_CD %_NN ##_CD ._.
+##_CD %_NN 34_CD #_# ._.
+##_CD %_NN #_# ._.
+##_CD %_NN ###_CD ##_NN ._.
+##_CD %_NN ##_CD ._.
+##_CD %_NN 20_CD #_# ._.
+##_CD %_NN #_# ._.
+##_CD %_NN ###_CD ##_NN ._.
+##_CD %_NN ##_CD ._.
+##_CD %_NN 10_CD ##_NN ._.
+##_CD %_NN #_# ._.
+##_CD %_NN ###_CD ##_NN ._.
+##_CD %_NN ##_CD ._.
+##_CD %_NN 5_CD ##_NN ._.
+##_CD %_NN ##_CD ._.
+##_CD %_NN ###_CD ##_NN ._.
+##_CD %_NN ##_CD ._.
+##_CD %_NN 2_CD ##_CD ._.
+##_CD %_NN ##_CD ._.
+##_CD %_NN ##_CD ##_NN ._.
+##_CD %_NN ##_CD ._.
+##_CD %_NN 1_CD ##_NN ._.
+##_CD %_NN ##_CD ._.
+##_CD %_NN ##_CD ##_NN ._.
+##_CD %_NN ##_CD ._.
+##_CD %_NN Table_NNP #_# :_: Multi-document_JJ Segmentation_NN :_: P-values_NNS of_IN T-test_NN on_IN Error_NNP Rates_NNP for_IN MIl_NNP and_CC WMIl_NNP #_# Doc_NNP ##_NNP ##_VBD ##_CD ##_CD #_# #_# P-value_JJ #_# ._.
+##_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_JJ set_VBN as_IN the_DT error_NN rate_NN :_: p_NN -LRB-_-LRB- error_NN |_CD predicted_VBN ,_, real_JJ -RRB-_-RRB- =_JJ dD_NN sSd_NN 1_CD -LRB-_-LRB- predicteds_NN =_JJ reals_NNS -RRB-_-RRB- /_: dD_NN nd_NN ._.
+In_IN order_NN to_TO show_VB the_DT benefits_NNS of_IN multi-document_JJ segmentation_NN and_CC alignment_NN ,_, we_PRP compared_VBD our_PRP$ method_NN with_IN different_JJ parameters_NNS on_IN different_JJ partitions_NNS of_IN the_DT same_JJ training_NN set_NN ._.
+Except_IN the_DT cases_NNS that_IN the_DT number_NN of_IN documents_NNS is_VBZ ###_CD and_CC one_CD -LRB-_-LRB- they_PRP are_VBP special_JJ cases_NNS of_IN using_VBG the_DT whole_JJ set_NN and_CC the_DT pure_JJ single-document_JJ segmentation_NN -RRB-_-RRB- ,_, we_PRP randomly_RB divided_VBD the_DT training_NN set_VBN into_IN m_NN partitions_NNS ,_, and_CC each_DT has_VBZ ##_CD ,_, ##_CD ,_, ##_CD ,_, 10_CD ,_, #_# ,_, and_CC #_# document_VBP samples_NNS ._.
+Then_RB we_PRP applied_VBD our_PRP$ methods_NNS on_IN each_DT partition_NN and_CC calculated_VBN the_DT error_NN rate_NN of_IN the_DT whole_JJ training_NN set_NN ._.
+Each_DT case_NN was_VBD repeated_VBN for_IN ##_CD times_NNS for_IN computing_VBG the_DT average_JJ error_NN rates_NNS ._.
+For_IN different_JJ partitions_NNS of_IN the_DT training_NN set_NN ,_, different_JJ k_NN values_NNS are_VBP used_VBN ,_, since_IN the_DT number_NN of_IN terms_NNS increases_VBZ when_WRB the_DT document_NN number_NN in_IN each_DT partition_NN increases_NNS ._.
+5_CD ._.
+#_# ._.
+#_# Experiment_NNP Results_NNS From_IN the_DT experiment_NN results_VBZ in_IN Table_NNP #_# ,_, we_PRP can_MD see_VB the_DT following_VBG observations_NNS :_: -LRB-_-LRB- #_# -RRB-_-RRB- When_WRB the_DT number_NN of_IN documents_NNS increases_NNS ,_, all_DT methods_NNS have_VBP better_JJR performances_NNS ._.
+Only_RB from_IN one_CD to_TO two_CD documents_NNS ,_, MIl_NN has_VBZ decrease_VB a_DT little_JJ ._.
+We_PRP can_MD observe_VB this_DT from_IN Figure_NNP #_# at_IN the_DT point_NN of_IN document_NN number_NN =_JJ #_# ._.
+Most_JJS curves_NNS even_RB have_VBP the_DT worst_JJS results_NNS at_IN this_DT point_NN ._.
+There_EX are_VBP two_CD reasons_NNS ._.
+First_RB ,_, because_IN samples_NNS vote_NN for_IN the_DT best_JJS multi-document_JJ segmentation_NN and_CC alignment_NN ,_, but_CC if_IN only_RB two_CD documents_NNS are_VBP compared_VBN with_IN each_DT other_JJ ,_, the_DT one_CD with_IN missing_VBG segments_NNS or_CC a_DT totally_RB different_JJ sequence_NN will_MD affect_VB the_DT correct_JJ segmentation_NN and_CC alignment_NN of_IN the_DT other_JJ ._.
+Second_RB ,_, as_IN noted_VBN at_IN the_DT beginning_NN of_IN this_DT section_NN ,_, if_IN two_CD documents_NNS have_VBP more_RBR document-dependent_JJ stop_NN words_NNS or_CC noisy_JJ words_NNS than_IN cue_NN words_NNS ,_, then_RB the_DT algorithm_NN may_MD view_VB them_PRP as_IN two_CD different_JJ segments_NNS and_CC the_DT other_JJ segment_NN is_VBZ missing_VBG ._.
+Generally_RB ,_, we_PRP can_MD only_RB expect_VB a_DT better_JJR performance_NN when_WRB the_DT number_NN of_IN documents_NNS is_VBZ larger_JJR than_IN the_DT number_NN of_IN segments_NNS ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- Except_IN single-document_JJ segmentation_NN ,_, WMIl_NN is_VBZ always_RB better_JJR than_IN MIl_NN ,_, and_CC when_WRB the_DT number_NN of_IN documents_NNS is_VBZ reaching_VBG one_CD or_CC increases_VBZ to_TO a_DT very_RB large_JJ number_NN ,_, their_PRP$ performances_NNS become_VBP closer_RBR ._.
+Table_NNP #_# shows_VBZ p-values_NNS of_IN twosample_NN one-sided_JJ t-test_NN between_IN MIl_NN and_CC WMIl_NN ._.
+We_PRP also_RB can_MD see_VB this_DT trend_NN from_IN p-values_NNS ._.
+When_WRB document_VBP number_NN =_JJ 5_CD ,_, we_PRP reached_VBD the_DT smallest_JJS p-value_NN and_CC the_DT largest_JJS difference_NN between_IN error_NN rates_NNS of_IN MIl_NN and_CC WMIl_NN ._.
+For_IN single-document_JJ Table_NNP #_# :_: Multi-document_JJ Segmentation_NN :_: Average_JJ Error_NNP Rate_NNP for_IN Document_NNP Number_NNP =_JJ #_# in_IN Each_DT Subset_NN with_IN Different_JJ Number_NN of_IN Term_NNP Clusters_NNS #_# Cluster_NNP ##_CD ###_CD ###_CD ###_CD l_NN MIk_NNP ##_NNP ._.
+##_CD %_NN ##_CD ._.
+##_CD %_NN ##_CD ._.
+##_CD %_NN ##_CD ._.
+##_CD %_NN ##_CD ._.
+##_CD %_NN segmentation_NN ,_, WMIl_NN is_VBZ even_RB a_DT little_JJ bit_NN worse_JJR than_IN MIl_NN ,_, which_WDT is_VBZ similar_JJ as_IN the_DT results_NNS of_IN the_DT single-document_JJ segmentation_NN on_IN the_DT first_JJ data_NN set_NN ._.
+The_DT reason_NN is_VBZ that_IN for_IN singledocument_NN segmentation_NN ,_, we_PRP can_MD not_RB estimate_VB term_NN weights_NNS accurately_RB ,_, since_IN multiple_JJ documents_NNS are_VBP unavailable_JJ ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- Using_VBG term_NN clustering_NN usually_RB gets_VBZ worse_JJR results_NNS than_IN MIl_NN and_CC WMIl_NN ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- Using_VBG term_NN clustering_NN in_IN WMIk_NNP is_VBZ even_RB worse_JJR than_IN in_IN MIk_NNP ,_, since_IN in_IN WMIk_NNP term_NN clusters_NNS are_VBP found_VBN first_RB using_VBG I_PRP before_IN using_VBG Iw_NNP ._.
+If_IN the_DT term_NN clusters_NNS are_VBP not_RB correct_VB ,_, then_RB the_DT term_NN weights_NNS are_VBP estimated_VBN worse_JJR ,_, which_WDT may_MD mislead_VB the_DT algorithm_NN to_TO reach_VB even_RB worse_JJR results_NNS ._.
+From_IN the_DT results_NNS we_PRP also_RB found_VBD that_IN in_IN multi-document_JJ segmentation_NN and_CC alignment_NN ,_, most_JJS documents_NNS with_IN missing_VBG segments_NNS and_CC a_DT reverse_JJ order_NN are_VBP identified_VBN correctly_RB ._.
+Table_NNP #_# illustrates_VBZ the_DT experiment_NN results_VBZ for_IN the_DT case_NN of_IN ##_CD partitions_NNS -LRB-_-LRB- each_DT has_VBZ five_CD document_NN samples_NNS -RRB-_-RRB- of_IN the_DT training_NN set_NN and_CC topic_NN segmentation_NN and_CC alignment_NN using_VBG MIk_NN with_IN different_JJ numbers_NNS of_IN term_NN clusters_NNS k_NN ._.
+Notice_NNP that_WDT when_WRB the_DT number_NN of_IN term_NN clusters_NNS increases_VBZ ,_, the_DT error_NN rate_NN becomes_VBZ smaller_JJR ._.
+Without_IN term_NN clustering_NN ,_, we_PRP have_VBP the_DT best_JJS result_NN ._.
+We_PRP did_VBD not_RB show_VB results_NNS for_IN WMIk_NN with_IN term_NN clustering_NN ,_, but_CC the_DT results_NNS are_VBP similar_JJ ._.
+We_PRP also_RB tested_VBD WMIl_NN with_IN different_JJ hyper_JJ parameters_NNS of_IN a_DT and_CC b_NN to_TO adjust_VB term_NN weights_NNS ._.
+The_DT results_NNS are_VBP presented_VBN in_IN Figure_NNP #_# ._.
+It_PRP was_VBD shown_VBN that_IN the_DT default_NN case_NN WMIl_NN :_: a_DT =_JJ #_# ,_, b_NN =_JJ #_# gave_VBD the_DT best_JJS results_NNS for_IN different_JJ partitions_NNS of_IN the_DT training_NN set_NN ._.
+We_PRP can_MD see_VB the_DT trend_NN that_WDT when_WRB the_DT document_NN number_NN is_VBZ very_RB small_JJ or_CC large_JJ ,_, the_DT difference_NN between_IN MIl_NNP :_: a_DT =_JJ #_# ,_, b_NN =_JJ #_# and_CC WMIl_NNP :_: a_DT =_JJ #_# ,_, b_NN =_JJ #_# becomes_VBZ quite_RB small_JJ ._.
+When_WRB the_DT document_NN number_NN is_VBZ not_RB large_JJ -LRB-_-LRB- about_RB from_IN #_# to_TO ##_CD -RRB-_-RRB- ,_, all_PDT the_DT cases_NNS using_VBG term_NN weights_NNS have_VBP better_JJR performances_NNS than_IN MIl_NN :_: a_DT =_JJ #_# ,_, b_NN =_JJ #_# without_IN term_NN weights_NNS ,_, but_CC when_WRB the_DT document_NN number_NN becomes_VBZ larger_JJR ,_, the_DT cases_NNS WMIl_NNP :_: a_DT =_JJ #_# ,_, b_NN =_JJ #_# and_CC WMIl_NNP :_: a_DT =_JJ #_# ,_, b_NN =_JJ #_# become_VB worse_JJR than_IN MIl_NN :_: a_DT =_JJ #_# ,_, b_NN =_JJ #_# ._.
+When_WRB the_DT document_NN number_NN becomes_VBZ very_RB large_JJ ,_, they_PRP are_VBP even_RB worse_JJR than_IN cases_NNS with_IN small_JJ document_NN numbers_NNS ._.
+This_DT means_VBZ that_IN a_DT proper_JJ way_NN to_TO estimate_VB term_NN weights_NNS for_IN the_DT criterion_NN of_IN WMI_NNP is_VBZ very_RB important_JJ ._.
+Figure_NNP #_# shows_VBZ the_DT term_NN weights_NNS learned_VBD from_IN the_DT whole_JJ training_NN set_NN ._.
+Four_CD types_NNS of_IN words_NNS are_VBP categorized_VBN roughly_RB even_RB though_IN the_DT transition_NN among_IN them_PRP are_VBP subtle_JJ ._.
+Figure_NNP #_# illustrates_VBZ the_DT change_NN in_IN -LRB-_-LRB- weighted_JJ -RRB-_-RRB- mutual_JJ information_NN for_IN MIl_NN and_CC WMIl_NN ._.
+As_IN expected_VBN ,_, mutual_JJ information_NN for_IN MIl_NN increases_VBZ monotonically_RB with_IN the_DT number_NN of_IN steps_NNS ,_, while_IN WMIl_NN does_VBZ not_RB ._.
+Finally_RB ,_, MIl_NN and_CC WMIl_NN are_VBP scalable_JJ ,_, with_IN computational_JJ complexity_NN shown_VBN in_IN Figure_NNP #_# ._.
+One_CD advantage_NN for_IN our_PRP$ approach_NN based_VBN on_IN MI_NNP is_VBZ that_IN removing_VBG stop_NN words_NNS is_VBZ not_RB required_VBN ._.
+Another_DT important_JJ advantage_NN is_VBZ that_IN there_EX are_VBP no_RB necessary_JJ hyper_JJ parameters_NNS to_TO adjust_VB ._.
+In_IN single-document_JJ segmentation_NN ,_, the_DT performance_NN based_VBN on_IN MI_NNP is_VBZ even_RB better_RBR for_IN that_DT based_VBN on_IN WMI_NNP ,_, so_IN no_DT extra_JJ hyper_NN parameter_NN is_VBZ required_VBN ._.
+In_IN multi-document_JJ segmentation_NN ,_, we_PRP show_VBP in_IN the_DT experiment_NN ,_, a_DT =_JJ #_# and_CC b_NN =_JJ #_# is_VBZ the_DT best_JJS ._.
+Our_PRP$ method_NN gives_VBZ more_JJR weights_NNS to_TO cue_NN terms_NNS ._.
+However_RB ,_, usually_RB cue_NN terms_NNS or_CC sentences_NNS appear_VBP at_IN the_DT beginning_NN of_IN a_DT segment_NN ,_, while_IN the_DT end_NN of_IN the_DT segment_NN may_MD be_VB 1_CD #_# #_# ##_CD ##_CD ##_CD ##_CD ###_CD 0_CD 0_CD ._.
+##_NN 0_CD ._.
+#_# 0_CD ._.
+##_NN 0_CD ._.
+#_# 0_CD ._.
+##_NN 0_CD ._.
+#_# 0_CD ._.
+##_NN Document_NNP Number_NNP ErrorRate_NNP MIl_NNP :_: a_DT =_JJ #_# ,_, b_NN =_JJ #_# WMI_FW l_NN :_: a_DT =_JJ #_# ,_, b_NN =_JJ #_# WMI_FW l_NN :_: a_DT =_JJ #_# ,_, b_NN =_JJ #_# WMI_FW l_NN :_: a_DT =_JJ #_# ,_, b_NN =_JJ #_# Figure_NNP #_# :_: Error_NN rates_NNS for_IN different_JJ hyper_JJ parameters_NNS of_IN term_NN weights_NNS ._.
+0_CD #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# 0_CD 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 1_CD Normalized_VBN Document_NNP Entropy_NNP NormalizedSegmentEntropy_NNP Noisy_NNP words_NNS Cue_NN words_NNS Common_JJ stop_NN words_NNS Docdep_NNP stop_VB words_NNS Figure_NNP #_# :_: Term_NN weights_NNS learned_VBD from_IN the_DT whole_JJ training_NN set_NN ._.
+0_CD ###_CD ###_CD ###_CD ###_CD ###_CD ###_CD 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+#_# 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN 0_CD ._.
+##_NN Number_NN of_IN Steps_NNS -LRB-_-LRB- Weighted_JJ -RRB-_-RRB- MutualInformation_NNP MI_NNP l_NN WMI_NN l_NN Figure_NN #_# :_: Change_NNP in_IN -LRB-_-LRB- weighted_JJ -RRB-_-RRB- MI_NNP for_IN MIl_NNP and_CC WMIl_NNP ._.
+0_CD ##_CD ##_CD ##_CD ##_CD ###_CD ###_CD 0_CD 200_CD 400_CD 600_CD 800_CD 1000_CD 1200_CD 1400_CD 1600_CD 1800_CD 2000_CD Document_NNP Number_NNP TimetoConverge_NNP -LRB-_-LRB- sec_NN -RRB-_-RRB- MI_NN l_NN WMI_NN l_NN Figure_NN #_# :_: Time_NNP to_TO converge_VB for_IN MIl_NN and_CC WMIl_NN ._.
+much_RB noisy_JJ ._.
+One_CD possible_JJ solution_NN is_VBZ giving_VBG more_RBR weights_NNS to_TO terms_NNS at_IN the_DT beginning_NN of_IN each_DT segment_NN ._.
+Moreover_RB ,_, when_WRB the_DT length_NN of_IN segments_NNS are_VBP quite_RB different_JJ ,_, long_JJ segments_NNS have_VBP much_RB higher_JJR term_NN frequencies_NNS ,_, so_IN they_PRP may_MD dominate_VB the_DT segmentation_NN boundaries_NNS ._.
+Normalization_NN of_IN term_NN frequencies_NNS versus_CC the_DT segment_NN length_NN may_MD be_VB useful_JJ ._.
+6_CD ._.
+CONCLUSIONS_NNS AND_CC FUTURE_NNS WORK_VBP We_PRP proposed_VBD a_DT novel_JJ method_NN for_IN multi-document_JJ topic_NN segmentation_NN and_CC alignment_NN based_VBN on_IN weighted_JJ mutual_JJ information_NN ,_, which_WDT can_MD also_RB handle_VB single-document_JJ cases_NNS ._.
+We_PRP used_VBD dynamic_JJ programming_NN to_TO optimize_VB our_PRP$ algorithm_NN ._.
+Our_PRP$ approach_NN outperforms_VBZ all_PDT the_DT previous_JJ methods_NNS on_IN singledocument_NN cases_NNS ._.
+Moreover_RB ,_, we_PRP also_RB showed_VBD that_IN doing_VBG segmentation_NN among_IN multiple_JJ documents_NNS can_MD improve_VB the_DT performance_NN tremendously_RB ._.
+Our_PRP$ results_NNS also_RB illustrated_VBD that_IN using_VBG weighted_JJ mutual_JJ information_NN can_MD utilize_VB the_DT information_NN of_IN multiple_JJ documents_NNS to_TO reach_VB a_DT better_JJR performance_NN ._.
+We_PRP only_RB tested_VBD our_PRP$ method_NN on_IN limited_JJ data_NNS sets_NNS ._.
+More_RBR data_NNS sets_NNS especially_RB complicated_JJ ones_NNS should_MD be_VB tested_VBN ._.
+More_RBR previous_JJ methods_NNS should_MD be_VB compared_VBN with_IN ._.
+Moreover_RB ,_, natural_JJ segmentations_NNS like_IN paragraphs_NNS are_VBP hints_NNS that_WDT can_MD be_VB used_VBN to_TO find_VB the_DT optimal_JJ boundaries_NNS ._.
+Supervised_VBN learning_NN also_RB can_MD be_VB considered_VBN ._.
+7_CD ._.
+ACKNOWLEDGMENTS_NNS The_DT authors_NNS want_VBP to_TO thank_VB Xiang_NNP Ji_NNP ,_, and_CC Prof_NNP ._.
+J_NN ._.
+Scott_NNP Payne_NNP for_IN their_PRP$ help_NN ._.
+8_CD ._.
+REFERENCES_NNS -LSB-_-LRB- #_# -RSB-_-RRB- A_DT ._.
+Banerjee_NNP ,_, I_PRP ._.
+Ghillon_NNP ,_, J_NNP ._.
+Ghosh_NNP ,_, S_NN ._.
+Merugu_NNP ,_, and_CC D_NN ._.
+Modha_NNP ._.
+A_DT generalized_VBN maximum_NN entropy_NN approach_NN to_TO bregman_NN co-clustering_NN and_CC matrix_NN approximation_NN ._.
+In_IN Proceedings_NNP of_IN SIGKDD_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- R_NN ._.
+Bekkerman_NNP ,_, R_NN ._.
+El-Yaniv_NNP ,_, and_CC A_NN ._.
+McCallum_NNP ._.
+Multi-way_JJ distributional_JJ clustering_NN via_IN pairwise_JJ interactions_NNS ._.
+In_IN Proceedings_NNP of_IN ICML_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- D_NN ._.
+M_NN ._.
+Blei_NNP and_CC P_NN ._.
+J_NN ._.
+Moreno_NNP ._.
+Topic_NN segmentation_NN with_IN an_DT aspect_NN hidden_VBN markov_NN model_NN ._.
+In_IN Proceedings_NNP of_IN SIGIR_NNP ,_, 2001_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- D_NN ._.
+M_NN ._.
+Blei_NNP ,_, A_NNP ._.
+Ng_NN ,_, and_CC M_NN ._.
+Jordan_NNP ._.
+Latent_JJ dirichlet_JJ allocation_NN ._.
+Journal_NNP of_IN Machine_NNP Learning_NNP Research_NNP ,_, 3_CD :_: 993-1022_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- T_NN ._.
+Brants_NNPS ,_, F_NN ._.
+Chen_NNP ,_, and_CC I_PRP ._.
+Tsochantaridis_NNP ._.
+Topic-based_JJ document_NN segmentation_NN with_IN probabilistic_JJ latent_JJ semantic_JJ analysis_NN ._.
+In_IN Proceedings_NNP of_IN CIKM_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- F_NN ._.
+Choi_NNP ._.
+Advances_NNS in_IN domain_NN indepedent_JJ linear_JJ text_NN segmentation_NN ._.
+In_IN Proceedings_NNP of_IN the_DT NAACL_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- H_NN ._.
+Christensen_NNP ,_, B_NN ._.
+Kolluru_NNP ,_, Y_NN ._.
+Gotoh_NNP ,_, and_CC S_NN ._.
+Renals_NNS ._.
+Maximum_NNP entropy_JJ segmentation_NN of_IN broadcast_NN news_NN ._.
+In_IN Proceedings_NNP of_IN ICASSP_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- T_NN ._.
+Cover_NNP and_CC J_NNP ._.
+Thomas_NNP ._.
+Elements_NNS of_IN Information_NN Theory_NNP ._.
+John_NNP Wiley_NNP and_CC Sons_NNPS ,_, New_NNP York_NNP ,_, USA_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- S_NN ._.
+Deerwester_NNP ,_, S_NN ._.
+Dumais_NNP ,_, G_NNP ._.
+Furnas_NNP ,_, T_NN ._.
+Landauer_NNP ,_, and_CC R_NN ._.
+Harshman_NNP ._.
+Indexing_NN by_IN latent_JJ semantic_JJ analysis_NN ._.
+Journal_NNP of_IN the_DT American_NNP Society_NNP for_IN Information_NNP Systems_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- I_PRP ._.
+Dhillon_NNP ,_, S_NN ._.
+Mallela_NNP ,_, and_CC D_NN ._.
+Modha_NNP ._.
+Information-theoretic_JJ co-clustering_NN ._.
+In_IN Proceedings_NNP of_IN SIGKDD_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- M_NN ._.
+Hajime_NNP ,_, H_NN ._.
+Takeo_NNP ,_, and_CC O_NN ._.
+Manabu_NNP ._.
+Text_VB segmentation_NN with_IN multiple_JJ surface_NN linguistic_JJ cues_NNS ._.
+In_IN Proceedings_NNP of_IN COLING-ACL_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- T_NN ._.
+K_NN ._.
+Ho_NNP ._.
+Stop_VB word_NN location_NN and_CC identification_NN for_IN adaptive_JJ text_NN recognition_NN ._.
+International_NNP Journal_NNP of_IN Document_NNP Analysis_NN and_CC Recognition_NN ,_, #_# -LRB-_-LRB- #_# -RRB-_-RRB- ,_, August_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- T_NN ._.
+Hofmann_NNP ._.
+Probabilistic_NNP latent_JJ semantic_JJ analysis_NN ._.
+In_IN Proceedings_NNP of_IN the_DT UAI_NNP ''_'' ##_NN ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- X_NN ._.
+Ji_NN and_CC H_NN ._.
+Zha_NNP ._.
+Correlating_VBG summarization_NN of_IN a_DT pair_NN of_IN multilingual_JJ documents_NNS ._.
+In_IN Proceedings_NNP of_IN RIDE_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- X_NN ._.
+Ji_NN and_CC H_NN ._.
+Zha_NNP ._.
+Domain-independent_JJ text_NN segmentation_NN using_VBG anisotropic_JJ diffusion_NN and_CC dynamic_JJ programming_NN ._.
+In_IN Proceedings_NNP of_IN SIGIR_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- X_NN ._.
+Ji_NN and_CC H_NN ._.
+Zha_NNP ._.
+Extracting_VBG shared_JJ topics_NNS of_IN multiple_JJ documents_NNS ._.
+In_IN Proceedings_NNP of_IN the_DT 7th_JJ PAKDD_NN ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+Lafferty_NNP ,_, A_NNP ._.
+McCallum_NNP ,_, and_CC F_NN ._.
+Pereira_NNP ._.
+Conditional_JJ random_JJ fields_NNS :_: Probabilistic_NNP models_NNS for_IN segmenting_VBG and_CC labeling_VBG sequence_NN data_NNS ._.
+In_IN Proceedings_NNP of_IN ICML_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- T_NN ._.
+Li_NNP ,_, S_NN ._.
+Ma_NNP ,_, and_CC M_NN ._.
+Ogihara_NNP ._.
+Entropy-based_JJ criterion_NN in_IN categorical_JJ clustering_NN ._.
+In_IN Proceedings_NNP of_IN ICML_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- A_DT ._.
+McCallum_NNP ,_, D_NNP ._.
+Freitag_NNP ,_, and_CC F_NN ._.
+Pereira_NNP ._.
+Maximum_NNP entropy_JJ markov_NN models_NNS for_IN information_NN extraction_NN and_CC segmentation_NN ._.
+In_IN Proceedings_NNP of_IN ICML_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- L_NN ._.
+Pevzner_NNP and_CC M_NN ._.
+Hearst_NNP ._.
+A_DT critique_NN and_CC improvement_NN of_IN an_DT evaluation_NN metric_JJ for_IN text_NN segmentation_NN ._.
+Computational_JJ Linguistic_NNP ,_, ##_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 19-36_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+C_NN ._.
+Reynar_NNP ._.
+Statistical_JJ models_NNS for_IN topic_NN segmentation_NN ._.
+In_IN Proceedings_NNP of_IN ACL_NN ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- G_NN ._.
+Salton_NNP and_CC M_NN ._.
+McGill_NNP ._.
+Introduction_NN to_TO Modern_NNP Information_NNP Retrieval_NNP ._.
+McGraw_NNP Hill_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- B_NN ._.
+Sun_NNP ,_, Q_NNP ._.
+Tan_NNP ,_, P_NN ._.
+Mitra_NNP ,_, and_CC C_NN ._.
+L_NN ._.
+Giles_NNP ._.
+Extraction_NN and_CC search_NN of_IN chemical_NN formulae_NNS in_IN text_NN documents_NNS on_IN the_DT web_NN ._.
+In_IN Proceedings_NNP of_IN WWW_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- B_NN ._.
+Sun_NNP ,_, D_NNP ._.
+Zhou_NNP ,_, H_NN ._.
+Zha_NNP ,_, and_CC J_NN ._.
+Yen_NN ._.
+Multi-task_JJ text_NN segmentation_NN and_CC alignment_NN based_VBN on_IN weighted_JJ mutual_JJ information_NN ._.
+In_IN Proceedings_NNP of_IN CIKM_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- M_NN ._.
+Utiyama_NN and_CC H_NN ._.
+Isahara_NNP ._.
+A_DT statistical_JJ model_NN for_IN domain-independent_JJ text_NN segmentation_NN ._.
+In_IN Proceedings_NNP of_IN the_DT 39th_JJ ACL_NN ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- C_NN ._.
+Wayne_NNP ._.
+Multilingual_JJ topic_NN detection_NN and_CC tracking_NN :_: Successful_JJ research_NN enabled_VBN by_IN corpora_NN and_CC evaluation_NN ._.
+In_IN Proceedings_NNP of_IN LREC_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+Yamron_NNP ,_, I_PRP ._.
+Carp_NN ,_, L_NN ._.
+Gillick_NNP ,_, S_NN ._.
+Lowe_NNP ,_, and_CC P_NN ._.
+van_NN Mulbregt_NN ._.
+A_DT hidden_JJ markov_NN model_NN approach_NN to_TO text_NN segmentation_NN and_CC event_NN tracking_NN ._.
+In_IN Proceedings_NNP of_IN ICASSP_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- H_NN ._.
+Zha_NN and_CC X_NN ._.
+Ji_NNP ._.
+Correlating_VBG multilingual_JJ documents_NNS via_IN bipartite_JJ graph_NN modeling_NN ._.
+In_IN Proceedings_NNP of_IN SIGIR_NNP ,_, ####_CD ._.

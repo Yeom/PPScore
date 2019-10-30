@@ -1,0 +1,673 @@
+Operation_NN Context_NN and_CC Context-based_JJ Operational_JJ Transformation_NN David_NNP Sun_NNP Computer_NNP Science_NNP Division_NNP ,_, EECS_NNP University_NNP of_IN California_NNP Berkeley_NNP ,_, CA_NNP davidsun_NNP @_IN cs_NNS ._.
+berkeley_NN ._.
+edu_NN Chengzheng_NNP Sun_NNP School_NNP of_IN Computer_NNP Engineering_NNP Nanyang_NNP Technological_NNP University_NNP Singapore_NNP CZSun_NNP @_IN ntu_NN ._.
+edu_NN ._.
+sg_NN ABSTRACT_NN Operational_JJ Transformation_NN -LRB-_-LRB- OT_NN -RRB-_-RRB- is_VBZ a_DT technique_NN for_IN consistency_NN maintenance_NN and_CC group_NN undo_VBP ,_, and_CC is_VBZ being_VBG applied_VBN to_TO an_DT increasing_VBG number_NN of_IN collaborative_JJ applications_NNS ._.
+The_DT theoretical_JJ foundation_NN for_IN OT_NNP is_VBZ crucial_JJ in_IN determining_VBG its_PRP$ capability_NN to_TO solve_VB existing_VBG and_CC new_JJ problems_NNS ,_, as_RB well_RB as_IN the_DT quality_NN of_IN those_DT solutions_NNS ._.
+The_DT theory_NN of_IN causality_NN has_VBZ been_VBN the_DT foundation_NN of_IN all_DT prior_JJ OT_NN systems_NNS ,_, but_CC it_PRP is_VBZ inadequate_JJ to_TO capture_VB essential_JJ correctness_NN requirements_NNS ._.
+Past_JJ research_NN had_VBD invented_VBN various_JJ patches_NNS to_TO work_VB around_RB this_DT problem_NN ,_, resulting_VBG in_IN increasingly_RB intricate_JJ and_CC complicated_JJ OT_NN algorithms_NNS ._.
+After_IN having_VBG designed_VBN ,_, implemented_VBN ,_, and_CC experimented_VBD with_IN a_DT series_NN of_IN OT_NNP algorithms_NNS ,_, we_PRP reflected_VBD on_IN what_WP had_VBD been_VBN learned_VBN and_CC set_VBN out_RP to_TO develop_VB a_DT new_JJ theoretical_JJ framework_NN for_IN better_JJR understanding_NN and_CC resolving_VBG OT_NN problems_NNS ,_, reducing_VBG its_PRP$ complexity_NN ,_, and_CC supporting_VBG its_PRP$ continual_JJ evolution_NN ._.
+In_IN this_DT paper_NN ,_, we_PRP report_VBP the_DT main_JJ results_NNS of_IN this_DT effort_NN :_: the_DT theory_NN of_IN operation_NN context_NN and_CC the_DT COT_NNP -LRB-_-LRB- Context-based_JJ OT_NN -RRB-_-RRB- algorithm_NN ._.
+The_DT COT_NNP algorithm_NN is_VBZ capable_JJ of_IN supporting_VBG both_CC do_VBP and_CC undo_VBP of_IN any_DT operations_NNS at_IN anytime_RB ,_, without_IN requiring_VBG transformation_NN functions_NNS to_TO preserve_VB Reversibility_NNP Property_NNP ,_, Convergence_NNP Property_NNP #_# ,_, Inverse_NNP Properties_NNP #_# and_CC #_# ._.
+The_DT COT_NNP algorithm_NN is_VBZ not_RB only_RB simpler_JJR and_CC more_RBR efficient_JJ than_IN prior_JJ OT_NN control_NN algorithms_NNS ,_, but_CC also_RB simplifies_VBZ the_DT design_NN of_IN transformation_NN functions_NNS ._.
+We_PRP have_VBP implemented_VBN the_DT COT_NNP algorithm_NN in_IN a_DT generic_JJ collaboration_NN engine_NN and_CC used_VBD it_PRP for_IN supporting_VBG a_DT range_NN of_IN novel_JJ collaborative_JJ applications_NNS ._.
+Categories_NNS and_CC Subject_NNP Descriptors_NNPS C_NNP ._.
+#_# ._.
+#_# -LSB-_-LRB- Computer-Communication_NNP Networks_NNP -RSB-_-RRB- :_: Distributed_VBN Systems-Distributed_NNP Applications_NNS ;_: H_NN ._.
+#_# ._.
+#_# -LSB-_-LRB- Information_NNP Interfaces_NNP and_CC Presentation_NN -RSB-_-RRB- :_: Group_NNP and_CC Organization_NNP Interfaces-Collaborative_JJ computing_NN ;_: Synchronous_JJ interaction_NN General_NNP Terms_NNS Algorithms_NNS ,_, Design_NN ,_, Theory_NNP 1_CD ._.
+INTRODUCTION_NNP Operational_NNP Transformation_NN -LRB-_-LRB- OT_NN -RRB-_-RRB- was_VBD originally_RB invented_VBN for_IN consistency_NN maintenance_NN in_IN plain-text_JJ group_NN editors_NNS -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+In_IN over_IN ##_CD years_NNS ,_, OT_NNP has_VBZ evolved_VBN to_TO support_VB an_DT increasing_VBG number_NN of_IN applications_NNS ,_, including_VBG group_NN undo_VBP -LSB-_-LRB- ##_CD ,_, ##_CD ,_, ##_CD ,_, 21_CD -RSB-_-RRB- ,_, group-awareness_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, operation_NN notification_NN and_CC compression_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, spreadsheet_NN and_CC table-centric_JJ applications_NNS -LSB-_-LRB- ##_NNS ,_, 27_CD -RSB-_-RRB- ,_, HTML_NNP /_: XML_NN and_CC tree-structured_JJ document_NN editing_NN -LSB-_-LRB- #_# ,_, 7_CD -RSB-_-RRB- ,_, word_NN processing_NN and_CC slide_NN creation_NN -LSB-_-LRB- ##_CD ,_, ##_CD ,_, ##_CD -RSB-_-RRB- ,_, transparent_JJ and_CC heterogenous_JJ application-sharing_NN -LSB-_-LRB- #_# ,_, ##_NN ,_, ##_NN -RSB-_-RRB- ,_, and_CC mobile_JJ replicated_VBN computing_NN and_CC database_NN systems_NNS -LSB-_-LRB- #_# ,_, ##_NN -RSB-_-RRB- ._.
+To_TO effectively_RB and_CC efficiently_RB support_VBP existing_VBG and_CC new_JJ applications_NNS ,_, we_PRP must_MD continue_VB to_TO improve_VB the_DT capability_NN and_CC quality_NN of_IN OT_NNP in_IN solving_VBG both_CC old_JJ and_CC new_JJ problems_NNS ._.
+The_DT soundness_NN of_IN the_DT theoretical_JJ foundation_NN for_IN OT_NNP is_VBZ crucial_JJ in_IN this_DT process_NN ._.
+One_CD theoretical_JJ underpinning_NN of_IN all_DT existing_VBG OT_NN algorithms_NNS is_VBZ causality_NN /_: concurrency_NN -LSB-_-LRB- #_# ,_, ##_NN ,_, #_# ,_, ##_NN -RSB-_-RRB- :_: causally_RB related_JJ operations_NNS must_MD be_VB executed_VBN in_IN their_PRP$ causal_JJ order_NN ;_: concurrent_JJ operations_NNS must_MD be_VB transformed_VBN before_IN their_PRP$ execution_NN ._.
+However_RB ,_, the_DT theory_NN of_IN causality_NN is_VBZ inadequate_JJ to_TO capture_VB essential_JJ OT_NN conditions_NNS for_IN correct_JJ transformation_NN ._.
+The_DT limitation_NN of_IN the_DT causality_NN theory_NN had_VBD caused_VBN correctness_NN problems_NNS from_IN the_DT very_JJ beginning_NN of_IN OT_NNP ._.
+The_DT dOPT_NN algorithm_NN was_VBD the_DT first_JJ OT_NNP algorithm_NN and_CC was_VBD based_VBN solely_RB on_IN the_DT concurrency_NN relationships_NNS among_IN operations_NNS -LSB-_-LRB- #_# -RSB-_-RRB- :_: a_DT pair_NN of_IN operations_NNS are_VBP transformable_JJ as_RB long_RB as_IN they_PRP are_VBP concurrent_JJ ._.
+However_RB ,_, later_RB research_NN discovered_VBD that_IN the_DT concurrency_NN condition_NN alone_RB is_VBZ not_RB sufficient_JJ to_TO ensure_VB the_DT correctness_NN of_IN transformation_NN ._.
+Another_DT condition_NN is_VBZ that_IN the_DT two_CD concurrent_JJ operations_NNS must_MD be_VB defined_VBN on_IN the_DT same_JJ document_NN state_NN ._.
+In_IN fact_NN ,_, the_DT failure_NN to_TO meet_VB the_DT second_JJ condition_NN was_VBD the_DT root_NN of_IN the_DT dOPT-puzzle_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+This_DT puzzle_NN was_VBD solved_VBN in_IN various_JJ ways_NNS ,_, but_CC the_DT theory_NN of_IN causality_NN as_RB well_RB as_IN its_PRP$ limitation_NN were_VBD inherited_VBN by_IN all_DT follow-up_JJ OT_NNP algorithms_NNS ._.
+The_DT causality_NN theory_NN limitation_NN became_VBD even_RB more_RBR prominent_JJ when_WRB OT_NNP was_VBD applied_VBN to_TO solve_VB the_DT undo_VB problem_NN in_IN group_NN editors_NNS ._.
+The_DT concept_NN of_IN causality_NN is_VBZ unsuitable_JJ to_TO capture_VB the_DT relationships_NNS between_IN an_DT inverse_JJ operation_NN -LRB-_-LRB- as_IN an_DT interpretation_NN of_IN a_DT meta-level_JJ undo_VBP command_NN -RRB-_-RRB- and_CC other_JJ normal_JJ editing_NN operations_NNS ._.
+In_IN fact_NN ,_, the_DT causality_NN relation_NN is_VBZ not_RB defined_VBN for_IN inverse_JJ operations_NNS ._.
+Various_JJ patches_NNS were_VBD invented_VBN to_TO work_VB around_RB this_DT problem_NN ,_, resulting_VBG in_IN more_RBR intricate_JJ complicated_JJ OT_NN algorithms_NNS -LSB-_-LRB- ##_NNS ,_, ##_NN -RSB-_-RRB- ._.
+After_IN having_VBG designed_VBN ,_, implemented_VBN ,_, and_CC experimented_VBD with_IN a_DT series_NN of_IN OT_NNP algorithms_NNS of_IN increased_VBN complexity_NN ,_, we_PRP reflected_VBD on_IN what_WP had_VBD been_VBN learned_VBN and_CC set_VBN out_RP to_TO develop_VB a_DT uniformed_JJ theoretical_JJ framework_NN for_IN better_JJR understanding_NN and_CC resolving_VBG OT_NN problems_NNS ,_, reducing_VBG its_PRP$ complexity_NN ,_, and_CC 279_CD supporting_VBG its_PRP$ continual_JJ evolution_NN ._.
+In_IN this_DT paper_NN ,_, we_PRP report_VBP the_DT main_JJ results_NNS of_IN this_DT effort_NN :_: the_DT theory_NN of_IN operation_NN context_NN and_CC the_DT COT_NNP -LRB-_-LRB- Context-based_JJ OT_NN -RRB-_-RRB- algorithm_NN ._.
+The_DT rest_NN of_IN this_DT paper_NN is_VBZ organized_VBN as_IN follows_VBZ ._.
+First_RB ,_, we_PRP define_VBP causal-dependency_NN /_: -_: independency_NN and_CC briefly_NN describe_VBP their_PRP$ limitations_NNS in_IN Section_NN #_# ._.
+Then_RB ,_, we_PRP present_VBP the_DT key_JJ elements_NNS of_IN the_DT operation_NN context_NN theory_NN ,_, including_VBG the_DT definition_NN of_IN operation_NN context_NN ,_, context-dependency_NN /_: -_: independency_NN relations_NNS ,_, context-based_JJ conditions_NNS ,_, and_CC context_NN vectors_NNS in_IN Section_NN #_# ._.
+In_IN Section_NN #_# ,_, we_PRP present_VBP the_DT basic_JJ COT_NNP algorithm_NN for_IN supporting_VBG consistency_NN maintenance_NN -LRB-_-LRB- do_VB -RRB-_-RRB- and_CC group_NN undo_VBP under_IN the_DT assumption_NN that_IN underlying_VBG transformation_NN functions_NNS are_VBP able_JJ to_TO preserve_VB some_DT important_JJ transformation_NN properties_NNS ._.
+Then_RB ,_, these_DT transformation_NN properties_NNS and_CC their_PRP$ pre-conditions_NNS are_VBP discussed_VBN in_IN Section_NN #_# ._.
+The_DT COT_NNP solutions_NNS to_TO these_DT transformation_NN properties_NNS are_VBP presented_VBN in_IN Section_NN #_# ._.
+Comparison_NN of_IN the_DT COT_NNP work_NN to_TO prior_JJ OT_NN work_NN ,_, OT_NN correctness_NN issues_NNS ,_, and_CC future_JJ work_NN are_VBP discussed_VBN in_IN Section_NN #_# ._.
+Finally_RB ,_, major_JJ contributions_NNS of_IN this_DT work_NN are_VBP summarized_VBN in_IN Section_NN #_# ._.
+2_LS ._.
+LIMITATIONS_NNS OF_IN CAUSALITY_NNP The_DT theory_NN of_IN causality_NN is_VBZ central_JJ to_TO distributed_VBN computing_NN and_CC to_TO the_DT design_NN of_IN all_DT existing_VBG OT_NN algorithms_NNS ._.
+Following_VBG Lamport_NNP -LSB-_-LRB- #_# -RSB-_-RRB- ,_, causal-dependency_NN /_: -_: independency_NN relations_NNS among_IN editing_NN operations_NNS can_MD be_VB defined_VBN in_IN terms_NNS of_IN their_PRP$ generation_NN and_CC execution_NN sequences_NNS -LSB-_-LRB- #_# ,_, ##_NN -RSB-_-RRB- ._.
+Definition_NN #_# ._.
+Causal-dependency_NN relation_NN Given_VBN two_CD operations_NNS Oa_NN and_CC Ob_NN ,_, generated_VBN at_IN sites_NNS i_FW and_CC j_FW ,_, Ob_NN is_VBZ causal-dependent_JJ on_IN Oa_NN ,_, denoted_VBN by_IN Oa_NN Ob_NN ,_, iff_NN :_: -LRB-_-LRB- #_# -RRB-_-RRB- i_FW =_JJ j_NN and_CC the_DT generation_NN of_IN Oa_NN happened_VBD before_IN the_DT generation_NN of_IN Ob_NN ;_: or_CC -LRB-_-LRB- #_# -RRB-_-RRB- i_FW =_JJ j_NN and_CC the_DT execution_NN of_IN Oa_NN at_IN site_NN j_NN happened_VBD before_IN the_DT generation_NN of_IN Ob_NN ;_: or_CC -LRB-_-LRB- #_# -RRB-_-RRB- there_EX exists_VBZ an_DT operation_NN Ox_NN ,_, such_JJ that_IN Oa_NN Ox_NN and_CC Ox_NN Ob_NN ._.
+#_# Definition_NNP #_# ._.
+Causal-independency_NN relation_NN Given_VBN two_CD operations_NNS Oa_NN and_CC Ob_NN ,_, Oa_NN and_CC Ob_NN are_VBP causalindependent_JJ or_CC concurrent_JJ ,_, denoted_VBN by_IN Oa_NN Ob_NN ,_, iff_NN neither_CC Oa_NN Ob_NN ,_, nor_CC Ob_NN Oa_NN ._.
+#_# Just_RB as_IN Vector_NNP Logical_NNP Clocks_NNP are_VBP used_VBN for_IN capturing_VBG casuality_NN in_IN distributed_VBN systems_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, State_NN Vectors_NNS have_VBP been_VBN used_VBN for_IN capturing_VBG causal_JJ relationships_NNS among_IN operations_NNS and_CC for_IN representing_VBG document_NN states_NNS in_IN OT_NNP systems_NNS -LSB-_-LRB- #_# ,_, ##_NN ,_, 23_CD -RSB-_-RRB- ._.
+To_TO illustrate_VB causal_JJ relations_NNS among_IN operations_NNS ,_, consider_VBP a_DT real-time_JJ group_NN editing_NN session_NN with_IN two_CD sites_NNS in_IN Figure_NNP #_# ._.
+There_EX are_VBP three_CD editing_NN operations_NNS in_IN this_DT scenario_NN -LRB-_-LRB- the_DT undo_VBP command_NN Undo_NN -LRB-_-LRB- O2_CD -RRB-_-RRB- and_CC its_PRP$ relation_NN with_IN other_JJ operations_NNS shall_MD be_VB explained_VBN later_RB -RRB-_-RRB- :_: O1_NN generated_VBN at_IN site_NN #_# ,_, and_CC O2_CD and_CC O3_NN generated_VBD at_IN site_NN #_# ._.
+According_VBG to_TO Definitions_NNS #_# and_CC #_# ,_, we_PRP have_VBP O2_CD O3_NN because_IN the_DT generation_NN of_IN O2_CD happened_VBD before_IN the_DT generation_NN of_IN O3_NN ;_: O1_NN O2_CD and_CC O1_NN O3_NN because_IN for_IN each_DT pair_NN ,_, neither_CC operation_NN ''_'' s_NNS execution_NN happened_VBD before_IN the_DT other_JJ operation_NN ''_'' s_NNS generation_NN ._.
+In_IN the_DT following_VBG discussion_NN ,_, we_PRP shall_MD use_VB the_DT term_NN ITtransform_NN to_TO mean_VB the_DT use_NN of_IN the_DT IT_NNP -LRB-_-LRB- Inclusion_NNP Transformation_NN -RRB-_-RRB- function_NN :_: IT_NNP -LRB-_-LRB- Oa_NNP ,_, Ob_NN -RRB-_-RRB- ,_, which_WDT transforms_VBZ operation_NN Oa_NN against_IN operation_NN Ob_NN in_IN such_JJ a_DT way_NN that_IN the_DT impact_NN of_IN Ob_NN is_VBZ effectively_RB included_VBN in_IN Oa_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+This_DT term_NN is_VBZ introduced_VBN to_TO differentiate_VB this_DT special_JJ transformation_NN function_NN from_IN other_JJ steps_NNS involved_VBN in_IN a_DT transformation_NN process_NN ._.
+Figure_NNP #_# :_: A_DT real-time_JJ group_NN editing_NN scenario_NN ._.
+The_DT scenario_NN in_IN Figure_NNP #_# -LRB-_-LRB- without_IN the_DT undo_VBP command_NN -RRB-_-RRB- has_VBZ often_RB been_VBN used_VBN to_TO illustrate_VB the_DT dOPT-puzzle_NN ._.
+Under_IN the_DT dOPT_NN algorithm_NN -LSB-_-LRB- #_# -RSB-_-RRB- ,_, when_WRB O2_CD arrives_VBZ at_IN site_NN #_# ,_, it_PRP will_MD be_VB ITtransformed_VBN against_IN O1_NN since_IN O2_CD O1_NN ;_: this_DT is_VBZ correct_JJ because_IN O2_CD and_CC O1_NN are_VBP defined_VBN on_IN the_DT same_JJ -LRB-_-LRB- initial_JJ -RRB-_-RRB- document_NN state_NN ._.
+When_WRB O3_NN arrives_VBZ at_IN site_NN #_# ,_, it_PRP will_MD also_RB be_VB IT-transformed_VBN against_IN O1_NN since_IN O3_NN O1_NN ;_: but_CC this_DT is_VBZ incorrect_JJ because_IN O3_NN is_VBZ defined_VBN on_IN the_DT document_NN state_NN that_WDT contains_VBZ the_DT effect_NN of_IN O2_CD ,_, whereas_IN O1_NN is_VBZ defined_VBN on_IN the_DT initial_JJ document_NN state_NN ._.
+In_IN this_DT case_NN ,_, the_DT parameters_NNS of_IN O3_NN and_CC O1_NN are_VBP not_RB comparable_JJ and_CC hence_RB may_MD not_RB be_VB IT-transformed_JJ correctly_RB ._.
+The_DT solution_NN to_TO this_DT puzzle_NN is_VBZ first_JJ to_TO IT-transform_NN O1_NN against_IN O2_CD to_TO produce_VB O1_NN ,_, which_WDT is_VBZ defined_VBN on_IN the_DT document_NN state_NN including_VBG the_DT effect_NN of_IN O2_CD -LRB-_-LRB- the_DT same_JJ state_NN on_IN which_WDT O3_NN is_VBZ defined_VBN -RRB-_-RRB- ,_, and_CC then_RB to_TO IT-transform_NN O3_NN against_IN O1_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+From_IN Definitions_NNS #_# and_CC #_# ,_, it_PRP is_VBZ clear_JJ that_IN the_DT causaldependency_NN relation_NN is_VBZ only_RB defined_VBN for_IN original_JJ operations_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+O1_NN ,_, O2_CD and_CC O3_NN -RRB-_-RRB- directly_RB generated_VBN by_IN users_NNS ,_, but_CC not_RB for_IN transformed_VBN operations_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+O1_NN -RRB-_-RRB- ._.
+Furthermore_RB ,_, the_DT concurrency_NN relation_NN does_VBZ not_RB capture_VB the_DT essential_JJ condition_NN for_IN correct_JJ IT-transformation_NN :_: the_DT two_CD input_NN operations_NNS must_MD be_VB defined_VBN on_IN the_DT same_JJ document_NN state_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Another_DT major_JJ limitation_NN of_IN causality_NN is_VBZ its_PRP$ unsuitability_NN for_IN capturing_VBG OT_NN conditions_NNS for_IN inverse_JJ operations_NNS ._.
+The_DT Undo_NNP -LRB-_-LRB- O2_CD -RRB-_-RRB- command_NN in_IN Figure_NNP #_# is_VBZ interpreted_VBN as_IN an_DT inverse_JJ operation_NN O2_CD ._.
+The_DT correct_JJ undo_VBP effect_NN for_IN O2_CD is_VBZ to_TO eliminate_VB the_DT effect_NN of_IN O2_CD but_CC retain_VB the_DT effects_NNS of_IN other_JJ operations_NNS -LRB-_-LRB- i_FW ._.
+e_LS ._.
+O1_NN and_CC O3_NN -RRB-_-RRB- -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+To_TO achieve_VB this_DT effect_NN ,_, O2_CD needs_NNS to_TO be_VB treated_VBN as_IN an_DT operation_NN defined_VBN on_IN the_DT document_NN state_NN including_VBG the_DT effect_NN of_IN O2_CD but_CC not_RB O1_NN and_CC O3_NN ,_, so_RB that_IN O2_CD can_MD be_VB transformed_VBN against_IN O1_NN and_CC O3_NN before_IN its_PRP$ execution_NN ._.
+However_RB ,_, according_VBG to_TO Lamport_NNP ''_'' s_VBZ happen-before_NN relation_NN -LSB-_-LRB- #_# -RSB-_-RRB- ,_, Undo_VB -LRB-_-LRB- O2_CD -RRB-_-RRB- is_VBZ causally_RB dependent_JJ on_IN O1_NN ,_, O2_CD ,_, and_CC O3_NN ._.
+If_IN O2_CD was_VBD to_TO inherit_VB the_DT causal_JJ relation_NN of_IN Undo_NNP -LRB-_-LRB- O2_CD -RRB-_-RRB- ,_, then_RB it_PRP would_MD be_VB effectively_RB treated_VBN as_IN an_DT operation_NN defined_VBN on_IN the_DT document_NN state_NN with_IN the_DT effects_NNS of_IN all_DT three_CD operations_NNS O1_NN ,_, O2_CD ,_, and_CC O3_NN ,_, which_WDT would_MD prohibit_VB O2_CD from_IN being_VBG transformed_VBN against_IN any_DT operation_NN ,_, thus_RB failing_VBG to_TO achieve_VB the_DT correct_JJ undo_VBP effect_NN ._.
+Moreover_RB ,_, after_IN executing_VBG an_DT inverse_JJ operation_NN like_IN O2_CD ,_, the_DT document_NN state_NN can_MD no_RB longer_RB be_VB properly_RB represented_VBN by_IN the_DT state_NN vector_NN ,_, which_WDT is_VBZ only_RB capable_JJ of_IN representing_VBG original_JJ normal_JJ editing_NN operations_NNS ._.
+3_LS ._.
+OPERATION_NN CONTEXT_NN 3_CD ._.
+#_# Basic_JJ concept_NN Conceptually_NNP ,_, each_DT operation_NN O_NN is_VBZ associated_VBN with_IN a_DT context_NN ,_, denoted_VBN by_IN C_NN -LRB-_-LRB- O_NN -RRB-_-RRB- ,_, which_WDT corresponds_VBZ to_TO the_DT document_NN 280_CD state_NN on_IN which_WDT the_DT operation_NN is_VBZ defined_VBN ._.
+The_DT significance_NN of_IN operation_NN context_NN is_VBZ twofold_RB :_: -LRB-_-LRB- #_# -RRB-_-RRB- an_DT operation_NN can_MD be_VB correctly_RB executed_VBN only_RB if_IN its_PRP$ context_NN and_CC the_DT current_JJ document_NN state_NN are_VBP the_DT same_JJ ;_: and_CC -LRB-_-LRB- #_# -RRB-_-RRB- an_DT operation_NN can_MD be_VB correctly_RB ITtransformed_VBN against_IN another_DT operation_NN only_RB if_IN the_DT contexts_NNS of_IN these_DT two_CD operations_NNS are_VBP the_DT same_JJ ._.
+In_IN Figure_NNP #_# ,_, both_DT O1_NN and_CC O2_CD are_VBP defined_VBN on_IN the_DT same_JJ initial_JJ document_NN so_IN they_PRP are_VBP associated_VBN with_IN the_DT same_JJ context_NN ;_: O3_NN is_VBZ defined_VBN on_IN the_DT document_NN state_NN which_WDT includes_VBZ the_DT effect_NN of_IN O2_CD ,_, so_RB C_NN -LRB-_-LRB- O3_NN -RRB-_-RRB- is_VBZ different_JJ from_IN C_NN -LRB-_-LRB- O1_NN -RRB-_-RRB- or_CC C_NN -LRB-_-LRB- O2_CD -RRB-_-RRB- ._.
+When_WRB O2_CD arrives_VBZ at_IN site_NN #_# ,_, it_PRP can_MD not_RB be_VB executed_VBN as-is_RB since_IN C_NN -LRB-_-LRB- O2_CD -RRB-_-RRB- does_VBZ not_RB match_VB the_DT current_JJ document_NN state_NN at_IN site_NN #_# which_WDT includes_VBZ the_DT effect_NN of_IN O1_NN ._.
+O2_CD can_MD be_VB correctly_RB IT-transformed_VBN against_IN O1_NN since_IN their_PRP$ contexts_NNS corresponds_VBZ to_TO the_DT same_JJ initial_JJ document_NN state_NN ._.
+When_WRB O3_NN arrives_VBZ at_IN site_NN #_# ,_, it_PRP can_MD not_RB be_VB executed_VBN as-is_RB either_CC since_IN C_NN -LRB-_-LRB- O3_NN -RRB-_-RRB- does_VBZ not_RB match_VB the_DT current_JJ document_NN state_NN at_IN site_NN #_# which_WDT includes_VBZ the_DT effects_NNS of_IN both_DT O1_NN and_CC O2_CD ._.
+O3_NN can_MD not_RB be_VB correctly_RB IT-transformed_VBN against_IN O1_NN since_IN their_PRP$ contexts_NNS are_VBP different_JJ ,_, which_WDT is_VBZ the_DT root_NN of_IN the_DT dOPT-puzzle_NN ._.
+As_IN discussed_VBN in_IN Section_NN #_# ,_, Undo_VB -LRB-_-LRB- O2_CD -RRB-_-RRB- should_MD be_VB interpreted_VBN as_IN an_DT inverse_JJ O2_CD defined_VBN on_IN the_DT document_NN state_NN with_IN the_DT effect_NN of_IN O2_CD only_RB ._.
+3_LS ._.
+#_# Set_VB representation_NN of_IN operation_NN context_NN To_TO facilitate_VB comparison_NN and_CC manipulation_NN of_IN operation_NN contexts_NNS for_IN correct_JJ execution_NN and_CC transformation_NN ,_, it_PRP is_VBZ necessary_JJ to_TO explicitly_RB represent_VB operation_NN context_NN ._.
+In_IN OT_NN systems_NNS ,_, there_EX are_VBP two_CD different_JJ kinds_NNS of_IN operation_NN :_: original_JJ operations_NNS which_WDT are_VBP generated_VBN by_IN users_NNS ,_, and_CC transformed_VBN operations_NNS which_WDT are_VBP the_DT outcomes_NNS of_IN some_DT transformations_NNS ._.
+Original_JJ operations_NNS can_MD be_VB further_JJ divided_VBN into_IN two_CD classes_NNS :_: normal_JJ operations_NNS which_WDT are_VBP generated_VBN to_TO do_VB something_NN ,_, and_CC inverse_JJ operations_NNS which_WDT are_VBP generated_VBN to_TO undo_VB some_DT executed_VBN operations_NNS ._.
+For_IN any_DT operation_NN O_NN ,_, its_PRP$ inverse_NN is_VBZ denoted_VBN by_IN O_NN ._.
+Since_IN every_DT transformed_VBN operation_NN must_MD come_VB from_IN an_DT original_JJ operation_NN ,_, we_PRP use_VBP the_DT notation_NN org_NN -LRB-_-LRB- O_NN -RRB-_-RRB- to_TO denote_VB the_DT original_JJ operation_NN of_IN O_NN ._.
+If_IN O_NN is_VBZ an_DT original_JJ operation_NN ,_, then_RB org_NN -LRB-_-LRB- O_NN -RRB-_-RRB- =_JJ O_NN ._.
+Since_IN the_DT context_NN of_IN an_DT operation_NN corresponds_VBZ to_TO the_DT document_NN state_NN on_IN which_WDT the_DT operation_NN is_VBZ defined_VBN ,_, the_DT problem_NN of_IN context_NN representation_NN can_MD be_VB reduced_VBN into_IN the_DT problem_NN of_IN document_NN state_NN representation_NN ._.
+In_IN an_DT OT-based_JJ group_NN editor_NN ,_, each_DT document_NN state_NN can_MD be_VB uniquely_RB represented_VBN by_IN the_DT set_NN of_IN original_JJ operations_NNS executed_VBN so_RB far_RB on_IN the_DT document_NN ._.
+These_DT original_JJ operations_NNS may_MD be_VB executed_VBN in_IN different_JJ orders_NNS or_CC in_IN different_JJ -LRB-_-LRB- original_JJ or_CC transformed_VBN -RRB-_-RRB- forms_NNS at_IN different_JJ sites_NNS ,_, but_CC the_DT same_JJ document_NN state_NN must_MD be_VB achieved_VBN -LRB-_-LRB- according_VBG to_TO the_DT convergence_NN requirement_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- -RRB-_-RRB- ._.
+We_PRP use_VBP original_JJ -LRB-_-LRB- normal_JJ and_CC inverse_JJ -RRB-_-RRB- operations_NNS ,_, rather_RB than_IN their_PRP$ transformed_VBN versions_NNS ,_, to_TO represent_VB a_DT document_NN state_NN ._.
+Definition_NN #_# ._.
+Document_NNP state_NN representation_NN A_NN document_NN state_NN can_MD be_VB represented_VBN by_IN DS_NN as_IN follows_VBZ :_: 1_CD ._.
+The_DT initial_JJ document_NN state_NN is_VBZ represented_VBN by_IN DS_NN =_JJ -LCB-_-LRB- -RCB-_-RRB- ._.
+2_LS ._.
+After_IN executing_VBG an_DT operation_NN O_NN of_IN any_DT type_NN on_IN the_DT document_NN state_NN represented_VBN by_IN DS_NN ,_, the_DT new_JJ document_NN state_NN is_VBZ represented_VBN by_IN DS_NN =_JJ DS_NN -LCB-_-LRB- org_NN -LRB-_-LRB- O_NN -RRB-_-RRB- -RCB-_-RRB- ._.
+#_# This_DT presentation_NN does_VBZ not_RB specify_VB what_WP execution_NN forms_VBZ the_DT original_JJ operations_NNS in_IN DS_NN should_MD take_VB to_TO bring_VB the_DT document_NN to_TO the_DT current_JJ state_NN ,_, but_CC it_PRP captures_VBZ essential_JJ and_CC sufficient_JJ information_NN for_IN detecting_VBG whether_IN two_CD document_NN states_NNS are_VBP the_DT same_JJ and_CC for_IN deriving_VBG their_PRP$ differences_NNS in_IN terms_NNS of_IN original_JJ operations_NNS ._.
+Based_VBN on_IN the_DT document_NN state_NN representation_NN ,_, the_DT context_NN of_IN an_DT original_JJ normal_JJ operation_NN should_MD be_VB the_DT same_JJ as_IN the_DT representation_NN of_IN the_DT document_NN state_NN from_IN which_WDT this_DT operation_NN was_VBD generated_VBN ._.
+To_TO achieve_VB the_DT undo_VB effect_NN in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ,_, an_DT original_JJ inverse_JJ operation_NN O_NN should_MD be_VB defined_VBN on_IN the_DT document_NN state_NN DS_NN =_JJ C_NN -LRB-_-LRB- O_NN -RRB-_-RRB- -LCB-_-LRB- O_NN -RCB-_-RRB- ,_, which_WDT is_VBZ the_DT state_NN after_IN executing_VBG the_DT original_JJ operation_NN O_NN on_IN the_DT state_NN C_NN -LRB-_-LRB- O_NN -RRB-_-RRB- ._.
+According_VBG to_TO the_DT definition_NN of_IN the_DT IT_NNP function_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, a_DT transformed_VBN operation_NN O_NN ,_, where_WRB O_NN =_JJ IT_NNP -LRB-_-LRB- O_NNP ,_, Ox_NN -RRB-_-RRB- ,_, should_MD be_VB defined_VBN on_IN the_DT document_NN state_NN DS_NN =_JJ C_NN -LRB-_-LRB- O_NN -RRB-_-RRB- -LCB-_-LRB- org_NN -LRB-_-LRB- Ox_NN -RRB-_-RRB- -RCB-_-RRB- ,_, which_WDT is_VBZ the_DT state_NN achievable_JJ by_IN executing_VBG Ox_NN on_IN the_DT state_NN C_NN -LRB-_-LRB- O_NN -RRB-_-RRB- ._.
+More_RBR precisely_RB ,_, the_DT context_NN of_IN an_DT operation_NN is_VBZ defined_VBN blow_NN ._.
+Definition_NN #_# ._.
+The_DT context_NN of_IN an_DT operation_NN 1_CD ._.
+For_IN an_DT original_JJ normal_JJ operation_NN O_NN ,_, C_NN -LRB-_-LRB- O_NN -RRB-_-RRB- =_JJ DS_NN ,_, where_WRB DS_NN is_VBZ the_DT representation_NN of_IN the_DT document_NN state_NN from_IN which_WDT O_NN was_VBD generated_VBN ._.
+2_LS ._.
+For_IN an_DT original_JJ inverse_JJ operation_NN O_NN ,_, C_NN -LRB-_-LRB- O_NN -RRB-_-RRB- =_JJ C_NN -LRB-_-LRB- O_NN -RRB-_-RRB- -LCB-_-LRB- O_NN -RCB-_-RRB- ,_, where_WRB O_NN is_VBZ the_DT operation_NN to_TO be_VB undone_VBN ._.
+3_LS ._.
+For_IN a_DT transformed_VBN operation_NN O_NN ,_, C_NN -LRB-_-LRB- O_NN -RRB-_-RRB- =_JJ C_NN -LRB-_-LRB- O_NN -RRB-_-RRB- -LCB-_-LRB- org_NN -LRB-_-LRB- Ox_NN -RRB-_-RRB- -RCB-_-RRB- ,_, where_WRB O_NN =_JJ IT_NNP -LRB-_-LRB- O_NNP ,_, Ox_NN -RRB-_-RRB- ._.
+#_# According_VBG to_TO the_DT above_JJ definition_NN ,_, the_DT context_NN of_IN any_DT type_NN of_IN operation_NN can_MD be_VB represented_VBN as_IN a_DT set_NN of_IN original_JJ operations_NNS ._.
+For_IN the_DT scenario_NN in_IN Figure_NNP #_# ,_, we_PRP have_VBP C_NN -LRB-_-LRB- O1_NN -RRB-_-RRB- =_JJ -LCB-_-LRB- -RCB-_-RRB- ,_, C_NN -LRB-_-LRB- O2_CD -RRB-_-RRB- =_JJ -LCB-_-LRB- -RCB-_-RRB- ,_, and_CC C_NN -LRB-_-LRB- O3_NN -RRB-_-RRB- =_JJ -LCB-_-LRB- O2_CD -RCB-_-RRB- according_VBG to_TO Definition_NNP 4-Item_NNP #_# ._.
+According_VBG to_TO Definition_NNP 4-Item_NNP #_# ,_, we_PRP have_VBP C_NN -LRB-_-LRB- O2_CD -RRB-_-RRB- =_JJ -LCB-_-LRB- O2_CD -RCB-_-RRB- ._.
+From_IN O2_CD =_JJ IT_NNP -LRB-_-LRB- O2_CD ,_, O1_NN -RRB-_-RRB- ,_, we_PRP have_VBP C_NN -LRB-_-LRB- O2_CD -RRB-_-RRB- =_JJ -LCB-_-LRB- O1_NN -RCB-_-RRB- according_VBG to_TO Definition_NNP 4-Item_NNP #_# ._.
+3_LS ._.
+#_# Context-dependency_NN /_: -_: independency_NN We_PRP define_VBP the_DT context-dependency_NN /_: -_: independency_NN relation_NN among_IN operations_NNS in_IN terms_NNS of_IN whether_IN an_DT original_JJ operation_NN is_VBZ included_VBN in_IN the_DT context_NN of_IN another_DT operation_NN of_IN any_DT type_NN ._.
+Definition_NN #_# ._.
+Context-dependency_NN relation_NN c_NN Given_VBN an_DT original_JJ operation_NN Oa_NN and_CC an_DT operation_NN Ob_NN of_IN any_DT type_NN ,_, Ob_NN is_VBZ context-dependent_JJ on_IN Oa_NN ,_, denoted_VBN by_IN Oa_NN c_NN Ob_NN ,_, iff_NN :_: -LRB-_-LRB- #_# -RRB-_-RRB- Oa_NN C_NN -LRB-_-LRB- Ob_NN -RRB-_-RRB- ;_: or_CC -LRB-_-LRB- #_# -RRB-_-RRB- there_EX exists_VBZ an_DT original_JJ operation_NN Ox_NN ,_, such_JJ that_IN Oa_NN C_NN -LRB-_-LRB- Ox_NN -RRB-_-RRB- and_CC Ox_NN C_NN -LRB-_-LRB- Ob_NN -RRB-_-RRB- ._.
+#_# It_PRP should_MD be_VB noted_VBN that_IN the_DT context-dependency_NN relation_NN is_VBZ defined_VBN only_RB between_IN an_DT original_JJ -LRB-_-LRB- either_CC normal_JJ or_CC inverse_JJ -RRB-_-RRB- operation_NN and_CC another_DT operation_NN of_IN any_DT type_NN -LRB-_-LRB- original_JJ or_CC transformed_VBN -RRB-_-RRB- ._.
+This_DT is_VBZ because_IN any_DT operation_NN has_VBZ a_DT context_NN ,_, but_CC only_RB original_JJ operations_NNS can_MD be_VB included_VBN in_IN a_DT context_NN ._.
+Definition_NN #_# ._.
+Context-independency_NN relation_NN c_NN Given_VBN two_CD original_JJ operations_NNS Oa_NN and_CC Ob_NN ,_, Oa_NN and_CC Ob_NN are_VBP context-independent_JJ ,_, denoted_VBN by_IN Oa_NN c_NN Ob_NN ,_, iff_NN neither_CC Oa_NN c_NN Ob_NN ,_, nor_CC Ob_NN c_NN Oa_NN ._.
+#_# It_PRP can_MD be_VB shown_VBN that_IN if_IN both_DT Oa_NN and_CC Ob_NN are_VBP original_JJ normal_JJ operations_NNS ,_, then_RB Oa_NN c_NN Ob_NN is_VBZ equivalent_JJ to_TO Oa_NN Ob_NN ;_: and_CC Oa_NN c_NN Ob_NN is_VBZ equivalent_JJ to_TO Oa_NN Ob_NN ._.
+In_IN other_JJ words_NNS ,_, the_DT causal-dependency_NN /_: -_: independency_NN relation_NN is_VBZ a_DT special_JJ case_NN of_IN the_DT context-dependency_NN /_: -_: independency_NN relation_NN ._.
+3_LS ._.
+#_# Context-based_JJ conditions_NNS The_DT following_JJ Context-based_JJ Conditions_NNS -LRB-_-LRB- CC_NN -RRB-_-RRB- capture_NN essential_JJ requirements_NNS for_IN operation_NN execution_NN and_CC transformation_NN in_IN OT_NNP systems_NNS :_: 281_CD CC1_NN :_: C_NN -LRB-_-LRB- O_NN -RRB-_-RRB- DS_NN is_VBZ a_DT necessary_JJ condition_NN for_IN an_DT original_JJ operation_NN O_NN to_TO be_VB transformed_VBN to_TO the_DT document_NN state_NN DS_NN for_IN execution_NN ._.
+CC1_NN ensures_VBZ that_IN O_NN is_VBZ always_RB executed_VBN after_IN the_DT contextdependent_JJ operations_NNS included_VBD in_IN C_NN -LRB-_-LRB- O_NN -RRB-_-RRB- ._.
+In_IN other_JJ words_NNS ,_, for_IN any_DT original_JJ operation_NN Ox_NN ,_, if_IN Ox_NN c_NN O_NN ,_, then_RB Ox_NN must_MD be_VB executed_VBN before_IN O_NN ._.
+When_WRB O_NN is_VBZ an_DT original_JJ normal_JJ operation_NN ,_, all_DT operations_NNS which_WDT are_VBP causally_RB before_IN O_NN must_MD be_VB included_VBN in_IN C_NN -LRB-_-LRB- O_NN -RRB-_-RRB- -LRB-_-LRB- according_VBG to_TO Definition_NNP #_# and_CC Definition_NNP #_# -RRB-_-RRB- ,_, so_RB CC1_NN preserves_VBZ the_DT causal_JJ ordering_VBG among_IN original_JJ normal_JJ operations_NNS -LSB-_-LRB- #_# ,_, ##_NN -RSB-_-RRB- ._.
+When_WRB O_NN is_VBZ an_DT original_JJ inverse_JJ operation_NN ,_, C_NN -LRB-_-LRB- O_NN -RRB-_-RRB- must_MD include_VB the_DT operation_NN to_TO be_VB undone_VBN by_IN O_NN ,_, so_RB CC1_NN preserves_VBZ the_DT do-undo_JJ ordering_VBG among_IN normal_JJ and_CC inverse_JJ operations_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+CC2_NN :_: DS_NN C_NN -LRB-_-LRB- O_NN -RRB-_-RRB- #_# is_VBZ the_DT set_NN of_IN operations_NNS that_WDT O_VBP must_MD be_VB transformed_VBN against_IN before_IN O_NN is_VBZ executed_VBN on_IN the_DT document_NN state_NN DS_NN ._.
+CC2_NN ensures_VBZ that_IN O_NN is_VBZ transformed_VBN against_IN all_DT contextindependent_JJ operations_NNS in_IN DS_NN before_IN its_PRP$ execution_NN ._.
+It_PRP can_MD be_VB shown_VBN that_IN ,_, for_IN any_DT Ox_NN in_IN DS_NN C_NN -LRB-_-LRB- O_NN -RRB-_-RRB- ,_, it_PRP must_MD be_VB that_IN Ox_NN c_NN O_NN ._.
+When_WRB O_NN is_VBZ an_DT original_JJ normal_JJ operation_NN ,_, DS_NN C_NN -LRB-_-LRB- O_NN -RRB-_-RRB- must_MD include_VB all_DT executed_VBN operations_NNS which_WDT are_VBP concurrent_JJ with_IN O_NN ,_, so_RB CC2_NN covers_VBZ the_DT condition_NN that_WDT O_NN should_MD be_VB transformed_VBN against_IN concurrent_JJ operations_NNS -LSB-_-LRB- #_# ,_, ##_NN -RSB-_-RRB- ._.
+When_WRB O_NN is_VBZ an_DT inverse_JJ operation_NN ,_, CC2_NN covers_VBZ the_DT condition_NN that_WDT O_NN should_MD be_VB transformed_VBN against_IN all_DT operations_NNS which_WDT are_VBP executed_VBN after_IN the_DT operation_NN to_TO be_VB undone_VBN by_IN O_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+CC3_NN :_: C_NN -LRB-_-LRB- O_NN -RRB-_-RRB- =_JJ DS_NN is_VBZ a_DT necessary_JJ condition_NN for_IN O_NN to_TO be_VB executed_VBN on_IN the_DT document_NN state_NN DS_NN ._.
+CC3_NN is_VBZ required_VBN for_IN correctly_RB executing_VBG operations_NNS ._.
+CC4_NN :_: C_NN -LRB-_-LRB- Oa_NN -RRB-_-RRB- C_NN -LRB-_-LRB- Ob_NN -RRB-_-RRB- is_VBZ a_DT necessary_JJ condition_NN for_IN Oa_NN to_TO be_VB IT-transformable_JJ to_TO the_DT new_JJ context_NN given_VBN by_IN C_NN -LRB-_-LRB- Ob_NN -RRB-_-RRB- ._.
+CC4_NN is_VBZ required_VBN because_IN if_IN C_NN -LRB-_-LRB- Oa_NN -RRB-_-RRB- C_NN -LRB-_-LRB- Ob_NN -RRB-_-RRB- ,_, then_RB there_EX must_MD be_VB an_DT operation_NN Ox_NN C_NN -LRB-_-LRB- Oa_NN -RRB-_-RRB- but_CC Ox_NN C_NN -LRB-_-LRB- Ob_NN -RRB-_-RRB- ,_, which_WDT means_VBZ Oa_NN can_MD not_RB be_VB IT-transformed_JJ to_TO the_DT new_JJ context_NN C_NN -LRB-_-LRB- Ob_NN -RRB-_-RRB- since_IN IT-transformation_NN can_MD not_RB remove_VB this_DT Ox_NN from_IN C_NN -LRB-_-LRB- Oa_NN -RRB-_-RRB- ._.
+CC5_NN :_: C_NN -LRB-_-LRB- Ob_NN -RRB-_-RRB- C_NN -LRB-_-LRB- Oa_NN -RRB-_-RRB- is_VBZ the_DT set_NN of_IN operations_NNS that_WDT Oa_NNP must_MD be_VB transformed_VBN against_IN before_IN IT-transformed_JJ against_IN Ob_NN ._.
+CC5_NN ensures_VBZ that_IN Oa_NN is_VBZ transformed_VBN against_IN contextindependent_JJ operations_NNS in_IN C_NN -LRB-_-LRB- Ob_NN -RRB-_-RRB- before_IN IT-transformed_JJ against_IN Ob_NN ._.
+It_PRP can_MD be_VB shown_VBN that_IN ,_, for_IN any_DT Ox_NN in_IN C_NN -LRB-_-LRB- Ob_NN -RRB-_-RRB- C_NN -LRB-_-LRB- Oa_NN -RRB-_-RRB- ,_, it_PRP must_MD be_VB that_IN Ox_NN c_NN Oa_NN ,_, CC6_NN :_: C_NN -LRB-_-LRB- Oa_NN -RRB-_-RRB- =_JJ C_NN -LRB-_-LRB- Ob_NN -RRB-_-RRB- is_VBZ a_DT necessary_JJ condition_NN for_IN Oa_NN to_TO be_VB IT-transformed_VBN against_IN Ob_NN ._.
+CC6_NN is_VBZ required_VBN for_IN correctly_RB applying_VBG IT_PRP functions_NNS ._.
+In_IN summary_NN ,_, CC1_NN and_CC CC4_NN are_VBP required_VBN for_IN ensuring_VBG correct_JJ ordering_VBG of_IN operation_NN execution_NN /_: transformation_NN ;_: CC2_NN and_CC CC5_NN are_VBP required_VBN for_IN selecting_VBG correct_JJ transformation_NN target_NN operations_NNS ;_: and_CC CC3_NN and_CC CC6_NN are_VBP required_VBN for_IN ensuring_VBG correct_JJ operation_NN execution_NN /_: transformation_NN ._.
+These_DT context-based_JJ conditions_NNS form_VBP the_DT foundation_NN for_IN the_DT COT_NNP algorithm_NN to_TO be_VB presented_VBN in_IN Section_NN #_# and_CC Section_NN #_# ._.
+1_CD DS_NN C_NN -LRB-_-LRB- O_NN -RRB-_-RRB- is_VBZ the_DT set_NN difference_NN between_IN DS_NN and_CC C_NN -LRB-_-LRB- O_NN -RRB-_-RRB- ._.
+3_LS ._.
+#_# Context_NNP vector_NN An_DT important_JJ element_NN of_IN the_DT operation_NN context_NN theory_NN is_VBZ the_DT context_NN vector_NN ,_, which_WDT represents_VBZ the_DT set_NN of_IN operations_NNS of_IN a_DT context_NN in_IN an_DT efficient_JJ way_NN ._.
+For_IN notational_JJ convenience_NN ,_, we_PRP assume_VBP that_IN a_DT collaborative_JJ editing_NN session_NN consists_VBZ of_IN N_NN collaborating_VBG sites_NNS ,_, identified_VBN by_IN #_# ,_, #_# ,_, ..._: ,_, N_NN #_# ._.
+3_LS ._.
+#_# ._.
+#_# Representing_VBG original_JJ normal_JJ operations_NNS Original_JJ normal_JJ operations_NNS generated_VBD at_IN each_DT site_NN are_VBP strictly_RB sequential_JJ ,_, so_IN each_DT of_IN them_PRP can_MD be_VB uniquely_RB identified_VBN by_IN a_DT pair_NN of_IN integers_NNS -LRB-_-LRB- sid_NN ,_, ns_NN -RRB-_-RRB- ,_, where_WRB sid_NN is_VBZ the_DT site_NN identifier_NN and_CC ns_NN is_VBZ the_DT local_JJ sequence_NN number_NN of_IN this_DT operation_NN ._.
+Let_VB Oij_NNP be_VB an_DT original_JJ normal_JJ operation_NN generated_VBN at_IN site_NN i_FW with_IN a_DT sequence_NN number_NN j_NN ._.
+If_IN Oij_NNP is_VBZ included_VBN in_IN a_DT context_NN C_NN -LRB-_-LRB- O_NN -RRB-_-RRB- ,_, then_RB Oi1_NN ,_, Oi2_NN ,_, ..._: ,_, Oij1_NN must_MD also_RB be_VB included_VBN in_IN C_NN -LRB-_-LRB- O_NN -RRB-_-RRB- according_VBG to_TO Definition_NNP #_# and_CC Definition_NNP #_# ._.
+Therefore_RB ,_, all_DT normal_JJ operations_NNS generated_VBD at_IN the_DT same_JJ site_NN can_MD be_VB sufficiently_RB characterized_VBN by_IN the_DT largest_JJS sequence_NN number_NN of_IN these_DT operations_NNS ._.
+All_DT original_JJ normal_JJ operations_NNS in_IN a_DT context_NN can_MD be_VB partitioned_VBN into_IN N_NN groups_NNS according_VBG to_TO their_PRP$ generation_NN sites_NNS ,_, so_RB N_NN integers_NNS are_VBP needed_VBN for_IN representing_VBG original_JJ normal_JJ operations_NNS in_IN a_DT context_NN ._.
+3_LS ._.
+#_# ._.
+#_# Representing_VBG original_JJ inverse_JJ operations_NNS An_DT original_JJ inverse_JJ operation_NN can_MD be_VB generated_VBN to_TO undo_VB an_DT original_JJ normal_JJ operation_NN ,_, or_CC to_TO redo_VB an_DT undone_VBN operation_NN ._.
+Each_DT original_JJ inverse_JJ operation_NN directly_RB or_CC indirectly_RB corresponds_VBZ to_TO exactly_RB one_CD original_JJ normal_JJ operation_NN ._.
+For_IN example_NN ,_, inverse_JJ operation_NN O_NN may_MD be_VB generated_VBN to_TO undo_VB O_NN ,_, and_CC O_NN may_MD be_VB generated_VBN to_TO undo_VB O_NN ._.
+Both_DT O_NN and_CC O_NN correspond_VBP to_TO the_DT same_JJ normal_JJ operation_NN O_NN ._.
+Based_VBN on_IN this_DT observation_NN ,_, all_DT original_JJ inverse_JJ operations_NNS in_IN an_DT operation_NN context_NN can_MD be_VB grouped_VBN by_IN their_PRP$ corresponding_JJ original_JJ normal_JJ operations_NNS :_: one_CD inverse_JJ group_NN for_IN each_DT undone_VBN original_JJ normal_JJ operation_NN ._.
+Inverse_JJ operations_NNS in_IN the_DT same_JJ inverse_JJ group_NN can_MD be_VB further_JJ differentiated_VBN by_IN a_DT sequence_NN number_NN based_VBN on_IN their_PRP$ execution_NN order_NN within_IN this_DT group_NN ._.
+For_IN example_NN ,_, O_NN and_CC O_NN are_VBP in_IN the_DT same_JJ inverse_JJ group_NN corresponding_VBG to_TO O_NNP ,_, so_RB O_NN has_VBZ the_DT sequence_NN number_NN #_# ,_, and_CC O_NN has_VBZ the_DT sequence_NN number_NN #_# ._.
+In_IN general_JJ ,_, an_DT inverse_NN can_MD be_VB identified_VBN by_IN a_DT triple_JJ -LRB-_-LRB- sid_NN ,_, ns_NNS ,_, is_VBZ -RRB-_-RRB- ,_, where_WRB sid_NN and_CC ns_NNS are_VBP the_DT site_NN identifier_NN and_CC sequence_NN number_NN of_IN the_DT corresponding_JJ normal_JJ operation_NN ,_, and_CC is_VBZ is_VBZ the_DT inverse_JJ sequence_NN number_NN within_IN the_DT group_NN ._.
+Since_IN inverses_NNS are_VBP sequentially_RB executed_VBN ,_, the_DT largest_JJS sequence_NN number_NN in_IN the_DT group_NN can_MD be_VB used_VBN to_TO represent_VB all_DT inverses_NNS in_IN the_DT group_NN ._.
+Inverse_JJ groups_NNS can_MD be_VB further_JJ partitioned_VBN into_IN N_NN inverse_JJ clusters_NNS according_VBG to_TO the_DT site_NN identifiers_NNS of_IN their_PRP$ corresponding_JJ normal_JJ operations_NNS ._.
+The_DT inverse_JJ cluster_NN at_IN site_NN i_LS -_: icican_NN be_VB expressed_VBN as_IN follows_VBZ :_: ici_NN =_JJ -LSB-_-LRB- -LRB-_-LRB- ns0_NN ,_, is0_NN -RRB-_-RRB- ,_, -LRB-_-LRB- ns1_NN ,_, is1_NN -RRB-_-RRB- ,_, ..._: ,_, -LRB-_-LRB- nsk1_NN ,_, isk1_NN -RRB-_-RRB- -RSB-_-RRB- ,_, where_WRB each_DT pair_NN -LRB-_-LRB- nsj_NN ,_, isj_NN -RRB-_-RRB- ,_, #_# j_SYM <_JJR k_NN ,_, represents_VBZ an_DT inverse_JJ group_NN with_IN isj_NN inverse_JJ operations_NNS corresponding_VBG to_TO the_DT original_JJ normal_JJ operation_NN with_IN sequence_NN number_NN nsj_NN at_IN site_NN i_FW ._.
+If_IN no_DT normal_JJ operation_NN at_IN site_NN i_FW has_VBZ been_VBN undone_VBN ,_, ici_NN is_VBZ empty_JJ ._.
+3_LS ._.
+#_# ._.
+#_# Representing_VBG normal_JJ and_CC inverse_JJ operations_NNS To_TO represent_VB an_DT operation_NN context_NN with_IN both_CC original_JJ normal_JJ and_CC inverse_JJ operations_NNS ,_, an_DT N-dimensional_JJ context_NN vector_NN is_VBZ defined_VBN below_IN ._.
+282_CD Definition_NN #_# ._.
+Context_NNP Vector_NNP Given_VBD an_DT operation_NN O_NN ,_, its_PRP$ context_NN C_NN -LRB-_-LRB- O_NN -RRB-_-RRB- can_MD be_VB represented_VBN by_IN the_DT following_VBG context_NN vector_NN CV_NN -LRB-_-LRB- O_NN -RRB-_-RRB- :_: CV_NN -LRB-_-LRB- O_NN -RRB-_-RRB- =_JJ -LSB-_-LRB- -LRB-_-LRB- ns0_NN ,_, ic0_NN -RRB-_-RRB- ,_, -LRB-_-LRB- ns1_NN ,_, ic1_NN -RRB-_-RRB- ,_, ..._: ,_, -LRB-_-LRB- nsN1_NN ,_, icN1_NN -RRB-_-RRB- -RSB-_-RRB- ,_, where_WRB ,_, for_IN #_# i_FW N_NN #_# ,_, 1_CD ._.
+nsi_NN represents_VBZ all_DT original_JJ normal_JJ operations_NNS generated_VBD at_IN site_NN i_FW ,_, and_CC 2_CD ._.
+ici_NN =_JJ -LSB-_-LRB- -LRB-_-LRB- ns0_NN ,_, is0_NN -RRB-_-RRB- ,_, -LRB-_-LRB- ns1_NN ,_, is1_NN -RRB-_-RRB- ,_, ..._: ,_, -LRB-_-LRB- nsk1_NN ,_, isk1_NN -RRB-_-RRB- -RSB-_-RRB- represents_VBZ all_DT inverse_JJ operations_NNS for_IN undoing_NN normal_JJ operations_NNS generated_VBD at_IN site_NN i_FW ,_, where_WRB -LRB-_-LRB- nsj_NN ,_, isj_NN -RRB-_-RRB- ,_, #_# j_SYM <_JJR k_NN ,_, represents_VBZ an_DT inverse_JJ group_NN with_IN isj_NN inverses_NNS related_VBN to_TO the_DT normal_JJ operation_NN with_IN sequence_NN number_NN nsj_NN ._.
+#_# In_IN the_DT absence_NN of_IN inverse_JJ operations_NNS in_IN the_DT operation_NN context_NN ,_, all_DT ici_NNS ,_, #_# i_FW N_NN #_# ,_, would_MD be_VB empty_JJ and_CC a_DT Context_NNP Vector_NNP would_MD be_VB reduced_VBN to_TO a_DT State_NN Vector_NNP -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+The_DT vector_NN representation_NN of_IN operation_NN context_NN can_MD also_RB be_VB used_VBN as_IN the_DT vector_NN representation_NN of_IN the_DT document_NN state_NN ._.
+As_IN an_DT example_NN ,_, consider_VB the_DT document_NN state_NN after_IN interpreting_VBG the_DT undo_VBP command_NN Undo_NN -LRB-_-LRB- O2_CD -RRB-_-RRB- in_IN Figure_NNP #_# ._.
+Since_IN Undo_NN -LRB-_-LRB- O2_CD -RRB-_-RRB- is_VBZ interpreted_VBN as_IN an_DT inverse_JJ O2_CD ,_, the_DT document_NN state_NN after_IN executing_VBG -LRB-_-LRB- the_DT transformed_VBN -RRB-_-RRB- O2_CD shall_MD be_VB DS_NN =_JJ -LCB-_-LRB- O1_NN ,_, O2_CD ,_, O3_NN ,_, O2_CD -RCB-_-RRB- ._.
+This_DT document_NN state_NN can_MD not_RB be_VB represented_VBN by_IN a_DT state_NN vector_NN but_CC can_MD be_VB represented_VBN as_IN a_DT context_NN vector_NN as_IN follows_VBZ :_: CV_NN -LRB-_-LRB- DS_NN -RRB-_-RRB- =_JJ -LSB-_-LRB- -LRB-_-LRB- #_# ,_, -LSB-_-LRB- -RSB-_-RRB- -RRB-_-RRB- ,_, -LRB-_-LRB- #_# ,_, -LSB-_-LRB- -LRB-_-LRB- #_# ,_, #_# -RRB-_-RRB- -RSB-_-RRB- -RSB-_-RRB- ._.
+Based_VBN on_IN Definition_NNP #_# ,_, it_PRP is_VBZ straightforward_JJ to_TO derive_VB the_DT scheme_NN for_IN maintaining_VBG the_DT vector_NN representation_NN for_IN the_DT document_NN state_NN after_IN executing_VBG each_DT operation_NN -LRB-_-LRB- according_VBG to_TO Definition_NNP #_# -RRB-_-RRB- ._.
+Moreover_RB ,_, the_DT vector_NN representation_NN of_IN operation_NN context_NN can_MD also_RB be_VB used_VBN to_TO efficiently_RB detect_VB contextdependency_NN /_: -_: independency_NN relations_NNS ._.
+Due_JJ to_TO space_NN limitation_NN ,_, these_DT technical_JJ details_NNS are_VBP omitted_VBN in_IN this_DT paper_NN ._.
+4_LS ._.
+THE_DT BASIC_JJ COT_NNP ALGORITHM_NNP In_IN the_DT basic_JJ COT_NNP algorithm_NN ,_, we_PRP assume_VBP each_DT site_NN maintains_VBZ a_DT document_NN state_NN DS_NN ,_, which_WDT contains_VBZ the_DT set_NN of_IN original_JJ operations_NNS executed_VBD so-far_RB ._.
+This_DT is_VBZ different_JJ from_IN the_DT log_NN or_CC the_DT History_NN Buffer_NN -LRB-_-LRB- HB_NN -RRB-_-RRB- schemes_NNS in_IN prior_JJ OT_NN algorithms_NNS -LSB-_-LRB- #_# ,_, 22_CD ,_, ##_CD -RSB-_-RRB- ,_, which_WDT record_VBP a_DT list_NN of_IN transformed_VBN operations_NNS ._.
+We_PRP deliberately_RB leave_VBP the_DT internal_JJ data_NNS structure_NN of_IN DS_NN unspecified_JJ to_TO keep_VB the_DT COT_NNP algorithm_NN independent_JJ of_IN the_DT operation_NN buffering_NN strategy_NN ._.
+In_IN algorithm_NN description_NN ,_, we_PRP shall_MD use_VB the_DT context_NN set_VBN representation_NN C_NN -LRB-_-LRB- O_NN -RRB-_-RRB- ,_, rather_RB than_IN the_DT context_NN vector_NN representation_NN CV_NN -LRB-_-LRB- O_NN -RRB-_-RRB- ._.
+When_WRB an_DT operation_NN O_NN is_VBZ propagated_VBN from_IN the_DT local_JJ site_NN to_TO remote_JJ sites_NNS ,_, however_RB ,_, it_PRP is_VBZ the_DT context_NN vector_NN ,_, not_RB the_DT context_NN set_NN ,_, that_WDT is_VBZ actually_RB piggy-backed_JJ on_IN O_NN for_IN propagation_NN ._.
+The_DT set_NN of_IN operations_NNS in_IN C_NN -LRB-_-LRB- O_NN -RRB-_-RRB- can_MD be_VB easily_RB determined_VBN from_IN DS_NN based_VBN on_IN the_DT information_NN in_IN CV_NN -LRB-_-LRB- O_NN -RRB-_-RRB- ._.
+The_DT COT_NNP algorithm_NN has_VBZ two_CD parts_NNS :_: the_DT COT-DO_NNP part_NN for_IN supporting_VBG consistency_NN maintenance_NN -LRB-_-LRB- do_VB -RRB-_-RRB- ,_, and_CC the_DT COTUNDO_NNP part_NN for_IN supporting_VBG undo_VB ._.
+Both_DT parts_NNS share_VBP the_DT same_JJ core_NN context-based_JJ transformation_NN procedure_NN ._.
+Operation_NN context_NN and_CC context-based_JJ conditions_NNS are_VBP central_JJ to_TO the_DT whole_JJ COT_NNP algorithm_NN ._.
+4_LS ._.
+#_# COT-DO_NNP COT-DO_NNP takes_VBZ two_CD parameters_NNS :_: O_NN -_: an_DT original_JJ operation_NN to_TO be_VB executed_VBN ,_, and_CC DS_NN -_: the_DT current_JJ document_NN state_NN representation_NN ._.
+COT-DO_NN is_VBZ invoked_VBN only_RB if_IN C_NN -LRB-_-LRB- O_NN -RRB-_-RRB- DS_NN -LRB-_-LRB- CC1_NN -RRB-_-RRB- ,_, which_WDT ensures_VBZ that_IN all_DT operations_NNS included_VBD in_IN the_DT context_NN of_IN O_NN have_VBP already_RB been_VBN executed_VBN on_IN DS_NN ._.
+Algorithm_NN #_# ._.
+COT-DO_NN -LRB-_-LRB- O_NN ,_, DS_NN -RRB-_-RRB- 1_CD ._.
+transform_VB -LRB-_-LRB- O_NN ,_, DS_NN C_NN -LRB-_-LRB- O_NN -RRB-_-RRB- -RRB-_-RRB- ;_: 2_LS ._.
+Execute_VB O_NN ;_: DS_NN :_: =_JJ DS_NN -LCB-_-LRB- org_NN -LRB-_-LRB- O_NN -RRB-_-RRB- -RCB-_-RRB- ._.
+Procedure_NN #_# ._.
+transform_VB -LRB-_-LRB- O_NN ,_, CD_NNP -RRB-_-RRB- Repeat_NN until_IN CD_NN =_JJ -LCB-_-LRB- -RCB-_-RRB- :_: 1_CD ._.
+Remove_VB Ox_NN from_IN CD_NNP ,_, where_WRB C_NN -LRB-_-LRB- Ox_NN -RRB-_-RRB- C_NN -LRB-_-LRB- O_NN -RRB-_-RRB- ;_: 2_LS ._.
+transform_VB -LRB-_-LRB- Ox_NN ,_, C_NN -LRB-_-LRB- O_NN -RRB-_-RRB- C_NN -LRB-_-LRB- Ox_NN -RRB-_-RRB- -RRB-_-RRB- ;_: 3_LS ._.
+O_NN :_: =_JJ IT_NNP -LRB-_-LRB- O_NNP ,_, Ox_NN -RRB-_-RRB- ;_: C_NN -LRB-_-LRB- O_NN -RRB-_-RRB- :_: =_JJ C_NN -LRB-_-LRB- O_NN -RRB-_-RRB- -LCB-_-LRB- org_NN -LRB-_-LRB- Ox_NN -RRB-_-RRB- -RCB-_-RRB- ._.
+COT-DO_NN first_RB invokes_VBZ procedure_NN transform_VB -LRB-_-LRB- -RRB-_-RRB- to_TO transform_VB O_NN against_IN operations_NNS in_IN DS_NN C_NN -LRB-_-LRB- O_NN -RRB-_-RRB- -LRB-_-LRB- CC2_NN -RRB-_-RRB- ._.
+This_DT is_VBZ to_TO upgrade_VB the_DT context_NN of_IN O_NN to_TO DS_NN ._.
+In_IN Step_NN #_# ,_, it_PRP must_MD be_VB that_IN C_NN -LRB-_-LRB- O_NN -RRB-_-RRB- =_JJ DS_NN -LRB-_-LRB- CC3_NN -RRB-_-RRB- ,_, so_RB O_NN is_VBZ executed_VBN as-is_RB ,_, and_CC the_DT original_NN of_IN O_NN is_VBZ added_VBN to_TO DS_NN -LRB-_-LRB- according_VBG to_TO Definition_NNP 3-Item_NNP #_# -RRB-_-RRB- ._.
+The_DT heart_NN of_IN COT-DO_NN is_VBZ transform_VB -LRB-_-LRB- O_NN ,_, CD_NNP -RRB-_-RRB- ,_, whose_WP$ task_NN is_VBZ to_TO transform_VB O_NN against_IN operations_NNS in_IN CD_NNP ,_, which_WDT represents_VBZ the_DT context_NN difference_NN between_IN C_NN -LRB-_-LRB- O_NN -RRB-_-RRB- and_CC a_DT new_JJ context_NN on_IN which_WDT O_NN is_VBZ to_TO be_VB defined_VBN ._.
+This_DT procedure_NN repeats_VBZ the_DT following_VBG three_CD steps_NNS until_IN CD_NNP becomes_VBZ empty_JJ :_: 1_CD ._.
+Remove_VB an_DT operation_NN Ox_NN from_IN CD_NNP ,_, where_WRB C_NN -LRB-_-LRB- Ox_NN -RRB-_-RRB- C_NN -LRB-_-LRB- O_NN -RRB-_-RRB- -LRB-_-LRB- CC4_NN -RRB-_-RRB- ._.
+An_DT operation_NN Ox_NN meeting_NN this_DT condition_NN can_MD be_VB determined_VBN if_IN all_DT operations_NNS in_IN CD_NNP are_VBP sorted_VBN in_IN the_DT order_NN of_IN their_PRP$ execution_NN and_CC sequentially_RB retrieved_VBN ._.
+2_LS ._.
+The_DT procedure_NN transform_VB -LRB-_-LRB- -RRB-_-RRB- is_VBZ recursively_RB invoked_VBN to_TO transform_VB Ox_NN against_IN operations_NNS in_IN C_NN -LRB-_-LRB- O_NN -RRB-_-RRB- C_NN -LRB-_-LRB- Ox_NN -RRB-_-RRB- -LRB-_-LRB- CC5_NN -RRB-_-RRB- ._.
+This_DT is_VBZ to_TO upgrade_VB Ox_NN to_TO the_DT context_NN of_IN O_NN ,_, so_RB that_IN they_PRP can_MD be_VB used_VBN for_IN IT_PRP transformation_NN in_IN the_DT next_JJ step_NN ._.
+3_LS ._.
+After_IN the_DT recursive_JJ call_NN to_TO transform_VB -LRB-_-LRB- -RRB-_-RRB- ,_, it_PRP must_MD be_VB that_IN C_NN -LRB-_-LRB- O_NN -RRB-_-RRB- =_JJ C_NN -LRB-_-LRB- Ox_NN -RRB-_-RRB- -LRB-_-LRB- CC6_NN -RRB-_-RRB- ,_, so_RB O_NN is_VBZ IT-transformed_JJ against_IN Ox_NN ,_, and_CC the_DT context_NN of_IN O_NN is_VBZ updated_VBN by_IN adding_VBG the_DT original_NN of_IN Ox_NN -LRB-_-LRB- according_VBG to_TO Definition_NNP 4-Item_NNP #_# -RRB-_-RRB- ._.
+To_TO show_VB how_WRB COT-DO_JJ works_NNS ,_, we_PRP examine_VBP how_WRB it_PRP resolves_VBZ the_DT dOPT-puzzle_NN in_IN Figure_NNP #_# ._.
+Consider_VB the_DT operation_NN executions_NNS at_IN site_NN #_# ,_, with_IN the_DT initial_JJ document_NN state_NN DS0_NN =_JJ -LCB-_-LRB- -RCB-_-RRB- ._.
+1_LS ._.
+After_IN the_DT generation_NN of_IN O1_NN ,_, since_IN C_NN -LRB-_-LRB- O1_NN -RRB-_-RRB- =_JJ DS0_NN ,_, O1_NN is_VBZ executed_VBN as-is_RB and_CC DS0_NN is_VBZ updated_VBN to_TO DS1_NN =_JJ -LCB-_-LRB- O1_NN -RCB-_-RRB- ._.
+2_LS ._.
+When_WRB O2_CD arrives_VBZ with_IN C_NN -LRB-_-LRB- O2_CD -RRB-_-RRB- =_JJ -LCB-_-LRB- -RCB-_-RRB- ,_, transform_VB -LRB-_-LRB- O2_CD ,_, DS1_NN C_NN -LRB-_-LRB- O2_CD -RRB-_-RRB- -RRB-_-RRB- is_VBZ called_VBN ,_, where_WRB DS1_NN C_NN -LRB-_-LRB- O2_CD -RRB-_-RRB- =_JJ -LCB-_-LRB- O1_NN -RCB-_-RRB- ._.
+Inside_IN transform_VB -LRB-_-LRB- O2_CD ,_, -LCB-_-LRB- O1_NN -RCB-_-RRB- -RRB-_-RRB- ,_, since_IN C_NN -LRB-_-LRB- O1_NN -RRB-_-RRB- =_JJ C_NN -LRB-_-LRB- O2_CD -RRB-_-RRB- ,_, we_PRP have_VBP O2_CD :_: =_JJ IT_NNP -LRB-_-LRB- O2_CD ,_, O1_NN -RRB-_-RRB- ,_, and_CC C_NN -LRB-_-LRB- O2_CD -RRB-_-RRB- =_JJ -LCB-_-LRB- O1_NN -RCB-_-RRB- ._.
+Returning_VBG from_IN transform_VB -LRB-_-LRB- O2_CD ,_, -LCB-_-LRB- O1_NN -RCB-_-RRB- -RRB-_-RRB- ,_, we_PRP have_VBP C_NN -LRB-_-LRB- O2_CD -RRB-_-RRB- =_JJ DS1_NN ,_, so_RB O2_CD is_VBZ executed_VBN ,_, and_CC DS1_NN is_VBZ updated_VBN to_TO DS2_NN =_JJ -LCB-_-LRB- O1_NN ,_, O2_CD -RCB-_-RRB- ,_, where_WRB O2_CD =_JJ org_NN -LRB-_-LRB- O2_CD -RRB-_-RRB- ._.
+3_LS ._.
+When_WRB O3_NN arrives_VBZ with_IN C_NN -LRB-_-LRB- O3_NN -RRB-_-RRB- =_JJ -LCB-_-LRB- O2_CD -RCB-_-RRB- ,_, transform_VB -LRB-_-LRB- O3_NN ,_, DS2_NN C_NN -LRB-_-LRB- O3_NN -RRB-_-RRB- -RRB-_-RRB- is_VBZ called_VBN ,_, where_WRB DS2_NN C_NN -LRB-_-LRB- O3_NN -RRB-_-RRB- =_JJ -LCB-_-LRB- O1_NN -RCB-_-RRB- ._.
+Inside_IN transform_VB -LRB-_-LRB- O3_NN ,_, -LCB-_-LRB- O1_NN -RCB-_-RRB- -RRB-_-RRB- ,_, transform_VB -LRB-_-LRB- O1_NN ,_, C_NN -LRB-_-LRB- O3_NN -RRB-_-RRB- C_NN -LRB-_-LRB- O1_NN -RRB-_-RRB- -RRB-_-RRB- is_VBZ recursively_RB called_VBN ,_, with_IN C_NN -LRB-_-LRB- O3_NN -RRB-_-RRB- C_NN -LRB-_-LRB- O1_NN -RRB-_-RRB- =_JJ -LCB-_-LRB- O2_CD -RCB-_-RRB- ,_, which_WDT is_VBZ the_DT key_JJ step_NN in_IN detecting_VBG the_DT dOPT-puzzle_NN ._.
+In_IN the_DT recursive_JJ transform_VB -LRB-_-LRB- O1_NN ,_, -LCB-_-LRB- O2_CD -RCB-_-RRB- -RRB-_-RRB- ,_, since_IN C_NN -LRB-_-LRB- O2_CD -RRB-_-RRB- =_JJ C_NN -LRB-_-LRB- O1_NN -RRB-_-RRB- ,_, we_PRP have_VBP O1_NN :_: =_JJ IT_NNP -LRB-_-LRB- O1_NNP ,_, O2_CD -RRB-_-RRB- ,_, and_CC C_NN -LRB-_-LRB- O1_NN -RRB-_-RRB- =_JJ -LCB-_-LRB- O2_CD -RCB-_-RRB- ._.
+Returning_VBG from_IN the_DT recursion_NN ,_, we_PRP have_VBP C_NN -LRB-_-LRB- O1_NN -RRB-_-RRB- =_JJ C_NN -LRB-_-LRB- O3_NN -RRB-_-RRB- ,_, so_RB C_NN -LRB-_-LRB- O3_NN -RRB-_-RRB- :_: =_JJ IT_NNP -LRB-_-LRB- O3_NNP ,_, O1_NN -RRB-_-RRB- -LRB-_-LRB- the_DT dOPT-puzzle_NN resolved_VBN here_RB -RRB-_-RRB- ,_, and_CC C_NN -LRB-_-LRB- O3_NN -RRB-_-RRB- =_JJ -LCB-_-LRB- O1_NN ,_, O2_CD -RCB-_-RRB- ,_, where_WRB O1_NN =_JJ org_NN -LRB-_-LRB- O1_NN -RRB-_-RRB- ._.
+After_IN returning_VBG from_IN transform_VB -LRB-_-LRB- O3_NN ,_, -LCB-_-LRB- O1_NN -RCB-_-RRB- -RRB-_-RRB- ,_, C_NN -LRB-_-LRB- O3_NN -RRB-_-RRB- =_JJ DS2_NN ;_: so_RB O3_NN is_VBZ executed_VBN ,_, and_CC DS2_NN is_VBZ updated_VBN to_TO DS3_NN =_JJ -LCB-_-LRB- O1_NN ,_, O2_CD ,_, O3_NN -RCB-_-RRB- ,_, where_WRB O3_NN =_JJ org_NN -LRB-_-LRB- O3_NN -RRB-_-RRB- ._.
+283_CD 4_CD ._.
+#_# COT-UNDO_NNP To_TO undo_VB an_DT operation_NN O_NN ,_, a_DT meta-level_JJ undo_VBP command_NN Undo_NN -LRB-_-LRB- O_NN -RRB-_-RRB- must_MD be_VB issued_VBN by_IN a_DT user_NN ._.
+How_WRB to_TO generate_VB the_DT undo_VB command_NN for_IN selecting_VBG any_DT operation_NN to_TO undo_VB is_VBZ part_NN of_IN the_DT undo_VBP policy_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+This_DT paper_NN is_VBZ confined_VBN to_TO the_DT discussion_NN of_IN the_DT undo_VBP mechanism_NN ,_, which_WDT determines_VBZ how_WRB to_TO undo_VB the_DT selected_VBN operation_NN in_IN a_DT given_VBN context_NN ._.
+In_IN COT-UNDO_NNP ,_, Undo_NNP -LRB-_-LRB- O_NNP -RRB-_-RRB- is_VBZ interpreted_VBN as_IN an_DT inverse_JJ O_NN ,_, that_WDT is_VBZ context-dependent_JJ on_IN operations_NNS in_IN C_NN -LRB-_-LRB- O_NN -RRB-_-RRB- and_CC O_NN itself_PRP ._.
+COT-UNDO_NN takes_VBZ two_CD input_NN parameters_NNS :_: O_NN is_VBZ the_DT operation_NN selected_VBN to_TO be_VB undone_VBN ,_, which_WDT can_MD be_VB any_DT operation_NN done_VBN sofar_RB ,_, and_CC DS_NN is_VBZ the_DT current_JJ document_NN state_NN representation_NN ._.
+Algorithm_NN #_# ._.
+COT-UNDO_NN -LRB-_-LRB- O_NN ,_, DS_NN -RRB-_-RRB- 1_CD ._.
+O_NN :_: =_JJ makeInverse_NN -LRB-_-LRB- O_NN -RRB-_-RRB- ;_: C_NN -LRB-_-LRB- O_NN -RRB-_-RRB- :_: =_JJ C_NN -LRB-_-LRB- O_NN -RRB-_-RRB- -LCB-_-LRB- O_NN -RCB-_-RRB- ;_: 2_LS ._.
+COT-DO_NN -LRB-_-LRB- O_NN ,_, DS_NN -RRB-_-RRB- ._.
+COT-UNDO_NN works_NNS by_IN first_JJ creating_VBG an_DT inverse_JJ O_NN by_IN invoking_VBG makeInverse_NN -LRB-_-LRB- O_NN -RRB-_-RRB- #_# ,_, with_IN its_PRP$ context_NN C_NN -LRB-_-LRB- O_NN -RRB-_-RRB- :_: =_JJ C_NN -LRB-_-LRB- O_NN -RRB-_-RRB- -LCB-_-LRB- O_NN -RCB-_-RRB- -LRB-_-LRB- according_VBG to_TO Definition_NNP 4-Item_NNP #_# -RRB-_-RRB- ,_, and_CC then_RB invoking_VBG COTDO_NNP to_TO handle_VB O_NNP ._.
+For_IN example_NN ,_, to_TO interpret_VB Undo_NNP -LRB-_-LRB- O2_CD -RRB-_-RRB- in_IN Figure_NNP #_# ,_, COTUNDO_NNP is_VBZ invoked_VBN with_IN parameters_NNS O2_CD and_CC DS_NN =_JJ -LCB-_-LRB- O1_NN ,_, O2_CD ,_, O3_NN -RCB-_-RRB- ._.
+First_RB ,_, O2_CD and_CC C_NN -LRB-_-LRB- O2_CD -RRB-_-RRB- =_JJ -LCB-_-LRB- O2_CD -RCB-_-RRB- are_VBP created_VBN ._.
+Then_RB ,_, COT-DO_NN is_VBZ invoked_VBN with_IN parameters_NNS O2_CD and_CC DS_NN ._.
+Inside_IN COT-DO_NN ,_, transform_VB -LRB-_-LRB- O2_CD ,_, DS_NN C_NN -LRB-_-LRB- O2_CD -RRB-_-RRB- -RRB-_-RRB- shall_MD be_VB invoked_VBN ,_, and_CC O2_CD shall_MD be_VB correctly_RB transformed_VBN against_IN O1_NN and_CC O3_NN since_IN CD_NN =_JJ DS_NN C_NN -LRB-_-LRB- O2_CD -RRB-_-RRB- =_JJ -LCB-_-LRB- O1_NN ,_, O3_NN -RCB-_-RRB- ._.
+This_DT example_NN shows_VBZ that_IN an_DT inverse_JJ operation_NN can_MD be_VB handled_VBN by_IN COT-DO_NN in_IN the_DT same_JJ way_NN as_IN other_JJ normal_JJ operations_NNS ._.
+This_DT is_VBZ because_IN context-based_JJ conditions_NNS CC1_NN -_: CC6_NN are_VBP uniformly_RB applicable_JJ to_TO both_CC normal_JJ and_CC inverse_JJ operations_NNS ._.
+The_DT basic_JJ COT_NNP algorithm_NN is_VBZ simple_JJ yet_RB powerful_JJ -_: capable_JJ of_IN doing_VBG and_CC undoing_NN any_DT operations_NNS at_IN anytime_RB ._.
+Among_IN all_DT prior_JJ OT_NN systems_NNS ,_, only_RB the_DT combination_NN of_IN GOTO_NNP and_CC ANYUNDO_NNP -LRB-_-LRB- referred_VBN as_IN GOTO-ANYUNDO_NN -RRB-_-RRB- has_VBZ similar_JJ capabilities_NNS -LSB-_-LRB- ##_NNS ,_, ##_NN -RSB-_-RRB- ._.
+5_CD ._.
+TRANSFORMATION_NN PROPERTIES_NNPS COT_NNP is_VBZ a_DT high-level_JJ control_NN algorithm_NN responsible_JJ for_IN determining_VBG which_WDT operation_NN should_MD be_VB transformed_VBN against_IN other_JJ operations_NNS and_CC in_IN which_WDT order_NN according_VBG to_TO contextbased_JJ conditions_NNS ._.
+Another_DT important_JJ component_NN of_IN an_DT OT_NN system_NN is_VBZ the_DT low-level_JJ transformation_NN functions_NNS responsible_JJ for_IN transforming_VBG operations_NNS according_VBG to_TO their_PRP$ types_NNS and_CC parameters_NNS ._.
+Past_JJ research_NN has_VBZ identified_VBN a_DT range_NN of_IN transformation_NN properties_NNS /_: conditions_NNS that_WDT must_MD be_VB maintained_VBN for_IN ensuring_VBG the_DT correctness_NN of_IN an_DT OT_NN system_NN ._.
+Different_JJ OT_NN systems_NNS may_MD have_VB different_JJ control_NN algorithms_NNS ,_, different_JJ transformation_NN functions_NNS ,_, and_CC different_JJ divisions_NNS of_IN responsibilities_NNS among_IN these_DT components_NNS ._.
+Unlike_IN GOTO-ANYUNDO_NN ,_, the_DT basic_JJ COT_NNP algorithm_NN does_VBZ not_RB use_VB ET_NNP -LRB-_-LRB- Exclusion_NNP Transformation_NN -RRB-_-RRB- functions_VBZ -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, thus_RB avoiding_VBG the_DT requirement_NN of_IN the_DT Reversibility_NNP Property_NN -LRB-_-LRB- RP_NN -RRB-_-RRB- between_IN IT_PRP and_CC ET_NNP functions_VBZ -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Similar_JJ to_TO GOTO-ANYUNDO_NN ,_, the_DT basic_JJ COT_NNP algorithm_NN assumes_VBZ that_IN underlying_VBG transformation_NN functions_NNS are_VBP capable_JJ of_IN preserving_VBG the_DT following_VBG properties_NNS -LSB-_-LRB- #_# ,_, ##_CD ,_, ##_CD ,_, ##_CD ,_, ##_CD -RSB-_-RRB- :_: 2_CD The_DT reader_NN is_VBZ referred_VBN to_TO -LSB-_-LRB- ##_CD -RSB-_-RRB- for_IN precise_JJ definitions_NNS of_IN three_CD primitive_JJ operations_NNS Insert_NNP ,_, Delete_VB and_CC Update_NNP and_CC their_PRP$ corresponding_JJ inverses_NNS ._.
+The_DT makeInverse_NN -LRB-_-LRB- O_NN -RRB-_-RRB- procedure_NN directly_RB follows_VBZ these_DT definitions_NNS ._.
+1_LS ._.
+Convergence_NN Property_NN #_# -LRB-_-LRB- CP1_NN -RRB-_-RRB- #_# ._.
+Given_VBN a_DT document_NN state_NN DS_NN ,_, and_CC operations_NNS Oa_NN ,_, Ob_NN ,_, if_IN Oa_NN =_JJ IT_NNP -LRB-_-LRB- Oa_NNP ,_, Ob_NN -RRB-_-RRB- ,_, and_CC Ob_NN =_JJ IT_NNP -LRB-_-LRB- Ob_NNP ,_, Oa_NN -RRB-_-RRB- ,_, then_RB it_PRP must_MD be_VB :_: DS_NN -LSB-_-LRB- Oa_NN ,_, Ob_NN -RSB-_-RRB- =_JJ DS_NN -LSB-_-LRB- Ob_NN ,_, Oa_NN -RSB-_-RRB- ,_, which_WDT means_VBZ that_IN -LSB-_-LRB- Oa_NN ,_, Ob_NN -RSB-_-RRB- and_CC -LSB-_-LRB- Ob_NN ,_, Oa_NN -RSB-_-RRB- are_VBP equivalent_JJ with_IN respect_NN to_TO the_DT effect_NN on_IN the_DT document_NN state_NN DS_NN ._.
+2_LS ._.
+Convergence_NN Property_NN #_# -LRB-_-LRB- CP2_NN -RRB-_-RRB- ._.
+Given_VBN three_CD operations_NNS O_NN ,_, Oa_NN and_CC Ob_NN ,_, if_IN Oa_NN =_JJ IT_NNP -LRB-_-LRB- Oa_NNP ,_, Ob_NN -RRB-_-RRB- and_CC Ob_NN =_JJ IT_NNP -LRB-_-LRB- Ob_NNP ,_, Oa_NN -RRB-_-RRB- ,_, then_RB it_PRP must_MD be_VB :_: IT_NNP -LRB-_-LRB- IT_NNP -LRB-_-LRB- O_NNP ,_, Oa_NN -RRB-_-RRB- ,_, Ob_NN -RRB-_-RRB- =_JJ IT_NNP -LRB-_-LRB- IT_NNP -LRB-_-LRB- O_NNP ,_, Ob_NN -RRB-_-RRB- ,_, Oa_NN -RRB-_-RRB- ,_, which_WDT means_VBZ that_IN -LSB-_-LRB- Oa_NN ,_, Ob_NN -RSB-_-RRB- and_CC -LSB-_-LRB- Ob_NN ,_, Oa_NN -RSB-_-RRB- are_VBP equivalent_JJ with_IN respect_NN to_TO the_DT effect_NN in_IN transformation_NN ._.
+3_LS ._.
+Inverse_JJ Property_NN #_# -LRB-_-LRB- IP2_NN -RRB-_-RRB- #_# ._.
+Given_VBN any_DT operation_NN Ox_NN and_CC a_DT pair_NN of_IN operations_NNS -LSB-_-LRB- O_NN ,_, O_NN -RSB-_-RRB- ,_, it_PRP must_MD be_VB :_: IT_NNP -LRB-_-LRB- IT_NNP -LRB-_-LRB- Ox_NN ,_, O_NN -RRB-_-RRB- ,_, O_NN -RRB-_-RRB- =_JJ IT_NNP -LRB-_-LRB- Ox_NN ,_, I_PRP -RRB-_-RRB- =_JJ Ox_NN ,_, which_WDT means_VBZ that_IN -LSB-_-LRB- O_NN ,_, O_NN -RSB-_-RRB- and_CC I_PRP are_VBP equivalent_JJ with_IN respect_NN to_TO the_DT effect_NN in_IN transformation_NN ._.
+4_LS ._.
+Inverse_JJ Property_NN #_# -LRB-_-LRB- IP3_NN -RRB-_-RRB- ._.
+Given_VBN two_CD operations_NNS Oa_NN and_CC Ob_NN ,_, if_IN Oa_NN :_: =_JJ IT_NNP -LRB-_-LRB- Oa_NNP ,_, Ob_NN -RRB-_-RRB- ,_, Ob_NN :_: =_JJ IT_NNP -LRB-_-LRB- Ob_NNP ,_, Oa_NN -RRB-_-RRB- ,_, and_CC Oa_NN :_: =_JJ IT_NNP -LRB-_-LRB- Oa_NNP ,_, Ob_NN -RRB-_-RRB- ,_, then_RB it_PRP must_MD be_VB :_: Oa_NN =_JJ Oa_NN ,_, which_WDT means_VBZ the_DT transformed_VBN inverse_JJ operation_NN Oa_NN is_VBZ equal_JJ to_TO the_DT inverse_NN of_IN the_DT transformed_VBN operation_NN Oa_NN ._.
+The_DT above_JJ transformation_NN properties_NNS are_VBP important_JJ discoveries_NNS of_IN past_JJ research_NN ,_, but_CC they_PRP are_VBP not_RB unconditionally_RB required_VBN ._.
+The_DT pre-conditions_NNS for_IN requiring_VBG them_PRP ,_, however_RB ,_, were_VBD never_RB explicitly_RB stated_VBN in_IN their_PRP$ specifications_NNS ,_, which_WDT has_VBZ unfortunately_RB caused_VBN quite_RB some_DT misconceptions_NNS in_IN OT_NNP literature_NN ._.
+To_TO explore_VB alternative_JJ solutions_NNS to_TO these_DT properties_NNS ,_, we_PRP explicitly_RB state_VBP the_DT Pre-Conditions_NNPS -LRB-_-LRB- PC_NN -RRB-_-RRB- for_IN CP1_NN ,_, CP2_NN ,_, IP2_NN ,_, and_CC IP3_NN as_IN follows_VBZ :_: 1_CD ._.
+PC-CP1_NN :_: CP1_NN is_VBZ required_VBN only_RB if_IN the_DT OT_NN system_NN allows_VBZ the_DT same_JJ group_NN of_IN context-independent_JJ operations_NNS to_TO be_VB executed_VBN in_IN different_JJ orders_NNS ._.
+2_LS ._.
+PC-CP2_NN :_: CP2_NN is_VBZ required_VBN only_RB if_IN the_DT OT_NN system_NN allows_VBZ an_DT operation_NN to_TO be_VB transformed_VBN against_IN the_DT same_JJ group_NN of_IN context-independent_JJ operations_NNS in_IN different_JJ orders_NNS ._.
+3_LS ._.
+PC-IP2_NN :_: IP2_NN is_VBZ required_VBN only_RB if_IN the_DT OT_NN system_NN allows_VBZ an_DT operation_NN Ox_NN to_TO be_VB transformed_VBN against_IN a_DT pair_NN of_IN do_VB and_CC undo_VB operations_NNS -LRB-_-LRB- O_NN and_CC O_NN -RRB-_-RRB- one-by-one_RB ._.
+4_LS ._.
+PC-IP3_NN :_: IP3_NN is_VBZ required_VBN only_RB if_IN the_DT OT_NN system_NN allows_VBZ an_DT inverse_JJ operation_NN Oa_NN to_TO be_VB transformed_VBN against_IN another_DT operation_NN Ob_NN that_WDT is_VBZ context-independent_JJ of_IN Oa_NN ._.
+3_CD Convergence_NN Property_NN #_# &_CC #_# in_IN this_DT paper_NN -LRB-_-LRB- and_CC in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- -RRB-_-RRB- are_VBP the_DT same_JJ as_IN Transformation_NN Property_NN #_# &_CC #_# in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ._.
+4_CD There_EX is_VBZ another_DT Inverse_NNP Property_NNP #_# -LRB-_-LRB- IP1_NN -RRB-_-RRB- that_WDT is_VBZ required_VBN in_IN an_DT OT_NN system_NN for_IN achieving_VBG the_DT correct_JJ undo_VBP effect_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, but_CC IP1_NN is_VBZ not_RB related_VBN to_TO IT_PRP functions_NNS ._.
+284_CD There_EX are_VBP generally_RB two_CD ways_NNS to_TO achieve_VB OT_NNP correctness_NN with_IN respect_NN to_TO these_DT transformation_NN properties_NNS :_: one_CD is_VBZ to_TO design_VB transformation_NN functions_NNS capable_JJ of_IN preserving_VBG these_DT properties_NNS ;_: the_DT other_JJ is_VBZ to_TO design_VB control_NN algorithms_NNS capable_JJ of_IN breaking_VBG the_DT pre-conditions_NNS for_IN requiring_VBG these_DT properties_NNS ._.
+Past_JJ research_NN has_VBZ shown_VBN that_IN it_PRP is_VBZ relatively_RB easy_JJ to_TO design_VB transformation_NN functions_NNS capable_JJ of_IN preserving_VBG CP1_NN ,_, but_CC non-trivial_JJ to_TO design_NN and_CC formally_RB prove_VBP transformation_NN functions_NNS capable_JJ of_IN preserving_VBG CP2_NN ,_, IP2_NN and_CC IP3_NN ._.
+Counterexamples_NNS illustrating_VBG the_DT violation_NN of_IN these_DT properties_NNS in_IN some_DT early_JJ published_VBN transformation_NN functions_NNS can_MD be_VB found_VBN in_IN -LSB-_-LRB- ##_CD ,_, ##_CD ,_, #_# ,_, ##_NN -RSB-_-RRB- ._.
+IT_PRP functions_VBZ capable_JJ of_IN preserving_VBG IP2_NN and_CC IP3_NN had_VBD been_VBN devised_VBN in_IN the_DT context_NN of_IN ANYUNDO_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, but_CC our_PRP$ experience_NN in_IN implementing_VBG these_DT functions_NNS revealed_VBD that_IN those_DT solutions_NNS are_VBP quick_JJ intricate_JJ and_CC inefficient_JJ -LRB-_-LRB- more_JJR analysis_NN can_MD be_VB found_VBN in_IN Section_NN #_# -RRB-_-RRB- ._.
+Clearly_RB ,_, solving_VBG CP2_NN ,_, IP2_NN and_CC IP3_NN at_IN the_DT control_NN algorithm_NN level_NN has_VBZ the_DT benefit_NN of_IN simplifying_VBG the_DT design_NN of_IN transformation_NN functions_NNS and_CC the_DT OT_NN system_NN as_IN a_DT whole_NN ._.
+In_IN the_DT following_VBG section_NN ,_, we_PRP extend_VBP the_DT basic_JJ COT_NNP algorithm_NN to_TO provide_VB simple_JJ and_CC efficient_JJ solutions_NNS to_TO CP2_NN ,_, IP2_NN and_CC IP3_NN at_IN the_DT control_NN algorithm_NN level_NN ._.
+6_CD ._.
+COT_NNP SOLUTIONS_NNP TO_TO CP2_NNP ,_, IP2_NN ,_, AND_CC IP3_NN A_DT distinctive_JJ feature_NN of_IN COT_NNP is_VBZ that_IN in_IN every_DT transformation_NN process_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+an_DT invocation_NN of_IN transform_VB -LRB-_-LRB- O_NN ,_, CD_NNP -RRB-_-RRB- -RRB-_-RRB- ,_, the_DT whole_JJ set_NN of_IN transformation_NN target_NN operations_NNS are_VBP determined_VBN in_IN advance_NN ,_, and_CC available_JJ in_IN the_DT context-difference_NN parameter_NN CD_NN -LRB-_-LRB- calculated_VBN by_IN using_VBG context-based_JJ conditions_NNS CC2_NN and_CC CC5_NN -RRB-_-RRB- ._.
+With_IN the_DT knowledge_NN of_IN all_DT operations_NNS involved_VBN in_IN the_DT transformation_NN process_NN ,_, we_PRP are_VBP able_JJ to_TO properly_RB arrange_VB these_DT operations_NNS to_TO break_VB the_DT pre-conditions_NNS for_IN CP2_NN ,_, IP2_NN ,_, and_CC IP3_NN ._.
+6_CD ._.
+#_# Extended_VBN transform_VB -LRB-_-LRB- -RRB-_-RRB- procedure_NN We_PRP extend_VBP the_DT core_NN procedure_NN transform_VB -LRB-_-LRB- O_NN ,_, CD_NNP -RRB-_-RRB- to_TO take_VB advantage_NN of_IN the_DT global_JJ knowledge_NN of_IN operations_NNS in_IN the_DT contextdifference_NN parameter_NN CD_NN for_IN breaking_VBG PC-CP2_NN ,_, PC-IP2_NN and_CC PC-IP3_NN ._.
+The_DT extended_JJ transform_VB -LRB-_-LRB- -RRB-_-RRB- ,_, as_IN shown_VBN in_IN Procedure_NNP #_# ,_, retains_VBZ the_DT structure_NN and_CC main_JJ elements_NNS of_IN Procedure_NNP #_# ,_, but_CC adds_VBZ solutions_NNS to_TO CP2_NN ,_, IP2_NN ,_, and_CC IP3_NN in_IN Step_NN #_# -LRB-_-LRB- ensure_VB TPsafety_NN -LRB-_-LRB- -RRB-_-RRB- -RRB-_-RRB- and_CC in_IN Step_NN 2_CD -_: -LRB-_-LRB- c_LS -RRB-_-RRB- -LRB-_-LRB- the_DT if-then_JJ part_NN -RRB-_-RRB- ._.
+Procedure_NN #_# ._.
+transform_VB -LRB-_-LRB- O_NN ,_, CD_NNP -RRB-_-RRB- 1_CD ._.
+If_IN CD_NN =_JJ -LCB-_-LRB- -RCB-_-RRB- ,_, ensure_VB TPsafety_NN -LRB-_-LRB- O_NN ,_, CD_NNP -RRB-_-RRB- ;_: 2_LS ._.
+Repeat_NN until_IN CD_NN =_JJ -LCB-_-LRB- -RCB-_-RRB- :_: -LRB-_-LRB- a_LS -RRB-_-RRB- Remove_VB the_DT first_JJ operation_NN Ox_NN from_IN CD_NNP ;_: -LRB-_-LRB- b_LS -RRB-_-RRB- transform_VB -LRB-_-LRB- Ox_NN ,_, C_NN -LRB-_-LRB- O_NN -RRB-_-RRB- C_NN -LRB-_-LRB- Ox_NN -RRB-_-RRB- -RRB-_-RRB- ;_: -LRB-_-LRB- c_LS -RRB-_-RRB- If_IN Ox_NN is_VBZ a_DT do-undo-pair_JJ ,_, then_RB C_NN -LRB-_-LRB- O_NN -RRB-_-RRB- :_: =_JJ C_NN -LRB-_-LRB- O_NN -RRB-_-RRB- -LCB-_-LRB- org_NN -LRB-_-LRB- Ox_NN -RRB-_-RRB- ,_, org_NN -LRB-_-LRB- Ox_NN -RRB-_-RRB- -RCB-_-RRB- ;_: else_RB O_NN :_: =_JJ IT_NNP -LRB-_-LRB- O_NNP ,_, Ox_NN -RRB-_-RRB- ;_: C_NN -LRB-_-LRB- O_NN -RRB-_-RRB- :_: =_JJ C_NN -LRB-_-LRB- O_NN -RRB-_-RRB- -LCB-_-LRB- org_NN -LRB-_-LRB- Ox_NN -RRB-_-RRB- -RCB-_-RRB- ._.
+Procedure_NN #_# ._.
+ensure_VB TPsafety_NN -LRB-_-LRB- O_NN ,_, CD_NNP -RRB-_-RRB- 1_CD ._.
+Ensure_VB CP2-safety_NN :_: sort_NN operations_NNS in_IN CD_NNP in_IN a_DT total_JJ order_NN that_WDT respects_VBZ their_PRP$ context-dependency_NN order_NN ._.
+2_LS ._.
+Ensure_VB IP2-safety_NN :_: for_IN any_DT Ox_NN CD_NN ,_, if_IN Ox_NN CD_NN ,_, then_RB mark_NN Ox_NN as_IN a_DT do-undo-pair_JJ ,_, remove_VB Ox_NN from_IN CD_NNP ._.
+3_LS ._.
+Ensure_VB IP3-safety_NN :_: if_IN O_NN is_VBZ inverse_JJ ,_, the_DT invoke_VB make_VB IP3safe_NNP Inverse_NNP -LRB-_-LRB- O_NNP ,_, CD_NNP -RRB-_-RRB- ._.
+Procedure_NN #_# ._.
+make_VB IP3safe_NNP Inverse_NNP -LRB-_-LRB- O_NNP ,_, CD_NNP -RRB-_-RRB- 1_CD ._.
+O_NN :_: =_JJ makeInverse_NN -LRB-_-LRB- O_NN -RRB-_-RRB- ;_: C_NN -LRB-_-LRB- O_NN -RRB-_-RRB- :_: =_JJ C_NN -LRB-_-LRB- O_NN -RRB-_-RRB- -LCB-_-LRB- O_NN -RCB-_-RRB- ;_: 2_LS ._.
+NCD_NNP :_: =_JJ -LCB-_-LRB- Ox_NN |_CD Ox_NN CD_NN and_CC Ox_NN c_NN O_NN -RCB-_-RRB- ;_: 3_LS ._.
+transform_VB -LRB-_-LRB- O_NN ,_, NCD_NN -RRB-_-RRB- ;_: 4_LS ._.
+O_NN :_: =_JJ makeInverse_NN -LRB-_-LRB- O_NN -RRB-_-RRB- ;_: C_NN -LRB-_-LRB- O_NN -RRB-_-RRB- :_: =_JJ C_NN -LRB-_-LRB- O_NN -RRB-_-RRB- -LCB-_-LRB- O_NN -RCB-_-RRB- ;_: 5_CD ._.
+CD_NNP :_: =_JJ CD_NNP NCD_NNP ._.
+6_CD ._.
+#_# Breaking_VBG the_DT pre-condition_NN for_IN CP2_NN The_DT COT_NNP solution_NN to_TO CP2_NN is_VBZ to_TO sort_VB all_DT operations_NNS in_IN CD_NNP in_IN a_DT total_JJ order_NN which_WDT respects_VBZ their_PRP$ context-dependency_NN order_NN -LRB-_-LRB- in_IN Step_NN #_# of_IN ensure_VB TPsafety_NN -LRB-_-LRB- -RRB-_-RRB- -RRB-_-RRB- ._.
+If_IN an_DT operation_NN O_NN is_VBZ transformed_VBN against_IN the_DT same_JJ group_NN of_IN context-independent_JJ operations_NNS in_IN multiple_JJ invocations_NNS to_TO transform_VB -LRB-_-LRB- O_NN ,_, CD_NNP -RRB-_-RRB- ,_, this_DT group_NN of_IN operations_NNS must_MD be_VB included_VBN in_IN CD_NNP and_CC sorted_VBN in_IN the_DT same_JJ total_JJ order_NN ._.
+Therefore_RB ,_, O_NN can_MD never_RB be_VB transformed_VBN against_IN the_DT same_JJ group_NN of_IN operations_NNS in_IN different_JJ orders_NNS ,_, thus_RB breaking_VBG PC-CP2_NN ._.
+It_PRP should_MD be_VB noted_VBN that_IN CD_NNP becomes_VBZ an_DT ordered_VBN set_NN after_IN the_DT sorting_NN ._.
+The_DT first_JJ Ox_NN in_IN CD_NNP must_MD meet_VB the_DT condition_NN C_NN -LRB-_-LRB- Ox_NN -RRB-_-RRB- C_NN -LRB-_-LRB- O_NN -RRB-_-RRB- in_IN Step_NN #_# -LRB-_-LRB- a_DT -RRB-_-RRB- of_IN transform_VB -LRB-_-LRB- O_NN ,_, CD_NNP -RRB-_-RRB- -LRB-_-LRB- Procedure_NNP #_# -RRB-_-RRB- ,_, so_RB this_DT condition_NN is_VBZ no_RB longer_RB explicitly_RB specified_VBN in_IN Procedure_NNP #_# ._.
+A_DT correct_JJ total_JJ order_NN for_IN breaking_VBG PCCP2_NN can_MD be_VB conveniently_RB determined_VBN by_IN using_VBG the_DT contextdependency_NN relations_NNS among_IN all_DT operations_NNS plus_CC the_DT site_NN identifiers_NNS of_IN context-independent_JJ operations_NNS ._.
+There_EX have_VBP been_VBN several_JJ prior_JJ OT_NN systems_NNS capable_JJ of_IN breaking_VBG PC-CP2_NN ,_, including_VBG the_DT GOT_NN system_NN -LRB-_-LRB- by_IN an_DT undo_VBP /_: redo_VB scheme_NN based_VBN on_IN total_JJ ordering_VBG -RRB-_-RRB- -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, the_DT SOCT4_NN system_NN -LRB-_-LRB- by_IN a_DT control_NN strategy_NN based_VBN on_IN global_JJ sequencing_NN -RRB-_-RRB- -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, the_DT NICE_JJ system_NN -LRB-_-LRB- by_IN a_DT central_JJ transformation-based_JJ notifier_NN -RRB-_-RRB- -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, and_CC the_DT TIBOT_NN system_NN -LRB-_-LRB- by_IN a_DT distributed_VBN synchronization_NN protocol_NN based_VBN on_IN time-internal_JJ -RRB-_-RRB- -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+The_DT COT_NNP solution_NN to_TO CP2_NN is_VBZ unique_JJ and_CC avoids_VBZ the_DT use_NN of_IN any_DT undo_VBP /_: redo_VB or_CC global_JJ sequencing_NN /_: synchronization_NN ._.
+6_CD ._.
+#_# Breaking_VBG the_DT pre-condition_NN for_IN IP2_NN The_DT basic_JJ idea_NN of_IN the_DT COT_NNP solution_NN to_TO IP2_NN is_VBZ to_TO make_VB sure_JJ that_IN an_DT operation_NN is_VBZ never_RB transformed_VBN against_IN a_DT pair_NN of_IN do_VB and_CC undo_VB operations_NNS one_CD by_IN one_CD ,_, thus_RB breaking_VBG PCIP2_NN ._.
+This_DT solution_NN consists_VBZ of_IN two_CD parts_NNS :_: -LRB-_-LRB- #_# -RRB-_-RRB- Step_NN #_# of_IN ensure_VB TPsafety_NN -LRB-_-LRB- CD_NN -RRB-_-RRB- couples_NNS operations_NNS with_IN their_PRP$ corresponding_JJ inverses_NNS if_IN they_PRP are_VBP all_DT included_VBN in_IN the_DT context_NN difference_NN CD_NN ,_, and_CC remove_VB these_DT inverses_NNS from_IN CD_NNP ;_: -LRB-_-LRB- #_# -RRB-_-RRB- In_IN Step_NN 2_CD -_: -LRB-_-LRB- c_LS -RRB-_-RRB- of_IN transform_VB -LRB-_-LRB- -RRB-_-RRB- ,_, if_IN Ox_NN is_VBZ found_VBN to_TO be_VB a_DT do-undo-pair_JJ ,_, the_DT IT-transformation_NN of_IN O_NN against_IN Ox_NN is_VBZ skipped_VBN -LRB-_-LRB- effectively_RB treating_VBG this_DT pair_NN as_IN an_DT identity_NN operation_NN -RRB-_-RRB- and_CC the_DT context_NN of_IN O_NN is_VBZ updated_VBN by_IN adding_VBG two_CD operations_NNS :_: -LCB-_-LRB- org_NN -LRB-_-LRB- Ox_NN -RRB-_-RRB- ,_, org_NN -LRB-_-LRB- Ox_NN -RRB-_-RRB- -RCB-_-RRB- ._.
+6_CD ._.
+#_# Breaking_VBG the_DT pre-condition_NN for_IN IP3_NN The_DT COT_NNP solution_NN to_TO IP3_NN is_VBZ encapsulated_VBN in_IN the_DT procedure_NN make_VBP IP3safe_NN Inverse_JJ -LRB-_-LRB- O_NN ,_, CD_NNP -RRB-_-RRB- ,_, which_WDT makes_VBZ O_NN an_DT IP3-safe_JJ inverse_JJ with_IN respect_NN to_TO the_DT context_NN difference_NN CD_NN ._.
+An_DT inverse_JJ O_NN is_VBZ IP3-safe_JJ with_IN respect_NN to_TO CD_NNP if_IN it_PRP is_VBZ made_VBN from_IN a_DT transformed_VBN version_NN of_IN O_NN ,_, which_WDT has_VBZ included_VBN all_DT operations_NNS in_IN CD_NNP that_WDT are_VBP context-independent_JJ of_IN O_NN ._.
+Under_IN the_DT control_NN of_IN COT_NNP ,_, the_DT IP3-safe_JJ inverse_JJ O_NN shall_MD never_RB be_VB transformed_VBN against_IN operations_NNS that_WDT are_VBP context-independent_JJ of_IN O_NN ,_, thus_RB breaking_VBG PC-IP3_NN ._.
+The_DT make_VBP IP3safe_NN Inverse_JJ procedure_NN works_VBZ as_IN follows_VBZ :_: -LRB-_-LRB- #_# -RRB-_-RRB- create_VBP operation_NN O_NN -LRB-_-LRB- the_DT inverse_NN of_IN O_NN -RRB-_-RRB- and_CC C_NN -LRB-_-LRB- O_NN -RRB-_-RRB- =_JJ C_NN -LRB-_-LRB- O_NN -RRB-_-RRB- 285_CD -LCB-_-LRB- O_NN -RCB-_-RRB- ;_: -LRB-_-LRB- #_# -RRB-_-RRB- select_JJ all_DT operations_NNS from_IN CD_NNP which_WDT are_VBP contextindependent_JJ of_IN O_NN and_CC create_VB a_DT new_JJ context_NN difference_NN NCD_NN ;_: -LRB-_-LRB- #_# -RRB-_-RRB- transform_VBP O_NN against_IN operations_NNS in_IN NCD_NN -LRB-_-LRB- by_IN recursively_RB invoking_VBG transform_VB -LRB-_-LRB- -RRB-_-RRB- -RRB-_-RRB- ;_: -LRB-_-LRB- #_# -RRB-_-RRB- create_VBP a_DT new_JJ inverse_NN from_IN the_DT transformed_VBN O_NN ;_: and_CC -LRB-_-LRB- #_# -RRB-_-RRB- create_VBP a_DT new_JJ CD_NN by_IN subtracting_VBG NCD_NN from_IN the_DT old_JJ CD_NN -LRB-_-LRB- the_DT new_JJ CD_NNP must_MD maintain_VB the_DT total_JJ order_NN as_IN required_VBN for_IN solving_VBG CP2_NN -RRB-_-RRB- ._.
+This_DT new_JJ inverse_JJ O_NN must_MD be_VB IP3-safe_JJ because_IN it_PRP is_VBZ created_VBN from_IN a_DT transformed_VBN operation_NN whose_WP$ context_NN has_VBZ included_VBN all_DT operations_NNS in_IN NCD_NN ._.
+The_DT IP3-safe_JJ inverse_JJ O_NN shall_MD never_RB be_VB transformed_VBN against_IN the_DT operations_NNS in_IN NCD_NN since_IN these_DT operations_NNS have_VBP been_VBN removed_VBN from_IN the_DT new_JJ CD_NN in_IN Step_NN -LRB-_-LRB- #_# -RRB-_-RRB- ._.
+7_CD ._.
+DISCUSSIONS_NNS 7_CD ._.
+#_# The_DT theory_NN of_IN operation_NN context_NN The_DT notion_NN of_IN operation_NN context_NN was_VBD first_JJ proposed_VBN in_IN the_DT GOT_NNP algorithm_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- and_CC used_VBN in_IN conjunction_NN with_IN the_DT theory_NN of_IN causality_NN in_IN follow-up_JJ GOTO_NNP and_CC ANYUNDO_NNP algorithms_NNS -LSB-_-LRB- ##_NNS ,_, ##_NN -RSB-_-RRB- ._.
+In_IN prior_JJ work_NN ,_, the_DT context_NN of_IN an_DT operation_NN O_NN was_VBD defined_VBN as_IN a_DT sequence_NN of_IN transformed_VBN operations_NNS which_WDT can_MD be_VB executed_VBN to_TO bring_VB the_DT document_NN from_IN its_PRP$ initial_JJ state_NN to_TO the_DT state_NN on_IN which_WDT O_NN is_VBZ defined_VBN ._.
+This_DT definition_NN is_VBZ directly_RB coupled_VBN to_TO the_DT sequential_JJ history_NN buffering_VBG strategy_NN ,_, which_WDT saves_VBZ executed_VBN operations_NNS in_IN their_PRP$ execution_NN forms_NNS and_CC orders_NNS ._.
+There_EX was_VBD no_DT explicit_JJ representation_NN of_IN an_DT operation_NN context_NN ._.
+Context_NN relationships_NNS among_IN operations_NNS are_VBP derived_VBN from_IN the_DT causality_NN relationships_NNS plus_CC the_DT history_NN buffer_NN position_NN relationships_NNS among_IN operations_NNS -LSB-_-LRB- ##_NNS ,_, ##_NN -RSB-_-RRB- ._.
+In_IN this_DT paper_NN ,_, the_DT concept_NN of_IN operation_NN context_NN is_VBZ defined_VBN as_IN a_DT set_NN of_IN original_JJ operations_NNS corresponding_VBG to_TO the_DT document_NN state_NN on_IN which_WDT this_DT operation_NN is_VBZ defined_VBN ._.
+This_DT new_JJ concept_NN of_IN operation_NN context_NN is_VBZ independent_JJ of_IN the_DT underlying_VBG operation_NN buffering_NN strategy_NN and_CC is_VBZ explicitly_RB represented_VBN as_IN an_DT operation_NN set_NN ._.
+Based_VBN on_IN the_DT set_VBN representation_NN of_IN operation_NN context_NN ,_, essential_JJ OT_NN conditions_NNS -LRB-_-LRB- CC1_NN -_: CC6_NN -RRB-_-RRB- have_VBP been_VBN precisely_RB and_CC concisely_RB captured_VBN ._.
+Moreover_RB ,_, the_DT context_NN vector_NN has_VBZ been_VBN devised_VBN to_TO efficiently_RB represent_VB both_CC normal_JJ and_CC inverse_JJ operations_NNS in_IN a_DT context_NN ._.
+The_DT context_NN vector_NN is_VBZ more_RBR general_JJ than_IN the_DT state_NN vector_NN and_CC potentially_RB applicable_JJ to_TO other_JJ distributed_VBN computing_NN systems_NNS as_RB well_RB ._.
+Based_VBN on_IN the_DT theory_NN of_IN causality_NN ,_, prior_RB OT_NNP algorithms_NNS have_VBP used_VBN state_NN vectors_NNS to_TO capture_VB causal-dependency_NN relationships_NNS among_IN original_JJ normal_JJ operations_NNS and_CC to_TO represent_VB document_NN states_NNS in_IN terms_NNS of_IN original_JJ normal_JJ operations_NNS ._.
+However_RB ,_, causal-dependency_NN relationships_NNS are_VBP not_RB defined_VBN for_IN inverse_JJ or_CC transformed_VBN operations_NNS ,_, and_CC state_NN vectors_NNS can_MD not_RB represent_VB document_NN states_NNS with_IN original_JJ inverse_JJ operations_NNS ._.
+The_DT theory_NN of_IN causality_NN is_VBZ unable_JJ to_TO capture_VB essential_JJ OT_NN conditions_NNS -LRB-_-LRB- CC1_NN -_: CC6_NN -RRB-_-RRB- for_IN all_DT types_NNS of_IN operation_NN -_: original_JJ and_CC transformed_VBN ,_, normal_JJ and_CC inverse_JJ operations_NNS ._.
+7_CD ._.
+#_# COT_NNP versus_CC GOTO-ANYUNDO_NNP Both_CC COT_NNP and_CC GOTO-ANYUNDO_NNP are_VBP capable_JJ of_IN doing_VBG and_CC undoing_NN any_DT operations_NNS at_IN anytime_RB ._.
+The_DT main_JJ difference_NN is_VBZ that_IN COT_NNP achieves_VBZ this_DT capability_NN without_IN using_VBG ET_NNP functions_NNS -LRB-_-LRB- thus_RB eliminating_VBG the_DT RP_NN requirement_NN for_IN IT_PRP functions_NNS -RRB-_-RRB- ,_, and_CC without_IN requiring_VBG IT_PRP functions_VBZ to_TO preserve_VB CP2_NN ,_, IP2_NN and_CC IP3_NN ._.
+The_DT avoidance_NN of_IN RP_NN ,_, CP2_NN ,_, IP2_NN ,_, and_CC IP3_NN has_VBZ significantly_RB simplified_VBN the_DT design_NN of_IN transformation_NN functions_NNS and_CC the_DT OT_NN system_NN as_IN a_DT whole_NN ._.
+COT_NNP is_VBZ simpler_JJR than_IN GOTO-ANYUNDO_NN -LRB-_-LRB- and_CC prior_JJ OT_NN algorithms_NNS based_VBN on_IN the_DT causality_NN theory_NN -RRB-_-RRB- because_IN of_IN the_DT use_NN of_IN a_DT single_JJ theory_NN of_IN operation_NN context_NN for_IN capturing_VBG all_DT OTrelated_JJ conditions_NNS -LRB-_-LRB- CC1-CC6_NN -RRB-_-RRB- ,_, the_DT uniformity_NN of_IN contextbased_JJ conditions_NNS for_IN treating_VBG all_DT types_NNS of_IN operation_NN ,_, and_CC the_DT conciseness_NN of_IN these_DT context-based_JJ conditions_NNS ._.
+The_DT COT-based_JJ system_NN is_VBZ more_RBR efficient_JJ than_IN the_DT GOTOANYUNDO-based_JJ system_NN in_IN solving_VBG IP2_NN and_CC IP3_NN ._.
+In_IN GOTOANYUNDO_NNP ,_, the_DT do-part_JJ -LRB-_-LRB- a_DT normal_JJ operation_NN -RRB-_-RRB- and_CC the_DT undopart_JJ -LRB-_-LRB- an_DT inverse_JJ operation_NN -RRB-_-RRB- need_VBP to_TO be_VB coupled_VBN for_IN the_DT purpose_NN of_IN preserving_VBG IP2_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+An_DT eager_JJ coupling_NN strategy_NN was_VBD adopted_VBN :_: an_DT inverse_JJ operation_NN is_VBZ coupled_VBN with_IN its_PRP$ corresponding_JJ normal_JJ operation_NN immediately_RB after_IN its_PRP$ execution_NN ._.
+Under_IN this_DT scheme_NN ,_, inverse_JJ operations_NNS are_VBP not_RB explicitly_RB represented_VBN in_IN the_DT history_NN buffer_NN ._.
+When_WRB a_DT normal_JJ operation_NN is_VBZ to_TO be_VB executed_VBN ,_, however_RB ,_, it_PRP may_MD need_VB to_TO be_VB transformed_VBN against_IN only_RB the_DT undo-part_NN of_IN a_DT do-undo-pair_NN ._.
+To_TO cope_VB with_IN this_DT problem_NN ,_, an_DT extra_JJ DeCouple-GOTO-ReCouple_JJ scheme_NN has_VBZ to_TO be_VB used_VBN to_TO decouple_VB a_DT do-undo-pair_NN before_IN invoking_VBG GOTO_NNP and_CC then_RB recouple_VB them_PRP afterwards_RB -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+However_RB ,_, the_DT implementation_NN of_IN this_DT decouple-recouple_JJ scheme_NN revealed_VBD it_PRP was_VBD rather_RB intricate_JJ and_CC causing_VBG many_JJ repeated_VBN transformations_NNS ._.
+In_IN the_DT COT_NNP algorithm_NN ,_, COT-DO_NN and_CC COT-UNDO_NN are_VBP seamlessly_RB integrated_VBN ._.
+Inverse_JJ operations_NNS are_VBP explicitly_RB represented_VBN in_IN the_DT operation_NN context_NN ,_, and_CC a_DT lazy_JJ coupling_NN strategy_NN is_VBZ adopted_VBN :_: the_DT coupling_NN of_IN a_DT do-undo-pair_NN occurs_VBZ not_RB immediately_RB after_IN executing_VBG each_DT inverse_NN ,_, but_CC only_RB when_WRB both_CC the_DT do-part_NN and_CC the_DT undo-part_JJ appear_VBP in_IN the_DT same_JJ transformation_NN process_NN at_IN some_DT late_JJ stage_NN ._.
+These_DT strategies_NNS help_VBP to_TO avoid_VB overhead_JJ transformations_NNS caused_VBN by_IN the_DT eager_JJ coupling_NN scheme_NN and_CC the_DT decouple-recouple_JJ scheme_NN ._.
+In_IN the_DT GOTO-ANYUNDO-based_JJ system_NN ,_, the_DT solution_NN to_TO IP3_NN is_VBZ encapsulated_VBN in_IN an_DT IP3-preserving_JJ IT_NNP function_NN ,_, called_VBN IP3P-IT_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Inside_IN this_DT function_NN ,_, an_DT extended_JJ ET_NNP function_NN has_VBZ to_TO be_VB used_VBN ,_, which_WDT may_MD invoke_VB the_DT expensive_JJ GOTO_NNP algorithm_NN to_TO ensure_VB RP_NN with_IN the_DT corresponding_JJ IT_NNP function_NN ._.
+In_IN contrast_NN ,_, the_DT COT_NNP solution_NN to_TO IP3_NN is_VBZ encapsulated_VBN in_IN the_DT high-level_JJ procedure_NN make_VBP IP3safe_NN Inverse_JJ -LRB-_-LRB- O_NN ,_, CD_NNP -RRB-_-RRB- ,_, which_WDT is_VBZ more_RBR efficient_JJ since_IN -LRB-_-LRB- #_# -RRB-_-RRB- it_PRP avoids_VBZ converting_VBG O_NN to_TO O_NN back_RB and_CC forth_RB multiple_JJ times_NNS for_IN each_DT Ox_NN NCD_NN -LRB-_-LRB- if_IN IP3P-IT_NN -LRB-_-LRB- O_NN ,_, Ox_NN -RRB-_-RRB- were_VBD used_VBN instead_RB -RRB-_-RRB- ;_: and_CC -LRB-_-LRB- #_# -RRB-_-RRB- the_DT transform_VB -LRB-_-LRB- -RRB-_-RRB- procedure_NN is_VBZ much_JJ cheaper_JJR than_IN GOTO_NNP ._.
+7_CD ._.
+#_# OT_NNP buffering_VBG strategies_NNS Another_DT distinctive_JJ feature_NN of_IN the_DT COT_NNP algorithm_NN is_VBZ the_DT separation_NN of_IN the_DT algorithm_NN from_IN the_DT underlying_VBG operation_NN buffering_NN strategy_NN ._.
+This_DT has_VBZ not_RB only_RB resulted_VBD in_IN a_DT cleaner_JJR and_CC simpler_JJR logical_JJ structure_NN to_TO the_DT algorithm_NN itself_PRP ,_, but_CC also_RB allowed_VBD a_DT range_NN of_IN performance_NN optimizations_NNS at_IN the_DT operation_NN buffering_NN level_NN ._.
+We_PRP have_VBP devised_VBN and_CC implemented_VBN a_DT buffering_NN structure_NN in_IN which_WDT not_RB only_RB original_JJ operations_NNS but_CC also_RB transformed_VBN versions_NNS can_MD be_VB saved_VBN ;_: and_CC all_DT transformed_VBN operations_NNS from_IN the_DT same_JJ original_JJ operation_NN are_VBP organized_VBN in_IN the_DT same_JJ version_NN group_NN ._.
+When_WRB an_DT original_JJ operation_NN is_VBZ required_VBN at_IN the_DT COT_NNP algorithm_NN level_NN ,_, the_DT corresponding_JJ version_NN group_NN is_VBZ searched_VBN for_IN a_DT version_NN that_WDT matches_VBZ the_DT context_NN requirement_NN ._.
+If_IN such_PDT a_DT version_NN already_RB exists_VBZ ,_, it_PRP is_VBZ used_VBN to_TO represent_VB the_DT original_JJ operation_NN in_IN the_DT transformation_NN process_NN ,_, thus_RB saving_VBG the_DT overhead_NN to_TO transform_VB the_DT original_JJ operation_NN into_IN this_DT version_NN ._.
+Under_IN this_DT buffering_NN structure_NN ,_, various_JJ heuristics_NNS can_MD be_VB used_VBN to_TO selectively_RB save_VB transformed_VBN versions_NNS to_TO maximize_VB their_PRP$ reuse_NN and_CC minimize_VB their_PRP$ space_NN usage_NN ._.
+By_IN experimentation_NN ,_, we_PRP have_VBP identified_VBN some_DT useful_JJ heuristics_NNS that_WDT are_VBP 286_CD effective_JJ in_IN saving_VBG transformations_NNS for_IN a_DT number_NN of_IN common_JJ patterns_NNS of_IN operation_NN sequence_NN ._.
+COT_NNP is_VBZ not_RB the_DT first_JJ OT_NNP algorithm_NN that_WDT buffers_NNS and_CC uses_VBZ original_JJ operations_NNS for_IN transformation_NN ._.
+Several_JJ prior_JJ OT_NN algorithms_NNS ,_, including_VBG CCU_NN -LSB-_-LRB- #_# -RSB-_-RRB- ,_, adOPTed_JJ -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, and_CC GOTOANYUNDO_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, have_VBP also_RB buffered_VBN original_JJ operations_NNS ._.
+COT_NNP is_VBZ unique_JJ in_IN its_PRP$ way_NN of_IN buffering_NN and_CC using_VBG original_JJ ,_, as_RB well_RB as_IN transformed_VBN ,_, operations_NNS ._.
+7_CD ._.
+#_# OT_NNP correctness_NN OT_NNP correctness_NN is_VBZ a_DT central_JJ topic_NN of_IN discussion_NN in_IN OT_NNP research_NN ._.
+In_IN this_DT section_NN ,_, we_PRP provide_VBP our_PRP$ observations_NNS and_CC opinions_NNS on_IN some_DT important_JJ OT_NN correctness_NN issues_NNS ._.
+OT_NNP is_VBZ a_DT complex_JJ system_NN with_IN multiple_JJ interrelated_JJ components_NNS ._.
+A_DT system-oriented_JJ approach_NN is_VBZ needed_VBN for_IN addressing_VBG OT_NN issues_NNS ._.
+An_DT experimental_JJ method_NN ,_, called_VBN puzzle-detectionresolution_NN ,_, has_VBZ commonly_RB been_VBN used_VBN in_IN exploring_VBG and_CC refining_VBG OT_NNP solutions_NNS ._.
+Puzzles_NNS are_VBP subtle_JJ but_CC representative_JJ scenarios_NNS in_IN which_WDT certain_JJ OT_NN properties_NNS /_: conditions_NNS may_MD be_VB violated_VBN and_CC the_DT system_NN may_MD produce_VB incorrect_JJ results_NNS ._.
+The_DT ability_NN to_TO solve_VB all_DT known_VBN puzzles_NNS is_VBZ a_DT necessary_JJ condition_NN and_CC an_DT important_JJ indicator_NN of_IN the_DT soundness_NN of_IN an_DT OT_NN system_NN ._.
+In_IN research_NN literature_NN ,_, simple_JJ puzzle_NN scenarios_NNS are_VBP often_RB used_VBN to_TO illustrate_VB the_DT key_JJ reasons_NNS why_WRB an_DT OT_NN system_NN works_VBZ or_CC fails_VBZ ._.
+In_IN real_JJ OT_NN system_NN design_NN ,_, however_RB ,_, a_DT real_JJ implementation_NN and_CC comprehensive_JJ testing_NN cases_NNS based_VBN on_IN complex_JJ puzzle_NN scenarios_NNS are_VBP crucial_JJ in_IN validating_VBG a_DT design_NN ._.
+Theoretical_JJ methods_NNS have_VBP also_RB been_VBN used_VBN to_TO formally_RB verify_VB OT_NN correctness_NN with_IN respect_NN to_TO some_DT identified_VBN transformation_NN properties_NNS /_: conditions_NNS ._.
+Formal_JJ verification_NN can_MD be_VB effective_JJ if_IN the_DT correctness_NN issues_NNS have_VBP been_VBN well-understood_JJ and_CC the_DT verification_NN criteria_NNS and_CC boundary_NN conditions_NNS have_VBP been_VBN well-defined_JJ ._.
+In_IN this_DT regard_NN ,_, experimental_JJ methods_NNS like_IN puzzle-detection-resolution_NN can_MD play_VB an_DT important_JJ role_NN in_IN gaining_VBG the_DT necessary_JJ insights_NNS into_IN the_DT real_JJ correctness_NN issues_NNS ,_, and_CC establishing_VBG suitable_JJ criteria_NNS and_CC conditions_NNS for_IN formal_JJ verification_NN ._.
+A_DT systematic_JJ approach_NN is_VBZ needed_VBN in_IN conducting_VBG both_CC experimental_JJ and_CC theoretic_JJ OT_NN research_NN ._.
+Many_JJ OT_NN components_NNS and_CC issues_NNS are_VBP intimately_RB related_JJ ,_, and_CC a_DT solution_NN to_TO one_CD issue_NN ,_, if_IN examined_VBN in_IN isolation_NN ,_, is_VBZ unlikely_JJ to_TO be_VB correct_JJ or_CC complete_JJ ._.
+For_IN example_NN ,_, a_DT solution_NN that_WDT works_VBZ well_RB for_IN consistency_NN maintenance_NN -LRB-_-LRB- do_VB -RRB-_-RRB- ,_, may_MD fail_VB when_WRB both_DT do_VBP and_CC undo_VBP problems_NNS are_VBP considered_VBN ;_: and_CC an_DT undo_VBP solution_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+preserving_VBG IP2_NN -RRB-_-RRB- may_MD violate_VB the_DT solution_NN to_TO consistency_NN maintenance_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+A_DT complete_JJ OT_NN solution_NN to_TO both_DT do_VBP and_CC undo_VBP problems_NNS is_VBZ significantly_RB more_RBR difficult_JJ to_TO design_NN than_IN a_DT partial_JJ solution_NN to_TO only_RB one_CD of_IN them_PRP ._.
+On_IN the_DT other_JJ hand_NN ,_, a_DT difficult_JJ issue_NN in_IN one_CD OT_NN component_NN may_MD be_VB resolved_VBN easily_RB ,_, or_CC avoided_VBN altogether_RB ,_, if_IN this_DT issue_NN is_VBZ addressed_VBN from_IN a_DT different_JJ OT_NN component_NN ._.
+For_IN example_NN ,_, it_PRP is_VBZ known_VBN that_IN devising_VBG and_CC proving_VBG transformation_NN functions_NNS capable_JJ of_IN preserving_VBG properties_NNS CP2_NN ,_, IP2_NN ,_, and_CC IP3_NN are_VBP difficult_JJ ._.
+However_RB ,_, these_DT difficulties_NNS can_MD be_VB avoided_VBN by_IN devising_VBG control_NN algorithms_NNS -LRB-_-LRB- like_IN COT_NNP -RRB-_-RRB- capable_JJ of_IN breaking_VBG the_DT pre-conditions_NNS for_IN requiring_VBG these_DT properties_NNS ;_: it_PRP is_VBZ also_RB easier_JJR to_TO prove_VB a_DT control_NN algorithm_NN is_VBZ capable_JJ of_IN breaking_VBG the_DT pre-conditions_NNS for_IN these_DT properties_NNS ,_, than_IN to_TO prove_VB transformation_NN functions_NNS are_VBP capable_JJ of_IN preserving_VBG them_PRP ._.
+Different_JJ OT_NN systems_NNS may_MD have_VB different_JJ divisions_NNS of_IN responsibility_NN among_IN their_PRP$ components_NNS and_CC hence_RB different_JJ correctness_NN requirements_NNS for_IN these_DT components_NNS ._.
+Caution_NN must_MD be_VB taken_VBN in_IN interpreting_VBG correctness_NN results_NNS ._.
+For_IN example_NN ,_, CP1_NN and_CC CP2_NN were_VBD proven_VBN to_TO be_VB necessary_JJ and_CC sufficient_JJ for_IN adOPTed-based_JJ systems_NNS to_TO converge_VB -LSB-_-LRB- ##_CD ,_, ##_CD -RSB-_-RRB- ,_, but_CC this_DT result_NN can_MD not_RB be_VB generalized_VBN to_TO all_DT OT_NN systems_NNS ._.
+In_IN fact_NN ,_, CP1_NN and_CC CP2_NN are_VBP neither_DT sufficient_JJ nor_CC necessary_JJ for_IN many_JJ OT_NNP systems_NNS ._.
+They_PRP are_VBP insufficient_JJ because_IN an_DT OT_NN system_NN may_MD need_VB to_TO preserve_VB additional_JJ properties_NNS /_: conditions_NNS ,_, such_JJ as_IN IP2_NN ,_, IP3_NN ,_, and_CC those_DT summarized_VBN in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ._.
+They_PRP are_VBP unnecessary_JJ if_IN the_DT pre-conditions_NNS for_IN requiring_VBG them_PRP have_VBP been_VBN broken_VBN ._.
+For_IN example_NN ,_, neither_CC CP1_NN nor_CC CP2_NN is_VBZ required_VBN in_IN the_DT REDUCE_NN system_NN based_VBN on_IN the_DT GOT_NNP algorithm_NN for_IN ensuring_VBG convergence_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+CP2_NN is_VBZ also_RB not_RB required_VBN by_IN OT_NN systems_NNS based_VBN on_IN COT_NNP or_CC some_DT prior_JJ OT_NN algorithms_NNS -LSB-_-LRB- ##_CD ,_, ##_CD ,_, ##_CD -RSB-_-RRB- ._.
+One_CD OT_NN correctness_NN issue_NN ,_, which_WDT is_VBZ often_RB discussed_VBN in_IN relation_NN to_TO the_DT CP2-violation_JJ problem_NN ,_, is_VBZ the_DT false-tie_JJ problem_NN :_: when_WRB two_CD -LRB-_-LRB- or_CC more_JJR -RRB-_-RRB- insert_NN operations_NNS with_IN the_DT same_JJ position_NN are_VBP IT-transformed_JJ with_IN each_DT other_JJ ,_, the_DT position_NN tie_NN may_MD be_VB false_JJ if_IN it_PRP was_VBD not_RB original_JJ but_CC caused_VBN by_IN previous_JJ transformations_NNS ._.
+An_DT OT_NN system_NN may_MD fail_VB to_TO produce_VB correct_JJ results_NNS if_IN the_DT normal_JJ tie-breaking_JJ rule_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+based_VBN on_IN site_NN identifiers_NNS -RRB-_-RRB- is_VBZ used_VBN to_TO break_VB false-ties_NNS ._.
+This_DT problem_NN was_VBD long_JJ discovered_VBN in_IN early_JJ OT_NN work_NN and_CC a_DT concrete_NN scenario_NN related_JJ to_TO this_DT problem_NN was_VBD illustrated_VBN in_IN Fig_NN ._.
+#_# of_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ._.
+It_PRP is_VBZ beyond_IN the_DT scope_NN of_IN this_DT paper_NN to_TO discuss_VB solutions_NNS to_TO this_DT problem_NN ,_, but_CC it_PRP is_VBZ worth_JJ pointing_VBG out_RP that_IN the_DT false-tie_JJ problem_NN is_VBZ different_JJ from_IN the_DT CP2-violation_JJ problem_NN :_: a_DT false-tie_NN may_MD occur_VB without_IN violating_VBG CP2_NN ._.
+In_IN our_PRP$ view_NN ,_, the_DT false-tie_JJ problem_NN is_VBZ an_DT issue_NN at_IN the_DT transformation_NN function_NN level_NN and_CC its_PRP$ solution_NN could_MD and_CC should_MD be_VB localized_JJ at_IN this_DT level_NN as_RB well_RB ._.
+For_IN alternative_JJ views_NNS and_CC approaches_NNS to_TO this_DT problem_NN ,_, the_DT reader_NN is_VBZ referred_VBN to_TO -LSB-_-LRB- #_# ,_, ##_NN ,_, #_# -RSB-_-RRB- ._.
+The_DT COT_NNP algorithm_NN has_VBZ been_VBN implemented_VBN and_CC validated_VBN by_IN a_DT comprehensive_JJ testing_NN suite_NN covering_VBG all_DT known_VBN OT_NN puzzle_NN scenarios_NNS ._.
+In_IN this_DT paper_NN ,_, informal_JJ analysis_NN and_CC simple_JJ puzzle_NN scenarios_NNS have_VBP been_VBN used_VBN to_TO show_VB the_DT correctness_NN of_IN COT_NN with_IN respect_NN to_TO various_JJ transformation_NN properties_NNS /_: conditions_NNS ._.
+Formal_JJ verification_NN of_IN COT_NNP correctness_NN with_IN respect_NN to_TO these_DT properties_NNS /_: conditions_NNS ,_, and_CC quantitative_JJ analysis_NN of_IN the_DT time_NN and_CC space_NN complexity_NN of_IN COT_NNP ,_, shall_MD be_VB reported_VBN in_IN a_DT journal_NN version_NN of_IN this_DT paper_NN ._.
+8_CD ._.
+CONCLUSIONS_NNS We_PRP have_VBP contributed_VBN the_DT theory_NN of_IN operation_NN context_NN and_CC the_DT COT_NNP -LRB-_-LRB- Context-based_JJ OT_NN -RRB-_-RRB- algorithm_NN ._.
+The_DT theory_NN of_IN operation_NN context_NN is_VBZ capable_JJ of_IN capturing_VBG essential_JJ relationships_NNS and_CC conditions_NNS for_IN all_DT types_NNS of_IN operation_NN in_IN an_DT OT_NN system_NN ;_: it_PRP provides_VBZ a_DT new_JJ foundation_NN for_IN better_JJR understanding_NN and_CC resolving_VBG OT_NN problems_NNS ._.
+The_DT COT_NNP algorithm_NN provides_VBZ uniformed_JJ solutions_NNS to_TO both_DT consistency_NN maintenance_NN and_CC undo_VB problems_NNS ;_: it_PRP is_VBZ simpler_JJR and_CC more_RBR efficient_JJ than_IN prior_JJ OT_NN control_NN algorithms_NNS with_IN similar_JJ capabilities_NNS ;_: and_CC it_PRP significantly_RB simplifies_VBZ the_DT design_NN of_IN transformation_NN functions_NNS ._.
+The_DT COT_NNP algorithm_NN has_VBZ been_VBN implemented_VBN in_IN a_DT generic_JJ collaboration_NN engine_NN and_CC used_VBN for_IN supporting_VBG a_DT range_NN of_IN novel_JJ collaborative_JJ applications_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Real-world_JJ applications_NNS provide_VBP exciting_JJ opportunities_NNS and_CC challenges_NNS to_TO future_JJ OT_NN research_NN ._.
+The_DT theory_NN of_IN operation_NN context_NN and_CC the_DT COT_NNP algorithm_NN shall_MD serve_VB as_IN new_JJ foundations_NNS for_IN addressing_VBG the_DT technical_JJ challenges_NNS in_IN existing_VBG and_CC emerging_VBG OT_NNP applications_NNS ._.
+Acknowledgments_NNS The_DT authors_NNS are_VBP grateful_JJ to_TO Bo_NNP Begole_NNP and_CC anonymous_JJ reviewers_NNS for_IN their_PRP$ valuable_JJ comments_NNS and_CC suggestions_NNS which_WDT have_VBP helped_VBN improve_VB the_DT presentation_NN of_IN the_DT paper_NN ._.
+287_CD 9_CD ._.
+REFERENCES_NNS -LSB-_-LRB- #_# -RSB-_-RRB- J_NN ._.
+Begole_NNP ,_, M_NN ._.
+Rosson_NNP ,_, and_CC C_NN ._.
+Shaffer_NNP ._.
+Flexible_JJ collaboration_NN transparency_NN :_: supporting_VBG worker_NN independence_NN in_IN replicated_VBN application-sharing_NN systems_NNS ._.
+ACM_NNP Trans_NNP ._.
+on_IN Computer-Human_NNP Interaction_NN ,_, #_# -LRB-_-LRB- #_# -RRB-_-RRB- :_: 95-132_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- G_NN ._.
+Cormack_NNP ._.
+A_DT calculus_NN for_IN concurrent_JJ update_VBP ._.
+In_IN Research_NNP Report_NNP CS-95-06_NNP ,_, Dept_NNP ._.
+of_IN Computer_NNP Science_NNP ,_, University_NNP of_IN Waterloo_NNP ,_, Canada_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- A_DT ._.
+Davis_NNP ,_, C_NNP ._.
+Sun_NNP ,_, and_CC J_NN ._.
+Lu_NNP ._.
+Generalizing_VBG operational_JJ transformation_NN to_TO the_DT standard_JJ general_JJ markup_NN language_NN ._.
+In_IN Proc_NNP ._.
+of_IN the_DT ACM_NNP Conf_NNP ._.
+on_IN Computer-Supported_NNP Cooperative_NNP Work_NNP ,_, pages_NNS ##_SYM -_: ##_NN ,_, Nov_NNP ._.
+####_NN ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- C_NN ._.
+A_DT ._.
+Ellis_NNP and_CC S_NN ._.
+J_NN ._.
+Gibbs_NNP ._.
+Concurrency_NNP control_NN in_IN groupware_NN systems_NNS ._.
+In_IN Proc_NNP ._.
+of_IN the_DT ACM_NNP Conf_NNP ._.
+on_IN Management_NN of_IN Data_NNS ,_, pages_NNS 399-407_CD ,_, May_NNP ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- N_NN ._.
+Gu_NNP ,_, J_NNP ._.
+Yang_NNP ,_, and_CC Q_NNP ._.
+Zhang_NNP ._.
+Consistency_NN maintenance_NN based_VBN on_IN the_DT mark_NN &_CC retrace_NN technique_NN in_IN groupware_NN systems_NNS ._.
+In_IN Proc_NNP ._.
+of_IN ACM_NNP Conf_NNP ._.
+on_IN Supporting_VBG Group_NNP Work_NNP ,_, pages_NNS 264-273_CD ,_, Nov_NNP ._.
+####_NN ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- R_NN ._.
+Guerraoui_NNP and_CC Corine_NNP Hari_NNP ._.
+On_IN the_DT consistency_NN problem_NN in_IN mobile_JJ distributed_VBN computing_NN ._.
+In_IN Proceedings_NNP of_IN the_DT Second_JJ ACM_NNP International_NNP Workshop_NNP on_IN Principles_NNS of_IN Mobile_NNP Computing_NNP ,_, pages_NNS 51-57_CD ,_, New_NNP York_NNP ,_, Octo_NNP ####_CD ._.
+ACM_NNP ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- C_NN ._.
+Ignat_NN and_CC M_NN ._.
+C_NN ._.
+Norrie_NNP ._.
+Customizable_JJ collaborative_JJ editor_NN relying_VBG on_IN treeOPT_NN algorithm_NN ._.
+In_IN Proc_NNP ._.
+of_IN the_DT European_JJ Conf_NNP ._.
+of_IN Computer-supported_JJ Cooperative_NNP Work_NNP ,_, pages_NNS 315-324_CD ,_, Sept_NNP ._.
+####_NN ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- A_DT ._.
+Imine_NNP ,_, P_NN ._.
+Molli_NNP ,_, G_NNP ._.
+Oster_NNP ,_, and_CC M_NN ._.
+Rusinowitch_NNP ._.
+Proving_VBG correctness_NN of_IN transformation_NN functions_NNS in_IN real-time_JJ groupware_NN ._.
+In_IN Proc_NNP ._.
+of_IN the_DT European_JJ Conf_NNP ._.
+on_IN Computer-Supported_NNP Cooperative_NNP Work_NNP ,_, Sept_NNP ._.
+####_NN ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- L_NN ._.
+Lamport_NNP ._.
+Time_NNP ,_, clocks_NNS ,_, and_CC the_DT ordering_VBG of_IN events_NNS in_IN a_DT distributed_VBN system_NN ._.
+Communication_NN of_IN ACM_NNP ,_, 21_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 558-565_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- D_NN ._.
+Li_NNP and_CC R_NN ._.
+Li_NNP ._.
+Transparent_JJ sharing_NN and_CC interoperation_NN of_IN heterogeneous_JJ single-user_NN applications_NNS ._.
+In_IN Proc_NNP ._.
+of_IN the_DT ACM_NNP Conf_NNP ._.
+on_IN Computer-Supported_NNP Cooperative_NNP Work_NNP ,_, pages_NNS 246-255_CD ,_, Nov_NNP ._.
+####_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- D_NN ._.
+Li_NNP and_CC R_NN ._.
+Li_NNP ._.
+Preserving_VBG operation_NN effects_NNS relation_NN in_IN group_NN editors_NNS ._.
+In_IN Proc_NNP ._.
+of_IN the_DT ACM_NNP Conf_NNP ._.
+on_IN Computer-Supported_NNP Cooperative_NNP Work_NNP ,_, pages_NNS 457-466_CD ,_, Nov_NNP ._.
+####_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- R_NN ._.
+Li_NNP ,_, D_NNP ._.
+Li_NNP ,_, and_CC C_NN ._.
+Sun_NNP ._.
+A_DT time_NN interval_NN based_VBN consistency_NN control_NN algorithm_NN for_IN interactive_JJ groupware_NN applications_NNS ._.
+In_IN Proc_NNP ._.
+of_IN International_NNP Conference_NNP on_IN Parallel_JJ and_CC Distributed_VBN Systems_NNPS ,_, pages_NNS 429-436_CD ,_, July_NNP ._.
+####_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- B_NN ._.
+Lushman_NNP and_CC G_NNP ._.
+Cormack_NNP ._.
+Proof_NN of_IN correctness_NN of_IN Ressels_NNP adOPTed_VBD algorithm_NN ._.
+Information_NNP Processing_NNP Letters_NNS ,_, -LRB-_-LRB- ##_CD -RRB-_-RRB- :_: 303-310_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- C_NN ._.
+Palmer_NNP and_CC G_NNP ._.
+Cormack_NNP ._.
+Operation_NN transforms_VBZ for_IN a_DT distributed_VBN shared_JJ spreadsheet_NN ._.
+In_IN Proc_NNP ._.
+of_IN the_DT ACM_NNP Conf_NNP ._.
+on_IN Computer-Supported_NNP Cooperative_NNP Work_NNP ,_, pages_NNS 69-78_CD ,_, Nov_NNP ._.
+####_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- A_DT ._.
+Prakash_NNP and_CC M_NN ._.
+Knister_NNP ._.
+A_DT framework_NN for_IN undoing_NN actions_NNS in_IN collaborative_JJ systems_NNS ._.
+ACM_NNP Trans_NNP ._.
+on_IN Computer-Human_NNP Interaction_NN ,_, #_# -LRB-_-LRB- #_# -RRB-_-RRB- :_: 295-330_CD ,_, Dec_NNP ._.
+1994_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- N_NN ._.
+Preguica_NNP ,_, M_NN ._.
+Shapiro_NNP ,_, and_CC J_NN ._.
+Legatheaux_NNP Martins_NNP ._.
+Automating_VBG semantics-based_JJ reconciliation_NN for_IN mobile_JJ databases_NNS ._.
+In_IN Proceedings_NNP of_IN the_DT 3th_JJ Conference_NN Francaise_NNP sur_NNP les_FW Systems_NNP d_NN ''_'' Exploitation_NN ,_, Octo_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- M_NN ._.
+Raynal_NNP and_CC M_NN ._.
+Singhal_NNP ._.
+Logical_JJ time_NN :_: capturing_VBG causality_NN in_IN distributed_VBN systems_NNS ._.
+IEEE_NNP Computer_NNP Magazine_NNP ,_, ##_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 49-56_CD ,_, Feb_NNP ._.
+####_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- M_NN ._.
+Ressel_NNP and_CC R_NN ._.
+Gunzenhauser_NNP ._.
+Reducing_VBG the_DT problems_NNS of_IN group_NN undo_VBP ._.
+In_IN Proc_NNP ._.
+of_IN the_DT ACM_NNP Conf_NNP ._.
+on_IN Supporting_VBG Group_NNP Work_NNP ,_, pages_NNS 131-139_CD ,_, Nov_NNP ._.
+####_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- M_NN ._.
+Ressel_NNP ,_, D_NNP ._.
+Nitsche-Ruhland_NNP ,_, and_CC R_NN ._.
+Gunzenhauser_NNP ._.
+An_DT integrating_VBG ,_, transformation-oriented_JJ approach_NN to_TO concurrency_NN control_NN and_CC undo_VB in_IN group_NN editors_NNS ._.
+In_IN Proc_NNP ._.
+of_IN the_DT ACM_NNP Conf_NNP ._.
+on_IN Computer-Supported_NNP Cooperative_NNP Work_NNP ,_, pages_NNS 288-297_CD ,_, Nov_NNP ._.
+####_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- H_NN ._.
+F_NN ._.
+Shen_VBN and_CC C_NN ._.
+Sun_NNP ._.
+A_DT flexible_JJ notification_NN framework_NN for_IN collaborative_JJ systems_NNS ._.
+In_IN Proc_NNP ._.
+of_IN the_DT ACM_NNP Conf_NNP ._.
+on_IN Computer-Supported_NNP Cooperative_NNP Work_NNP ,_, pages_NNS 77-86_CD ,_, Nov_NNP ._.
+####_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- C_NN ._.
+Sun_NNP ._.
+Undo_VB as_IN concurrent_JJ inverse_JJ in_IN group_NN editors_NNS ._.
+ACM_NNP Trans_NNP ._.
+on_IN Computer-Human_NNP Interaction_NN ,_, 9_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 309-361_CD ,_, December_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- C_NN ._.
+Sun_NNP and_CC C_NNP ._.
+A_DT ._.
+Ellis_NNP ._.
+Operational_JJ transformation_NN in_IN real-time_JJ group_NN editors_NNS :_: issues_NNS ,_, algorithms_NNS ,_, and_CC achievements_NNS ._.
+In_IN Proc_NNP ._.
+of_IN the_DT ACM_NNP Conf_NNP ._.
+on_IN Computer-Supported_NNP Cooperative_NNP Work_NNP ,_, pages_NNS 59-68_CD ,_, Nov_NNP ._.
+####_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- C_NN ._.
+Sun_NNP ,_, X_NN ._.
+Jia_NNP ,_, Y_NN ._.
+Zhang_NNP ,_, Y_NN ._.
+Yang_NNP ,_, and_CC D_NN ._.
+Chen_NNP ._.
+Achieving_VBG convergence_NN ,_, causality-preservation_NN ,_, and_CC intention-preservation_NN in_IN real-time_JJ cooperative_JJ editing_NN systems_NNS ._.
+ACM_NNP Trans_NNP ._.
+on_IN Computer-Human_NNP Interaction_NN ,_, #_# -LRB-_-LRB- #_# -RRB-_-RRB- :_: 63-108_CD ,_, March_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- C_NN ._.
+Sun_NNP ,_, Q_NNP ._.
+Xia_NNP ,_, D_NNP ._.
+Sun_NNP ,_, D_NNP ._.
+Chen_NNP ,_, H_NN ._.
+F_NN ._.
+Shen_NNP ,_, and_CC W_NN ._.
+Cai_NNP ._.
+Transparent_JJ adaptation_NN of_IN single-user_NN applications_NNS for_IN multi-user_JJ real-time_JJ collaboration_NN ._.
+ACM_NNP Trans_NNP ._.
+on_IN Computer-Human_NNP Interaction_NN ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- D_NN ._.
+Sun_NNP ,_, S_NN ._.
+Xia_NNP ,_, C_NNP ._.
+Sun_NNP ,_, and_CC D_NN ._.
+Chen_NNP ._.
+Operational_JJ transformation_NN for_IN collaborative_JJ word_NN processing_NN ._.
+In_IN Proc_NNP ._.
+of_IN the_DT ACM_NNP Conf_NNP ._.
+on_IN Computer-Supported_NNP Cooperative_NNP Work_NNP ,_, pages_NNS 437-446_CD ,_, Nov_NNP ._.
+####_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- N_NN ._.
+Vidot_NNP ,_, M_NN ._.
+Cart_NN ,_, J_NN ._.
+Ferrie_NNP ,_, and_CC M_NN ._.
+Suleiman_NNP ._.
+Copies_NNS convergence_NN in_IN a_DT distributed_VBN real-time_JJ collaborative_JJ environment_NN ._.
+In_IN Proc_NNP ._.
+of_IN the_DT ACM_NNP Conf_NNP ._.
+on_IN Computer-Supported_NNP Cooperative_NNP Work_NNP ,_, pages_NNS 171-180_CD ,_, Dec_NNP ._.
+####_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- S_NN ._.
+Xia_NNP ,_, D_NNP ._.
+Sun_NNP ,_, C_NNP ._.
+Sun_NNP ,_, and_CC D_NN ._.
+Chen_NNP ._.
+A_DT collaborative_JJ table_NN editing_NN technique_NN based_VBN on_IN transparent_JJ adaptation_NN ._.
+In_IN Proc_NNP ._.
+of_IN the_DT International_NNP Conf_NNP ._.
+on_IN Cooperative_NNP Information_NNP Systems_NNP ,_, LNCS_NNP Vol_NNP ._.
+####_NN ,_, Springer_NNP Verlag_NNP ,_, pages_NNS 576-592_CD ,_, Nov_NNP ._.
+####_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- S_NN ._.
+Xia_NNP ,_, D_NNP ._.
+Sun_NNP ,_, C_NNP ._.
+Sun_NNP ,_, and_CC D_NN ._.
+Chen_NNP ._.
+Object-associated_JJ telepointer_NN for_IN real-time_JJ collaborative_JJ document_NN editing_NN systems_NNS ._.
+In_IN Proc_NNP ._.
+of_IN the_DT IEEE_NNP Conf_NNP ._.
+on_IN Collaborative_NNP Computing_NNP :_: Networking_NN ,_, Applications_NNS and_CC Worksharing_NN ,_, Dec_NNP ._.
+####_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- S_NN ._.
+Xia_NNP ,_, D_NNP ._.
+Sun_NNP ,_, C_NNP ._.
+Sun_NNP ,_, D_NNP ._.
+Chen_NNP ,_, and_CC H_NN ._.
+F_NN ._.
+Shen_NNP ._.
+Leveraging_VBG single-user_JJ applications_NNS for_IN multi-user_JJ collaboration_NN :_: the_DT CoWord_NNP approach_NN ._.
+In_IN Proc_NNP ._.
+of_IN the_DT ACM_NNP Conf_NNP ._.
+on_IN Computer-Supported_NNP Cooperative_NNP Work_NNP ,_, pages_NNS 162-171_CD ,_, Nov_NNP ._.
+####_NN ._.
+288_CD

@@ -1,0 +1,814 @@
+Consistency-preserving_JJ Caching_NN of_IN Dynamic_NNP Database_NNP Content_NNP Niraj_NNP Tolia_NNP and_CC M_NN ._.
+Satyanarayanan_NNP Carnegie_NNP Mellon_NNP University_NNP -LCB-_-LRB- ntolia_NN ,_, satya_NN -RCB-_-RRB- @_SYM cs_NNS ._.
+cmu_NN ._.
+edu_NN ABSTRACT_NN With_IN the_DT growing_VBG use_NN of_IN dynamic_JJ web_NN content_NN generated_VBN from_IN relational_JJ databases_NNS ,_, traditional_JJ caching_NN solutions_NNS for_IN throughput_NN and_CC latency_NN improvements_NNS are_VBP ineffective_JJ ._.
+We_PRP describe_VBP a_DT middleware_JJ layer_NN called_VBN Ganesh_NNP that_IN reduces_VBZ the_DT volume_NN of_IN data_NNS transmitted_VBN without_IN semantic_JJ interpretation_NN of_IN queries_NNS or_CC results_NNS ._.
+It_PRP achieves_VBZ this_DT reduction_NN through_IN the_DT use_NN of_IN cryptographic_JJ hashing_VBG to_TO detect_VB similarities_NNS with_IN previous_JJ results_NNS ._.
+These_DT benefits_NNS do_VBP not_RB require_VB any_DT compromise_NN of_IN the_DT strict_JJ consistency_NN semantics_NNS provided_VBN by_IN the_DT back-end_JJ database_NN ._.
+Further_RB ,_, Ganesh_NNP does_VBZ not_RB require_VB modifications_NNS to_TO applications_NNS ,_, web_NN servers_NNS ,_, or_CC database_NN servers_NNS ,_, and_CC works_VBZ with_IN closed-source_NN applications_NNS and_CC databases_NNS ._.
+Using_VBG two_CD benchmarks_NNS representative_NN of_IN dynamic_JJ web_NN sites_NNS ,_, measurements_NNS of_IN our_PRP$ prototype_NN show_NN that_IN it_PRP can_MD increase_VB end-to-end_JJ throughput_NN by_IN as_RB much_JJ as_IN twofold_JJ for_IN non-data_JJ intensive_JJ applications_NNS and_CC by_IN as_RB much_JJ as_IN tenfold_RB for_IN data_NNS intensive_JJ ones_NNS ._.
+Categories_NNS and_CC Subject_NNP Descriptors_NNPS C_NNP ._.
+#_# ._.
+#_# -LSB-_-LRB- Computer-Communication_NNP Networks_NNP -RSB-_-RRB- :_: Distributed_VBN Systems_NNPS ;_: H_NN ._.
+#_# ._.
+#_# -LSB-_-LRB- Database_NNP Management_NNP -RSB-_-RRB- :_: Systems_NNP General_NNP Terms_NNS Design_NN ,_, Performance_NNP 1_CD ._.
+INTRODUCTION_NN An_DT increasing_VBG fraction_NN of_IN web_NN content_NN is_VBZ dynamically_RB generated_VBN from_IN back-end_JJ relational_JJ databases_NNS ._.
+Even_RB when_WRB database_NN content_NN remains_VBZ unchanged_JJ ,_, temporal_JJ locality_NN of_IN access_NN can_MD not_RB be_VB exploited_VBN because_IN dynamic_JJ content_NN is_VBZ not_RB cacheable_JJ by_IN web_NN browsers_NNS or_CC by_IN intermediate_JJ caching_NN servers_NNS such_JJ as_IN Akamai_NNP mirrors_VBZ ._.
+In_IN a_DT multitiered_JJ architecture_NN ,_, each_DT web_NN request_NN can_MD stress_VB the_DT WAN_NNP link_NN between_IN the_DT web_NN server_NN and_CC the_DT database_NN ._.
+This_DT causes_VBZ user_NN experience_NN to_TO be_VB highly_RB variable_JJ because_IN there_EX is_VBZ no_DT caching_NN to_TO insulate_VB the_DT client_NN from_IN bursty_JJ loads_NNS ._.
+Previous_JJ attempts_NNS in_IN caching_VBG dynamic_NN database_NN content_NN have_VBP generally_RB weakened_VBN transactional_JJ semantics_NNS -LSB-_-LRB- #_# ,_, #_# -RSB-_-RRB- or_CC required_VBN application_NN modifications_NNS -LSB-_-LRB- ##_NNS ,_, ##_NN -RSB-_-RRB- ._.
+We_PRP report_VBP on_IN a_DT new_JJ solution_NN that_WDT takes_VBZ the_DT form_NN of_IN a_DT databaseagnostic_JJ middleware_JJ layer_NN called_VBN Ganesh_NNP ._.
+Ganesh_NNP makes_VBZ no_DT effort_NN to_TO semantically_RB interpret_VB the_DT contents_NNS of_IN queries_NNS or_CC their_PRP$ results_NNS ._.
+Instead_RB ,_, it_PRP relies_VBZ exclusively_RB on_IN cryptographic_JJ hashing_VBG to_TO detect_VB similarities_NNS with_IN previous_JJ results_NNS ._.
+Hash-based_JJ similarity_NN detection_NN has_VBZ seen_VBN increasing_VBG use_NN in_IN distributed_VBN file_NN systems_NNS -LSB-_-LRB- ##_CD ,_, ##_CD ,_, ##_CD -RSB-_-RRB- for_IN improving_VBG performance_NN on_IN low-bandwidth_JJ networks_NNS ._.
+However_RB ,_, these_DT techniques_NNS have_VBP not_RB been_VBN used_VBN for_IN relational_JJ databases_NNS ._.
+Unlike_IN previous_JJ approaches_NNS that_WDT use_VBP generic_JJ methods_NNS to_TO detect_VB similarity_NN ,_, Ganesh_NNP exploits_VBZ the_DT structure_NN of_IN relational_NN database_NN results_VBZ to_TO yield_VB superior_JJ performance_NN improvement_NN ._.
+One_CD faces_VBZ at_IN least_JJS three_CD challenges_NNS in_IN applying_VBG hash-based_JJ similarity_NN detection_NN to_TO back-end_JJ databases_NNS ._.
+First_RB ,_, previous_JJ work_NN in_IN this_DT space_NN has_VBZ traditionally_RB viewed_VBN storage_NN content_NN as_IN uninterpreted_JJ bags_NNS of_IN bits_NNS with_IN no_DT internal_JJ structure_NN ._.
+This_DT allows_VBZ hash-based_JJ techniques_NNS to_TO operate_VB on_RP long_RB ,_, contiguous_JJ runs_NNS of_IN data_NNS for_IN maximum_NN effectiveness_NN ._.
+In_IN contrast_NN ,_, relational_JJ databases_NNS have_VBP rich_JJ internal_JJ structure_NN that_WDT may_MD not_RB be_VB as_IN amenable_JJ to_TO hash-based_JJ similarity_NN detection_NN ._.
+Second_RB ,_, relational_JJ databases_NNS have_VBP very_RB tight_JJ integrity_NN and_CC consistency_NN constraints_NNS that_WDT must_MD not_RB be_VB compromised_VBN by_IN the_DT use_NN of_IN hash-based_JJ techniques_NNS ._.
+Third_NNP ,_, the_DT source_NN code_NN of_IN commercial_JJ databases_NNS is_VBZ typically_RB not_RB available_JJ ._.
+This_DT is_VBZ in_IN contrast_NN to_TO previous_JJ work_NN which_WDT presumed_JJ availability_NN of_IN source_NN code_NN ._.
+Our_PRP$ experiments_NNS show_VBP that_IN Ganesh_NNP ,_, while_IN conceptually_RB simple_JJ ,_, can_MD improve_VB performance_NN significantly_RB at_IN bandwidths_NNS representative_NN of_IN today_NN ''_'' s_NNS commercial_JJ Internet_NN ._.
+On_IN benchmarks_NNS modeling_NN multitiered_JJ web_NN applications_NNS ,_, the_DT throughput_NN improvement_NN was_VBD as_RB high_JJ as_IN tenfold_RB for_IN data-intensive_JJ workloads_NNS ._.
+For_IN workloads_NNS that_WDT were_VBD not_RB data-intensive_JJ ,_, throughput_NN improvements_NNS of_IN up_RB to_TO twofold_JJ were_VBD observed_VBN ._.
+Even_RB when_WRB bandwidth_NN was_VBD not_RB a_DT constraint_NN ,_, Ganesh_NNP had_VBD low_JJ overhead_NN and_CC did_VBD not_RB hurt_VB performance_NN ._.
+Our_PRP$ experiments_NNS also_RB confirm_VBP that_IN exploiting_VBG the_DT structure_NN present_JJ in_IN database_NN results_NNS is_VBZ crucial_JJ to_TO this_DT performance_NN improvement_NN ._.
+2_LS ._.
+BACKGROUND_NN 2_CD ._.
+#_# Dynamic_NNP Content_NNP Generation_NNP As_IN the_DT World_NNP Wide_NN Web_NN has_VBZ grown_VBN ,_, many_JJ web_NN sites_NNS have_VBP decentralized_VBN their_PRP$ data_NNS and_CC functionality_NN by_IN pushing_VBG them_PRP to_TO the_DT edges_NNS of_IN the_DT Internet_NN ._.
+Today_NN ,_, eBusiness_NN systems_NNS often_RB use_VBP a_DT three-tiered_JJ architecture_NN consisting_VBG of_IN a_DT front-end_JJ web_NN server_NN ,_, an_DT application_NN server_NN ,_, and_CC a_DT back-end_JJ database_NN server_NN ._.
+Figure_NNP #_# illustrates_VBZ this_DT architecture_NN ._.
+The_DT first_JJ two_CD tiers_NNS can_MD be_VB replicated_VBN close_RB to_TO a_DT concentration_NN of_IN clients_NNS at_IN the_DT edge_NN of_IN the_DT Internet_NN ._.
+This_DT improves_VBZ user_NN experience_NN by_IN lowering_VBG end-to-end_JJ latency_NN and_CC reducing_VBG exposure_NN WWW_NNP ####_CD /_: Track_NNP :_: Performance_NNP and_CC Scalability_NNP Session_NN :_: Scalable_NNP Systems_NNPS for_IN Dynamic_NNP Content_NNP 311_CD Back-End_NNP Database_NNP Server_NN Front-End_NNP Web_NN and_CC Application_NN Servers_NNS Figure_NNP #_# :_: Multi-Tier_JJ Architecture_NNP to_TO backbone_NN traffic_NN congestion_NN ._.
+It_PRP can_MD also_RB increase_VB the_DT availability_NN and_CC scalability_NN of_IN web_NN services_NNS ._.
+Content_NN that_WDT is_VBZ generated_VBN dynamically_RB from_IN the_DT back-end_JJ database_NN can_MD not_RB be_VB cached_VBN in_IN the_DT first_JJ two_CD tiers_NNS ._.
+While_IN databases_NNS can_MD be_VB easily_RB replicated_VBN in_IN a_DT LAN_NNP ,_, this_DT is_VBZ infeasible_JJ in_IN a_DT WAN_NNP because_IN of_IN the_DT difficult_JJ task_NN of_IN simultaneously_RB providing_VBG strong_JJ consistency_NN ,_, availability_NN ,_, and_CC tolerance_NN to_TO network_NN partitions_NNS -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+As_IN a_DT result_NN ,_, databases_NNS tend_VBP to_TO be_VB centralized_VBN to_TO meet_VB the_DT strong_JJ consistency_NN requirements_NNS of_IN many_JJ eBusiness_NN applications_NNS such_JJ as_IN banking_NN ,_, finance_NN ,_, and_CC online_JJ retailing_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Thus_RB ,_, the_DT back-end_JJ database_NN is_VBZ usually_RB located_JJ far_RB from_IN many_JJ sets_NNS of_IN first_JJ and_CC second-tier_JJ nodes_NNS -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+In_IN the_DT absence_NN of_IN both_DT caching_NN and_CC replication_NN ,_, WAN_NNP bandwidth_NN can_MD easily_RB become_VB a_DT limiting_VBG factor_NN in_IN the_DT performance_NN and_CC scalability_NN of_IN data-intensive_JJ applications_NNS ._.
+2_LS ._.
+#_# Hash-Based_NNPS Systems_NNPS Ganesh_NNP ''_'' s_VBZ focus_NN is_VBZ on_IN efficient_JJ transmission_NN of_IN results_NNS by_IN discovering_VBG similarities_NNS with_IN the_DT results_NNS of_IN previous_JJ queries_NNS ._.
+As_IN SQL_NN queries_NNS can_MD generate_VB large_JJ results_NNS ,_, hash-based_JJ techniques_NNS lend_VBP themselves_PRP well_RB to_TO the_DT problem_NN of_IN efficiently_RB transferring_VBG these_DT large_JJ results_NNS across_IN bandwidth_NN constrained_VBD links_NNS ._.
+The_DT use_NN of_IN hash-based_JJ techniques_NNS to_TO reduce_VB the_DT volume_NN of_IN data_NNS transmitted_VBN has_VBZ emerged_VBN as_IN a_DT common_JJ theme_NN of_IN many_JJ recent_JJ storage_NN systems_NNS ,_, as_IN discussed_VBN in_IN Section_NN #_# ._.
+#_# ._.
+These_DT techniques_NNS rely_VBP on_IN some_DT basic_JJ assumptions_NNS ._.
+Cryptographic_JJ hash_NN functions_NNS are_VBP assumed_VBN to_TO be_VB collision-resistant_JJ ._.
+In_IN other_JJ words_NNS ,_, it_PRP is_VBZ computationally_RB intractable_JJ to_TO find_VB two_CD inputs_NNS that_WDT hash_VBP to_TO the_DT same_JJ output_NN ._.
+The_DT functions_NNS are_VBP also_RB assumed_VBN to_TO be_VB one-way_JJ ;_: that_DT is_VBZ ,_, finding_VBG an_DT input_NN that_WDT results_VBZ in_IN a_DT specific_JJ output_NN is_VBZ computationally_RB infeasible_JJ ._.
+Menezes_NNP et_FW al_FW ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- provide_VBP more_JJR details_NNS about_IN these_DT assumptions_NNS ._.
+The_DT above_JJ assumptions_NNS allow_VBP hash-based_JJ systems_NNS to_TO assume_VB that_IN collisions_NNS do_VBP not_RB occur_VB ._.
+Hence_RB ,_, they_PRP are_VBP able_JJ to_TO treat_VB the_DT hash_NN of_IN a_DT data_NNS item_NN as_IN its_PRP$ unique_JJ identifier_NN ._.
+A_DT collection_NN of_IN data_NNS items_NNS effectively_RB becomes_VBZ content-addressable_JJ ,_, allowing_VBG a_DT small_JJ hash_NN to_TO serve_VB as_IN a_DT codeword_NN for_IN a_DT much_JJ larger_JJR data_NNS item_NN in_IN permanent_JJ storage_NN or_CC network_NN transmission_NN ._.
+The_DT assumption_NN that_IN collisions_NNS are_VBP so_RB rare_JJ as_IN to_TO be_VB effectively_RB non-existent_JJ has_VBZ recently_RB come_VBN under_IN fire_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+However_RB ,_, as_IN explained_VBN by_IN Black_JJ -LSB-_-LRB- #_# -RSB-_-RRB- ,_, we_PRP believe_VBP that_IN these_DT issues_NNS do_VBP not_RB form_VB a_DT concern_NN for_IN Ganesh_NNP ._.
+All_DT communication_NN is_VBZ between_IN trusted_VBN parts_NNS of_IN the_DT system_NN and_CC an_DT adversary_NN has_VBZ no_DT way_NN to_TO force_VB Ganesh_NNP to_TO accept_VB invalid_JJ data_NNS ._.
+Further_RB ,_, Ganesh_NNP does_VBZ not_RB depend_VB critically_RB on_IN any_DT specific_JJ hash_NN function_NN ._.
+While_IN we_PRP currently_RB use_VBP SHA-1_NN ,_, replacing_VBG it_PRP with_IN a_DT different_JJ hash_NN function_NN would_MD be_VB simple_JJ ._.
+There_EX would_MD be_VB no_DT impact_NN on_IN performance_NN as_IN stronger_JJR hash_NN functions_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+SHA256_NN -RRB-_-RRB- only_RB add_VB a_DT few_JJ extra_JJ bytes_NNS and_CC the_DT generated_VBN hashes_NNS are_VBP still_RB orders_NNS of_IN magnitude_NN smaller_JJR than_IN the_DT data_NNS items_NNS they_PRP represent_VBP ._.
+No_DT re-hashing_NN of_IN permanent_JJ storage_NN is_VBZ required_VBN since_IN Ganesh_NNP only_RB uses_VBZ hashing_VBG on_IN volatile_JJ data_NNS ._.
+3_LS ._.
+DESIGN_NN AND_CC IMPLEMENTATION_NN Ganesh_JJ exploits_NNS redundancy_NN in_IN the_DT result_NN stream_NN to_TO avoid_VB transmitting_VBG result_NN fragments_NNS that_WDT are_VBP already_RB present_JJ at_IN the_DT query_NN site_NN ._.
+Redundancy_NN can_MD arise_VB naturally_RB in_IN many_JJ different_JJ ways_NNS ._.
+For_IN example_NN ,_, a_DT query_NN repeated_VBN after_IN a_DT certain_JJ interval_NN may_MD return_VB a_DT different_JJ result_NN because_IN of_IN updates_NNS to_TO the_DT database_NN ;_: however_RB ,_, there_EX may_MD be_VB significant_JJ commonality_NN between_IN the_DT two_CD results_NNS ._.
+As_IN another_DT example_NN ,_, a_DT user_NN who_WP is_VBZ refining_VBG a_DT search_NN may_MD generate_VB a_DT sequence_NN of_IN queries_NNS with_IN overlapping_VBG results_NNS ._.
+When_WRB Ganesh_NNP detects_VBZ redundancy_NN ,_, it_PRP suppresses_VBZ transmission_NN of_IN the_DT corresponding_JJ result_NN fragments_NNS ._.
+Instead_RB ,_, it_PRP transmits_VBZ a_DT much_RB smaller_JJR digest_VB of_IN those_DT fragments_NNS and_CC lets_VBZ the_DT query_NN site_NN reconstruct_VB the_DT result_NN through_IN hash_NN lookup_NN in_IN a_DT cache_NN of_IN previous_JJ results_NNS ._.
+In_IN effect_NN ,_, Ganesh_NNP uses_VBZ computation_NN at_IN the_DT edges_NNS to_TO reduce_VB Internet_NNP communication_NN ._.
+Our_PRP$ description_NN of_IN Ganesh_NNP focuses_VBZ on_IN four_CD aspects_NNS ._.
+We_PRP first_RB explain_VB our_PRP$ approach_NN to_TO detecting_VBG similarity_NN in_IN query_NN results_NNS ._.
+Next_RB ,_, we_PRP discuss_VBP how_WRB the_DT Ganesh_NNP architecture_NN is_VBZ completely_RB invisible_JJ to_TO all_DT components_NNS of_IN a_DT multi-tier_JJ system_NN ._.
+We_PRP then_RB describe_VBP Ganesh_NNP ''_'' s_VBZ proxy-based_JJ approach_NN and_CC the_DT dataflow_NN for_IN detecting_VBG similarity_NN ._.
+3_LS ._.
+#_# Detecting_VBG Similarity_NNP One_CD of_IN the_DT key_JJ design_NN decisions_NNS in_IN Ganesh_NNP is_VBZ how_WRB similarity_NN is_VBZ detected_VBN ._.
+There_EX are_VBP many_JJ potential_JJ ways_NNS to_TO decompose_VB a_DT result_NN into_IN fragments_NNS ._.
+The_DT optimal_JJ way_NN is_VBZ ,_, of_IN course_NN ,_, the_DT one_CD that_WDT results_VBZ in_IN the_DT smallest_JJS possible_JJ object_NN for_IN transmission_NN for_IN a_DT given_VBN query_NN ''_'' s_NNS results_NNS ._.
+Finding_VBG this_DT optimal_JJ decomposition_NN is_VBZ a_DT difficult_JJ problem_NN because_IN of_IN the_DT large_JJ space_NN of_IN possibilities_NNS and_CC because_IN the_DT optimal_JJ choice_NN depends_VBZ on_IN many_JJ factors_NNS such_JJ as_IN the_DT contents_NNS of_IN the_DT query_NN ''_'' s_NNS result_VBP ,_, the_DT history_NN of_IN recent_JJ results_NNS ,_, and_CC the_DT cache_NN management_NN algorithm_NN ._.
+When_WRB an_DT object_NN is_VBZ opaque_JJ ,_, the_DT use_NN of_IN Rabin_NN fingerprints_NNS -LSB-_-LRB- #_# ,_, ##_NN -RSB-_-RRB- to_TO detect_VB common_JJ data_NNS between_IN two_CD objects_NNS has_VBZ been_VBN successfully_RB shown_VBN in_IN the_DT past_NN by_IN systems_NNS such_JJ as_IN LBFS_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- and_CC CASPER_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Rabin_NN fingerprinting_NN uses_VBZ a_DT sliding_VBG window_NN over_IN the_DT data_NNS to_TO compute_VB a_DT rolling_JJ hash_NN ._.
+Assuming_VBG that_IN the_DT hash_NN function_NN is_VBZ uniformly_RB distributed_VBN ,_, a_DT chunk_NN boundary_NN is_VBZ defined_VBN whenever_WRB the_DT lower_JJR order_NN bits_NNS of_IN the_DT hash_NN value_NN equal_VBP some_DT predetermined_VBN value_NN ._.
+The_DT number_NN of_IN lower_JJR order_NN bits_NNS used_VBN defines_VBZ the_DT average_JJ chunk_NN size_NN ._.
+These_DT sub-divided_JJ chunks_NNS of_IN the_DT object_NN become_VB the_DT unit_NN of_IN comparison_NN for_IN detecting_VBG similarity_NN between_IN different_JJ objects_NNS ._.
+As_IN the_DT locations_NNS of_IN boundaries_NNS found_VBN by_IN using_VBG Rabin_NN fingerprints_NNS is_VBZ stochastically_RB determined_VBN ,_, they_PRP usually_RB fail_VBP to_TO align_VB with_IN any_DT structural_JJ properties_NNS of_IN the_DT underlying_VBG data_NNS ._.
+The_DT algorithm_NN therefore_RB deals_VBZ well_RB with_IN in-place_JJ updates_NNS ,_, insertions_NNS and_CC deletions_NNS ._.
+However_RB ,_, it_PRP performs_VBZ poorly_RB in_IN the_DT presence_NN of_IN any_DT reordering_NN of_IN data_NNS ._.
+Figure_NNP #_# shows_VBZ an_DT example_NN where_WRB two_CD results_NNS ,_, A_DT and_CC B_NN ,_, consisting_VBG of_IN three_CD rows_NNS ,_, have_VBP the_DT same_JJ data_NNS but_CC have_VBP different_JJ sort_NN attributes_NNS ._.
+In_IN the_DT extreme_JJ case_NN ,_, Rabin_NN fingerprinting_NN might_MD be_VB unable_JJ to_TO find_VB any_DT similar_JJ data_NNS due_JJ to_TO the_DT way_NN it_PRP detects_VBZ chunk_NN boundaries_NNS ._.
+Fortunately_RB ,_, Ganesh_NNP can_MD use_VB domain_NN specific_JJ knowledge_NN for_IN more_RBR precise_JJ boundary_NN detection_NN ._.
+The_DT information_NN we_PRP exploit_VBP is_VBZ that_IN a_DT query_NN ''_'' s_NNS result_VBP reflects_VBZ the_DT structure_NN of_IN a_DT relational_NN database_NN where_WRB all_DT data_NNS is_VBZ organized_VBN as_IN tables_NNS and_CC rows_NNS ._.
+It_PRP is_VBZ therefore_RB simple_JJ to_TO check_VB for_IN similarity_NN with_IN previous_JJ results_NNS at_IN two_CD granularities_NNS :_: first_RB the_DT entire_JJ result_NN ,_, and_CC then_RB individual_JJ rows_NNS ._.
+The_DT end_NN of_IN a_DT row_NN in_IN a_DT result_NN serves_VBZ as_IN a_DT natural_JJ chunk_NN boundary_NN ._.
+It_PRP is_VBZ important_JJ to_TO note_VB that_IN using_VBG the_DT tabular_JJ structure_NN in_IN results_NNS only_RB involves_VBZ shallow_JJ interpretation_NN of_IN the_DT data_NNS ._.
+Ganesh_NNP does_VBZ not_RB perform_VB any_DT deeper_JJR semantic_JJ interpretation_NN such_JJ as_IN understanding_VBG data_NNS types_NNS ,_, result_VBP schema_NN ,_, or_CC integrity_NN constraints_NNS ._.
+Tuning_VBG Rabin_NNP fingerprinting_VBG for_IN a_DT workload_NN can_MD also_RB be_VB difficult_JJ ._.
+If_IN the_DT average_JJ chunk_NN size_NN is_VBZ too_RB large_JJ ,_, chunks_NNS can_MD span_VB multiple_JJ result_NN rows_NNS ._.
+However_RB ,_, selecting_VBG a_DT smaller_JJR average_JJ chunk_NN size_NN increases_VBZ the_DT amount_NN of_IN metadata_NN required_VBN to_TO the_DT describe_VBP the_DT results_NNS ._.
+WWW_NNP ####_CD /_: Track_NNP :_: Performance_NNP and_CC Scalability_NNP Session_NN :_: Scalable_NNP Systems_NNPS for_IN Dynamic_NNP Content_NNP 312_CD Figure_NNP #_# :_: Rabin_NNP Fingerprinting_NNP vs_CC ._.
+Ganesh_NNP ''_'' s_NNS Chunking_VBG This_DT ,_, in_IN turn_NN ,_, would_MD decrease_VB the_DT savings_NNS obtained_VBN via_IN its_PRP$ use_NN ._.
+Rabin_NN fingerprinting_NN also_RB needs_VBZ two_CD computationally-expensive_JJ passes_NNS over_IN the_DT data_NNS :_: once_RB to_TO determine_VB chunk_NN boundaries_NNS and_CC one_CD again_RB to_TO generate_VB cryptographic_JJ hashes_NNS for_IN the_DT chunks_NNS ._.
+Ganesh_NNP only_RB needs_VBZ a_DT single_JJ pass_NN for_IN hash_NN generation_NN as_IN the_DT chunk_NN boundaries_NNS are_VBP provided_VBN by_IN the_DT data_NNS ''_'' s_VBZ natural_JJ structure_NN ._.
+The_DT performance_NN comparison_NN in_IN Section_NN #_# shows_VBZ that_IN Ganesh_NNP ''_'' s_VBZ row-based_JJ algorithm_NN outperforms_VBZ Rabin_NNP fingerprinting_NN ._.
+Given_VBN that_IN previous_JJ work_NN has_VBZ already_RB shown_VBN that_IN Rabin_NN fingerprinting_NN performs_VBZ better_JJR than_IN gzip_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, we_PRP do_VBP not_RB compare_VB Ganesh_NNP to_TO compression_NN algorithms_NNS in_IN this_DT paper_NN ._.
+3_LS ._.
+#_# Transparency_NNP The_DT key_JJ factor_NN influencing_VBG our_PRP$ design_NN was_VBD the_DT need_NN for_IN Ganesh_NNP to_TO be_VB completely_RB transparent_JJ to_TO all_DT components_NNS of_IN a_DT typical_JJ eBusiness_NN system_NN :_: web_NN servers_NNS ,_, application_NN servers_NNS ,_, and_CC database_NN servers_NNS ._.
+Without_IN this_DT ,_, Ganesh_NNP stands_VBZ little_JJ chance_NN of_IN having_VBG a_DT significant_JJ real-world_JJ impact_NN ._.
+Requiring_VBG modifications_NNS to_TO any_DT of_IN the_DT above_JJ components_NNS would_MD raise_VB the_DT barrier_NN for_IN entry_NN of_IN Ganesh_NNP into_IN an_DT existing_VBG system_NN ,_, and_CC thus_RB reduce_VB its_PRP$ chances_NNS of_IN adoption_NN ._.
+Preserving_VBG transparency_NN is_VBZ simplified_VBN by_IN the_DT fact_NN that_IN Ganesh_NNP is_VBZ purely_RB a_DT performance_NN enhancement_NN ,_, not_RB a_DT functionality_NN or_CC usability_NN enhancement_NN ._.
+We_PRP chose_VBD agent_NN interposition_NN as_IN the_DT architectural_JJ approach_NN to_TO realizing_VBG our_PRP$ goal_NN ._.
+This_DT approach_NN relies_VBZ on_IN the_DT existence_NN of_IN a_DT compact_JJ programming_NN interface_NN that_WDT is_VBZ already_RB widely_RB used_VBN by_IN target_NN software_NN ._.
+It_PRP also_RB relies_VBZ on_IN a_DT mechanism_NN to_TO easily_RB add_VB new_JJ code_NN without_IN disrupting_VBG existing_VBG module_NN structure_NN ._.
+These_DT conditions_NNS are_VBP easily_RB met_VBN in_IN our_PRP$ context_NN because_IN of_IN the_DT popularity_NN of_IN Java_NNP as_IN the_DT programming_NN language_NN for_IN eBusiness_NN systems_NNS ._.
+The_DT Java_NNP Database_NNP Connectivity_NNP -LRB-_-LRB- JDBC_NNP -RRB-_-RRB- API_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- allows_VBZ Java_NNP applications_NNS to_TO access_VB a_DT wide_JJ variety_NN of_IN databases_NNS and_CC even_RB other_JJ tabular_JJ data_NNS repositories_NNS such_JJ as_IN flat_JJ files_NNS ._.
+Access_NN to_TO these_DT data_NNS sources_NNS is_VBZ provided_VBN by_IN JDBC_NN drivers_NNS that_WDT translate_VBP between_IN the_DT JDBC_NNP API_NNP and_CC the_DT database_NN communication_NN mechanism_NN ._.
+Figure_NNP #_# -LRB-_-LRB- a_DT -RRB-_-RRB- shows_VBZ how_WRB JDBC_NNP is_VBZ typically_RB used_VBN in_IN an_DT application_NN ._.
+As_IN the_DT JDBC_NNP interface_NN is_VBZ standardized_JJ ,_, one_PRP can_MD substitute_VB one_CD JDBC_NNP driver_NN for_IN another_DT without_IN application_NN modifications_NNS ._.
+The_DT JDBC_NN driver_NN thus_RB becomes_VBZ the_DT natural_JJ module_NN to_TO exploit_VB for_IN code_NN interposition_NN ._.
+As_IN shown_VBN in_IN Figure_NNP #_# -LRB-_-LRB- b_NN -RRB-_-RRB- ,_, the_DT native_JJ JDBC_NN driver_NN is_VBZ replaced_VBN with_IN a_DT Ganesh_NNP JDBC_NNP driver_NN that_WDT presents_VBZ the_DT same_JJ standardized_JJ interface_NN ._.
+The_DT Ganesh_NNP driver_NN maintains_VBZ an_DT in-memory_JJ cache_NN of_IN result_NN fragments_NNS from_IN previous_JJ queries_NNS and_CC performs_VBZ reassembly_NN of_IN results_NNS ._.
+At_IN the_DT database_NN ,_, we_PRP add_VBP a_DT new_JJ process_NN called_VBD the_DT Ganesh_NNP proxy_NN ._.
+This_DT proxy_NN ,_, which_WDT can_MD be_VB shared_VBN by_IN multiple_JJ front-end_NN nodes_NNS ,_, consists_VBZ of_IN two_CD parts_NNS :_: code_NN to_TO detect_VB similarity_NN in_IN result_NN fragments_NNS and_CC the_DT original_JJ native_JJ JDBC_NN driver_NN that_WDT communicates_VBZ with_IN the_DT database_NN ._.
+The_DT use_NN of_IN a_DT proxy_NN at_IN the_DT database_NN makes_VBZ Ganesh_NNP database-agnostic_JJ and_CC simplifies_VBZ prototyping_NN and_CC experimentation_NN ._.
+Ganesh_NNP is_VBZ thus_RB able_JJ to_TO work_VB with_IN a_DT wide_JJ range_NN of_IN databases_NNS and_CC applications_NNS ,_, requiring_VBG no_DT modifications_NNS to_TO either_CC ._.
+3_LS ._.
+#_# Proxy-Based_NNP Caching_NNP The_NNP native_JJ JDBC_NN driver_NN shown_VBN in_IN Figure_NNP #_# -LRB-_-LRB- a_DT -RRB-_-RRB- is_VBZ a_DT lightweight_JJ code_NN component_NN supplied_VBN by_IN the_DT database_NN vendor_NN ._.
+Its_PRP$ main_JJ funcClient_NNP Database_NNP Web_NN and_CC Application_NN Server_NN Native_JJ JDBC_NN Driver_NN WAN_NNP -LRB-_-LRB- a_DT -RRB-_-RRB- Native_JJ Architecture_NNP Client_NNP Database_NNP Ganesh_NNP Proxy_NNP Native_JJ JDBC_NNP Driver_NN WAN_NNP Web_NN and_CC Application_NN Server_NN Ganesh_NNP JDBC_NNP Driver_NN -LRB-_-LRB- b_NN -RRB-_-RRB- Ganesh_NN ''_'' s_NNS Interposition-based_JJ Architecture_NNP Figure_NNP #_# :_: Native_JJ vs_CC ._.
+Ganesh_NNP Architecture_NNP tion_NN is_VBZ to_TO mediate_VB communication_NN between_IN the_DT application_NN and_CC the_DT remote_JJ database_NN ._.
+It_PRP forwards_RB queries_VBZ ,_, buffers_NNS entire_JJ results_NNS ,_, and_CC responds_VBZ to_TO application_NN requests_NNS to_TO view_VB parts_NNS of_IN results_NNS ._.
+The_DT Ganesh_NNP JDBC_NNP driver_NN shown_VBN in_IN Figure_NNP #_# -LRB-_-LRB- b_NN -RRB-_-RRB- presents_VBZ the_DT application_NN with_IN an_DT interface_NN identical_JJ to_TO that_DT provided_VBN by_IN the_DT native_JJ driver_NN ._.
+It_PRP provides_VBZ the_DT ability_NN to_TO reconstruct_VB results_NNS from_IN compact_JJ hash-based_JJ descriptions_NNS sent_VBN by_IN the_DT proxy_NN ._.
+To_TO perform_VB this_DT reconstruction_NN ,_, the_DT driver_NN maintains_VBZ an_DT in-memory_JJ cache_NN of_IN recentlyreceived_JJ results_NNS ._.
+This_DT cache_NN is_VBZ only_RB used_VBN as_IN a_DT source_NN of_IN result_NN fragments_NNS in_IN reconstructing_VBG results_NNS ._.
+No_DT attempt_NN is_VBZ made_VBN by_IN the_DT Ganesh_NNP driver_NN or_CC proxy_NN to_TO track_NN database_NN updates_NNS ._.
+The_DT lack_NN of_IN cache_NN consistency_NN does_VBZ not_RB hurt_VB correctness_NN as_IN a_DT description_NN of_IN the_DT results_NNS is_VBZ always_RB fetched_VBN from_IN the_DT proxy_NN -_: at_IN worst_JJS ,_, there_EX will_MD be_VB no_DT performance_NN benefit_NN from_IN using_VBG Ganesh_NNP ._.
+Stale_JJ data_NNS will_MD simply_RB be_VB paged_VBN out_IN of_IN the_DT cache_NN over_IN time_NN ._.
+The_DT Ganesh_NNP proxy_NN accesses_VBZ the_DT database_NN via_IN the_DT native_JJ JDBC_NN driver_NN ,_, which_WDT remains_VBZ unchanged_JJ between_IN Figures_NNS #_# -LRB-_-LRB- a_DT -RRB-_-RRB- and_CC -LRB-_-LRB- b_LS -RRB-_-RRB- ._.
+The_DT database_NN is_VBZ thus_RB completely_RB unaware_JJ of_IN the_DT existence_NN of_IN the_DT proxy_NN ._.
+The_DT proxy_NN does_VBZ not_RB examine_VB any_DT queries_NNS received_VBN from_IN the_DT Ganesh_NNP driver_NN but_CC passes_VBZ them_PRP to_TO the_DT native_JJ driver_NN ._.
+Instead_RB ,_, the_DT proxy_NN is_VBZ responsible_JJ for_IN inspecting_VBG database_NN output_NN received_VBN from_IN the_DT native_JJ driver_NN ,_, detecting_VBG similar_JJ results_NNS ,_, and_CC generating_VBG hash-based_JJ encodings_NNS of_IN these_DT results_NNS whenever_WRB enough_JJ similarity_NN is_VBZ found_VBN ._.
+While_IN this_DT architecture_NN does_VBZ not_RB decrease_VB the_DT load_NN on_IN a_DT database_NN ,_, as_IN mentioned_VBN earlier_RBR in_IN Section_NNP #_# ._.
+#_# ,_, it_PRP is_VBZ much_RB easier_JJR to_TO replicate_VB databases_NNS for_IN scalability_NN in_IN a_DT LAN_NN than_IN in_IN a_DT WAN_NNP ._.
+To_TO generate_VB a_DT hash-based_JJ encoding_NN ,_, the_DT proxy_NN must_MD be_VB aware_JJ of_IN what_WP result_VBP fragments_NNS are_VBP available_JJ in_IN the_DT Ganesh_NNP driver_NN ''_'' s_NNS cache_NN ._.
+One_CD approach_NN is_VBZ to_TO be_VB optimistic_JJ ,_, and_CC to_TO assume_VB that_IN all_DT result_VBP fragments_NNS are_VBP available_JJ ._.
+This_DT will_MD result_VB in_IN the_DT smallest_JJS possible_JJ initial_JJ transmission_NN of_IN a_DT result_NN ._.
+However_RB ,_, in_IN cases_NNS where_WRB there_EX is_VBZ little_JJ overlap_VBP with_IN previous_JJ results_NNS ,_, the_DT Ganesh_NNP driver_NN will_MD have_VB to_TO make_VB many_JJ calls_NNS to_TO the_DT proxy_NN during_IN reconstruction_NN to_TO fetch_VB missing_JJ result_NN fragments_NNS ._.
+To_TO avoid_VB this_DT situation_NN ,_, the_DT proxy_NN loosely_RB tracks_VBZ the_DT state_NN of_IN the_DT Ganesh_NNP driver_NN ''_'' s_NNS cache_NN ._.
+Since_IN both_DT components_NNS are_VBP under_IN our_PRP$ control_NN ,_, it_PRP is_VBZ relatively_RB simple_JJ to_TO do_VB this_DT without_IN resorting_VBG to_TO gray-box_NN techniques_NNS or_CC explicit_JJ communication_NN for_IN maintaining_VBG cache_NN coherence_NN ._.
+Instead_RB ,_, the_DT proxy_NN simulates_VBZ the_DT Ganesh_NNP driver_NN ''_'' s_NNS cache_NN management_NN algorithm_NN and_CC uses_VBZ this_DT to_TO maintain_VB a_DT list_NN of_IN hashes_NNS for_IN which_WDT the_DT Ganesh_NNP driver_NN is_VBZ likely_JJ to_TO possess_VB the_DT result_NN fragments_NNS ._.
+In_IN case_NN of_IN mistracking_NN ,_, there_EX will_MD be_VB no_DT loss_NN of_IN correctness_NN but_CC there_EX will_MD be_VB extra_JJ round-trip_NN delays_NNS to_TO fetch_VB the_DT missing_VBG fragments_NNS ._.
+If_IN the_DT client_NN detects_VBZ loss_NN of_IN synchronization_NN with_IN the_DT proxy_NN ,_, it_PRP can_MD ask_VB the_DT proxy_NN to_TO reset_VB the_DT state_NN shared_VBD between_IN them_PRP ._.
+Also_RB note_NN that_IN the_DT proxy_NN does_VBZ not_RB need_VB to_TO keep_VB the_DT result_NN fragments_NNS themselves_PRP ,_, only_RB their_PRP$ hashes_NNS ._.
+This_DT allows_VBZ the_DT proxy_NN to_TO remain_VB scalable_JJ even_RB when_WRB it_PRP is_VBZ shared_VBN by_IN many_JJ front-end_JJ nodes_NNS ._.
+WWW_NNP ####_CD /_: Track_NNP :_: Performance_NNP and_CC Scalability_NNP Session_NN :_: Scalable_NNP Systems_NNPS for_IN Dynamic_NNP Content_NNP 313_CD Object_NNP Output_NN Stream_NNP Convert_NNP ResultSet_NNP Object_NNP Input_NNP Stream_NNP Convert_NNP ResultSet_NNP All_NNP Data_NNP Recipe_NNP ResultSet_NNP All_NNP Data_NNP ResultSet_NNP Network_NNP Ganesh_NNP Proxy_NNP Ganesh_NNP JDBC_NNP Driver_NN Result_NN Set_VB Recipe_NNP Result_NN Set_VB Yes_UH Yes_UH No_DT No_DT GaneshInputStream_NN GaneshOutputStream_NNP Figure_NNP #_# :_: Dataflow_NNP for_IN Result_NN Handling_NN 3_CD ._.
+#_# Encoding_VBG and_CC Decoding_VBG Results_NNS The_DT Ganesh_NNP proxy_NN receives_VBZ database_NN output_NN as_IN Java_NNP objects_NNS from_IN the_DT native_JJ JDBC_NN driver_NN ._.
+It_PRP examines_VBZ this_DT output_NN to_TO see_VB if_IN a_DT Java_NNP object_NN of_IN type_NN ResultSet_NNP is_VBZ present_JJ ._.
+The_DT JDBC_NNP interface_NN uses_VBZ this_DT data_NN type_NN to_TO store_VB results_NNS of_IN database_NN queries_NNS ._.
+If_IN a_DT ResultSet_NNP object_NN is_VBZ found_VBN ,_, it_PRP is_VBZ shrunk_VBN as_IN discussed_VBN below_IN ._.
+All_DT other_JJ Java_NNP objects_NNS are_VBP passed_VBN through_IN unmodified_JJ ._.
+As_IN discussed_VBN in_IN Section_NN #_# ._.
+#_# ,_, the_DT proxy_NN uses_VBZ the_DT row_NN boundaries_NNS defined_VBN in_IN the_DT ResultSet_NNP to_TO partition_NN it_PRP into_IN fragments_NNS consisting_VBG of_IN single_JJ result_NN rows_NNS ._.
+All_DT ResultSet_NNP objects_NNS are_VBP converted_VBN into_IN objects_NNS of_IN a_DT new_JJ type_NN called_VBN RecipeResultSet_NNP ._.
+We_PRP use_VBP the_DT term_NN recipe_NN for_IN this_DT compact_JJ description_NN of_IN a_DT database_NN result_NN because_IN of_IN its_PRP$ similarity_NN to_TO a_DT file_NN recipe_NN in_IN the_DT CASPER_NNP file_NN system_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+The_DT conversion_NN replaces_VBZ each_DT result_NN fragment_NN that_WDT is_VBZ likely_JJ to_TO be_VB present_JJ in_IN the_DT Ganesh_NNP driver_NN ''_'' s_NNS cache_NN by_IN a_DT SHA-1_NN hash_NN of_IN that_DT fragment_NN ._.
+Previously_RB unseen_JJ result_NN fragments_NNS are_VBP retained_VBN verbatim_JJ ._.
+The_DT proxy_NN also_RB retains_VBZ hashes_NNS for_IN the_DT new_JJ result_NN fragments_NNS as_IN they_PRP will_MD be_VB present_JJ in_IN the_DT driver_NN ''_'' s_NNS cache_NN in_IN the_DT future_NN ._.
+Note_VB that_IN the_DT proxy_NN only_RB caches_VBZ hashes_NNS for_IN result_NN fragments_NNS and_CC does_VBZ not_RB cache_NN recipes_NNS ._.
+The_DT proxy_NN constructs_NNS a_DT RecipeResultSet_NNP by_IN checking_VBG for_IN similarity_NN at_IN the_DT entire_JJ result_NN and_CC then_RB the_DT row_NN level_NN ._.
+If_IN the_DT entire_JJ result_NN is_VBZ predicted_VBN to_TO be_VB present_JJ in_IN the_DT Ganesh_NNP driver_NN ''_'' s_NNS cache_NN ,_, the_DT RecipeResultSet_NNP is_VBZ simply_RB a_DT single_JJ hash_NN of_IN the_DT entire_JJ result_NN ._.
+Otherwise_RB ,_, it_PRP contains_VBZ hashes_NNS for_IN those_DT rows_NNS predicted_VBD to_TO be_VB present_JJ in_IN that_DT cache_NN ;_: all_DT other_JJ rows_NNS are_VBP retained_VBN verbatim_JJ ._.
+If_IN the_DT proxy_NN estimates_VBZ an_DT overall_JJ space_NN savings_NNS ,_, it_PRP will_MD transmit_VB the_DT RecipeResultSet_NNP ._.
+Otherwise_RB the_DT original_JJ ResultSet_NNP is_VBZ transmitted_VBN ._.
+The_DT RecipeResultSet_NNP objects_NNS are_VBP transformed_VBN back_RB into_IN ResultSet_NNP objects_NNS by_IN the_DT Ganesh_NNP driver_NN ._.
+Figure_NNP #_# illustrates_VBZ ResultSet_NNP handling_VBG at_IN both_DT ends_NNS ._.
+Each_DT SHA-1_NN hash_NN found_VBN in_IN a_DT RecipeResultSet_NNP is_VBZ looked_VBN up_RP in_IN the_DT local_JJ cache_NN of_IN result_NN fragments_NNS ._.
+On_IN a_DT hit_NN ,_, the_DT hash_NN is_VBZ replaced_VBN by_IN the_DT corresponding_JJ fragment_NN ._.
+On_IN a_DT miss_VBP ,_, the_DT driver_NN contacts_NNS the_DT Ganesh_NNP proxy_NN to_TO fetch_VB the_DT fragment_NN ._.
+All_DT previously_RB unseen_JJ result_NN fragments_NNS that_WDT were_VBD retained_VBN verbatim_JJ by_IN the_DT proxy_NN are_VBP hashed_VBN and_CC added_VBN to_TO the_DT result_NN cache_NN ._.
+There_EX should_MD be_VB very_RB few_JJ misses_VBZ if_IN the_DT proxy_NN has_VBZ accurately_RB tracked_VBN the_DT Ganesh_NNP driver_NN ''_'' s_NNS cache_NN state_NN ._.
+A_DT future_JJ optimization_NN would_MD be_VB to_TO batch_NN the_DT fetch_VB of_IN missing_VBG fragments_NNS ._.
+This_DT would_MD be_VB valuable_JJ when_WRB there_EX are_VBP many_JJ small_JJ missing_VBG fragments_NNS in_IN a_DT high-latency_NN WAN_NNP ._.
+Once_RB the_DT transformation_NN is_VBZ complete_JJ ,_, the_DT fully_RB reconstructed_VBN ResultSet_NNP object_NN is_VBZ passed_VBN up_RP to_TO the_DT application_NN ._.
+4_LS ._.
+EXPERIMENTAL_JJ VALIDATION_NN Three_CD questions_NNS follow_VBP from_IN the_DT goals_NNS and_CC design_NN of_IN Ganesh_NNP :_: First_NNP ,_, can_MD performance_NN can_MD be_VB improved_VBN significantly_RB by_IN exploiting_VBG similarity_NN across_IN database_NN results_NNS ?_.
+Benchmark_NNP Dataset_NNP Details_NNP 500_CD ,_, ###_CD Users_NNS ,_, ##_NN ,_, ###_CD Stories_NNP BBOARD_NNP #_# ._.
+#_# GB_NNP #_# ,_, ###_CD ,_, ###_CD Comments_NNS AUCTION_NN #_# ._.
+#_# GB_NNP #_# ,_, ###_CD ,_, ###_CD Users_NNS ,_, ##_NN ,_, ###_CD Items_NNS Table_NNP #_# :_: Benchmark_NNP Dataset_NNP Details_NNP Second_NNP ,_, how_WRB important_JJ is_VBZ Ganesh_NNP ''_'' s_VBZ structural_JJ similarity_NN detection_NN relative_JJ to_TO Rabin_NN fingerprinting_NN ''_'' s_NNS similarity_NN detection_NN ?_.
+Third_NNP ,_, is_VBZ the_DT overhead_NN of_IN the_DT proxy-based_JJ design_NN acceptable_JJ ?_.
+Our_PRP$ evaluation_NN answers_NNS these_DT question_NN through_IN controlled_VBN experiments_NNS with_IN the_DT Ganesh_NNP prototype_NN ._.
+This_DT section_NN describes_VBZ the_DT benchmarks_NNS used_VBN ,_, our_PRP$ evaluation_NN procedure_NN ,_, and_CC the_DT experimental_JJ setup_NN ._.
+Results_NNS of_IN the_DT experiments_NNS are_VBP presented_VBN in_IN Sections_NNS #_# ,_, #_# ,_, and_CC #_# ._.
+4_LS ._.
+#_# Benchmarks_NNPS Our_PRP$ evaluation_NN is_VBZ based_VBN on_IN two_CD benchmarks_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- that_WDT have_VBP been_VBN widely_RB used_VBN by_IN other_JJ researchers_NNS to_TO evaluate_VB various_JJ aspects_NNS of_IN multi-tier_JJ -LSB-_-LRB- ##_CD -RSB-_-RRB- and_CC eBusiness_NN architectures_NNS -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+The_DT first_JJ benchmark_NN ,_, BBOARD_NN ,_, is_VBZ modeled_VBN after_IN Slashdot_NNP ,_, a_DT technology-oriented_JJ news_NN site_NN ._.
+The_DT second_JJ benchmark_NN ,_, AUCTION_NNP ,_, is_VBZ modeled_VBN after_IN eBay_NNP ,_, an_DT online_JJ auction_NN site_NN ._.
+In_IN both_DT benchmarks_NNS ,_, most_JJS content_NN is_VBZ dynamically_RB generated_VBN from_IN information_NN stored_VBN in_IN a_DT database_NN ._.
+Details_NNS of_IN the_DT datasets_NNS used_VBN can_MD be_VB found_VBN in_IN Table_NNP #_# ._.
+4_LS ._.
+#_# ._.
+#_# The_DT BBOARD_NNP Benchmark_NNP The_NNP BBOARD_NNP benchmark_NN ,_, also_RB known_VBN as_IN RUBBoS_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, models_NNS Slashdot_NNP ,_, a_DT popular_JJ technology-oriented_JJ web_NN site_NN ._.
+Slashdot_NNP aggregates_NNS links_NNS to_TO news_NN stories_NNS and_CC other_JJ topics_NNS of_IN interest_NN found_VBD elsewhere_RB on_IN the_DT web_NN ._.
+The_DT site_NN also_RB serves_VBZ as_IN a_DT bulletin_NN board_NN by_IN allowing_VBG users_NNS to_TO comment_VB on_IN the_DT posted_VBN stories_NNS in_IN a_DT threaded_JJ conversation_NN form_NN ._.
+It_PRP is_VBZ not_RB uncommon_JJ for_IN a_DT story_NN to_TO gather_VB hundreds_NNS of_IN comments_NNS in_IN a_DT matter_NN of_IN hours_NNS ._.
+The_DT BBOARD_NNP benchmark_NN is_VBZ similar_JJ to_TO the_DT site_NN and_CC models_NNS the_DT activities_NNS of_IN a_DT user_NN ,_, including_VBG readonly_JJ operations_NNS such_JJ as_IN browsing_VBG the_DT stories_NNS of_IN the_DT day_NN ,_, browsing_VBG story_NN categories_NNS ,_, and_CC viewing_VBG comments_NNS as_RB well_RB as_IN write_VB operations_NNS such_JJ as_IN new_JJ user_NN registration_NN ,_, adding_VBG and_CC moderating_VBG comments_NNS ,_, and_CC story_NN submission_NN ._.
+The_DT benchmark_NN consists_VBZ of_IN three_CD different_JJ phases_NNS :_: a_DT short_JJ warmup_NN phase_NN ,_, a_DT runtime_NN phase_NN representing_VBG the_DT main_JJ body_NN of_IN the_DT workload_NN ,_, and_CC a_DT short_JJ cool-down_JJ phase_NN ._.
+In_IN this_DT paper_NN we_PRP only_RB report_VBP results_NNS from_IN the_DT runtime_NN phase_NN ._.
+The_DT warm-up_NN phase_NN is_VBZ important_JJ in_IN establishing_VBG dynamic_JJ system_NN state_NN ,_, but_CC measurements_NNS from_IN that_DT phase_NN are_VBP not_RB significant_JJ for_IN our_PRP$ evaluation_NN ._.
+The_DT cool-down_JJ phase_NN is_VBZ solely_RB for_IN allowing_VBG the_DT benchmark_NN to_TO shut_VB down_RP ._.
+The_DT warm-up_NN ,_, runtime_NN ,_, and_CC cool-down_JJ phases_NNS are_VBP #_# ,_, ##_NN ,_, and_CC #_# minutes_NNS respectively_RB ._.
+The_DT number_NN of_IN simulated_JJ clients_NNS were_VBD ###_CD ,_, 800_CD ,_, ####_CD ,_, and_CC ####_NN ._.
+The_DT benchmark_NN is_VBZ available_JJ in_IN a_DT Java_NNP Servlets_NNPS and_CC PHP_NNP version_NN and_CC has_VBZ different_JJ datasets_NNS ;_: we_PRP evaluated_VBD Ganesh_NNP using_VBG the_DT Java_NNP Servlets_NNPS version_NN and_CC the_DT Expanded_JJ dataset_NN ._.
+The_DT BBOARD_NNP benchmark_NN defines_VBZ two_CD different_JJ workloads_NNS ._.
+The_DT first_JJ ,_, the_DT Authoring_NN mix_NN ,_, consists_VBZ of_IN ##_CD %_NN read-only_JJ operations_NNS and_CC 30_CD %_NN read-write_JJ operations_NNS ._.
+The_DT second_JJ ,_, the_DT Browsing_VBG mix_NN ,_, contains_VBZ only_RB read-only_JJ operations_NNS and_CC does_VBZ not_RB update_VB the_DT database_NN ._.
+4_LS ._.
+#_# ._.
+#_# The_DT AUCTION_NNP Benchmark_NNP The_NNP AUCTION_NNP benchmark_NN ,_, also_RB known_VBN as_IN RUBiS_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, models_NNS eBay_NNP ,_, the_DT online_JJ auction_NN site_NN ._.
+The_DT eBay_NNP web_NN site_NN is_VBZ used_VBN to_TO buy_VB and_CC sell_VB items_NNS via_IN an_DT auction_NN format_NN ._.
+The_DT main_JJ activities_NNS of_IN a_DT user_NN include_VBP browsing_NN ,_, selling_NN ,_, or_CC bidding_NN for_IN items_NNS ._.
+Modeling_VBG the_DT activities_NNS on_IN this_DT site_NN ,_, this_DT benchmark_NN includes_VBZ read-only_JJ activities_NNS such_JJ as_IN browsing_VBG items_NNS by_IN category_NN and_CC by_IN region_NN ,_, as_RB well_RB as_IN read-write_JJ WWW_NNP ####_CD /_: Track_NNP :_: Performance_NNP and_CC Scalability_NNP Session_NN :_: Scalable_NNP Systems_NNPS for_IN Dynamic_NNP Content_NNP 314_CD NetEm_NNP Router_NNP Ganesh_NNP Proxy_NNP Clients_NNS Web_NN and_CC Application_NN Server_NN Database_NN Server_NN Figure_NN #_# :_: Experimental_JJ Setup_NN activities_NNS such_JJ as_IN bidding_NN for_IN items_NNS ,_, buying_VBG and_CC selling_VBG items_NNS ,_, and_CC leaving_VBG feedback_NN ._.
+As_IN with_IN BBOARD_NN ,_, the_DT benchmark_NN consists_VBZ of_IN three_CD different_JJ phases_NNS ._.
+The_DT warm-up_NN ,_, runtime_NN ,_, and_CC cool-down_JJ phases_NNS for_IN this_DT experiment_NN are_VBP #_# ._.
+#_# ,_, ##_NN ,_, and_CC #_# minutes_NNS respectively_RB ._.
+We_PRP tested_VBD Ganesh_NNP with_IN four_CD client_NN configurations_NNS where_WRB the_DT number_NN of_IN test_NN clients_NNS was_VBD set_VBN to_TO ###_CD ,_, ###_CD ,_, ####_CD ,_, and_CC ####_NN ._.
+The_DT benchmark_NN is_VBZ available_JJ in_IN a_DT Enterprise_NNP Java_NNP Bean_NNP -LRB-_-LRB- EJB_NNP -RRB-_-RRB- ,_, Java_NNP Servlets_NNP ,_, and_CC PHP_NNP version_NN and_CC has_VBZ different_JJ datasets_NNS ;_: we_PRP evaluated_VBD Ganesh_NNP with_IN the_DT Java_NNP Servlets_NNPS version_NN and_CC the_DT Expanded_JJ dataset_NN ._.
+The_DT AUCTION_NNP benchmark_NN defines_VBZ two_CD different_JJ workloads_NNS ._.
+The_DT first_JJ ,_, the_DT Bidding_NN mix_NN ,_, consists_VBZ of_IN ##_CD %_NN read-only_JJ operations_NNS and_CC 30_CD %_NN read-write_JJ operations_NNS ._.
+The_DT second_JJ ,_, the_DT Browsing_VBG mix_NN ,_, contains_VBZ only_RB read-only_JJ operations_NNS and_CC does_VBZ not_RB update_VB the_DT database_NN ._.
+4_LS ._.
+#_# Experimental_JJ Procedure_NNP Both_CC benchmarks_NNS involve_VBP a_DT synthetic_JJ workload_NN of_IN clients_NNS accessing_VBG a_DT web_NN server_NN ._.
+The_DT number_NN of_IN clients_NNS emulated_VBN is_VBZ an_DT experimental_JJ parameter_NN ._.
+Each_DT emulated_VBN client_NN runs_VBZ an_DT instance_NN of_IN the_DT benchmark_NN in_IN its_PRP$ own_JJ thread_NN ,_, using_VBG a_DT matrix_NN to_TO transition_NN between_IN different_JJ benchmark_JJ states_NNS ._.
+The_DT matrix_NN defines_VBZ a_DT stochastic_JJ model_NN with_IN probabilities_NNS of_IN transitioning_VBG between_IN the_DT different_JJ states_NNS that_WDT represent_VBP typical_JJ user_NN actions_NNS ._.
+An_DT example_NN transition_NN is_VBZ a_DT user_NN logging_VBG into_IN the_DT AUCTION_NN system_NN and_CC then_RB deciding_VBG on_IN whether_IN to_TO post_VB an_DT item_NN for_IN sale_NN or_CC bid_NN on_IN active_JJ auctions_NNS ._.
+Each_DT client_NN also_RB models_NNS user_NN think_VBP time_NN between_IN requests_NNS ._.
+The_DT think_NN time_NN is_VBZ modeled_VBN as_IN an_DT exponential_JJ distribution_NN with_IN a_DT mean_NN of_IN #_# seconds_NNS ._.
+We_PRP evaluate_VBP Ganesh_NNP along_IN two_CD axes_NNS :_: number_NN of_IN clients_NNS and_CC WAN_NNP bandwidth_NN ._.
+Higher_JJR loads_NNS are_VBP especially_RB useful_JJ in_IN understanding_VBG Ganesh_NNP ''_'' s_VBZ performance_NN when_WRB the_DT CPU_NNP or_CC disk_NN of_IN the_DT database_NN server_NN or_CC proxy_NN is_VBZ the_DT limiting_VBG factor_NN ._.
+A_DT previous_JJ study_NN has_VBZ shown_VBN that_IN approximately_RB ##_CD %_NN of_IN the_DT wide-area_JJ Internet_NN bottlenecks_NNS observed_VBN had_VBD an_DT available_JJ bandwidth_NN under_IN ##_CD Mb_NN /_: s_NNS -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+Based_VBN on_IN this_DT work_NN ,_, we_PRP focus_VBP our_PRP$ evaluation_NN on_IN the_DT WAN_NNP bandwidth_NN of_IN #_# Mb_NNP /_: s_NNS with_IN 66_CD ms_NNS of_IN round-trip_JJ latency_NN ,_, representative_NN of_IN severely_RB constrained_VBN network_NN paths_NNS ,_, and_CC ##_CD Mb_NN /_: s_NNS with_IN ##_NN ms_NNS of_IN round-trip_JJ latency_NN ,_, representative_NN of_IN a_DT moderately_RB constrained_VBN network_NN path_NN ._.
+We_PRP also_RB report_VBP Ganesh_NNP ''_'' s_VBZ performance_NN at_IN ###_CD Mb_NN /_: s_NNS with_IN no_DT added_VBN round-trip_JJ latency_NN ._.
+This_DT bandwidth_NN ,_, representative_NN of_IN an_DT unconstrained_JJ network_NN ,_, is_VBZ especially_RB useful_JJ in_IN revealing_VBG any_DT potential_JJ overhead_NN of_IN Ganesh_NNP in_IN situations_NNS where_WRB WAN_NNP bandwidth_NN is_VBZ not_RB the_DT limiting_VBG factor_NN ._.
+For_IN each_DT combination_NN of_IN number_NN of_IN clients_NNS and_CC WAN_NNP bandwidth_NN ,_, we_PRP measured_VBD results_NNS from_IN the_DT two_CD configurations_NNS listed_VBN below_IN :_: Native_JJ :_: This_DT configuration_NN corresponds_VBZ to_TO Figure_NNP #_# -LRB-_-LRB- a_DT -RRB-_-RRB- ._.
+Native_JJ avoids_NNS Ganesh_NNP ''_'' s_VBZ overhead_NN in_IN using_VBG a_DT proxy_NN and_CC performing_VBG Java_NNP object_NN serialization_NN ._.
+Ganesh_NNP :_: This_DT configuration_NN corresponds_VBZ to_TO Figure_NNP #_# -LRB-_-LRB- b_NN -RRB-_-RRB- ._.
+For_IN a_DT given_VBN number_NN of_IN clients_NNS and_CC WAN_NNP bandwidth_NN ,_, comparing_VBG these_DT results_NNS to_TO the_DT corresponding_JJ Native_JJ results_NNS gives_VBZ the_DT performance_NN benefit_NN due_JJ to_TO the_DT Ganesh_NNP middleware_NN system_NN ._.
+The_DT metric_JJ used_VBN to_TO quantify_VB the_DT improvement_NN in_IN throughput_NN is_VBZ the_DT number_NN of_IN client_NN requests_NNS that_WDT can_MD be_VB serviced_VBN per_IN second_NN ._.
+The_DT metric_JJ used_VBN to_TO quantify_VB Ganesh_NNP ''_'' s_VBZ overhead_NN is_VBZ the_DT average_JJ response_NN time_NN for_IN a_DT client_NN request_NN ._.
+For_IN all_DT of_IN the_DT experiments_NNS ,_, the_DT Ganesh_NNP driver_NN used_VBN by_IN the_DT application_NN server_NN used_VBD a_DT cache_NN size_NN of_IN ###_CD ,_, ###_CD items1_NN ._.
+The_DT proxy_NN was_VBD effective_JJ in_IN tracking_VBG the_DT Ganesh_NNP driver_NN ''_'' s_NNS cache_NN state_NN ;_: for_IN all_DT of_IN our_PRP$ experiments_NNS the_DT miss_VBP rate_NN on_IN the_DT driver_NN never_RB exceeded_VBD #_# ._.
+#_# %_NN ._.
+4_LS ._.
+#_# Experimental_JJ Setup_NN The_DT experimental_JJ setup_NN used_VBN for_IN the_DT benchmarks_NNS can_MD be_VB seen_VBN in_IN Figure_NNP #_# ._.
+All_DT machines_NNS were_VBD #_# ._.
+#_# GHz_NNP Pentium_NNP 4s_NNS -LRB-_-LRB- with_IN HyperThreading_NN enabled_VBD ._. -RRB-_-RRB-
+With_IN the_DT exception_NN of_IN the_DT database_NN server_NN ,_, all_DT machines_NNS had_VBD #_# GB_NN of_IN SDRAM_NNP and_CC ran_VBD the_DT Fedora_NNP Core_NNP Linux_NNP distribution_NN ._.
+The_DT database_NN server_NN had_VBD #_# GB_NN of_IN SDRAM_NNP ._.
+We_PRP used_VBD Apache_NNP ''_'' s_VBZ Tomcat_NNP as_IN both_DT the_DT application_NN server_NN that_WDT hosted_VBD the_DT Java_NNP Servlets_NNPS and_CC the_DT web_NN server_NN ._.
+Both_DT benchmarks_NNS used_VBN Java_NNP Servlets_NNPS to_TO generate_VB the_DT dynamic_JJ content_NN ._.
+The_DT database_NN server_NN used_VBD the_DT open_JJ source_NN MySQL_NN database_NN ._.
+For_IN the_DT native_JJ JDBC_NN drivers_NNS ,_, we_PRP used_VBD the_DT Connector_NNP /_: J_NNP drivers_NNS provided_VBN by_IN MySQL_NNP ._.
+The_DT application_NN server_NN used_VBN Sun_NNP ''_'' s_VBZ Java_NNP Virtual_NNP Machine_NN as_IN the_DT runtime_JJ environment_NN for_IN the_DT Java_NNP Servlets_NNPS ._.
+The_DT sysstat_NN tool_NN was_VBD used_VBN to_TO monitor_VB the_DT CPU_NNP ,_, network_NN ,_, disk_NN ,_, and_CC memory_NN utilization_NN on_IN all_DT machines_NNS ._.
+The_DT machines_NNS were_VBD connected_VBN by_IN a_DT switched_VBN gigabit_NN Ethernet_NNP network_NN ._.
+As_IN shown_VBN in_IN Figure_NNP #_# ,_, the_DT front-end_JJ web_NN and_CC application_NN server_NN was_VBD separated_VBN from_IN the_DT proxy_NN and_CC database_NN server_NN by_IN a_DT NetEm_NNP router_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+This_DT router_NN allowed_VBD us_PRP to_TO control_VB the_DT bandwidth_NN and_CC latency_NN settings_NNS on_IN the_DT network_NN ._.
+The_DT NetEm_NNP router_NN is_VBZ a_DT standard_JJ PC_NN with_IN two_CD network_NN cards_NNS running_VBG the_DT Linux_NNP Traffic_NNP Control_NNP and_CC Network_NNP Emulation_NNP software_NN ._.
+The_DT bandwidth_NN and_CC latency_NN constraints_NNS were_VBD only_RB applied_VBN to_TO the_DT link_NN between_IN the_DT application_NN server_NN and_CC the_DT database_NN for_IN the_DT native_JJ case_NN and_CC between_IN the_DT application_NN server_NN and_CC the_DT proxy_NN for_IN the_DT Ganesh_NNP case_NN ._.
+There_EX is_VBZ no_DT communication_NN between_IN the_DT application_NN server_NN and_CC the_DT database_NN with_IN Ganesh_NNP as_IN all_DT data_NNS flows_VBZ through_IN the_DT proxy_NN ._.
+As_IN our_PRP$ focus_NN was_VBD on_IN the_DT WAN_NNP link_NN between_IN the_DT application_NN server_NN and_CC the_DT database_NN ,_, there_EX were_VBD no_DT constraints_NNS on_IN the_DT link_NN between_IN the_DT simulated_JJ test_NN clients_NNS and_CC the_DT web_NN server_NN ._.
+5_CD ._.
+THROUGHPUT_NNP AND_CC RESPONSE_NNP TIME_NNP In_IN this_DT section_NN ,_, we_PRP address_VBP the_DT first_JJ question_NN raised_VBN in_IN Section_NN #_# :_: Can_MD performance_NN can_MD be_VB improved_VBN significantly_RB by_IN exploiting_VBG similarity_NN across_IN database_NN results_NNS ?_.
+To_TO answer_VB this_DT question_NN ,_, we_PRP use_VBP results_NNS from_IN the_DT BBOARD_NN and_CC AUCTION_NN benchmarks_NNS ._.
+We_PRP use_VBP two_CD metrics_NNS to_TO quantify_VB the_DT performance_NN improvement_NN obtainable_JJ through_IN the_DT use_NN of_IN Ganesh_NNP :_: throughput_NN ,_, from_IN the_DT perspective_NN of_IN the_DT web_NN server_NN ,_, and_CC average_JJ response_NN time_NN ,_, from_IN the_DT perspective_NN of_IN the_DT client_NN ._.
+Throughput_NNP is_VBZ measured_VBN in_IN terms_NNS of_IN the_DT number_NN of_IN client_NN requests_NNS that_WDT can_MD be_VB serviced_VBN per_IN second_NN ._.
+5_CD ._.
+#_# BBOARD_NNP Results_NNS and_CC Analysis_NN 5_CD ._.
+#_# ._.
+#_# Authoring_VBG Mix_NNP Figures_NNS #_# -LRB-_-LRB- a_DT -RRB-_-RRB- and_CC -LRB-_-LRB- b_LS -RRB-_-RRB- present_VB the_DT average_JJ number_NN of_IN requests_NNS serviced_VBD per_IN second_JJ and_CC the_DT average_JJ response_NN time_NN for_IN these_DT requests_NNS as_IN perceived_VBN by_IN the_DT clients_NNS for_IN BBOARD_NNP ''_'' s_NNS Authoring_VBG Mix_NNP ._.
+As_IN Figure_NNP #_# -LRB-_-LRB- a_DT -RRB-_-RRB- shows_VBZ ,_, Native_JJ easily_RB saturates_VBZ the_DT #_# Mb_NNP /_: s_NNS link_NN ._.
+At_IN ###_CD clients_NNS ,_, the_DT Native_JJ solution_NN delivers_VBZ ##_CD requests_NNS /_: sec_NN with_IN an_DT average_JJ response_NN time_NN of_IN #_# ._.
+#_# seconds_NNS ._.
+Native_JJ ''_'' s_NNS throughput_NN drops_VBZ with_IN an_DT increase_NN in_IN test_NN clients_NNS as_IN clients_NNS timeout_NN due_JJ to_TO congestion_NN at_IN the_DT application_NN server_NN ._.
+Usability_NN studies_NNS have_VBP shown_VBN that_IN response_NN times_NNS above_IN ##_CD seconds_NNS cause_VBP the_DT user_NN to_TO move_VB on_IN to_TO 1_CD As_IN Java_NNP lacks_VBZ a_DT sizeof_NN -LRB-_-LRB- -RRB-_-RRB- operator_NN ,_, Java_NNP caches_VBZ therefore_RB limit_VB their_PRP$ size_NN based_VBN on_IN the_DT number_NN of_IN objects_NNS ._.
+The_DT size_NN of_IN cache_NN dumps_VBZ taken_VBN at_IN the_DT end_NN of_IN the_DT experiments_NNS never_RB exceeded_VBD ###_CD MB_NN ._.
+WWW_NNP ####_CD /_: Track_NNP :_: Performance_NNP and_CC Scalability_NNP Session_NN :_: Scalable_NNP Systems_NNPS for_IN Dynamic_NNP Content_NNP 315_CD 0_CD 50_CD 100_CD 150_CD 200_CD 250_CD 400_CD 800_CD 1200_CD 1600_CD 400_CD 800_CD 1200_CD 1600_CD 400_CD 800_CD 1200_CD 1600_CD 5_CD Mb_NN /_: s_NNS ##_VBP Mb_NN /_: s_NNS ###_VBP Mb_NN /_: s_NNS Test_VBP Clients_NNS Requests_NNS /_: sec_NN Native_JJ Ganesh_NNP 0_CD ._.
+###_NN 0_CD ._.
+##_NN 0_CD ._.
+#_# 1_CD 10_CD 100_CD 400_CD 800_CD 1200_CD 1600_CD 400_CD 800_CD 1200_CD 1600_CD 400_CD 800_CD 1200_CD 1600_CD 5_CD Mb_NN /_: s_NNS ##_VBP Mb_NN /_: s_NNS ###_VBP Mb_NN /_: s_NNS Test_VBP Clients_NNS Avg_NN ._.
+Resp_NNP ._.
+Time_NN -LRB-_-LRB- sec_NN -RRB-_-RRB- Native_JJ Ganesh_NNP Note_NN Logscale_NN -LRB-_-LRB- a_DT -RRB-_-RRB- Throughput_NNP :_: Authoring_NN Mix_NNP -LRB-_-LRB- b_NN -RRB-_-RRB- Response_NN Time_NN :_: Authoring_NN Mix_NNP 0_CD 50_CD 100_CD 150_CD 200_CD 250_CD 400_CD 800_CD 1200_CD 1600_CD 400_CD 800_CD 1200_CD 1600_CD 400_CD 800_CD 1200_CD 1600_CD 5_CD Mb_NN /_: s_NNS ##_VBP Mb_NN /_: s_NNS ###_VBP Mb_NN /_: s_NNS Test_VBP Clients_NNS Requests_NNS /_: sec_NN Native_JJ Ganesh_NNP 0_CD ._.
+###_NN 0_CD ._.
+##_NN 0_CD ._.
+#_# 1_CD 10_CD 100_CD 400_CD 800_CD 1200_CD 1600_CD 400_CD 800_CD 1200_CD 1600_CD 400_CD 800_CD 1200_CD 1600_CD 5_CD Mb_NN /_: s_NNS ##_VBP Mb_NN /_: s_NNS ###_VBP Mb_NN /_: s_NNS Test_VBP Clients_NNS Avg_NN ._.
+Resp_NNP ._.
+Time_NN -LRB-_-LRB- sec_NN -RRB-_-RRB- Native_JJ Ganesh_NNP Note_NN Logscale_NN -LRB-_-LRB- c_NN -RRB-_-RRB- Throughput_NN :_: Browsing_VBG Mix_NNP -LRB-_-LRB- d_NN -RRB-_-RRB- Response_NN Time_NN :_: Browsing_VBG Mix_NNP Mean_NN of_IN three_CD trials_NNS ._.
+The_DT maximum_JJ standard_JJ deviation_NN for_IN throughput_NN and_CC response_NN time_NN was_VBD #_# ._.
+#_# %_NN and_CC ##_NN ._.
+#_# %_NN of_IN the_DT corresponding_JJ mean_NN ._.
+Figure_NNP #_# :_: BBOARD_NNP Benchmark_NNP -_: Throughput_NN and_CC Average_JJ Response_NN Time_NNP other_JJ tasks_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Based_VBN on_IN these_DT numbers_NNS ,_, increasing_VBG the_DT number_NN of_IN test_NN clients_NNS makes_VBZ the_DT Native_JJ system_NN unusable_JJ ._.
+Ganesh_NNP at_IN 5_CD Mb_NN /_: s_NNS ,_, however_RB ,_, delivers_VBZ a_DT twofold_JJ improvement_NN with_IN ###_CD test_NN clients_NNS and_CC a_DT fivefold_JJ improvement_NN at_IN ####_CD clients_NNS ._.
+Ganesh_NNP ''_'' s_NNS performance_NN drops_VBZ slightly_RB at_IN ####_CD and_CC ####_CD clients_NNS as_IN the_DT network_NN is_VBZ saturated_VBN ._.
+Compared_VBN to_TO Native_JJ ,_, Figure_NNP #_# -LRB-_-LRB- b_NN -RRB-_-RRB- shows_VBZ that_IN Ganesh_NNP ''_'' s_VBZ response_NN times_NNS are_VBP substantially_RB lower_JJR with_IN sub-second_JJ response_NN times_NNS at_IN ###_CD clients_NNS ._.
+Figure_NNP #_# -LRB-_-LRB- a_DT -RRB-_-RRB- also_RB shows_VBZ that_IN for_IN ###_CD and_CC ###_CD test_NN clients_NNS Ganesh_NNP at_IN #_# Mb_NNP /_: s_NNS has_VBZ the_DT same_JJ throughput_NN and_CC average_JJ response_NN time_NN as_IN Native_JJ at_IN ##_CD Mb_NN /_: s_NNS ._.
+Only_RB at_IN ####_CD and_CC ####_CD clients_NNS does_VBZ Native_JJ at_IN ##_CD Mb_NN /_: s_NNS deliver_VBP higher_JJR throughput_NN than_IN Ganesh_NNP at_IN #_# Mb_NNP /_: s_NNS ._.
+Comparing_VBG both_DT Ganesh_NNP and_CC Native_JJ at_IN ##_CD Mb_NN /_: s_NNS ,_, we_PRP see_VBP that_IN Ganesh_NNP is_VBZ no_RB longer_RB bandwidth_NN constrained_VBD and_CC delivers_VBZ up_RP to_TO a_DT twofold_JJ improvement_NN over_IN Native_JJ at_IN ####_CD test_NN clients_NNS ._.
+As_IN Ganesh_NNP does_VBZ not_RB saturate_VB the_DT network_NN with_IN higher_JJR test_NN client_NN configurations_NNS ,_, at_IN ####_CD test_NN clients_NNS ,_, its_PRP$ average_JJ response_NN time_NN is_VBZ #_# ._.
+#_# seconds_NNS rather_RB than_IN Native_JJ ''_'' s_NNS #_# ._.
+#_# seconds_NNS ._.
+As_IN expected_VBN ,_, there_EX are_VBP no_DT visible_JJ gains_NNS from_IN Ganesh_NNP at_IN the_DT higher_JJR bandwidth_NN of_IN ###_CD Mb_NN /_: s_NNS where_WRB the_DT network_NN is_VBZ no_RB longer_RB the_DT bottleneck_NN ._.
+Ganesh_NNP ,_, however_RB ,_, still_RB tracks_VBZ Native_JJ in_IN terms_NNS of_IN throughput_NN ._.
+5_CD ._.
+#_# ._.
+#_# Browsing_VBG Mix_NNP Figures_NNS #_# -LRB-_-LRB- c_NN -RRB-_-RRB- and_CC -LRB-_-LRB- d_LS -RRB-_-RRB- present_VB the_DT average_JJ number_NN of_IN requests_NNS serviced_VBD per_IN second_JJ and_CC the_DT average_JJ response_NN time_NN for_IN these_DT requests_NNS as_IN perceived_VBN by_IN the_DT clients_NNS for_IN BBOARD_NNP ''_'' s_VBZ Browsing_NNP Mix_NNP ._.
+Regardless_RB of_IN the_DT test_NN client_NN configuration_NN ,_, Figure_NNP #_# -LRB-_-LRB- c_NN -RRB-_-RRB- shows_VBZ that_IN Native_JJ ''_'' s_NNS throughput_NN at_IN #_# Mb_NNP /_: s_NNS is_VBZ limited_VBN to_TO ##_VB reqs_NNS /_: sec_NN ._.
+Ganesh_NNP at_IN #_# Mb_NNP /_: s_NNS with_IN ###_CD test_NN clients_NNS ,_, delivers_VBZ more_JJR than_IN a_DT sixfold_JJ increase_NN in_IN throughput_NN ._.
+The_DT improvement_NN increases_VBZ to_TO over_IN a_DT elevenfold_JJ increase_NN at_IN ###_CD test_NN clients_NNS before_IN Ganesh_NNP saturates_VBZ the_DT network_NN ._.
+Further_RB ,_, Figure_NNP #_# -LRB-_-LRB- d_NN -RRB-_-RRB- shows_VBZ that_IN Native_JJ ''_'' s_NNS average_JJ response_NN time_NN of_IN ##_CD seconds_NNS at_IN ###_CD test_NN clients_NNS make_VBP the_DT system_NN unusable_JJ ._.
+These_DT high_JJ response_NN times_NNS further_JJ increase_NN with_IN the_DT addition_NN of_IN test_NN clients_NNS ._.
+Even_RB with_IN the_DT ####_CD test_NN client_NN configuration_NN Ganesh_NNP delivers_VBZ an_DT acceptable_JJ average_JJ response_NN time_NN of_IN #_# ._.
+#_# seconds_NNS ._.
+Due_JJ to_TO the_DT data-intensive_JJ nature_NN of_IN the_DT Browsing_VBG mix_NN ,_, Ganesh_NNP at_IN 5_CD Mb_NN /_: s_NNS surprisingly_RB performs_VBZ much_RB better_JJR than_IN Native_JJ at_IN ##_CD Mb_NN /_: s_NNS ._.
+Further_RB ,_, as_IN shown_VBN in_IN Figure_NNP #_# -LRB-_-LRB- d_NN -RRB-_-RRB- ,_, while_IN the_DT average_JJ response_NN time_NN for_IN Native_JJ at_IN ##_CD Mb_NN /_: s_NNS is_VBZ acceptable_JJ at_IN ###_CD test_NN clients_NNS ,_, it_PRP is_VBZ unusable_JJ with_IN ###_CD test_NN clients_NNS with_IN an_DT average_JJ response_NN time_NN of_IN ##_NN ._.
+#_# seconds_NNS ._.
+Like_IN the_DT #_# Mb_NNP /_: s_NNS case_NN ,_, this_DT response_NN time_NN increases_VBZ with_IN the_DT addition_NN of_IN extra_JJ test_NN clients_NNS ._.
+Ganesh_NNP at_IN ##_CD Mb_NN /_: s_NNS and_CC both_DT Native_JJ and_CC Ganesh_NNP at_IN ###_CD Mb_NN /_: s_NNS are_VBP not_RB bandwidth_NN limited_JJ ._.
+However_RB ,_, performance_NN plateaus_VBZ out_RP after_IN 1200_CD test_NN clients_NNS due_JJ to_TO the_DT database_NN CPU_NNP being_VBG saturated_VBN ._.
+5_CD ._.
+#_# ._.
+#_# Filter_NNP Variant_JJ We_PRP were_VBD surprised_VBN by_IN the_DT Native_JJ performance_NN from_IN the_DT BBOARD_NNP benchmark_NN ._.
+At_IN the_DT bandwidth_NN of_IN #_# Mb_NNP /_: s_NNS ,_, Native_JJ performance_NN was_VBD lower_JJR than_IN what_WP we_PRP had_VBD expected_VBN ._.
+It_PRP turned_VBD out_RP the_DT benchmark_NN code_NN that_WDT displays_VBZ stories_NNS read_VB all_PDT the_DT comments_NNS associated_VBN with_IN the_DT particular_JJ story_NN from_IN the_DT database_NN and_CC only_RB then_RB did_VBD some_DT postprocessing_NN to_TO select_VB the_DT comments_NNS to_TO be_VB displayed_VBN ._.
+While_IN this_DT is_VBZ exactly_RB the_DT behavior_NN of_IN SlashCode_NNP ,_, the_DT code_NN base_NN behind_IN the_DT Slashdot_NNP web_NN site_NN ,_, we_PRP decided_VBD to_TO modify_VB the_DT benchmark_NN to_TO perform_VB some_DT pre-filtering_JJ at_IN the_DT database_NN ._.
+This_DT modified_VBN benchmark_NN ,_, named_VBD the_DT Filter_NNP Variant_JJ ,_, models_NNS a_DT developer_NN who_WP applies_VBZ optimizations_NNS at_IN the_DT SQL_NN level_NN to_TO transfer_VB less_JJR data_NNS ._.
+In_IN the_DT interests_NNS of_IN brevity_NN ,_, we_PRP only_RB briefly_RB summarize_VB the_DT results_NNS from_IN the_DT Authoring_NN mix_NN ._.
+For_IN the_DT Authoring_NN mix_NN ,_, at_IN ###_CD test_NN clients_NNS at_IN #_# Mb_NNP /_: s_NNS ,_, Figure_NNP #_# -LRB-_-LRB- a_DT -RRB-_-RRB- shows_VBZ that_IN Native_JJ ''_'' s_NNS throughput_JJ increase_NN by_IN ##_CD %_NN when_WRB compared_VBN to_TO the_DT original_JJ benchmark_NN while_IN Ganesh_NNP ''_'' s_VBZ improvement_NN is_VBZ smaller_JJR at_IN ##_CD %_NN ._.
+Native_JJ ''_'' s_NNS performance_NN drops_VBZ above_IN ###_CD clients_NNS as_IN the_DT test_NN clients_NNS time_NN out_RP due_JJ to_TO high_JJ response_NN times_NNS ._.
+The_DT most_RBS significant_JJ gain_NN for_IN Native_JJ is_VBZ seen_VBN at_IN ##_CD Mb_NN /_: s_NNS ._.
+At_IN ####_CD test_NN clients_NNS ,_, when_WRB compared_VBN to_TO the_DT original_JJ benchmark_NN ,_, Native_JJ sees_VBZ a_DT ##_CD %_NN improvement_NN in_IN throughput_NN and_CC a_DT ##_CD %_NN reduction_NN in_IN average_JJ response_NN time_NN ._.
+While_IN WWW_NNP ####_CD /_: Track_NNP :_: Performance_NNP and_CC Scalability_NNP Session_NN :_: Scalable_NNP Systems_NNPS for_IN Dynamic_NNP Content_NNP 316_CD 0_CD 50_CD 100_CD 150_CD 200_CD 250_CD 400_CD 800_CD 1200_CD 1600_CD 400_CD 800_CD 1200_CD 1600_CD 400_CD 800_CD 1200_CD 1600_CD 5_CD Mb_NN /_: s_NNS ##_VBP Mb_NN /_: s_NNS ###_VBP Mb_NN /_: s_NNS Test_VBP Clients_NNS Requests_NNS /_: sec_NN Native_JJ Ganesh_NNP 0_CD ._.
+###_NN 0_CD ._.
+##_NN 0_CD ._.
+#_# 1_CD 10_CD 100_CD 400_CD 800_CD 1200_CD 1600_CD 400_CD 800_CD 1200_CD 1600_CD 400_CD 800_CD 1200_CD 1600_CD 5_CD Mb_NN /_: s_NNS ##_VBP Mb_NN /_: s_NNS ###_VBP Mb_NN /_: s_NNS Test_VBP Clients_NNS Avg_NN ._.
+Resp_NNP ._.
+Time_NN -LRB-_-LRB- sec_NN -RRB-_-RRB- Native_JJ Ganesh_NNP Note_NN Logscale_NN -LRB-_-LRB- a_DT -RRB-_-RRB- Throughput_NNP :_: Authoring_NN Mix_NNP -LRB-_-LRB- b_NN -RRB-_-RRB- Response_NN Time_NN :_: Authoring_NN Mix_NNP Mean_NN of_IN three_CD trials_NNS ._.
+The_DT maximum_JJ standard_JJ deviation_NN for_IN throughput_NN and_CC response_NN time_NN was_VBD #_# ._.
+#_# %_NN and_CC ##_NN ._.
+#_# %_NN of_IN the_DT corresponding_JJ mean_NN ._.
+Figure_NNP #_# :_: BBOARD_NNP Benchmark_NNP -_: Filter_NNP Variant_JJ -_: Throughput_NN and_CC Average_JJ Response_NN Time_NNP Ganesh_NNP sees_VBZ no_DT improvement_NN when_WRB compared_VBN to_TO the_DT original_JJ ,_, it_PRP still_RB processes_VBZ ##_CD %_NN more_JJR requests_NNS /_: sec_NN than_IN Native_JJ ._.
+Thus_RB ,_, while_IN the_DT optimizations_NNS were_VBD more_RBR helpful_JJ to_TO Native_JJ ,_, Ganesh_NNP still_RB delivers_VBZ an_DT improvement_NN in_IN performance_NN ._.
+5_CD ._.
+#_# AUCTION_NNP Results_NNS and_CC Analysis_NN 5_CD ._.
+#_# ._.
+#_# Bidding_VBG Mix_NNP Figures_NNS #_# -LRB-_-LRB- a_DT -RRB-_-RRB- and_CC -LRB-_-LRB- b_LS -RRB-_-RRB- present_VB the_DT average_JJ number_NN of_IN requests_NNS serviced_VBD per_IN second_JJ and_CC the_DT average_JJ response_NN time_NN for_IN these_DT requests_NNS as_IN perceived_VBN by_IN the_DT clients_NNS for_IN AUCTION_NN ''_'' s_NNS Bidding_VBG Mix_NNP ._.
+As_IN mentioned_VBN earlier_RBR ,_, the_DT Bidding_NN mix_NN consists_VBZ of_IN a_DT mixture_NN of_IN read_NN and_CC write_VB operations_NNS ._.
+The_DT AUCTION_NNP benchmark_NN is_VBZ not_RB as_IN data_NNS intensive_JJ as_IN BBOARD_NN ._.
+Therefore_RB ,_, most_JJS of_IN the_DT gains_NNS are_VBP observed_VBN at_IN the_DT lower_JJR bandwidth_NN of_IN #_# Mb_NNP /_: s_NNS ._.
+Figure_NNP #_# -LRB-_-LRB- a_DT -RRB-_-RRB- shows_VBZ that_IN the_DT increase_NN in_IN throughput_NN due_JJ to_TO Ganesh_NNP ranges_VBZ from_IN #_# %_NN at_IN ###_CD test_NN clients_NNS to_TO ##_CD %_NN with_IN ####_CD test_NN clients_NNS ._.
+As_IN seen_VBN in_IN Figure_NNP #_# -LRB-_-LRB- b_NN -RRB-_-RRB- ,_, the_DT average_JJ response_NN times_NNS for_IN Ganesh_NNP are_VBP significantly_RB lower_JJR than_IN Native_JJ ranging_VBG from_IN a_DT decrease_NN of_IN ##_CD %_NN at_IN ###_CD test_NN clients_NNS to_TO ##_CD %_NN at_IN ####_CD test_NN clients_NNS ._.
+Figure_NNP #_# -LRB-_-LRB- a_DT -RRB-_-RRB- also_RB shows_VBZ that_IN with_IN a_DT fourfold_JJ increase_NN of_IN bandwidth_NN from_IN #_# Mb_NNP /_: s_NNS to_TO ##_VB Mb_NN /_: s_NNS ,_, Native_JJ is_VBZ no_RB longer_RB bandwidth_NN constrained_VBD and_CC there_EX is_VBZ no_DT performance_NN difference_NN between_IN Ganesh_NNP and_CC Native_JJ ._.
+With_IN the_DT higher_JJR test_NN client_NN configurations_NNS ,_, we_PRP did_VBD observe_VB that_IN the_DT bandwidth_NN used_VBN by_IN Ganesh_NNP was_VBD lower_JJR than_IN Native_JJ ._.
+Ganesh_NNP might_MD still_RB be_VB useful_JJ in_IN these_DT non-constrained_JJ scenarios_NNS if_IN bandwidth_NN is_VBZ purchased_VBN on_IN a_DT metered_JJ basis_NN ._.
+Similar_JJ results_NNS are_VBP seen_VBN for_IN the_DT ###_CD Mb_NN /_: s_NNS scenario_NN ._.
+5_CD ._.
+#_# ._.
+#_# Browsing_VBG Mix_NNP For_IN AUCTION_NNP ''_'' s_VBZ Browsing_NNP Mix_NNP ,_, Figures_NNS #_# -LRB-_-LRB- c_NN -RRB-_-RRB- and_CC -LRB-_-LRB- d_LS -RRB-_-RRB- present_VB the_DT average_JJ number_NN of_IN requests_NNS serviced_VBD per_IN second_JJ and_CC the_DT average_JJ response_NN time_NN for_IN these_DT requests_NNS as_IN perceived_VBN by_IN the_DT clients_NNS ._.
+Again_RB ,_, most_JJS of_IN the_DT gains_NNS are_VBP observed_VBN at_IN lower_JJR bandwidths_NNS ._.
+At_IN #_# Mb_NNP /_: s_NNS ,_, Native_JJ and_CC Ganesh_NNP deliver_VBP similar_JJ throughput_NN and_CC response_NN times_NNS with_IN ###_CD test_NN clients_NNS ._.
+While_IN the_DT throughput_NN for_IN both_DT remains_VBZ the_DT same_JJ at_IN ###_CD test_NN clients_NNS ,_, Figure_NNP #_# -LRB-_-LRB- d_NN -RRB-_-RRB- shows_VBZ that_IN Ganesh_NNP ''_'' s_NNS average_JJ response_NN time_NN is_VBZ ##_CD %_NN lower_JJR than_IN Native_JJ ._.
+Native_JJ saturates_VBZ the_DT link_NN at_IN ###_CD clients_NNS and_CC adding_VBG extra_JJ test_NN clients_NNS only_RB increases_VBZ the_DT average_JJ response_NN time_NN ._.
+Ganesh_NNP ,_, regardless_RB of_IN the_DT test_NN client_NN configuration_NN ,_, is_VBZ not_RB bandwidth_NN constrained_VBD and_CC maintains_VBZ the_DT same_JJ response_NN time_NN ._.
+At_IN ####_CD test_NN clients_NNS ,_, Figure_NNP #_# -LRB-_-LRB- c_NN -RRB-_-RRB- shows_VBZ that_IN Ganesh_NNP ''_'' s_VBZ throughput_NN is_VBZ almost_RB twice_RB that_IN of_IN Native_JJ ._.
+At_IN the_DT higher_JJR bandwidths_NNS of_IN ##_NN and_CC ###_CD Mb_NN /_: s_NNS ,_, neither_CC Ganesh_NNP nor_CC Native_JJ is_VBZ bandwidth_NN limited_JJ and_CC deliver_VB equivalent_JJ throughput_NN and_CC response_NN times_NNS ._.
+Benchmark_NNP Orig_NNP ._.
+Size_NN Ganesh_NNP Size_NN Rabin_NNP Size_NN SelectSort1_NN ###_CD ._.
+#_# MB_NNP #_# ._.
+#_# MB_NNP ###_CD ._.
+#_# MB_NN SelectSort2_NN ###_CD ._.
+#_# MB_NNP #_# ._.
+#_# MB_NNP ###_CD ._.
+#_# MB_NNP Table_NNP #_# :_: Similarity_NN Microbenchmarks_NNS 6_CD ._.
+STRUCTURAL_JJ VS_NN ._.
+RABIN_NNP SIMILARITY_NNP In_IN this_DT section_NN ,_, we_PRP address_VBP the_DT second_JJ question_NN raised_VBN in_IN Section_NN #_# :_: How_WRB important_JJ is_VBZ Ganesh_NNP ''_'' s_VBZ structural_JJ similarity_NN detection_NN relative_JJ to_TO Rabin_NN fingerprinting-based_JJ similarity_NN detecting_VBG ?_.
+To_TO answer_VB this_DT question_NN ,_, we_PRP used_VBD microbenchmarks_NNS and_CC the_DT BBOARD_NN and_CC AUCTION_NN benchmarks_NNS ._.
+As_IN Ganesh_NNP always_RB performed_VBD better_JJR than_IN Rabin_NN fingerprinting_NN ,_, we_PRP only_RB present_VBP a_DT subset_NN of_IN the_DT results_NNS here_RB in_IN the_DT interests_NNS of_IN brevity_NN ._.
+6_CD ._.
+#_# Microbenchmarks_NNPS Two_CD microbenchmarks_NNS show_VBP an_DT example_NN of_IN the_DT effects_NNS of_IN data_NNS reordering_NN on_IN Rabin_NNP fingerprinting_VBG algorithm_NN ._.
+In_IN the_DT first_JJ microbenchmark_NN ,_, SelectSort1_NN ,_, a_DT query_NN with_IN a_DT specified_VBN sort_NN order_NN selects_VBZ 223_CD ._.
+#_# MB_NN of_IN data_NNS spread_VBN over_IN approximately_RB ###_CD K_NNP rows_NNS ._.
+The_DT query_NN is_VBZ then_RB repeated_VBN with_IN a_DT different_JJ sort_NN attribute_NN ._.
+While_IN the_DT same_JJ number_NN of_IN rows_NNS and_CC the_DT same_JJ data_NNS is_VBZ returned_VBN ,_, the_DT order_NN of_IN rows_NNS is_VBZ different_JJ ._.
+In_IN such_PDT a_DT scenario_NN ,_, one_CD would_MD expect_VB a_DT large_JJ amount_NN of_IN similarity_NN to_TO be_VB detected_VBN between_IN both_DT results_NNS ._.
+As_IN Table_NNP #_# shows_NNS ,_, Ganesh_NNP ''_'' s_VBZ row-based_JJ algorithm_NN achieves_VBZ a_DT ##_NN ._.
+#_# %_NN reduction_NN while_IN the_DT Rabin_NNP fingerprinting_VBG algorithm_NN ,_, with_IN the_DT average_JJ chunk_NN size_NN parameter_NN set_VBN to_TO #_# KB_NN ,_, only_RB achieves_VBZ a_DT #_# %_NN reduction_NN ._.
+The_DT reason_NN ,_, as_IN shown_VBN earlier_RBR in_IN Figure_NNP #_# ,_, is_VBZ that_IN with_IN Rabin_NN fingerprinting_NN ,_, the_DT spans_NNS of_IN data_NNS between_IN two_CD consecutive_JJ boundaries_NNS usually_RB cross_VBP row_NN boundaries_NNS ._.
+With_IN the_DT order_NN of_IN the_DT rows_NNS changing_VBG in_IN the_DT second_JJ result_NN and_CC the_DT Rabin_NN fingerprints_NNS now_RB spanning_VBG different_JJ rows_NNS ,_, the_DT algorithm_NN is_VBZ unable_JJ to_TO detect_VB significant_JJ similarity_NN ._.
+The_DT small_JJ gain_NN seen_VBN is_VBZ mostly_RB for_IN those_DT single_JJ rows_NNS that_WDT are_VBP large_JJ enough_RB to_TO be_VB broken_VBN into_IN multiple_JJ chunks_NNS ._.
+SelectSort2_NN ,_, another_DT micro-benchmark_NN executed_VBD the_DT same_JJ queries_NNS but_CC increased_VBD the_DT minimum_JJ chunk_NN size_NN of_IN the_DT Rabin_NNP fingerprinting_VBG algorithm_NN ._.
+As_IN can_MD be_VB seen_VBN in_IN Table_NNP #_# ,_, even_RB the_DT small_JJ gain_NN from_IN the_DT previous_JJ microbenchmark_NN disappears_VBZ as_IN the_DT minimum_JJ chunk_NN size_NN was_VBD greater_JJR than_IN the_DT average_JJ row_NN size_NN ._.
+While_IN one_PRP can_MD partially_RB address_VB these_DT problems_NNS by_IN dynamically_RB varying_VBG the_DT parameters_NNS of_IN the_DT Rabin_NNP fingerprinting_VBG algorithm_NN ,_, this_DT can_MD be_VB computationally_RB expensive_JJ ,_, especially_RB in_IN the_DT presence_NN of_IN changing_VBG workloads_NNS ._.
+6_CD ._.
+#_# Application_NN Benchmarks_NNPS We_PRP ran_VBD the_DT BBOARD_NNP benchmark_NN described_VBN in_IN Section_NN #_# ._.
+#_# ._.
+#_# on_IN two_CD versions_NNS of_IN Ganesh_NNP :_: the_DT first_JJ with_IN Rabin_NN fingerprinting_NN used_VBN as_IN WWW_NNP ####_CD /_: Track_NNP :_: Performance_NNP and_CC Scalability_NNP Session_NN :_: Scalable_NNP Systems_NNPS for_IN Dynamic_NNP Content_NNP 317_CD 0_CD 50_CD 100_CD 150_CD 200_CD 250_CD 300_CD 350_CD 400_CD 800_CD 1200_CD 1600_CD 400_CD 800_CD 1200_CD 1600_CD 400_CD 800_CD 1200_CD 1600_CD 5_CD Mb_NN /_: s_NNS ##_VBP Mb_NN /_: s_NNS ###_VBP Mb_NN /_: s_NNS Test_VBP Clients_NNS Requests_NNS /_: sec_NN Native_JJ Ganesh_NNP 0_CD ._.
+###_NN 0_CD ._.
+##_NN 0_CD ._.
+#_# 1_CD 10_CD 400_CD 800_CD 1200_CD 1600_CD 400_CD 800_CD 1200_CD 1600_CD 400_CD 800_CD 1200_CD 1600_CD 5_CD Mb_NN /_: s_NNS ##_VBP Mb_NN /_: s_NNS ###_VBP Mb_NN /_: s_NNS Test_VBP Clients_NNS Avg_NN ._.
+Resp_NNP ._.
+Time_NN -LRB-_-LRB- sec_NN -RRB-_-RRB- Native_JJ Ganesh_NNP Note_NN Logscale_NN -LRB-_-LRB- a_DT -RRB-_-RRB- Throughput_NNP :_: Bidding_NN Mix_NNP -LRB-_-LRB- b_NN -RRB-_-RRB- Response_NN Time_NN :_: Bidding_NN Mix_NNP 0_CD 50_CD 100_CD 150_CD 200_CD 250_CD 300_CD 350_CD 400_CD 800_CD 1200_CD 1600_CD 400_CD 800_CD 1200_CD 1600_CD 400_CD 800_CD 1200_CD 1600_CD 5_CD Mb_NN /_: s_NNS ##_VBP Mb_NN /_: s_NNS ###_VBP Mb_NN /_: s_NNS Test_VBP Clients_NNS Requests_NNS /_: sec_NN Native_JJ Ganesh_NNP 0_CD ._.
+###_NN 0_CD ._.
+##_NN 0_CD ._.
+#_# 1_CD 10_CD 400_CD 800_CD 1200_CD 1600_CD 400_CD 800_CD 1200_CD 1600_CD 400_CD 800_CD 1200_CD 1600_CD 5_CD Mb_NN /_: s_NNS ##_VBP Mb_NN /_: s_NNS ###_VBP Mb_NN /_: s_NNS Test_VBP Clients_NNS Avg_NN ._.
+Resp_NNP ._.
+Time_NN -LRB-_-LRB- sec_NN -RRB-_-RRB- Native_JJ Ganesh_NNP Note_NN Logscale_NN -LRB-_-LRB- c_NN -RRB-_-RRB- Throughput_NN :_: Browsing_VBG Mix_NNP -LRB-_-LRB- d_NN -RRB-_-RRB- Response_NN Time_NN :_: Browsing_VBG Mix_NNP Mean_NN of_IN three_CD trials_NNS ._.
+The_DT maximum_JJ standard_JJ deviation_NN for_IN throughput_NN and_CC response_NN time_NN was_VBD #_# ._.
+#_# %_NN and_CC ##_NN ._.
+#_# %_NN of_IN the_DT corresponding_JJ mean_NN ._.
+Figure_NNP #_# :_: AUCTION_NNP Benchmark_NNP -_: Throughput_NN and_CC Average_JJ Response_NN Time_NNP the_DT chunking_VBG algorithm_NN and_CC the_DT second_JJ with_IN Ganesh_NNP ''_'' s_VBZ row-based_JJ algorithm_NN ._.
+Rabin_NN ''_'' s_NNS results_VBZ for_IN the_DT Browsing_NNP Mix_NNP are_VBP normalized_VBN to_TO Ganesh_NNP ''_'' s_VBZ results_NNS and_CC presented_VBN in_IN Figure_NNP #_# ._.
+As_IN Figure_NNP #_# -LRB-_-LRB- a_DT -RRB-_-RRB- shows_VBZ ,_, at_IN #_# Mb_NNP /_: s_NNS ,_, independent_JJ of_IN the_DT test_NN client_NN configuration_NN ,_, Rabin_NN significantly_RB underperforms_VBZ Ganesh_NNP ._.
+This_DT happens_VBZ because_IN of_IN a_DT combination_NN of_IN two_CD reasons_NNS ._.
+First_RB ,_, as_IN outlined_VBN in_IN Section_NN #_# ._.
+#_# ,_, Rabin_NNP finds_VBZ less_RBR similarity_NN as_IN it_PRP does_VBZ not_RB exploit_VB the_DT result_NN ''_'' s_NNS structural_JJ information_NN ._.
+Second_RB ,_, this_DT benchmark_NN contained_VBD some_DT queries_NNS that_WDT generated_VBD large_JJ results_NNS ._.
+In_IN this_DT case_NN ,_, Rabin_NNP ,_, with_IN a_DT small_JJ average_JJ chunk_NN size_NN ,_, generated_VBD a_DT large_JJ number_NN of_IN objects_NNS that_WDT evicted_VBD other_JJ useful_JJ data_NNS from_IN the_DT cache_NN ._.
+In_IN contrast_NN ,_, Ganesh_NNP was_VBD able_JJ to_TO detect_VB these_DT large_JJ rows_NNS and_CC correspondingly_RB increase_VB the_DT size_NN of_IN the_DT chunks_NNS ._.
+This_DT was_VBD confirmed_VBN as_IN cache_NN statistics_NNS showed_VBD that_IN Ganesh_NNP ''_'' s_VBZ hit_NN ratio_NN was_VBD roughly_RB three_CD time_NN that_IN of_IN Rabin_NNP ._.
+Throughput_NN measurements_NNS at_IN ##_CD Mb_NN /_: s_NNS were_VBD similar_JJ with_IN the_DT exception_NN of_IN Rabin_NN ''_'' s_NNS performance_NN with_IN ###_CD test_NN clients_NNS ._.
+In_IN this_DT case_NN ,_, Ganesh_NNP was_VBD not_RB network_NN limited_JJ and_CC ,_, in_IN fact_NN ,_, the_DT throughput_NN was_VBD the_DT same_JJ as_IN ###_CD clients_NNS at_IN #_# Mb_NNP /_: s_NNS ._.
+Rabin_NNP ,_, however_RB ,_, took_VBD advantage_NN of_IN the_DT bandwidth_NN increase_NN from_IN #_# to_TO ##_VB Mb_NN /_: s_NNS to_TO deliver_VB a_DT slightly_RB better_JJR performance_NN ._.
+At_IN ###_CD Mb_NN /_: s_NNS ,_, Rabin_NN ''_'' s_NNS throughput_NN was_VBD almost_RB similar_JJ to_TO Ganesh_NNP as_IN bandwidth_NN was_VBD no_RB longer_RB a_DT bottleneck_NN ._.
+The_DT normalized_VBN response_NN time_NN ,_, presented_VBN in_IN Figure_NNP #_# -LRB-_-LRB- b_NN -RRB-_-RRB- ,_, shows_VBZ similar_JJ trends_NNS ._.
+At_IN #_# and_CC ##_CD Mb_NN /_: s_NNS ,_, the_DT addition_NN of_IN test_NN clients_NNS decreases_VBZ the_DT normalized_VBN response_NN time_NN as_IN Ganesh_NNP ''_'' s_NNS average_JJ response_NN time_NN increases_VBZ faster_JJR than_IN Rabin_NN ''_'' s_NNS ._.
+However_RB ,_, at_IN no_DT point_NN does_VBZ Rabin_NNP outperform_VB Ganesh_NNP ._.
+Note_VB that_DT at_IN ###_CD and_CC ###_CD clients_NNS at_IN ###_CD Mb_NN /_: s_NNS ,_, Rabin_NN does_VBZ have_VB a_DT higher_JJR overhead_NN even_RB when_WRB it_PRP is_VBZ not_RB bandwidth_NN constrained_VBN ._.
+As_IN mentioned_VBN in_IN Section_NN #_# ._.
+#_# ,_, this_DT is_VBZ due_JJ to_TO the_DT fact_NN that_IN Rabin_NNP has_VBZ to_TO hash_VB each_DT ResultSet_NNP twice_RB ._.
+The_DT overhead_JJ disappears_VBZ with_IN ####_CD and_CC ####_CD clients_NNS as_IN the_DT database_NN CPU_NNP is_VBZ saturated_VBN and_CC limits_VBZ the_DT performance_NN of_IN both_DT Ganesh_NNP and_CC Rabin_NNP ._.
+7_CD ._.
+PROXY_NN OVERHEAD_NN In_IN this_DT section_NN ,_, we_PRP address_VBP the_DT third_JJ question_NN raised_VBN in_IN Section_NN #_# :_: Is_VBZ the_DT overhead_NN of_IN Ganesh_NNP ''_'' s_VBZ proxy-based_JJ design_NN acceptable_JJ ?_.
+To_TO answer_VB this_DT question_NN ,_, we_PRP concentrate_VBP on_IN its_PRP$ performance_NN at_IN the_DT higher_JJR bandwidths_NNS ._.
+Our_PRP$ evaluation_NN in_IN Section_NN #_# showed_VBD that_IN Ganesh_NNP ,_, when_WRB compared_VBN to_TO Native_JJ ,_, can_MD deliver_VB a_DT substantial_JJ throughput_NN improvement_NN at_IN lower_JJR bandwidths_NNS ._.
+It_PRP is_VBZ only_RB at_IN higher_JJR bandwidths_NNS that_WDT latency_NN ,_, measured_VBN by_IN the_DT average_JJ response_NN time_NN for_IN a_DT client_NN request_NN ,_, and_CC throughput_NN ,_, measured_VBN by_IN the_DT number_NN of_IN client_NN requests_NNS that_WDT can_MD be_VB serviced_VBN per_IN second_JJ ,_, overheads_NNS would_MD be_VB visible_JJ ._.
+Looking_VBG at_IN the_DT Authoring_NN mix_NN of_IN the_DT original_JJ BBOARD_NNP benchmark_NN ,_, there_EX are_VBP no_DT visible_JJ gains_NNS from_IN Ganesh_NNP at_IN ###_CD Mb_NN /_: s_NNS ._.
+Ganesh_NNP ,_, however_RB ,_, still_RB tracks_VBZ Native_JJ in_IN terms_NNS of_IN throughput_NN ._.
+While_IN the_DT average_JJ response_NN time_NN is_VBZ higher_JJR for_IN Ganesh_NNP ,_, the_DT absolute_JJ difference_NN is_VBZ in_IN between_IN #_# ._.
+##_NN and_CC #_# ._.
+##_NN seconds_NNS and_CC would_MD be_VB imperceptible_JJ to_TO the_DT end-user_NN ._.
+The_DT Browsing_VBG mix_NN shows_VBZ an_DT even_RB smaller_JJR difference_NN in_IN average_JJ response_NN times_NNS ._.
+The_DT results_NNS from_IN the_DT filter_NN variant_NN of_IN the_DT BBOARD_NNP benchmarks_NNS are_VBP similar_JJ ._.
+Even_RB for_IN the_DT AUCTION_NNP benchmark_NN ,_, the_DT difference_NN between_IN Native_JJ and_CC Ganesh_NNP ''_'' s_VBZ response_NN time_NN at_IN 100_CD Mb_NN /_: s_NNS was_VBD never_RB greater_JJR than_IN #_# ._.
+##_NN seconds_NNS ._.
+The_DT only_JJ exception_NN to_TO the_DT above_JJ results_NNS was_VBD seen_VBN in_IN the_DT filter_NN variant_NN of_IN the_DT BBOARD_NNP benchmark_NN where_WRB Ganesh_NNP at_IN ####_CD test_NN clients_NNS added_VBD #_# ._.
+##_NN seconds_NNS to_TO the_DT average_JJ response_NN time_NN ._.
+Thus_RB ,_, even_RB for_IN much_JJ faster_RBR networks_NNS where_WRB the_DT WAN_NNP link_NN is_VBZ not_RB the_DT bottleneck_NN ,_, Ganesh_NNP always_RB delivers_VBZ throughput_NN equivalent_JJ to_TO Native_JJ ._.
+While_IN some_DT extra_JJ latency_NN is_VBZ added_VBN by_IN the_DT proxy-based_JJ design_NN ,_, it_PRP is_VBZ usually_RB imperceptible_JJ ._.
+8_CD ._.
+RELATED_JJ WORK_VBP To_TO the_DT best_JJS of_IN our_PRP$ knowledge_NN ,_, Ganesh_NNP is_VBZ the_DT first_JJ system_NN that_WDT combines_VBZ the_DT use_NN of_IN hash-based_JJ techniques_NNS with_IN caching_NN of_IN database_NN results_VBZ to_TO improve_VB throughput_NN and_CC response_NN times_NNS for_IN applications_NNS with_IN dynamic_JJ content_NN ._.
+We_PRP also_RB believe_VBP that_IN it_PRP is_VBZ also_RB the_DT first_JJ system_NN to_TO demonstrate_VB the_DT benefits_NNS of_IN using_VBG structural_JJ information_NN for_IN WWW_NNP ####_CD /_: Track_NNP :_: Performance_NNP and_CC Scalability_NNP Session_NN :_: Scalable_NNP Systems_NNPS for_IN Dynamic_NNP Content_NNP 318_CD 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 1_CD ._.
+#_# 400_CD 800_CD 1200_CD 1600_CD 400_CD 800_CD 1200_CD 1600_CD 400_CD 800_CD 1200_CD 1600_CD 5_CD Mb_NN /_: s_NNS ##_VBP Mb_NN /_: s_NNS ###_VBP Mb_NN /_: s_NNS Test_VBP Clients_NNS Norm_NNP ._.
+Throughput_NNP 31_CD ._.
+#_# 3_CD ._.
+#_# 2_CD ._.
+#_# 2_CD ._.
+#_# 23_CD ._.
+#_# 32_CD ._.
+#_# 5_CD ._.
+#_# 3_CD ._.
+#_# 1_CD ._.
+#_# 2_CD ._.
+#_# 1_CD ._.
+#_# 1_CD ._.
+#_# 0_CD 5_CD 10_CD 15_CD 20_CD 25_CD 30_CD 35_CD 400_CD 800_CD 1200_CD 1600_CD 400_CD 800_CD 1200_CD 1600_CD 400_CD 800_CD 1200_CD 1600_CD 5_CD Mb_NN /_: s_NNS ##_VBP Mb_NN /_: s_NNS ###_VBP Mb_NN /_: s_NNS Test_VBP Clients_NNS Norm_NNP ._.
+ResponseTime_NN -LRB-_-LRB- a_DT -RRB-_-RRB- Normalized_VBN Throughput_NNP :_: Higher_JJR is_VBZ better_JJR -LRB-_-LRB- b_NN -RRB-_-RRB- Normalized_VBN Response_NN Time_NN :_: Higher_JJR is_VBZ worse_JJR For_IN throughput_NN ,_, a_DT normalized_VBN result_NN greater_JJR than_IN #_# implies_VBZ that_IN Rabin_NNP is_VBZ better_RBR ,_, For_IN response_NN time_NN ,_, a_DT normalized_VBN result_NN greater_JJR than_IN #_# implies_VBZ that_IN Ganesh_NNP is_VBZ better_RBR ._.
+Mean_NN of_IN three_CD trials_NNS ._.
+The_DT maximum_JJ standard_JJ deviation_NN for_IN throughput_NN and_CC response_NN time_NN was_VBD #_# ._.
+#_# %_NN and_CC ##_NN ._.
+#_# %_NN of_IN the_DT corresponding_JJ mean_NN ._.
+Figure_NNP #_# :_: Normalized_VBN Comparison_NN of_IN Ganesh_NNP vs_CC ._.
+Rabin_NN -_: BBOARD_NNP Browsing_NNP Mix_NNP detecting_VBG similarity_NN ._.
+In_IN this_DT section_NN ,_, we_PRP first_RB discuss_VBP alternative_JJ approaches_NNS to_TO caching_VBG dynamic_JJ content_NN and_CC then_RB examine_VB other_JJ uses_NNS of_IN hash-based_JJ primitives_NNS in_IN distributed_VBN systems_NNS ._.
+8_CD ._.
+#_# Caching_VBG Dynamic_NNP Content_NNP At_IN the_DT database_NN layer_NN ,_, a_DT number_NN of_IN systems_NNS have_VBP advocated_VBN middletier_JJ caching_NN where_WRB parts_NNS of_IN the_DT database_NN are_VBP replicated_VBN at_IN the_DT edge_NN or_CC server_NN -LSB-_-LRB- #_# ,_, #_# ,_, ##_NN -RSB-_-RRB- ._.
+These_DT systems_NNS either_CC cache_NN entire_JJ tables_NNS in_IN what_WP is_VBZ essentially_RB a_DT replicated_VBN database_NN or_CC use_NN materialized_VBD views_NNS from_IN previous_JJ query_NN replies_VBZ -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+They_PRP require_VBP tight_JJ integration_NN with_IN the_DT back-end_JJ database_NN to_TO ensure_VB a_DT time_NN bound_VBN on_IN the_DT propagation_NN of_IN updates_NNS ._.
+These_DT systems_NNS are_VBP also_RB usually_RB targeted_VBN towards_IN workloads_NNS that_WDT do_VBP not_RB require_VB strict_JJ consistency_NN and_CC can_MD tolerate_VB stale_JJ data_NNS ._.
+Further_RB ,_, unlike_IN Ganesh_NNP ,_, some_DT of_IN these_DT mid-tier_JJR caching_NN solutions_NNS -LSB-_-LRB- #_# ,_, #_# -RSB-_-RRB- ,_, suffer_VBP from_IN the_DT complexity_NN of_IN having_VBG to_TO participate_VB in_IN query_NN planing_NN and_CC distributed_VBN query_NN processing_NN ._.
+Gao_NNP et_FW al_FW ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- propose_VBP using_VBG a_DT distributed_VBN object_NN replication_NN architecture_NN where_WRB the_DT data_NNS store_NN ''_'' s_NNS consistency_NN requirements_NNS are_VBP adapted_VBN on_IN a_DT per-application_JJ basis_NN ._.
+These_DT solutions_NNS require_VBP substantial_JJ developer_NN resources_NNS and_CC detailed_JJ understanding_NN of_IN the_DT application_NN being_VBG modified_VBN ._.
+While_IN systems_NNS that_WDT attempt_VBP to_TO automate_VB the_DT partitioning_NN and_CC replication_NN of_IN an_DT application_NN ''_'' s_NNS database_NN exist_VBP -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, they_PRP do_VBP not_RB provide_VB full_JJ transaction_NN semantics_NNS ._.
+In_IN comparison_NN ,_, Ganesh_NNP does_VBZ not_RB weaken_VB any_DT of_IN the_DT semantics_NNS provided_VBN by_IN the_DT underlying_VBG database_NN ._.
+Recent_JJ work_NN in_IN the_DT evaluation_NN of_IN edge_NN caching_NN options_NNS for_IN dynamic_JJ web_NN sites_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- has_VBZ suggested_VBN that_IN ,_, without_IN careful_JJ planning_NN ,_, employing_VBG complex_JJ offloading_NN strategies_NNS can_MD hurt_VB performance_NN ._.
+Instead_RB ,_, the_DT work_NN advocates_NNS for_IN an_DT architecture_NN in_IN which_WDT all_DT tiers_NNS except_IN the_DT database_NN should_MD be_VB offloaded_VBN to_TO the_DT edge_NN ._.
+Our_PRP$ evaluation_NN of_IN Ganesh_NNP has_VBZ shown_VBN that_IN it_PRP would_MD benefit_VB these_DT scenarios_NNS ._.
+To_TO improve_VB database_NN scalability_NN ,_, C-JDBC_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, SSS_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, and_CC Ganymed_JJ -LSB-_-LRB- ##_CD -RSB-_-RRB- also_RB advocate_VBP the_DT use_NN of_IN an_DT interposition-based_JJ architecture_NN to_TO transparently_RB cluster_VB and_CC replicate_VB databases_NNS at_IN the_DT middleware_JJ level_NN ._.
+The_DT approaches_NNS of_IN these_DT architectures_NNS and_CC Ganesh_NNP are_VBP complementary_JJ and_CC they_PRP would_MD benefit_VB each_DT other_JJ ._.
+Moving_VBG up_RP to_TO the_DT presentation_NN layer_NN ,_, there_EX has_VBZ been_VBN widespread_JJ adoption_NN of_IN fragment-based_JJ caching_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, which_WDT improves_VBZ cache_NN utilization_NN by_IN separately_RB caching_VBG different_JJ parts_NNS of_IN generated_VBN web_NN pages_NNS ._.
+While_IN fragment-based_JJ caching_NN works_VBZ at_IN the_DT edge_NN ,_, a_DT recent_JJ proposal_NN has_VBZ proposed_VBN moving_VBG web_NN page_NN assembly_NN to_TO the_DT clients_NNS to_TO optimize_VB content_JJ delivery_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+While_IN Ganesh_NNP is_VBZ not_RB used_VBN at_IN the_DT presentation_NN layer_NN ,_, the_DT same_JJ principles_NNS have_VBP been_VBN applied_VBN in_IN Duplicate_NNP Transfer_NN Detection_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- to_TO increase_VB web_NN cache_NN efficiency_NN as_RB well_RB as_IN for_IN web_NN access_NN across_IN bandwidth_NN limited_JJ links_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+8_CD ._.
+#_# Hash-based_JJ Systems_NNPS The_DT past_JJ few_JJ years_NNS have_VBP seen_VBN the_DT emergence_NN of_IN many_JJ systems_NNS that_WDT exploit_VBP hash-based_JJ techniques_NNS ._.
+At_IN the_DT heart_NN of_IN all_PDT these_DT systems_NNS is_VBZ the_DT idea_NN of_IN detecting_VBG similarity_NN in_IN data_NNS without_IN requiring_VBG interpretation_NN of_IN that_DT data_NNS ._.
+This_DT simple_JJ yet_RB elegant_JJ idea_NN relies_VBZ on_IN cryptographic_JJ hashing_VBG ,_, as_IN discussed_VBN earlier_RBR in_IN Section_NNP #_# ._.
+Successful_JJ applications_NNS of_IN this_DT idea_NN span_NN a_DT wide_JJ range_NN of_IN storage_NN systems_NNS ._.
+Examples_NNS include_VBP peer-to-peer_NN backup_NN of_IN personal_JJ computing_NN files_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, storage-efficient_JJ archiving_NN of_IN data_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, and_CC finding_NN similar_JJ files_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Spring_NN and_CC Wetherall_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- apply_VB similar_JJ principles_NNS at_IN the_DT network_NN level_NN ._.
+Using_VBG synchronized_VBN caches_NNS at_IN both_DT ends_NNS of_IN a_DT network_NN link_NN ,_, duplicated_JJ data_NNS is_VBZ replaced_VBN by_IN smaller_JJR tokens_NNS for_IN transmission_NN and_CC then_RB restored_VBD at_IN the_DT remote_JJ end_NN ._.
+This_DT and_CC other_JJ hash-based_JJ systems_NNS such_JJ as_IN the_DT CASPER_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- and_CC LBFS_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- filesystems_NNS ,_, and_CC Layer-2_NN bandwidth_NN optimizers_NNS such_JJ as_IN Riverbed_NNP and_CC Peribit_NNP use_VBP Rabin_NNP fingerprinting_VBG -LSB-_-LRB- ##_CD -RSB-_-RRB- to_TO discover_VB spans_NNS of_IN commonality_NN in_IN data_NNS ._.
+This_DT approach_NN is_VBZ especially_RB useful_JJ when_WRB data_NNS items_NNS are_VBP modified_VBN in-place_JJ through_IN insertions_NNS ,_, deletions_NNS ,_, and_CC updates_NNS ._.
+However_RB ,_, as_IN Section_NN #_# shows_NNS ,_, the_DT performance_NN of_IN this_DT technique_NN can_MD show_VB a_DT dramatic_JJ drop_NN in_IN the_DT presence_NN of_IN data_NNS reordering_NN ._.
+Ganesh_NNP instead_RB uses_VBZ row_NN boundaries_NNS as_IN dividers_NNS for_IN detecting_VBG similarity_NN ._.
+The_DT most_RBS aggressive_JJ use_NN of_IN hash-based_JJ techniques_NNS is_VBZ by_IN systems_NNS that_WDT use_VBP hashes_VBZ as_IN the_DT primary_JJ identifiers_NNS for_IN objects_NNS in_IN persistent_JJ storage_NN ._.
+Storage_NNP systems_NNS such_JJ as_IN CFS_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- and_CC PAST_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- that_WDT have_VBP been_VBN built_VBN using_VBG distributed_VBN hash_NN tables_NNS fall_VBP into_IN this_DT category_NN ._.
+Single_JJ Instance_NNP Storage_NNP -LSB-_-LRB- #_# -RSB-_-RRB- and_CC Venti_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- are_VBP other_JJ examples_NNS of_IN such_JJ systems_NNS ._.
+As_IN discussed_VBN in_IN Section_NN #_# ._.
+#_# ,_, the_DT use_NN of_IN cryptographic_JJ hashes_NNS for_IN addressing_VBG persistent_JJ data_NNS represents_VBZ a_DT deeper_JJR level_NN of_IN faith_NN in_IN their_PRP$ collision-resistance_NN than_IN that_DT assumed_VBN by_IN Ganesh_NNP ._.
+If_IN time_NN reveals_VBZ shortcomings_NNS in_IN the_DT hash_JJ algorithm_NN ,_, the_DT effort_NN involved_VBN in_IN correcting_VBG the_DT flaw_NN is_VBZ much_RB greater_JJR ._.
+In_IN Ganesh_NNP ,_, it_PRP is_VBZ merely_RB a_DT matter_NN of_IN replacing_VBG the_DT hash_JJ algorithm_NN ._.
+9_CD ._.
+CONCLUSION_NN The_DT growing_VBG use_NN of_IN dynamic_JJ web_NN content_NN generated_VBN from_IN relational_JJ databases_NNS places_NNS increased_VBD demands_NNS on_IN WAN_NNP bandwidth_NN ._.
+Traditional_JJ caching_NN solutions_NNS for_IN bandwidth_NN and_CC latency_NN reduction_NN are_VBP often_RB ineffective_JJ for_IN such_JJ content_NN ._.
+This_DT paper_NN shows_VBZ that_IN the_DT impact_NN of_IN WAN_NNP accesses_VBZ to_TO databases_NNS can_MD be_VB substantially_RB reduced_VBN through_IN the_DT Ganesh_NNP architecture_NN without_IN any_DT compromise_NN of_IN the_DT database_NN ''_'' s_NNS strict_JJ consistency_NN semantics_NNS ._.
+The_DT essence_NN of_IN the_DT Ganesh_NNP architecture_NN is_VBZ the_DT use_NN of_IN computation_NN at_IN the_DT edges_NNS to_TO reduce_VB communication_NN through_IN the_DT Internet_NN ._.
+Ganesh_NNP is_VBZ able_JJ to_TO use_VB cryptographic_JJ hashes_NNS to_TO detect_VB similarity_NN with_IN previous_JJ results_NNS and_CC send_VB WWW_NNP ####_CD /_: Track_NNP :_: Performance_NNP and_CC Scalability_NNP Session_NN :_: Scalable_NNP Systems_NNPS for_IN Dynamic_NNP Content_NNP 319_CD compact_JJ recipes_NNS of_IN results_NNS rather_RB than_IN full_JJ results_NNS ._.
+Our_PRP$ design_NN uses_VBZ interposition_NN to_TO achieve_VB complete_JJ transparency_NN :_: clients_NNS ,_, application_NN servers_NNS ,_, and_CC database_NN servers_NNS are_VBP all_DT unaware_JJ of_IN Ganesh_NNP ''_'' s_VBZ presence_NN and_CC require_VB no_DT modification_NN ._.
+Our_PRP$ experimental_JJ evaluation_NN confirms_VBZ that_IN Ganesh_NNP ,_, while_IN conceptually_RB simple_JJ ,_, can_MD be_VB highly_RB effective_JJ in_IN improving_VBG throughput_NN and_CC response_NN time_NN ._.
+Our_PRP$ results_NNS also_RB confirm_VBP that_IN exploiting_VBG the_DT structure_NN present_JJ in_IN database_NN results_VBZ to_TO detect_VB similarity_NN is_VBZ crucial_JJ to_TO this_DT performance_NN improvement_NN ._.
+10_CD ._.
+REFERENCES_NNS -LSB-_-LRB- #_# -RSB-_-RRB- AKELLA_NNP ,_, A_NNP ._.
+,_, SESHAN_NNP ,_, S_NN ._.
+,_, AND_CC SHAIKH_NNP ,_, A_NNP ._.
+An_DT empirical_JJ evaluation_NN of_IN wide-area_JJ internet_NN bottlenecks_NNS ._.
+In_IN Proc_NNP ._.
+3rd_JJ ACM_NN SIGCOMM_NNP Conference_NNP on_IN Internet_NNP Measurement_NNP -LRB-_-LRB- Miami_NNP Beach_NNP ,_, FL_NN ,_, USA_NNP ,_, Oct_NNP ._.
+####_NN -RRB-_-RRB- ,_, pp_NN ._.
+101-114_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- ALTINEL_NNP ,_, M_NN ._.
+,_, BORNH_NN OVD_NN ,_, C_NN ._.
+,_, KRISHNAMURTHY_NNP ,_, S_NN ._.
+,_, MOHAN_NNP ,_, C_NNP ._.
+,_, PIRAHESH_NN ,_, H_NN ._.
+,_, AND_CC REINWALD_NNP ,_, B_NN ._.
+Cache_NN tables_NNS :_: Paving_VBG the_DT way_NN for_IN an_DT adaptive_JJ database_NN cache_NN ._.
+In_IN Proc_NNP ._.
+of_IN 29th_JJ VLDB_NN -LRB-_-LRB- Berlin_NNP ,_, Germany_NNP ,_, ####_CD -RRB-_-RRB- ,_, pp_NN ._.
+718-729_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- ALTINEL_NNP ,_, M_NN ._.
+,_, LUO_NNP ,_, Q_NNP ._.
+,_, KRISHNAMURTHY_NNP ,_, S_NN ._.
+,_, MOHAN_NNP ,_, C_NNP ._.
+,_, PIRAHESH_NN ,_, H_NN ._.
+,_, LINDSAY_NNP ,_, B_NN ._.
+G_NN ._.
+,_, WOO_NNP ,_, H_NN ._.
+,_, AND_CC BROWN_NNP ,_, L_NNP ._.
+Dbcache_NNP :_: Database_NN caching_NN for_IN web_NN application_NN servers_NNS ._.
+In_IN Proc_NNP ._.
+####_CD ACM_JJ SIGMOD_NN -LRB-_-LRB- ####_CD -RRB-_-RRB- ,_, pp_NN ._.
+612-612_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- AMIRI_NNP ,_, K_NNP ._.
+,_, PARK_NN ,_, S_NN ._.
+,_, TEWARI_NNP ,_, R_NN ._.
+,_, AND_CC PADMANABHAN_NNP ,_, S_NN ._.
+Dbproxy_NNP :_: A_NNP dynamic_JJ data_NNS cache_NN for_IN web_NN applications_NNS ._.
+In_IN Proc_NNP ._.
+IEEE_NNP International_NNP Conference_NNP on_IN Data_NNP Engineering_NNP -LRB-_-LRB- ICDE_NN -RRB-_-RRB- -LRB-_-LRB- Mar_NNP ._.
+####_NN -RRB-_-RRB- ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- BLACK_NNP ,_, J_NNP ._.
+Compare-by-hash_JJ :_: A_DT reasoned_VBN analysis_NN ._.
+In_IN Proc_NNP ._.
+2006_CD USENIX_NNP Annual_JJ Technical_NNP Conference_NN -LRB-_-LRB- Boston_NNP ,_, MA_NNP ,_, May_NNP ####_CD -RRB-_-RRB- ,_, pp_NN ._.
+85-90_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- BOLOSKY_NNP ,_, W_NNP ._.
+J_NN ._.
+,_, CORBIN_NNP ,_, S_NN ._.
+,_, GOEBEL_NNP ,_, D_NNP ._.
+,_, ,_, AND_CC DOUCEUR_NN ,_, J_NN ._.
+R_NN ._.
+Single_JJ instance_NN storage_NN in_IN windows_NNS ####_CD ._.
+In_IN Proc_NNP ._.
+4th_JJ USENIX_NNP Windows_NNP Systems_NNPS Symposium_NNP -LRB-_-LRB- Seattle_NNP ,_, WA_NNP ,_, Aug_NNP ._.
+####_NN -RRB-_-RRB- ,_, pp_NN ._.
+13-24_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- BREWER_NNP ,_, E_NNP ._.
+A_DT ._.
+Lessons_NNS from_IN giant-scale_JJ services_NNS ._.
+IEEE_NNP Internet_NNP Computing_NNP #_# ,_, #_# -LRB-_-LRB- ####_CD -RRB-_-RRB- ,_, 46-55_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- BRODER_NNP ,_, A_NNP ._.
+,_, GLASSMAN_NNP ,_, S_NN ._.
+,_, MANASSE_NNP ,_, M_NN ._.
+,_, AND_CC ZWEIG_NNP ,_, G_NNP ._.
+Syntactic_JJ clustering_NN of_IN the_DT web_NN ._.
+In_IN Proc_NNP ._.
+6th_JJ International_NNP WWW_NNP Conference_NNP -LRB-_-LRB- ####_CD -RRB-_-RRB- ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- CECCHET_NNP ,_, E_NNP ._.
+,_, CHANDA_NNP ,_, A_NNP ._.
+,_, ELNIKETY_NN ,_, S_NN ._.
+,_, MARGUERITE_NNP ,_, J_NNP ._.
+,_, AND_CC ZWAENEPOEL_NN ,_, W_NN ._.
+Performance_NNP comparison_NN of_IN middleware_JJ architectures_NNS for_IN generating_VBG dynamic_JJ web_NN content_NN ._.
+In_IN Proc_NNP ._.
+Fourth_JJ ACM_NN /_: IFIP_NN /_: USENIX_NNP International_NNP Middleware_NNP Conference_NNP -LRB-_-LRB- Rio_NNP de_IN Janeiro_NNP ,_, Brazil_NNP ,_, June_NNP ####_CD -RRB-_-RRB- ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- CECCHET_NN ,_, E_NN ._.
+,_, MARGUERITE_NNP ,_, J_NNP ._.
+,_, AND_CC ZWAENEPOEL_NN ,_, W_NN ._.
+C-JDBC_NNP :_: Flexible_JJ database_NN clustering_NN middleware_NN ._.
+In_IN Proc_NNP ._.
+2004_CD USENIX_NNP Annual_JJ Technical_NNP Conference_NN -LRB-_-LRB- Boston_NNP ,_, MA_NNP ,_, June_NNP ####_CD -RRB-_-RRB- ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- COX_NNP ,_, L_NNP ._.
+P_NN ._.
+,_, MURRAY_NNP ,_, C_NNP ._.
+D_NN ._.
+,_, AND_CC NOBLE_NN ,_, B_NN ._.
+D_NN ._.
+Pastiche_NNP :_: Making_VBG backup_NN cheap_JJ and_CC easy_JJ ._.
+In_IN OSDI_NNP :_: Symposium_NNP on_IN Operating_NNP Systems_NNPS Design_NN and_CC Implementation_NN -LRB-_-LRB- ####_CD -RRB-_-RRB- ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- DABEK_NN ,_, F_NN ._.
+,_, KAASHOEK_NNP ,_, M_NN ._.
+F_NN ._.
+,_, KARGER_NNP ,_, D_NNP ._.
+,_, MORRIS_NNP ,_, R_NN ._.
+,_, AND_CC STOICA_NN ,_, I_PRP ._.
+Wide-area_JJ cooperative_JJ storage_NN with_IN CFS_NNP ._.
+In_IN 18th_JJ ACM_NNP Symposium_NNP on_IN Operating_NNP Systems_NNPS Principles_NNS -LRB-_-LRB- Banff_NNP ,_, Canada_NNP ,_, Oct_NNP ._.
+####_NN -RRB-_-RRB- ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- DRUSCHEL_NN ,_, P_NN ._.
+,_, AND_CC ROWSTRON_NN ,_, A_DT ._.
+PAST_NN :_: A_DT large-scale_JJ ,_, persistent_JJ peer-to-peer_JJ storage_NN utility_NN ._.
+In_IN HotOS_NNP VIII_NNP -LRB-_-LRB- Schloss_NNP Elmau_NNP ,_, Germany_NNP ,_, May_NNP ####_CD -RRB-_-RRB- ,_, pp_NN ._.
+75-80_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Edge_NNP side_NN includes_VBZ ._.
+http_NN :_: /_: /_: www_NN ._.
+esi_NNS ._.
+org_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- GAO_NNP ,_, L_NNP ._.
+,_, DAHLIN_NNP ,_, M_NN ._.
+,_, NAYATE_NNP ,_, A_NNP ._.
+,_, ZHENG_NNP ,_, J_NNP ._.
+,_, AND_CC IYENGAR_NN ,_, A_DT ._.
+Application_NN specific_JJ data_NNS replication_NN for_IN edge_NN services_NNS ._.
+In_IN WWW_NNP ''_'' ##_CD :_: Proc_NNP ._.
+Twelfth_NNP International_NNP Conference_NNP on_IN World_NNP Wide_NN Web_NN -LRB-_-LRB- ####_CD -RRB-_-RRB- ,_, pp_NN ._.
+449-460_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- HEMMINGER_NN ,_, S_NN ._.
+Netem_NNP -_: emulating_VBG real_JJ networks_NNS in_IN the_DT lab_NN ._.
+In_IN Proc_NNP ._.
+####_NNP Linux_NNP Conference_NNP Australia_NNP -LRB-_-LRB- Canberra_NNP ,_, Australia_NNP ,_, Apr_NNP ._.
+####_NN -RRB-_-RRB- ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- HENSON_NN ,_, V_NN ._.
+An_DT analysis_NN of_IN compare-by-hash_JJ ._.
+In_IN Proc_NNP ._.
+9th_JJ Workshop_NNP on_IN Hot_NNP Topics_NNPS in_IN Operating_NNP Systems_NNP -LRB-_-LRB- HotOS_NNP IX_CD -RRB-_-RRB- -LRB-_-LRB- May_NNP ####_CD -RRB-_-RRB- ,_, pp_NN ._.
+13-18_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Jmob_NN benchmarks_NNS ._.
+http_NN :_: /_: /_: jmob_NN ._.
+objectweb_NN ._.
+org_NN /_: ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- LABRINIDIS_NN ,_, A_DT ._.
+,_, AND_CC ROUSSOPOULOS_NNS ,_, N_NN ._.
+Balancing_VBG performance_NN and_CC data_NNS freshness_NN in_IN web_NN database_NN servers_NNS ._.
+In_IN Proc_NNP ._.
+29th_JJ VLDB_NN Conference_NN -LRB-_-LRB- Sept_NNP ._.
+####_NN -RRB-_-RRB- ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- LARSON_NN ,_, P_NN ._.
+-_: A_NN ._.
+,_, GOLDSTEIN_NNP ,_, J_NNP ._.
+,_, AND_CC ZHOU_NNP ,_, J_NNP ._.
+Transparent_JJ mid-tier_NN database_NN caching_NN in_IN sql_NN server_NN ._.
+In_IN Proc_NNP ._.
+2003_CD ACM_NNP SIGMOD_NNP -LRB-_-LRB- ####_CD -RRB-_-RRB- ,_, pp_NN ._.
+661-661_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- MANBER_NN ,_, U_NNP ._.
+Finding_VBG similar_JJ files_NNS in_IN a_DT large_JJ file_NN system_NN ._.
+In_IN Proc_NNP ._.
+USENIX_NNP Winter_NNP ####_NNP Technical_NNP Conference_NNP -LRB-_-LRB- San_NNP Fransisco_NNP ,_, CA_NNP ,_, 17-21_CD ####_CD -RRB-_-RRB- ,_, pp_NN ._.
+1-10_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- MANJHI_NNP ,_, A_NNP ._.
+,_, AILAMAKI_NNP ,_, A_NNP ._.
+,_, MAGGS_NN ,_, B_NN ._.
+M_NN ._.
+,_, MOWRY_NNP ,_, T_NN ._.
+C_NN ._.
+,_, OLSTON_NNP ,_, C_NNP ._.
+,_, AND_CC TOMASIC_NN ,_, A_DT ._.
+Simultaneous_JJ scalability_NN and_CC security_NN for_IN data-intensive_JJ web_NN applications_NNS ._.
+In_IN Proc_NNP ._.
+####_CD ACM_JJ SIGMOD_NN -LRB-_-LRB- June_NNP ####_CD -RRB-_-RRB- ,_, pp_NN ._.
+241-252_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- MENEZES_NNP ,_, A_NNP ._.
+J_NN ._.
+,_, VANSTONE_NNP ,_, S_NN ._.
+A_DT ._.
+,_, AND_CC OORSCHOT_NN ,_, P_NN ._.
+C_NN ._.
+V_NN ._.
+Handbook_NN of_IN Applied_NNP Cryptography_NNP ._.
+CRC_NN Press_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- MILLER_NN ,_, R_NN ._.
+B_NN ._.
+Response_NN time_NN in_IN man-computer_NN conversational_JJ transactions_NNS ._.
+In_IN Proc_NNP ._.
+AFIPS_NNP Fall_NN Joint_NNP Computer_NNP Conference_NNP -LRB-_-LRB- ####_CD -RRB-_-RRB- ,_, pp_NN ._.
+267-277_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- MOGUL_NN ,_, J_NN ._.
+C_NN ._.
+,_, CHAN_NNP ,_, Y_NN ._.
+M_NN ._.
+,_, AND_CC KELLY_NN ,_, T_NN ._.
+Design_NN ,_, implementation_NN ,_, and_CC evaluation_NN of_IN duplicate_VB transfer_NN detection_NN in_IN http_NN ._.
+In_IN Proc_NNP ._.
+First_NNP Symposium_NNP on_IN Networked_NNP Systems_NNPS Design_NN and_CC Implementation_NN -LRB-_-LRB- San_NNP Francisco_NNP ,_, CA_NNP ,_, Mar_NNP ._.
+####_NN -RRB-_-RRB- ._.
+-LSB-_-LRB- ##_CD -RSB-_-RRB- MUTHITACHAROEN_NNP ,_, A_NNP ._.
+,_, CHEN_NNP ,_, B_NN ._.
+,_, AND_CC MAZIERES_NNS ,_, D_NN ._.
+A_DT low-bandwidth_JJ network_NN file_NN system_NN ._.
+In_IN Proc_NNP ._.
+18th_JJ ACM_NNP Symposium_NNP on_IN Operating_NNP Systems_NNPS Principles_NNS -LRB-_-LRB- Banff_NNP ,_, Canada_NNP ,_, Oct_NNP ._.
+####_NN -RRB-_-RRB- ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- PFEIFER_NN ,_, D_NN ._.
+,_, AND_CC JAKSCHITSCH_NN ,_, H_NN ._.
+Method-based_JJ caching_NN in_IN multi-tiered_JJ server_NN applications_NNS ._.
+In_IN Proc_NNP ._.
+Fifth_NNP International_NNP Symposium_NNP on_IN Distributed_VBN Objects_NNS and_CC Applications_NNS -LRB-_-LRB- Catania_NNP ,_, Sicily_NNP ,_, Italy_NNP ,_, Nov_NNP ._.
+####_NN -RRB-_-RRB- ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- PLATTNER_NNP ,_, C_NNP ._.
+,_, AND_CC ALONSO_NNP ,_, G_NNP ._.
+Ganymed_NNP :_: Scalable_JJ replication_NN for_IN transactional_JJ web_NN applications_NNS ._.
+In_IN Proc_NNP ._.
+5th_JJ ACM_NN /_: IFIP_NN /_: USENIX_NNP International_NNP Conference_NNP on_IN Middleware_NNP -LRB-_-LRB- ####_CD -RRB-_-RRB- ,_, pp_NN ._.
+155-174_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- QUINLAN_NNP ,_, S_NN ._.
+,_, AND_CC DORWARD_NNP ,_, S_NN ._.
+Venti_NNP :_: A_DT new_JJ approach_NN to_TO archival_JJ storage_NN ._.
+In_IN Proc_NNP ._.
+FAST_RB ####_CD Conference_NN on_IN File_NN and_CC Storage_NNP Technologies_NNP -LRB-_-LRB- ####_CD -RRB-_-RRB- ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- RABIN_NN ,_, M_NN ._.
+Fingerprinting_VBG by_IN random_JJ polynomials_NNS ._.
+In_IN Harvard_NNP University_NNP Center_NNP for_IN Research_NNP in_IN Computing_NNP Technology_NNP Technical_NNP Report_NNP TR-15-81_NN -LRB-_-LRB- ####_CD -RRB-_-RRB- ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- RABINOVICH_NN ,_, M_NN ._.
+,_, XIAO_NNP ,_, Z_NN ._.
+,_, DOUGLIS_NN ,_, F_NN ._.
+,_, AND_CC KALMANEK_NN ,_, C_NN ._.
+Moving_VBG edge_NN side_NN includes_VBZ to_TO the_DT real_JJ edge_NN -_: the_DT clients_NNS ._.
+In_IN Proc_NNP ._.
+4th_JJ USENIX_NNP Symposium_NNP on_IN Internet_NNP Technologies_NNPS and_CC Systems_NNPS -LRB-_-LRB- Seattle_NNP ,_, WA_NNP ,_, Mar_NNP ._.
+####_NN -RRB-_-RRB- ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- REESE_NN ,_, G_NN ._.
+Database_NN Programming_VBG with_IN JDBC_NN and_CC Java_NNP ,_, 1st_CD ed_VBD ._.
+O_NN ''_'' Reilly_NNP ,_, June_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- RHEA_NNP ,_, S_NN ._.
+,_, LIANG_NNP ,_, K_NNP ._.
+,_, AND_CC BREWER_NN ,_, E_NN ._.
+Value-based_JJ web_NN caching_NN ._.
+In_IN Proc_NNP ._.
+Twelfth_NNP International_NNP World_NNP Wide_NN Web_NN Conference_NN -LRB-_-LRB- May_NNP ####_CD -RRB-_-RRB- ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- SIVASUBRAMANIAN_NN ,_, S_NN ._.
+,_, ALONSO_NNP ,_, G_NNP ._.
+,_, PIERRE_NNP ,_, G_NNP ._.
+,_, AND_CC VAN_NNP STEEN_NNP ,_, M_NN ._.
+Globedb_NNP :_: Autonomic_JJ data_NNS replication_NN for_IN web_NN applications_NNS ._.
+In_IN WWW_NNP ''_'' ##_CD :_: Proc_NNP ._.
+14th_JJ International_NNP World-Wide_NNP Web_NN conference_NN -LRB-_-LRB- May_NNP ####_CD -RRB-_-RRB- ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- SPRING_NN ,_, N_NN ._.
+T_NN ._.
+,_, AND_CC WETHERALL_NNP ,_, D_NNP ._.
+A_DT protocol-independent_JJ technique_NN for_IN eliminating_VBG redundant_JJ network_NN traffic_NN ._.
+In_IN Proc_NNP ._.
+of_IN ACM_NNP SIGCOMM_NNP -LRB-_-LRB- Aug_NNP ._.
+####_NN -RRB-_-RRB- ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- TOLIA_NN ,_, N_NN ._.
+,_, HARKES_NNP ,_, J_NNP ._.
+,_, KOZUCH_NN ,_, M_NN ._.
+,_, AND_CC SATYANARAYANAN_NN ,_, M_NN ._.
+Integrating_VBG portable_JJ and_CC distributed_VBN storage_NN ._.
+In_IN Proc_NNP ._.
+3rd_JJ USENIX_NNP Conference_NNP on_IN File_NNP and_CC Storage_NNP Technologies_NNP -LRB-_-LRB- San_NNP Francisco_NNP ,_, CA_NNP ,_, Mar_NNP ._.
+####_NN -RRB-_-RRB- ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- TOLIA_NN ,_, N_NN ._.
+,_, KOZUCH_NN ,_, M_NN ._.
+,_, SATYANARAYANAN_NNP ,_, M_NN ._.
+,_, KARP_NN ,_, B_NN ._.
+,_, PERRIG_NN ,_, A_DT ._.
+,_, AND_CC BRESSOUD_NN ,_, T_NN ._.
+Opportunistic_JJ use_NN of_IN content_NN addressable_JJ storage_NN for_IN distributed_VBN file_NN systems_NNS ._.
+In_IN Proc_NNP ._.
+####_CD USENIX_NNP Annual_JJ Technical_NNP Conference_NN -LRB-_-LRB- San_NNP Antonio_NNP ,_, TX_NNP ,_, June_NNP ####_CD -RRB-_-RRB- ,_, pp_NN ._.
+127-140_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- YUAN_NN ,_, C_NN ._.
+,_, CHEN_NNP ,_, Y_NN ._.
+,_, AND_CC ZHANG_NNP ,_, Z_NN ._.
+Evaluation_NN of_IN edge_NN caching_NN /_: offloading_VBG for_IN dynamic_JJ content_NN delivery_NN ._.
+In_IN WWW_NNP ''_'' ##_CD :_: Proc_NNP ._.
+Twelfth_NNP International_NNP Conference_NNP on_IN World_NNP Wide_NN Web_NN -LRB-_-LRB- ####_CD -RRB-_-RRB- ,_, pp_NN ._.
+461-471_CD ._.
+WWW_NNP ####_CD /_: Track_NNP :_: Performance_NNP and_CC Scalability_NNP Session_NN :_: Scalable_NNP Systems_NNPS for_IN Dynamic_NNP Content_NNP 320_CD

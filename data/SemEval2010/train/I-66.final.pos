@@ -1,0 +1,485 @@
+Letting_VBG loose_RB a_DT SPIDER_NN on_IN a_DT network_NN of_IN POMDPs_NNS :_: Generating_NNP quality_NN guaranteed_VBN policies_NNS Pradeep_NNP Varakantham_NNP ,_, Janusz_NNP Marecki_NNP ,_, Yuichi_NNP Yabu_NNP ,_, Milind_NNP Tambe_NNP ,_, Makoto_NNP Yokoo_NNP University_NNP of_IN Southern_NNP California_NNP ,_, Los_NNP Angeles_NNP ,_, CA_NNP #####_NNP ,_, -LCB-_-LRB- varakant_NN ,_, marecki_NN ,_, tambe_NN -RCB-_-RRB- @_IN usc_NN ._.
+edu_FW Dept_FW ._.
+of_IN Intelligent_NNP Systems_NNPS ,_, Kyushu_NNP University_NNP ,_, Fukuoka_NNP ,_, 812-8581_CD Japan_NNP ,_, yokoo_NNP @_SYM is_VBZ ._.
+kyushu-u_NN ._.
+ac_NN ._.
+jp_NN ABSTRACT_NN Distributed_VBN Partially_RB Observable_JJ Markov_NNP Decision_NNP Problems_NNS -LRB-_-LRB- Distributed_VBN POMDPs_NNS -RRB-_-RRB- are_VBP a_DT popular_JJ approach_NN for_IN modeling_NN multi-agent_JJ systems_NNS acting_VBG in_IN uncertain_JJ domains_NNS ._.
+Given_VBN the_DT significant_JJ complexity_NN of_IN solving_VBG distributed_VBN POMDPs_NNS ,_, particularly_RB as_IN we_PRP scale_VBP up_RP the_DT numbers_NNS of_IN agents_NNS ,_, one_CD popular_JJ approach_NN has_VBZ focused_VBN on_IN approximate_JJ solutions_NNS ._.
+Though_IN this_DT approach_NN is_VBZ efficient_JJ ,_, the_DT algorithms_NNS within_IN this_DT approach_NN do_VBP not_RB provide_VB any_DT guarantees_NNS on_IN solution_NN quality_NN ._.
+A_DT second_JJ less_JJR popular_JJ approach_NN focuses_VBZ on_IN global_JJ optimality_NN ,_, but_CC typical_JJ results_NNS are_VBP available_JJ only_RB for_IN two_CD agents_NNS ,_, and_CC also_RB at_IN considerable_JJ computational_JJ cost_NN ._.
+This_DT paper_NN overcomes_VBZ the_DT limitations_NNS of_IN both_DT these_DT approaches_NNS by_IN providing_VBG SPIDER_NNP ,_, a_DT novel_JJ combination_NN of_IN three_CD key_JJ features_NNS for_IN policy_NN generation_NN in_IN distributed_VBN POMDPs_NNS :_: -LRB-_-LRB- i_LS -RRB-_-RRB- it_PRP exploits_VBZ agent_NN interaction_NN structure_NN given_VBN a_DT network_NN of_IN agents_NNS -LRB-_-LRB- i_FW ._.
+e_LS ._.
+allowing_VBG easier_JJR scale-up_NN to_TO larger_JJR number_NN of_IN agents_NNS -RRB-_-RRB- ;_: -LRB-_-LRB- ii_LS -RRB-_-RRB- it_PRP uses_VBZ a_DT combination_NN of_IN heuristics_NNS to_TO speedup_VB policy_NN search_NN ;_: and_CC -LRB-_-LRB- iii_LS -RRB-_-RRB- it_PRP allows_VBZ quality_NN guaranteed_VBN approximations_NNS ,_, allowing_VBG a_DT systematic_JJ tradeoff_NN of_IN solution_NN quality_NN for_IN time_NN ._.
+Experimental_JJ results_NNS show_VBP orders_NNS of_IN magnitude_NN improvement_NN in_IN performance_NN when_WRB compared_VBN with_IN previous_JJ global_JJ optimal_JJ algorithms_NNS ._.
+Categories_NNS and_CC Subject_NNP Descriptors_NNS I_PRP ._.
+#_# ._.
+##_NN -LSB-_-LRB- Artificial_NNP Intelligence_NNP -RSB-_-RRB- :_: Distributed_VBN Artificial_NNP IntelligenceMulti-agent_NNP Systems_NNP General_NNP Terms_NNS Algorithms_NNS ,_, Theory_NNP 1_CD ._.
+INTRODUCTION_NNP Distributed_VBD Partially_RB Observable_JJ Markov_NNP Decision_NNP Problems_NNS -LRB-_-LRB- Distributed_VBN POMDPs_NNS -RRB-_-RRB- are_VBP emerging_VBG as_IN a_DT popular_JJ approach_NN for_IN modeling_NN sequential_JJ decision_NN making_VBG in_IN teams_NNS operating_VBG under_IN uncertainty_NN -LSB-_-LRB- #_# ,_, #_# ,_, #_# ,_, #_# ,_, ##_NN -RSB-_-RRB- ._.
+The_DT uncertainty_NN arises_VBZ on_IN account_NN of_IN nondeterminism_NN in_IN the_DT outcomes_NNS of_IN actions_NNS and_CC because_IN the_DT world_NN state_NN may_MD only_RB be_VB partially_RB -LRB-_-LRB- or_CC incorrectly_RB -RRB-_-RRB- observable_JJ ._.
+Unfortunately_RB ,_, as_IN shown_VBN by_IN Bernstein_NNP et_FW al_FW ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- ,_, the_DT problem_NN of_IN finding_VBG the_DT optimal_JJ joint_JJ policy_NN for_IN general_JJ distributed_VBN POMDPs_NNS is_VBZ NEXP-Complete_JJ ._.
+Researchers_NNS have_VBP attempted_VBN two_CD different_JJ types_NNS of_IN approaches_NNS towards_IN solving_VBG these_DT models_NNS ._.
+The_DT first_JJ category_NN consists_VBZ of_IN highly_RB efficient_JJ approximate_JJ techniques_NNS ,_, that_WDT may_MD not_RB reach_VB globally_RB optimal_JJ solutions_NNS -LSB-_-LRB- #_# ,_, #_# ,_, ##_NN -RSB-_-RRB- ._.
+The_DT key_JJ problem_NN with_IN these_DT techniques_NNS has_VBZ been_VBN their_PRP$ inability_NN to_TO provide_VB any_DT guarantees_NNS on_IN the_DT quality_NN of_IN the_DT solution_NN ._.
+In_IN contrast_NN ,_, the_DT second_JJ less_JJR popular_JJ category_NN of_IN approaches_NNS has_VBZ focused_VBN on_IN a_DT global_JJ optimal_JJ result_NN -LSB-_-LRB- ##_CD ,_, #_# ,_, ##_NN -RSB-_-RRB- ._.
+Though_IN these_DT approaches_NNS obtain_VB optimal_JJ solutions_NNS ,_, they_PRP typically_RB consider_VBP only_RB two_CD agents_NNS ._.
+Furthermore_RB ,_, they_PRP fail_VBP to_TO exploit_VB structure_NN in_IN the_DT interactions_NNS of_IN the_DT agents_NNS and_CC hence_RB are_VBP severely_RB hampered_VBN with_IN respect_NN to_TO scalability_NN when_WRB considering_VBG more_JJR than_IN two_CD agents_NNS ._.
+To_TO address_VB these_DT problems_NNS with_IN the_DT existing_VBG approaches_NNS ,_, we_PRP propose_VBP approximate_JJ techniques_NNS that_WDT provide_VBP guarantees_NNS on_IN the_DT quality_NN of_IN the_DT solution_NN while_IN focussing_VBG on_IN a_DT network_NN of_IN more_JJR than_IN two_CD agents_NNS ._.
+We_PRP first_RB propose_VBP the_DT basic_JJ SPIDER_NN -LRB-_-LRB- Search_VB for_IN Policies_NNS In_IN Distributed_VBN EnviRonments_NNS -RRB-_-RRB- algorithm_NN ._.
+There_EX are_VBP two_CD key_JJ novel_JJ features_NNS in_IN SPIDER_NNP :_: -LRB-_-LRB- i_LS -RRB-_-RRB- it_PRP is_VBZ a_DT branch_NN and_CC bound_VBD heuristic_NN search_NN technique_NN that_WDT uses_VBZ a_DT MDP-based_JJ heuristic_NN function_NN to_TO search_VB for_IN an_DT optimal_JJ joint_JJ policy_NN ;_: -LRB-_-LRB- ii_LS -RRB-_-RRB- it_PRP exploits_VBZ network_NN structure_NN of_IN agents_NNS by_IN organizing_VBG agents_NNS into_IN a_DT Depth_NNP First_NNP Search_VB -LRB-_-LRB- DFS_NN -RRB-_-RRB- pseudo_NN tree_NN and_CC takes_VBZ advantage_NN of_IN the_DT independence_NN in_IN the_DT different_JJ branches_NNS of_IN the_DT DFS_NN tree_NN ._.
+We_PRP then_RB provide_VBP three_CD enhancements_NNS to_TO improve_VB the_DT efficiency_NN of_IN the_DT basic_JJ SPIDER_NN algorithm_NN while_IN providing_VBG guarantees_NNS on_IN the_DT quality_NN of_IN the_DT solution_NN ._.
+The_DT first_JJ enhancement_NN uses_VBZ abstractions_NNS for_IN speedup_NN ,_, but_CC does_VBZ not_RB sacrifice_VB solution_NN quality_NN ._.
+In_IN particular_JJ ,_, it_PRP initially_RB performs_VBZ branch_NN and_CC bound_VBD search_NN on_IN abstract_JJ policies_NNS and_CC then_RB extends_VBZ to_TO complete_VB policies_NNS ._.
+The_DT second_JJ enhancement_NN obtains_VBZ speedups_NNS by_IN sacrificing_VBG solution_NN quality_NN ,_, but_CC within_IN an_DT input_NN parameter_NN that_WDT provides_VBZ the_DT tolerable_JJ expected_VBN value_NN difference_NN from_IN the_DT optimal_JJ solution_NN ._.
+The_DT third_JJ enhancement_NN is_VBZ again_RB based_VBN on_IN bounding_VBG the_DT search_NN for_IN efficiency_NN ,_, however_RB with_IN a_DT tolerance_NN parameter_NN that_WDT is_VBZ provided_VBN as_IN a_DT percentage_NN of_IN optimal_JJ ._.
+We_PRP experimented_VBD with_IN the_DT sensor_NN network_NN domain_NN presented_VBN in_IN Nair_NNP et_FW al_FW ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- ,_, a_DT domain_NN representative_NN of_IN an_DT important_JJ class_NN of_IN problems_NNS with_IN networks_NNS of_IN agents_NNS working_VBG in_IN uncertain_JJ environments_NNS ._.
+In_IN our_PRP$ experiments_NNS ,_, we_PRP illustrate_VBP that_IN SPIDER_NN dominates_VBZ an_DT existing_VBG global_JJ optimal_JJ approach_NN called_VBD GOA_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, the_DT only_RB known_JJ global_JJ optimal_JJ algorithm_NN with_IN demonstrated_VBN experimental_JJ results_NNS for_IN more_JJR than_IN two_CD agents_NNS ._.
+Furthermore_RB ,_, we_PRP demonstrate_VBP that_IN abstraction_NN improves_VBZ the_DT performance_NN of_IN SPIDER_NN significantly_RB -LRB-_-LRB- while_IN providing_VBG optimal_JJ solutions_NNS -RRB-_-RRB- ._.
+We_PRP finally_RB demonstrate_VBP a_DT key_JJ feature_NN of_IN SPIDER_NNP :_: by_IN utilizing_VBG the_DT approximation_NN enhancements_NNS it_PRP enables_VBZ principled_JJ tradeoffs_NNS in_IN run-time_JJ versus_CC solution_NN quality_NN ._.
+822_CD 978-81-904262-7-5_CD -LRB-_-LRB- RPS_NN -RRB-_-RRB- c_NN ####_CD IFAAMAS_NN 2_CD ._.
+DOMAIN_NN :_: DISTRIBUTED_NNP SENSOR_NNP NETS_NNP Distributed_VBD sensor_NN networks_NNS are_VBP a_DT large_JJ ,_, important_JJ class_NN of_IN domains_NNS that_WDT motivate_VBP our_PRP$ work_NN ._.
+This_DT paper_NN focuses_VBZ on_IN a_DT set_NN of_IN target_NN tracking_NN problems_NNS that_WDT arise_VBP in_IN certain_JJ types_NNS of_IN sensor_NN networks_NNS -LSB-_-LRB- #_# -RSB-_-RRB- first_RB introduced_VBN in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ._.
+Figure_NNP #_# shows_VBZ a_DT specific_JJ problem_NN instance_NN within_IN this_DT type_NN consisting_VBG of_IN three_CD sensors_NNS ._.
+Here_RB ,_, each_DT sensor_NN node_NN can_MD scan_VB in_IN one_CD of_IN four_CD directions_NNS :_: North_NNP ,_, South_NNP ,_, East_NNP or_CC West_NNP -LRB-_-LRB- see_VB Figure_NNP #_# -RRB-_-RRB- ._.
+To_TO track_VB a_DT target_NN and_CC obtain_VB associated_JJ reward_NN ,_, two_CD sensors_NNS with_IN overlapping_VBG scanning_NN areas_NNS must_MD coordinate_VB by_IN scanning_VBG the_DT same_JJ area_NN simultaneously_RB ._.
+In_IN Figure_NNP #_# ,_, to_TO track_VB a_DT target_NN in_IN Loc11_NN ,_, sensor1_NN needs_VBZ to_TO scan_VB East_NNP ''_'' and_CC sensor2_NN needs_VBZ to_TO scan_VB West_NNP ''_'' simultaneously_RB ._.
+Thus_RB ,_, sensors_NNS have_VBP to_TO act_VB in_IN a_DT coordinated_VBN fashion_NN ._.
+We_PRP assume_VBP that_IN there_EX are_VBP two_CD independent_JJ targets_NNS and_CC that_IN each_DT target_NN ''_'' s_NNS movement_NN is_VBZ uncertain_JJ and_CC unaffected_JJ by_IN the_DT sensor_NN agents_NNS ._.
+Based_VBN on_IN the_DT area_NN it_PRP is_VBZ scanning_NN ,_, each_DT sensor_NN receives_VBZ observations_NNS that_WDT can_MD have_VB false_JJ positives_NNS and_CC false_JJ negatives_NNS ._.
+The_DT sensors_NNS ''_'' observations_NNS and_CC transitions_NNS are_VBP independent_JJ of_IN each_DT other_JJ ''_'' s_NNS actions_NNS e_LS ._.
+g_NN ._.
+the_DT observations_NNS that_WDT sensor1_NN receives_VBZ are_VBP independent_JJ of_IN sensor2_NN ''_'' s_NNS actions_NNS ._.
+Each_DT agent_NN incurs_VBZ a_DT cost_NN for_IN scanning_NN whether_IN the_DT target_NN is_VBZ present_JJ or_CC not_RB ,_, but_CC no_DT cost_NN if_IN it_PRP turns_VBZ off_RP ._.
+Given_VBN the_DT sensors_NNS ''_'' observational_JJ uncertainty_NN ,_, the_DT targets_NNS ''_'' uncertain_JJ transitions_NNS and_CC the_DT distributed_VBN nature_NN of_IN the_DT sensor_NN nodes_NNS ,_, these_DT sensor_NN nets_NNS provide_VBP a_DT useful_JJ domains_NNS for_IN applying_VBG distributed_VBN POMDP_NN models_NNS ._.
+Figure_NNP #_# :_: A_DT 3-chain_JJ sensor_NN configuration_NN 3_CD ._.
+BACKGROUND_NN 3_CD ._.
+#_# Model_NNP :_: Network_NNP Distributed_VBN POMDP_NN The_DT ND-POMDP_NN model_NN was_VBD introduced_VBN in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ,_, motivated_VBN by_IN domains_NNS such_JJ as_IN the_DT sensor_NN networks_NNS introduced_VBN in_IN Section_NN #_# ._.
+It_PRP is_VBZ defined_VBN as_IN the_DT tuple_NN S_NN ,_, A_NN ,_, P_NN ,_, ,_, O_NN ,_, R_NN ,_, b_NN ,_, where_WRB S_NN =_JJ 1inSi_NN Su_NN is_VBZ the_DT set_NN of_IN world_NN states_NNS ._.
+Si_NNP refers_VBZ to_TO the_DT set_NN of_IN local_JJ states_NNS of_IN agent_NN i_FW and_CC Su_FW is_VBZ the_DT set_NN of_IN unaffectable_JJ states_NNS ._.
+Unaffectable_JJ state_NN refers_VBZ to_TO that_DT part_NN of_IN the_DT world_NN state_NN that_WDT can_MD not_RB be_VB affected_VBN by_IN the_DT agents_NNS ''_'' actions_NNS ,_, e_LS ._.
+g_NN ._.
+environmental_JJ factors_NNS like_IN target_NN locations_NNS that_IN no_DT agent_NN can_MD control_VB ._.
+A_DT =_JJ 1inAi_NN is_VBZ the_DT set_NN of_IN joint_JJ actions_NNS ,_, where_WRB Ai_NNP is_VBZ the_DT set_NN of_IN action_NN for_IN agent_NN i_FW ._.
+ND-POMDP_NN assumes_VBZ transition_NN independence_NN ,_, where_WRB the_DT transition_NN function_NN is_VBZ defined_VBN as_IN P_NN -LRB-_-LRB- s_NNS ,_, a_DT ,_, s_NNS -RRB-_-RRB- =_JJ Pu_NN -LRB-_-LRB- su_FW ,_, su_FW -RRB-_-RRB- 1in_JJ Pi_NN -LRB-_-LRB- si_NN ,_, su_FW ,_, ai_VBP ,_, si_VBP -RRB-_-RRB- ,_, where_WRB a_DT =_JJ a1_NN ,_, ..._: ,_, an_DT is_VBZ the_DT joint_JJ action_NN performed_VBN in_IN state_NN s_NNS =_JJ s1_NN ,_, ..._: ,_, sn_NN ,_, su_NN and_CC s_NN =_JJ s1_NN ,_, ..._: ,_, sn_NN ,_, su_FW is_VBZ the_DT resulting_VBG state_NN ._.
+=_JJ 1ini_NNS is_VBZ the_DT set_NN of_IN joint_JJ observations_NNS where_WRB i_FW is_VBZ the_DT set_NN of_IN observations_NNS for_IN agents_NNS i_LS ._.
+Observational_JJ independence_NN is_VBZ assumed_VBN in_IN ND-POMDPs_NNS i_LS ._.
+e_LS ._.
+,_, the_DT joint_JJ observation_NN function_NN is_VBZ defined_VBN as_IN O_NN -LRB-_-LRB- s_NNS ,_, a_DT ,_, -RRB-_-RRB- =_JJ 1in_JJ Oi_NN -LRB-_-LRB- si_NN ,_, su_FW ,_, ai_VBP ,_, i_LS -RRB-_-RRB- ,_, where_WRB s_NNS =_JJ s1_NN ,_, ..._: ,_, sn_NN ,_, su_FW is_VBZ the_DT world_NN state_NN that_WDT results_VBZ from_IN the_DT agents_NNS performing_VBG a_DT =_JJ a1_NN ,_, ..._: ,_, an_DT in_IN the_DT previous_JJ state_NN ,_, and_CC =_JJ #_# ,_, ..._: ,_, n_NN is_VBZ the_DT observation_NN received_VBN in_IN state_NN s_NNS ._.
+This_DT implies_VBZ that_IN each_DT agent_NN ''_'' s_NNS observation_NN depends_VBZ only_RB on_IN the_DT unaffectable_JJ state_NN ,_, its_PRP$ local_JJ action_NN and_CC on_IN its_PRP$ resulting_VBG local_JJ state_NN ._.
+The_DT reward_NN function_NN ,_, R_NN ,_, is_VBZ defined_VBN as_IN R_NN -LRB-_-LRB- s_NNS ,_, a_DT -RRB-_-RRB- =_JJ l_NN Rl_NN -LRB-_-LRB- sl1_NN ,_, ..._: ,_, slr_NN ,_, su_FW ,_, al1_NN ,_, ..._: ,_, alr_NN -RRB-_-RRB- ,_, where_WRB each_DT l_NN could_MD refer_VB to_TO any_DT sub-group_NN of_IN agents_NNS and_CC r_NN =_JJ |_CD l_NN |_NN ._.
+Based_VBN on_IN the_DT reward_NN function_NN ,_, an_DT interaction_NN hypergraph_NN is_VBZ constructed_VBN ._.
+A_DT hyper-link_JJ ,_, l_NN ,_, exists_VBZ between_IN a_DT subset_NN of_IN agents_NNS for_IN all_DT Rl_NN that_WDT comprise_VBP R_NN ._.
+The_DT interaction_NN hypergraph_NN is_VBZ defined_VBN as_IN G_NN =_JJ -LRB-_-LRB- Ag_NN ,_, E_NN -RRB-_-RRB- ,_, where_WRB the_DT agents_NNS ,_, Ag_NN ,_, are_VBP the_DT vertices_NNS and_CC E_NN =_JJ -LCB-_-LRB- l_NN |_CD l_NN Ag_NN Rl_NN is_VBZ a_DT component_NN of_IN R_NN -RCB-_-RRB- are_VBP the_DT edges_NNS ._.
+The_DT initial_JJ belief_NN state_NN -LRB-_-LRB- distribution_NN over_IN the_DT initial_JJ state_NN -RRB-_-RRB- ,_, b_NN ,_, is_VBZ defined_VBN as_IN b_NN -LRB-_-LRB- s_NNS -RRB-_-RRB- =_JJ bu_NN -LRB-_-LRB- su_NN -RRB-_-RRB- 1in_JJ bi_NN -LRB-_-LRB- si_NN -RRB-_-RRB- ,_, where_WRB bu_NN and_CC bi_NN refer_VBP to_TO the_DT distribution_NN over_IN initial_JJ unaffectable_JJ state_NN and_CC agent_NN i_FW ''_'' s_VBZ initial_JJ belief_NN state_NN ,_, respectively_RB ._.
+The_DT goal_NN in_IN ND-POMDP_NN is_VBZ to_TO compute_VB the_DT joint_JJ policy_NN =_JJ #_# ,_, ..._: ,_, n_NN that_WDT maximizes_VBZ team_NN ''_'' s_NNS expected_VBN reward_NN over_IN a_DT finite_JJ horizon_NN T_NN starting_VBG from_IN the_DT belief_NN state_NN b_NN ._.
+An_DT ND-POMDP_NN is_VBZ similar_JJ to_TO an_DT n-ary_JJ Distributed_VBN Constraint_NN Optimization_NN Problem_NNP -LRB-_-LRB- DCOP_NNP -RRB-_-RRB- -LSB-_-LRB- #_# ,_, ##_NN -RSB-_-RRB- where_WRB the_DT variable_NN at_IN each_DT node_NN represents_VBZ the_DT policy_NN selected_VBN by_IN an_DT individual_JJ agent_NN ,_, i_FW with_IN the_DT domain_NN of_IN the_DT variable_NN being_VBG the_DT set_NN of_IN all_DT local_JJ policies_NNS ,_, i_FW ._.
+The_DT reward_NN component_NN Rl_NN where_WRB |_NN l_NN |_NN =_JJ #_# can_MD be_VB thought_VBN of_IN as_IN a_DT local_JJ constraint_NN while_IN the_DT reward_NN component_NN Rl_NN where_WRB l_NN >_JJR #_# corresponds_VBZ to_TO a_DT non-local_JJ constraint_NN in_IN the_DT constraint_NN graph_NN ._.
+3_LS ._.
+#_# Algorithm_NNP :_: Global_NNP Optimal_JJ Algorithm_NN -LRB-_-LRB- GOA_NN -RRB-_-RRB- In_IN previous_JJ work_NN ,_, GOA_NNP has_VBZ been_VBN defined_VBN as_IN a_DT global_JJ optimal_JJ algorithm_NN for_IN ND-POMDPs_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+We_PRP will_MD use_VB GOA_NNP in_IN our_PRP$ experimental_JJ comparisons_NNS ,_, since_IN GOA_NNP is_VBZ a_DT state-of-the-art_JJ global_JJ optimal_JJ algorithm_NN ,_, and_CC in_IN fact_NN the_DT only_JJ one_CD with_IN experimental_JJ results_NNS available_JJ for_IN networks_NNS of_IN more_JJR than_IN two_CD agents_NNS ._.
+GOA_NN borrows_VBZ from_IN a_DT global_JJ optimal_JJ DCOP_NN algorithm_NN called_VBN DPOP_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+GOA_NN ''_'' s_NNS message_NN passing_VBG follows_VBZ that_DT of_IN DPOP_NN ._.
+The_DT first_JJ phase_NN is_VBZ the_DT UTIL_NNP propagation_NN ,_, where_WRB the_DT utility_NN messages_NNS ,_, in_IN this_DT case_NN values_NNS of_IN policies_NNS ,_, are_VBP passed_VBN up_RP from_IN the_DT leaves_NNS to_TO the_DT root_NN ._.
+Value_NN for_IN a_DT policy_NN at_IN an_DT agent_NN is_VBZ defined_VBN as_IN the_DT sum_NN of_IN best_JJS response_NN values_NNS from_IN its_PRP$ children_NNS and_CC the_DT joint_JJ policy_NN reward_NN associated_VBN with_IN the_DT parent_NN policy_NN ._.
+Thus_RB ,_, given_VBN a_DT policy_NN for_IN a_DT parent_NN node_NN ,_, GOA_NN requires_VBZ an_DT agent_NN to_TO iterate_VB through_IN all_DT its_PRP$ policies_NNS ,_, finding_VBG the_DT best_JJS response_NN policy_NN and_CC returning_VBG the_DT value_NN to_TO the_DT parent_NN -_: while_IN at_IN the_DT parent_NN node_NN ,_, to_TO find_VB the_DT best_JJS policy_NN ,_, an_DT agent_NN requires_VBZ its_PRP$ children_NNS to_TO return_VB their_PRP$ best_JJS responses_NNS to_TO each_DT of_IN its_PRP$ policies_NNS ._.
+This_DT UTIL_NN propagation_NN process_NN is_VBZ repeated_VBN at_IN each_DT level_NN in_IN the_DT tree_NN ,_, until_IN the_DT root_NN exhausts_VBZ all_DT its_PRP$ policies_NNS ._.
+In_IN the_DT second_JJ phase_NN of_IN VALUE_NNP propagation_NN ,_, where_WRB the_DT optimal_JJ policies_NNS are_VBP passed_VBN down_RP from_IN the_DT root_NN till_IN the_DT leaves_NNS ._.
+GOA_NN takes_VBZ advantage_NN of_IN the_DT local_JJ interactions_NNS in_IN the_DT interaction_NN graph_NN ,_, by_IN pruning_NN out_IN unnecessary_JJ joint_JJ policy_NN evaluations_NNS -LRB-_-LRB- associated_VBN with_IN nodes_NNS not_RB connected_VBN directly_RB in_IN the_DT tree_NN -RRB-_-RRB- ._.
+Since_IN the_DT interaction_NN graph_NN captures_VBZ all_PDT the_DT reward_NN interactions_NNS among_IN agents_NNS and_CC as_IN this_DT algorithm_NN iterates_VBZ through_IN all_PDT the_DT relevant_JJ joint_JJ policy_NN evaluations_NNS ,_, this_DT algorithm_NN yields_VBZ a_DT globally_RB optimal_JJ solution_NN ._.
+4_LS ._.
+SPIDER_NN As_IN mentioned_VBN in_IN Section_NN #_# ._.
+#_# ,_, an_DT ND-POMDP_NN can_MD be_VB treated_VBN as_IN a_DT DCOP_NN ,_, where_WRB the_DT goal_NN is_VBZ to_TO compute_VB a_DT joint_JJ policy_NN that_WDT maximizes_VBZ the_DT overall_JJ joint_JJ reward_NN ._.
+The_DT brute-force_JJ technique_NN for_IN computing_VBG an_DT optimal_JJ policy_NN would_MD be_VB to_TO examine_VB the_DT expected_VBN values_NNS for_IN all_DT possible_JJ joint_JJ policies_NNS ._.
+The_DT key_JJ idea_NN in_IN SPIDER_NN is_VBZ to_TO avoid_VB computation_NN of_IN expected_VBN values_NNS for_IN the_DT entire_JJ space_NN of_IN joint_JJ policies_NNS ,_, by_IN utilizing_VBG upper_JJ bounds_NNS on_IN the_DT expected_VBN values_NNS of_IN policies_NNS and_CC the_DT interaction_NN structure_NN of_IN the_DT agents_NNS ._.
+Akin_JJ to_TO some_DT of_IN the_DT algorithms_NNS for_IN DCOP_NN -LSB-_-LRB- #_# ,_, ##_NN -RSB-_-RRB- ,_, SPIDER_NN has_VBZ a_DT pre-processing_JJ step_NN that_WDT constructs_NNS a_DT DFS_NN tree_NN corresponding_VBG to_TO the_DT given_VBN interaction_NN structure_NN ._.
+Note_VB that_IN these_DT DFS_NN trees_NNS are_VBP pseudo_JJ trees_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- that_WDT allow_VBP links_NNS between_IN ancestors_NNS and_CC children_NNS ._.
+We_PRP employ_VBP the_DT Maximum_NNP Constrained_NNP Node_NNP -LRB-_-LRB- MCN_NNP -RRB-_-RRB- heuristic_NN used_VBN in_IN the_DT DCOP_NN algorithm_NN ,_, ADOPT_VBP -LSB-_-LRB- #_# -RSB-_-RRB- ,_, however_RB other_JJ heuristics_NNS -LRB-_-LRB- such_JJ as_IN MLSP_NN heuristic_NN from_IN -LSB-_-LRB- #_# -RSB-_-RRB- -RRB-_-RRB- can_MD also_RB be_VB employed_VBN ._.
+MCN_NNP heuristic_NN tries_VBZ to_TO place_VB agents_NNS with_IN more_JJR number_NN of_IN constraints_NNS at_IN the_DT top_NN of_IN the_DT tree_NN ._.
+This_DT tree_NN governs_VBZ how_WRB the_DT search_NN for_IN the_DT optimal_JJ joint_JJ polThe_NNP Sixth_NNP Intl_NNP ._.
+Joint_NNP Conf_NNP ._.
+on_IN Autonomous_NNP Agents_NNPS and_CC Multi-Agent_NNP Systems_NNP -LRB-_-LRB- AAMAS_NNP ##_CD -RRB-_-RRB- ###_CD icy_NN proceeds_NNS in_IN SPIDER_NN ._.
+The_DT algorithms_NNS presented_VBN in_IN this_DT paper_NN are_VBP easily_RB extendable_JJ to_TO hyper-trees_NNS ,_, however_RB for_IN expository_JJ purposes_NNS ,_, we_PRP assume_VBP binary_JJ trees_NNS ._.
+SPIDER_NN is_VBZ an_DT algorithm_NN for_IN centralized_JJ planning_NN and_CC distributed_VBN execution_NN in_IN distributed_VBN POMDPs_NNS ._.
+In_IN this_DT paper_NN ,_, we_PRP employ_VBP the_DT following_VBG notation_NN to_TO denote_VB policies_NNS and_CC expected_VBN values_NNS :_: Ancestors_NNS -LRB-_-LRB- i_LS -RRB-_-RRB- agents_NNS from_IN i_FW to_TO the_DT root_NN -LRB-_-LRB- not_RB including_VBG i_LS -RRB-_-RRB- ._.
+Tree_NN -LRB-_-LRB- i_LS -RRB-_-RRB- agents_NNS in_IN the_DT sub-tree_JJ -LRB-_-LRB- not_RB including_VBG i_LS -RRB-_-RRB- for_IN which_WDT i_FW is_VBZ the_DT root_NN ._.
+root_NN +_CC joint_JJ policy_NN of_IN all_DT agents_NNS ._.
+i_LS +_CC joint_JJ policy_NN of_IN all_DT agents_NNS in_IN Tree_NN -LRB-_-LRB- i_LS -RRB-_-RRB- i_LS ._.
+i_FW joint_JJ policy_NN of_IN agents_NNS that_WDT are_VBP in_IN Ancestors_NNS -LRB-_-LRB- i_LS -RRB-_-RRB- ._.
+i_LS policy_NN of_IN the_DT ith_JJ agent_NN ._.
+v_LS -LSB-_-LRB- i_FW ,_, i_FW -RSB-_-RRB- upper_JJ bound_VBN on_IN the_DT expected_VBN value_NN for_IN i_FW +_CC given_VBN i_FW and_CC policies_NNS of_IN ancestor_NN agents_NNS i_LS ._.
+e_LS ._.
+i_LS ._.
+vj_NN -LSB-_-LRB- i_FW ,_, i_FW -RSB-_-RRB- upper_JJ bound_VBN on_IN the_DT expected_VBN value_NN for_IN i_FW +_CC from_IN the_DT jth_NN child_NN ._.
+v_LS -LSB-_-LRB- i_FW ,_, i_FW -RSB-_-RRB- expected_VBN value_NN for_IN i_FW given_VBN policies_NNS of_IN ancestor_NN agents_NNS ,_, i_FW ._.
+v_LS -LSB-_-LRB- i_FW +_CC ,_, i_FW -RSB-_-RRB- expected_VBN value_NN for_IN i_FW +_CC given_VBN policies_NNS of_IN ancestor_NN agents_NNS ,_, i_FW ._.
+vj_NN -LSB-_-LRB- i_FW +_CC ,_, i_FW -RSB-_-RRB- expected_VBN value_NN for_IN i_FW +_CC from_IN the_DT jth_NN child_NN ._.
+Figure_NNP #_# :_: Execution_NN of_IN SPIDER_NN ,_, an_DT example_NN 4_CD ._.
+#_# Outline_NN of_IN SPIDER_NNP SPIDER_NNP is_VBZ based_VBN on_IN the_DT idea_NN of_IN branch_NN and_CC bound_VBD search_NN ,_, where_WRB the_DT nodes_NNS in_IN the_DT search_NN tree_NN represent_VBP partial_JJ /_: complete_JJ joint_JJ policies_NNS ._.
+Figure_NNP #_# shows_VBZ an_DT example_NN search_NN tree_NN for_IN the_DT SPIDER_NN algorithm_NN ,_, using_VBG an_DT example_NN of_IN the_DT three_CD agent_NN chain_NN ._.
+Before_IN SPIDER_NN begins_VBZ its_PRP$ search_NN we_PRP create_VBP a_DT DFS_NN tree_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+pseudo_NN tree_NN -RRB-_-RRB- from_IN the_DT three_CD agent_NN chain_NN ,_, with_IN the_DT middle_JJ agent_NN as_IN the_DT root_NN of_IN this_DT tree_NN ._.
+SPIDER_NN exploits_VBZ the_DT structure_NN of_IN this_DT DFS_NN tree_NN while_IN engaging_VBG in_IN its_PRP$ search_NN ._.
+Note_VB that_IN in_IN our_PRP$ example_NN figure_NN ,_, each_DT agent_NN is_VBZ assigned_VBN a_DT policy_NN with_IN T_NN =_JJ #_# ._.
+Thus_RB ,_, each_DT rounded_VBD rectange_NN -LRB-_-LRB- search_NN tree_NN node_NN -RRB-_-RRB- indicates_VBZ a_DT partial_JJ /_: complete_JJ joint_JJ policy_NN ,_, a_DT rectangle_NN indicates_VBZ an_DT agent_NN and_CC the_DT ovals_NNS internal_JJ to_TO an_DT agent_NN show_VBP its_PRP$ policy_NN ._.
+Heuristic_JJ or_CC actual_JJ expected_VBN value_NN for_IN a_DT joint_JJ policy_NN is_VBZ indicated_VBN in_IN the_DT top_JJ right_NN corner_NN of_IN the_DT rounded_VBN rectangle_NN ._.
+If_IN the_DT number_NN is_VBZ italicized_VBN and_CC underlined_VBN ,_, it_PRP implies_VBZ that_IN the_DT actual_JJ expected_VBN value_NN of_IN the_DT joint_JJ policy_NN is_VBZ provided_VBN ._.
+SPIDER_NN begins_VBZ with_IN no_DT policy_NN assigned_VBN to_TO any_DT of_IN the_DT agents_NNS -LRB-_-LRB- shown_VBN in_IN the_DT level_NN #_# of_IN the_DT search_NN tree_NN -RRB-_-RRB- ._.
+Level_NN #_# of_IN the_DT search_NN tree_NN indicates_VBZ that_IN the_DT joint_JJ policies_NNS are_VBP sorted_VBN based_VBN on_IN upper_JJ bounds_NNS computed_VBN for_IN root_NN agent_NN ''_'' s_NNS policies_NNS ._.
+Level_NN #_# shows_VBZ one_CD SPIDER_NN search_NN node_NN with_IN a_DT complete_JJ joint_JJ policy_NN -LRB-_-LRB- a_DT policy_NN assigned_VBN to_TO each_DT of_IN the_DT agents_NNS -RRB-_-RRB- ._.
+The_DT expected_VBN value_NN for_IN this_DT joint_JJ policy_NN is_VBZ used_VBN to_TO prune_VB out_RP the_DT nodes_NNS in_IN level_NN #_# -LRB-_-LRB- the_DT ones_NNS with_IN upper_JJ bounds_NNS <_VBG ###_CD -RRB-_-RRB- When_WRB creating_VBG policies_NNS for_IN each_DT non-leaf_JJ agent_NN i_FW ,_, SPIDER_NN potentially_RB performs_VBZ two_CD steps_NNS :_: 1_CD ._.
+Obtaining_VBG upper_JJ bounds_NNS and_CC sorting_NN :_: In_IN this_DT step_NN ,_, agent_NN i_FW computes_VBZ upper_JJ bounds_NNS on_IN the_DT expected_VBN values_NNS ,_, v_LS -LSB-_-LRB- i_FW ,_, i_FW -RSB-_-RRB- of_IN the_DT joint_JJ policies_NNS i_FW +_CC corresponding_VBG to_TO each_DT of_IN its_PRP$ policy_NN i_FW and_CC fixed_VBN ancestor_NN policies_NNS ._.
+An_DT MDP_NN based_VBN heuristic_NN is_VBZ used_VBN to_TO compute_VB these_DT upper_JJ bounds_NNS on_IN the_DT expected_VBN values_NNS ._.
+Detailed_JJ description_NN about_IN this_DT MDP_NN heuristic_NN is_VBZ provided_VBN in_IN Section_NN #_# ._.
+#_# ._.
+All_DT policies_NNS of_IN agent_NN i_FW ,_, i_FW are_VBP then_RB sorted_VBN based_VBN on_IN these_DT upper_JJ bounds_NNS -LRB-_-LRB- also_RB referred_VBN to_TO as_IN heuristic_NN values_NNS henceforth_VBP -RRB-_-RRB- in_IN descending_VBG order_NN ._.
+Exploration_NN of_IN these_DT policies_NNS -LRB-_-LRB- in_IN step_NN #_# below_IN -RRB-_-RRB- are_VBP performed_VBN in_IN this_DT descending_VBG order_NN ._.
+As_IN indicated_VBN in_IN the_DT level_NN #_# of_IN the_DT search_NN tree_NN -LRB-_-LRB- of_IN Figure_NNP #_# -RRB-_-RRB- ,_, all_PDT the_DT joint_JJ policies_NNS are_VBP sorted_VBN based_VBN on_IN the_DT heuristic_NN values_NNS ,_, indicated_VBD in_IN the_DT top_JJ right_NN corner_NN of_IN each_DT joint_JJ policy_NN ._.
+The_DT intuition_NN behind_IN sorting_VBG and_CC then_RB exploring_VBG policies_NNS in_IN descending_VBG order_NN of_IN upper_JJ bounds_NNS ,_, is_VBZ that_IN the_DT policies_NNS with_IN higher_JJR upper_JJ bounds_NNS could_MD yield_VB joint_JJ policies_NNS with_IN higher_JJR expected_VBN values_NNS ._.
+2_LS ._.
+Exploration_NN and_CC Pruning_NN :_: Exploration_NN implies_VBZ computing_VBG the_DT best_JJS response_NN joint_JJ policy_NN i_FW +_CC ,_, corresponding_VBG to_TO fixed_VBN ancestor_NN policies_NNS of_IN agent_NN i_FW ,_, i_FW ._.
+This_DT is_VBZ performed_VBN by_IN iterating_VBG through_IN all_DT policies_NNS of_IN agent_NN i_FW i_FW ._.
+e_LS ._.
+i_LS and_CC summing_VBG two_CD quantities_NNS for_IN each_DT policy_NN :_: -LRB-_-LRB- i_LS -RRB-_-RRB- the_DT best_JJS response_NN for_IN all_DT of_IN i_FW ''_'' s_VBZ children_NNS -LRB-_-LRB- obtained_VBN by_IN performing_VBG steps_NNS #_# and_CC #_# at_IN each_DT of_IN the_DT child_NN nodes_NNS -RRB-_-RRB- ;_: -LRB-_-LRB- ii_LS -RRB-_-RRB- the_DT expected_VBN value_NN obtained_VBN by_IN i_FW for_IN fixed_JJ policies_NNS of_IN ancestors_NNS ._.
+Thus_RB ,_, exploration_NN of_IN a_DT policy_NN i_FW yields_NNS actual_JJ expected_VBN value_NN of_IN a_DT joint_JJ policy_NN ,_, i_FW +_CC represented_VBN as_IN v_LS -LSB-_-LRB- i_FW +_CC ,_, i_FW -RSB-_-RRB- ._.
+The_DT policy_NN with_IN the_DT highest_JJS expected_VBN value_NN is_VBZ the_DT best_JJS response_NN policy_NN ._.
+Pruning_NN refers_VBZ to_TO avoiding_VBG exploring_VBG all_DT policies_NNS -LRB-_-LRB- or_CC computing_VBG expected_VBN values_NNS -RRB-_-RRB- at_IN agent_NN i_FW by_IN using_VBG the_DT current_JJ best_JJS expected_VBN value_NN ,_, vmax_NN -LSB-_-LRB- i_FW +_CC ,_, i_FW -RSB-_-RRB- ._.
+Henceforth_NNP ,_, this_DT vmax_NN -LSB-_-LRB- i_FW +_CC ,_, i_FW -RSB-_-RRB- will_MD be_VB referred_VBN to_TO as_IN threshold_NN ._.
+A_DT policy_NN ,_, i_FW need_MD not_RB be_VB explored_VBN if_IN the_DT upper_JJ bound_VBN for_IN that_DT policy_NN ,_, v_LS -LSB-_-LRB- i_FW ,_, i_FW -RSB-_-RRB- is_VBZ less_JJR than_IN the_DT threshold_NN ._.
+This_DT is_VBZ because_IN the_DT expected_VBN value_NN for_IN the_DT best_JJS joint_JJ policy_NN attainable_JJ for_IN that_DT policy_NN will_MD be_VB less_JJR than_IN the_DT threshold_NN ._.
+On_IN the_DT other_JJ hand_NN ,_, when_WRB considering_VBG a_DT leaf_NN agent_NN ,_, SPIDER_NN computes_VBZ the_DT best_JJS response_NN policy_NN -LRB-_-LRB- and_CC consequently_RB its_PRP$ expected_VBN value_NN -RRB-_-RRB- corresponding_VBG to_TO fixed_VBN policies_NNS of_IN its_PRP$ ancestors_NNS ,_, i_FW ._.
+This_DT is_VBZ accomplished_VBN by_IN computing_VBG expected_VBN values_NNS for_IN each_DT of_IN the_DT policies_NNS -LRB-_-LRB- corresponding_VBG to_TO fixed_VBN policies_NNS of_IN ancestors_NNS -RRB-_-RRB- and_CC selecting_VBG the_DT highest_JJS expected_VBN value_NN policy_NN ._.
+In_IN Figure_NNP #_# ,_, SPIDER_NN assigns_VBZ best_JJS response_NN policies_NNS to_TO leaf_NN agents_NNS at_IN level_NN #_# ._.
+The_DT policy_NN for_IN the_DT left_JJ leaf_NN agent_NN is_VBZ to_TO perform_VB action_NN East_NNP at_IN each_DT time_NN step_NN in_IN the_DT policy_NN ,_, while_IN the_DT policy_NN for_IN the_DT right_JJ leaf_NN agent_NN is_VBZ to_TO perform_VB Off_IN at_IN each_DT time_NN step_NN ._.
+These_DT best_JJS response_NN policies_NNS from_IN the_DT leaf_NN agents_NNS yield_VBP an_DT actual_JJ expected_VBN value_NN of_IN ###_CD for_IN the_DT complete_JJ joint_JJ policy_NN ._.
+Algorithm_NN #_# provides_VBZ the_DT pseudo_NN code_NN for_IN SPIDER_NN ._.
+This_DT algorithm_NN outputs_VBZ the_DT best_JJS joint_JJ policy_NN ,_, i_FW +_CC ,_, -LRB-_-LRB- with_IN an_DT expected_VBN value_NN greater_JJR than_IN threshold_NN -RRB-_-RRB- for_IN the_DT agents_NNS in_IN Tree_NN -LRB-_-LRB- i_LS -RRB-_-RRB- ._.
+Lines_NNP 3-8_CD compute_VB the_DT best_JJS response_NN policy_NN of_IN a_DT leaf_NN agent_NN i_FW ,_, while_IN lines_NNS 9-23_CD computes_VBZ the_DT best_JJS response_NN joint_JJ policy_NN for_IN agents_NNS in_IN Tree_NN -LRB-_-LRB- i_LS -RRB-_-RRB- ._.
+This_DT best_JJS response_NN computation_NN for_IN a_DT non-leaf_JJ agent_NN i_FW includes_VBZ :_: -LRB-_-LRB- a_LS -RRB-_-RRB- Sorting_VBG of_IN policies_NNS -LRB-_-LRB- in_IN descending_VBG order_NN -RRB-_-RRB- based_VBN on_IN heuristic_NN values_NNS on_IN line_NN ##_NN ;_: -LRB-_-LRB- b_LS -RRB-_-RRB- Computing_NNP best_JJS response_NN policies_NNS at_IN each_DT of_IN the_DT children_NNS for_IN fixed_JJ policies_NNS of_IN agent_NN i_FW in_IN lines_NNS 16-20_CD ;_: and_CC -LRB-_-LRB- c_LS -RRB-_-RRB- Maintaining_VBG 824_CD The_DT Sixth_NNP Intl_NNP ._.
+Joint_NNP Conf_NNP ._.
+on_IN Autonomous_NNP Agents_NNPS and_CC Multi-Agent_NNP Systems_NNP -LRB-_-LRB- AAMAS_NNP ##_CD -RRB-_-RRB- Algorithm_NNP #_# SPIDER_NN -LRB-_-LRB- i_FW ,_, i_FW ,_, threshold_NN -RRB-_-RRB- 1_CD :_: i_FW +_CC ,_, null_JJ 2_CD :_: i_FW GET-ALL-POLICIES_NN -LRB-_-LRB- horizon_NN ,_, Ai_NNP ,_, i_LS -RRB-_-RRB- 3_CD :_: if_IN IS-LEAF_NN -LRB-_-LRB- i_LS -RRB-_-RRB- then_RB 4_CD :_: for_IN all_DT i_FW i_FW do_VBP 5_CD :_: v_LS -LSB-_-LRB- i_FW ,_, i_FW -RSB-_-RRB- JOINT-REWARD_NN -LRB-_-LRB- i_FW ,_, i_LS -RRB-_-RRB- 6_CD :_: if_IN v_LS -LSB-_-LRB- i_FW ,_, i_FW -RSB-_-RRB- >_JJR threshold_NN then_RB 7_CD :_: i_FW +_CC ,_, i_FW 8_CD :_: threshold_NN v_LS -LSB-_-LRB- i_FW ,_, i_FW -RSB-_-RRB- 9_CD :_: else_RB 10_CD :_: children_NNS CHILDREN_NNS -LRB-_-LRB- i_LS -RRB-_-RRB- 11_CD :_: i_FW UPPER-BOUND-SORT_NN -LRB-_-LRB- i_FW ,_, i_FW ,_, i_LS -RRB-_-RRB- 12_CD :_: for_IN all_DT i_FW i_FW do_VBP 13_CD :_: i_FW +_CC i_FW 14_CD :_: if_IN v_LS -LSB-_-LRB- i_FW ,_, i_FW -RSB-_-RRB- <_JJR threshold_NN then_RB 15_CD :_: Go_VB to_TO line_NN ##_NN 16_CD :_: for_IN all_DT j_NN children_NNS do_VBP 17_CD :_: jThres_NNS threshold_NN v_LS -LSB-_-LRB- i_FW ,_, i_FW -RSB-_-RRB- kchildren_NNS ,_, k_NN =_JJ j_NN vk_NN -LSB-_-LRB- i_FW ,_, i_FW -RSB-_-RRB- 18_CD :_: j_NN +_CC ,_, SPIDER_NN -LRB-_-LRB- j_NN ,_, i_FW i_FW ,_, jThres_NNS -RRB-_-RRB- 19_CD :_: i_FW +_CC i_FW +_CC j_FW +_CC ,_, 20_CD :_: vj_NN -LSB-_-LRB- i_FW ,_, i_FW -RSB-_-RRB- v_LS -LSB-_-LRB- j_NN +_CC ,_, ,_, i_FW i_FW -RSB-_-RRB- 21_CD :_: if_IN v_LS -LSB-_-LRB- i_FW +_CC ,_, i_FW -RSB-_-RRB- >_JJR threshold_NN then_RB 22_CD :_: threshold_NN v_LS -LSB-_-LRB- i_FW +_CC ,_, i_FW -RSB-_-RRB- 23_CD :_: i_FW +_CC ,_, i_FW +_CC 24_CD :_: return_NN i_FW +_CC ,_, Algorithm_NNP #_# UPPER-BOUND-SORT_NN -LRB-_-LRB- i_FW ,_, i_FW ,_, i_LS -RRB-_-RRB- 1_CD :_: children_NNS CHILDREN_NNS -LRB-_-LRB- i_LS -RRB-_-RRB- 2_CD :_: i_FW null_JJ /_: *_SYM Stores_NNPS the_DT sorted_VBN list_NN *_SYM /_: 3_CD :_: for_IN all_DT i_FW i_FW do_VBP 4_CD :_: v_LS -LSB-_-LRB- i_FW ,_, i_FW -RSB-_-RRB- JOINT-REWARD_NN -LRB-_-LRB- i_FW ,_, i_LS -RRB-_-RRB- 5_CD :_: for_IN all_DT j_NN children_NNS do_VBP 6_CD :_: vj_NN -LSB-_-LRB- i_FW ,_, i_FW -RSB-_-RRB- UPPER-BOUND_NN -LRB-_-LRB- i_FW ,_, j_NN ,_, i_FW i_FW -RRB-_-RRB- 7_CD :_: v_LS -LSB-_-LRB- i_FW ,_, i_FW -RSB-_-RRB- +_CC vj_NN -LSB-_-LRB- i_FW ,_, i_FW -RSB-_-RRB- 8_CD :_: i_LS INSERT-INTO-SORTED_NN -LRB-_-LRB- i_FW ,_, i_LS -RRB-_-RRB- 9_CD :_: return_NN i_FW best_JJS expected_VBN value_NN ,_, joint_JJ policy_NN in_IN lines_NNS 21-23_CD ._.
+Algorithm_NN #_# provides_VBZ the_DT pseudo_NN code_NN for_IN sorting_VBG policies_NNS based_VBN on_IN the_DT upper_JJ bounds_NNS on_IN the_DT expected_VBN values_NNS of_IN joint_JJ policies_NNS ._.
+Expected_VBN value_NN for_IN an_DT agent_NN i_FW consists_VBZ of_IN two_CD parts_NNS :_: value_NN obtained_VBN from_IN ancestors_NNS and_CC value_NN obtained_VBN from_IN its_PRP$ children_NNS ._.
+Line_NNP #_# computes_VBZ the_DT expected_VBN value_NN obtained_VBN from_IN ancestors_NNS of_IN the_DT agent_NN -LRB-_-LRB- using_VBG JOINT-REWARD_NN function_NN -RRB-_-RRB- ,_, while_IN lines_NNS 5-7_CD compute_VBP the_DT heuristic_NN value_NN from_IN the_DT children_NNS ._.
+The_DT sum_NN of_IN these_DT two_CD parts_NNS yields_VBZ an_DT upper_JJ bound_VBN on_IN the_DT expected_VBN value_NN for_IN agent_NN i_FW ,_, and_CC line_NN #_# of_IN the_DT algorithm_NN sorts_NNS the_DT policies_NNS based_VBN on_IN these_DT upper_JJ bounds_NNS ._.
+4_LS ._.
+#_# MDP_NN based_VBN heuristic_NN function_NN The_DT heuristic_NN function_NN quickly_RB provides_VBZ an_DT upper_JJ bound_VBN on_IN the_DT expected_VBN value_NN obtainable_JJ from_IN the_DT agents_NNS in_IN Tree_NN -LRB-_-LRB- i_LS -RRB-_-RRB- ._.
+The_DT subtree_NN of_IN agents_NNS is_VBZ a_DT distributed_VBN POMDP_NN in_IN itself_PRP and_CC the_DT idea_NN here_RB is_VBZ to_TO construct_VB a_DT centralized_JJ MDP_NN corresponding_VBG to_TO the_DT -LRB-_-LRB- sub-tree_JJ -RRB-_-RRB- distributed_VBN POMDP_NN and_CC obtain_VB the_DT expected_VBN value_NN of_IN the_DT optimal_JJ policy_NN for_IN this_DT centralized_JJ MDP_NN ._.
+To_TO reiterate_VB this_DT in_IN terms_NNS of_IN the_DT agents_NNS in_IN DFS_NN tree_NN interaction_NN structure_NN ,_, we_PRP assume_VBP full_JJ observability_NN for_IN the_DT agents_NNS in_IN Tree_NN -LRB-_-LRB- i_LS -RRB-_-RRB- and_CC for_IN fixed_JJ policies_NNS of_IN the_DT agents_NNS in_IN -LCB-_-LRB- Ancestors_NNS -LRB-_-LRB- i_LS -RRB-_-RRB- i_FW -RCB-_-RRB- ,_, we_PRP compute_VBP the_DT joint_JJ value_NN v_LS -LSB-_-LRB- i_FW +_CC ,_, i_FW -RSB-_-RRB- ._.
+We_PRP use_VBP the_DT following_VBG notation_NN for_IN presenting_VBG the_DT equations_NNS for_IN computing_VBG upper_JJ bounds_NNS /_: heuristic_NN values_NNS -LRB-_-LRB- for_IN agents_NNS i_FW and_CC k_NN -RRB-_-RRB- :_: Let_VB Ei_NNP denote_VB the_DT set_NN of_IN links_NNS between_IN agents_NNS in_IN -LCB-_-LRB- Ancestors_NNS -LRB-_-LRB- i_LS -RRB-_-RRB- i_FW -RCB-_-RRB- and_CC Tree_NN -LRB-_-LRB- i_LS -RRB-_-RRB- ,_, Ei_NN +_CC denote_VBP the_DT set_NN of_IN links_NNS between_IN agents_NNS in_IN Tree_NN -LRB-_-LRB- i_LS -RRB-_-RRB- ._.
+Also_RB ,_, if_IN l_NN Ei_NN ,_, then_RB l1_NN is_VBZ the_DT agent_NN in_IN -LCB-_-LRB- Ancestors_NNS -LRB-_-LRB- i_LS -RRB-_-RRB- i_FW -RCB-_-RRB- and_CC l2_NN is_VBZ the_DT agent_NN in_IN Tree_NN -LRB-_-LRB- i_LS -RRB-_-RRB- ,_, that_WDT l_NN connects_VBZ together_RB ._.
+We_PRP first_RB compact_JJ the_DT standard_JJ notation_NN :_: ot_NN k_NN =_JJ Ok_NN -LRB-_-LRB- st_NN +_CC #_# k_NN ,_, st_NN +_CC #_# u_FW ,_, k_NN -LRB-_-LRB- t_NN k_NN -RRB-_-RRB- ,_, t_NN +_CC #_# k_NN -RRB-_-RRB- -LRB-_-LRB- #_# -RRB-_-RRB- pt_NN k_NN =_JJ Pk_NN -LRB-_-LRB- st_NN k_NN ,_, st_NN u_NN ,_, k_NN -LRB-_-LRB- t_NN k_NN -RRB-_-RRB- ,_, st_NN +_CC #_# k_NN -RRB-_-RRB- ot_NN k_NN pt_NN u_NN =_JJ P_NN -LRB-_-LRB- st_NN u_NN ,_, st_NN +_CC #_# u_FW -RRB-_-RRB- st_NN l_NN =_JJ st_NN l1_NN ,_, st_NN l2_NN ,_, st_NN u_NN ;_: t_NN l_NN =_JJ t_NN l1_NN ,_, t_NN l2_NN rt_NN l_NN =_JJ Rl_NN -LRB-_-LRB- st_NN l_NN ,_, l1_NN -LRB-_-LRB- t_NN l1_NN -RRB-_-RRB- ,_, l2_NN -LRB-_-LRB- t_NN l2_NN -RRB-_-RRB- -RRB-_-RRB- vt_NN l_NN =_JJ V_NN t_NN l_NN -LRB-_-LRB- st_NN l_NN ,_, st_NN u_NN ,_, t_NN l1_NN ,_, t_NN l2_NN -RRB-_-RRB- Depending_VBG on_IN the_DT location_NN of_IN agent_NN k_NN in_IN the_DT agent_NN tree_NN we_PRP have_VBP the_DT following_VBG cases_NNS :_: IF_IN k_NN -LCB-_-LRB- Ancestors_NNS -LRB-_-LRB- i_LS -RRB-_-RRB- i_FW -RCB-_-RRB- ,_, pt_NN k_NN =_JJ pt_NN k_NN ,_, -LRB-_-LRB- #_# -RRB-_-RRB- IF_IN k_NN Tree_NN -LRB-_-LRB- i_LS -RRB-_-RRB- ,_, pt_NN k_NN =_JJ Pk_NN -LRB-_-LRB- st_NN k_NN ,_, st_NN u_NN ,_, k_NN -LRB-_-LRB- t_NN k_NN -RRB-_-RRB- ,_, st_NN +_CC #_# k_NN -RRB-_-RRB- IF_IN l_NN Ei_NN ,_, rt_NN l_NN =_JJ max_NN -LCB-_-LRB- al2_NN -RCB-_-RRB- Rl_NN -LRB-_-LRB- st_NN l_NN ,_, l1_NN -LRB-_-LRB- t_NN l1_NN -RRB-_-RRB- ,_, al2_NN -RRB-_-RRB- IF_IN l_NN Ei_NN +_CC ,_, rt_NN l_NN =_JJ max_NN -LCB-_-LRB- al1_NN ,_, al2_NN -RCB-_-RRB- Rl_NN -LRB-_-LRB- st_NN l_NN ,_, al1_NN ,_, al2_NN -RRB-_-RRB- The_DT value_NN function_NN for_IN an_DT agent_NN i_FW executing_VBG the_DT joint_JJ policy_NN i_FW +_CC at_IN time_NN #_# is_VBZ provided_VBN by_IN the_DT equation_NN :_: V_NNP #_# i_FW +_CC -LRB-_-LRB- s1_NN ,_, #_# -RRB-_-RRB- =_JJ lEi_NN v1_NN l_NN +_CC lEi_NN +_CC v1_NN l_NN -LRB-_-LRB- #_# -RRB-_-RRB- where_WRB v1_NN l_NN =_JJ r1_NN l_NN +_CC l_NN ,_, s_VBZ p1_NN l1_NN p1_NN l2_NN p1_NN u_FW v_LS l_NN Algorithm_NN #_# UPPER-BOUND_NN -LRB-_-LRB- i_FW ,_, j_NN ,_, j_NN -RRB-_-RRB- 1_CD :_: val_NN #_# 2_CD :_: for_IN all_DT l_NN Ej_NN Ej_NN +_CC do_VBP 3_CD :_: if_IN l_NN Ej_NN then_RB l1_RB 4_CD :_: for_IN all_DT s0_NN l_NN do_VBP 5_CD :_: val_NN +_CC startBel_NN -LSB-_-LRB- s0_NN l_NN -RSB-_-RRB- UPPER-BOUND-TIME_NN -LRB-_-LRB- i_FW ,_, s0_NN l_NN ,_, j_NN ,_, l1_NN ,_, -RRB-_-RRB- 6_CD :_: return_NN val_NN Algorithm_NN #_# UPPER-BOUND-TIME_NN -LRB-_-LRB- i_FW ,_, st_NN l_NN ,_, j_NN ,_, l1_NN ,_, t_NN l1_NN -RRB-_-RRB- 1_CD :_: maxV_NN al_NNP 2_CD :_: for_IN all_DT al1_NN ,_, al2_NN do_VBP 3_CD :_: if_IN l_NN Ei_NN and_CC l_NN Ej_NN then_RB al1_RB l1_NN -LRB-_-LRB- t_NN l1_NN -RRB-_-RRB- 4_CD :_: val_NN GET-REWARD_NN -LRB-_-LRB- st_NN l_NN ,_, al1_NN ,_, al2_NN -RRB-_-RRB- 5_CD :_: if_IN t_NN <_JJR i_LS ._.
+horizon_NN #_# then_RB 6_CD :_: for_IN all_DT st_NN +_CC #_# l_NN ,_, t_NN +_CC #_# l1_CD do_VBP 7_CD :_: futV_NN alpt_NN u_NN pt_NN l1_NN pt_NN l2_NN 8_CD :_: futV_NN al_NNP UPPER-BOUND-TIME_NNP -LRB-_-LRB- st_NN +_CC #_# l_NN ,_, j_NN ,_, l1_NN ,_, t_NN l1_NN t_NN +_CC #_# l1_NN -RRB-_-RRB- 9_CD :_: val_NN +_CC futV_NN al_NNP 10_CD :_: if_IN val_NN >_JJR maxV_NN al_NNP then_RB maxV_NN al_NNP val_NNP 11_CD :_: return_NN maxV_NN al_NNP Upper_NNP bound_VBD on_IN the_DT expected_VBN value_NN for_IN a_DT link_NN is_VBZ computed_VBN by_IN modifying_VBG the_DT equation_NN #_# to_TO reflect_VB the_DT full_JJ observability_NN assumption_NN ._.
+This_DT involves_VBZ removing_VBG the_DT observational_JJ probability_NN term_NN for_IN agents_NNS in_IN Tree_NN -LRB-_-LRB- i_LS -RRB-_-RRB- and_CC maximizing_VBG the_DT future_JJ value_NN v_LS l_NN over_IN the_DT actions_NNS of_IN those_DT agents_NNS -LRB-_-LRB- in_IN Tree_NN -LRB-_-LRB- i_LS -RRB-_-RRB- -RRB-_-RRB- ._.
+Thus_RB ,_, the_DT equation_NN for_IN the_DT The_DT Sixth_NNP Intl_NNP ._.
+Joint_NNP Conf_NNP ._.
+on_IN Autonomous_NNP Agents_NNPS and_CC Multi-Agent_NNP Systems_NNP -LRB-_-LRB- AAMAS_NNP ##_CD -RRB-_-RRB- ###_CD computation_NN of_IN the_DT upper_JJ bound_VBN on_IN a_DT link_NN l_NN ,_, is_VBZ as_IN follows_VBZ :_: IF_IN l_NN Ei_NN ,_, v1_NN l_NN =_JJ r1_NN l_NN +_CC max_NN al2_NN l1_NN ,_, s_VBZ l_NN p1_NN l1_NN p1_NN l2_NN p1_NN u_FW v_LS l_NN IF_IN l_NN Ei_NN +_CC ,_, v1_NN l_NN =_JJ r1_NN l_NN +_CC max_NN al1_NN ,_, al2_NN s_NNS l_NN p1_NN l1_NN p1_NN l2_NN p1_NN u_FW v_LS l_NN Algorithm_NN #_# and_CC Algorithm_NNP #_# provide_VBP the_DT algorithm_NN for_IN computing_VBG upper_JJ bound_VBN for_IN child_NN j_NN of_IN agent_NN i_FW ,_, using_VBG the_DT equations_NNS descirbed_VBN above_IN ._.
+While_IN Algorithm_NN #_# computes_VBZ the_DT upper_JJ bound_VBN on_IN a_DT link_NN given_VBN the_DT starting_VBG state_NN ,_, Algorithm_NNP #_# sums_NNS the_DT upper_JJ bound_VBN values_NNS computed_VBD over_IN each_DT of_IN the_DT links_NNS in_IN Ei_NN Ei_NN +_CC ._.
+4_LS ._.
+#_# Abstraction_NNP Algorithm_NNP #_# SPIDER-ABS_NN -LRB-_-LRB- i_FW ,_, i_FW ,_, threshold_NN -RRB-_-RRB- 1_CD :_: i_FW +_CC ,_, null_JJ 2_CD :_: i_FW GET-POLICIES_NN -LRB-_-LRB- <_JJR >_JJR ,_, #_# -RRB-_-RRB- 3_CD :_: if_IN IS-LEAF_NN -LRB-_-LRB- i_LS -RRB-_-RRB- then_RB 4_CD :_: for_IN all_DT i_FW i_FW do_VBP 5_CD :_: absHeuristic_JJ GET-ABS-HEURISTIC_NN -LRB-_-LRB- i_FW ,_, i_LS -RRB-_-RRB- 6_CD :_: absHeuristic_NNP -LRB-_-LRB- timeHorizon_NNP i_LS ._.
+horizon_NN -RRB-_-RRB- 7_CD :_: if_IN i_FW ._.
+horizon_NN =_JJ timeHorizon_NN and_CC i_LS ._.
+absNodes_NN =_JJ #_# then_RB 8_CD :_: v_LS -LSB-_-LRB- i_FW ,_, i_FW -RSB-_-RRB- JOINT-REWARD_NN -LRB-_-LRB- i_FW ,_, i_LS -RRB-_-RRB- 9_CD :_: if_IN v_LS -LSB-_-LRB- i_FW ,_, i_FW -RSB-_-RRB- >_JJR threshold_NN then_RB 10_CD :_: i_FW +_CC ,_, i_FW ;_: threshold_NN v_LS -LSB-_-LRB- i_FW ,_, i_FW -RSB-_-RRB- 11_CD :_: else_RB if_IN v_LS -LSB-_-LRB- i_FW ,_, i_FW -RSB-_-RRB- +_CC absHeuristic_JJ >_JJR threshold_NN then_RB 12_CD :_: i_FW EXTEND-POLICY_NN -LRB-_-LRB- i_FW ,_, i_FW ._.
+absNodes_NNS +_CC #_# -RRB-_-RRB- 13_CD :_: i_FW +_CC INSERT-SORTED-POLICIES_NN -LRB-_-LRB- i_LS -RRB-_-RRB- 14_CD :_: REMOVE_VB -LRB-_-LRB- i_LS -RRB-_-RRB- 15_CD :_: else_RB 16_CD :_: children_NNS CHILDREN_NNS -LRB-_-LRB- i_LS -RRB-_-RRB- 17_CD :_: i_FW UPPER-BOUND-SORT_NN -LRB-_-LRB- i_FW ,_, i_FW ,_, i_LS -RRB-_-RRB- 18_CD :_: for_IN all_DT i_FW i_FW do_VBP 19_CD :_: i_FW +_CC i_FW 20_CD :_: absHeuristic_JJ GET-ABS-HEURISTIC_NN -LRB-_-LRB- i_FW ,_, i_LS -RRB-_-RRB- 21_CD :_: absHeuristic_NNP -LRB-_-LRB- timeHorizon_NNP i_LS ._.
+horizon_NN -RRB-_-RRB- 22_CD :_: if_IN i_FW ._.
+horizon_NN =_JJ timeHorizon_NN and_CC i_LS ._.
+absNodes_NN =_JJ #_# then_RB 23_CD :_: if_IN v_LS -LSB-_-LRB- i_FW ,_, i_FW -RSB-_-RRB- <_JJR threshold_NN and_CC i_LS ._.
+absNodes_NN =_JJ #_# then_RB 24_CD :_: Go_VB to_TO line_NN ##_NN 25_CD :_: for_IN all_DT j_NN children_NNS do_VBP 26_CD :_: jThres_NNS threshold_NN v_LS -LSB-_-LRB- i_FW ,_, i_FW -RSB-_-RRB- kchildren_NNS ,_, k_NN =_JJ j_NN vk_NN -LSB-_-LRB- i_FW ,_, i_FW -RSB-_-RRB- 27_CD :_: j_NN +_CC ,_, SPIDER_NN -LRB-_-LRB- j_NN ,_, i_FW i_FW ,_, jThres_NNS -RRB-_-RRB- 28_CD :_: i_FW +_CC i_FW +_CC j_FW +_CC ,_, ;_: vj_NN -LSB-_-LRB- i_FW ,_, i_FW -RSB-_-RRB- v_LS -LSB-_-LRB- j_NN +_CC ,_, ,_, i_FW i_FW -RSB-_-RRB- 29_CD :_: if_IN v_LS -LSB-_-LRB- i_FW +_CC ,_, i_FW -RSB-_-RRB- >_JJR threshold_NN then_RB 30_CD :_: threshold_NN v_LS -LSB-_-LRB- i_FW +_CC ,_, i_FW -RSB-_-RRB- ;_: i_LS +_CC ,_, i_FW +_CC 31_CD :_: else_RB if_IN v_LS -LSB-_-LRB- i_FW +_CC ,_, i_FW -RSB-_-RRB- +_CC absHeuristic_JJ >_JJR threshold_NN then_RB 32_CD :_: i_FW EXTEND-POLICY_NN -LRB-_-LRB- i_FW ,_, i_FW ._.
+absNodes_NNS +_CC #_# -RRB-_-RRB- 33_CD :_: i_FW +_CC INSERT-SORTED-POLICIES_NN -LRB-_-LRB- i_LS -RRB-_-RRB- 34_CD :_: REMOVE_VB -LRB-_-LRB- i_LS -RRB-_-RRB- 35_CD :_: return_NN i_FW +_CC ,_, In_IN SPIDER_NN ,_, the_DT exploration_NN /_: pruning_NN phase_NN can_MD only_RB begin_VB after_IN the_DT heuristic_NN -LRB-_-LRB- or_CC upper_JJ bound_VBN -RRB-_-RRB- computation_NN and_CC sorting_VBG for_IN the_DT policies_NNS has_VBZ ended_VBN ._.
+We_PRP provide_VBP an_DT approach_NN to_TO possibly_RB circumvent_VB the_DT exploration_NN of_IN a_DT group_NN of_IN policies_NNS based_VBN on_IN heuristic_NN computation_NN for_IN one_CD abstract_JJ policy_NN ,_, thus_RB leading_VBG to_TO an_DT improvement_NN in_IN runtime_NN performance_NN -LRB-_-LRB- without_IN loss_NN in_IN solution_NN quality_NN -RRB-_-RRB- ._.
+The_DT important_JJ steps_NNS in_IN this_DT technique_NN are_VBP defining_VBG the_DT abstract_JJ policy_NN and_CC how_WRB heuristic_NN values_NNS are_VBP computated_VBN for_IN the_DT abstract_JJ policies_NNS ._.
+In_IN this_DT paper_NN ,_, we_PRP propose_VBP two_CD types_NNS of_IN abstraction_NN :_: 1_CD ._.
+Horizon_NNP Based_VBD Abstraction_NN -LRB-_-LRB- HBA_NN -RRB-_-RRB- :_: Here_RB ,_, the_DT abstract_JJ policy_NN is_VBZ defined_VBN as_IN a_DT shorter_JJR horizon_NN policy_NN ._.
+It_PRP represents_VBZ a_DT group_NN of_IN longer_JJR horizon_NN policies_NNS that_WDT have_VBP the_DT same_JJ actions_NNS as_IN the_DT abstract_JJ policy_NN for_IN times_NNS less_JJR than_IN or_CC equal_JJ to_TO the_DT horizon_NN of_IN the_DT abstract_JJ policy_NN ._.
+In_IN Figure_NNP #_# -LRB-_-LRB- a_DT -RRB-_-RRB- ,_, a_DT T_NN =_JJ #_# abstract_JJ policy_NN that_WDT performs_VBZ East_NNP action_NN ,_, represents_VBZ a_DT group_NN of_IN T_NN =_JJ #_# policies_NNS ,_, that_IN perform_VBP East_NNP in_IN the_DT first_JJ time_NN step_NN ._.
+For_IN HBA_NNP ,_, there_EX are_VBP two_CD parts_NNS to_TO heuristic_NN computation_NN :_: -LRB-_-LRB- a_LS -RRB-_-RRB- Computing_NNP the_DT upper_JJ bound_VBN for_IN the_DT horizon_NN of_IN the_DT abstract_JJ policy_NN ._.
+This_DT is_VBZ same_JJ as_IN the_DT heuristic_NN computation_NN defined_VBN by_IN the_DT GETHEURISTIC_NNP -LRB-_-LRB- -RRB-_-RRB- algorithm_NN for_IN SPIDER_NNP ,_, however_RB with_IN a_DT shorter_JJR time_NN horizon_NN -LRB-_-LRB- horizon_NN of_IN the_DT abstract_JJ policy_NN -RRB-_-RRB- ._.
+-LRB-_-LRB- b_NN -RRB-_-RRB- Computing_NNP the_DT maximum_NN possible_JJ reward_NN that_WDT can_MD be_VB accumulated_VBN in_IN one_CD time_NN step_NN -LRB-_-LRB- using_VBG GET-ABS-HEURISTIC_NN -LRB-_-LRB- -RRB-_-RRB- -RRB-_-RRB- and_CC multiplying_VBG it_PRP by_IN the_DT number_NN of_IN time_NN steps_NNS to_TO time_NN horizon_NN ._.
+This_DT maximum_NN possible_JJ reward_NN -LRB-_-LRB- for_IN one_CD time_NN step_NN -RRB-_-RRB- is_VBZ obtained_VBN by_IN iterating_VBG through_IN all_PDT the_DT actions_NNS of_IN all_PDT the_DT agents_NNS in_IN Tree_NN -LRB-_-LRB- i_LS -RRB-_-RRB- and_CC computing_VBG the_DT maximum_NN joint_JJ reward_NN for_IN any_DT joint_JJ action_NN ._.
+Sum_NN of_IN -LRB-_-LRB- a_DT -RRB-_-RRB- and_CC -LRB-_-LRB- b_LS -RRB-_-RRB- is_VBZ the_DT heuristic_NN value_NN for_IN a_DT HBA_NNP abstract_JJ policy_NN ._.
+2_LS ._.
+Node_NNP Based_VBD Abstraction_NN -LRB-_-LRB- NBA_NNP -RRB-_-RRB- :_: Here_RB an_DT abstract_JJ policy_NN is_VBZ obtained_VBN by_IN not_RB associating_VBG actions_NNS to_TO certain_JJ nodes_NNS of_IN the_DT policy_NN tree_NN ._.
+Unlike_IN in_IN HBA_NNP ,_, this_DT implies_VBZ multiple_JJ levels_NNS of_IN abstraction_NN ._.
+This_DT is_VBZ illustrated_VBN in_IN Figure_NNP #_# -LRB-_-LRB- b_NN -RRB-_-RRB- ,_, where_WRB there_EX are_VBP T_NN =_JJ #_# policies_NNS that_WDT do_VBP not_RB have_VB an_DT action_NN for_IN observation_NN TP_NN ''_'' ._.
+These_DT incomplete_JJ T_NN =_JJ #_# policies_NNS are_VBP abstractions_NNS for_IN T_NN =_JJ #_# complete_JJ policies_NNS ._.
+Increased_VBN levels_NNS of_IN abstraction_NN leads_VBZ to_TO faster_RBR computation_NN of_IN a_DT complete_JJ joint_JJ policy_NN ,_, root_NN +_CC and_CC also_RB to_TO shorter_JJR heuristic_NN computation_NN and_CC exploration_NN ,_, pruning_NN phases_NNS ._.
+For_IN NBA_NNP ,_, the_DT heuristic_NN computation_NN is_VBZ similar_JJ to_TO that_DT of_IN a_DT normal_JJ policy_NN ,_, except_IN in_IN cases_NNS where_WRB there_EX is_VBZ no_DT action_NN associated_VBN with_IN policy_NN nodes_NNS ._.
+In_IN such_JJ cases_NNS ,_, the_DT immediate_JJ reward_NN is_VBZ taken_VBN as_IN Rmax_NN -LRB-_-LRB- maximum_NN reward_NN for_IN any_DT action_NN -RRB-_-RRB- ._.
+We_PRP combine_VBP both_CC the_DT abstraction_NN techniques_NNS mentioned_VBN above_IN into_IN one_CD technique_NN ,_, SPIDER-ABS_NN ._.
+Algorithm_NN #_# provides_VBZ the_DT algorithm_NN for_IN this_DT abstraction_NN technique_NN ._.
+For_IN computing_VBG optimal_JJ joint_JJ policy_NN with_IN SPIDER-ABS_NN ,_, a_DT non-leaf_JJ agent_NN i_FW initially_RB examines_VBZ all_DT abstract_JJ T_NN =_JJ #_# policies_NNS -LRB-_-LRB- line_NN #_# -RRB-_-RRB- and_CC sorts_NNS them_PRP based_VBN on_IN abstract_JJ policy_NN heuristic_NN computations_NNS -LRB-_-LRB- line_NN ##_NN -RRB-_-RRB- ._.
+The_DT abstraction_NN horizon_NN is_VBZ gradually_RB increased_VBN and_CC these_DT abstract_JJ policies_NNS are_VBP then_RB explored_VBN in_IN descending_VBG order_NN of_IN heuristic_NN values_NNS and_CC ones_NNS that_WDT have_VBP heuristic_NN values_NNS less_JJR than_IN the_DT threshold_NN are_VBP pruned_VBN -LRB-_-LRB- lines_NNS 23-24_CD -RRB-_-RRB- ._.
+Exploration_NN in_IN SPIDER-ABS_NN has_VBZ the_DT same_JJ definition_NN as_IN in_IN SPIDER_NNP if_IN the_DT policy_NN being_VBG explored_VBN has_VBZ a_DT horizon_NN of_IN policy_NN computation_NN which_WDT is_VBZ equal_JJ to_TO the_DT actual_JJ time_NN horizon_NN and_CC if_IN all_DT the_DT nodes_NNS of_IN the_DT policy_NN have_VBP an_DT action_NN associated_VBN with_IN them_PRP -LRB-_-LRB- lines_NNS 25-30_CD -RRB-_-RRB- ._.
+However_RB ,_, if_IN those_DT conditions_NNS are_VBP not_RB met_VBN ,_, then_RB it_PRP is_VBZ substituted_VBN by_IN a_DT group_NN of_IN policies_NNS that_IN it_PRP represents_VBZ -LRB-_-LRB- using_VBG EXTEND-POLICY_NN -LRB-_-LRB- -RRB-_-RRB- function_NN -RRB-_-RRB- -LRB-_-LRB- lines_NNS 31-32_CD -RRB-_-RRB- ._.
+EXTEND-POLICY_NN -LRB-_-LRB- -RRB-_-RRB- function_NN is_VBZ also_RB responsible_JJ for_IN initializing_VBG the_DT horizon_NN and_CC absNodes_NNS of_IN a_DT policy_NN ._.
+absNodes_NNS represents_VBZ the_DT number_NN of_IN nodes_NNS at_IN the_DT last_JJ level_NN in_IN the_DT policy_NN tree_NN ,_, that_WDT do_VBP not_RB have_VB an_DT action_NN assigned_VBN to_TO them_PRP ._.
+If_IN i_FW ._.
+absNodes_NN =_JJ |_CD i_FW |_FW i_FW ._.
+horizon1_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+total_JJ number_NN of_IN policy_NN nodes_NNS possible_JJ at_IN i_FW ._.
+horizon_NN -RRB-_-RRB- ,_, then_RB i_LS ._.
+absNodes_NNS is_VBZ set_VBN to_TO zero_CD and_CC i_LS ._.
+horizon_NN is_VBZ increased_VBN by_IN #_# ._.
+Otherwise_RB ,_, i_FW ._.
+absNodes_NNS is_VBZ increased_VBN by_IN #_# ._.
+Thus_RB ,_, this_DT function_NN combines_VBZ both_CC HBA_NN and_CC NBA_NNP by_IN using_VBG the_DT policy_NN variables_NNS ,_, horizon_NN and_CC absNodes_NNS ._.
+Before_IN substituting_VBG the_DT abstract_JJ policy_NN with_IN a_DT group_NN of_IN policies_NNS ,_, those_DT policies_NNS are_VBP sorted_VBN based_VBN on_IN heuristic_NN values_NNS -LRB-_-LRB- line_NN ##_NN -RRB-_-RRB- ._.
+Similar_JJ type_NN of_IN abstraction_NN based_VBN best_JJS response_NN computation_NN is_VBZ adopted_VBN at_IN leaf_NN agents_NNS -LRB-_-LRB- lines_NNS 3-14_CD -RRB-_-RRB- ._.
+4_LS ._.
+#_# Value_NNP ApproXimation_NNP -LRB-_-LRB- VAX_NNP -RRB-_-RRB- In_IN this_DT section_NN ,_, we_PRP present_VBP an_DT approximate_JJ enhancement_NN to_TO SPIDER_NN called_VBD VAX_NNP ._.
+The_DT input_NN to_TO this_DT technique_NN is_VBZ an_DT approximation_NN parameter_NN ,_, which_WDT determines_VBZ the_DT difference_NN from_IN the_DT optimal_JJ solution_NN quality_NN ._.
+This_DT approximation_NN parameter_NN is_VBZ used_VBN at_IN each_DT agent_NN for_IN pruning_NN out_IN joint_JJ policies_NNS ._.
+The_DT pruning_NN mechanism_NN in_IN SPIDER_NN and_CC SPIDER-Abs_NNS dictates_VBZ that_IN a_DT joint_JJ policy_NN be_VB pruned_VBN only_RB if_IN the_DT threshold_NN is_VBZ exactly_RB greater_JJR than_IN the_DT heuristic_NN value_NN ._.
+However_RB ,_, the_DT 826_CD The_DT Sixth_NNP Intl_NNP ._.
+Joint_NNP Conf_NNP ._.
+on_IN Autonomous_NNP Agents_NNPS and_CC Multi-Agent_NNP Systems_NNP -LRB-_-LRB- AAMAS_NNP ##_CD -RRB-_-RRB- Figure_NNP #_# :_: Example_NN of_IN abstraction_NN for_IN -LRB-_-LRB- a_DT -RRB-_-RRB- HBA_NN -LRB-_-LRB- Horizon_NN Based_VBN Abstraction_NN -RRB-_-RRB- and_CC -LRB-_-LRB- b_LS -RRB-_-RRB- NBA_NNP -LRB-_-LRB- Node_NNP Based_VBD Abstraction_NN -RRB-_-RRB- idea_NN in_IN this_DT technique_NN is_VBZ to_TO prune_VB out_RP joint_JJ a_DT policy_NN if_IN the_DT following_VBG condition_NN is_VBZ satisfied_JJ :_: threshold_NN +_CC >_JJR v_LS -LSB-_-LRB- i_FW ,_, i_FW -RSB-_-RRB- ._.
+Apart_RB from_IN the_DT pruning_NN condition_NN ,_, VAX_NNP is_VBZ the_DT same_JJ as_IN SPIDER_NN /_: SPIDER-ABS_NN ._.
+In_IN the_DT example_NN of_IN Figure_NNP #_# ,_, if_IN the_DT heuristic_NN value_NN for_IN the_DT second_JJ joint_JJ policy_NN -LRB-_-LRB- or_CC second_JJ search_NN tree_NN node_NN -RRB-_-RRB- in_IN level_NN #_# were_VBD ###_CD instead_RB of_IN ###_CD ,_, then_RB that_IN policy_NN could_MD not_RB be_VB be_VB pruned_VBN using_VBG SPIDER_NN or_CC SPIDER-Abs_NNS ._.
+However_RB ,_, in_IN VAX_NNP with_IN an_DT approximation_NN parameter_NN of_IN #_# ,_, the_DT joint_JJ policy_NN in_IN consideration_NN would_MD also_RB be_VB pruned_VBN ._.
+This_DT is_VBZ because_IN the_DT threshold_NN -LRB-_-LRB- ###_CD -RRB-_-RRB- at_IN that_DT juncture_NN plus_IN the_DT approximation_NN parameter_NN -LRB-_-LRB- #_# -RRB-_-RRB- ,_, i_FW ._.
+e_LS ._.
+###_NN would_MD have_VB been_VBN greater_JJR than_IN the_DT heuristic_NN value_NN for_IN that_DT joint_JJ policy_NN -LRB-_-LRB- ###_CD -RRB-_-RRB- ._.
+It_PRP can_MD be_VB noted_VBN from_IN the_DT example_NN -LRB-_-LRB- just_RB discussed_VBN -RRB-_-RRB- that_IN this_DT kind_NN of_IN pruning_NN can_MD lead_VB to_TO fewer_JJR explorations_NNS and_CC hence_RB lead_VB to_TO an_DT improvement_NN in_IN the_DT overall_JJ run-time_NN performance_NN ._.
+However_RB ,_, this_DT can_MD entail_VB a_DT sacrifice_NN in_IN the_DT quality_NN of_IN the_DT solution_NN because_IN this_DT technique_NN can_MD prune_VB out_RP a_DT candidate_NN optimal_JJ solution_NN ._.
+A_DT bound_VBN on_IN the_DT error_NN introduced_VBN by_IN this_DT approximate_JJ algorithm_NN as_IN a_DT function_NN of_IN ,_, is_VBZ provided_VBN by_IN Proposition_NNP #_# ._.
+4_LS ._.
+#_# Percentage_NN ApproXimation_NN -LRB-_-LRB- PAX_NN -RRB-_-RRB- In_IN this_DT section_NN ,_, we_PRP present_VBP the_DT second_JJ approximation_NN enhancement_NN over_IN SPIDER_NN called_VBN PAX_NNP ._.
+Input_NN to_TO this_DT technique_NN is_VBZ a_DT parameter_NN ,_, that_WDT represents_VBZ the_DT minimum_JJ percentage_NN of_IN the_DT optimal_JJ solution_NN quality_NN that_WDT is_VBZ desired_VBN ._.
+Output_NN of_IN this_DT technique_NN is_VBZ a_DT policy_NN with_IN an_DT expected_VBN value_NN that_WDT is_VBZ at_IN least_JJS %_NN of_IN the_DT optimal_JJ solution_NN quality_NN ._.
+A_DT policy_NN is_VBZ pruned_VBN if_IN the_DT following_VBG condition_NN is_VBZ satisfied_JJ :_: threshold_NN >_JJR 100_CD v_LS -LSB-_-LRB- i_FW ,_, i_FW -RSB-_-RRB- ._.
+Like_IN in_IN VAX_NNP ,_, the_DT only_JJ difference_NN between_IN PAX_NNP and_CC SPIDER_NNP /_: SPIDER-ABS_NN is_VBZ this_DT pruning_NN condition_NN ._.
+Again_RB in_IN Figure_NNP #_# ,_, if_IN the_DT heuristic_NN value_NN for_IN the_DT second_JJ search_NN tree_NN node_NN in_IN level_NN #_# were_VBD ###_CD instead_RB of_IN ###_CD ,_, then_RB PAX_NN with_IN an_DT input_NN parameter_NN of_IN ##_CD %_NN would_MD be_VB able_JJ to_TO prune_VB that_DT search_NN tree_NN node_NN -LRB-_-LRB- since_IN ##_NN 100_CD 238_CD <_JJR ###_CD -RRB-_-RRB- ._.
+This_DT type_NN of_IN pruning_NN leads_VBZ to_TO fewer_JJR explorations_NNS and_CC hence_RB an_DT improvement_NN in_IN run-time_JJ performance_NN ,_, while_IN potentially_RB leading_VBG to_TO a_DT loss_NN in_IN quality_NN of_IN the_DT solution_NN ._.
+Proposition_NN #_# provides_VBZ the_DT bound_VBN on_IN quality_NN loss_NN ._.
+4_LS ._.
+#_# Theoretical_JJ Results_NNS PROPOSITION_NN #_# ._.
+Heuristic_JJ provided_VBN using_VBG the_DT centralized_VBN MDP_NN heuristic_NN is_VBZ admissible_JJ ._.
+Proof_NN ._.
+For_IN the_DT value_NN provided_VBN by_IN the_DT heuristic_NN to_TO be_VB admissible_JJ ,_, it_PRP should_MD be_VB an_DT over_IN estimate_NN of_IN the_DT expected_VBN value_NN for_IN a_DT joint_JJ policy_NN ._.
+Thus_RB ,_, we_PRP need_VBP to_TO show_VB that_IN :_: For_IN l_NN Ei_NN +_CC Ei_NN :_: vt_NN l_NN vt_NN l_NN -LRB-_-LRB- refer_VB to_TO notation_NN in_IN Section_NN #_# ._.
+#_# -RRB-_-RRB- We_PRP use_VBP mathematical_JJ induction_NN on_IN t_NN to_TO prove_VB this_DT ._.
+Base_NNP case_NN :_: t_NN =_JJ T_NN #_# ._.
+Irrespective_RB of_IN whether_IN l_NN Ei_NN or_CC l_NN Ei_NN +_CC ,_, rt_NN l_NN is_VBZ computed_VBN by_IN maximizing_VBG over_IN all_DT actions_NNS of_IN the_DT agents_NNS in_IN Tree_NN -LRB-_-LRB- i_LS -RRB-_-RRB- ,_, while_IN rt_NN l_NN is_VBZ computed_VBN for_IN fixed_JJ policies_NNS of_IN the_DT same_JJ agents_NNS ._.
+Hence_RB ,_, rt_NN l_NN rt_NN l_NN and_CC also_RB vt_NN l_NN vt_NN l_NN ._.
+Assumption_NN :_: Proposition_NNP holds_VBZ for_IN t_NN =_JJ ,_, where_WRB #_# <_JJR T_NN #_# ._.
+We_PRP now_RB have_VBP to_TO prove_VB that_IN the_DT proposition_NN holds_VBZ for_IN t_NN =_JJ #_# ._.
+We_PRP show_VBP the_DT proof_NN for_IN l_NN Ei_NN and_CC similar_JJ reasoning_NN can_MD be_VB adopted_VBN to_TO prove_VB for_IN l_NN Ei_NN +_CC ._.
+The_DT heuristic_NN value_NN function_NN for_IN l_NN Ei_NN is_VBZ provided_VBN by_IN the_DT following_JJ equation_NN :_: v1_NN l_NN =_JJ r1_NN l_NN +_CC max_NN al2_NN l1_NN ,_, s_VBZ l_NN p1_NN l1_NN p1_NN l2_NN p1_NN u_FW v_LS l_NN Rewriting_VBG the_DT RHS_NN and_CC using_VBG Eqn_NN #_# -LRB-_-LRB- in_IN Section_NN #_# ._.
+#_# -RRB-_-RRB- =_JJ r1_NN l_NN +_CC max_NN al2_NN l1_NN ,_, s_VBZ l_NN p1_NN u_NN p1_NN l1_NN p1_NN l2_NN v_LS l_NN =_JJ r1_NN l_NN +_CC l1_NN ,_, s_VBZ l_NN p1_NN u_NN p1_NN l1_NN max_NN al2_NN p1_NN l2_NN v_LS l_NN Since_IN maxal2_NN p1_NN l2_NN v_LS l_NN l2_NN o1_NN l2_NN p1_NN l2_NN v_LS l_NN and_CC p1_NN l2_NN =_JJ o1_NN l2_NN p1_NN l2_NN r1_NN l_NN +_CC l1_NN ,_, s_VBZ l_NN p1_NN u_NN p1_NN l1_NN l2_NN p1_NN l2_NN v_LS l_NN Since_IN v_LS l_NN v_LS l_NN -LRB-_-LRB- from_IN the_DT assumption_NN -RRB-_-RRB- r1_NN l_NN +_CC l1_NN ,_, s_VBZ l_NN p1_NN u_NN p1_NN l1_NN l2_NN p1_NN l2_NN v_LS l_NN Since_IN r1_NN l_NN r1_NN l_NN -LRB-_-LRB- by_IN definition_NN -RRB-_-RRB- r1_NN l_NN +_CC l1_NN ,_, s_VBZ l_NN p1_NN u_NN p1_NN l1_NN l2_NN p1_NN l2_NN v_LS l_NN =_JJ r1_NN l_NN +_CC -LRB-_-LRB- l_NN ,_, s_VBZ l_NN -RRB-_-RRB- p1_NN u_NN p1_NN l1_NN p1_NN l2_NN v_LS l_NN =_JJ v1_NN l_NN Thus_RB proved_VBD ._.
+PROPOSITION_NN #_# ._.
+SPIDER_NN provides_VBZ an_DT optimal_JJ solution_NN ._.
+Proof_NN ._.
+SPIDER_NN examines_VBZ all_DT possible_JJ joint_JJ policies_NNS given_VBN the_DT interaction_NN structure_NN of_IN the_DT agents_NNS ._.
+The_DT only_JJ exception_NN being_VBG when_WRB a_DT joint_JJ policy_NN is_VBZ pruned_VBN based_VBN on_IN the_DT heuristic_NN value_NN ._.
+Thus_RB ,_, as_RB long_RB as_IN a_DT candidate_NN optimal_JJ policy_NN is_VBZ not_RB pruned_VBN ,_, SPIDER_NNP will_MD return_VB an_DT optimal_JJ policy_NN ._.
+As_IN proved_VBN in_IN Proposition_NNP #_# ,_, the_DT expected_VBN value_NN for_IN a_DT joint_JJ policy_NN is_VBZ always_RB an_DT upper_JJ bound_VBN ._.
+Hence_RB when_WRB a_DT joint_JJ policy_NN is_VBZ pruned_VBN ,_, it_PRP can_MD not_RB be_VB an_DT optimal_JJ solution_NN ._.
+PROPOSITION_NN #_# ._.
+Error_NN bound_VBD on_IN the_DT solution_NN quality_NN for_IN VAX_NNP -LRB-_-LRB- implemented_VBN over_IN SPIDER-ABS_NN -RRB-_-RRB- with_IN an_DT approximation_NN parameter_NN of_IN is_VBZ ,_, where_WRB is_VBZ the_DT number_NN of_IN leaf_NN nodes_NNS in_IN the_DT DFS_NN tree_NN ._.
+The_DT Sixth_NNP Intl_NNP ._.
+Joint_NNP Conf_NNP ._.
+on_IN Autonomous_NNP Agents_NNPS and_CC Multi-Agent_NNP Systems_NNP -LRB-_-LRB- AAMAS_NNP ##_CD -RRB-_-RRB- ###_CD Proof_NNP ._.
+We_PRP prove_VBP this_DT proposition_NN using_VBG mathematical_JJ induction_NN on_IN the_DT depth_NN of_IN the_DT DFS_NN tree_NN ._.
+Base_NNP case_NN :_: depth_NN =_JJ #_# -LRB-_-LRB- i_FW ._.
+e_LS ._.
+one_CD node_NN -RRB-_-RRB- ._.
+Best_NN response_NN is_VBZ computed_VBN by_IN iterating_VBG through_IN all_DT policies_NNS ,_, k_NN ._.
+A_DT policy_NN ,_, k_NN is_VBZ pruned_VBN if_IN v_LS -LSB-_-LRB- k_NN ,_, k_NN -RSB-_-RRB- <_JJR threshold_NN +_CC ._.
+Thus_RB the_DT best_JJS response_NN policy_NN computed_VBN by_IN VAX_NNP would_MD be_VB at_IN most_JJS away_RB from_IN the_DT optimal_JJ best_JJS response_NN ._.
+Hence_RB the_DT proposition_NN holds_VBZ for_IN the_DT base_NN case_NN ._.
+Assumption_NN :_: Proposition_NNP holds_VBZ for_IN d_NN ,_, where_WRB #_# depth_NN d_NN ._.
+We_PRP now_RB have_VBP to_TO prove_VB that_IN the_DT proposition_NN holds_VBZ for_IN d_NN +_CC #_# ._.
+Without_IN loss_NN of_IN generality_NN ,_, lets_VBZ assume_VB that_IN the_DT root_NN node_NN of_IN this_DT tree_NN has_VBZ k_NN children_NNS ._.
+Each_DT of_IN this_DT children_NNS is_VBZ of_IN depth_NN d_NN ,_, and_CC hence_RB from_IN the_DT assumption_NN ,_, the_DT error_NN introduced_VBN in_IN kth_NN child_NN is_VBZ k_NN ,_, where_WRB k_NN is_VBZ the_DT number_NN of_IN leaf_NN nodes_NNS in_IN kth_NN child_NN of_IN the_DT root_NN ._.
+Therefore_RB ,_, =_JJ k_NN k_NN ,_, where_WRB is_VBZ the_DT number_NN of_IN leaf_NN nodes_NNS in_IN the_DT tree_NN ._.
+In_IN SPIDER-ABS_NN ,_, threshold_NN at_IN the_DT root_NN agent_NN ,_, thresspider_NN =_JJ k_NN v_LS -LSB-_-LRB- k_NN +_CC ,_, k_NN -RSB-_-RRB- ._.
+However_RB ,_, with_IN VAX_NNP the_DT threshold_NN at_IN the_DT root_NN agent_NN will_MD be_VB -LRB-_-LRB- in_IN the_DT worst_JJS case_NN -RRB-_-RRB- ,_, threshvax_NN =_JJ k_NN v_LS -LSB-_-LRB- k_NN +_CC ,_, k_NN -RSB-_-RRB- k_NN k_NN ._.
+Hence_RB ,_, with_IN VAX_NNP a_DT joint_JJ policy_NN is_VBZ pruned_VBN at_IN the_DT root_NN agent_NN if_IN v_LS -LSB-_-LRB- root_NN ,_, root_NN -RSB-_-RRB- <_JJR threshvax_NN +_CC v_LS -LSB-_-LRB- root_NN ,_, root_NN -RSB-_-RRB- <_JJR threshspider_NN -LRB-_-LRB- -LRB-_-LRB- k_NN k_NN -RRB-_-RRB- #_# -RRB-_-RRB- threshspider_NN -LRB-_-LRB- k_NN k_NN -RRB-_-RRB- threshspider_NN ._.
+Hence_RB proved_VBN ._.
+PROPOSITION_NN #_# ._.
+For_IN PAX_NN -LRB-_-LRB- implemented_VBN over_IN SPIDER-ABS_NN -RRB-_-RRB- with_IN an_DT input_NN parameter_NN of_IN ,_, the_DT solution_NN quality_NN is_VBZ at_IN least_JJS 100_CD v_LS -LSB-_-LRB- root_NN +_CC ,_, -RSB-_-RRB- ,_, where_WRB v_LS -LSB-_-LRB- root_NN +_CC ,_, -RSB-_-RRB- denotes_VBZ the_DT optimal_JJ solution_NN quality_NN ._.
+Proof_NN ._.
+We_PRP prove_VBP this_DT proposition_NN using_VBG mathematical_JJ induction_NN on_IN the_DT depth_NN of_IN the_DT DFS_NN tree_NN ._.
+Base_NNP case_NN :_: depth_NN =_JJ #_# -LRB-_-LRB- i_FW ._.
+e_LS ._.
+one_CD node_NN -RRB-_-RRB- ._.
+Best_NN response_NN is_VBZ computed_VBN by_IN iterating_VBG through_IN all_DT policies_NNS ,_, k_NN ._.
+A_DT policy_NN ,_, k_NN is_VBZ pruned_VBN if_IN 100_CD v_LS -LSB-_-LRB- k_NN ,_, k_NN -RSB-_-RRB- <_JJR threshold_NN ._.
+Thus_RB the_DT best_JJS response_NN policy_NN computed_VBN by_IN PAX_NNP would_MD be_VB at_IN least_JJS 100_CD times_NNS the_DT optimal_JJ best_JJS response_NN ._.
+Hence_RB the_DT proposition_NN holds_VBZ for_IN the_DT base_NN case_NN ._.
+Assumption_NN :_: Proposition_NNP holds_VBZ for_IN d_NN ,_, where_WRB #_# depth_NN d_NN ._.
+We_PRP now_RB have_VBP to_TO prove_VB that_IN the_DT proposition_NN holds_VBZ for_IN d_NN +_CC #_# ._.
+Without_IN loss_NN of_IN generality_NN ,_, lets_VBZ assume_VB that_IN the_DT root_NN node_NN of_IN this_DT tree_NN has_VBZ k_NN children_NNS ._.
+Each_DT of_IN this_DT children_NNS is_VBZ of_IN depth_NN d_NN ,_, and_CC hence_RB from_IN the_DT assumption_NN ,_, the_DT solution_NN quality_NN in_IN the_DT kth_NN child_NN is_VBZ at_IN least_JJS 100_CD v_LS -LSB-_-LRB- k_NN +_CC ,_, ,_, k_NN -RSB-_-RRB- for_IN PAX_NNP ._.
+With_IN SPIDER-ABS_NN ,_, a_DT joint_JJ policy_NN is_VBZ pruned_VBN at_IN the_DT root_NN agent_NN if_IN v_LS -LSB-_-LRB- root_NN ,_, root_NN -RSB-_-RRB- <_JJR k_NN v_LS -LSB-_-LRB- k_NN +_CC ,_, ,_, k_NN -RSB-_-RRB- ._.
+However_RB with_IN PAX_NN ,_, a_DT joint_JJ policy_NN is_VBZ pruned_VBN if_IN 100_CD v_LS -LSB-_-LRB- root_NN ,_, root_NN -RSB-_-RRB- <_JJR k_NN 100_CD v_LS -LSB-_-LRB- k_NN +_CC ,_, ,_, k_NN -RSB-_-RRB- v_LS -LSB-_-LRB- root_NN ,_, root_NN -RSB-_-RRB- <_JJR k_NN v_LS -LSB-_-LRB- k_NN +_CC ,_, ,_, k_NN -RSB-_-RRB- ._.
+Since_IN the_DT pruning_NN condition_NN at_IN the_DT root_NN agent_NN in_IN PAX_NNP is_VBZ the_DT same_JJ as_IN the_DT one_CD in_IN SPIDER-ABS_NN ,_, there_EX is_VBZ no_DT error_NN introduced_VBN at_IN the_DT root_NN agent_NN and_CC all_PDT the_DT error_NN is_VBZ introduced_VBN in_IN the_DT children_NNS ._.
+Thus_RB ,_, overall_JJ solution_NN quality_NN is_VBZ at_IN least_JJS 100_CD of_IN the_DT optimal_JJ solution_NN ._.
+Hence_RB proved_VBN ._.
+5_CD ._.
+EXPERIMENTAL_JJ RESULTS_NNS All_PDT our_PRP$ experiments_NNS were_VBD conducted_VBN on_IN the_DT sensor_NN network_NN domain_NN from_IN Section_NN #_# ._.
+The_DT five_CD network_NN configurations_NNS employed_VBN are_VBP shown_VBN in_IN Figure_NNP #_# ._.
+Algorithms_NNS that_IN we_PRP experimented_VBD with_IN are_VBP GOA_NNP ,_, SPIDER_NNP ,_, SPIDER-ABS_NNP ,_, PAX_NNP and_CC VAX_NNP ._.
+We_PRP compare_VBP against_IN GOA_NN because_IN it_PRP is_VBZ the_DT only_JJ global_JJ optimal_JJ algorithm_NN that_WDT considers_VBZ more_JJR than_IN two_CD agents_NNS ._.
+We_PRP performed_VBD two_CD sets_NNS of_IN experiments_NNS :_: -LRB-_-LRB- i_LS -RRB-_-RRB- firstly_RB ,_, we_PRP compared_VBD the_DT run-time_JJ performance_NN of_IN the_DT above_JJ algorithms_NNS and_CC -LRB-_-LRB- ii_LS -RRB-_-RRB- secondly_RB ,_, we_PRP experimented_VBD with_IN PAX_NN and_CC VAX_NNP to_TO study_VB the_DT tradeoff_NN between_IN run-time_NN and_CC solution_NN quality_NN ._.
+Experiments_NNS were_VBD terminated_VBN after_IN #####_CD seconds1_NN ._.
+Figure_NNP #_# -LRB-_-LRB- a_DT -RRB-_-RRB- provides_VBZ run-time_JJ comparisons_NNS between_IN the_DT optimal_JJ algorithms_NNS GOA_NNP ,_, SPIDER_NNP ,_, SPIDER-Abs_NNP and_CC the_DT approximate_JJ algorithms_NNS ,_, PAX_NN -LRB-_-LRB- of_IN ##_NN -RRB-_-RRB- and_CC VAX_NNP -LRB-_-LRB- of_IN ##_NN -RRB-_-RRB- ._.
+X-axis_NN denotes_VBZ the_DT 1_CD Machine_NN specs_NNS for_IN all_DT experiments_NNS :_: Intel_NNP Xeon_NNP #_# ._.
+#_# GHZ_CD processor_NN ,_, 2GB_NN RAM_NNP sensor_NN network_NN configuration_NN used_VBN ,_, while_IN Y-axis_NN indicates_VBZ the_DT runtime_NN -LRB-_-LRB- on_IN a_DT log-scale_JJ -RRB-_-RRB- ._.
+The_DT time_NN horizon_NN of_IN policy_NN computation_NN was_VBD 3_CD ._.
+For_IN each_DT configuration_NN -LRB-_-LRB- 3-chain_NN ,_, 4-chain_NN ,_, 4-star_JJ and_CC 5-star_JJ -RRB-_-RRB- ,_, there_EX are_VBP five_CD bars_NNS indicating_VBG the_DT time_NN taken_VBN by_IN GOA_NNP ,_, SPIDER_NNP ,_, SPIDERAbs_NNP ,_, PAX_NNP and_CC VAX_NNP ._.
+GOA_NN did_VBD not_RB terminate_VB within_IN the_DT time_NN limit_NN for_IN 4-star_JJ and_CC 5-star_JJ configurations_NNS ._.
+SPIDER-Abs_NNS dominated_VBD the_DT SPIDER_NN and_CC GOA_NN for_IN all_PDT the_DT configurations_NNS ._.
+For_IN instance_NN ,_, in_IN the_DT 3chain_JJ configuration_NN ,_, SPIDER-ABS_NN provides_VBZ 230-fold_JJ speedup_NN over_IN GOA_NN and_CC 2-fold_JJ speedup_NN over_IN SPIDER_NN and_CC for_IN the_DT 4-chain_JJ configuration_NN it_PRP provides_VBZ 58-fold_JJ speedup_NN over_IN GOA_NN and_CC 2-fold_JJ speedup_NN over_IN SPIDER_NN ._.
+The_DT two_CD approximation_NN approaches_NNS ,_, VAX_NNP and_CC PAX_NNP provided_VBD further_JJ improvement_NN in_IN performance_NN over_IN SPIDER-Abs_NNS ._.
+For_IN instance_NN ,_, in_IN the_DT 5-star_JJ configuration_NN VAX_NNP provides_VBZ a_DT 15-fold_JJ speedup_NN and_CC PAX_NN provides_VBZ a_DT 8-fold_JJ speedup_NN over_IN SPIDER-Abs_NNS ._.
+Figures_NNS #_# -LRB-_-LRB- b_NN -RRB-_-RRB- provides_VBZ a_DT comparison_NN of_IN the_DT solution_NN quality_NN obtained_VBN using_VBG the_DT different_JJ algorithms_NNS for_IN the_DT problems_NNS tested_VBN in_IN Figure_NNP #_# -LRB-_-LRB- a_DT -RRB-_-RRB- ._.
+X-axis_NN denotes_VBZ the_DT sensor_NN network_NN configuration_NN while_IN Y-axis_NN indicates_VBZ the_DT solution_NN quality_NN ._.
+Since_IN GOA_NNP ,_, SPIDER_NNP ,_, and_CC SPIDER-Abs_NNS are_VBP all_DT global_JJ optimal_JJ algorithms_NNS ,_, the_DT solution_NN quality_NN is_VBZ the_DT same_JJ for_IN all_PDT those_DT algorithms_NNS ._.
+For_IN 5-P_NN configuration_NN ,_, the_DT global_JJ optimal_JJ algorithms_NNS did_VBD not_RB terminate_VB within_IN the_DT limit_NN of_IN 10000_CD seconds_NNS ,_, so_IN the_DT bar_NN for_IN optimal_JJ quality_NN indicates_VBZ an_DT upper_JJ bound_VBN on_IN the_DT optimal_JJ solution_NN quality_NN ._.
+With_IN both_CC the_DT approximations_NNS ,_, we_PRP obtained_VBD a_DT solution_NN quality_NN that_WDT was_VBD close_JJ to_TO the_DT optimal_JJ solution_NN quality_NN ._.
+In_IN 3-chain_JJ and_CC 4-star_JJ configurations_NNS ,_, it_PRP is_VBZ remarkable_JJ that_IN both_CC PAX_NN and_CC VAX_NNP obtained_VBD almost_RB the_DT same_JJ actual_JJ quality_NN as_IN the_DT global_JJ optimal_JJ algorithms_NNS ,_, despite_IN the_DT approximation_NN parameter_NN and_CC ._.
+For_IN other_JJ configurations_NNS as_RB well_RB ,_, the_DT loss_NN in_IN quality_NN was_VBD less_JJR than_IN ##_CD %_NN of_IN the_DT optimal_JJ solution_NN quality_NN ._.
+Figure_NNP #_# -LRB-_-LRB- c_NN -RRB-_-RRB- provides_VBZ the_DT time_NN to_TO solution_NN with_IN PAX_NN -LRB-_-LRB- for_IN varying_VBG epsilons_NNS -RRB-_-RRB- ._.
+X-axis_NN denotes_VBZ the_DT approximation_NN parameter_NN ,_, -LRB-_-LRB- percentage_NN to_TO optimal_JJ -RRB-_-RRB- used_VBN ,_, while_IN Y-axis_JJ denotes_VBZ the_DT time_NN taken_VBN to_TO compute_VB the_DT solution_NN -LRB-_-LRB- on_IN a_DT log-scale_JJ -RRB-_-RRB- ._.
+The_DT time_NN horizon_NN for_IN all_PDT the_DT configurations_NNS was_VBD #_# ._.
+As_IN was_VBD decreased_VBN from_IN ##_CD to_TO ##_CD ,_, the_DT time_NN to_TO solution_NN decreased_VBD drastically_RB ._.
+For_IN instance_NN ,_, in_IN the_DT 3-chain_JJ case_NN there_EX was_VBD a_DT total_JJ speedup_NN of_IN 170-fold_RB when_WRB the_DT was_VBD changed_VBN from_IN ##_CD to_TO ##_CD ._.
+Interestingly_RB ,_, even_RB with_IN a_DT low_JJ of_IN ##_CD %_NN ,_, the_DT actual_JJ solution_NN quality_NN remained_VBD equal_JJ to_TO the_DT one_CD obtained_VBN at_IN ##_CD %_NN ._.
+Figure_NNP #_# -LRB-_-LRB- d_NN -RRB-_-RRB- provides_VBZ the_DT time_NN to_TO solution_NN for_IN all_PDT the_DT configurations_NNS with_IN VAX_NNP -LRB-_-LRB- for_IN varying_VBG epsilons_NNS -RRB-_-RRB- ._.
+X-axis_NN denotes_VBZ the_DT approximation_NN parameter_NN ,_, used_VBN ,_, while_IN Y-axis_JJ denotes_VBZ the_DT time_NN taken_VBN to_TO compute_VB the_DT solution_NN -LRB-_-LRB- on_IN a_DT log-scale_JJ -RRB-_-RRB- ._.
+The_DT time_NN horizon_NN for_IN all_PDT the_DT configurations_NNS was_VBD #_# ._.
+As_IN was_VBD increased_VBN ,_, the_DT time_NN to_TO solution_NN decreased_VBD drastically_RB ._.
+For_IN instance_NN ,_, in_IN the_DT 4-star_JJ case_NN there_EX was_VBD a_DT total_JJ speedup_NN of_IN 73-fold_JJ when_WRB the_DT was_VBD changed_VBN from_IN ##_CD to_TO ###_CD ._.
+Again_RB ,_, the_DT actual_JJ solution_NN quality_NN did_VBD not_RB change_VB with_IN varying_VBG epsilon_NN ._.
+Figure_NNP #_# :_: Sensor_NN network_NN configurations_NNS 828_CD The_DT Sixth_NNP Intl_NNP ._.
+Joint_NNP Conf_NNP ._.
+on_IN Autonomous_NNP Agents_NNPS and_CC Multi-Agent_NNP Systems_NNP -LRB-_-LRB- AAMAS_NNP ##_CD -RRB-_-RRB- Figure_NNP #_# :_: Comparison_NN of_IN GOA_NNP ,_, SPIDER_NNP ,_, SPIDER-Abs_NNP and_CC VAX_NNP for_IN T_NN =_JJ #_# on_IN -LRB-_-LRB- a_DT -RRB-_-RRB- Runtime_NN and_CC -LRB-_-LRB- b_LS -RRB-_-RRB- Solution_NN quality_NN ;_: -LRB-_-LRB- c_LS -RRB-_-RRB- Time_NN to_TO solution_NN for_IN PAX_NN with_IN varying_VBG percentage_NN to_TO optimal_JJ for_IN T_NN =_JJ #_# -LRB-_-LRB- d_NN -RRB-_-RRB- Time_NN to_TO solution_NN for_IN VAX_NNP with_IN varying_VBG epsilon_NN for_IN T_NN =_JJ #_# 6_CD ._.
+SUMMARY_NN AND_CC RELATED_JJ WORK_VBP This_DT paper_NN presents_VBZ four_CD algorithms_NNS SPIDER_NN ,_, SPIDER-ABS_NN ,_, PAX_NN and_CC VAX_NNP that_WDT provide_VBP a_DT novel_JJ combination_NN of_IN features_NNS for_IN policy_NN search_NN in_IN distributed_VBN POMDPs_NNS :_: -LRB-_-LRB- i_LS -RRB-_-RRB- exploiting_VBG agent_NN interaction_NN structure_NN given_VBN a_DT network_NN of_IN agents_NNS -LRB-_-LRB- i_FW ._.
+e_LS ._.
+easier_JJR scale-up_NN to_TO larger_JJR number_NN of_IN agents_NNS -RRB-_-RRB- ;_: -LRB-_-LRB- ii_LS -RRB-_-RRB- using_VBG branch_NN and_CC bound_VBD search_NN with_IN an_DT MDP_NN based_VBN heuristic_NN function_NN ;_: -LRB-_-LRB- iii_LS -RRB-_-RRB- utilizing_VBG abstraction_NN to_TO improve_VB runtime_NN performance_NN without_IN sacrificing_VBG solution_NN quality_NN ;_: -LRB-_-LRB- iv_LS -RRB-_-RRB- providing_VBG a_DT priori_FW percentage_NN bounds_NNS on_IN quality_NN of_IN solutions_NNS using_VBG PAX_NN ;_: and_CC -LRB-_-LRB- v_LS -RRB-_-RRB- providing_VBG expected_VBN value_NN bounds_NNS on_IN the_DT quality_NN of_IN solutions_NNS using_VBG VAX_NNP ._.
+These_DT features_NNS allow_VBP for_IN systematic_JJ tradeoff_NN of_IN solution_NN quality_NN for_IN run-time_NN in_IN networks_NNS of_IN agents_NNS operating_VBG under_IN uncertainty_NN ._.
+Experimental_JJ results_NNS show_VBP orders_NNS of_IN magnitude_NN improvement_NN in_IN performance_NN over_IN previous_JJ global_JJ optimal_JJ algorithms_NNS ._.
+Researchers_NNS have_VBP typically_RB employed_VBN two_CD types_NNS of_IN techniques_NNS for_IN solving_VBG distributed_VBN POMDPs_NNS ._.
+The_DT first_JJ set_NN of_IN techniques_NNS compute_VBP global_JJ optimal_JJ solutions_NNS ._.
+Hansen_NNP et_FW al_FW ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- present_JJ an_DT algorithm_NN based_VBN on_IN dynamic_JJ programming_NN and_CC iterated_JJ elimination_NN of_IN dominant_JJ policies_NNS ,_, that_WDT provides_VBZ optimal_JJ solutions_NNS for_IN distributed_VBN POMDPs_NNS ._.
+Szer_NNP et_FW al_FW ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- provide_VBP an_DT optimal_JJ heuristic_NN search_NN method_NN for_IN solving_VBG Decentralized_VBN POMDPs_NNS ._.
+This_DT algorithm_NN is_VBZ based_VBN on_IN the_DT combination_NN of_IN a_DT classical_JJ heuristic_NN search_NN algorithm_NN ,_, A_DT and_CC decentralized_VBN control_NN theory_NN ._.
+The_DT key_JJ differences_NNS between_IN SPIDER_NNP and_CC MAA_NNP *_SYM are_VBP :_: -LRB-_-LRB- a_LS -RRB-_-RRB- Enhancements_NNP to_TO SPIDER_NNP -LRB-_-LRB- VAX_NNP and_CC PAX_NNP -RRB-_-RRB- provide_VBP for_IN quality_NN guaranteed_VBN approximations_NNS ,_, while_IN MAA_NN *_NN is_VBZ a_DT global_JJ optimal_JJ algorithm_NN and_CC hence_RB involves_VBZ significant_JJ computational_JJ complexity_NN ;_: -LRB-_-LRB- b_LS -RRB-_-RRB- Due_JJ to_TO MAA_NNP *_SYM ''_'' s_VBZ inability_NN to_TO exploit_VB interaction_NN structure_NN ,_, it_PRP was_VBD illustrated_VBN only_RB with_IN two_CD agents_NNS ._.
+However_RB ,_, SPIDER_NN has_VBZ been_VBN illustrated_VBN for_IN networks_NNS of_IN agents_NNS ;_: and_CC -LRB-_-LRB- c_LS -RRB-_-RRB- SPIDER_NN explores_VBZ the_DT joint_JJ policy_NN one_CD agent_NN at_IN a_DT time_NN ,_, while_IN MAA_NN *_SYM expands_VBZ it_PRP one_CD time_NN step_NN at_IN a_DT time_NN -LRB-_-LRB- simultaneously_RB for_IN all_PDT the_DT agents_NNS -RRB-_-RRB- ._.
+The_DT second_JJ set_NN of_IN techniques_NNS seek_VBP approximate_JJ policies_NNS ._.
+EmeryMontemerlo_NNP et_FW al_FW ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- approximate_JJ POSGs_NNS as_IN a_DT series_NN of_IN one-step_JJ Bayesian_JJ games_NNS using_VBG heuristics_NNS to_TO approximate_JJ future_JJ value_NN ,_, trading_VBG off_RP limited_JJ lookahead_NN for_IN computational_JJ efficiency_NN ,_, resulting_VBG in_IN locally_RB optimal_JJ policies_NNS -LRB-_-LRB- with_IN respect_NN to_TO the_DT selected_VBN heuristic_NN -RRB-_-RRB- ._.
+Nair_NNP et_FW al_FW ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- ''_'' s_VBZ JESP_NNP algorithm_NN uses_VBZ dynamic_JJ programming_NN to_TO reach_VB a_DT local_JJ optimum_JJ solution_NN for_IN finite_JJ horizon_NN decentralized_VBN POMDPs_NNS ._.
+Peshkin_NNP et_FW al_FW ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- and_CC Bernstein_NNP et_FW al_FW ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- are_VBP examples_NNS of_IN policy_NN search_NN techniques_NNS that_WDT search_VBP for_IN locally_RB optimal_JJ policies_NNS ._.
+Though_IN all_PDT the_DT above_JJ techniques_NNS improve_VBP the_DT efficiency_NN of_IN policy_NN computation_NN considerably_RB ,_, they_PRP are_VBP unable_JJ to_TO provide_VB error_NN bounds_NNS on_IN the_DT quality_NN of_IN the_DT solution_NN ._.
+This_DT aspect_NN of_IN quality_NN bounds_NNS differentiates_VBZ SPIDER_NN from_IN all_PDT the_DT above_JJ techniques_NNS ._.
+Acknowledgements_NNS ._.
+This_DT material_NN is_VBZ based_VBN upon_IN work_NN supported_VBN by_IN the_DT Defense_NNP Advanced_NNP Research_NNP Projects_NNP Agency_NNP -LRB-_-LRB- DARPA_NNP -RRB-_-RRB- ,_, through_IN the_DT Department_NNP of_IN the_DT Interior_NNP ,_, NBC_NNP ,_, Acquisition_NNP Services_NNPS Division_NNP under_IN Contract_NNP No_NNP ._.
+NBCHD030010_NN ._.
+The_DT views_NNS and_CC conclusions_NNS contained_VBN in_IN this_DT document_NN are_VBP those_DT of_IN the_DT authors_NNS ,_, and_CC should_MD not_RB be_VB interpreted_VBN as_IN representing_VBG the_DT official_JJ policies_NNS ,_, either_RB expressed_VBN or_CC implied_VBN ,_, of_IN the_DT Defense_NNP Advanced_NNP Research_NNP Projects_NNP Agency_NNP or_CC the_DT U_NNP ._.
+S_NN ._.
+Government_NN ._.
+7_CD ._.
+REFERENCES_NNS -LSB-_-LRB- #_# -RSB-_-RRB- R_NN ._.
+Becker_NNP ,_, S_NN ._.
+Zilberstein_NNP ,_, V_NNP ._.
+Lesser_RBR ,_, and_CC C_NN ._.
+V_NN ._.
+Goldman_NNP ._.
+Solving_VBG transition_NN independent_JJ decentralized_JJ Markov_NNP decision_NN processes_NNS ._.
+JAIR_NNP ,_, ##_CD :_: 423-455_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- D_NN ._.
+S_NN ._.
+Bernstein_NNP ,_, E_NNP ._.
+A_DT ._.
+Hansen_NNP ,_, and_CC S_NN ._.
+Zilberstein_NN ._.
+Bounded_JJ policy_NN iteration_NN for_IN decentralized_VBN POMDPs_NNS ._.
+In_IN IJCAI_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- D_NN ._.
+S_NN ._.
+Bernstein_NNP ,_, S_NN ._.
+Zilberstein_NNP ,_, and_CC N_NN ._.
+Immerman_NNP ._.
+The_DT complexity_NN of_IN decentralized_VBN control_NN of_IN MDPs_NNS ._.
+In_IN UAI_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- R_NN ._.
+Emery-Montemerlo_NNP ,_, G_NNP ._.
+Gordon_NNP ,_, J_NNP ._.
+Schneider_NNP ,_, and_CC S_NN ._.
+Thrun_NNP ._.
+Approximate_JJ solutions_NNS for_IN partially_RB observable_JJ stochastic_JJ games_NNS with_IN common_JJ payoffs_NNS ._.
+In_IN AAMAS_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- E_NN ._.
+Hansen_NNP ,_, D_NNP ._.
+Bernstein_NNP ,_, and_CC S_NN ._.
+Zilberstein_NN ._.
+Dynamic_NNP programming_NN for_IN partially_RB observable_JJ stochastic_JJ games_NNS ._.
+In_IN AAAI_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- V_NN ._.
+Lesser_RBR ,_, C_NN ._.
+Ortiz_NNP ,_, and_CC M_NN ._.
+Tambe_NN ._.
+Distributed_VBN sensor_NN nets_NNS :_: A_DT multiagent_JJ perspective_NN ._.
+Kluwer_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- R_NN ._.
+Maheswaran_NNP ,_, M_NN ._.
+Tambe_NNP ,_, E_NNP ._.
+Bowring_NNP ,_, J_NNP ._.
+Pearce_NNP ,_, and_CC P_NN ._.
+Varakantham_NNP ._.
+Taking_VBG dcop_NN to_TO the_DT real_JJ world_NN :_: Efficient_JJ complete_JJ solutions_NNS for_IN distributed_VBN event_NN scheduling_NN ._.
+In_IN AAMAS_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- P_NN ._.
+J_NN ._.
+Modi_NNP ,_, W_NNP ._.
+Shen_NNP ,_, M_NN ._.
+Tambe_NNP ,_, and_CC M_NN ._.
+Yokoo_NNP ._.
+An_DT asynchronous_JJ complete_JJ method_NN for_IN distributed_VBN constraint_NN optimization_NN ._.
+In_IN AAMAS_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- R_NN ._.
+Nair_NNP ,_, D_NNP ._.
+Pynadath_NNP ,_, M_NN ._.
+Yokoo_NNP ,_, M_NN ._.
+Tambe_NNP ,_, and_CC S_NN ._.
+Marsella_NNP ._.
+Taming_VBG decentralized_VBN POMDPs_NNS :_: Towards_IN efficient_JJ policy_NN computation_NN for_IN multiagent_JJ settings_NNS ._.
+In_IN IJCAI_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- R_NN ._.
+Nair_NNP ,_, P_NN ._.
+Varakantham_NNP ,_, M_NN ._.
+Tambe_NNP ,_, and_CC M_NN ._.
+Yokoo_NNP ._.
+Networked_VBN distributed_VBN POMDPs_NNS :_: A_DT synthesis_NN of_IN distributed_VBN constraint_NN optimization_NN and_CC POMDPs_NNS ._.
+In_IN AAAI_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- L_NN ._.
+Peshkin_NNP ,_, N_NNP ._.
+Meuleau_NNP ,_, K_NNP ._.
+-_: E_NN ._.
+Kim_NNP ,_, and_CC L_NN ._.
+Kaelbling_NN ._.
+Learning_VBG to_TO cooperate_VB via_IN policy_NN search_NN ._.
+In_IN UAI_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- A_DT ._.
+Petcu_NN and_CC B_NN ._.
+Faltings_NNP ._.
+A_DT scalable_JJ method_NN for_IN multiagent_JJ constraint_NN optimization_NN ._.
+In_IN IJCAI_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- D_NN ._.
+Szer_NNP ,_, F_NN ._.
+Charpillet_NNP ,_, and_CC S_NN ._.
+Zilberstein_NN ._.
+MAA_NN *_SYM :_: A_DT heuristic_NN search_NN algorithm_NN for_IN solving_VBG decentralized_VBN POMDPs_NNS ._.
+In_IN IJCAI_NNP ,_, ####_CD ._.
+The_DT Sixth_NNP Intl_NNP ._.
+Joint_NNP Conf_NNP ._.
+on_IN Autonomous_NNP Agents_NNPS and_CC Multi-Agent_NNP Systems_NNP -LRB-_-LRB- AAMAS_NNP ##_CD -RRB-_-RRB- ###_CD

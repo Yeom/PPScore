@@ -1,0 +1,457 @@
+A_DT Reinforcement_NNP Learning_NNP based_VBN Distributed_VBN Search_VB Algorithm_NN For_IN Hierarchical_JJ Peer-to-Peer_NNP Information_NNP Retrieval_NNP Systems_NNPS Haizheng_NNP Zhang_NNP College_NNP of_IN Information_NNP Science_NNP and_CC Technology_NNP Pennsylvania_NNP State_NNP University_NNP University_NNP Park_NNP ,_, PA_NN #####_CD hzhang_NN @_IN ist_NN ._.
+psu_NN ._.
+edu_NN Victor_NNP Lesser_NNP Department_NNP of_IN Computer_NNP Science_NNP University_NNP Of_IN Massachusetts_NNP Amherst_NNP ,_, MA_NNP #####_CD lesser_JJR @_IN cs_NNS ._.
+umass_NN ._.
+edu_NN ABSTRACT_NN The_DT dominant_JJ existing_VBG routing_VBG strategies_NNS employed_VBN in_IN peerto-peer_NN -LRB-_-LRB- P2P_NN -RRB-_-RRB- based_VBN information_NN retrieval_NN -LRB-_-LRB- IR_NN -RRB-_-RRB- systems_NNS are_VBP similarity-based_JJ approaches_NNS ._.
+In_IN these_DT approaches_NNS ,_, agents_NNS depend_VBP on_IN the_DT content_NN similarity_NN between_IN incoming_JJ queries_NNS and_CC their_PRP$ direct_JJ neighboring_VBG agents_NNS to_TO direct_VB the_DT distributed_VBN search_NN sessions_NNS ._.
+However_RB ,_, such_PDT a_DT heuristic_NN is_VBZ myopic_JJ in_IN that_IN the_DT neighboring_VBG agents_NNS may_MD not_RB be_VB connected_VBN to_TO more_JJR relevant_JJ agents_NNS ._.
+In_IN this_DT paper_NN ,_, an_DT online_JJ reinforcement-learning_NN based_VBN approach_NN is_VBZ developed_VBN to_TO take_VB advantage_NN of_IN the_DT dynamic_JJ run-time_NN characteristics_NNS of_IN P2P_NN IR_NN systems_NNS as_IN represented_VBN by_IN information_NN about_IN past_JJ search_NN sessions_NNS ._.
+Specifically_RB ,_, agents_NNS maintain_VBP estimates_NNS on_IN the_DT downstream_JJ agents_NNS ''_'' abilities_NNS to_TO provide_VB relevant_JJ documents_NNS for_IN incoming_JJ queries_NNS ._.
+These_DT estimates_NNS are_VBP updated_VBN gradually_RB by_IN learning_VBG from_IN the_DT feedback_NN information_NN returned_VBD from_IN previous_JJ search_NN sessions_NNS ._.
+Based_VBN on_IN this_DT information_NN ,_, the_DT agents_NNS derive_VBP corresponding_JJ routing_VBG policies_NNS ._.
+Thereafter_RB ,_, these_DT agents_NNS route_NN the_DT queries_NNS based_VBN on_IN the_DT learned_VBN policies_NNS and_CC update_VB the_DT estimates_NNS based_VBN on_IN the_DT new_JJ routing_VBG policies_NNS ._.
+Experimental_JJ results_NNS demonstrate_VBP that_IN the_DT learning_NN algorithm_NN improves_VBZ considerably_RB the_DT routing_VBG performance_NN on_IN two_CD test_NN collection_NN sets_VBZ that_IN have_VBP been_VBN used_VBN in_IN a_DT variety_NN of_IN distributed_VBN IR_NN studies_NNS ._.
+Categories_NNS and_CC Subject_NNP Descriptors_NNS I_PRP ._.
+#_# ._.
+##_NN -LSB-_-LRB- Distributed_VBN Artificial_NNP Intelligence_NNP -RSB-_-RRB- :_: Multiagent_NNP Systems_NNP General_NNP Terms_NNS Algorithms_NNS ,_, Performance_NNP ,_, Experimentation_NN 1_CD ._.
+INTRODUCTION_NN Over_IN the_DT last_JJ few_JJ years_NNS there_RB have_VBP been_VBN increasing_VBG interests_NNS in_IN studying_VBG how_WRB to_TO control_VB the_DT search_NN processes_NNS in_IN peer-to-peer_NN -LRB-_-LRB- P2P_NN -RRB-_-RRB- based_VBN information_NN retrieval_NN -LRB-_-LRB- IR_NN -RRB-_-RRB- systems_NNS -LSB-_-LRB- #_# ,_, ##_NN ,_, ##_NN ,_, ##_NN -RSB-_-RRB- ._.
+In_IN this_DT line_NN of_IN research_NN ,_, one_CD of_IN the_DT core_NN problems_NNS that_WDT concerns_VBZ researchers_NNS is_VBZ to_TO efficiently_RB route_NN user_NN queries_NNS in_IN the_DT network_NN to_TO agents_NNS that_WDT are_VBP in_IN possession_NN of_IN appropriate_JJ documents_NNS ._.
+In_IN the_DT absence_NN of_IN global_JJ information_NN ,_, the_DT dominant_JJ strategies_NNS in_IN addressing_VBG this_DT problem_NN are_VBP content-similarity_JJ based_VBN approaches_NNS -LSB-_-LRB- #_# ,_, ##_NN ,_, ##_NN ,_, ##_NN -RSB-_-RRB- ._.
+While_IN the_DT content_NN similarity_NN between_IN queries_NNS and_CC local_JJ nodes_NNS appears_VBZ to_TO be_VB a_DT creditable_JJ indicator_NN for_IN the_DT number_NN of_IN relevant_JJ documents_NNS residing_VBG on_IN each_DT node_NN ,_, these_DT approaches_NNS are_VBP limited_VBN by_IN a_DT number_NN of_IN factors_NNS ._.
+First_NNP of_IN all_DT ,_, similaritybased_JJ metrics_NNS can_MD be_VB myopic_JJ since_IN locally_RB relevant_JJ nodes_NNS may_MD not_RB be_VB connected_VBN to_TO other_JJ relevant_JJ nodes_NNS ._.
+Second_RB ,_, the_DT similarity-based_JJ approaches_NNS do_VBP not_RB take_VB into_IN account_NN the_DT run-time_JJ characteristics_NNS of_IN the_DT P2P_NN IR_NN systems_NNS ,_, including_VBG environmental_JJ parameters_NNS ,_, bandwidth_NN usage_NN ,_, and_CC the_DT historical_JJ information_NN of_IN the_DT past_JJ search_NN sessions_NNS ,_, that_WDT provide_VBP valuable_JJ information_NN for_IN the_DT query_NN routing_VBG algorithms_NNS ._.
+In_IN this_DT paper_NN ,_, we_PRP develop_VBP a_DT reinforcement_NN learning_NN based_VBN IR_NNP approach_NN for_IN improving_VBG the_DT performance_NN of_IN distributed_VBN IR_NN search_NN algorithms_NNS ._.
+Agents_NNS can_MD acquire_VB better_JJR search_NN strategies_NNS by_IN collecting_VBG and_CC analyzing_VBG feedback_NN information_NN from_IN previous_JJ search_NN sessions_NNS ._.
+Particularly_RB ,_, agents_NNS maintain_VBP estimates_NNS ,_, namely_RB expected_VBN utility_NN ,_, on_IN the_DT downstream_JJ agents_NNS ''_'' capabilities_NNS of_IN providing_VBG relevant_JJ documents_NNS for_IN specific_JJ types_NNS of_IN incoming_JJ queries_NNS ._.
+These_DT estimates_NNS are_VBP updated_VBN gradually_RB by_IN learning_VBG from_IN the_DT feedback_NN information_NN returned_VBD from_IN previous_JJ search_NN sessions_NNS ._.
+Based_VBN on_IN the_DT updated_VBN expected_VBN utility_NN information_NN ,_, the_DT agents_NNS derive_VBP corresponding_JJ routing_VBG policies_NNS ._.
+Thereafter_RB ,_, these_DT agents_NNS route_NN the_DT queries_NNS based_VBN on_IN the_DT learned_VBN policies_NNS and_CC update_VB the_DT estimates_NNS on_IN the_DT expected_VBN utility_NN based_VBN on_IN the_DT new_JJ routing_VBG policies_NNS ._.
+This_DT process_NN is_VBZ conducted_VBN in_IN an_DT iterative_JJ manner_NN ._.
+The_DT goal_NN of_IN the_DT learning_NN algorithm_NN ,_, even_RB though_IN it_PRP consumes_VBZ some_DT network_NN bandwidth_NN ,_, is_VBZ to_TO shorten_VB the_DT routing_VBG time_NN so_IN that_IN more_JJR queries_NNS are_VBP processed_VBN per_IN time_NN unit_NN while_IN at_IN the_DT same_JJ time_NN finding_VBG more_RBR relevant_JJ documents_NNS ._.
+This_DT contrasts_VBZ with_IN the_DT content-similarity_NN based_VBN approaches_NNS where_WRB similar_JJ operations_NNS are_VBP repeated_VBN for_IN every_DT incoming_JJ query_NN and_CC the_DT processing_NN time_NN keeps_VBZ largely_RB constant_JJ over_IN time_NN ._.
+Another_DT way_NN of_IN viewing_VBG this_DT paper_NN is_VBZ that_IN our_PRP$ basic_JJ approach_NN to_TO distributed_VBN IR_NNP search_NN is_VBZ to_TO construct_VB a_DT hierarchical_JJ overlay_NN network_NN -LRB-_-LRB- agent_NN organization_NN -RRB-_-RRB- based_VBN on_IN the_DT contentsimilarity_NN measure_NN among_IN agents_NNS ''_'' document_NN collections_NNS in_IN a_DT bottom-up_JJ fashion_NN ._.
+In_IN the_DT past_JJ work_NN ,_, we_PRP have_VBP shown_VBN that_IN this_DT organization_NN improves_VBZ search_NN performance_NN significantly_RB ._.
+However_RB ,_, this_DT organizational_JJ structure_NN does_VBZ not_RB take_VB into_IN account_NN the_DT arrival_NN patterns_NNS of_IN queries_NNS ,_, including_VBG their_PRP$ frequency_NN ,_, types_NNS ,_, and_CC where_WRB they_PRP enter_VBP the_DT system_NN ,_, nor_CC the_DT available_JJ communication_NN bandwidth_NN of_IN the_DT network_NN and_CC processing_NN capabilities_NNS of_IN individual_JJ agents_NNS ._.
+The_DT intention_NN of_IN the_DT reinforcement_NN learning_NN is_VBZ to_TO adapt_VB the_DT agents_NNS ''_'' routing_VBG decisions_NNS to_TO the_DT dynamic_JJ network_NN situations_NNS and_CC learn_VB from_IN past_JJ search_NN sessions_NNS ._.
+Specifically_RB ,_, the_DT contributions_NNS of_IN this_DT paper_NN include_VBP :_: -LRB-_-LRB- #_# -RRB-_-RRB- a_DT reinforcement_NN learning_NN based_VBN approach_NN for_IN agents_NNS to_TO acquire_VB satisfactory_JJ routing_VBG policies_NNS based_VBN on_IN estimates_NNS of_IN the_DT potential_JJ contribution_NN of_IN their_PRP$ neighboring_VBG agents_NNS ;_: -LRB-_-LRB- #_# -RRB-_-RRB- two_CD strategies_NNS to_TO speed_VB up_RP the_DT learning_NN process_NN ._.
+To_TO our_PRP$ best_JJS knowledge_NN ,_, this_DT is_VBZ one_CD of_IN the_DT first_JJ reinforcement_NN learning_VBG applications_NNS in_IN addressing_VBG distributed_VBN content_JJ sharing_NN problems_NNS and_CC it_PRP is_VBZ indicative_JJ of_IN some_DT of_IN the_DT issues_NNS in_IN applying_VBG reinforcement_NN in_IN a_DT complex_JJ application_NN ._.
+The_DT remainder_NN of_IN this_DT paper_NN is_VBZ organized_VBN as_IN follows_VBZ :_: Section_NN #_# reviews_VBZ the_DT hierarchical_JJ content_NN sharing_VBG systems_NNS and_CC the_DT two-phase_JJ search_NN algorithm_NN based_VBN on_IN such_JJ topology_NN ._.
+Section_NN #_# describes_VBZ a_DT reinforcement_NN learning_NN based_VBN approach_NN to_TO direct_VB the_DT routing_VBG process_NN ;_: Section_NN #_# details_NNS the_DT experimental_JJ settings_NNS and_CC analyze_VBP the_DT results_NNS ._.
+Section_NN #_# discusses_VBZ related_JJ studies_NNS and_CC Section_NN #_# concludes_VBZ the_DT paper_NN ._.
+2_LS ._.
+SEARCH_NN IN_IN HIERARCHICAL_JJ P2P_NN IR_NNP SYSTEMS_NNP This_DT section_NN briefly_NN reviews_VBZ our_PRP$ basic_JJ approaches_NNS to_TO hierarchical_JJ P2P_NN IR_NN systems_NNS ._.
+In_IN a_DT hierarchical_JJ P2P_NN IR_NN system_NN illustrated_VBD in_IN Fig_NN ._.
+#_# ,_, agents_NNS are_VBP connected_VBN to_TO each_DT other_JJ through_IN three_CD types_NNS of_IN links_NNS :_: upward_RB links_NNS ,_, downward_RB links_NNS ,_, and_CC lateral_JJ links_NNS ._.
+In_IN the_DT following_VBG sections_NNS ,_, we_PRP denote_VBP the_DT set_NN of_IN agents_NNS that_WDT are_VBP directly_RB connected_VBN to_TO agent_NN Ai_NN as_IN DirectConn_NNP -LRB-_-LRB- Ai_NNP -RRB-_-RRB- ,_, which_WDT is_VBZ defined_VBN as_IN DirectConn_NNP -LRB-_-LRB- Ai_NNP -RRB-_-RRB- =_JJ NEI_NN -LRB-_-LRB- Ai_NN -RRB-_-RRB- PAR_NN -LRB-_-LRB- Ai_NN -RRB-_-RRB- CHL_NN -LRB-_-LRB- Ai_NN -RRB-_-RRB- ,_, where_WRB NEI_NNP -LRB-_-LRB- Ai_NNP -RRB-_-RRB- is_VBZ the_DT set_NN of_IN neighboring_VBG agents_NNS connected_VBN to_TO Ai_VB through_IN lateral_JJ links_NNS ;_: PAR_NN -LRB-_-LRB- Ai_NN -RRB-_-RRB- is_VBZ the_DT set_NN of_IN agents_NNS whom_WP agent_NN Ai_NN is_VBZ connected_VBN to_TO through_IN upward_RB links_NNS and_CC CHL_NN -LRB-_-LRB- Ai_NN -RRB-_-RRB- is_VBZ the_DT set_NN of_IN agents_NNS that_WDT agent_NN Ai_NN connects_VBZ to_TO through_IN downward_JJ links_NNS ._.
+These_DT links_NNS are_VBP established_VBN through_IN a_DT bottom-up_JJ content-similarity_NN based_VBN distributed_VBN clustering_NN process_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+These_DT links_NNS are_VBP then_RB used_VBN by_IN agents_NNS to_TO locate_VB other_JJ agents_NNS that_WDT contain_VBP documents_NNS relevant_JJ to_TO the_DT given_VBN queries_NNS ._.
+A_DT typical_JJ agent_NN Ai_NNP in_IN our_PRP$ system_NN uses_VBZ two_CD queues_NNS :_: a_DT local_JJ search_NN queue_NN ,_, LSi_NNP ,_, and_CC a_DT message_NN forwarding_NN queue_NN MFi_NNP ._.
+The_DT states_NNS of_IN the_DT two_CD queues_NNS constitute_VBP the_DT internal_JJ states_NNS of_IN an_DT agent_NN ._.
+The_DT local_JJ search_NN queue_NN LSi_NNP stores_NNS search_NN sessions_NNS that_WDT are_VBP scheduled_VBN for_IN local_JJ processing_NN ._.
+It_PRP is_VBZ a_DT priority_NN queue_NN and_CC agent_NN Ai_NN always_RB selects_VBZ the_DT most_RBS promising_JJ queries_NNS to_TO process_VB in_IN order_NN to_TO maximize_VB the_DT global_JJ utility_NN ._.
+MFi_NNP consists_VBZ of_IN a_DT set_NN of_IN queries_NNS to_TO forward_RB on_IN and_CC is_VBZ processed_VBN in_IN a_DT FIFO_NN -LRB-_-LRB- first_RB in_IN first_JJ out_IN -RRB-_-RRB- fashion_NN ._.
+For_IN the_DT first_JJ query_NN in_IN MFi_NNP ,_, agent_NN Ai_NNP determines_VBZ which_WDT subset_NN of_IN its_PRP$ neighboring_VBG agents_NNS to_TO forward_RB it_PRP to_TO based_VBN on_IN the_DT agent_NN ''_'' s_NNS routing_VBG policy_NN i_FW ._.
+These_DT routing_VBG decisions_NNS determine_VB how_WRB the_DT search_NN process_NN is_VBZ conducted_VBN in_IN the_DT network_NN ._.
+In_IN this_DT paper_NN ,_, we_PRP call_VBP Ai_NNP as_IN Aj_NNP ''_'' s_VBZ upstream_JJ agent_NN and_CC Aj_NN as_IN Ai_NN ''_'' s_NNS downstream_JJ agent_NN if_IN A4_NN A5_NN A6_NN A7_NN A2_NN A3_NN A9_NN NEI_NN -LRB-_-LRB- A2_NN -RRB-_-RRB- =_JJ -LCB-_-LRB- A3_NN -RCB-_-RRB- PAR_NN -LRB-_-LRB- A2_NN -RRB-_-RRB- =_JJ -LCB-_-LRB- A1_NN -RCB-_-RRB- CHL_NN -LRB-_-LRB- A2_NN -RRB-_-RRB- =_JJ -LCB-_-LRB- A4_NN ,_, A5_NN -RCB-_-RRB- A1_NN A8_NN Figure_NN #_# :_: A_DT fraction_NN of_IN a_DT hierarchical_JJ P2PIR_NN system_NN an_DT agent_NN Ai_NNP routes_VBZ a_DT query_NN to_TO agent_NN Aj_NN ._.
+The_DT distributed_VBN search_NN protocol_NN of_IN our_PRP$ hierarchical_JJ agent_NN organization_NN is_VBZ composed_VBN of_IN two_CD steps_NNS ._.
+In_IN the_DT first_JJ step_NN ,_, upon_IN receipt_NN of_IN a_DT query_NN qk_NN at_IN time_NN tl_NN from_IN a_DT user_NN ,_, agent_NN Ai_NNP initiates_VBZ a_DT search_NN session_NN si_NNS by_IN probing_VBG its_PRP$ neighboring_VBG agents_NNS Aj_NNP NEI_NNP -LRB-_-LRB- Ai_NNP -RRB-_-RRB- with_IN the_DT message_NN PROBE_NN for_IN the_DT similarity_NN value_NN Sim_NN -LRB-_-LRB- qk_NN ,_, Aj_NN -RRB-_-RRB- between_IN qk_NN and_CC Aj_NN ._.
+Here_RB ,_, Ai_NNP is_VBZ defined_VBN as_IN the_DT query_NN initiator_NN of_IN search_NN session_NN si_NNS ._.
+In_IN the_DT second_JJ step_NN ,_, Ai_NNP selects_VBZ a_DT group_NN of_IN the_DT most_RBS promising_JJ agents_NNS to_TO start_VB the_DT actual_JJ search_NN process_NN with_IN the_DT message_NN SEARCH_NN ._.
+These_DT SEARCH_NN messages_NNS contain_VBP a_DT TTL_NN -LRB-_-LRB- Time_NN To_TO Live_VB -RRB-_-RRB- parameter_NN in_IN addition_NN to_TO the_DT query_NN ._.
+The_DT TTL_NN value_NN decreases_VBZ by_IN #_# after_IN each_DT hop_NN ._.
+In_IN the_DT search_NN process_NN ,_, agents_NNS discard_VBP those_DT queries_NNS that_WDT either_RB have_VBP been_VBN previously_RB processed_VBN or_CC whose_WP$ TTL_NN drops_VBZ to_TO #_# ,_, which_WDT prevents_VBZ queries_NNS from_IN looping_VBG in_IN the_DT system_NN forever_RB ._.
+The_DT search_NN session_NN ends_VBZ when_WRB all_PDT the_DT agents_NNS that_WDT receive_VBP the_DT query_JJ drop_NN it_PRP or_CC TTL_NN decreases_VBZ to_TO #_# ._.
+Upon_IN receipt_NN of_IN SEARCH_NN messages_NNS for_IN qk_NN ,_, agents_NNS schedule_VBP local_JJ activities_NNS including_VBG local_JJ searching_VBG ,_, forwarding_NN qk_NN to_TO their_PRP$ neighbors_NNS ,_, and_CC returning_VBG search_NN results_VBZ to_TO the_DT query_NN initiator_NN ._.
+This_DT process_NN and_CC related_JJ algorithms_NNS are_VBP detailed_VBN in_IN -LSB-_-LRB- ##_NN ,_, 14_CD -RSB-_-RRB- ._.
+3_LS ._.
+A_DT BASIC_JJ REINFORCEMENTLEARNING_NN BASED_NN SEARCH_NN APPROACH_NN In_IN the_DT aforementioned_JJ distributed_VBN search_NN algorithm_NN ,_, the_DT routing_VBG decisions_NNS of_IN an_DT agent_NN Ai_NNP rely_VBP on_IN the_DT similarity_NN comparison_NN between_IN incoming_JJ queries_NNS and_CC Ai_NN ''_'' s_NNS neighboring_VBG agents_NNS in_IN order_NN to_TO forward_RB those_DT queries_NNS to_TO relevant_JJ agents_NNS without_IN flooding_VBG the_DT network_NN with_IN unnecessary_JJ query_NN messages_NNS ._.
+However_RB ,_, this_DT heuristic_NN is_VBZ myopic_JJ because_IN a_DT relevant_JJ direct_JJ neighbor_NN is_VBZ not_RB necessarily_RB connected_VBN to_TO other_JJ relevant_JJ agents_NNS ._.
+In_IN this_DT section_NN ,_, we_PRP propose_VBP a_DT more_JJR general_JJ approach_NN by_IN framing_VBG this_DT problem_NN as_IN a_DT reinforcement_NN learning_VBG task_NN ._.
+In_IN pursuit_NN of_IN greater_JJR flexibility_NN ,_, agents_NNS can_MD switch_VB between_IN two_CD modes_NNS :_: learning_VBG mode_NN and_CC non-learning_JJ mode_NN ._.
+In_IN the_DT non-learning_JJ mode_NN ,_, agents_NNS operate_VBP in_IN the_DT same_JJ way_NN as_IN they_PRP do_VBP in_IN the_DT normal_JJ distributed_VBN search_NN processes_NNS described_VBN in_IN -LSB-_-LRB- ##_NN ,_, ##_NN -RSB-_-RRB- ._.
+On_IN the_DT other_JJ hand_NN ,_, in_IN the_DT learning_NN mode_NN ,_, in_IN parallel_NN with_IN distributed_VBN search_NN sessions_NNS ,_, agents_NNS also_RB participate_VBP in_IN a_DT learning_NN process_NN which_WDT will_MD be_VB detailed_VBN in_IN this_DT section_NN ._.
+Note_VB that_IN in_IN the_DT learning_NN protocol_NN ,_, the_DT learning_VBG process_NN does_VBZ not_RB interfere_VB with_IN the_DT distributed_VBN search_NN process_NN ._.
+Agents_NNS can_MD choose_VB to_TO initiate_VB and_CC stop_VB learning_VBG processes_NNS without_IN affecting_VBG the_DT system_NN performance_NN ._.
+In_IN particular_JJ ,_, since_IN the_DT learning_NN process_NN consumes_VBZ network_NN resources_NNS -LRB-_-LRB- especially_RB bandwidth_NN -RRB-_-RRB- ,_, agents_NNS can_MD choose_VB to_TO initiate_VB learning_VBG only_RB when_WRB the_DT network_NN load_NN is_VBZ relatively_RB low_JJ ,_, thus_RB minimizing_VBG the_DT extra_JJ communication_NN costs_NNS incurred_VBN by_IN the_DT learning_NN algorithm_NN ._.
+The_DT section_NN is_VBZ structured_VBN as_IN follows_VBZ ,_, Section_NNP #_# ._.
+#_# describes_VBZ 232_CD The_DT Sixth_NNP Intl_NNP ._.
+Joint_NNP Conf_NNP ._.
+on_IN Autonomous_NNP Agents_NNPS and_CC Multi-Agent_NNP Systems_NNP -LRB-_-LRB- AAMAS_NNP ##_CD -RRB-_-RRB- a_DT reinforcement_NN learning_NN based_VBN model_NN ._.
+Section_NN #_# ._.
+#_# describes_VBZ a_DT protocol_NN to_TO deploy_VB the_DT learning_NN algorithm_NN in_IN the_DT network_NN ._.
+Section_NN #_# ._.
+#_# discusses_VBZ the_DT convergence_NN of_IN the_DT learning_NN algorithm_NN ._.
+3_LS ._.
+#_# The_DT Model_NNP An_DT agent_NN ''_'' s_NNS routing_VBG policy_NN takes_VBZ the_DT state_NN of_IN a_DT search_NN session_NN as_IN input_NN and_CC output_NN the_DT routing_VBG actions_NNS for_IN that_DT query_NN ._.
+In_IN our_PRP$ work_NN ,_, the_DT state_NN of_IN a_DT search_NN session_NN sj_NN is_VBZ stipulated_VBN as_IN :_: QSj_NN =_JJ -LRB-_-LRB- qk_NN ,_, ttlj_NN -RRB-_-RRB- where_WRB ttlj_NN is_VBZ the_DT number_NN of_IN hops_VBZ that_IN remains_VBZ for_IN the_DT search_NN session_NN sj_NN ,_, qk_NN is_VBZ the_DT specific_JJ query_NN ._.
+QL_NNP is_VBZ an_DT attribute_NN of_IN qk_NN that_WDT indicates_VBZ which_WDT type_NN of_IN queries_NNS qk_VBP most_RBS likely_JJ belong_VBP to_TO ._.
+The_DT set_NN of_IN QL_NNP can_MD be_VB generated_VBN by_IN running_VBG a_DT simple_JJ online_JJ classification_NN algorithm_NN on_IN all_PDT the_DT queries_NNS that_WDT have_VBP been_VBN processed_VBN by_IN the_DT agents_NNS ,_, or_CC an_DT oine_NN algorithm_NN on_IN a_DT pre-designated_JJ training_NN set_NN ._.
+The_DT assumption_NN here_RB is_VBZ that_IN the_DT set_NN of_IN query_NN types_NNS is_VBZ learned_VBN ahead_RB of_IN time_NN and_CC belongs_VBZ to_TO the_DT common_JJ knowledge_NN of_IN the_DT agents_NNS in_IN the_DT network_NN ._.
+Future_JJ work_NN includes_VBZ exploring_VBG how_WRB learning_NN can_MD be_VB accomplished_VBN when_WRB this_DT assumption_NN does_VBZ not_RB hold_VB ._.
+Given_VBN the_DT query_NN types_NNS set_VBN ,_, an_DT incoming_JJ query_NN qi_NN can_MD be_VB classified_VBN to_TO one_CD query_NN class_NN Q_NNP -LRB-_-LRB- qi_NNS -RRB-_-RRB- by_IN the_DT formula_NN :_: Q_NNP -LRB-_-LRB- qi_NNS -RRB-_-RRB- =_JJ arg_NN max_NN Qj_NN P_NN -LRB-_-LRB- qi_NN |_CD Qj_NN -RRB-_-RRB- -LRB-_-LRB- #_# -RRB-_-RRB- where_WRB P_NN -LRB-_-LRB- qi_NN |_CD Qj_NN -RRB-_-RRB- indicates_VBZ the_DT likelihood_NN that_IN the_DT query_NN qi_NN is_VBZ generated_VBN by_IN the_DT query_NN class_NN Qj_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+The_DT set_NN of_IN atomic_JJ routing_VBG actions_NNS of_IN an_DT agent_NN Ai_NN is_VBZ denoted_VBN as_IN -LCB-_-LRB- i_FW -RCB-_-RRB- ,_, where_WRB -LCB-_-LRB- i_FW -RCB-_-RRB- is_VBZ defined_VBN as_IN i_FW =_JJ -LCB-_-LRB- i0_NN ,_, i1_NN ,_, ..._: ,_, in_IN -RCB-_-RRB- ._.
+An_DT element_NN ij_NN represents_VBZ an_DT action_NN to_TO route_NN a_DT given_VBN query_NN to_TO the_DT neighboring_VBG agent_NN Aij_NN DirectConn_NN -LRB-_-LRB- Ai_NN -RRB-_-RRB- ._.
+The_DT routing_VBG policy_NN i_FW of_IN agent_NN Ai_NN is_VBZ stochastic_JJ and_CC its_PRP$ outcome_NN for_IN a_DT search_NN session_NN with_IN state_NN QSj_NN is_VBZ defined_VBN as_IN :_: i_LS -LRB-_-LRB- QSj_NN -RRB-_-RRB- =_JJ -LCB-_-LRB- -LRB-_-LRB- i0_NN ,_, i_FW -LRB-_-LRB- QSi_NNP ,_, i0_NN -RRB-_-RRB- -RRB-_-RRB- ,_, -LRB-_-LRB- i1_NN ,_, i_FW -LRB-_-LRB- QSi_NNP ,_, i1_NN -RRB-_-RRB- -RRB-_-RRB- ,_, ..._: -RCB-_-RRB- -LRB-_-LRB- #_# -RRB-_-RRB- Note_VBP that_IN operator_NN i_FW is_VBZ overloaded_VBN to_TO represent_VB either_CC the_DT probabilistic_JJ policy_NN for_IN a_DT search_NN session_NN with_IN state_NN QSj_NN ,_, denoted_VBN as_IN i_FW -LRB-_-LRB- QSj_NN -RRB-_-RRB- ;_: or_CC the_DT probability_NN of_IN forwarding_NN the_DT query_NN to_TO a_DT specific_JJ neighboring_VBG agent_NN Aik_NNP DirectConn_NNP -LRB-_-LRB- Ai_NNP -RRB-_-RRB- under_IN the_DT policy_NN i_FW -LRB-_-LRB- QSj_NN -RRB-_-RRB- ,_, denoted_VBN as_IN i_FW -LRB-_-LRB- QSj_NNP ,_, ik_NN -RRB-_-RRB- ._.
+Therefore_RB ,_, equation_NN -LRB-_-LRB- #_# -RRB-_-RRB- means_VBZ that_IN the_DT probability_NN of_IN forwarding_NN the_DT search_NN session_NN to_TO agent_NN Ai0_NN is_VBZ i_FW -LRB-_-LRB- QSi_NNP ,_, i0_NN -RRB-_-RRB- and_CC so_RB on_IN ._.
+Under_IN this_DT stochastic_JJ policy_NN ,_, the_DT routing_VBG action_NN is_VBZ nondeterministic_JJ ._.
+The_DT advantage_NN of_IN such_PDT a_DT strategy_NN is_VBZ that_IN the_DT best_JJS neighboring_VBG agents_NNS will_MD not_RB be_VB selected_VBN repeatedly_RB ,_, thereby_RB mitigating_VBG the_DT potential_JJ hot_JJ spots_NNS situations_NNS ._.
+The_DT expected_VBN utility_NN ,_, Un_NNP i_FW -LRB-_-LRB- QSj_NN -RRB-_-RRB- ,_, is_VBZ used_VBN to_TO estimate_VB the_DT potential_JJ utility_NN gain_NN of_IN routing_VBG query_NN type_NN QSj_NN to_TO agent_NN Ai_NN under_IN policy_NN n_NN i_FW ._.
+The_DT superscript_JJ n_NN indicates_VBZ the_DT value_NN at_IN the_DT nth_JJ iteration_NN in_IN an_DT iterative_JJ learning_NN process_NN ._.
+The_DT expected_VBN utility_NN provides_VBZ routing_VBG guidance_NN for_IN future_JJ search_NN sessions_NNS ._.
+In_IN the_DT search_NN process_NN ,_, each_DT agent_NN Ai_NNP maintains_VBZ partial_JJ observations_NNS of_IN its_PRP$ neighbors_NNS ''_'' states_NNS ,_, as_IN shown_VBN in_IN Fig_NN ._.
+#_# ._.
+The_DT partial_JJ observation_NN includes_VBZ non-local_JJ information_NN such_JJ as_IN the_DT potential_JJ utility_NN estimation_NN of_IN its_PRP$ neighbor_NN Am_VBP for_IN query_JJ state_NN QSj_NN ,_, denoted_VBN as_IN Um_NN -LRB-_-LRB- QSj_NN -RRB-_-RRB- ,_, as_RB well_RB as_IN the_DT load_NN information_NN ,_, Lm_NN ._.
+These_DT observations_NNS are_VBP updated_VBN periodically_RB by_IN the_DT neighbors_NNS ._.
+The_DT estimated_VBN utility_NN information_NN will_MD be_VB used_VBN to_TO update_VB Ai_NNP ''_'' s_VBZ expected_VBN utility_NN for_IN its_PRP$ routing_VBG policy_NN ._.
+Load_NN Information_NN Expected_NNP Utility_NN For_IN Different_JJ Query_NNP Types_NNP Neighboring_NNP Agents_NNPS ..._: A0_NN A1_NN A3_NN A2_NN Un_NN 0_CD -LRB-_-LRB- QS0_NN -RRB-_-RRB- ..._: ..._: ..._: ..._: ..._: ._.
+Un_NN 0_CD -LRB-_-LRB- QS1_NN -RRB-_-RRB- Un_NN 1_CD -LRB-_-LRB- QS1_NN -RRB-_-RRB- Un_NN 2_CD -LRB-_-LRB- QS1_NN -RRB-_-RRB- Un_NN 3_CD -LRB-_-LRB- QS1_NN -RRB-_-RRB- Un_NN 1_CD -LRB-_-LRB- QS0_NN -RRB-_-RRB- Un_NN 2_CD -LRB-_-LRB- QS0_NN -RRB-_-RRB- Un_NN 3_CD -LRB-_-LRB- QS0_NN -RRB-_-RRB- Ln_NN 0_CD Ln_NN 1_CD Ln_NN 2_CD Ln_NN 3_CD ..._: QS0_CD QS1_NN ..._: Figure_NNP #_# :_: Agent_NNP Ai_NNP ''_'' s_VBZ Partial_JJ Observation_NN about_IN its_PRP$ neighbors_NNS -LRB-_-LRB- A0_NN ,_, A1_NN ..._: -RRB-_-RRB- The_DT load_NN information_NN of_IN Am_NNP ,_, Lm_NNP ,_, is_VBZ defined_VBN as_IN Lm_NN =_JJ |_CD MFm_NN |_CD Cm_NN ,_, where_WRB |_JJ MFm_NN |_NN is_VBZ the_DT length_NN of_IN the_DT message-forward_JJ queue_NN and_CC Cm_NN is_VBZ the_DT service_NN rate_NN of_IN agent_NN Am_VBP ''_'' s_VBZ message-forward_JJ queue_NN ._.
+Therefore_RB Lm_NN characterizes_VBZ the_DT utilization_NN of_IN an_DT agent_NN ''_'' s_NNS communication_NN channel_NN ,_, and_CC thus_RB provide_VBP non-local_JJ information_NN for_IN Am_NNP ''_'' s_VBZ neighbors_NNS to_TO adjust_VB the_DT parameters_NNS of_IN their_PRP$ routing_VBG policy_NN to_TO avoid_VB inundating_VBG their_PRP$ downstream_JJ agents_NNS ._.
+Note_VB that_DT based_VBN on_IN the_DT characteristics_NNS of_IN the_DT queries_NNS entering_VBG the_DT system_NN and_CC agents_NNS ''_'' capabilities_NNS ,_, the_DT loading_NN of_IN agents_NNS may_MD not_RB be_VB uniform_JJ ._.
+After_IN collecting_VBG the_DT utilization_NN rate_NN information_NN from_IN all_DT its_PRP$ neighbors_NNS ,_, agent_NN Ai_NNP computes_VBZ Li_NNP as_IN a_DT single_JJ measure_NN for_IN assessing_VBG the_DT average_JJ load_NN condition_NN of_IN its_PRP$ neighborhood_NN :_: Li_NNP =_JJ P_NN k_NN Lk_NN |_CD DirectConn_NNP -LRB-_-LRB- Ai_NNP -RRB-_-RRB- |_CD Agents_NNS exploit_VBP Li_NNP value_NN in_IN determining_VBG the_DT routing_VBG probability_NN in_IN its_PRP$ routing_VBG policy_NN ._.
+Note_VB that_IN ,_, as_IN described_VBN in_IN Section_NN #_# ._.
+#_# ,_, information_NN about_IN neighboring_VBG agents_NNS is_VBZ piggybacked_VBN with_IN the_DT query_NN message_NN propagated_VBD among_IN the_DT agents_NNS whenever_WRB possible_JJ to_TO reduce_VB the_DT traffic_NN overhead_NN ._.
+3_LS ._.
+#_# ._.
+#_# Update_NNP the_DT Policy_NNP An_DT iterative_JJ update_VBP process_NN is_VBZ introduced_VBN for_IN agents_NNS to_TO learn_VB a_DT satisfactory_JJ stochastic_JJ routing_VBG policy_NN ._.
+In_IN this_DT iterative_JJ process_NN ,_, agents_NNS update_VBP their_PRP$ estimates_NNS on_IN the_DT potential_JJ utility_NN of_IN their_PRP$ current_JJ routing_VBG policies_NNS and_CC then_RB propagate_VB the_DT updated_VBN estimates_NNS to_TO their_PRP$ neighbors_NNS ._.
+Their_PRP$ neighbors_NNS then_RB generate_VBP a_DT new_JJ routing_VBG policy_NN based_VBN on_IN the_DT updated_VBN observation_NN and_CC in_IN turn_NN they_PRP calculate_VBP the_DT expected_VBN utility_NN based_VBN on_IN the_DT new_JJ policies_NNS and_CC continue_VB this_DT iterative_JJ process_NN ._.
+In_IN particular_JJ ,_, at_IN time_NN n_NN ,_, given_VBN a_DT set_NN of_IN expected_VBN utility_NN ,_, an_DT agent_NN Ai_NNP ,_, whose_WP$ directly_RB connected_JJ agents_NNS set_VBN is_VBZ DirectConn_NNP -LRB-_-LRB- Ai_NNP -RRB-_-RRB- =_JJ -LCB-_-LRB- Ai0_NN ,_, ..._: ,_, Aim_NNP -RCB-_-RRB- ,_, determines_VBZ its_PRP$ corresponding_JJ stochastic_JJ routing_VBG policy_NN for_IN a_DT search_NN session_NN of_IN state_NN QSj_NN based_VBN on_IN the_DT following_VBG steps_NNS :_: -LRB-_-LRB- #_# -RRB-_-RRB- Ai_NN first_RB selects_VBZ a_DT subset_NN of_IN agents_NNS as_IN the_DT potential_JJ downstream_JJ agents_NNS from_IN set_VBN DirectConn_NNP -LRB-_-LRB- Ai_NNP -RRB-_-RRB- ,_, denoted_VBN as_IN PDn_NN -LRB-_-LRB- Ai_NN ,_, QSj_NN -RRB-_-RRB- ._.
+The_DT size_NN of_IN the_DT potential_JJ downstream_JJ agent_NN is_VBZ specified_VBN as_IN |_CD PDn_NN -LRB-_-LRB- Ai_NN ,_, QSj_NN -RRB-_-RRB- |_NN =_JJ min_NN -LRB-_-LRB- |_CD NEI_NN -LRB-_-LRB- Ai_NN -RRB-_-RRB- ,_, dn_NN i_FW +_CC k_NN -RRB-_-RRB- |_CD where_WRB k_NN is_VBZ a_DT constant_JJ and_CC is_VBZ set_VBN to_TO #_# in_IN this_DT paper_NN ;_: dn_NN i_FW ,_, the_DT forward_JJ width_NN ,_, is_VBZ defined_VBN as_IN the_DT expected_VBN number_NN of_IN The_DT Sixth_NNP Intl_NNP ._.
+Joint_NNP Conf_NNP ._.
+on_IN Autonomous_NNP Agents_NNPS and_CC Multi-Agent_NNP Systems_NNP -LRB-_-LRB- AAMAS_NNP ##_CD -RRB-_-RRB- ###_CD neighboring_VBG agents_NNS that_WDT agent_NN Ai_NN can_MD forward_RB to_TO at_IN time_NN n_NN ._.
+This_DT formula_NN specifies_VBZ that_IN the_DT potential_JJ downstream_JJ agent_NN set_VBN PDn_NN -LRB-_-LRB- Ai_NN ,_, QSj_NN -RRB-_-RRB- is_VBZ either_CC the_DT subset_NN of_IN neighboring_VBG agents_NNS with_IN dn_NN i_FW +_CC k_NN highest_JJS expected_VBN utility_NN value_NN for_IN state_NN QSj_NN among_IN all_PDT the_DT agents_NNS in_IN DirectConn_NNP -LRB-_-LRB- Ai_NNP -RRB-_-RRB- ,_, or_CC all_DT their_PRP$ neighboring_VBG agents_NNS ._.
+The_DT k_NN is_VBZ introduced_VBN based_VBN on_IN the_DT idea_NN of_IN a_DT stochastic_JJ routing_VBG policy_NN and_CC it_PRP makes_VBZ the_DT forwarding_NN probability_NN of_IN the_DT dn_NN i_FW +_CC k_NN highest_JJS agent_NN less_JJR than_IN ###_CD %_NN ._.
+Note_VB that_IN if_IN we_PRP want_VBP to_TO limit_VB the_DT number_NN of_IN downstream_JJ agents_NNS for_IN search_NN session_NN sj_NN as_IN #_# ,_, the_DT probability_NN of_IN forwarding_NN the_DT query_NN to_TO all_DT neighboring_VBG agents_NNS should_MD add_VB up_RP to_TO #_# ._.
+Setting_VBG up_RP dn_NN i_FW value_NN properly_RB can_MD improve_VB the_DT utilization_NN rate_NN of_IN the_DT network_NN bandwidth_NN when_WRB much_RB of_IN the_DT network_NN is_VBZ idle_JJ while_IN mitigating_VBG the_DT traffic_NN load_NN when_WRB the_DT network_NN is_VBZ highly_RB loaded_VBN ._.
+The_DT dn_NN +_CC #_# i_FW value_NN is_VBZ updated_VBN based_VBN on_IN dn_NN i_FW ,_, the_DT previous_JJ and_CC current_JJ observations_NNS on_IN the_DT traffic_NN situation_NN in_IN the_DT neighborhood_NN ._.
+Specifically_RB ,_, the_DT update_VBP formula_NN for_IN dn_NN +_CC #_# i_FW is_VBZ dn_NN +_CC #_# i_FW =_JJ dn_NN i_FW -LRB-_-LRB- #_# +_CC 1_CD Li_NNP |_CD DirectConn_NNP -LRB-_-LRB- Ai_NNP -RRB-_-RRB- |_NN -RRB-_-RRB- In_IN this_DT formula_NN ,_, the_DT forward_JJ width_NN is_VBZ updated_VBN based_VBN on_IN the_DT traffic_NN conditions_NNS of_IN agent_NN Ai_NN ''_'' s_NNS neighborhood_NN ,_, i_FW ._.
+e_LS Li_NNP ,_, and_CC its_PRP$ previous_JJ value_NN ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- For_IN each_DT agent_NN Aik_NNP in_IN the_DT PDn_NN -LRB-_-LRB- Ai_NN ,_, QSj_NN -RRB-_-RRB- ,_, the_DT probability_NN of_IN forwarding_NN the_DT query_NN to_TO Aik_NNP is_VBZ determined_VBN in_IN the_DT following_JJ way_NN in_IN order_NN to_TO assign_VB higher_JJR forwarding_NN probability_NN to_TO the_DT neighboring_VBG agents_NNS with_IN higher_JJR expected_JJ utility_NN value_NN :_: n_NN +_CC #_# i_FW -LRB-_-LRB- QSj_NNP ,_, ik_NN -RRB-_-RRB- =_JJ dn_NN +_CC #_# i_FW |_FW PDn_NN -LRB-_-LRB- Ai_NN ,_, QSj_NN -RRB-_-RRB- |_NN +_CC `_`` Uik_NNP -LRB-_-LRB- QSj_NNP -RRB-_-RRB- PDU_NN -LRB-_-LRB- Ai_NN ,_, QSj_NN -RRB-_-RRB- |_CD PDn_NN -LRB-_-LRB- Ai_NN ,_, QSj_NN -RRB-_-RRB- |_NN -LRB-_-LRB- #_# -RRB-_-RRB- where_WRB PDUn_NN -LRB-_-LRB- Ai_NN ,_, QSj_NN -RRB-_-RRB- =_JJ X_NN oP_NN Dn_NN -LRB-_-LRB- Ai_NN ,_, QSj_NN -RRB-_-RRB- Uo_NN -LRB-_-LRB- QSj_NN -RRB-_-RRB- and_CC QSj_NN is_VBZ the_DT subsequent_JJ state_NN of_IN agent_NN Aik_NNP after_IN agent_NN Ai_NN forwards_RB the_DT search_NN session_NN with_IN state_NN QSj_NN to_TO its_PRP$ neighboring_VBG agent_NN Aik_NNP ;_: If_IN QSj_NN =_JJ -LRB-_-LRB- qk_NN ,_, ttl0_NN -RRB-_-RRB- ,_, then_RB QSj_NN =_JJ -LRB-_-LRB- qk_NN ,_, ttl0_NN 1_CD -RRB-_-RRB- ._.
+In_IN formula_NN #_# ,_, the_DT first_JJ term_NN on_IN the_DT right_NN of_IN the_DT equation_NN ,_, dn_NN +_CC #_# i_FW |_FW P_NN Dn_NN -LRB-_-LRB- Ai_NN ,_, QSj_NN -RRB-_-RRB- |_NN ,_, is_VBZ used_VBN to_TO to_TO determine_VB the_DT forwarding_NN probability_NN by_IN equally_RB distributing_VBG the_DT forward_JJ width_NN ,_, dn_NN +_CC #_# i_FW ,_, to_TO the_DT agents_NNS in_IN PDn_NN -LRB-_-LRB- Ai_NN ,_, QSj_NN -RRB-_-RRB- set_NN ._.
+The_DT second_JJ term_NN is_VBZ used_VBN to_TO adjust_VB the_DT probability_NN of_IN being_VBG chosen_VBN so_IN that_IN agents_NNS with_IN higher_JJR expected_JJ utility_NN values_NNS will_MD be_VB favored_VBN ._.
+is_VBZ determined_VBN according_VBG to_TO :_: =_JJ min_NN `_`` m_NN dn_NN +_CC #_# i_FW m_NN umax_NN PDUn_NN -LRB-_-LRB- Ai_NN ,_, QSj_NN -RRB-_-RRB- ,_, dn_NN +_CC #_# i_FW PDUn_FW -LRB-_-LRB- Ai_NN ,_, QSj_NN -RRB-_-RRB- m_NN umin_NN -LRB-_-LRB- #_# -RRB-_-RRB- where_WRB m_NN =_JJ |_CD PDn_NN -LRB-_-LRB- Ai_NN ,_, QSj_NN -RRB-_-RRB- |_NN ,_, umax_NN =_JJ max_NN oP_NN Dn_NN -LRB-_-LRB- Ao_NN ,_, QSj_NN -RRB-_-RRB- Uo_NN -LRB-_-LRB- QSj_NN -RRB-_-RRB- and_CC umin_NN =_JJ min_NN oP_NN Dn_NN -LRB-_-LRB- Ao_NN ,_, QSj_NN -RRB-_-RRB- Uo_NN -LRB-_-LRB- QSj_NN -RRB-_-RRB- This_DT formula_NN guarantees_VBZ that_IN the_DT final_JJ n_NN +_CC #_# i_FW -LRB-_-LRB- QSj_NNP ,_, ik_NN -RRB-_-RRB- value_NN is_VBZ well_RB defined_VBN ,_, i_FW ._.
+e_LS ,_, 0_CD n_NN +_CC #_# i_FW -LRB-_-LRB- QSj_NNP ,_, ik_NN -RRB-_-RRB- #_# and_CC X_NN i_FW n_NN +_CC #_# i_FW -LRB-_-LRB- QSj_NNP ,_, ik_NN -RRB-_-RRB- =_JJ dn_NN +_CC #_# i_FW However_RB ,_, such_PDT a_DT solution_NN does_VBZ not_RB explore_VB all_PDT the_DT possibilities_NNS ._.
+In_IN order_NN to_TO balance_NN between_IN exploitation_NN and_CC exploration_NN ,_, a_SYM -_: Greedy_JJ approach_NN is_VBZ taken_VBN ._.
+In_IN the_DT -_: Greedy_JJ approach_NN ,_, in_IN addition_NN to_TO assigning_VBG higher_JJR probability_NN to_TO those_DT agents_NNS with_IN higher_JJR expected_JJ utility_NN value_NN ,_, as_IN in_IN the_DT equation_NN -LRB-_-LRB- #_# -RRB-_-RRB- ._.
+Agents_NNS that_WDT appear_VBP to_TO be_VB not-so-good_JJ choices_NNS will_MD also_RB be_VB sent_VBN queries_NNS based_VBN on_IN a_DT dynamic_JJ exploration_NN rate_NN ._.
+In_IN particular_JJ ,_, for_IN agents_NNS in_IN the_DT set_VBN PDn_NN -LRB-_-LRB- Ai_NN ,_, QSj_NN -RRB-_-RRB- ,_, n_NN +_CC #_# i1_NN -LRB-_-LRB- QSj_NN -RRB-_-RRB- is_VBZ determined_VBN in_IN the_DT same_JJ way_NN as_IN the_DT above_JJ ,_, with_IN the_DT only_JJ difference_NN being_VBG that_IN dn_NN +_CC #_# i_FW is_VBZ replaced_VBN with_IN dn_NN +_CC #_# i_FW -LRB-_-LRB- #_# n_NN -RRB-_-RRB- ._.
+The_DT remaining_VBG search_NN bandwidth_NN is_VBZ used_VBN for_IN learning_VBG by_IN assigning_VBG probability_NN n_NN evenly_RB to_TO agents_NNS Ai2_NN in_IN the_DT set_VBN DirectConn_NNP -LRB-_-LRB- Ai_NNP -RRB-_-RRB- PDn_NN -LRB-_-LRB- Ai_NN ,_, QSj_NN -RRB-_-RRB- ._.
+n_NN +_CC #_# i2_NN -LRB-_-LRB- QSj_NN ,_, ik_NN -RRB-_-RRB- =_JJ dn_NN +_CC #_# i_FW n_NN |_CD DirectConn_NNP -LRB-_-LRB- Ai_NNP -RRB-_-RRB- PDn_NN -LRB-_-LRB- Ai_NN ,_, QSj_NN -RRB-_-RRB- |_NN -LRB-_-LRB- #_# -RRB-_-RRB- where_WRB PDn_NN -LRB-_-LRB- Ai_NN ,_, QSj_NN -RRB-_-RRB- DirectConn_NN -LRB-_-LRB- Ai_NN -RRB-_-RRB- ._.
+Note_VB that_IN the_DT exploration_NN rate_NN is_VBZ not_RB a_DT constant_JJ and_CC it_PRP decreases_VBZ overtime_NN ._.
+The_DT is_VBZ determined_VBN according_VBG to_TO the_DT following_JJ equation_NN :_: n_NN +_CC #_# =_JJ #_# ec1n_CD -LRB-_-LRB- #_# -RRB-_-RRB- where_WRB #_# is_VBZ the_DT initial_JJ exploration_NN rate_NN ,_, which_WDT is_VBZ a_DT constant_JJ ;_: c1_NN is_VBZ also_RB a_DT constant_JJ to_TO adjust_VB the_DT decreasing_VBG rate_NN of_IN the_DT exploration_NN rate_NN ;_: n_NN is_VBZ the_DT current_JJ time_NN unit_NN ._.
+3_LS ._.
+#_# ._.
+#_# Update_NNP Expected_NNP Utility_NNP Once_IN the_DT routing_VBG policy_NN at_IN step_NN n_NN +_CC #_# ,_, n_NN +_CC #_# i_FW ,_, is_VBZ determined_VBN based_VBN on_IN the_DT above_JJ formula_NN ,_, agent_NN Ai_NNP can_MD update_VB its_PRP$ own_JJ expected_JJ utility_NN ,_, Un_NN +_CC #_# i_FW -LRB-_-LRB- QSi_NN -RRB-_-RRB- ,_, based_VBN on_IN the_DT the_DT updated_VBN routing_VBG policy_NN resulted_VBD from_IN the_DT formula_NN #_# and_CC the_DT updated_VBN U_NN values_NNS of_IN its_PRP$ neighboring_VBG agents_NNS ._.
+Under_IN the_DT assumption_NN that_IN after_IN a_DT query_NN is_VBZ forwarded_VBN to_TO Ai_NNP ''_'' s_VBZ neighbors_NNS the_DT subsequent_JJ search_NN sessions_NNS are_VBP independent_JJ ,_, the_DT update_VBP formula_NN is_VBZ similar_JJ to_TO the_DT Bellman_NNP update_VBP formula_NN in_IN Q-Learning_NN :_: Un_NN +_CC #_# i_FW -LRB-_-LRB- QSj_NN -RRB-_-RRB- =_JJ -LRB-_-LRB- #_# i_LS -RRB-_-RRB- Un_NN i_FW -LRB-_-LRB- QSj_NN -RRB-_-RRB- +_CC i_FW -LRB-_-LRB- Rn_NN +_CC #_# i_FW -LRB-_-LRB- QSj_NN -RRB-_-RRB- +_CC X_NN k_NN n_NN +_CC #_# i_FW -LRB-_-LRB- QSj_NNP ,_, ik_NN -RRB-_-RRB- Un_NN k_NN -LRB-_-LRB- QSj_NN -RRB-_-RRB- -RRB-_-RRB- -LRB-_-LRB- #_# -RRB-_-RRB- where_WRB QSj_NN =_JJ -LRB-_-LRB- Qj_NN ,_, ttl_NN #_# -RRB-_-RRB- is_VBZ the_DT next_JJ state_NN of_IN QSj_NN =_JJ -LRB-_-LRB- Qj_NN ,_, ttl_NN -RRB-_-RRB- ;_: Rn_NN +_CC #_# i_FW -LRB-_-LRB- QSj_NN -RRB-_-RRB- is_VBZ the_DT expected_VBN local_JJ reward_NN for_IN query_NN class_NN Qk_NN at_IN agent_NN Ai_NN under_IN the_DT routing_VBG policy_NN n_NN +_CC #_# i_FW ;_: i_LS is_VBZ the_DT coefficient_NN for_IN deciding_VBG how_WRB much_JJ weight_NN is_VBZ given_VBN to_TO the_DT old_JJ value_NN during_IN the_DT update_VBP process_NN :_: the_DT smaller_JJR i_FW value_NN is_VBZ ,_, the_DT faster_RBR the_DT agent_NN is_VBZ expected_VBN to_TO learn_VB the_DT real_JJ value_NN ,_, while_IN the_DT greater_JJR volatility_NN of_IN the_DT algorithm_NN ,_, and_CC vice_NN versa_RB ._.
+Rn_NN +_CC #_# -LRB-_-LRB- s_NNS -RRB-_-RRB- is_VBZ updated_VBN according_VBG to_TO the_DT following_JJ equation_NN :_: 234_CD The_DT Sixth_NNP Intl_NNP ._.
+Joint_NNP Conf_NNP ._.
+on_IN Autonomous_NNP Agents_NNPS and_CC Multi-Agent_NNP Systems_NNP -LRB-_-LRB- AAMAS_NNP ##_CD -RRB-_-RRB- Rn_NN +_CC #_# i_FW -LRB-_-LRB- QSj_NN -RRB-_-RRB- =_JJ Rn_NN i_FW -LRB-_-LRB- QSj_NN -RRB-_-RRB- +_CC i_FW -LRB-_-LRB- r_NN -LRB-_-LRB- QSj_NN -RRB-_-RRB- Rn_NN i_FW -LRB-_-LRB- QSj_NN -RRB-_-RRB- -RRB-_-RRB- P_NN -LRB-_-LRB- qj_NN |_CD Qj_NN -RRB-_-RRB- -LRB-_-LRB- #_# -RRB-_-RRB- where_WRB r_NN -LRB-_-LRB- QSj_NN -RRB-_-RRB- is_VBZ the_DT local_JJ reward_NN associated_VBN with_IN the_DT search_NN session_NN ._.
+P_NN -LRB-_-LRB- qj_NN |_CD Qj_NN -RRB-_-RRB- indicates_VBZ how_WRB relevant_JJ the_DT query_NN qj_NN is_VBZ to_TO the_DT query_NN type_NN Qj_NN ,_, and_CC i_FW is_VBZ the_DT learning_NN rate_NN for_IN agent_NN Ai_NN ._.
+Depending_VBG on_IN the_DT similarity_NN between_IN a_DT specific_JJ query_NN qi_NN and_CC its_PRP$ corresponding_JJ query_NN type_NN Qi_NNP ,_, the_DT local_JJ reward_NN associated_VBN with_IN the_DT search_NN session_NN has_VBZ different_JJ impact_NN on_IN the_DT Rn_NN i_FW -LRB-_-LRB- QSj_NN -RRB-_-RRB- estimation_NN ._.
+In_IN the_DT above_JJ formula_NN ,_, this_DT impact_NN is_VBZ reflected_VBN by_IN the_DT coefficient_NN ,_, the_DT P_NN -LRB-_-LRB- qj_NN |_CD Qj_NN -RRB-_-RRB- value_NN ._.
+3_LS ._.
+#_# ._.
+#_# Reward_VB function_NN After_IN a_DT search_NN session_NN stops_VBZ when_WRB its_PRP$ TTL_NN values_NNS expires_VBZ ,_, all_DT search_NN results_NNS are_VBP returned_VBN back_RB to_TO the_DT user_NN and_CC are_VBP compared_VBN against_IN the_DT relevance_NN judgment_NN ._.
+Assuming_VBG the_DT set_NN of_IN search_NN results_NNS is_VBZ SR_JJ ,_, the_DT reward_NN Rew_NN -LRB-_-LRB- SR_NN -RRB-_-RRB- is_VBZ defined_VBN as_IN :_: Rew_NN -LRB-_-LRB- SR_NN -RRB-_-RRB- =_JJ j_NN 1_CD if_IN |_CD Rel_NN -LRB-_-LRB- SR_NN -RRB-_-RRB- |_CD >_JJR c_NN |_CD Rel_NN -LRB-_-LRB- SR_NN -RRB-_-RRB- |_CD c_NN otherwise_RB ._.
+where_WRB SR_JJ is_VBZ the_DT set_NN of_IN returned_VBN search_NN results_NNS ,_, Rel_NN -LRB-_-LRB- SR_NN -RRB-_-RRB- is_VBZ the_DT set_NN of_IN relevant_JJ documents_NNS in_IN the_DT search_NN results_VBZ ._.
+This_DT equation_NN specifies_VBZ that_IN users_NNS give_VBP #_# ._.
+#_# reward_VB if_IN the_DT number_NN of_IN returned_VBN relevant_JJ documents_NNS reaches_VBZ a_DT predefined_JJ number_NN c_NN ._.
+Otherwise_RB ,_, the_DT reward_NN is_VBZ in_IN proportion_NN to_TO the_DT number_NN of_IN relevant_JJ documents_NNS returned_VBD ._.
+This_DT rationale_NN for_IN setting_VBG up_RP such_PDT a_DT cut-off_JJ value_NN is_VBZ that_IN the_DT importance_NN of_IN recall_NN ratio_NN decreases_VBZ with_IN the_DT abundance_NN of_IN relevant_JJ documents_NNS in_IN real_JJ world_NN ,_, therefore_RB users_NNS tend_VB to_TO focus_VB on_IN only_RB a_DT limited_JJ number_NN of_IN searched_VBN results_NNS ._.
+The_DT details_NNS of_IN the_DT actual_JJ routing_VBG protocol_NN will_MD be_VB introduced_VBN in_IN Section_NN #_# ._.
+#_# when_WRB we_PRP introduce_VB how_WRB the_DT learning_NN algorithm_NN is_VBZ deployed_VBN in_IN real_JJ systems_NNS ._.
+3_LS ._.
+#_# Deployment_NNP of_IN the_DT Learning_NNP algorithm_NN This_DT section_NN describes_VBZ how_WRB the_DT learning_NN algorithm_NN can_MD be_VB used_VBN in_IN either_CC a_DT single-phase_NN or_CC a_DT two-phase_JJ search_NN process_NN ._.
+In_IN the_DT single-phase_JJ search_NN algorithm_NN ,_, search_NN sessions_NNS start_VBP from_IN the_DT initiators_NNS of_IN the_DT queries_NNS ._.
+In_IN contrast_NN ,_, in_IN the_DT two-step_JJ search_NN algorithm_NN ,_, the_DT query_NN initiator_NN first_RB attempts_VBZ to_TO seek_VB a_DT more_RBR appropriate_JJ starting_VBG point_NN for_IN the_DT query_NN by_IN introducing_VBG an_DT exploratory_JJ step_NN as_IN described_VBN in_IN Section_NN #_# ._.
+Despite_IN the_DT difference_NN in_IN the_DT quality_NN of_IN starting_VBG points_NNS ,_, the_DT major_JJ part_NN of_IN the_DT learning_NN process_NN for_IN the_DT two_CD algorithms_NNS is_VBZ largely_RB the_DT same_JJ as_IN described_VBN in_IN the_DT following_VBG paragraphs_NNS ._.
+Before_IN learning_VBG starts_NNS ,_, each_DT agent_NN initializes_VBZ the_DT expected_VBN utility_NN value_NN for_IN all_DT possible_JJ states_NNS as_IN #_# ._.
+Thereafter_RB ,_, upon_IN receipt_NN of_IN a_DT query_NN ,_, in_IN addition_NN to_TO the_DT normal_JJ operations_NNS described_VBN in_IN the_DT previous_JJ section_NN ,_, an_DT agent_NN Ai_NNP also_RB sets_VBZ up_RP a_DT timer_NN to_TO wait_VB for_IN the_DT search_NN results_VBZ returned_VBN from_IN its_PRP$ downstream_JJ agents_NNS ._.
+Once_RB the_DT timer_NN expires_VBZ or_CC it_PRP has_VBZ received_VBN response_NN from_IN all_DT its_PRP$ downstream_JJ agents_NNS ,_, Ai_NNP merges_VBZ and_CC forwards_RB the_DT search_NN results_VBZ accrued_VBN from_IN its_PRP$ downstream_JJ agents_NNS to_TO its_PRP$ upstream_JJ agent_NN ._.
+Setting_VBG up_RP the_DT timer_NN speeds_NNS up_IN the_DT learning_NN because_IN agents_NNS can_MD avoid_VB waiting_VBG too_RB long_RB for_IN the_DT downstream_JJ agents_NNS to_TO return_VB search_NN results_NNS ._.
+Note_VB that_IN these_DT detailed_VBN results_NNS and_CC corresponding_JJ agent_NN information_NN will_MD still_RB be_VB stored_VBN at_IN Ai_NNP until_IN the_DT feedback_NN information_NN is_VBZ passed_VBN from_IN its_PRP$ upstream_JJ agent_NN and_CC the_DT performance_NN of_IN its_PRP$ downstream_JJ agents_NNS can_MD be_VB evaluated_VBN ._.
+The_DT duration_NN of_IN the_DT timer_NN is_VBZ related_VBN to_TO the_DT TTL_NN value_NN ._.
+In_IN this_DT paper_NN ,_, we_PRP set_VBD the_DT timer_NN to_TO ttimer_NN =_JJ ttli_NNS #_# +_CC tf_NN ,_, where_WRB ttli_JJ #_# is_VBZ the_DT sum_NN of_IN the_DT travel_NN time_NN of_IN the_DT queries_NNS in_IN the_DT network_NN ,_, and_CC tf_NN is_VBZ the_DT expected_JJ time_NN period_NN that_WDT users_NNS would_MD like_VB to_TO wait_VB ._.
+The_DT search_NN results_NNS will_MD eventually_RB be_VB returned_VBN to_TO the_DT search_NN session_NN initiator_NN A0_NN ._.
+They_PRP will_MD be_VB compared_VBN to_TO the_DT relevance_NN judgment_NN that_WDT is_VBZ provided_VBN by_IN the_DT final_JJ users_NNS -LRB-_-LRB- as_IN described_VBN in_IN the_DT experiment_NN section_NN ,_, the_DT relevance_NN judgement_NN for_IN the_DT query_JJ set_NN is_VBZ provided_VBN along_RP with_IN the_DT data_NNS collections_NNS -RRB-_-RRB- ._.
+The_DT reward_NN will_MD be_VB calculated_VBN and_CC propagated_VBN backward_RB to_TO the_DT agents_NNS along_IN the_DT way_NN that_IN search_NN results_NNS were_VBD passed_VBN ._.
+This_DT is_VBZ a_DT reverse_JJ process_NN of_IN the_DT search_NN results_VBZ propagation_NN ._.
+In_IN the_DT process_NN of_IN propagating_VBG reward_NN backward_RB ,_, agents_NNS update_VBP estimates_NNS of_IN their_PRP$ own_JJ potential_JJ utility_NN value_NN ,_, generate_VBP an_DT upto-dated_JJ policy_NN and_CC pass_VB their_PRP$ updated_VBN results_NNS to_TO the_DT neighboring_VBG agents_NNS based_VBN on_IN the_DT algorithm_NN described_VBN in_IN Section_NN #_# ._.
+Upon_IN change_NN of_IN expected_VBN utility_NN value_NN ,_, agent_NN Ai_NNP sends_VBZ out_RP its_PRP$ updated_VBN utility_NN estimation_NN to_TO its_PRP$ neighbors_NNS so_IN that_IN they_PRP can_MD act_VB upon_IN the_DT changed_VBN expected_VBN utility_NN and_CC corresponding_JJ state_NN ._.
+This_DT update_VBP message_NN includes_VBZ the_DT potential_JJ reward_NN as_RB well_RB as_IN the_DT corresponding_JJ state_NN QSi_NN =_JJ -LRB-_-LRB- qk_NN ,_, ttll_NN -RRB-_-RRB- of_IN agent_NN Ai_NN ._.
+Each_DT neighboring_VBG agent_NN ,_, Aj_NNP ,_, reacts_VBZ to_TO this_DT kind_NN of_IN update_VB message_NN by_IN updating_VBG the_DT expected_VBN utility_NN value_NN for_IN state_NN QSj_NN -LRB-_-LRB- qk_NN ,_, ttll_NN +_CC #_# -RRB-_-RRB- according_VBG to_TO the_DT newly-announced_JJ changed_VBD expected_VBN utility_NN value_NN ._.
+Once_IN they_PRP complete_VBP the_DT update_VBP ,_, the_DT agents_NNS would_MD again_RB in_IN turn_NN inform_VBP related_JJ neighbors_NNS to_TO update_VB their_PRP$ values_NNS ._.
+This_DT process_NN goes_VBZ on_IN until_IN the_DT TTL_NN value_NN in_IN the_DT update_VBP message_NN increases_NNS to_TO the_DT TTL_NN limit_NN ._.
+To_TO speed_VB up_RP the_DT learning_NN process_NN ,_, while_IN updating_VBG the_DT expected_VBN utility_NN values_NNS of_IN an_DT agent_NN Ai_NN ''_'' s_NNS neighboring_VBG agents_NNS we_PRP specify_VBP that_IN Um_NN -LRB-_-LRB- Qk_NN ,_, ttl0_NN -RRB-_-RRB- >_JJR =_JJ Um_NN -LRB-_-LRB- Qk_NN ,_, ttl1_NN -RRB-_-RRB- iff_NN ttl0_NN >_JJR ttl1_NN Thus_RB ,_, when_WRB agent_NN Ai_NN receives_VBZ an_DT updated_VBN expected_VBN utility_NN value_NN with_IN ttl1_NN ,_, it_PRP also_RB updates_NNS the_DT expected_VBN utility_NN values_NNS with_IN any_DT ttl0_NN >_JJR ttl1_CD if_IN Um_NN -LRB-_-LRB- Qk_NN ,_, ttl0_NN -RRB-_-RRB- <_JJR Um_NN -LRB-_-LRB- Qk_NN ,_, ttl1_NN -RRB-_-RRB- to_TO speed_VB up_RP convergence_NN ._.
+This_DT heuristic_NN is_VBZ based_VBN on_IN the_DT fact_NN that_IN the_DT utility_NN of_IN a_DT search_NN session_NN is_VBZ a_DT non-decreasing_JJ function_NN of_IN time_NN t_NN ._.
+3_LS ._.
+#_# Discussion_NNP In_IN formalizing_VBG the_DT content_NN routing_VBG system_NN as_IN a_DT learning_NN task_NN ,_, many_JJ assumptions_NNS are_VBP made_VBN ._.
+In_IN real_JJ systems_NNS ,_, these_DT assumptions_NNS may_MD not_RB hold_VB ,_, and_CC thus_RB the_DT learning_VBG algorithm_NN may_MD not_RB converge_VB ._.
+Two_CD problems_NNS are_VBP of_IN particular_JJ note_NN ,_, -LRB-_-LRB- #_# -RRB-_-RRB- This_DT content_NN routing_VBG problem_NN does_VBZ not_RB have_VB Markov_NNP properties_NNS ._.
+In_IN contrast_NN to_TO IP-level_JJ based_VBN packet_NN routing_VBG ,_, the_DT routing_VBG decision_NN of_IN each_DT agent_NN for_IN a_DT particular_JJ search_NN session_NN sj_NN depends_VBZ on_IN the_DT routing_VBG history_NN of_IN sj_NN ._.
+Therefore_RB ,_, the_DT assumption_NN that_IN all_DT subsequent_JJ search_NN sessions_NNS are_VBP independent_JJ does_VBZ not_RB hold_VB in_IN reality_NN ._.
+This_DT may_MD lead_VB to_TO double_JJ counting_NN problem_NN that_IN the_DT relevant_JJ documents_NNS of_IN some_DT agents_NNS will_MD be_VB counted_VBN more_JJR than_IN once_RB for_IN the_DT state_NN where_WRB the_DT TTL_NN value_NN is_VBZ more_JJR than_IN #_# ._.
+However_RB ,_, in_IN the_DT context_NN of_IN the_DT hierarchical_JJ agent_NN organizations_NNS ,_, two_CD factors_NNS mitigate_VBP this_DT problems_NNS :_: first_RB ,_, the_DT agents_NNS in_IN each_DT content_NN group_NN form_VBP a_DT tree-like_JJ structure_NN ._.
+With_IN the_DT absense_NN of_IN the_DT cycles_NNS ,_, the_DT estimates_NNS inside_IN the_DT tree_NN would_MD be_VB close_JJ to_TO the_DT accurate_JJ value_NN ._.
+Secondly_RB ,_, the_DT stochastic_JJ nature_NN of_IN the_DT routing_VBG policy_NN partly_RB remedies_NNS this_DT problem_NN ._.
+The_DT Sixth_NNP Intl_NNP ._.
+Joint_NNP Conf_NNP ._.
+on_IN Autonomous_NNP Agents_NNPS and_CC Multi-Agent_NNP Systems_NNP -LRB-_-LRB- AAMAS_NNP ##_CD -RRB-_-RRB- ###_CD -LRB-_-LRB- #_# -RRB-_-RRB- Another_DT challenge_NN for_IN this_DT learning_VBG algorithm_NN is_VBZ that_IN in_IN a_DT real_JJ network_NN environment_NN observations_NNS on_IN neighboring_VBG agents_NNS may_MD not_RB be_VB able_JJ to_TO be_VB updated_VBN in_IN time_NN due_JJ to_TO the_DT communication_NN delay_NN or_CC other_JJ situations_NNS ._.
+In_IN addition_NN ,_, when_WRB neighboring_VBG agents_NNS update_VBP their_PRP$ estimates_NNS at_IN the_DT same_JJ time_NN ,_, oscillation_NN may_MD arise_VB during_IN the_DT learning_NN process_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+This_DT paper_NN explores_VBZ several_JJ approaches_NNS to_TO speed_VB up_RP the_DT learning_NN process_NN ._.
+Besides_IN the_DT aforementioned_JJ strategy_NN of_IN updating_VBG the_DT expected_VBN utility_NN values_NNS ,_, we_PRP also_RB employ_VBP an_DT active_JJ update_VBP strategy_NN where_WRB agents_NNS notify_VBP their_PRP$ neighbors_NNS whenever_WRB its_PRP$ expected_VBN utility_NN is_VBZ updated_VBN ._.
+Thus_RB a_DT faster_RBR convergence_NN speed_NN can_MD be_VB achieved_VBN ._.
+This_DT strategy_NN contrasts_VBZ to_TO the_DT Lazy_JJ update_VBP ,_, where_WRB agents_NNS only_RB echo_VBP their_PRP$ neighboring_VBG agents_NNS with_IN their_PRP$ expected_VBN utility_NN change_NN when_WRB they_PRP exchange_VBP information_NN ._.
+The_DT trade_NN off_IN between_IN the_DT two_CD approaches_NNS is_VBZ the_DT network_NN load_NN versus_IN learning_VBG speed_NN ._.
+The_DT advantage_NN of_IN this_DT learning_VBG algorithm_NN is_VBZ that_IN once_RB a_DT routing_VBG policy_NN is_VBZ learned_VBN ,_, agents_NNS do_VBP not_RB have_VB to_TO repeatedly_RB compare_VB the_DT similarity_NN of_IN queries_NNS as_RB long_RB as_IN the_DT network_NN topology_NN remains_VBZ unchanged_JJ ._.
+Instead_RB ,_, agent_NN just_RB have_VBP to_TO determine_VB the_DT classification_NN of_IN the_DT query_NN properly_RB and_CC follow_VB the_DT learned_VBN policies_NNS ._.
+The_DT disadvantage_NN of_IN this_DT learning-based_JJ approach_NN is_VBZ that_IN the_DT learning_NN process_NN needs_VBZ to_TO be_VB conducted_VBN whenever_WRB the_DT network_NN structure_NN changes_NNS ._.
+There_EX are_VBP many_JJ potential_JJ extensions_NNS for_IN this_DT learning_VBG model_NN ._.
+For_IN example_NN ,_, a_DT single_JJ measure_NN is_VBZ currently_RB used_VBN to_TO indicate_VB the_DT traffic_NN load_NN for_IN an_DT agent_NN ''_'' s_NNS neighborhood_NN ._.
+A_DT simple_JJ extension_NN would_MD be_VB to_TO keep_VB track_NN of_IN individual_JJ load_NN for_IN each_DT neighbor_NN of_IN the_DT agent_NN ._.
+4_LS ._.
+EXPERIMENTSSETTINGSAND_NNP RESULTS_NNS The_DT experiments_NNS are_VBP conducted_VBN on_IN TRANO_NNP simulation_NN toolkit_NN with_IN two_CD sets_NNS of_IN datasets_NNS ,_, TREC-VLC-921_NN and_CC TREC123-100_NN ._.
+The_DT following_VBG sub-sections_NNS introduce_VB the_DT TRANO_NN testbed_VBD ,_, the_DT datasets_NNS ,_, and_CC the_DT experimental_JJ results_NNS ._.
+4_LS ._.
+#_# TRANO_NNP Testbed_NNP TRANO_NNP -LRB-_-LRB- Task_NNP Routing_NNP on_IN Agent_NNP Network_NNP Organization_NNP -RRB-_-RRB- is_VBZ a_DT multi-agent_JJ based_VBN network_NN based_VBN information_NN retrieval_NN testbed_VBD ._.
+TRANO_NN is_VBZ built_VBN on_IN top_NN of_IN the_DT Farm_NN -LSB-_-LRB- #_# -RSB-_-RRB- ,_, a_DT time_NN based_VBN distributed_VBN simulator_NN that_WDT provides_VBZ a_DT data_NN dissemination_NN framework_NN for_IN large_JJ scale_NN distributed_VBN agent_NN network_NN based_VBN organizations_NNS ._.
+TRANO_NN supports_VBZ importation_NN and_CC exportation_NN of_IN agent_NN organization_NN profiles_NNS including_VBG topological_JJ connections_NNS and_CC other_JJ features_NNS ._.
+Each_DT TRANO_NN agent_NN is_VBZ composed_VBN of_IN an_DT agent_NN view_NN structure_NN and_CC a_DT control_NN unit_NN ._.
+In_IN simulation_NN ,_, each_DT agent_NN is_VBZ pulsed_JJ regularly_RB and_CC the_DT agent_NN checks_NNS the_DT incoming_JJ message_NN queues_NNS ,_, performs_VBZ local_JJ operations_NNS and_CC then_RB forwards_RB messages_NNS to_TO other_JJ agents_NNS ._.
+4_LS ._.
+#_# Experimental_JJ Settings_NNS In_IN our_PRP$ experiment_NN ,_, we_PRP use_VBP two_CD standard_JJ datasets_NNS ,_, TRECVLC-921_NN and_CC TREC-123-100_NN datasets_NNS ,_, to_TO simulate_VB the_DT collections_NNS hosted_VBN on_IN agents_NNS ._.
+The_DT TREC-VLC-921_NN and_CC TREC123-100_NN datasets_NNS were_VBD created_VBN by_IN the_DT U_NNP ._.
+S_NN ._.
+National_NNP Institute_NNP for_IN Standard_NNP Technology_NNP -LRB-_-LRB- NIST_NNP -RRB-_-RRB- for_IN its_PRP$ TREC_NN conferences_NNS ._.
+In_IN distributed_VBN information_NN retrieval_NN domain_NN ,_, the_DT two_CD data_NNS collections_NNS are_VBP split_VBN to_TO ###_CD and_CC ###_CD sub-collections_NNS ._.
+It_PRP is_VBZ observed_VBN that_IN dataset_NN TREC-VLC-921_NN is_VBZ more_RBR heterogeneous_JJ than_IN TREC-123-100_NN in_IN terms_NNS of_IN source_NN ,_, document_NN length_NN ,_, and_CC relevant_JJ document_NN distribution_NN from_IN the_DT statistics_NNS of_IN the_DT two_CD data_NNS collections_NNS listed_VBN in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ._.
+Hence_RB ,_, TREC-VLC-921_NN is_VBZ much_RB closer_JJR to_TO real_JJ document_NN distributions_NNS in_IN P2P_NN environments_NNS ._.
+Furthermore_RB ,_, TREC-123-100_NN is_VBZ split_VBN into_IN two_CD sets_NNS of_IN 0_CD 0_CD ._.
+##_NN 0_CD ._.
+#_# 0_CD ._.
+##_NN 0_CD ._.
+#_# 0_CD ._.
+##_NN 0_CD ._.
+#_# 0_CD ._.
+##_NN 0_CD ._.
+#_# 0_CD ###_CD ####_CD ####_CD ####_CD ####_CD ####_CD ARSS_NNP Query_NNP number_NN ARSS_NN versus_CC the_DT number_NN of_IN incoming_JJ queries_NNS for_IN TREC-VLC-921_NN SSLA-921_NN SSNA-921_NN Figure_NN #_# :_: ARSS_NN -LRB-_-LRB- Average_JJ reward_NN per_IN search_NN session_NN -RRB-_-RRB- versus_CC the_DT number_NN of_IN search_NN sessions_NNS for_IN 1phase_NN search_NN in_IN TREC-VLC-921_NN 0_CD 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ###_CD ####_CD ####_CD ####_CD ####_CD ####_CD ARSS_NNP Query_NNP number_NN ARSS_NN versus_CC query_NN number_NN for_IN TREC-VLC-921_NN TSLA-921_NN TSNA-921_NN Figure_NN #_# :_: ARSS_NN -LRB-_-LRB- Average_JJ reward_NN per_IN search_NN session_NN -RRB-_-RRB- versus_CC the_DT number_NN of_IN search_NN sessions_NNS for_IN 2phase_JJ search_NN in_IN TREC-VLC-921_NN sub-collections_NNS in_IN two_CD ways_NNS :_: randomly_RB and_CC by_IN source_NN ._.
+The_DT two_CD partitions_NNS are_VBP denoted_VBN as_IN TREC-123-100-Random_NN and_CC TREC-123-100-Source_NN respectively_RB ._.
+The_DT documents_NNS in_IN each_DT subcollection_NN in_IN dataset_NN TREC-123-100-Source_NN are_VBP more_RBR coherent_JJ than_IN those_DT in_IN TREC-123-100-Random_NN ._.
+The_DT two_CD different_JJ sets_NNS of_IN partitions_NNS allow_VBP us_PRP to_TO observe_VB how_WRB the_DT distributed_VBN learning_NN algorithm_NN is_VBZ affected_VBN by_IN the_DT homogeneity_NN of_IN the_DT collections_NNS ._.
+The_DT hierarchical_JJ agent_NN organization_NN is_VBZ generated_VBN by_IN the_DT algorithm_NN described_VBN in_IN our_PRP$ previous_JJ algorithm_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+During_IN the_DT topology_NN generation_NN process_NN ,_, degree_NN information_NN of_IN each_DT agent_NN is_VBZ estimated_VBN by_IN the_DT algorithm_NN introduced_VBN by_IN Palmer_NNP et_FW al_FW ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- with_IN parameters_NNS =_JJ #_# ._.
+#_# and_CC =_JJ #_# ._.
+#_# ._.
+In_IN our_PRP$ experiments_NNS ,_, we_PRP estimate_VBP the_DT upward_JJ limit_NN and_CC downward_JJ degree_NN limit_NN using_VBG linear_JJ discount_NN factors_NNS #_# ._.
+#_# ,_, #_# ._.
+#_# and_CC #_# ._.
+#_# ._.
+Once_RB the_DT topology_NN is_VBZ built_VBN ,_, queries_NNS randomly_RB selected_VBN from_IN the_DT query_JJ set_NN ######_NN on_IN TREC-VLC-921_NN and_CC query_NN set_VBD #_# 50_CD on_IN TREC-123-100-Random_NN and_CC TREC-123-100-Source_NN are_VBP injected_VBN to_TO the_DT system_NN based_VBN on_IN a_DT Poisson_NNP distribution_NN P_NN -LRB-_-LRB- N_NN -LRB-_-LRB- t_NN -RRB-_-RRB- =_JJ n_NN -RRB-_-RRB- =_JJ -LRB-_-LRB- t_NN -RRB-_-RRB- n_NN n_NN !_.
+e_SYM 236_CD The_DT Sixth_NNP Intl_NNP ._.
+Joint_NNP Conf_NNP ._.
+on_IN Autonomous_NNP Agents_NNPS and_CC Multi-Agent_NNP Systems_NNP -LRB-_-LRB- AAMAS_NNP ##_CD -RRB-_-RRB- 0_CD 50_CD 100_CD 150_CD 200_CD 250_CD 300_CD 350_CD 400_CD 0_CD ###_CD ####_CD ####_CD ####_CD ####_CD ####_CD Cumulativeutility_NNP Query_NNP number_NN Cumulative_JJ utility_NN over_IN the_DT number_NN of_IN incoming_JJ queries_NNS TSLA-921_NN SSNA-921_NN SSLA-921_NN TSNA-921_NN Figure_NN #_# :_: The_DT cumulative_JJ utility_NN versus_CC the_DT number_NN of_IN search_NN sessions_NNS TREC-VLC-921_NN In_IN addition_NN ,_, we_PRP assume_VBP that_IN all_DT agents_NNS have_VBP an_DT equal_JJ chance_NN of_IN getting_VBG queries_NNS from_IN the_DT environment_NN ,_, i_FW ._.
+e_LS ,_, is_VBZ the_DT same_JJ for_IN every_DT agent_NN ._.
+In_IN our_PRP$ experiments_NNS ,_, is_VBZ set_VBN as_IN #_# ._.
+####_CD so_IN that_IN the_DT mean_NN of_IN the_DT incoming_JJ queries_NNS from_IN the_DT environment_NN to_TO the_DT agent_NN network_NN is_VBZ ##_CD per_IN time_NN unit_NN ._.
+The_DT service_NN time_NN for_IN the_DT communication_NN queue_NN and_CC local_JJ search_NN queue_NN ,_, i_FW ._.
+e_SYM tQij_NN and_CC trs_NNS ,_, is_VBZ set_VBN as_IN #_# ._.
+##_NN time_NN unit_NN and_CC #_# ._.
+##_NN time_NN units_NNS respectively_RB ._.
+In_IN our_PRP$ experiments_NNS ,_, there_EX are_VBP ten_CD types_NNS of_IN queries_NNS acquired_VBN by_IN clustering_VBG the_DT query_JJ set_NN ###_CD ###_CD and_CC #_# ##_CD ._.
+4_LS ._.
+#_# Results_NNS analysis_NN and_CC evaluation_NN Figure_NN #_# demonstrates_VBZ the_DT ARSS_NN -LRB-_-LRB- Average_JJ Reward_VB per_IN Search_VB Session_NN -RRB-_-RRB- versus_CC the_DT number_NN of_IN incoming_JJ queries_NNS over_IN time_NN for_IN the_DT the_DT Single-Step_NNP based_VBN Non-learning_JJ Algorithm_NN -LRB-_-LRB- SSNA_NN -RRB-_-RRB- ,_, and_CC the_DT Single-Step_NNP Learning_NNP Algorithm_NNP -LRB-_-LRB- SSLA_NNP -RRB-_-RRB- for_IN data_NNS collection_NN TREC-VLC-921_NN ._.
+It_PRP shows_VBZ that_IN the_DT average_JJ reward_NN for_IN SSNA_NNP algorithm_NN ranges_VBZ from_IN #_# ._.
+##_NN #_# ._.
+##_NN and_CC the_DT performance_NN changes_NNS little_RB over_IN time_NN ._.
+The_DT average_JJ reward_NN for_IN SSLA_NN approach_NN starts_VBZ at_IN the_DT same_JJ level_NN with_IN the_DT SSNA_NN algorithm_NN ._.
+But_CC the_DT performance_NN increases_VBZ over_IN time_NN and_CC the_DT average_JJ performance_NN gain_NN stabilizes_VBZ at_IN about_IN ##_CD %_NN after_IN query_NN range_NN ####_CD ####_CD ._.
+Figure_NNP #_# shows_VBZ the_DT ARSS_NN -LRB-_-LRB- Average_JJ Reward_VB per_IN Search_VB Session_NN -RRB-_-RRB- versus_CC the_DT number_NN of_IN incoming_JJ queries_NNS over_IN time_NN for_IN the_DT the_DT Two-Step_NNP based_VBN Non-learning_JJ Algorithm_NN -LRB-_-LRB- TSNA_NN -RRB-_-RRB- ,_, and_CC the_DT Two-Step_NNP Learning_NNP Algorithm_NNP -LRB-_-LRB- TSLA_NNP -RRB-_-RRB- for_IN data_NNS collection_NN TREC-VLC-921_NN ._.
+The_DT TSNA_NNP approach_NN has_VBZ a_DT relatively_RB consistent_JJ performance_NN with_IN the_DT average_JJ reward_NN ranges_NNS from_IN 0_CD ._.
+##_NN #_# ._.
+##_NN ._.
+The_DT average_JJ reward_NN for_IN TSLA_NN approach_NN ,_, where_WRB learning_VBG algorithm_NN is_VBZ exploited_VBN ,_, starts_VBZ at_IN the_DT same_JJ level_NN with_IN the_DT TSNA_NNP algorithm_NN and_CC improves_VBZ the_DT average_JJ reward_NN over_IN time_NN until_IN ########_CD queries_NNS joining_VBG the_DT system_NN ._.
+The_DT results_NNS show_VBP that_IN the_DT average_JJ performance_NN gain_NN for_IN TSLA_NN approach_NN over_IN TNLA_NN approach_NN is_VBZ ##_CD %_NN after_IN stabilization_NN ._.
+Figure_NNP #_# shows_VBZ the_DT cumulative_JJ utility_NN versus_CC the_DT number_NN of_IN incoming_JJ queries_NNS over_IN time_NN for_IN SSNA_NNP ,_, SSLA_NNP ,_, TSNA_NNP ,_, and_CC TSLA_NN respectively_RB ._.
+It_PRP illustrates_VBZ that_IN the_DT cumulative_JJ utility_NN of_IN non-learning_JJ algorithms_NNS increases_VBZ largely_RB linearly_RB over_IN time_NN ,_, while_IN the_DT gains_NNS of_IN learning-based_JJ algorithms_NNS accelerate_VB when_WRB more_RBR queries_NNS enter_VBP the_DT system_NN ._.
+These_DT experimental_JJ results_NNS demonstrate_VBP that_IN learning-based_JJ approaches_NNS consistently_RB perform_VB better_JJR than_IN non-learning_JJ based_VBN routing_VBG algorithm_NN ._.
+Moreover_RB ,_, two-phase_JJ learning_NN based_VBN algorithm_NN is_VBZ better_JJR than_IN single-phase_JJ based_VBN learning_VBG algorithm_NN because_IN the_DT maximal_JJ reward_NN an_DT agent_NN can_MD receive_VB from_IN searching_VBG its_PRP$ neighborhood_NN within_IN TTL_NN hops_VBZ is_VBZ related_VBN to_TO the_DT total_JJ number_NN of_IN the_DT relevant_JJ documents_NNS in_IN that_DT area_NN ._.
+Thus_RB ,_, even_RB the_DT optimal_JJ routing_VBG policy_NN can_MD do_VB little_JJ beyond_IN reaching_VBG these_DT relevant_JJ documents_NNS faster_RBR ._.
+On_IN the_DT contrary_NN ,_, the_DT two-stepbased_JJ learning_NN algorithm_NN can_MD relocate_VB the_DT search_NN session_NN to_TO a_DT neighborhood_NN with_IN more_JJR relevant_JJ documents_NNS ._.
+The_DT TSLA_NN combines_VBZ the_DT merits_NNS of_IN both_DT approaches_NNS and_CC outperforms_VBZ them_PRP ._.
+Table_NNP #_# lists_VBZ the_DT cumulative_JJ utility_NN for_IN datasets_NNS TREC123-100-Random_NN and_CC TREC-123-100-Source_NN with_IN hierarchical_JJ organizations_NNS ._.
+The_DT five_CD columns_NNS show_VBP the_DT results_NNS for_IN four_CD different_JJ approaches_NNS ._.
+In_IN particular_JJ ,_, column_NN TSNA-Random_NN shows_VBZ the_DT results_NNS for_IN dataset_NN TREC-123-100-Random_NN with_IN the_DT TSNA_NNP approach_NN ._.
+The_DT column_NN TSLA-Random_NN shows_VBZ the_DT results_NNS for_IN dataset_NN TREC-123-100-Random_NN with_IN the_DT TSLA_NN approach_NN ._.
+There_EX are_VBP two_CD numbers_NNS in_IN each_DT cell_NN in_IN the_DT column_NN TSLA-Random_NN ._.
+The_DT first_JJ number_NN is_VBZ the_DT actual_JJ cumulative_JJ utility_NN while_IN the_DT second_JJ number_NN is_VBZ the_DT percentage_NN gain_NN in_IN terms_NNS of_IN the_DT utility_NN over_IN TSNA_NNP approach_NN ._.
+Columns_NNS TSNA-Source_NN and_CC TSLA-Source_NN show_VBP the_DT results_NNS for_IN dataset_NN TREC-123-100-Source_NN with_IN TSNA_NN and_CC TSLA_NN approaches_NNS respectively_RB ._.
+Table_NNP #_# shows_VBZ that_IN the_DT performance_NN improvement_NN for_IN TREC-123-100-Random_NN is_VBZ not_RB as_IN significant_JJ as_IN the_DT other_JJ datasets_NNS ._.
+This_DT is_VBZ because_IN that_IN the_DT documents_NNS in_IN the_DT sub-collection_NN of_IN TREC-123-100-Random_NN are_VBP selected_VBN randomly_RB which_WDT makes_VBZ the_DT collection_NN model_NN ,_, the_DT signature_NN of_IN the_DT collection_NN ,_, less_JJR meaningful_JJ ._.
+Since_IN both_DT algorithms_NNS are_VBP designed_VBN based_VBN on_IN the_DT assumption_NN that_IN document_NN collections_NNS can_MD be_VB well_RB represented_VBN by_IN their_PRP$ collection_NN model_NN ,_, this_DT result_NN is_VBZ not_RB surprising_JJ ._.
+Overall_RB ,_, Figures_NNS #_# ,_, #_# ,_, and_CC Table_NNP #_# demonstrate_VBP that_IN the_DT reinforcement_NN learning_NN based_VBN approach_NN can_MD considerably_RB enhance_VB the_DT system_NN performance_NN for_IN both_DT data_NNS collections_NNS ._.
+However_RB ,_, it_PRP remains_VBZ as_IN future_JJ work_NN to_TO discover_VB the_DT correlation_NN between_IN the_DT magnitude_NN of_IN the_DT performance_NN gains_NNS and_CC the_DT size_NN of_IN the_DT data_NNS collection_NN and_CC /_: or_CC the_DT extent_NN of_IN the_DT heterogeneity_NN between_IN the_DT sub-collections_NNS ._.
+5_CD ._.
+RELATED_JJ WORK_VBP The_DT content_NN routing_VBG problem_NN differs_VBZ from_IN the_DT networklevel_JJ routing_VBG in_IN packet-switched_JJ communication_NN networks_NNS in_IN that_DT content-based_JJ routing_VBG occurs_VBZ in_IN application-level_JJ networks_NNS ._.
+In_IN addition_NN ,_, the_DT destination_NN agents_NNS in_IN our_PRP$ contentrouting_VBG algorithms_NNS are_VBP multiple_JJ and_CC the_DT addresses_NNS are_VBP not_RB known_VBN in_IN the_DT routing_VBG process_NN ._.
+IP-level_JJ Routing_NN problems_NNS have_VBP been_VBN attacked_VBN from_IN the_DT reinforcement_NN learning_VBG perspective_NN -LSB-_-LRB- #_# ,_, #_# ,_, ##_NN ,_, ##_NN -RSB-_-RRB- ._.
+These_DT studies_NNS have_VBP explored_VBN fully_RB distributed_VBN algorithms_NNS that_WDT are_VBP able_JJ ,_, without_IN central_JJ coordination_NN to_TO disseminate_VB knowledge_NN about_IN the_DT network_NN ,_, to_TO find_VB the_DT shortest_JJS paths_NNS robustly_RB and_CC efficiently_RB in_IN the_DT face_NN of_IN changing_VBG network_NN topologies_NNS and_CC changing_VBG link_NN costs_NNS ._.
+There_EX are_VBP two_CD major_JJ classes_NNS of_IN adaptive_JJ ,_, distributed_VBN packet_NN routing_VBG algorithms_NNS in_IN the_DT literature_NN :_: distance-vector_JJ algorithms_NNS and_CC link-state_JJ algorithms_NNS ._.
+While_IN this_DT line_NN of_IN studies_NNS carry_VBP a_DT certain_JJ similarity_NN with_IN our_PRP$ work_NN ,_, it_PRP has_VBZ mainly_RB focused_VBN on_IN packet-switched_JJ communication_NN networks_NNS ._.
+In_IN this_DT domain_NN ,_, the_DT destination_NN of_IN a_DT packet_NN is_VBZ deterministic_JJ and_CC unique_JJ ._.
+Each_DT agent_NN maintains_VBZ estimations_NNS ,_, probabilistically_RB or_CC deterministically_RB ,_, on_IN the_DT distance_NN to_TO a_DT certain_JJ destination_NN through_IN its_PRP$ neighbors_NNS ._.
+A_DT variant_NN of_IN Q-Learning_NN techniques_NNS is_VBZ deployed_VBN The_DT Sixth_NNP Intl_NNP ._.
+Joint_NNP Conf_NNP ._.
+on_IN Autonomous_NNP Agents_NNPS and_CC Multi-Agent_NNP Systems_NNP -LRB-_-LRB- AAMAS_NNP ##_CD -RRB-_-RRB- ###_CD Table_NNP #_# :_: Cumulative_JJ Utility_NN for_IN Datasets_NNS TREC-123-100-Random_NN and_CC TREC-123-100-Source_NN with_IN Hierarchical_JJ Organization_NNP ;_: The_DT percentage_NN numbers_NNS in_IN the_DT columns_NNS TSLA-Random_NN and_CC TSLA-Source_NN demonstrate_VBP the_DT performance_NN gain_NN over_IN the_DT algorithm_NN without_IN learning_VBG Query_NNP number_NN TSNA-Random_NN TSLA-Random_NN TSNA-Source_NN TSLA-Source_NN 500_CD ##_NN ._.
+##_NN ##_CD ._.
+##_NN ##_CD %_NN ##_CD ._.
+##_NN ##_CD ._.
+##_SYM -_: ##_CD %_NN 1000_CD ###_CD ._.
+##_CD ###_CD ._.
+##_NN ##_CD %_NN ##_CD ._.
+##_NN ##_CD ._.
+##_NN #_# ._.
+#_# %_NN 1250_CD ###_CD ._.
+##_CD ###_CD ._.
+##_NN ##_CD %_NN ###_CD ._.
+##_CD ###_CD ._.
+##_NN #_# ._.
+#_# %_NN 1500_CD ###_CD ._.
+##_CD ###_CD ._.
+##_NN ##_CD %_NN ###_CD ._.
+##_CD ###_CD ._.
+##_NN ##_CD %_NN 1750_CD ###_CD ._.
+##_CD ###_CD ._.
+##_NN ##_CD %_NN ###_CD ._.
+##_CD ###_CD ._.
+##_NN ##_CD %_NN 2000_CD ###_CD ._.
+##_CD ###_CD ._.
+##_NN ##_CD %_NN ###_CD ._.
+#_# ###_CD ._.
+##_NN ##_CD %_NN to_TO update_VB the_DT estimations_NNS to_TO converge_VB to_TO the_DT real_JJ distances_NNS ._.
+It_PRP has_VBZ been_VBN discovered_VBN that_IN the_DT locality_NN property_NN is_VBZ an_DT important_JJ feature_NN of_IN information_NN retrieval_NN systems_NNS in_IN user_NN modeling_NN studies_NNS -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+In_IN P2P_NN based_VBN content_NN sharing_VBG systems_NNS ,_, this_DT property_NN is_VBZ exemplified_VBN by_IN the_DT phenomenon_NN that_WDT users_NNS tend_VBP to_TO send_VB queries_NNS that_WDT represent_VBP only_RB a_DT limited_JJ number_NN of_IN topics_NNS and_CC conversely_RB ,_, users_NNS in_IN the_DT same_JJ neighborhood_NN are_VBP likely_JJ to_TO share_VB common_JJ interests_NNS and_CC send_VB similar_JJ queries_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+The_DT learning_NN based_VBN approach_NN is_VBZ perceived_VBN to_TO be_VB more_RBR beneficial_JJ for_IN real_JJ distributed_VBN information_NN retrieval_NN systems_NNS which_WDT exhibit_VBP locality_NN property_NN ._.
+This_DT is_VBZ because_IN the_DT users_NNS ''_'' traffic_NN and_CC query_NN patterns_NNS can_MD reduce_VB the_DT state_NN space_NN and_CC speed_VB up_RP the_DT learning_NN process_NN ._.
+Related_JJ work_NN in_IN taking_VBG advantage_NN of_IN this_DT property_NN include_VBP -LSB-_-LRB- #_# -RSB-_-RRB- ,_, where_WRB the_DT authors_NNS attempted_VBD to_TO address_VB this_DT problem_NN by_IN user_NN modeling_NN techniques_NNS ._.
+6_CD ._.
+CONCLUSIONS_NNS In_IN this_DT paper_NN ,_, a_DT reinforcement-learning_NN based_VBN approach_NN is_VBZ developed_VBN to_TO improve_VB the_DT performance_NN of_IN distributed_VBN IR_NN search_NN algorithms_NNS ._.
+Particularly_RB ,_, agents_NNS maintain_VBP estimates_NNS ,_, namely_RB expected_VBN utility_NN ,_, on_IN the_DT downstream_JJ agents_NNS ''_'' ability_NN to_TO provide_VB relevant_JJ documents_NNS for_IN incoming_JJ queries_NNS ._.
+These_DT estimates_NNS are_VBP updated_VBN gradually_RB by_IN learning_VBG from_IN the_DT feedback_NN information_NN returned_VBD from_IN previous_JJ search_NN sessions_NNS ._.
+Based_VBN on_IN the_DT updated_VBN expected_VBN utility_NN information_NN ,_, the_DT agents_NNS modify_VBP their_PRP$ routing_VBG policies_NNS ._.
+Thereafter_RB ,_, these_DT agents_NNS route_NN the_DT queries_NNS based_VBN on_IN the_DT learned_VBN policies_NNS and_CC update_VB the_DT estimates_NNS on_IN the_DT expected_VBN utility_NN based_VBN on_IN the_DT new_JJ routing_VBG policies_NNS ._.
+The_DT experiments_NNS on_IN two_CD different_JJ distributed_VBN IR_NN datasets_NNS illustrates_VBZ that_IN the_DT reinforcement_NN learning_VBG approach_NN improves_VBZ considerably_RB the_DT cumulative_JJ utility_NN over_IN time_NN ._.
+7_CD ._.
+REFERENCES_NNS -LSB-_-LRB- #_# -RSB-_-RRB- S_NN ._.
+Abdallah_NNP and_CC V_NNP ._.
+Lesser_RBR ._.
+Learning_VBG the_DT task_NN allocation_NN game_NN ._.
+In_IN AAMAS_NNP ''_'' ##_CD :_: Proceedings_NNP of_IN the_DT fifth_JJ international_JJ joint_JJ conference_NN on_IN Autonomous_JJ agents_NNS and_CC multiagent_JJ systems_NNS ,_, pages_NNS 850-857_CD ,_, New_NNP York_NNP ,_, NY_NNP ,_, USA_NNP ,_, ####_CD ._.
+ACM_NNP Press_NNP ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- J_NN ._.
+A_DT ._.
+Boyan_NNP and_CC M_NN ._.
+L_NN ._.
+Littman_NNP ._.
+Packet_NN routing_VBG in_IN dynamically_RB changing_VBG networks_NNS :_: A_DT reinforcement_NN learning_VBG approach_NN ._.
+In_IN Advances_NNS in_IN Neural_NNP Information_NNP Processing_NNP Systems_NNPS ,_, volume_NN #_# ,_, pages_NNS 671-678_CD ._.
+Morgan_NNP Kaufmann_NNP Publishers_NNPS ,_, Inc_NNP ._.
+,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- J_NN ._.
+C_NN ._.
+French_JJ ,_, A_DT ._.
+L_NN ._.
+Powell_NNP ,_, J_NNP ._.
+P_NN ._.
+Callan_NNP ,_, C_NNP ._.
+L_NN ._.
+Viles_NNP ,_, T_NN ._.
+Emmitt_NNP ,_, K_NNP ._.
+J_NN ._.
+Prey_NN ,_, and_CC Y_NN ._.
+Mou_NNP ._.
+Comparing_VBG the_DT performance_NN of_IN database_NN selection_NN algorithms_NNS ._.
+In_IN Research_NNP and_CC Development_NNP in_IN Information_NNP Retrieval_NNP ,_, pages_NNS 238-245_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- B_NN ._.
+Horling_NNP ,_, R_NN ._.
+Mailler_NNP ,_, and_CC V_NN ._.
+Lesser_RBR ._.
+Farm_NN :_: A_DT scalable_JJ environment_NN for_IN multi-agent_JJ development_NN and_CC evaluation_NN ._.
+In_IN Advances_NNS in_IN Software_NNP Engineering_NNP for_IN Multi-Agent_NNP Systems_NNPS ,_, pages_NNS 220-237_CD ,_, Berlin_NNP ,_, ####_CD ._.
+Springer-Verlag_NNP ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- M_NN ._.
+Littman_NNP and_CC J_NNP ._.
+Boyan_NNP ._.
+A_DT distributed_VBN reinforcement_NN learning_VBG scheme_NN for_IN network_NN routing_VBG ._.
+In_IN Proceedings_NNP of_IN the_DT International_NNP Workshop_NNP on_IN Applications_NNS of_IN Neural_JJ Networks_NNP to_TO Telecommunications_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- J_NN ._.
+Lu_NN and_CC J_NN ._.
+Callan_NNP ._.
+Federated_NNP search_NN of_IN text-based_JJ digital_JJ libraries_NNS in_IN hierarchical_JJ peer-to-peer_JJ networks_NNS ._.
+In_IN In_IN ECIR_NN ''_'' ##_NN ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- J_NN ._.
+Lu_NN and_CC J_NN ._.
+Callan_NNP ._.
+User_NN modeling_NN for_IN full-text_JJ federated_JJ search_NN in_IN peer-to-peer_JJ networks_NNS ._.
+In_IN ACM_JJ SIGIR_NN ####_CD ._.
+ACM_NNP Press_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- C_NN ._.
+D_NN ._.
+Manning_VBG and_CC H_NN ._.
+Schutze_NNP ._.
+Foundations_NNS of_IN Statistical_NNP Natural_NNP Language_NNP Processing_NNP ._.
+The_DT MIT_NNP Press_NNP ,_, Cambridge_NNP ,_, Massachusetts_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- C_NN ._.
+R_NN ._.
+Palmer_NNP and_CC J_NNP ._.
+G_NN ._.
+Steffan_NNP ._.
+Generating_NNP network_NN topologies_NNS that_WDT obey_VBP power_NN laws_NNS ._.
+In_IN Proceedings_NNP of_IN GLOBECOM_NNP ''_'' ####_CD ,_, November_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- K_NN ._.
+Sripanidkulchai_NNP ,_, B_NN ._.
+Maggs_NNP ,_, and_CC H_NN ._.
+Zhang_NNP ._.
+Efficient_JJ content_NN location_NN using_VBG interest-based_JJ locality_NN in_IN peer-topeer_JJ systems_NNS ._.
+In_IN INFOCOM_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- D_NN ._.
+Subramanian_NNP ,_, P_NN ._.
+Druschel_NNP ,_, and_CC J_NN ._.
+Chen_NNP ._.
+Ants_NNS and_CC reinforcement_NN learning_NN :_: A_DT case_NN study_NN in_IN routing_VBG in_IN dynamic_JJ networks_NNS ._.
+In_IN In_IN Proceedings_NNP of_IN the_DT Fifteenth_NNP International_NNP Joint_NNP Conference_NNP on_IN Artificial_NNP Intelligence_NNP ,_, pages_NNS 832-839_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+N_NN ._.
+Tao_NNP and_CC L_NNP ._.
+Weaver_NNP ._.
+A_DT multi-agent_JJ ,_, policy_NN gradient_NN approach_NN to_TO network_NN routing_VBG ._.
+In_IN In_IN Proceedings_NNP of_IN the_DT Eighteenth_NNP International_NNP Conference_NNP on_IN Machine_NNP Learning_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- H_NN ._.
+Zhang_NNP ,_, W_NNP ._.
+B_NN ._.
+Croft_NNP ,_, B_NN ._.
+Levine_NNP ,_, and_CC V_NN ._.
+Lesser_RBR ._.
+A_DT multi-agent_JJ approach_NN for_IN peer-to-peer_JJ information_NN retrieval_NN ._.
+In_IN Proceedings_NNP of_IN Third_NNP International_NNP Joint_NNP Conference_NNP on_IN Autonomous_NNP Agents_NNPS and_CC Multi-Agent_NNP Systems_NNPS ,_, July_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- H_NN ._.
+Zhang_NNP and_CC V_NNP ._.
+Lesser_RBR ._.
+Multi-agent_JJ based_VBN peer-to-peer_NN information_NN retrieval_NN systems_NNS with_IN concurrent_JJ search_NN sessions_NNS ._.
+In_IN Proceedings_NNP of_IN the_DT Fifth_NNP International_NNP Joint_NNP Conference_NNP on_IN Autonomous_NNP Agents_NNPS and_CC Multi-Agent_NNP Systems_NNPS ,_, May_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- H_NN ._.
+Zhang_NNP and_CC V_NNP ._.
+R_NN ._.
+Lesser_RBR ._.
+A_DT dynamically_RB formed_VBN hierarchical_JJ agent_NN organization_NN for_IN a_DT distributed_VBN content_NN sharing_VBG system_NN ._.
+In_IN ####_CD IEEE_NN /_: WIC_NNP /_: ACM_NNP International_NNP Conference_NNP on_IN Intelligent_NNP Agent_NNP Technology_NNP -LRB-_-LRB- IAT_NNP ####_CD -RRB-_-RRB- ,_, 20-24_CD September_NNP ####_CD ,_, Beijing_NNP ,_, China_NNP ,_, pages_NNS 169-175_CD ._.
+IEEE_NNP Computer_NNP Society_NNP ,_, ####_CD ._.
+238_CD The_DT Sixth_NNP Intl_NNP ._.
+Joint_NNP Conf_NNP ._.
+on_IN Autonomous_NNP Agents_NNPS and_CC Multi-Agent_NNP Systems_NNP -LRB-_-LRB- AAMAS_NNP ##_CD -RRB-_-RRB-

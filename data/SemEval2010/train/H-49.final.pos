@@ -1,0 +1,715 @@
+Performance_NNP Prediction_NNP Using_VBG Spatial_JJ Autocorrelation_NN Fernando_NNP Diaz_NNP Center_NNP for_IN Intelligent_NNP Information_NNP Retrieval_NNP Department_NNP of_IN Computer_NNP Science_NNP University_NNP of_IN Massachusetts_NNP Amherst_NNP ,_, MA_NNP #####_CD fdiaz_NN @_IN cs_NNS ._.
+umass_NN ._.
+edu_NN ABSTRACT_NN Evaluation_NN of_IN information_NN retrieval_NN systems_NNS is_VBZ one_CD of_IN the_DT core_NN tasks_NNS in_IN information_NN retrieval_NN ._.
+Problems_NNS include_VBP the_DT inability_NN to_TO exhaustively_RB label_VB all_DT documents_NNS for_IN a_DT topic_NN ,_, nongeneralizability_NN from_IN a_DT small_JJ number_NN of_IN topics_NNS ,_, and_CC incorporating_VBG the_DT variability_NN of_IN retrieval_NN systems_NNS ._.
+Previous_JJ work_NN addresses_NNS the_DT evaluation_NN of_IN systems_NNS ,_, the_DT ranking_NN of_IN queries_NNS by_IN difficulty_NN ,_, and_CC the_DT ranking_NN of_IN individual_JJ retrievals_NNS by_IN performance_NN ._.
+Approaches_NNS exist_VBP for_IN the_DT case_NN of_IN few_JJ and_CC even_RB no_DT relevance_NN judgments_NNS ._.
+Our_PRP$ focus_NN is_VBZ on_IN zero-judgment_NN performance_NN prediction_NN of_IN individual_JJ retrievals_NNS ._.
+One_CD common_JJ shortcoming_NN of_IN previous_JJ techniques_NNS is_VBZ the_DT assumption_NN of_IN uncorrelated_JJ document_NN scores_NNS and_CC judgments_NNS ._.
+If_IN documents_NNS are_VBP embedded_VBN in_IN a_DT high-dimensional_JJ space_NN -LRB-_-LRB- as_IN they_PRP often_RB are_VBP -RRB-_-RRB- ,_, we_PRP can_MD apply_VB techniques_NNS from_IN spatial_JJ data_NN analysis_NN to_TO detect_VB correlations_NNS between_IN document_NN scores_NNS ._.
+We_PRP find_VBP that_IN the_DT low_JJ correlation_NN between_IN scores_NNS of_IN topically_RB close_JJ documents_NNS often_RB implies_VBZ a_DT poor_JJ retrieval_NN performance_NN ._.
+When_WRB compared_VBN to_TO a_DT state_NN of_IN the_DT art_NN baseline_NN ,_, we_PRP demonstrate_VBP that_IN the_DT spatial_JJ analysis_NN of_IN retrieval_NN scores_NNS provides_VBZ significantly_RB better_JJR prediction_NN performance_NN ._.
+These_DT new_JJ predictors_NNS can_MD also_RB be_VB incorporated_VBN with_IN classic_JJ predictors_NNS to_TO improve_VB performance_NN further_RB ._.
+We_PRP also_RB describe_VBP the_DT first_JJ large-scale_JJ experiment_NN to_TO evaluate_VB zero-judgment_NN performance_NN prediction_NN for_IN a_DT massive_JJ number_NN of_IN retrieval_NN systems_NNS over_IN a_DT variety_NN of_IN collections_NNS in_IN several_JJ languages_NNS ._.
+Categories_NNS and_CC Subject_NNP Descriptors_NNPS H_NN ._.
+#_# ._.
+#_# -LSB-_-LRB- Information_NNP Search_VB and_CC Retrieval_NN -RSB-_-RRB- :_: Retrieval_NNP models_NNS ;_: H_NN ._.
+#_# ._.
+#_# -LSB-_-LRB- Systems_NNPS and_CC Software_NNP -RSB-_-RRB- :_: Performance_NNP evaluation_NN -LRB-_-LRB- efficiency_NN and_CC effectiveness_NN -RRB-_-RRB- General_JJ Terms_NNS Performance_NNP ,_, Design_NNP ,_, Reliability_NN ,_, Experimentation_NN 1_CD ._.
+INTRODUCTION_NN In_IN information_NN retrieval_NN ,_, a_DT user_NN poses_VBZ a_DT query_NN to_TO a_DT system_NN ._.
+The_DT system_NN retrieves_VBZ n_NN documents_NNS each_DT receiving_VBG a_DT realvalued_JJ score_NN indicating_VBG the_DT predicted_VBN degree_NN of_IN relevance_NN ._.
+If_IN we_PRP randomly_RB select_JJ pairs_NNS of_IN documents_NNS from_IN this_DT set_NN ,_, we_PRP expect_VBP some_DT pairs_NNS to_TO share_VB the_DT same_JJ topic_NN and_CC other_JJ pairs_NNS to_TO not_RB share_VB the_DT same_JJ topic_NN ._.
+Take_VB two_CD topically-related_JJ documents_NNS from_IN the_DT set_NN and_CC call_VB them_PRP a_DT and_CC b_NN ._.
+If_IN the_DT scores_NNS of_IN a_DT and_CC b_NN are_VBP very_RB different_JJ ,_, we_PRP may_MD be_VB concerned_VBN about_IN the_DT performance_NN of_IN our_PRP$ system_NN ._.
+That_DT is_VBZ ,_, if_IN a_DT and_CC b_NN are_VBP both_DT on_IN the_DT topic_NN of_IN the_DT query_NN ,_, we_PRP would_MD like_VB them_PRP both_DT to_TO receive_VB a_DT high_JJ score_NN ;_: if_IN a_DT and_CC b_NN are_VBP not_RB on_IN the_DT topic_NN of_IN the_DT query_NN ,_, we_PRP would_MD like_VB them_PRP both_DT to_TO receive_VB a_DT low_JJ score_NN ._.
+We_PRP might_MD become_VB more_RBR worried_JJ as_IN we_PRP find_VBP more_RBR differences_NNS between_IN scores_NNS of_IN related_JJ documents_NNS ._.
+We_PRP would_MD be_VB more_RBR comfortable_JJ with_IN a_DT retrieval_NN where_WRB scores_NNS are_VBP consistent_JJ between_IN related_JJ documents_NNS ._.
+Our_PRP$ paper_NN studies_NNS the_DT quantification_NN of_IN this_DT inconsistency_NN in_IN a_DT retrieval_NN from_IN a_DT spatial_JJ perspective_NN ._.
+Spatial_JJ analysis_NN is_VBZ appropriate_JJ since_IN many_JJ retrieval_NN models_NNS embed_VBD documents_NNS in_IN some_DT vector_NN space_NN ._.
+If_IN documents_NNS are_VBP embedded_VBN in_IN a_DT space_NN ,_, proximity_NN correlates_VBZ with_IN topical_JJ relationships_NNS ._.
+Score_NN consistency_NN can_MD be_VB measured_VBN by_IN the_DT spatial_JJ version_NN of_IN autocorrelation_NN known_VBN as_IN the_DT Moran_NNP coefficient_NN or_CC IM_NN -LSB-_-LRB- #_# ,_, ##_NN -RSB-_-RRB- ._.
+In_IN this_DT paper_NN ,_, we_PRP demonstrate_VBP a_DT strong_JJ correlation_NN between_IN IM_NNP and_CC retrieval_NN performance_NN ._.
+The_DT discussion_NN up_IN to_TO this_DT point_NN is_VBZ reminiscent_JJ of_IN the_DT cluster_NN hypothesis_NN ._.
+The_DT cluster_NN hypothesis_NN states_NNS :_: closely-related_JJ documents_NNS tend_VBP to_TO be_VB relevant_JJ to_TO the_DT same_JJ request_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+As_IN we_PRP shall_MD see_VB ,_, a_DT retrieval_NN function_NN ''_'' s_NNS spatial_JJ autocorrelation_NN measures_VBZ the_DT degree_NN to_TO which_WDT closely-related_JJ documents_NNS receive_VBP similar_JJ scores_NNS ._.
+Because_IN of_IN this_DT ,_, we_PRP interpret_VBP autocorrelation_NN as_IN measuring_VBG the_DT degree_NN to_TO which_WDT a_DT retrieval_NN function_NN satisfies_VBZ the_DT clustering_NN hypothesis_NN ._.
+If_IN this_DT connection_NN is_VBZ reasonable_JJ ,_, in_IN Section_NN #_# ,_, we_PRP present_VBP evidence_NN that_IN failure_NN to_TO satisfy_VB the_DT cluster_NN hypothesis_NN correlates_VBZ strongly_RB with_IN poor_JJ performance_NN ._.
+In_IN this_DT work_NN ,_, we_PRP provide_VBP the_DT following_VBG contributions_NNS ,_, 1_CD ._.
+A_DT general_JJ ,_, robust_JJ method_NN for_IN predicting_VBG the_DT performance_NN of_IN retrievals_NNS with_IN zero_CD relevance_NN judgments_NNS -LRB-_-LRB- Section_NN #_# -RRB-_-RRB- ._.
+2_LS ._.
+A_DT theoretical_JJ treatment_NN of_IN the_DT similarities_NNS and_CC motivations_NNS behind_IN several_JJ state-of-the-art_JJ performance_NN prediction_NN techniques_NNS -LRB-_-LRB- Section_NN #_# -RRB-_-RRB- ._.
+3_LS ._.
+The_DT first_JJ large-scale_JJ experiments_NNS of_IN zero-judgment_NN ,_, single_JJ run_NN performance_NN prediction_NN -LRB-_-LRB- Sections_NNS #_# and_CC #_# -RRB-_-RRB- ._.
+2_LS ._.
+PROBLEM_NN DEFINITION_NNP Given_VBN a_DT query_NN ,_, an_DT information_NN retrieval_NN system_NN produces_VBZ a_DT ranking_NN of_IN documents_NNS in_IN the_DT collection_NN encoded_VBN as_IN a_DT set_NN of_IN scores_NNS associated_VBN with_IN documents_NNS ._.
+We_PRP refer_VBP to_TO the_DT set_NN of_IN scores_NNS for_IN a_DT particular_JJ query-system_NN combination_NN as_IN a_DT retrieval_NN ._.
+We_PRP would_MD like_VB to_TO predict_VB the_DT performance_NN of_IN this_DT retrieval_NN with_IN respect_NN to_TO some_DT evaluation_NN measure_NN -LRB-_-LRB- eg_FW ,_, mean_VB average_JJ precision_NN -RRB-_-RRB- ._.
+In_IN this_DT paper_NN ,_, we_PRP present_VBP results_NNS for_IN ranking_JJ retrievals_NNS from_IN arbitrary_JJ systems_NNS ._.
+We_PRP would_MD like_VB this_DT ranking_VBG to_TO approximate_JJ the_DT ranking_NN of_IN retrievals_NNS by_IN the_DT evaluation_NN measure_NN ._.
+This_DT is_VBZ different_JJ from_IN ranking_VBG queries_NNS by_IN the_DT average_JJ performance_NN on_IN each_DT query_NN ._.
+It_PRP is_VBZ also_RB different_JJ from_IN ranking_VBG systems_NNS by_IN the_DT average_JJ performance_NN on_IN a_DT set_NN of_IN queries_NNS ._.
+Scores_NNS are_VBP often_RB only_RB computed_VBN for_IN the_DT top_JJ n_NN documents_NNS from_IN the_DT collection_NN ._.
+We_PRP place_VBP these_DT scores_NNS in_IN the_DT length_NN n_NN vector_NN ,_, y_NN ,_, where_WRB yi_NN refers_VBZ to_TO the_DT score_NN of_IN the_DT ith-ranked_JJ document_NN ._.
+We_PRP adjust_VBP scores_NNS to_TO have_VB zero_CD mean_NN and_CC unit_NN variance_NN ._.
+We_PRP use_VBP this_DT method_NN because_IN of_IN its_PRP$ simplicity_NN and_CC its_PRP$ success_NN in_IN previous_JJ work_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+3_LS ._.
+SPATIAL_JJ CORRELATION_NN In_IN information_NN retrieval_NN ,_, we_PRP often_RB assume_VBP that_IN the_DT representations_NNS of_IN documents_NNS exist_VBP in_IN some_DT high-dimensional_JJ vector_NN space_NN ._.
+For_IN example_NN ,_, given_VBN a_DT vocabulary_NN ,_, V_NN ,_, this_DT vector_NN space_NN may_MD be_VB an_DT arbitrary_JJ |_NN V_NN |_SYM -_: dimensional_JJ space_NN with_IN cosine_NN inner-product_NN or_CC a_DT multinomial_JJ simplex_NN with_IN a_DT distributionbased_JJ distance_NN measure_NN ._.
+An_DT embedding_NN space_NN is_VBZ often_RB selected_VBN to_TO respect_NN topical_JJ proximity_NN ;_: if_IN two_CD documents_NNS are_VBP near_RB ,_, they_PRP are_VBP more_RBR likely_JJ to_TO share_VB a_DT topic_NN ._.
+Because_IN of_IN the_DT prevalence_NN and_CC success_NN of_IN spatial_JJ models_NNS of_IN information_NN retrieval_NN ,_, we_PRP believe_VBP that_IN the_DT application_NN of_IN spatial_JJ data_NN analysis_NN techniques_NNS are_VBP appropriate_JJ ._.
+Whereas_IN in_IN information_NN retrieval_NN ,_, we_PRP are_VBP concerned_VBN with_IN the_DT score_NN at_IN a_DT point_NN in_IN a_DT space_NN ,_, in_IN spatial_JJ data_NN analysis_NN ,_, we_PRP are_VBP concerned_VBN with_IN the_DT value_NN of_IN a_DT function_NN at_IN a_DT point_NN or_CC location_NN in_IN a_DT space_NN ._.
+We_PRP use_VBP the_DT term_NN function_NN here_RB to_TO mean_VB a_DT mapping_NN from_IN a_DT location_NN to_TO a_DT real_JJ value_NN ._.
+For_IN example_NN ,_, we_PRP might_MD be_VB interested_JJ in_IN the_DT prevalence_NN of_IN a_DT disease_NN in_IN the_DT neighborhood_NN of_IN some_DT city_NN ._.
+The_DT function_NN would_MD map_VB the_DT location_NN of_IN a_DT neighborhood_NN to_TO an_DT infection_NN rate_NN ._.
+If_IN we_PRP want_VBP to_TO quantify_VB the_DT spatial_JJ dependencies_NNS of_IN a_DT function_NN ,_, we_PRP would_MD employ_VB a_DT measure_NN referred_VBD to_TO as_IN the_DT spatial_JJ autocorrelation_NN -LSB-_-LRB- #_# ,_, ##_NN -RSB-_-RRB- ._.
+High_JJ spatial_JJ autocorrelation_NN suggests_VBZ that_IN knowing_VBG the_DT value_NN of_IN a_DT function_NN at_IN location_NN a_DT will_MD tell_VB us_PRP a_DT great_JJ deal_NN about_IN the_DT value_NN at_IN a_DT neighboring_VBG location_NN b_NN ._.
+There_EX is_VBZ a_DT high_JJ spatial_JJ autocorrelation_NN for_IN a_DT function_NN representing_VBG the_DT temperature_NN of_IN a_DT location_NN since_IN knowing_VBG the_DT temperature_NN at_IN a_DT location_NN a_DT will_MD tell_VB us_PRP a_DT lot_NN about_IN the_DT temperature_NN at_IN a_DT neighboring_VBG location_NN b_NN ._.
+Low_JJ spatial_JJ autocorrelation_NN suggests_VBZ that_IN knowing_VBG the_DT value_NN of_IN a_DT function_NN at_IN location_NN a_DT tells_VBZ us_PRP little_JJ about_IN the_DT value_NN at_IN a_DT neighboring_VBG location_NN b_NN ._.
+There_EX is_VBZ low_JJ spatial_JJ autocorrelation_NN in_IN a_DT function_NN measuring_VBG the_DT outcome_NN of_IN a_DT coin_NN toss_VBP at_IN a_DT and_CC b_NN ._.
+In_IN this_DT section_NN ,_, we_PRP will_MD begin_VB by_IN describing_VBG what_WP we_PRP mean_VBP by_IN spatial_JJ proximity_NN for_IN documents_NNS and_CC then_RB define_VB a_DT measure_NN of_IN spatial_JJ autocorrelation_NN ._.
+We_PRP conclude_VBP by_IN extending_VBG this_DT model_NN to_TO include_VB information_NN from_IN multiple_JJ retrievals_NNS from_IN multiple_JJ systems_NNS for_IN a_DT single_JJ query_NN ._.
+3_LS ._.
+#_# Spatial_JJ Representation_NN of_IN Documents_NNS Our_PRP$ work_NN does_VBZ not_RB focus_VB on_IN improving_VBG a_DT specific_JJ similarity_NN measure_NN or_CC defining_VBG a_DT novel_JJ vector_NN space_NN ._.
+Instead_RB ,_, we_PRP choose_VBP an_DT inner_JJ product_NN known_VBN to_TO be_VB effective_JJ at_IN detecting_VBG interdocument_NN topical_JJ relationships_NNS ._.
+Specifically_RB ,_, we_PRP adopt_VBP tf_NN ._.
+idf_NN document_NN vectors_NNS ,_, di_FW =_JJ di_FW log_NN -LRB-_-LRB- n_NN +_CC #_# ._.
+#_# -RRB-_-RRB- ci_NN 0_CD ._.
+#_# +_CC ci_NN -LRB-_-LRB- #_# -RRB-_-RRB- where_WRB d_NN is_VBZ a_DT vector_NN of_IN term_NN frequencies_NNS ,_, c_NN is_VBZ the_DT length_NN -_: |_CD V_NN |_CD document_NN frequency_NN vector_NN ._.
+We_PRP use_VBP this_DT weighting_NN scheme_NN due_JJ to_TO its_PRP$ success_NN for_IN topical_JJ link_NN detection_NN in_IN the_DT context_NN of_IN Topic_NNP Detection_NN and_CC Tracking_VBG -LRB-_-LRB- TDT_NN -RRB-_-RRB- evaluations_NNS -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+Assuming_VBG vectors_NNS are_VBP scaled_VBN by_IN their_PRP$ L2_NN norm_NN ,_, we_PRP use_VBP the_DT inner_JJ product_NN ,_, di_FW ,_, dj_NN ,_, to_TO define_VB similarity_NN ._.
+Given_VBN documents_NNS and_CC some_DT similarity_NN measure_NN ,_, we_PRP can_MD construct_VB a_DT matrix_NN which_WDT encodes_VBZ the_DT similarity_NN between_IN pairs_NNS of_IN documents_NNS ._.
+Recall_VB that_IN we_PRP are_VBP given_VBN the_DT top_JJ n_NN documents_NNS retrieved_VBN in_IN y_NN ._.
+We_PRP can_MD compute_VB an_DT n_NN n_NN similarity_NN matrix_NN ,_, W_NN ._.
+An_DT element_NN of_IN this_DT matrix_NN ,_, Wij_NN represents_VBZ the_DT similarity_NN between_IN documents_NNS ranked_VBD i_FW and_CC j_FW ._.
+In_IN practice_NN ,_, we_PRP only_RB include_VBP the_DT affinities_NNS for_IN a_DT document_NN ''_'' s_NNS k-nearest_JJ neighbors_NNS ._.
+In_IN all_DT of_IN our_PRP$ experiments_NNS ,_, we_PRP have_VBP fixed_VBN k_NN to_TO #_# ._.
+We_PRP leave_VBP exploration_NN of_IN parameter_NN sensitivity_NN to_TO future_JJ work_NN ._.
+We_PRP also_RB row_VBP normalize_VB the_DT matrix_NN so_IN that_IN Pn_NN j_NN =_JJ #_# Wij_NN =_JJ #_# for_IN all_DT i_FW ._.
+3_LS ._.
+#_# Spatial_JJ Autocorrelation_NN of_IN a_DT Retrieval_NNP Recall_VB that_IN we_PRP are_VBP interested_JJ in_IN measuring_VBG the_DT similarity_NN between_IN the_DT scores_NNS of_IN spatially-close_JJ documents_NNS ._.
+One_CD such_JJ suitable_JJ measure_NN is_VBZ the_DT Moran_NNP coefficient_NN of_IN spatial_JJ autocorrelation_NN ._.
+Assuming_VBG the_DT function_NN y_NN over_IN n_NN locations_NNS ,_, this_DT is_VBZ defined_VBN as_IN IM_NN =_JJ n_NN eTWe_NN P_NN i_FW ,_, j_NN Wijyiyj_NNP P_NN i_FW y2_FW i_FW =_JJ n_NN eTWe_NN yT_NN Wy_NN yTy_NN -LRB-_-LRB- #_# -RRB-_-RRB- where_WRB eT_NNP We_PRP =_JJ P_NN ij_NN Wij_NN ._.
+We_PRP would_MD like_VB to_TO compare_VB autocorrelation_NN values_NNS for_IN different_JJ retrievals_NNS ._.
+Unfortunately_RB ,_, the_DT bound_VBN for_IN Equation_NN #_# is_VBZ not_RB consistent_JJ for_IN different_JJ W_NN and_CC y_NN ._.
+Therefore_RB ,_, we_PRP use_VBP the_DT Cauchy-Schwartz_NNP inequality_NN to_TO establish_VB a_DT bound_VBN ,_, IM_NN n_NN eTWe_NN s_VBZ yTWTWy_NNP yTy_NNP And_CC we_PRP define_VBP the_DT normalized_VBN spatial_JJ autocorrelation_NN as_IN IM_NN =_JJ yT_NN Wy_NN p_NN yTy_NN yTWTWy_NN Notice_NNP that_IN if_IN we_PRP let_VBP y_NN =_JJ Wy_NN ,_, then_RB we_PRP can_MD write_VB this_DT formula_NN as_IN ,_, IM_NN =_JJ yT_NN y_NN y_NN #_# y_SYM #_# -LRB-_-LRB- #_# -RRB-_-RRB- which_WDT can_MD be_VB interpreted_VBN as_IN the_DT correlation_NN between_IN the_DT original_JJ retrieval_NN scores_NNS and_CC a_DT set_NN of_IN retrieval_NN scores_NNS diffused_VBN in_IN the_DT space_NN ._.
+We_PRP present_VBP some_DT examples_NNS of_IN autocorrelations_NNS of_IN functions_NNS on_IN a_DT grid_NN in_IN Figure_NNP #_# ._.
+3_LS ._.
+#_# Correlation_NN with_IN Other_JJ Retrievals_NNS Sometimes_RB we_PRP are_VBP interested_JJ in_IN the_DT performance_NN of_IN a_DT single_JJ retrieval_NN but_CC have_VBP access_NN to_TO scores_NNS from_IN multiple_JJ systems_NNS for_IN -LRB-_-LRB- a_DT -RRB-_-RRB- IM_NN =_JJ #_# ._.
+###_NN -LRB-_-LRB- b_NN -RRB-_-RRB- IM_NN =_JJ #_# ._.
+###_NN -LRB-_-LRB- c_NN -RRB-_-RRB- IM_NN =_JJ #_# ._.
+###_CD Figure_NNP #_# :_: The_DT Moran_NNP coefficient_NN ,_, IM_NN for_IN a_DT several_JJ binary_JJ functions_NNS on_IN a_DT grid_NN ._.
+The_DT Moran_NNP coefficient_NN is_VBZ a_DT local_JJ measure_NN of_IN function_NN consistency_NN ._.
+From_IN the_DT perspective_NN of_IN information_NN retrieval_NN ,_, each_DT of_IN these_DT grid_NN spaces_NNS would_MD represent_VB a_DT document_NN and_CC documents_NNS would_MD be_VB organized_VBN so_RB that_IN they_PRP lay_VBD next_JJ to_TO topically-related_JJ documents_NNS ._.
+Binary_JJ retrieval_NN scores_NNS would_MD define_VB a_DT pattern_NN on_IN this_DT grid_NN ._.
+Notice_NNP that_IN ,_, as_IN the_DT Moran_NNP coefficient_NN increases_NNS ,_, neighboring_VBG cells_NNS tend_VBP to_TO have_VB similar_JJ values_NNS ._.
+the_DT same_JJ query_NN ._.
+In_IN this_DT situation_NN ,_, we_PRP can_MD use_VB combined_JJ information_NN from_IN these_DT scores_NNS to_TO construct_VB a_DT surrogate_NN for_IN a_DT high-quality_JJ ranking_JJ -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+We_PRP can_MD treat_VB the_DT correlation_NN between_IN the_DT retrieval_NN we_PRP are_VBP interested_JJ in_IN and_CC the_DT combined_JJ scores_NNS as_IN a_DT predictor_NN of_IN performance_NN ._.
+Assume_VB that_IN we_PRP are_VBP given_VBN m_NN score_NN functions_NNS ,_, yi_NN ,_, for_IN the_DT same_JJ n_NN documents_NNS ._.
+We_PRP will_MD represent_VB the_DT mean_NN of_IN these_DT vectors_NNS as_IN y_NN =_JJ Pm_NN i_FW =_JJ #_# yi_FW ._.
+We_PRP use_VBP the_DT mean_NN vector_NN as_IN an_DT approximation_NN to_TO relevance_NN ._.
+Since_IN we_PRP use_VBP zero_CD mean_JJ and_CC unit_NN variance_NN normalization_NN ,_, work_NN in_IN metasearch_NN suggests_VBZ that_IN this_DT assumption_NN is_VBZ justified_JJ -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Because_IN y_NN represents_VBZ a_DT very_RB good_JJ retrieval_NN ,_, we_PRP hypothesize_VBP that_IN a_DT strong_JJ similarity_NN between_IN y_NN and_CC y_NN will_MD correlate_VB positively_RB with_IN system_NN performance_NN ._.
+We_PRP use_VBP Pearson_NNP ''_'' s_VBZ product-moment_NN correlation_NN to_TO measure_VB the_DT similarity_NN between_IN these_DT vectors_NNS ,_, -LRB-_-LRB- y_NN ,_, y_NN -RRB-_-RRB- =_JJ yT_NN y_NN y_NN #_# y_SYM #_# -LRB-_-LRB- #_# -RRB-_-RRB- We_PRP will_MD comment_VB on_IN the_DT similarity_NN between_IN Equation_NN #_# and_CC 4_CD in_IN Section_NN #_# ._.
+Of_IN course_NN ,_, we_PRP can_MD combine_VB -LRB-_-LRB- y_NN ,_, y_NN -RRB-_-RRB- and_CC -LRB-_-LRB- y_NN ,_, y_NN -RRB-_-RRB- if_IN we_PRP assume_VBP that_IN they_PRP capture_VBP different_JJ factors_NNS in_IN the_DT prediction_NN ._.
+One_CD way_NN to_TO accomplish_VB this_DT is_VBZ to_TO combine_VB these_DT predictors_NNS as_IN independent_JJ variables_NNS in_IN a_DT linear_JJ regression_NN ._.
+An_DT alternative_JJ means_NNS of_IN combination_NN is_VBZ suggested_VBN by_IN the_DT mathematical_JJ form_NN of_IN our_PRP$ predictors_NNS ._.
+Since_IN y_NN encodes_VBZ the_DT spatial_JJ dependencies_NNS in_IN y_NN and_CC y_NN encodes_VBZ the_DT spatial_JJ properties_NNS of_IN the_DT multiple_JJ runs_NNS ,_, we_PRP can_MD compute_VB a_DT third_JJ correlation_NN between_IN these_DT two_CD vectors_NNS ,_, -LRB-_-LRB- y_NN ,_, y_NN -RRB-_-RRB- =_JJ yT_NN y_NN y_NN #_# y_SYM #_# -LRB-_-LRB- #_# -RRB-_-RRB- We_PRP can_MD interpret_VB Equation_NN #_# as_IN measuring_VBG the_DT correlation_NN between_IN a_DT high_JJ quality_NN ranking_NN -LRB-_-LRB- y_NN -RRB-_-RRB- and_CC a_DT spatially_RB smoothed_VBN version_NN of_IN the_DT retrieval_NN -LRB-_-LRB- y_NN -RRB-_-RRB- ._.
+4_LS ._.
+RELATIONSHIP_NN WITH_IN OTHER_JJ PREDICTORS_NNS One_CD way_NN to_TO predict_VB the_DT effectiveness_NN of_IN a_DT retrieval_NN is_VBZ to_TO look_VB at_IN the_DT shared_JJ vocabulary_NN of_IN the_DT top_JJ n_NN retrieved_VBD documents_NNS ._.
+If_IN we_PRP computed_VBD the_DT most_RBS frequent_JJ content_NN words_NNS in_IN this_DT set_NN ,_, we_PRP would_MD hope_VB that_IN they_PRP would_MD be_VB consistent_JJ with_IN our_PRP$ topic_NN ._.
+In_IN fact_NN ,_, we_PRP might_MD believe_VB that_IN a_DT bad_JJ retrieval_NN would_MD include_VB documents_NNS on_IN many_JJ disparate_JJ topics_NNS ,_, resulting_VBG in_IN an_DT overlap_VBP of_IN terminological_JJ noise_NN ._.
+The_DT Clarity_NN of_IN a_DT query_NN attempts_VBZ to_TO quantify_VB exactly_RB this_DT -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+Specifically_RB ,_, Clarity_NN measures_VBZ the_DT similarity_NN of_IN the_DT words_NNS most_RBS frequently_RB used_VBN in_IN retrieved_VBN documents_NNS to_TO those_DT most_RBS frequently_RB used_VBN in_IN the_DT whole_JJ corpus_NN ._.
+The_DT conjecture_NN is_VBZ that_IN a_DT good_JJ retrieval_NN will_MD use_VB language_NN distinct_JJ from_IN general_JJ text_NN ;_: the_DT overlapping_VBG language_NN in_IN a_DT bad_JJ retrieval_NN will_MD tend_VB to_TO be_VB more_RBR similar_JJ to_TO general_JJ text_NN ._.
+Mathematically_RB ,_, we_PRP can_MD compute_VB a_DT representation_NN of_IN the_DT language_NN used_VBN in_IN the_DT initial_JJ retrieval_NN as_IN a_DT weighted_JJ combination_NN of_IN document_NN language_NN models_NNS ,_, P_NN -LRB-_-LRB- w_NN |_CD Q_NNP -RRB-_-RRB- =_JJ nX_NN i_FW =_JJ #_# P_NN -LRB-_-LRB- w_NN |_CD i_LS -RRB-_-RRB- P_NN -LRB-_-LRB- Q_NNP |_CD i_LS -RRB-_-RRB- Z_NN -LRB-_-LRB- #_# -RRB-_-RRB- where_WRB i_FW is_VBZ the_DT language_NN model_NN of_IN the_DT ith-ranked_JJ document_NN ,_, P_NN -LRB-_-LRB- Q_NNP |_CD i_LS -RRB-_-RRB- is_VBZ the_DT query_NN likelihood_NN score_NN of_IN the_DT ith-ranked_JJ document_NN and_CC Z_NN =_JJ Pn_NN i_FW =_JJ #_# P_NN -LRB-_-LRB- Q_NNP |_CD i_LS -RRB-_-RRB- is_VBZ a_DT normalization_NN constant_NN ._.
+The_DT similarity_NN between_IN the_DT multinomial_JJ P_NN -LRB-_-LRB- w_NN |_CD Q_NNP -RRB-_-RRB- and_CC a_DT model_NN of_IN general_JJ text_NN can_MD be_VB computed_VBN using_VBG the_DT Kullback-Leibler_NNP divergence_NN ,_, DV_NNP KL_NNP -LRB-_-LRB- Q_NNP C_NNP -RRB-_-RRB- ._.
+Here_RB ,_, the_DT distribution_NN P_NN -LRB-_-LRB- w_NN |_CD C_NN -RRB-_-RRB- is_VBZ our_PRP$ model_NN of_IN general_JJ text_NN which_WDT can_MD be_VB computed_VBN using_VBG term_NN frequencies_NNS in_IN the_DT corpus_NN ._.
+In_IN Figure_NNP 2a_NN ,_, we_PRP present_VBP Clarity_NN as_IN measuring_VBG the_DT distance_NN between_IN the_DT weighted_JJ center_NN of_IN mass_NN of_IN the_DT retrieval_NN -LRB-_-LRB- labeled_VBN y_NN -RRB-_-RRB- and_CC the_DT unweighted_JJ center_NN of_IN mass_NN of_IN the_DT collection_NN -LRB-_-LRB- labeled_VBN O_NN -RRB-_-RRB- ._.
+Clarity_NN reaches_VBZ a_DT minimum_NN when_WRB a_DT retrieval_NN assigns_VBZ every_DT document_NN the_DT same_JJ score_NN ._.
+Let_VB ''_'' s_VBZ again_RB assume_VB we_PRP have_VBP a_DT set_NN of_IN n_NN documents_NNS retrieved_VBN for_IN our_PRP$ query_NN ._.
+Another_DT way_NN to_TO quantify_VB the_DT dispersion_NN of_IN a_DT set_NN of_IN documents_NNS is_VBZ to_TO look_VB at_IN how_WRB clustered_VBN they_PRP are_VBP ._.
+We_PRP may_MD hypothesize_VB that_IN a_DT good_JJ retrieval_NN will_MD return_VB a_DT single_JJ ,_, tight_JJ cluster_NN ._.
+A_DT poorly_RB performing_VBG retrieval_NN will_MD return_VB a_DT loosely_RB related_JJ set_NN of_IN documents_NNS covering_VBG many_JJ topics_NNS ._.
+One_CD proposed_VBN method_NN of_IN quantifying_VBG this_DT dispersion_NN is_VBZ to_TO measure_VB the_DT distance_NN from_IN a_DT random_JJ document_NN a_DT to_TO it_PRP ''_'' s_VBZ nearest_JJS neighbor_NN ,_, b_NN ._.
+A_DT retrieval_NN which_WDT is_VBZ tightly_RB clustered_VBN will_MD ,_, on_IN average_NN ,_, have_VBP a_DT low_JJ distance_NN between_IN a_DT and_CC b_NN ;_: a_DT retrieval_NN which_WDT is_VBZ less_RBR tightly-closed_JJ will_MD ,_, on_IN average_NN have_VBP high_JJ distances_NNS between_IN a_DT and_CC b_NN ._.
+This_DT average_JJ corresponds_VBZ to_TO using_VBG the_DT Cox-Lewis_NNP statistic_NN to_TO measure_VB the_DT randomness_NN of_IN the_DT top_JJ n_NN documents_NNS retrieved_VBN from_IN a_DT system_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+In_IN Figure_NNP 2a_NN ,_, this_DT is_VBZ roughly_RB equivalent_JJ to_TO measuring_VBG the_DT area_NN of_IN the_DT set_VBN n_NN ._.
+Notice_NNP that_IN we_PRP are_VBP throwing_VBG away_RP information_NN about_IN the_DT retrieval_NN function_NN y_NN ._.
+Therefore_RB the_DT Cox-Lewis_NNP statistic_NN is_VBZ highly_RB dependent_JJ on_IN selecting_VBG the_DT top_JJ n_NN documents_NNS ._.
+#_# Remember_VB that_IN we_PRP have_VBP n_NN documents_NNS and_CC a_DT set_NN of_IN scores_NNS ._.
+Let_VB ''_'' s_VBZ assume_VB that_IN we_PRP have_VBP access_NN to_TO the_DT system_NN which_WDT provided_VBD the_DT original_JJ scores_NNS and_CC that_IN we_PRP can_MD also_RB request_VB scores_NNS for_IN new_JJ documents_NNS ._.
+This_DT suggests_VBZ a_DT third_JJ method_NN for_IN predicting_VBG performance_NN ._.
+Take_VB some_DT document_NN ,_, a_DT ,_, from_IN the_DT retrieved_VBN set_NN and_CC arbitrarily_RB add_VB or_CC remove_VB words_NNS at_IN random_JJ to_TO create_VB a_DT new_JJ document_NN a_DT ._.
+Now_RB ,_, we_PRP can_MD ask_VB our_PRP$ system_NN to_TO score_VB a_DT with_IN respect_NN to_TO our_PRP$ query_NN ._.
+If_IN ,_, on_IN average_NN over_IN the_DT n_NN documents_NNS ,_, the_DT scores_NNS of_IN a_DT and_CC a_DT tend_VB to_TO be_VB very_RB different_JJ ,_, we_PRP might_MD suspect_VB that_IN the_DT system_NN is_VBZ failing_VBG on_IN this_DT query_NN ._.
+So_RB ,_, an_DT alternative_JJ approach_NN is_VBZ to_TO measure_VB the_DT simi1_NN The_DT authors_NNS have_VBP suggested_VBN coupling_NN the_DT query_NN with_IN the_DT distance_NN measure_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+The_DT information_NN introduced_VBN by_IN the_DT query_NN ,_, though_RB ,_, is_VBZ retrieval-independent_JJ so_IN that_IN ,_, if_IN two_CD retrievals_NNS return_VBP the_DT same_JJ set_NN of_IN documents_NNS ,_, the_DT approximate_JJ Cox-Lewis_NNP statistic_NN will_MD be_VB the_DT same_JJ regardless_RB of_IN the_DT retrieval_NN scores_NNS ._.
+yOy_NN -LRB-_-LRB- a_DT -RRB-_-RRB- Global_JJ Divergence_NN -LRB-_-LRB- y_NN -RRB-_-RRB- y_NN y_NN -LRB-_-LRB- b_NN -RRB-_-RRB- Score_NN Perturbation_NN -LRB-_-LRB- y_NN -RRB-_-RRB- y_NN -LRB-_-LRB- c_NN -RRB-_-RRB- Multirun_NNP Averaging_NNP Figure_NNP #_# :_: Representation_NN of_IN several_JJ performance_NN predictors_NNS on_IN a_DT grid_NN ._.
+In_IN Figure_NNP 2a_NN ,_, we_PRP depict_VBP predictors_NNS which_WDT measure_VBP the_DT divergence_NN between_IN the_DT center_NN of_IN mass_NN of_IN a_DT retrieval_NN and_CC the_DT center_NN of_IN the_DT embedding_NN space_NN ._.
+In_IN Figure_NNP 2b_NN ,_, we_PRP depict_VBP predictors_NNS which_WDT compare_VBP the_DT original_JJ retrieval_NN ,_, y_NN ,_, to_TO a_DT perturbed_VBN version_NN of_IN the_DT retrieval_NN ,_, y_NN ._.
+Our_PRP$ approach_NN uses_VBZ a_DT particular_JJ type_NN of_IN perturbation_NN based_VBN on_IN score_NN diffusion_NN ._.
+Finally_RB ,_, in_IN Figure_NNP 2c_NN ,_, we_PRP depict_VBP prediction_NN when_WRB given_VBN retrievals_NNS from_IN several_JJ other_JJ systems_NNS on_IN the_DT same_JJ query_NN ._.
+Here_RB ,_, we_PRP can_MD consider_VB the_DT fusion_NN of_IN these_DT retrieval_NN as_IN a_DT surrogate_NN for_IN relevance_NN ._.
+larity_NN between_IN the_DT retrieval_NN and_CC a_DT perturbed_VBN version_NN of_IN that_DT retrieval_NN -LSB-_-LRB- ##_CD ,_, ##_CD -RSB-_-RRB- ._.
+This_DT can_MD be_VB accomplished_VBN by_IN either_CC perturbing_VBG the_DT documents_NNS or_CC queries_NNS ._.
+The_DT similarity_NN between_IN the_DT two_CD retrievals_NNS can_MD be_VB measured_VBN using_VBG some_DT correlation_NN measure_NN ._.
+This_DT is_VBZ depicted_VBN in_IN Figure_NNP 2b_NN ._.
+The_DT upper_JJ grid_NN represents_VBZ the_DT original_JJ retrieval_NN ,_, y_NN ,_, while_IN the_DT lower_JJR grid_NN represents_VBZ the_DT function_NN after_IN having_VBG been_VBN perturbed_VBN ,_, y_NN ._.
+The_DT nature_NN of_IN the_DT perturbation_NN process_NN requires_VBZ additional_JJ scorings_NNS or_CC retrievals_NNS ._.
+Our_PRP$ predictor_NN does_VBZ not_RB require_VB access_NN to_TO the_DT original_JJ scoring_VBG function_NN or_CC additional_JJ retrievals_NNS ._.
+So_RB ,_, although_IN our_PRP$ method_NN is_VBZ similar_JJ to_TO other_JJ perturbation_NN methods_NNS in_IN spirit_NN ,_, it_PRP can_MD be_VB applied_VBN in_IN situations_NNS when_WRB the_DT retrieval_NN system_NN is_VBZ inaccessible_JJ or_CC costly_JJ to_TO access_NN ._.
+Finally_RB ,_, assume_VB that_IN we_PRP have_VBP ,_, in_IN addition_NN to_TO the_DT retrieval_NN we_PRP want_VBP to_TO evaluate_VB ,_, m_NN retrievals_NNS from_IN a_DT variety_NN of_IN different_JJ systems_NNS ._.
+In_IN this_DT case_NN ,_, we_PRP might_MD take_VB a_DT document_NN a_DT ,_, compare_VB its_PRP$ rank_NN in_IN the_DT retrieval_NN to_TO its_PRP$ average_JJ rank_NN in_IN the_DT m_NN retrievals_NNS ._.
+If_IN we_PRP believe_VBP that_IN the_DT m_NN retrievals_NNS provide_VBP a_DT satisfactory_JJ approximation_NN to_TO relevance_NN ,_, then_RB a_DT very_RB large_JJ difference_NN in_IN rank_NN would_MD suggest_VB that_IN our_PRP$ retrieval_NN is_VBZ misranking_VBG a_DT ._.
+If_IN this_DT difference_NN is_VBZ large_JJ on_IN average_NN over_IN all_DT n_NN documents_NNS ,_, then_RB we_PRP might_MD predict_VB that_IN the_DT retrieval_NN is_VBZ bad_JJ ._.
+If_IN ,_, on_IN the_DT other_JJ hand_NN ,_, the_DT retrieval_NN is_VBZ very_RB consistent_JJ with_IN the_DT m_NN retrievals_NNS ,_, then_RB we_PRP might_MD predict_VB that_IN the_DT retrieval_NN is_VBZ good_JJ ._.
+The_DT similarity_NN between_IN the_DT retrieval_NN and_CC the_DT combined_JJ retrieval_NN may_MD be_VB computed_VBN using_VBG some_DT correlation_NN measure_NN ._.
+This_DT is_VBZ depicted_VBN in_IN Figure_NNP 2c_NN ._.
+In_IN previous_JJ work_NN ,_, the_DT Kullback-Leibler_NNP divergence_NN between_IN the_DT normalized_VBN scores_NNS of_IN the_DT retrieval_NN and_CC the_DT normalized_VBN scores_NNS of_IN the_DT combined_JJ retrieval_NN provides_VBZ the_DT similarity_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+5_CD ._.
+EXPERIMENTS_NNS Our_PRP$ experiments_NNS focus_VBP on_IN testing_VBG the_DT predictive_JJ power_NN of_IN each_DT of_IN our_PRP$ predictors_NNS :_: -LRB-_-LRB- y_NN ,_, y_NN -RRB-_-RRB- ,_, -LRB-_-LRB- y_NN ,_, y_NN -RRB-_-RRB- ,_, and_CC -LRB-_-LRB- y_NN ,_, y_NN -RRB-_-RRB- ._.
+As_IN stated_VBN in_IN Section_NN #_# ,_, we_PRP are_VBP interested_JJ in_IN predicting_VBG the_DT performance_NN of_IN the_DT retrieval_NN generated_VBN by_IN an_DT arbitrary_JJ system_NN ._.
+Our_PRP$ methodology_NN is_VBZ consistent_JJ with_IN previous_JJ research_NN in_IN that_IN we_PRP predict_VBP the_DT relative_JJ performance_NN of_IN a_DT retrieval_NN by_IN comparing_VBG a_DT ranking_JJ based_VBN on_IN our_PRP$ predictor_NN to_TO a_DT ranking_JJ based_VBN on_IN average_JJ precision_NN ._.
+We_PRP present_VBP results_NNS for_IN two_CD sets_NNS of_IN experiments_NNS ._.
+The_DT first_JJ set_NN of_IN experiments_NNS presents_VBZ detailed_JJ comparisons_NNS of_IN our_PRP$ predictors_NNS to_TO previously-proposed_JJ predictors_NNS using_VBG identical_JJ data_NNS sets_NNS ._.
+Our_PRP$ second_JJ set_NN of_IN experiments_NNS demonstrates_VBZ the_DT generalizability_NN of_IN our_PRP$ approach_NN to_TO arbitrary_JJ retrieval_NN methods_NNS ,_, corpus_NN types_NNS ,_, and_CC corpus_NN languages_NNS ._.
+5_CD ._.
+#_# Detailed_JJ Experiments_NNS In_IN these_DT experiments_NNS ,_, we_PRP will_MD predict_VB the_DT performance_NN of_IN language_NN modeling_NN scores_NNS using_VBG our_PRP$ autocorrelation_NN predictor_NN ,_, -LRB-_-LRB- y_NN ,_, y_NN -RRB-_-RRB- ;_: we_PRP do_VBP not_RB consider_VB -LRB-_-LRB- y_NN ,_, y_NN -RRB-_-RRB- or_CC -LRB-_-LRB- y_NN ,_, y_NN -RRB-_-RRB- because_RB ,_, in_IN these_DT detailed_JJ experiments_NNS ,_, we_PRP focus_VBP on_IN ranking_VBG the_DT retrievals_NNS from_IN a_DT single_JJ system_NN ._.
+We_PRP use_VBP retrievals_NNS ,_, values_NNS for_IN baseline_NN predictors_NNS ,_, and_CC evaluation_NN measures_NNS reported_VBN in_IN previous_JJ work_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+5_CD ._.
+#_# ._.
+#_# Topics_NNPS and_CC Collections_NNPS These_DT performance_NN prediction_NN experiments_NNS use_VBP language_NN model_NN retrievals_NNS performed_VBN for_IN queries_NNS associated_VBN with_IN collections_NNS in_IN the_DT TREC_NN corpora_NN ._.
+Using_VBG TREC_NN collections_NNS allows_VBZ us_PRP to_TO confidently_RB associate_VB an_DT average_JJ precision_NN with_IN a_DT retrieval_NN ._.
+In_IN these_DT experiments_NNS ,_, we_PRP use_VBP the_DT following_VBG topic_NN collections_NNS :_: TREC_NN #_# ad-hoc_JJ ,_, TREC_NN #_# ad-hoc_JJ ,_, Robust_JJ ####_NN ,_, Terabyte_NNP ####_NNP ,_, and_CC Terabyte_NNP ####_CD ._.
+5_CD ._.
+#_# ._.
+#_# Baselines_NNPS We_PRP provide_VBP two_CD baselines_NNS ._.
+Our_PRP$ first_JJ baseline_NN is_VBZ the_DT classic_JJ Clarity_NN predictor_NN presented_VBN in_IN Equation_NN #_# ._.
+Clarity_NN is_VBZ designed_VBN to_TO be_VB used_VBN with_IN language_NN modeling_NN systems_NNS ._.
+Our_PRP$ second_JJ baseline_NN is_VBZ Zhou_NNP and_CC Croft_NNP ''_'' s_VBZ ranking_JJ robustness_NN predictor_NN ._.
+This_DT predictor_NN corrupts_VBZ the_DT top_JJ k_NN documents_NNS from_IN retrieval_NN and_CC re-computes_NNS the_DT language_NN model_NN scores_NNS for_IN these_DT corrupted_VBN documents_NNS ._.
+The_DT value_NN of_IN the_DT predictor_NN is_VBZ the_DT Spearman_NNP rank_NN correlation_NN between_IN the_DT original_JJ ranking_NN and_CC the_DT corrupted_JJ ranking_NN ._.
+In_IN our_PRP$ tables_NNS ,_, we_PRP will_MD label_VB results_NNS for_IN Clarity_NN using_VBG DV_NNP KL_NNP and_CC the_DT ranking_JJ robustness_NN predictor_NN using_VBG P_NN ._.
+5_CD ._.
+#_# Generalizability_NNP Experiments_NNS Our_PRP$ predictors_NNS do_VBP not_RB require_VB a_DT particular_JJ baseline_NN retrieval_NN system_NN ;_: the_DT predictors_NNS can_MD be_VB computed_VBN for_IN an_DT arbitrary_JJ retrieval_NN ,_, regardless_RB of_IN how_WRB scores_NNS were_VBD generated_VBN ._.
+We_PRP believe_VBP that_IN that_DT is_VBZ one_CD of_IN the_DT most_RBS attractive_JJ aspects_NNS of_IN our_PRP$ algorithm_NN ._.
+Therefore_RB ,_, in_IN a_DT second_JJ set_NN of_IN experiments_NNS ,_, we_PRP demonstrate_VBP the_DT ability_NN of_IN our_PRP$ techniques_NNS to_TO generalize_VB to_TO a_DT variety_NN of_IN collections_NNS ,_, topics_NNS ,_, and_CC retrieval_NN systems_NNS ._.
+5_CD ._.
+#_# ._.
+#_# Topics_NNPS and_CC Collections_NNPS We_PRP gathered_VBD a_DT diverse_JJ set_NN of_IN collections_NNS from_IN all_DT possible_JJ TREC_NN corpora_NN ._.
+We_PRP cast_VBD a_DT wide_JJ net_NN in_IN order_NN to_TO locate_VB collections_NNS where_WRB our_PRP$ predictors_NNS might_MD fail_VB ._.
+Our_PRP$ hypothesis_NN is_VBZ that_IN documents_NNS with_IN high_JJ topical_JJ similarity_NN should_MD have_VB correlated_VBN scores_NNS ._.
+Therefore_RB ,_, we_PRP avoided_VBD collections_NNS where_WRB scores_NNS were_VBD unlikely_JJ to_TO be_VB correlated_VBN -LRB-_-LRB- eg_FW ,_, question-answering_NN -RRB-_-RRB- or_CC were_VBD likely_JJ to_TO be_VB negatively_RB correlated_VBN -LRB-_-LRB- eg_FW ,_, novelty_NN -RRB-_-RRB- ._.
+Nevertheless_RB ,_, our_PRP$ collections_NNS include_VBP corpora_NN where_WRB correlations_NNS are_VBP weakly_RB justified_JJ -LRB-_-LRB- eg_FW ,_, non-English_JJ corpora_NN -RRB-_-RRB- or_CC not_RB justified_JJ at_IN all_DT -LRB-_-LRB- eg_FW ,_, expert_JJ search_NN -RRB-_-RRB- ._.
+We_PRP use_VBP the_DT ad-hoc_JJ tracks_NNS from_IN TREC3-8_NN ,_, TREC_NN Robust_JJ 2003-2005_CD ,_, TREC_NNP Terabyte_NNP 20042005_CD ,_, TREC4-5_NN Spanish_NNP ,_, TREC5-6_NNP Chinese_NNP ,_, and_CC TREC_NNP Enterprise_NNP Expert_NNP Search_VB ####_CD ._.
+In_IN all_DT cases_NNS ,_, we_PRP use_VBP only_RB the_DT automatic_JJ runs_NNS for_IN ad-hoc_JJ tracks_NNS submitted_VBN to_TO NIST_NNP ._.
+For_IN all_DT English_JJ and_CC Spanish_JJ corpora_NN ,_, we_PRP construct_VBP the_DT matrix_NN W_NN according_VBG to_TO the_DT process_NN described_VBN in_IN Section_NN #_# ._.
+#_# ._.
+For_IN Chinese_JJ corpora_NN ,_, we_PRP use_VBP nave_NN character-based_JJ tf_NN ._.
+idf_NN vectors_NNS ._.
+For_IN entities_NNS ,_, entries_NNS in_IN W_NN are_VBP proportional_JJ to_TO the_DT number_NN of_IN documents_NNS in_IN which_WDT two_CD entities_NNS cooccur_NN ._.
+5_CD ._.
+#_# ._.
+#_# Baselines_NNPS In_IN our_PRP$ detailed_JJ experiments_NNS ,_, we_PRP used_VBD the_DT Clarity_NN measure_NN as_IN a_DT baseline_NN ._.
+Since_IN we_PRP are_VBP predicting_VBG the_DT performance_NN of_IN retrievals_NNS which_WDT are_VBP not_RB based_VBN on_IN language_NN modeling_NN ,_, we_PRP use_VBP a_DT version_NN of_IN Clarity_NN referred_VBD to_TO as_IN ranked-list_JJ Clarity_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+Ranked-list_JJ clarity_NN converts_VBZ document_NN ranks_NNS to_TO P_NN -LRB-_-LRB- Q_NNP |_CD i_LS -RRB-_-RRB- values_NNS ._.
+This_DT conversion_NN begins_VBZ by_IN replacing_VBG all_DT of_IN the_DT scores_NNS in_IN y_NN with_IN the_DT respective_JJ ranks_NNS ._.
+Our_PRP$ estimation_NN of_IN P_NN -LRB-_-LRB- Q_NNP |_CD i_LS -RRB-_-RRB- from_IN the_DT ranks_NNS ,_, then_RB is_VBZ ,_, P_NN -LRB-_-LRB- Q_NNP |_CD i_LS -RRB-_-RRB- =_JJ -LRB-_-LRB- 2_CD -LRB-_-LRB- c_NN +_CC 1yi_NNS -RRB-_-RRB- c_NN -LRB-_-LRB- c_NN +_CC #_# -RRB-_-RRB- if_IN yi_NN c_NN 0_CD otherwise_RB -LRB-_-LRB- #_# -RRB-_-RRB- where_WRB c_NN is_VBZ a_DT cutoff_NN parameter_NN ._.
+As_IN suggested_VBN by_IN the_DT authors_NNS ,_, we_PRP fix_VBP the_DT algorithm_NN parameters_NNS c_NN and_CC #_# so_IN that_IN c_NN =_JJ ##_NN and_CC #_# =_JJ #_# ._.
+##_NN ._.
+We_PRP use_VBP Equation_NN #_# to_TO estimate_VB P_NN -LRB-_-LRB- w_NN |_CD Q_NNP -RRB-_-RRB- and_CC DV_NNP KL_NNP -LRB-_-LRB- Q_NNP C_NNP -RRB-_-RRB- to_TO compute_VB the_DT value_NN of_IN the_DT predictor_NN ._.
+We_PRP will_MD refer_VB to_TO this_DT predictor_NN as_IN DV_NNP KL_NNP ,_, superscripted_VBN by_IN V_NN to_TO indicate_VB that_IN the_DT Kullback-Leibler_NNP divergence_NN is_VBZ with_IN respect_NN to_TO the_DT term_NN embedding_NN space_NN ._.
+When_WRB information_NN from_IN multiple_JJ runs_NNS on_IN the_DT same_JJ query_NN is_VBZ available_JJ ,_, we_PRP use_VBP Aslam_NNP and_CC Pavlu_NNP ''_'' s_VBZ document-space_NN multinomial_JJ divergence_NN as_IN a_DT baseline_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+This_DT rank-based_JJ method_NN first_JJ normalizes_VBZ the_DT scores_NNS in_IN a_DT retrieval_NN as_IN an_DT n-dimensional_JJ multinomial_JJ ._.
+As_IN with_IN ranked-list_JJ Clarity_NN ,_, we_PRP begin_VBP by_IN replacing_VBG all_DT of_IN the_DT scores_NNS in_IN y_NN with_IN their_PRP$ respective_JJ ranks_NNS ._.
+Then_RB ,_, we_PRP adjust_VBP the_DT elements_NNS of_IN y_NN in_IN the_DT following_JJ way_NN ,_, yi_NN =_JJ 1_CD 2n_NN 0_CD @_SYM #_# +_CC nX_NN k_NN =_JJ yi_NN 1_CD k_NN 1_CD A_NN -LRB-_-LRB- #_# -RRB-_-RRB- In_IN our_PRP$ multirun_JJ experiments_NNS ,_, we_PRP only_RB use_VBP the_DT top_JJ ##_CD documents_NNS from_IN each_DT retrieval_NN -LRB-_-LRB- n_NN =_JJ ##_NN -RRB-_-RRB- ;_: this_DT is_VBZ within_IN the_DT range_NN of_IN parameter_NN values_NNS suggested_VBN by_IN the_DT authors_NNS ._.
+However_RB ,_, we_PRP admit_VBP not_RB tuning_NN this_DT parameter_NN for_IN either_CC our_PRP$ system_NN or_CC the_DT baseline_NN ._.
+The_DT predictor_NN is_VBZ the_DT divergence_NN between_IN the_DT candidate_NN distribution_NN ,_, y_NN ,_, and_CC the_DT mean_JJ distribution_NN ,_, y_NN ._.
+With_IN the_DT uniform_JJ linear_JJ combination_NN of_IN these_DT m_NN retrievals_NNS represented_VBN as_IN y_NN ,_, we_PRP can_MD compute_VB the_DT divergence_NN as_IN Dn_NNP KL_NNP -LRB-_-LRB- y_FW y_FW -RRB-_-RRB- where_WRB we_PRP use_VBP the_DT superscript_JJ n_NN to_TO indicate_VB that_IN the_DT summation_NN is_VBZ over_IN the_DT set_NN of_IN n_NN documents_NNS ._.
+This_DT baseline_NN was_VBD developed_VBN in_IN the_DT context_NN of_IN predicting_VBG query_NN difficulty_NN but_CC we_PRP adopt_VBP it_PRP as_IN a_DT reasonable_JJ baseline_NN for_IN predicting_VBG retrieval_NN performance_NN ._.
+5_CD ._.
+#_# ._.
+#_# Parameter_NNP Settings_NNP When_WRB given_VBN multiple_JJ retrievals_NNS ,_, we_PRP use_VBP documents_NNS in_IN the_DT union_NN of_IN the_DT top_JJ k_NN =_JJ ##_CD documents_NNS from_IN each_DT of_IN the_DT m_NN retrievals_NNS for_IN that_DT query_NN ._.
+If_IN the_DT size_NN of_IN this_DT union_NN is_VBZ n_NN ,_, then_RB y_NN and_CC each_DT yi_NN is_VBZ of_IN length_NN n_NN ._.
+In_IN some_DT cases_NNS ,_, a_DT system_NN did_VBD not_RB score_VB a_DT document_NN in_IN the_DT union_NN ._.
+Since_IN we_PRP are_VBP making_VBG a_DT Gaussian_JJ assumption_NN about_IN our_PRP$ scores_NNS ,_, we_PRP can_MD sample_NN scores_NNS for_IN these_DT unseen_JJ documents_NNS from_IN the_DT negative_JJ tail_NN of_IN the_DT distribution_NN ._.
+Specifically_RB ,_, we_PRP sample_NN from_IN the_DT part_NN of_IN the_DT distribution_NN lower_JJR than_IN the_DT minimum_JJ value_NN of_IN in_IN the_DT normalized_VBN retrieval_NN ._.
+This_DT introduces_VBZ randomness_NN into_IN our_PRP$ algorithm_NN but_CC we_PRP believe_VBP it_PRP is_VBZ more_RBR appropriate_JJ than_IN assigning_VBG an_DT arbitrary_JJ fixed_JJ value_NN ._.
+We_PRP optimized_VBD the_DT linear_JJ regression_NN using_VBG the_DT square_JJ root_NN of_IN each_DT predictor_NN ._.
+We_PRP found_VBD that_IN this_DT substantially_RB improved_VBN fits_NNS for_IN all_DT predictors_NNS ,_, including_VBG the_DT baselines_NNS ._.
+We_PRP considered_VBD linear_JJ combinations_NNS of_IN pairs_NNS of_IN predictors_NNS -LRB-_-LRB- labeled_VBN by_IN the_DT components_NNS -RRB-_-RRB- and_CC all_DT predictors_NNS -LRB-_-LRB- labeled_VBN as_IN -RRB-_-RRB- ._.
+5_CD ._.
+#_# Evaluation_NN Given_VBN a_DT set_NN of_IN retrievals_NNS ,_, potentially_RB from_IN a_DT combination_NN of_IN queries_NNS and_CC systems_NNS ,_, we_PRP measure_VBP the_DT correlation_NN of_IN the_DT rank_NN ordering_VBG of_IN this_DT set_VBN by_IN the_DT predictor_NN and_CC by_IN the_DT performance_NN metric_NN ._.
+In_IN order_NN to_TO ensure_VB comparability_NN with_IN previous_JJ results_NNS ,_, we_PRP present_VBP Kendall_NNP ''_'' s_VBZ correlation_NN between_IN the_DT predictor_NN ''_'' s_NNS ranking_JJ and_CC ranking_JJ based_VBN on_IN average_JJ precision_NN of_IN the_DT retrieval_NN ._.
+Unless_IN explicitly_RB noted_VBN ,_, all_DT correlations_NNS are_VBP significant_JJ with_IN p_NN <_JJR #_# ._.
+##_NN ._.
+Predictors_NNS can_MD sometimes_RB perform_VB better_JJR when_WRB linearly_RB combined_VBN -LSB-_-LRB- #_# ,_, ##_NN -RSB-_-RRB- ._.
+Although_IN previous_JJ work_NN has_VBZ presented_VBN the_DT coefficient_NN of_IN determination_NN -LRB-_-LRB- R2_NN -RRB-_-RRB- to_TO measure_VB the_DT quality_NN of_IN the_DT regression_NN ,_, this_DT measure_NN can_MD not_RB be_VB reliably_RB used_VBN when_WRB comparing_VBG slight_JJ improvements_NNS from_IN combining_VBG predictors_NNS ._.
+Therefore_RB ,_, we_PRP adopt_VBP the_DT adjusted_JJ coefficient_NN of_IN determination_NN which_WDT penalizes_VBZ models_NNS with_IN more_JJR variables_NNS ._.
+The_DT adjusted_JJ R2_NN allows_VBZ us_PRP to_TO evaluate_VB the_DT improvement_NN in_IN prediction_NN achieved_VBN by_IN adding_VBG a_DT parameter_NN but_CC loses_VBZ the_DT statistical_JJ interpretation_NN of_IN R2_NN ._.
+We_PRP will_MD use_VB Kendall_NNP ''_'' s_VBZ to_TO evaluate_VB the_DT magnitude_NN of_IN the_DT correlation_NN and_CC the_DT adjusted_VBN R2_NN to_TO evaluate_VB the_DT combination_NN of_IN variables_NNS ._.
+6_CD ._.
+RESULTS_NNS We_PRP present_JJ results_NNS for_IN our_PRP$ detailed_JJ experiments_NNS comparing_VBG the_DT prediction_NN of_IN language_NN model_NN scores_NNS in_IN Table_NNP #_# ._.
+Although_IN the_DT Clarity_NN measure_NN is_VBZ theoretically_RB designed_VBN for_IN language_NN model_NN scores_NNS ,_, it_PRP consistently_RB underperforms_VBZ our_PRP$ system-agnostic_JJ predictor_NN ._.
+Ranking_JJ robustness_NN was_VBD presented_VBN as_IN an_DT improvement_NN to_TO Clarity_NN for_IN web_NN collections_NNS -LRB-_-LRB- represented_VBN in_IN our_PRP$ experiments_NNS by_IN the_DT terabyte04_NN and_CC terabyte05_NN collections_NNS -RRB-_-RRB- ,_, shifting_VBG the_DT correlation_NN from_IN #_# ._.
+###_CD to_TO #_# ._.
+###_NN for_IN terabyte04_NN and_CC 0_CD ._.
+###_CD to_TO #_# ._.
+###_NN for_IN terabyte05_NN ._.
+However_RB ,_, these_DT improvements_NNS are_VBP slight_JJ compared_VBN to_TO the_DT performance_NN of_IN autocorrelation_NN on_IN these_DT collections_NNS ._.
+Our_PRP$ predictor_NN achieves_VBZ a_DT correlation_NN of_IN #_# ._.
+###_NN for_IN terabyte04_NN and_CC #_# ._.
+###_NN for_IN terabyte05_NN ._.
+Though_IN not_RB always_RB the_DT strongest_JJS ,_, autocorrelation_NN achieves_VBZ correlations_NNS competitive_JJ with_IN baseline_NN predictors_NNS ._.
+When_WRB examining_VBG the_DT performance_NN of_IN linear_JJ combinations_NNS of_IN predictors_NNS ,_, we_PRP note_VBP that_IN in_IN every_DT case_NN ,_, autocorrelation_NN factors_NNS as_IN a_DT necessary_JJ component_NN of_IN a_DT strong_JJ predictor_NN ._.
+We_PRP also_RB note_VBP that_IN the_DT adjusted_VBN R2_NN for_IN individual_JJ baselines_NNS are_VBP always_RB significantly_RB improved_VBN by_IN incorporating_VBG autocorrelation_NN ._.
+We_PRP present_VBP our_PRP$ generalizability_NN results_VBZ in_IN Table_NNP #_# ._.
+We_PRP begin_VBP by_IN examining_VBG the_DT situation_NN in_IN column_NN -LRB-_-LRB- a_DT -RRB-_-RRB- where_WRB we_PRP are_VBP presented_VBN with_IN a_DT single_JJ retrieval_NN and_CC no_DT information_NN from_IN additional_JJ retrievals_NNS ._.
+For_IN every_DT collection_NN except_IN one_CD ,_, we_PRP achieve_VBP significantly_RB better_JJR correlations_NNS than_IN ranked-list_JJ Clarity_NN ._.
+Surprisingly_RB ,_, we_PRP achieve_VBP relatively_RB strong_JJ correlations_NNS for_IN Spanish_JJ and_CC Chinese_JJ collections_NNS despite_IN our_PRP$ nave_NN processing_NN ._.
+We_PRP do_VBP not_RB have_VB a_DT ranked-list_JJ clarity_NN correlation_NN for_IN ent05_NN because_IN entity_NN modeling_NN is_VBZ itself_PRP an_DT open_JJ research_NN question_NN ._.
+However_RB ,_, our_PRP$ autocorrelation_NN measure_NN does_VBZ not_RB achieve_VB high_JJ correlations_NNS perhaps_RB because_IN relevance_NN for_IN entity_NN retrieval_NN does_VBZ not_RB propagate_VB according_VBG to_TO the_DT cooccurrence_NN links_NNS we_PRP use_VBP ._.
+As_IN noted_VBN above_IN ,_, the_DT poor_JJ Clarity_NN performance_NN on_IN web_NN data_NNS is_VBZ consistent_JJ with_IN our_PRP$ findings_NNS in_IN the_DT detailed_JJ experiments_NNS ._.
+Clarity_NN also_RB notably_RB underperforms_VBZ for_IN several_JJ news_NN corpora_NN -LRB-_-LRB- trec5_NN ,_, trec7_NN ,_, and_CC robust04_NN -RRB-_-RRB- ._.
+On_IN the_DT other_JJ hand_NN ,_, autocorrelation_NN seems_VBZ robust_JJ to_TO the_DT changes_NNS between_IN different_JJ corpora_NN ._.
+Next_RB ,_, we_PRP turn_VBP to_TO the_DT introduction_NN of_IN information_NN from_IN multiple_JJ retrievals_NNS ._.
+We_PRP compare_VBP the_DT correlations_NNS between_IN those_DT predictors_NNS which_WDT do_VBP not_RB use_VB this_DT information_NN in_IN column_NN -LRB-_-LRB- a_DT -RRB-_-RRB- and_CC those_DT which_WDT do_VBP in_IN column_NN -LRB-_-LRB- b_NN -RRB-_-RRB- ._.
+For_IN every_DT collection_NN ,_, the_DT predictors_NNS in_IN column_NN -LRB-_-LRB- b_NN -RRB-_-RRB- outperform_VBP the_DT predictors_NNS in_IN column_NN -LRB-_-LRB- a_DT -RRB-_-RRB- ,_, indicating_VBG that_IN the_DT information_NN from_IN additional_JJ runs_NNS can_MD be_VB critical_JJ to_TO making_VBG good_JJ predictions_NNS ._.
+Inspecting_VBG the_DT predictors_NNS in_IN column_NN -LRB-_-LRB- b_NN -RRB-_-RRB- ,_, we_PRP only_RB draw_VBP weak_JJ conclusions_NNS ._.
+Our_PRP$ new_JJ predictors_NNS tend_VBP to_TO perform_VB better_JJR on_IN news_NN corpora_NN ._.
+And_CC between_IN our_PRP$ new_JJ predictors_NNS ,_, the_DT hybrid_NN -LRB-_-LRB- y_NN ,_, y_NN -RRB-_-RRB- predictor_NN tends_VBZ to_TO perform_VB better_JJR ._.
+Recall_VB that_IN our_PRP$ -LRB-_-LRB- y_NN ,_, y_NN -RRB-_-RRB- measure_NN incorporates_VBZ both_CC spatial_JJ and_CC multiple_JJ retrieval_NN information_NN ._.
+Therefore_RB ,_, we_PRP believe_VBP that_IN the_DT improvement_NN in_IN correlation_NN is_VBZ the_DT result_NN of_IN incorporating_VBG information_NN from_IN spatial_JJ behavior_NN ._.
+In_IN column_NN -LRB-_-LRB- c_NN -RRB-_-RRB- ,_, we_PRP can_MD investigate_VB the_DT utility_NN of_IN incorporating_VBG spatial_JJ information_NN with_IN information_NN from_IN multiple_JJ retrievals_NNS ._.
+Notice_NNP that_IN in_IN the_DT cases_NNS where_WRB autocorrelation_NN ,_, -LRB-_-LRB- y_NN ,_, y_NN -RRB-_-RRB- ,_, alone_RB performs_VBZ well_RB -LRB-_-LRB- trec3_NN ,_, trec5-spanish_NN ,_, and_CC trec6-chinese_JJ -RRB-_-RRB- ,_, it_PRP is_VBZ substantially_RB improved_VBN by_IN incorporating_VBG multiple-retrieval_JJ information_NN from_IN -LRB-_-LRB- y_NN ,_, y_NN -RRB-_-RRB- in_IN the_DT linear_JJ regression_NN ,_, ._.
+In_IN the_DT cases_NNS where_WRB -LRB-_-LRB- y_NN ,_, y_NN -RRB-_-RRB- performs_VBZ well_RB ,_, incorporating_VBG autocorrelation_NN rarely_RB results_VBZ in_IN a_DT significant_JJ improvement_NN in_IN performance_NN ._.
+In_IN fact_NN ,_, in_IN every_DT case_NN where_WRB our_PRP$ predictor_NN outperforms_VBZ the_DT baseline_NN ,_, it_PRP includes_VBZ information_NN from_IN multiple_JJ runs_NNS ._.
+7_CD ._.
+DISCUSSION_NN The_DT most_RBS important_JJ result_NN from_IN our_PRP$ experiments_NNS involves_VBZ prediction_NN when_WRB no_DT information_NN is_VBZ available_JJ from_IN multiple_JJ runs_NNS -LRB-_-LRB- Tables_NNS #_# and_CC 2a_NN -RRB-_-RRB- ._.
+This_DT situation_NN arises_VBZ often_RB in_IN system_NN design_NN ._.
+For_IN example_NN ,_, a_DT system_NN may_MD need_VB to_TO ,_, at_IN retrieval_NN time_NN ,_, assess_VB its_PRP$ performance_NN before_IN deciding_VBG to_TO conduct_VB more_JJR intensive_JJ processing_NN such_JJ as_IN pseudo-relevance_NN feedback_NN or_CC interaction_NN ._.
+Assuming_VBG the_DT presence_NN of_IN multiple_JJ retrievals_NNS is_VBZ unrealistic_JJ in_IN this_DT case_NN ._.
+We_PRP believe_VBP that_IN autocorrelation_NN is_VBZ ,_, like_IN multiple-retrieval_JJ algorithms_NNS ,_, approximating_VBG a_DT good_JJ ranking_NN ;_: in_IN this_DT case_NN by_IN diffusing_VBG scores_NNS ._.
+Why_WRB is_VBZ y_NN a_DT reasonable_JJ surrogate_NN ?_.
+We_PRP know_VBP that_IN diffusion_NN of_IN scores_NNS on_IN the_DT web_NN graph_NN and_CC language_NN model_NN graphs_NNS improves_VBZ performance_NN -LSB-_-LRB- ##_CD ,_, ##_CD -RSB-_-RRB- ._.
+Therefore_RB ,_, if_IN score_NN diffusion_NN tends_VBZ to_TO ,_, in_IN general_JJ ,_, improve_VB performance_NN ,_, then_RB diffused_VBD scores_NNS will_MD ,_, in_IN general_JJ ,_, provide_VB a_DT good_JJ surrogate_NN for_IN relevance_NN ._.
+Our_PRP$ results_NNS demonstrate_VBP that_IN this_DT approximation_NN is_VBZ not_RB as_IN powerful_JJ as_IN information_NN from_IN multiple_JJ retrievals_NNS ._.
+Nevertheless_RB ,_, in_IN situations_NNS where_WRB this_DT information_NN is_VBZ lacking_VBG ,_, autocorrelation_NN provides_VBZ substantial_JJ information_NN ._.
+The_DT success_NN of_IN autocorrelation_NN as_IN a_DT predictor_NN may_MD also_RB have_VB roots_NNS in_IN the_DT clustering_NN hypothesis_NN ._.
+Recall_VB that_IN we_PRP regard_VBP autocorrelation_NN as_IN the_DT degree_NN to_TO which_WDT a_DT retrieval_NN satisfies_VBZ the_DT clustering_NN hypothesis_NN ._.
+Our_PRP$ experiments_NNS ,_, then_RB ,_, demonstrate_VBP that_IN a_DT failure_NN to_TO respect_VB the_DT clustering_NN hypothesis_NN correlates_VBZ with_IN poor_JJ performance_NN ._.
+Why_WRB might_MD systems_NNS fail_VBP to_TO conform_VB to_TO the_DT cluster_NN hypothesis_NN ?_.
+Query-based_JJ information_NN retrieval_NN systems_NNS often_RB score_VBP documents_NNS independently_RB ._.
+The_DT score_NN of_IN document_NN a_DT may_MD be_VB computed_VBN by_IN examining_VBG query_JJ term_NN or_CC phrase_NN matches_NNS ,_, the_DT document_NN length_NN ,_, and_CC perhaps_RB global_JJ collection_NN statistics_NNS ._.
+Once_RB computed_VBN ,_, a_DT system_NN rarely_RB compares_VBZ the_DT score_NN of_IN a_DT to_TO the_DT score_NN of_IN a_DT topically-related_JJ document_NN b_NN ._.
+With_IN some_DT exceptions_NNS ,_, the_DT correlation_NN of_IN document_NN scores_NNS has_VBZ largely_RB been_VBN ignored_VBN ._.
+We_PRP should_MD make_VB it_PRP clear_JJ that_IN we_PRP have_VBP selected_VBN tasks_NNS where_WRB topical_JJ autocorrelation_NN is_VBZ appropriate_JJ ._.
+There_EX are_VBP certainly_RB cases_NNS where_WRB there_EX is_VBZ no_DT reason_NN to_TO believe_VB that_IN retrieval_NN scores_NNS will_MD have_VB topical_JJ autocorrelation_NN ._.
+For_IN example_NN ,_, ranked_VBD lists_NNS which_WDT incorporate_VBP document_NN novelty_NN should_MD not_RB exhibit_VB spatial_JJ autocorrelation_NN ;_: if_IN anything_NN autocorrelation_NN should_MD be_VB negative_JJ for_IN this_DT task_NN ._.
+Similarly_RB ,_, answer_VB candidates_NNS in_IN a_DT question-answering_NN task_NN may_MD or_CC may_MD not_RB exhibit_VB autocorrelation_NN ;_: in_IN this_DT case_NN ,_, the_DT semantics_NNS of_IN links_NNS is_VBZ questionable_JJ too_RB ._.
+It_PRP is_VBZ important_JJ before_IN applying_VBG this_DT measure_NN to_TO confirm_VB that_IN ,_, given_VBN the_DT semantics_NNS for_IN some_DT link_NN between_IN two_CD retrieved_VBD items_NNS ,_, we_PRP should_MD expect_VB a_DT correlation_NN between_IN scores_NNS ._.
+8_CD ._.
+RELATED_JJ WORK_VBP In_IN this_DT section_NN we_PRP draw_VBP more_RBR general_JJ comparisons_NNS to_TO other_JJ work_NN in_IN performance_NN prediction_NN and_CC spatial_JJ data_NN analysis_NN ._.
+There_EX is_VBZ a_DT growing_VBG body_NN of_IN work_NN which_WDT attempts_VBZ to_TO predict_VB the_DT performance_NN of_IN individual_JJ retrievals_NNS -LSB-_-LRB- #_# ,_, #_# ,_, ##_NN ,_, #_# ,_, ##_NN -RSB-_-RRB- ._.
+We_PRP have_VBP attempted_VBN to_TO place_VB our_PRP$ work_NN in_IN the_DT context_NN of_IN much_JJ of_IN this_DT work_NN in_IN Section_NN #_# ._.
+However_RB ,_, a_DT complete_JJ comparison_NN is_VBZ beyond_IN the_DT scope_NN of_IN this_DT paper_NN ._.
+We_PRP note_VBP ,_, though_RB ,_, that_IN our_PRP$ experiments_NNS cover_VBP a_DT larger_JJR and_CC more_RBR diverse_JJ set_NN of_IN retrievals_NNS ,_, collections_NNS ,_, and_CC topics_NNS than_IN previously_RB examined_VBN ._.
+Much_JJ previous_JJ work-particularly_NN in_IN the_DT context_NN of_IN TRECfocuses_NNS on_IN predicting_VBG the_DT performance_NN of_IN systems_NNS ._.
+Here_RB ,_, each_DT system_NN generates_VBZ k_NN retrievals_NNS ._.
+The_DT task_NN is_VBZ ,_, given_VBN these_DT retrievals_NNS ,_, to_TO predict_VB the_DT ranking_NN of_IN systems_NNS according_VBG to_TO some_DT performance_NN measure_NN ._.
+Several_JJ papers_NNS attempt_VBP to_TO address_VB this_DT task_NN under_IN the_DT constraint_NN of_IN few_JJ judgments_NNS -LSB-_-LRB- #_# ,_, #_# -RSB-_-RRB- ._.
+Some_DT work_NN even_RB attempts_VBZ to_TO use_VB zero_CD judgments_NNS by_IN leveraging_VBG multiple_JJ retrievals_NNS for_IN the_DT same_JJ query_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Our_PRP$ task_NN differs_VBZ because_IN we_PRP focus_VBP on_IN ranking_JJ retrievals_NNS independent_JJ of_IN the_DT generating_VBG system_NN ._.
+The_DT task_NN here_RB is_VBZ not_RB to_TO test_VB the_DT hypothesis_NN system_NN A_NN is_VBZ superior_JJ to_TO system_NN B_NN but_CC to_TO test_VB the_DT hypothesis_NN retrieval_NN A_NN is_VBZ superior_JJ to_TO retrieval_NN B_NN ._.
+Autocorrelation_NN manifests_VBZ itself_PRP in_IN many_JJ classification_NN tasks_NNS ._.
+Neville_NNP and_CC Jensen_NNP define_VBP relational_JJ autocorrelation_NN for_IN relational_JJ learning_NN problems_NNS and_CC demonstrate_VBP that_IN many_JJ classification_NN tasks_NNS manifest_VBP autocorrelation_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Temporal_JJ autocorrelation_NN of_IN initial_JJ retrievals_NNS has_VBZ also_RB been_VBN used_VBN to_TO predict_VB performance_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+However_RB ,_, temporal_JJ autocorrelation_NN is_VBZ performed_VBN by_IN projecting_VBG the_DT retrieval_NN function_NN into_IN the_DT temporal_JJ embedding_NN space_NN ._.
+In_IN our_PRP$ work_NN ,_, we_PRP focus_VBP on_IN the_DT behavior_NN of_IN the_DT function_NN over_IN the_DT relationships_NNS between_IN documents_NNS ._.
+adjusted_VBN R2_NN DV_NN KL_NN P_NN -LRB-_-LRB- y_NN ,_, y_NN -RRB-_-RRB- DV_NN KL_NN P_NN -LRB-_-LRB- y_NN ,_, y_NN -RRB-_-RRB- DV_NN KL_NN ,_, P_NN DV_NN KL_NN ,_, -LRB-_-LRB- y_NN ,_, y_NN -RRB-_-RRB- P_NN -LRB-_-LRB- y_NN ,_, y_NN -RRB-_-RRB- trec4_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_CD trec5_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_CD robust04_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_CD terabyte04_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_CD terabyte05_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_RB Table_NNP #_# :_: Comparison_NN to_TO Robustness_NNP and_CC Clarity_NNP measures_NNS for_IN language_NN model_NN scores_NNS ._.
+Evaluation_NN replicates_VBZ experiments_NNS from_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ._.
+We_PRP present_VBP correlations_NNS between_IN the_DT classic_JJ Clarity_NN measure_NN -LRB-_-LRB- DV_NN KL_NN -RRB-_-RRB- ,_, the_DT ranking_JJ robustness_NN measure_NN -LRB-_-LRB- P_NN -RRB-_-RRB- ,_, and_CC autocorrelation_NN -LRB-_-LRB- -LRB-_-LRB- y_NN ,_, y_NN -RRB-_-RRB- -RRB-_-RRB- each_DT with_IN mean_JJ average_JJ precision_NN in_IN terms_NNS of_IN Kendall_NNP ''_'' s_NNS ._.
+The_DT adjusted_JJ coefficient_NN of_IN determination_NN is_VBZ presented_VBN to_TO measure_VB the_DT effectiveness_NN of_IN combining_VBG predictors_NNS ._.
+Measures_NNS in_IN bold_JJ represent_VBP the_DT strongest_JJS correlation_NN for_IN that_DT test_NN /_: collection_NN pair_NN ._.
+multiple_JJ run_NN -LRB-_-LRB- a_DT -RRB-_-RRB- -LRB-_-LRB- b_NN -RRB-_-RRB- -LRB-_-LRB- c_NN -RRB-_-RRB- adjusted_JJ R2_NN DKL_NN -LRB-_-LRB- y_NN ,_, y_NN -RRB-_-RRB- Dn_NN KL_NN -LRB-_-LRB- y_NN ,_, y_NN -RRB-_-RRB- -LRB-_-LRB- y_NN ,_, y_NN -RRB-_-RRB- Dn_NN KL_NN -LRB-_-LRB- y_NN ,_, y_NN -RRB-_-RRB- -LRB-_-LRB- y_NN ,_, y_NN -RRB-_-RRB- -LRB-_-LRB- y_NN ,_, y_NN -RRB-_-RRB- trec3_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_CD trec4_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_CD trec5_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN trec6_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN trec7_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN trec8_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_CD robust03_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_CD robust04_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_CD robust05_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_CD terabyte04_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_CD terabyte05_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_CD trec4-spanish_JJ #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_CD trec5-spanish_JJ #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_CD trec5-chinese_JJ #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_CD trec6-chinese_JJ #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN ent05_SYM -_: #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_RB Table_NNP #_# :_: Large_JJ scale_NN prediction_NN experiments_NNS ._.
+We_PRP predict_VBP the_DT ranking_NN of_IN large_JJ sets_NNS of_IN retrievals_NNS for_IN various_JJ collections_NNS and_CC retrieval_NN systems_NNS ._.
+Kendall_NNP ''_'' s_VBZ correlations_NNS are_VBP computed_VBN between_IN the_DT predicted_VBN ranking_NN and_CC a_DT ranking_JJ based_VBN on_IN the_DT retrieval_NN ''_'' s_NNS average_JJ precision_NN ._.
+In_IN column_NN -LRB-_-LRB- a_DT -RRB-_-RRB- ,_, we_PRP have_VBP predictors_NNS which_WDT do_VBP not_RB use_VB information_NN from_IN other_JJ retrievals_NNS for_IN the_DT same_JJ query_NN ._.
+In_IN columns_NNS -LRB-_-LRB- b_NN -RRB-_-RRB- and_CC -LRB-_-LRB- c_LS -RRB-_-RRB- we_PRP present_VBP performance_NN for_IN predictors_NNS which_WDT incorporate_VBP information_NN from_IN multiple_JJ retrievals_NNS ._.
+The_DT adjusted_JJ coefficient_NN of_IN determination_NN is_VBZ computed_VBN to_TO determine_VB effectiveness_NN of_IN combining_VBG predictors_NNS ._.
+Measures_NNS in_IN bold_JJ represent_VBP the_DT strongest_JJS correlation_NN for_IN that_DT test_NN /_: collection_NN pair_NN ._.
+Finally_RB ,_, regularization-based_JJ re-ranking_NN processes_NNS are_VBP also_RB closely-related_JJ to_TO our_PRP$ work_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+These_DT techniques_NNS seek_VBP to_TO maximize_VB the_DT agreement_NN between_IN scores_NNS of_IN related_JJ documents_NNS by_IN solving_VBG a_DT constrained_VBN optimization_NN problem_NN ._.
+The_DT maximization_NN of_IN consistency_NN is_VBZ equivalent_JJ to_TO maximizing_VBG the_DT Moran_NNP autocorrelation_NN ._.
+Therefore_RB ,_, we_PRP believe_VBP that_IN our_PRP$ work_NN provides_VBZ explanation_NN for_IN why_WRB regularization-based_JJ re-ranking_NN works_NNS ._.
+9_CD ._.
+CONCLUSION_NN We_PRP have_VBP presented_VBN a_DT new_JJ method_NN for_IN predicting_VBG the_DT performance_NN of_IN a_DT retrieval_NN ranking_NN without_IN any_DT relevance_NN judgments_NNS ._.
+We_PRP consider_VBP two_CD cases_NNS ._.
+First_RB ,_, when_WRB making_VBG predictions_NNS in_IN the_DT absence_NN of_IN retrievals_NNS from_IN other_JJ systems_NNS ,_, our_PRP$ predictors_NNS demonstrate_VBP robust_JJ ,_, strong_JJ correlations_NNS with_IN average_JJ precision_NN ._.
+This_DT performance_NN ,_, combined_VBN with_IN a_DT simple_JJ implementation_NN ,_, makes_VBZ our_PRP$ predictors_NNS ,_, in_IN particular_JJ ,_, very_RB attractive_JJ ._.
+We_PRP have_VBP demonstrated_VBN this_DT improvement_NN for_IN many_JJ ,_, diverse_JJ settings_NNS ._.
+To_TO our_PRP$ knowledge_NN ,_, this_DT is_VBZ the_DT first_JJ large_JJ scale_NN examination_NN of_IN zero-judgment_NN ,_, single-retrieval_JJ performance_NN prediction_NN ._.
+Second_RB ,_, when_WRB provided_VBN retrievals_NNS from_IN other_JJ systems_NNS ,_, our_PRP$ extended_VBN methods_NNS demonstrate_VBP competitive_JJ performance_NN with_IN state_NN of_IN the_DT art_NN baselines_NNS ._.
+Our_PRP$ experiments_NNS also_RB demonstrate_VBP the_DT limits_NNS of_IN the_DT usefulness_NN of_IN our_PRP$ predictors_NNS when_WRB information_NN from_IN multiple_JJ runs_NNS is_VBZ provided_VBN ._.
+Our_PRP$ results_NNS suggest_VBP two_CD conclusions_NNS ._.
+First_RB ,_, our_PRP$ results_NNS could_MD affect_VB retrieval_NN algorithm_NN design_NN ._.
+Retrieval_NN algorithms_NNS designed_VBN to_TO consider_VB spatial_JJ autocorrelation_NN will_MD conform_VB to_TO the_DT cluster_NN hypothesis_NN and_CC improve_VB performance_NN ._.
+Second_RB ,_, our_PRP$ results_NNS could_MD affect_VB the_DT design_NN of_IN minimal_JJ test_NN collection_NN algorithms_NNS ._.
+Much_JJ of_IN the_DT recent_JJ work_NN in_IN ranking_JJ systems_NNS sometimes_RB ignores_VBZ correlations_NNS between_IN document_NN labels_NNS and_CC scores_NNS ._.
+We_PRP believe_VBP that_IN these_DT two_CD directions_NNS could_MD be_VB rewarding_JJ given_VBN the_DT theoretical_JJ and_CC experimental_JJ evidence_NN in_IN this_DT paper_NN ._.
+10_CD ._.
+ACKNOWLEDGMENTS_NNS This_DT work_NN was_VBD supported_VBN in_IN part_NN by_IN the_DT Center_NNP for_IN Intelligent_NNP Information_NNP Retrieval_NNP and_CC in_IN part_NN by_IN the_DT Defense_NNP Advanced_NNP Research_NNP Projects_NNP Agency_NNP -LRB-_-LRB- DARPA_NNP -RRB-_-RRB- under_IN contract_NN number_NN HR0011-06-C-0023_NN ._.
+Any_DT opinions_NNS ,_, findings_NNS and_CC conclusions_NNS or_CC recommendations_NNS expressed_VBN in_IN this_DT material_NN are_VBP the_DT author_NN ''_'' s_NNS and_CC do_VBP not_RB necessarily_RB reflect_VB those_DT of_IN the_DT sponsor_NN ._.
+We_PRP thank_VBP Yun_NNP Zhou_NNP and_CC Desislava_NNP Petkova_NNP for_IN providing_VBG data_NNS and_CC Andre_NNP Gauthier_NNP for_IN technical_JJ assistance_NN ._.
+11_CD ._.
+REFERENCES_NNS -LSB-_-LRB- #_# -RSB-_-RRB- J_NN ._.
+Aslam_NNP and_CC V_NNP ._.
+Pavlu_NNP ._.
+Query_NNP hardness_NN estimation_NN using_VBG jensen-shannon_NN divergence_NN among_IN multiple_JJ scoring_VBG functions_NNS ._.
+In_IN ECIR_NN ####_CD :_: Proceedings_NNP of_IN the_DT 29th_JJ European_JJ Conference_NN on_IN Information_NNP Retrieval_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- J_NN ._.
+A_DT ._.
+Aslam_NNP ,_, V_NNP ._.
+Pavlu_NNP ,_, and_CC E_NN ._.
+Yilmaz_NNP ._.
+A_DT statistical_JJ method_NN for_IN system_NN evaluation_NN using_VBG incomplete_JJ judgments_NNS ._.
+In_IN S_NN ._.
+Dumais_NNP ,_, E_NNP ._.
+N_NN ._.
+Efthimiadis_NNP ,_, D_NNP ._.
+Hawking_VBG ,_, and_CC K_NN ._.
+Jarvelin_NNP ,_, editors_NNS ,_, Proceedings_NNP of_IN the_DT 29th_JJ Annual_JJ International_NNP ACM_NNP SIGIR_NNP Conference_NNP on_IN Research_NNP and_CC Development_NNP in_IN Information_NNP Retrieval_NNP ,_, pages_NNS 541-548_CD ._.
+ACM_NNP Press_NNP ,_, August_NNP 2006_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- D_NN ._.
+Carmel_NNP ,_, E_NNP ._.
+Yom-Tov_NNP ,_, A_NNP ._.
+Darlow_NNP ,_, and_CC D_NN ._.
+Pelleg_NNP ._.
+What_WP makes_VBZ a_DT query_NN difficult_JJ ?_.
+In_IN SIGIR_NN ''_'' ##_NN :_: Proceedings_NNP of_IN the_DT 29th_JJ annual_JJ international_JJ ACM_NNP SIGIR_NNP conference_NN on_IN Research_NNP and_CC development_NN in_IN information_NN retrieval_NN ,_, pages_NNS 390-397_CD ,_, New_NNP York_NNP ,_, NY_NNP ,_, USA_NNP ,_, ####_CD ._.
+ACM_NNP Press_NNP ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- B_NN ._.
+Carterette_NNP ,_, J_NNP ._.
+Allan_NNP ,_, and_CC R_NN ._.
+Sitaraman_NNP ._.
+Minimal_JJ test_NN collections_NNS for_IN retrieval_NN evaluation_NN ._.
+In_IN SIGIR_NN ''_'' ##_NN :_: Proceedings_NNP of_IN the_DT 29th_JJ annual_JJ international_JJ ACM_NNP SIGIR_NNP conference_NN on_IN Research_NNP and_CC development_NN in_IN information_NN retrieval_NN ,_, pages_NNS 268-275_CD ,_, New_NNP York_NNP ,_, NY_NNP ,_, USA_NNP ,_, ####_CD ._.
+ACM_NNP Press_NNP ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- A_DT ._.
+D_NN ._.
+Cliff_NNP and_CC J_NNP ._.
+K_NN ._.
+Ord_NNP ._.
+Spatial_JJ Autocorrelation_NN ._.
+Pion_NNP Ltd_NNP ._.
+,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- M_NN ._.
+Connell_NNP ,_, A_NNP ._.
+Feng_NNP ,_, G_NNP ._.
+Kumaran_NNP ,_, H_NN ._.
+Raghavan_NNP ,_, C_NNP ._.
+Shah_NNP ,_, and_CC J_NN ._.
+Allan_NNP ._.
+Umass_NNP at_IN tdt_NN ####_CD ._.
+Technical_NNP Report_NNP CIIR_NNP Technical_NNP Report_NNP IR_NNP -_: ###_CD ,_, Department_NNP of_IN Computer_NNP Science_NNP ,_, University_NNP of_IN Massachusetts_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- S_NN ._.
+Cronen-Townsend_NNP ,_, Y_NN ._.
+Zhou_NNP ,_, and_CC W_NN ._.
+B_NN ._.
+Croft_NNP ._.
+Precision_NN prediction_NN based_VBN on_IN ranked_VBN list_NN coherence_NN ._.
+Inf_NNP ._.
+Retr_NNP ._.
+,_, 9_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 723-755_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- F_NN ._.
+Diaz_NNP ._.
+Regularizing_VBG ad-hoc_JJ retrieval_NN scores_NNS ._.
+In_IN CIKM_NNP ''_'' ##_CD :_: Proceedings_NNP of_IN the_DT 14th_JJ ACM_JJ international_JJ conference_NN on_IN Information_NN and_CC knowledge_NN management_NN ,_, pages_NNS 672-679_CD ,_, New_NNP York_NNP ,_, NY_NNP ,_, USA_NNP ,_, ####_CD ._.
+ACM_NNP Press_NNP ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- F_NN ._.
+Diaz_NNP and_CC R_NN ._.
+Jones_NNP ._.
+Using_VBG temporal_JJ profiles_NNS of_IN queries_NNS for_IN precision_NN prediction_NN ._.
+In_IN SIGIR_NN ''_'' ##_NN :_: Proceedings_NNP of_IN the_DT 27th_JJ annual_JJ international_JJ ACM_NNP SIGIR_NNP conference_NN on_IN Research_NNP and_CC development_NN in_IN information_NN retrieval_NN ,_, pages_NNS 18-24_CD ,_, New_NNP York_NNP ,_, NY_NNP ,_, USA_NNP ,_, ####_CD ._.
+ACM_NNP Press_NNP ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- D_NN ._.
+A_DT ._.
+Griffith_NNP ._.
+Spatial_JJ Autocorrelation_NN and_CC Spatial_JJ Filtering_NN ._.
+Springer_NNP Verlag_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- B_NN ._.
+He_PRP and_CC I_PRP ._.
+Ounis_NNP ._.
+Inferring_VBG Query_NNP Performance_NNP Using_VBG Pre-retrieval_JJ Predictors_NNS ._.
+In_IN The_DT Eleventh_NNP Symposium_NNP on_IN String_NNP Processing_NNP and_CC Information_NNP Retrieval_NNP -LRB-_-LRB- SPIRE_NN -RRB-_-RRB- ,_, 2004_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- N_NN ._.
+Jardine_NNP and_CC C_NNP ._.
+J_NN ._.
+V_NN ._.
+Rijsbergen_NNP ._.
+The_DT use_NN of_IN hierarchic_JJ clustering_NN in_IN information_NN retrieval_NN ._.
+Information_NNP Storage_NNP and_CC Retrieval_NNP ,_, #_# :_: 217-240_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- D_NN ._.
+Jensen_NNP and_CC J_NNP ._.
+Neville_NNP ._.
+Linkage_NN and_CC autocorrelation_NN cause_VBP feature_NN selection_NN bias_NN in_IN relational_JJ learning_NN ._.
+In_IN ICML_NN ''_'' ##_NN :_: Proceedings_NNP of_IN the_DT Nineteenth_NNP International_NNP Conference_NNP on_IN Machine_NNP Learning_NNP ,_, pages_NNS 259-266_CD ,_, San_NNP Francisco_NNP ,_, CA_NNP ,_, USA_NNP ,_, ####_CD ._.
+Morgan_NNP Kaufmann_NNP Publishers_NNPS Inc_NNP ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- O_NN ._.
+Kurland_NNP and_CC L_NNP ._.
+Lee_NNP ._.
+Corpus_NNP structure_NN ,_, language_NN models_NNS ,_, and_CC ad-hoc_JJ information_NN retrieval_NN ._.
+In_IN SIGIR_NN ''_'' ##_NN :_: Proceedings_NNP of_IN the_DT 27th_JJ annual_JJ international_JJ conference_NN on_IN Research_NNP and_CC development_NN in_IN information_NN retrieval_NN ,_, pages_NNS 194-201_CD ,_, New_NNP York_NNP ,_, NY_NNP ,_, USA_NNP ,_, ####_CD ._.
+ACM_NNP Press_NNP ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- M_NN ._.
+Montague_NNP and_CC J_NNP ._.
+A_DT ._.
+Aslam_NNP ._.
+Relevance_NN score_NN normalization_NN for_IN metasearch_NN ._.
+In_IN CIKM_NNP ''_'' ##_CD :_: Proceedings_NNP of_IN the_DT tenth_NN international_JJ conference_NN on_IN Information_NN and_CC knowledge_NN management_NN ,_, pages_NNS 427-433_CD ,_, New_NNP York_NNP ,_, NY_NNP ,_, USA_NNP ,_, ####_CD ._.
+ACM_NNP Press_NNP ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- T_NN ._.
+Qin_NNP ,_, T_NN ._.
+-_: Y_NN ._.
+Liu_NNP ,_, X_NN ._.
+-_: D_NN ._.
+Zhang_NNP ,_, Z_NN ._.
+Chen_NNP ,_, and_CC W_NN ._.
+-_: Y_NN ._.
+Ma_NNP ._.
+A_DT study_NN of_IN relevance_NN propagation_NN for_IN web_NN search_NN ._.
+In_IN SIGIR_NN ''_'' ##_NN :_: Proceedings_NNP of_IN the_DT 28th_JJ annual_JJ international_JJ ACM_NNP SIGIR_NNP conference_NN on_IN Research_NNP and_CC development_NN in_IN information_NN retrieval_NN ,_, pages_NNS 408-415_CD ,_, New_NNP York_NNP ,_, NY_NNP ,_, USA_NNP ,_, 2005_CD ._.
+ACM_NNP Press_NNP ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- I_PRP ._.
+Soboroff_NNP ,_, C_NNP ._.
+Nicholas_NNP ,_, and_CC P_NN ._.
+Cahan_NNP ._.
+Ranking_JJ retrieval_NN systems_NNS without_IN relevance_NN judgments_NNS ._.
+In_IN SIGIR_NN ''_'' ##_NN :_: Proceedings_NNP of_IN the_DT 24th_JJ annual_JJ international_JJ ACM_NNP SIGIR_NNP conference_NN on_IN Research_NNP and_CC development_NN in_IN information_NN retrieval_NN ,_, pages_NNS 66-73_CD ,_, New_NNP York_NNP ,_, NY_NNP ,_, USA_NNP ,_, ####_CD ._.
+ACM_NNP Press_NNP ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- V_NN ._.
+Vinay_NNP ,_, I_PRP ._.
+J_NN ._.
+Cox_NN ,_, N_NN ._.
+Milic-Frayling_NNP ,_, and_CC K_NN ._.
+Wood_NNP ._.
+On_IN ranking_VBG the_DT effectiveness_NN of_IN searches_NNS ._.
+In_IN SIGIR_NN ''_'' ##_NN :_: Proceedings_NNP of_IN the_DT 29th_JJ annual_JJ international_JJ ACM_NNP SIGIR_NNP conference_NN on_IN Research_NNP and_CC development_NN in_IN information_NN retrieval_NN ,_, pages_NNS 398-404_CD ,_, New_NNP York_NNP ,_, NY_NNP ,_, USA_NNP ,_, ####_CD ._.
+ACM_NNP Press_NNP ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Y_NN ._.
+Zhou_NNP and_CC W_NNP ._.
+B_NN ._.
+Croft_NNP ._.
+Ranking_JJ robustness_NN :_: a_DT novel_JJ framework_NN to_TO predict_VB query_NN performance_NN ._.
+In_IN CIKM_NNP ''_'' ##_CD :_: Proceedings_NNP of_IN the_DT 15th_JJ ACM_JJ international_JJ conference_NN on_IN Information_NN and_CC knowledge_NN management_NN ,_, pages_NNS 567-574_CD ,_, New_NNP York_NNP ,_, NY_NNP ,_, USA_NNP ,_, ####_CD ._.
+ACM_NNP Press_NNP ._.

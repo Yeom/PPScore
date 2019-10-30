@@ -1,0 +1,348 @@
+Evaluating_VBG Adaptive_JJ Resource_NNP Management_NNP for_IN Distributed_VBN Real-Time_NNP Embedded_VBN Systems_NNPS Nishanth_NNP Shankaran_NNP ,_, Xenofon_NNP Koutsoukos_NNP ,_, Douglas_NNP C_NNP ._.
+Schmidt_NNP ,_, and_CC Aniruddha_NNP Gokhale_NNP Dept_NNP ._.
+of_IN EECS_NN ,_, Vanderbilt_NNP University_NNP ,_, Nashville_NNP ABSTRACT_NN A_DT challenging_JJ problem_NN faced_VBN by_IN researchers_NNS and_CC developers_NNS of_IN distributed_VBN real-time_JJ and_CC embedded_JJ -LRB-_-LRB- DRE_NN -RRB-_-RRB- systems_NNS is_VBZ devising_VBG and_CC implementing_VBG effective_JJ adaptive_JJ resource_NN management_NN strategies_NNS that_WDT can_MD meet_VB end-to-end_JJ quality_NN of_IN service_NN -LRB-_-LRB- QoS_NN -RRB-_-RRB- requirements_NNS in_IN varying_VBG operational_JJ conditions_NNS ._.
+This_DT paper_NN presents_VBZ two_CD contributions_NNS to_TO research_NN in_IN adaptive_JJ resource_NN management_NN for_IN DRE_NN systems_NNS ._.
+First_RB ,_, we_PRP describe_VBP the_DT structure_NN and_CC functionality_NN of_IN the_DT Hybrid_NNP Adaptive_NNP Resourcemanagement_NNP Middleware_NNP -LRB-_-LRB- HyARM_NNP -RRB-_-RRB- ,_, which_WDT provides_VBZ adaptive_JJ resource_NN management_NN using_VBG hybrid_NN control_NN techniques_NNS for_IN adapting_VBG to_TO workload_NN fluctuations_NNS and_CC resource_NN availability_NN ._.
+Second_RB ,_, we_PRP evaluate_VBP the_DT adaptive_JJ behavior_NN of_IN HyARM_NN via_IN experiments_NNS on_IN a_DT DRE_NN multimedia_NNS system_NN that_WDT distributes_VBZ video_NN in_IN real-time_JJ ._.
+Our_PRP$ results_NNS indicate_VBP that_IN HyARM_NN yields_NNS predictable_JJ ,_, stable_JJ ,_, and_CC high_JJ system_NN performance_NN ,_, even_RB in_IN the_DT face_NN of_IN fluctuating_VBG workload_NN and_CC resource_NN availability_NN ._.
+Categories_NNS and_CC Subject_NNP Descriptors_NNPS C_NNP ._.
+#_# ._.
+#_# -LSB-_-LRB- Distributed_VBN Systems_NNPS -RSB-_-RRB- :_: Distributed_VBN Applications_NNS ;_: D_NN ._.
+#_# ._.
+#_# -LSB-_-LRB- Organization_NNP and_CC Design_NN -RSB-_-RRB- :_: Real-time_JJ Systems_NNPS and_CC Embedded_VBN Systems_NNP 1_CD ._.
+INTRODUCTION_NNP Achieving_NNP end-to-end_JJ real-time_JJ quality_NN of_IN service_NN -LRB-_-LRB- QoS_NN -RRB-_-RRB- is_VBZ particularly_RB important_JJ for_IN open_JJ distributed_VBN real-time_JJ and_CC embedded_JJ -LRB-_-LRB- DRE_NN -RRB-_-RRB- systems_NNS that_WDT face_VBP resource_NN constraints_NNS ,_, such_JJ as_IN limited_JJ computing_NN power_NN and_CC network_NN bandwidth_NN ._.
+Overutilization_NN of_IN these_DT system_NN resources_NNS can_MD yield_VB unpredictable_JJ and_CC unstable_JJ behavior_NN ,_, whereas_IN under-utilization_NN can_MD yield_VB excessive_JJ system_NN cost_NN ._.
+A_DT promising_JJ approach_NN to_TO meeting_VBG these_DT end-to-end_JJ QoS_NN requirements_NNS effectively_RB ,_, therefore_RB ,_, is_VBZ to_TO develop_VB and_CC apply_VB adaptive_JJ middleware_JJ -LSB-_-LRB- ##_CD ,_, ##_CD -RSB-_-RRB- ,_, which_WDT is_VBZ software_NN whose_WP$ functional_JJ and_CC QoS-related_JJ properties_NNS can_MD be_VB modified_VBN either_CC statically_RB or_CC dynamically_RB ._.
+Static_JJ modifications_NNS are_VBP carried_VBN out_RP to_TO reduce_VB footprint_NN ,_, leverage_NN capabilities_NNS that_WDT exist_VBP in_IN specific_JJ platforms_NNS ,_, enable_VBP functional_JJ subsetting_NN ,_, and_CC /_: or_CC minimize_VB hardware_NN /_: software_NN infrastructure_NN dependencies_NNS ._.
+Objectives_NNS of_IN dynamic_JJ modifications_NNS include_VBP optimizing_VBG system_NN responses_NNS to_TO changing_VBG environments_NNS or_CC requirements_NNS ,_, such_JJ as_IN changing_VBG component_NN interconnections_NNS ,_, power-levels_NNS ,_, CPU_NNP and_CC network_NN bandwidth_NN availability_NN ,_, latency_NN /_: jitter_NN ,_, and_CC workload_NN ._.
+In_IN open_JJ DRE_NN systems_NNS ,_, adaptive_JJ middleware_NN must_MD make_VB such_JJ modifications_NNS dependably_RB ,_, i_FW ._.
+e_LS ._.
+,_, while_IN meeting_VBG stringent_JJ end-to-end_JJ QoS_NN requirements_NNS ,_, which_WDT requires_VBZ the_DT specification_NN and_CC enforcement_NN of_IN upper_JJ and_CC lower_JJR bounds_NNS on_IN system_NN resource_NN utilization_NN to_TO ensure_VB effective_JJ use_NN of_IN system_NN resources_NNS ._.
+To_TO meet_VB these_DT requirements_NNS ,_, we_PRP have_VBP developed_VBN the_DT Hybrid_NNP Adaptive_NNP Resource-management_NN Middleware_NNP -LRB-_-LRB- HyARM_NNP -RRB-_-RRB- ,_, which_WDT is_VBZ an_DT open-source1_NN distributed_VBN resource_NN management_NN middleware_NN ._.
+HyARM_NN is_VBZ based_VBN on_IN hybrid_NN control_NN theoretic_JJ techniques_NNS -LSB-_-LRB- #_# -RSB-_-RRB- ,_, which_WDT provide_VBP a_DT theoretical_JJ framework_NN for_IN designing_VBG control_NN of_IN complex_JJ system_NN with_IN both_CC continuous_JJ and_CC discrete_JJ dynamics_NNS ._.
+In_IN our_PRP$ case_NN study_NN ,_, which_WDT involves_VBZ a_DT distributed_VBN real-time_JJ video_NN distribution_NN system_NN ,_, the_DT task_NN of_IN adaptive_JJ resource_NN management_NN is_VBZ to_TO control_VB the_DT utilization_NN of_IN the_DT different_JJ resources_NNS ,_, whose_WP$ utilizations_NNS are_VBP described_VBN by_IN continuous_JJ variables_NNS ._.
+We_PRP achieve_VBP this_DT by_IN adapting_VBG the_DT resolution_NN of_IN the_DT transmitted_JJ video_NN ,_, which_WDT is_VBZ modeled_VBN as_IN a_DT continuous_JJ variable_NN ,_, and_CC by_IN changing_VBG the_DT frame-rate_JJ and_CC the_DT compression_NN ,_, which_WDT are_VBP modeled_VBN by_IN discrete_JJ actions_NNS ._.
+We_PRP have_VBP implemented_VBN HyARM_NN atop_IN The_DT ACE_NN ORB_NN -LRB-_-LRB- TAO_NN -RRB-_-RRB- -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, which_WDT is_VBZ an_DT implementation_NN of_IN the_DT Real-time_JJ CORBA_NNP specification_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Our_PRP$ results_NNS show_VBP that_IN -LRB-_-LRB- #_# -RRB-_-RRB- HyARM_NN ensures_VBZ effective_JJ system_NN resource_NN utilization_NN and_CC -LRB-_-LRB- #_# -RRB-_-RRB- end-to-end_JJ QoS_NN requirements_NNS of_IN higher_JJR priority_NN applications_NNS are_VBP met_VBN ,_, even_RB in_IN the_DT face_NN of_IN fluctuations_NNS in_IN workload_NN ._.
+The_DT remainder_NN of_IN the_DT paper_NN is_VBZ organized_VBN as_IN follows_VBZ :_: Section_NN #_# describes_VBZ the_DT architecture_NN ,_, functionality_NN ,_, and_CC resource_NN utilization_NN model_NN of_IN our_PRP$ DRE_NN multimedia_NNS system_NN case_NN study_NN ;_: Section_NN #_# explains_VBZ the_DT structure_NN and_CC functionality_NN of_IN HyARM_NN ;_: Section_NN #_# evaluates_VBZ the_DT adaptive_JJ behavior_NN of_IN HyARM_NN via_IN experiments_NNS on_IN our_PRP$ multimedia_NNS system_NN case_NN study_NN ;_: Section_NN #_# compares_VBZ our_PRP$ research_NN on_IN HyARM_NN with_IN related_JJ work_NN ;_: and_CC Section_NNP #_# presents_VBZ concluding_VBG remarks_NNS ._.
+1_CD The_DT code_NN and_CC examples_NNS for_IN HyARM_NN are_VBP available_JJ at_IN www_NN ._.
+dre_NN ._.
+vanderbilt_NN ._.
+edu_FW /_: nshankar_JJ /_: HyARM_NN /_: ._.
+Article_NNP #_# 2_CD ._.
+CASE_NN STUDY_NN :_: DRE_NN MULTIMEDIA_NNP SYSTEM_NNP This_DT section_NN describes_VBZ the_DT architecture_NN and_CC QoS_NN requirements_NNS of_IN our_PRP$ DRE_NN multimedia_NNS system_NN ._.
+2_LS ._.
+#_# Multimedia_NNP System_NNP Architecture_NNP Wireless_NNP Link_NNP Wireless_NNP Link_NNP Wireless_NNP Link_NNP `_`` `_`` `_`` Physical_JJ Link_NN Physical_JJ Link_NNP Physical_NNP Link_NNP Base_NNP Station_NNP End_NNP Receiver_NNP End_NNP Receiver_NNP End_NNP Receiver_NNP `_`` Physical_JJ Link_NN End_NN Receiver_NN UAV_NNP Camera_NNP Video_NNP Encoder_NNP Camera_NNP Video_NNP Encoder_NNP Camera_NNP Video_NNP Encoder_NNP UAV_NNP Camera_NNP Video_NNP Encoder_NNP Camera_NNP Video_NNP Encoder_NNP Camera_NNP Video_NNP Encoder_NNP UAV_NNP Camera_NNP Video_NNP Encoder_NNP Camera_NNP Video_NNP Encoder_NNP Camera_NNP Video_NNP Encoder_NNP Figure_NNP #_# :_: DRE_NN Multimedia_NNP System_NNP Architecture_NNP The_NNP architecture_NN for_IN our_PRP$ DRE_NN multimedia_NNS system_NN is_VBZ shown_VBN in_IN Figure_NNP #_# and_CC consists_VBZ of_IN the_DT following_VBG entities_NNS :_: -LRB-_-LRB- #_# -RRB-_-RRB- Data_NNS source_NN -LRB-_-LRB- video_NN capture_NN by_IN UAV_NN -RRB-_-RRB- ,_, where_WRB video_NN is_VBZ captured_VBN -LRB-_-LRB- related_JJ to_TO subject_NN of_IN interest_NN -RRB-_-RRB- by_IN camera_NN -LRB-_-LRB- s_NNS -RRB-_-RRB- on_IN each_DT UAV_NNP ,_, followed_VBN by_IN encoding_VBG of_IN raw_JJ video_NN using_VBG a_DT specific_JJ encoding_VBG scheme_NN and_CC transmitting_VBG the_DT video_NN to_TO the_DT next_JJ stage_NN in_IN the_DT pipeline_NN ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- Data_NNS distributor_NN -LRB-_-LRB- base_NN station_NN -RRB-_-RRB- ,_, where_WRB the_DT video_NN is_VBZ processed_VBN to_TO remove_VB noise_NN ,_, followed_VBN by_IN retransmission_NN of_IN the_DT processed_VBN video_NN to_TO the_DT next_JJ stage_NN in_IN the_DT pipeline_NN ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- Sinks_VBZ -LRB-_-LRB- command_NN and_CC control_NN center_NN -RRB-_-RRB- ,_, where_WRB the_DT received_VBN video_NN is_VBZ again_RB processed_VBN to_TO remove_VB noise_NN ,_, then_RB decoded_VBN and_CC finally_RB rendered_VBN to_TO end_VB user_NN via_IN graphical_JJ displays_NNS ._.
+Significant_JJ improvements_NNS in_IN video_NN encoding_VBG /_: decoding_VBG and_CC -LRB-_-LRB- de_FW -RRB-_-RRB- compression_NN techniques_NNS have_VBP been_VBN made_VBN as_IN a_DT result_NN of_IN recent_JJ advances_NNS in_IN video_NN encoding_NN and_CC compression_NN techniques_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Common_JJ video_NN compression_NN schemes_NNS are_VBP MPEG1_NN ,_, MPEG-2_NN ,_, Real_JJ Video_NNP ,_, and_CC MPEG-4_NN ._.
+Each_DT compression_NN scheme_NN is_VBZ characterized_VBN by_IN its_PRP$ resource_NN requirement_NN ,_, e_LS ._.
+g_NN ._.
+,_, the_DT computational_JJ power_NN to_TO -LRB-_-LRB- de_FW -RRB-_-RRB- compress_VBP the_DT video_NN signal_NN and_CC the_DT network_NN bandwidth_NN required_VBN to_TO transmit_VB the_DT compressed_VBN video_NN signal_NN ._.
+Properties_NNP of_IN the_DT compressed_VBN video_NN ,_, such_JJ as_IN resolution_NN and_CC frame-rate_JJ determine_VB both_CC the_DT quality_NN and_CC the_DT resource_NN requirements_NNS of_IN the_DT video_NN ._.
+Our_PRP$ multimedia_NNS system_NN case_NN study_NN has_VBZ the_DT following_VBG endto-end_JJ real-time_JJ QoS_NN requirements_NNS :_: -LRB-_-LRB- #_# -RRB-_-RRB- latency_NN ,_, -LRB-_-LRB- #_# -RRB-_-RRB- interframe_JJ delay_NN -LRB-_-LRB- also_RB know_VBP as_IN jitter_NN -RRB-_-RRB- ,_, -LRB-_-LRB- #_# -RRB-_-RRB- frame_NN rate_NN ,_, and_CC -LRB-_-LRB- #_# -RRB-_-RRB- picture_NN resolution_NN ._.
+These_DT QoS_NN requirements_NNS can_MD be_VB classified_VBN as_IN being_VBG either_CC hard_JJ or_CC soft_JJ ._.
+Hard_JJ QoS_NN requirements_NNS should_MD be_VB met_VBN by_IN the_DT underlying_VBG system_NN at_IN all_DT times_NNS ,_, whereas_IN soft_JJ QoS_NN requirements_NNS can_MD be_VB missed_VBN occasionally_RB ._.
+#_# For_IN our_PRP$ case_NN study_NN ,_, we_PRP treat_VBP QoS_NN requirements_NNS such_JJ as_IN latency_NN and_CC jitter_NN as_IN harder_JJR QoS_NN requirements_NNS and_CC strive_VBP to_TO meet_VB these_DT requirements_NNS at_IN all_DT times_NNS ._.
+In_IN contrast_NN ,_, we_PRP treat_VBP QoS_NN requirements_NNS such_JJ as_IN video_NN frame_NN rate_NN and_CC picture_NN resolution_NN as_IN softer_JJR QoS_NN requirements_NNS and_CC modify_VB these_DT video_NN properties_NNS adaptively_RB to_TO handle_VB dynamic_JJ changes_NNS in_IN resource_NN availabil2_NN Although_IN hard_JJ and_CC soft_JJ are_VBP often_RB portrayed_VBN as_IN two_CD discrete_JJ requirement_NN sets_NNS ,_, in_IN practice_NN they_PRP are_VBP usually_RB two_CD ends_NNS of_IN a_DT continuum_NN ranging_VBG from_IN softer_JJR to_TO harder_JJR rather_RB than_IN two_CD disjoint_NN points_NNS ._.
+ity_NN effectively_RB ._.
+2_LS ._.
+#_# DRE_NN Multimedia_NNP System_NNP Rresources_NNP There_EX are_VBP two_CD primary_JJ types_NNS of_IN resources_NNS in_IN our_PRP$ DRE_NN multimedia_NNS system_NN :_: -LRB-_-LRB- #_# -RRB-_-RRB- processors_NNS that_WDT provide_VBP computational_JJ power_NN available_JJ at_IN the_DT UAVs_NNS ,_, base_NN stations_NNS ,_, and_CC end_VB receivers_NNS and_CC -LRB-_-LRB- #_# -RRB-_-RRB- network_NN links_NNS that_WDT provide_VBP communication_NN bandwidth_NN between_IN UAVs_NNS ,_, base_NN stations_NNS ,_, and_CC end_VB receivers_NNS ._.
+The_DT computing_NN power_NN required_VBN by_IN the_DT video_NN capture_NN and_CC encoding_VBG tasks_NNS depends_VBZ on_IN dynamic_JJ factors_NNS ,_, such_JJ as_IN speed_NN of_IN the_DT UAV_NNP ,_, speed_NN of_IN the_DT subject_NN -LRB-_-LRB- if_IN the_DT subject_NN is_VBZ mobile_JJ -RRB-_-RRB- ,_, and_CC distance_NN between_IN UAV_NNP and_CC the_DT subject_NN ._.
+The_DT wireless_JJ network_NN bandwidth_NN available_JJ to_TO transmit_VB video_NN captured_VBN by_IN UAVs_NNS to_TO base_NN stations_NNS also_RB depends_VBZ on_IN the_DT wireless_JJ connectivity_NN between_IN the_DT UAVs_NNS and_CC the_DT base_NN station_NN ,_, which_WDT in-turn_JJ depend_VB on_IN dynamic_JJ factors_NNS such_JJ as_IN the_DT speed_NN of_IN the_DT UAVs_NNS and_CC the_DT relative_JJ distance_NN between_IN UAVs_NNS and_CC base_NN stations_NNS ._.
+The_DT bandwidth_NN of_IN the_DT link_NN between_IN the_DT base_NN station_NN and_CC the_DT end_NN receiver_NN is_VBZ limited_VBN ,_, but_CC more_RBR stable_JJ than_IN the_DT bandwidth_NN of_IN the_DT wireless_JJ network_NN ._.
+Resource_NNP requirements_NNS and_CC availability_NN of_IN resources_NNS are_VBP subjected_VBN to_TO dynamic_JJ changes_NNS ._.
+Two_CD classes_NNS of_IN applications_NNS -_: QoS-enabled_JJ and_CC best-effort_JJ -_: use_VB the_DT multimedia_NNS system_NN infrastructure_NN described_VBN above_IN to_TO transmit_VB video_NN to_TO their_PRP$ respective_JJ receivers_NNS ._.
+QoS-enabled_JJ class_NN of_IN applications_NNS have_VBP higher_JJR priority_NN over_IN best-effort_JJ class_NN of_IN application_NN ._.
+In_IN our_PRP$ study_NN ,_, emergency_NN response_NN applications_NNS belong_VBP to_TO QoS-enabled_NNP and_CC surveillance_NN applications_NNS belong_VBP to_TO best-effort_JJS class_NN ._.
+For_IN example_NN ,_, since_IN a_DT stream_NN from_IN an_DT emergency_NN response_NN application_NN is_VBZ of_IN higher_JJR importance_NN than_IN a_DT video_NN stream_NN from_IN a_DT surveillance_NN application_NN ,_, it_PRP receives_VBZ more_RBR resources_NNS end-to-end_JJ ._.
+Since_IN resource_NN availability_NN significantly_RB affects_VBZ QoS_NN ,_, we_PRP use_VBP current_JJ resource_NN utilization_NN as_IN the_DT primary_JJ indicator_NN of_IN system_NN performance_NN ._.
+We_PRP refer_VBP to_TO the_DT current_JJ level_NN of_IN system_NN resource_NN utilization_NN as_IN the_DT system_NN condition_NN ._.
+Based_VBN on_IN this_DT definition_NN ,_, we_PRP can_MD classify_VB system_NN conditions_NNS as_IN being_VBG either_CC under_IN ,_, over_IN ,_, or_CC effectively_RB utilized_VBN ._.
+Under-utilization_NN of_IN system_NN resources_NNS occurs_VBZ when_WRB the_DT current_JJ resource_NN utilization_NN is_VBZ lower_JJR than_IN the_DT desired_VBN lower_JJR bound_VBN on_IN resource_NN utilization_NN ._.
+In_IN this_DT system_NN condition_NN ,_, residual_JJ system_NN resources_NNS -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, network_NN bandwidth_NN and_CC computational_JJ power_NN -RRB-_-RRB- are_VBP available_JJ in_IN large_JJ amounts_NNS after_IN meeting_VBG end-to-end_JJ QoS_NN requirements_NNS of_IN applications_NNS ._.
+These_DT residual_JJ resources_NNS can_MD be_VB used_VBN to_TO increase_VB the_DT QoS_NN of_IN the_DT applications_NNS ._.
+For_IN example_NN ,_, residual_JJ CPU_NNP and_CC network_NN bandwidth_NN can_MD be_VB used_VBN to_TO deliver_VB better_JJR quality_NN video_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, with_IN greater_JJR resolution_NN and_CC higher_JJR frame_NN rate_NN -RRB-_-RRB- to_TO end_VB receivers_NNS ._.
+Over-utilization_NN of_IN system_NN resources_NNS occurs_VBZ when_WRB the_DT current_JJ resource_NN utilization_NN is_VBZ higher_JJR than_IN the_DT desired_VBN upper_JJ bound_VBN on_IN resource_NN utilization_NN ._.
+This_DT condition_NN can_MD arise_VB from_IN loss_NN of_IN resources_NNS -_: network_NN bandwidth_NN and_CC /_: or_CC computing_VBG power_NN at_IN base_NN station_NN ,_, end_NN receiver_NN or_CC at_IN UAV_NNP -_: or_CC may_MD be_VB due_JJ to_TO an_DT increase_NN in_IN resource_NN demands_NNS by_IN applications_NNS ._.
+Over-utilization_NN is_VBZ generally_RB undesirable_JJ since_IN the_DT quality_NN of_IN the_DT received_VBN video_NN -LRB-_-LRB- such_JJ as_IN resolution_NN and_CC frame_NN rate_NN -RRB-_-RRB- and_CC timeliness_NN properties_NNS -LRB-_-LRB- such_JJ as_IN latency_NN and_CC jitter_NN -RRB-_-RRB- are_VBP degraded_VBN and_CC may_MD result_VB in_IN an_DT unstable_JJ -LRB-_-LRB- and_CC thus_RB ineffective_JJ -RRB-_-RRB- system_NN ._.
+Effective_JJ resource_NN utilization_NN is_VBZ the_DT desired_VBN system_NN condition_NN since_IN it_PRP ensures_VBZ that_IN end-to-end_JJ QoS_NN requirements_NNS of_IN the_DT UAV-based_JJ multimedia_NNS system_NN are_VBP met_VBN and_CC utilization_NN of_IN both_DT system_NN resources_NNS ,_, i_FW ._.
+e_LS ._.
+,_, network_NN bandwidth_NN and_CC computational_JJ power_NN ,_, are_VBP within_IN their_PRP$ desired_VBN utilization_NN bounds_NNS ._.
+Article_NNP #_# Section_NN #_# describes_VBZ techniques_NNS we_PRP applied_VBD to_TO achieve_VB effective_JJ utilization_NN ,_, even_RB in_IN the_DT face_NN of_IN fluctuating_VBG resource_NN availability_NN and_CC /_: or_CC demand_NN ._.
+3_LS ._.
+OVERVIEW_NN OF_IN HYARM_NNP This_DT section_NN describes_VBZ the_DT architecture_NN of_IN the_DT Hybrid_NNP Adaptive_NNP Resource-management_NN Middleware_NNP -LRB-_-LRB- HyARM_NNP -RRB-_-RRB- ._.
+HyARM_NN ensures_VBZ efficient_JJ and_CC predictable_JJ system_NN performance_NN by_IN providing_VBG adaptive_JJ resource_NN management_NN ,_, including_VBG monitoring_NN of_IN system_NN resources_NNS and_CC enforcing_VBG bounds_NNS on_IN application_NN resource_NN utilization_NN ._.
+3_LS ._.
+#_# HyARM_NNP Structure_NN and_CC Functionality_NN Resource_NNP Utilization_NN Legend_NNP Resource_NNP Allocation_NNP Application_NN Parameters_NNS Figure_NNP #_# :_: HyARM_NN Architecture_NNP HyARM_NNP is_VBZ composed_VBN of_IN three_CD types_NNS of_IN entities_NNS shown_VBN in_IN Figure_NNP #_# and_CC described_VBN below_IN :_: Resource_NNP monitors_VBZ observe_VB the_DT overall_JJ resource_NN utilization_NN for_IN each_DT type_NN of_IN resource_NN and_CC resource_NN utilization_NN per_IN application_NN ._.
+In_IN our_PRP$ multimedia_NNS system_NN ,_, there_EX are_VBP resource_NN monitors_NNS for_IN CPU_NNP utilization_NN and_CC network_NN bandwidth_NN ._.
+CPU_NNP monitors_VBZ observe_VB the_DT CPU_NNP resource_NN utilization_NN of_IN UAVs_NNS ,_, base_NN station_NN ,_, and_CC end_VB receivers_NNS ._.
+Network_NNP bandwidth_NN monitors_VBZ observe_VB the_DT network_NN resource_NN utilization_NN of_IN -LRB-_-LRB- #_# -RRB-_-RRB- wireless_JJ network_NN link_NN between_IN UAVs_NNS and_CC the_DT base_NN station_NN and_CC -LRB-_-LRB- #_# -RRB-_-RRB- wired_VBD network_NN link_NN between_IN the_DT base_NN station_NN and_CC end_NN receivers_NNS ._.
+The_DT central_JJ controller_NN maintains_VBZ the_DT system_NN resource_NN utilization_NN below_IN a_DT desired_VBN bound_VBN by_IN -LRB-_-LRB- #_# -RRB-_-RRB- processing_NN periodic_JJ updates_NNS it_PRP receives_VBZ from_IN resource_NN monitors_NNS and_CC -LRB-_-LRB- #_# -RRB-_-RRB- modifying_VBG the_DT execution_NN of_IN applications_NNS accordingly_RB ,_, e_LS ._.
+g_NN ._.
+,_, by_IN using_VBG different_JJ execution_NN algorithms_NNS or_CC operating_VBG the_DT application_NN with_IN increased_VBN /_: decreased_VBN QoS_NN ._.
+This_DT adaptation_NN process_NN ensures_VBZ that_IN system_NN resources_NNS are_VBP utilized_VBN efficiently_RB and_CC end-to-end_JJ application_NN QoS_NN requirements_NNS are_VBP met_VBN ._.
+In_IN our_PRP$ multimedia_NNS system_NN ,_, the_DT HyARM_NN controller_NN determines_VBZ the_DT value_NN of_IN application_NN parameters_NNS such_JJ as_IN -LRB-_-LRB- #_# -RRB-_-RRB- video_NN compression_NN schemes_NNS ,_, such_JJ as_IN Real_JJ Video_NNP and_CC MPEG-4_NN ,_, and_CC /_: or_CC -LRB-_-LRB- #_# -RRB-_-RRB- frame_NN rate_NN ,_, and_CC -LRB-_-LRB- #_# -RRB-_-RRB- picture_NN resolution_NN ._.
+From_IN the_DT perspective_NN of_IN hybrid_NN control_NN theoretic_JJ techniques_NNS -LSB-_-LRB- #_# -RSB-_-RRB- ,_, the_DT different_JJ video_NN compression_NN schemes_NNS and_CC frame_NN rate_NN form_VB the_DT discrete_JJ variables_NNS of_IN application_NN execution_NN and_CC picture_NN resolution_NN forms_VBZ the_DT continuous_JJ variables_NNS ._.
+Application_NN adapters_NNS modify_VBP application_NN execution_NN according_VBG to_TO parameters_NNS recommended_VBN by_IN the_DT controller_NN and_CC ensures_VBZ that_IN the_DT operation_NN of_IN the_DT application_NN is_VBZ in_IN accordance_NN with_IN the_DT recommended_VBN parameters_NNS ._.
+In_IN the_DT current_JJ mplementation_NN of_IN HyARM_NN ,_, the_DT application_NN adapter_NN modifies_VBZ the_DT input_NN parameters_NNS to_TO the_DT application_NN that_WDT affect_VBP application_NN QoS_NN and_CC resource_NN utilization_NN -_: compression_NN scheme_NN ,_, frame_NN rate_NN ,_, and_CC picture_NN resolution_NN ._.
+In_IN our_PRP$ future_JJ implementations_NNS ,_, we_PRP plan_VBP to_TO use_VB resource_NN reservation_NN mechanisms_NNS such_JJ as_IN Differentiated_NNP Service_NNP -LSB-_-LRB- #_# ,_, #_# -RSB-_-RRB- and_CC Class-based_JJ Kernel_NNP Resource_NNP Management_NNP -LSB-_-LRB- #_# -RSB-_-RRB- to_TO provision_NN /_: reserve_NN network_NN and_CC CPU_NNP resources_NNS ._.
+In_IN our_PRP$ multimedia_NNS system_NN ,_, the_DT application_NN adapter_NN ensures_VBZ that_IN the_DT video_NN is_VBZ encoded_VBN at_IN the_DT recommended_VBN frame_NN rate_NN and_CC resolution_NN using_VBG the_DT specified_VBN compression_NN scheme_NN ._.
+3_LS ._.
+#_# Applying_VBG HyARM_NN to_TO the_DT Multimedia_NNP System_NNP Case_NNP Study_NNP HyARM_NNP is_VBZ built_VBN atop_IN TAO_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, a_DT widely_RB used_VBN open-source_JJ implementation_NN of_IN Real-time_JJ CORBA_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+HyARM_NN can_MD be_VB applied_VBN to_TO ensure_VB efficient_JJ ,_, predictable_JJ and_CC adaptive_JJ resource_NN management_NN of_IN any_DT DRE_NN system_NN where_WRB resource_NN availability_NN and_CC requirements_NNS are_VBP subject_JJ to_TO dynamic_JJ change_NN ._.
+Figure_NNP #_# shows_VBZ the_DT interaction_NN of_IN various_JJ parts_NNS of_IN the_DT DRE_NN multimedia_NNS system_NN developed_VBD with_IN HyARM_NN ,_, TAO_NNP ,_, and_CC TAO_NNP ''_'' s_NNS A_DT /_: V_NN Streaming_NNP Service_NNP ._.
+TAO_NNP ''_'' s_NNS A_DT /_: V_NNP Streaming_NNP service_NN is_VBZ an_DT implementation_NN of_IN the_DT CORBA_NNP A_NNP /_: V_NNP Streaming_NNP Service_NNP specification_NN ._.
+TAO_NNP ''_'' s_NNS A_DT /_: V_NN Streaming_NNP Service_NNP is_VBZ a_DT QoS-enabled_JJ video_NN distribution_NN service_NN that_WDT can_MD transfer_VB video_NN in_IN real-time_JJ to_TO one_CD or_CC more_JJR receivers_NNS ._.
+We_PRP use_VBP the_DT A_NN /_: V_NNP Streaming_NNP Service_NNP to_TO transmit_VB the_DT video_NN from_IN the_DT UAVs_NNS to_TO the_DT end_NN receivers_NNS via_IN the_DT base_NN station_NN ._.
+Three_CD entities_NNS of_IN Receiver_NNP UAV_NNP TAO_NNP Resource_NNP Utilization_NN HyARM_NN Central_NNP Controller_NNP A_NNP /_: V_NNP Streaming_NNP Service_NNP :_: Sender_NN MPEG1_NN MPEG4_NN Real_JJ Video_NNP HyARM_NNP Resource_NNP Monitor_NNP A_NNP /_: V_NNP Streaming_NNP Service_NNP :_: Receiver_NNP Compressed_NNP Video_NNP Compressed_NNP Video_NNP Application_NN HyARM_NN Application_NN Adapter_NNP Remote_NNP Object_NNP Call_NNP Control_NNP Inputs_NNP Resource_NNP Utilization_NN Resource_NNP Utilization_NN /_: Control_NNP Inputs_NNP Control_NNP Inputs_NNP Legend_NNP Figure_NNP #_# :_: Developing_VBG the_DT DRE_NN Multimedia_NNP System_NNP with_IN HyARM_NN HyARM_NN ,_, namely_RB the_DT resource_NN monitors_NNS ,_, central_JJ controller_NN ,_, and_CC application_NN adapters_NNS are_VBP built_VBN as_IN CORBA_NNP servants_NNS ,_, so_IN they_PRP can_MD be_VB distributed_VBN throughout_IN a_DT DRE_NN system_NN ._.
+Resource_NNP monitors_NNS are_VBP remote_JJ CORBA_NNP objects_NNS that_WDT update_VBP the_DT central_JJ controller_NN periodically_RB with_IN the_DT current_JJ resource_NN utilization_NN ._.
+Application_NN adapters_NNS are_VBP collocated_VBN with_IN applications_NNS since_IN the_DT two_CD interact_VBP closely_RB ._.
+As_IN shown_VBN in_IN Figure_NNP #_# ,_, UAVs_NNS compress_VBP the_DT data_NNS using_VBG various_JJ compression_NN schemes_NNS ,_, such_JJ as_IN MPEG1_NN ,_, MPEG4_NN ,_, and_CC Real_JJ Video_NNP ,_, and_CC uses_VBZ TAO_NNP ''_'' s_NNS A_DT /_: V_NN streaming_NN service_NN to_TO transmit_VB the_DT video_NN to_TO end_VB receivers_NNS ._.
+HyARM_NN ''_'' s_NNS resource_NN monitors_VBZ continuously_RB observe_VB the_DT system_NN resource_NN utilization_NN and_CC notify_VB the_DT central_JJ controller_NN with_IN the_DT current_JJ utilization_NN ._.
+#_# The_DT interaction_NN between_IN the_DT controller_NN and_CC the_DT resource_NN monitors_VBZ uses_VBZ the_DT Observer_NNP pattern_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+When_WRB the_DT controller_NN receives_VBZ resource_NN utilization_NN updates_NNS from_IN monitors_NNS ,_, it_PRP computes_VBZ the_DT necessary_JJ modifications_NNS to_TO application_NN -LRB-_-LRB- s_NNS -RRB-_-RRB- parameters_NNS and_CC notifies_VBZ application_NN adapter_NN -LRB-_-LRB- s_NNS -RRB-_-RRB- via_IN a_DT remote_JJ operation_NN call_NN ._.
+Application_NN adapter_NN -LRB-_-LRB- s_NNS -RRB-_-RRB- ,_, that_WDT are_VBP collocated_VBN with_IN the_DT application_NN ,_, modify_VB the_DT input_NN parameters_NNS to_TO the_DT application_NN -_: in_IN our_PRP$ case_NN video_NN encoder_NN -_: to_TO modify_VB the_DT application_NN resource_NN utilization_NN and_CC QoS_NN ._.
+3_CD The_DT base_NN station_NN is_VBZ not_RB included_VBN in_IN the_DT figure_NN since_IN it_PRP only_RB retransmits_VBZ the_DT video_NN received_VBN from_IN UAVs_NNS to_TO end_VB receivers_NNS ._.
+Article_NNP #_# 4_CD ._.
+PERFORMANCE_NN RESULTS_NNS AND_CC ANALYSIS_NNS This_DT section_NN first_RB describes_VBZ the_DT testbed_VBN that_IN provides_VBZ the_DT infrastructure_NN for_IN our_PRP$ DRE_NN multimedia_NNS system_NN ,_, which_WDT was_VBD used_VBN to_TO evaluate_VB the_DT performance_NN of_IN HyARM_NN ._.
+We_PRP then_RB describe_VBP our_PRP$ experiments_NNS and_CC analyze_VBP the_DT results_NNS obtained_VBN to_TO empirically_RB evaluate_VB how_WRB HyARM_NN behaves_VBZ during_IN underand_NN over-utilization_NN of_IN system_NN resources_NNS ._.
+4_LS ._.
+#_# Overview_NN of_IN the_DT Hardware_NNP and_CC Software_NNP Testbed_NNP Our_PRP$ experiments_NNS were_VBD performed_VBN on_IN the_DT Emulab_NNP testbed_VBD at_IN University_NNP of_IN Utah_NNP ._.
+The_DT hardware_NN configuration_NN consists_VBZ of_IN two_CD nodes_NNS acting_VBG as_IN UAVs_NNS ,_, one_CD acting_VBG as_IN base_NN station_NN ,_, and_CC one_CD as_IN end_NN receiver_NN ._.
+Video_NNP from_IN the_DT two_CD UAVs_NNS were_VBD transmitted_VBN to_TO a_DT base_NN station_NN via_IN a_DT LAN_NNP configured_VBN with_IN the_DT following_VBG properties_NNS :_: average_JJ packet_NN loss_NN ratio_NN of_IN #_# ._.
+#_# and_CC bandwidth_NN #_# Mbps_NNPS ._.
+The_DT network_NN bandwidth_NN was_VBD chosen_VBN to_TO be_VB #_# Mbps_NNPS since_IN each_DT UAV_NNP in_IN the_DT DRE_NN multimedia_NNS system_NN is_VBZ allocated_VBN ###_CD Kbps_NNS ._.
+These_DT parameters_NNS were_VBD chosen_VBN to_TO emulate_VB an_DT unreliable_JJ wireless_JJ network_NN with_IN limited_JJ bandwidth_NN between_IN the_DT UAVs_NNS and_CC the_DT base_NN station_NN ._.
+From_IN the_DT base_NN station_NN ,_, the_DT video_NN was_VBD retransmitted_VBN to_TO the_DT end_NN receiver_NN via_IN a_DT reliable_JJ wireline_JJ link_NN of_IN ##_CD Mbps_NNS bandwidth_NN with_IN no_DT packet_NN loss_NN ._.
+The_DT hardware_NN configuration_NN of_IN all_PDT the_DT nodes_NNS was_VBD chosen_VBN as_IN follows_VBZ :_: ###_CD MHz_NNP Intel_NNP Pentium_NNP III_NNP processor_NN ,_, ###_CD MB_NN physical_JJ memory_NN ,_, #_# Intel_NNP EtherExpress_NNP Pro_FW ##_FW /_: ###_CD Mbps_NNP Ethernet_NNP ports_NNS ,_, and_CC ##_CD GB_NN hard_JJ drive_NN ._.
+A_DT real-time_JJ version_NN of_IN Linux_NN -_: TimeSys_NNP Linux_NNP /_: NET_NNP #_# ._.
+#_# ._.
+###_NN based_VBN on_IN RedHat_NNP Linux_NNP 9was_NNS used_VBN as_IN the_DT operating_NN system_NN for_IN all_DT nodes_NNS ._.
+The_DT following_VBG software_NN packages_NNS were_VBD also_RB used_VBN for_IN our_PRP$ experiments_NNS :_: -LRB-_-LRB- #_# -RRB-_-RRB- Ffmpeg_NNP #_# ._.
+#_# ._.
+9-pre1_NN ,_, which_WDT is_VBZ an_DT open-source_JJ library_NN -LRB-_-LRB- http_NN :_: /_: /_: www_NN ._.
+ffmpeg_NN ._.
+sourceforge_NN ._.
+net_JJ /_: download_NN ._.
+php_NN -RRB-_-RRB- that_WDT compresses_VBZ video_NN into_IN MPEG-2_NN ,_, MPEG-4_NN ,_, Real_JJ Video_NNP ,_, and_CC many_JJ other_JJ video_NN formats_NNS ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- Iftop_JJ #_# ._.
+##_NN ,_, which_WDT is_VBZ an_DT opensource_NN library_NN -LRB-_-LRB- http_NN :_: /_: /_: www_NN ._.
+ex-parrot_NN ._.
+com_NN /_: pdw_NN /_: iftop_JJ /_: -RRB-_-RRB- we_PRP used_VBD for_IN monitoring_VBG network_NN activity_NN and_CC bandwidth_NN utilization_NN ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- ACE_NN #_# ._.
+#_# ._.
+#_# +_CC TAO_NNP #_# ._.
+#_# ._.
+#_# ,_, which_WDT is_VBZ an_DT opensource_NN -LRB-_-LRB- http_NN :_: /_: /_: www_NN ._.
+dre_NN ._.
+vanderbilt_NN ._.
+edu_FW /_: TAO_NN -RRB-_-RRB- implementation_NN of_IN the_DT Real-time_JJ CORBA_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- specification_NN upon_IN which_WDT HyARM_NN is_VBZ built_VBN ._.
+TAO_NNP provides_VBZ the_DT CORBA_NNP Audio_NNP /_: Video_NNP -LRB-_-LRB- A_DT /_: V_NN -RRB-_-RRB- Streaming_NNP Service_NNP that_IN we_PRP use_VBP to_TO transmit_VB the_DT video_NN from_IN the_DT UAVs_NNS to_TO end_VB receivers_NNS via_IN the_DT base_NN station_NN ._.
+4_LS ._.
+#_# Experiment_NNP Configuration_NNP Our_PRP$ experiment_NN consisted_VBD of_IN two_CD -LRB-_-LRB- emulated_VBN -RRB-_-RRB- UAVs_NNS that_WDT simultaneously_RB send_VBP video_NN to_TO the_DT base_NN station_NN using_VBG the_DT experimentation_NN setup_NN described_VBN in_IN Section_NN #_# ._.
+#_# ._.
+At_IN the_DT base_NN station_NN ,_, video_NN was_VBD retransmitted_VBN to_TO the_DT end_NN receivers_NNS -LRB-_-LRB- without_IN any_DT modifications_NNS -RRB-_-RRB- ,_, where_WRB it_PRP was_VBD stored_VBN to_TO a_DT file_NN ._.
+Each_DT UAV_NNP hosted_VBD two_CD applications_NNS ,_, one_CD QoS-enabled_JJ application_NN -LRB-_-LRB- emergency_NN response_NN -RRB-_-RRB- ,_, and_CC one_CD best-effort_JJS application_NN -LRB-_-LRB- surveillance_NN -RRB-_-RRB- ._.
+Within_IN each_DT UAV_NNP ,_, computational_JJ power_NN is_VBZ shared_VBN between_IN the_DT applications_NNS ,_, while_IN the_DT network_NN bandwidth_NN is_VBZ shared_VBN among_IN all_DT applications_NNS ._.
+To_TO evaluate_VB the_DT QoS_NN provided_VBN by_IN HyARM_NN ,_, we_PRP monitored_VBD CPU_NNP utilization_NN at_IN the_DT two_CD UAVs_NNS ,_, and_CC network_NN bandwidth_NN utilization_NN between_IN the_DT UAV_NNP and_CC the_DT base_NN station_NN ._.
+CPU_NNP resource_NN utilization_NN was_VBD not_RB monitored_VBN at_IN the_DT base_NN station_NN and_CC the_DT end_NN receiver_NN since_IN they_PRP performed_VBD no_DT computationallyintensive_JJ operations_NNS ._.
+The_DT resource_NN utilization_NN of_IN the_DT ##_CD Mpbs_NNS physical_JJ link_NN between_IN the_DT base_NN station_NN and_CC the_DT end_NN receiver_NN does_VBZ not_RB affect_VB QoS_NN of_IN applications_NNS and_CC is_VBZ not_RB monitored_VBN by_IN HyARM_NN since_IN it_PRP is_VBZ nearly_RB ##_JJ times_NNS the_DT #_# MB_NNP bandwidth_NN of_IN the_DT LAN_NN between_IN the_DT UAVs_NNS and_CC the_DT base_NN station_NN ._.
+The_DT experiment_NN also_RB monitors_VBZ properties_NNS of_IN the_DT video_NN that_WDT affect_VBP the_DT QoS_NN of_IN the_DT applications_NNS ,_, such_JJ as_IN latency_NN ,_, jitter_NN ,_, frame_NN rate_NN ,_, and_CC resolution_NN ._.
+The_DT set_NN point_NN on_IN resource_NN utilization_NN for_IN each_DT resource_NN was_VBD specified_VBN at_IN #_# ._.
+##_NN ,_, which_WDT is_VBZ the_DT upper_JJ bound_VBN typically_RB recommended_VBN by_IN scheduling_NN techniques_NNS ,_, such_JJ as_IN rate_NN monotonic_JJ algorithm_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+Since_IN studies_NNS -LSB-_-LRB- #_# -RSB-_-RRB- have_VBP shown_VBN that_IN human_JJ eyes_NNS can_MD perceive_VB delays_NNS more_RBR than_IN 200ms_NNS ,_, we_PRP use_VBP this_DT as_IN the_DT upper_JJ bound_VBN on_IN jitter_NN of_IN the_DT received_VBN video_NN ._.
+QoS_NN requirements_NNS for_IN each_DT class_NN of_IN application_NN is_VBZ specified_VBN during_IN system_NN initialization_NN and_CC is_VBZ shown_VBN in_IN Table_NNP #_# ._.
+4_LS ._.
+#_# Empirical_JJ Results_NNS and_CC Analysis_NN This_DT section_NN presents_VBZ the_DT results_NNS obtained_VBN from_IN running_VBG the_DT experiment_NN described_VBN in_IN Section_NN #_# ._.
+#_# on_IN our_PRP$ DRE_NN multimedia_NNS system_NN testbed_VBD ._.
+We_PRP used_VBD system_NN resource_NN utilization_NN as_IN a_DT metric_JJ to_TO evaluate_VB the_DT adaptive_JJ resource_NN management_NN capabilities_NNS of_IN HyARM_NN under_IN varying_VBG input_NN work_NN loads_NNS ._.
+We_PRP also_RB used_VBD application_NN QoS_NN as_IN a_DT metric_JJ to_TO evaluate_VB HyARM_NN ''_'' s_NNS capabilities_NNS to_TO support_VB end-to-end_JJ QoS_NN requirements_NNS of_IN the_DT various_JJ classes_NNS of_IN applications_NNS in_IN the_DT DRE_NN multimedia_NNS system_NN ._.
+We_PRP analyze_VBP these_DT results_NNS to_TO explain_VB the_DT significant_JJ differences_NNS in_IN system_NN performance_NN and_CC application_NN QoS_NN ._.
+Comparison_NN of_IN system_NN performance_NN is_VBZ decomposed_VBN into_IN comparison_NN of_IN resource_NN utilization_NN and_CC application_NN QoS_NN ._.
+For_IN system_NN resource_NN utilization_NN ,_, we_PRP compare_VBP -LRB-_-LRB- #_# -RRB-_-RRB- network_NN bandwidth_NN utilization_NN of_IN the_DT local_JJ area_NN network_NN and_CC -LRB-_-LRB- #_# -RRB-_-RRB- CPU_NNP utilization_NN at_IN the_DT two_CD UAV_NNP nodes_NNS ._.
+For_IN application_NN QoS_NN ,_, we_PRP compare_VBP mean_JJ values_NNS of_IN video_NN parameters_NNS ,_, including_VBG -LRB-_-LRB- #_# -RRB-_-RRB- picture_NN resolution_NN ,_, -LRB-_-LRB- #_# -RRB-_-RRB- frame_NN rate_NN ,_, -LRB-_-LRB- #_# -RRB-_-RRB- latency_NN ,_, and_CC -LRB-_-LRB- #_# -RRB-_-RRB- jitter_NN ._.
+Comparison_NN of_IN resource_NN utilization_NN ._.
+Over-utilization_NN of_IN system_NN resources_NNS in_IN DRE_NN systems_NNS can_MD yield_VB an_DT unstable_JJ system_NN ._.
+In_IN contrast_NN ,_, under-utilization_NN of_IN system_NN resources_NNS increases_VBZ system_NN cost_NN ._.
+Figure_NNP #_# and_CC Figure_NNP #_# compare_VB the_DT system_NN resource_NN utilization_NN with_IN and_CC without_IN HyARM_NN ._.
+Figure_NNP #_# shows_VBZ that_IN HyARM_NN maintains_VBZ system_NN utilization_NN close_NN to_TO the_DT desired_VBN utilization_NN set_NN point_NN during_IN fluctuation_NN in_IN input_NN work_NN load_NN by_IN transmitting_VBG video_NN of_IN higher_JJR -LRB-_-LRB- or_CC lower_JJR -RRB-_-RRB- QoS_NN for_IN QoS-enabled_JJ -LRB-_-LRB- or_CC best-effort_JJS -RRB-_-RRB- class_NN of_IN applications_NNS during_IN over_IN -LRB-_-LRB- or_CC under_IN -RRB-_-RRB- utilization_NN of_IN system_NN resources_NNS ._.
+Figure_NNP #_# shows_VBZ that_IN without_IN HyARM_NN ,_, network_NN utilization_NN was_VBD as_RB high_JJ as_IN #_# ._.
+#_# during_IN increase_NN in_IN workload_NN conditions_NNS ,_, which_WDT is_VBZ greater_JJR than_IN the_DT utilization_NN set_NN point_NN of_IN #_# ._.
+#_# by_IN #_# ._.
+#_# ._.
+As_IN a_DT result_NN of_IN over-utilization_NN of_IN resources_NNS ,_, QoS_NN of_IN the_DT received_VBN video_NN ,_, such_JJ as_IN average_JJ latency_NN and_CC jitter_NN ,_, was_VBD affected_VBN significantly_RB ._.
+Without_IN HyARM_NN ,_, system_NN resources_NNS were_VBD either_RB under-utilized_JJ or_CC over-utilized_JJ ,_, both_DT of_IN which_WDT are_VBP undesirable_JJ ._.
+In_IN contrast_NN ,_, with_IN HyARM_NN ,_, system_NN resource_NN utilization_NN is_VBZ always_RB close_JJ to_TO the_DT desired_VBN set_NN point_NN ,_, even_RB during_IN fluctuations_NNS in_IN application_NN workload_NN ._.
+During_IN sudden_JJ fluctuation_NN in_IN application_NN workload_NN ,_, system_NN conditions_NNS may_MD be_VB temporarily_RB undesirable_JJ ,_, but_CC are_VBP restored_VBN to_TO the_DT desired_VBN condition_NN within_IN several_JJ sampling_NN periods_NNS ._.
+Temporary_JJ over-utilization_NN of_IN resources_NNS is_VBZ permissible_JJ in_IN our_PRP$ multimedia_NNS system_NN since_IN the_DT quality_NN of_IN the_DT video_NN may_MD be_VB degraded_VBN for_IN a_DT short_JJ period_NN of_IN time_NN ,_, though_IN application_NN QoS_NN will_MD be_VB degraded_VBN significantly_RB if_IN poor_JJ quality_NN video_NN is_VBZ transmitted_VBN for_IN a_DT longer_JJR period_NN of_IN time_NN ._.
+Comparison_NN of_IN application_NN QoS_NN ._.
+Figures_NNS #_# ,_, Figure_NNP #_# ,_, and_CC Table_NNP #_# compare_VB latency_NN ,_, jitter_NN ,_, resolution_NN ,_, and_CC frameArticle_NN #_# Class_NNP Resolution_NNP Frame_NNP Rate_NNP Latency_NN -LRB-_-LRB- msec_NN -RRB-_-RRB- Jitter_NN -LRB-_-LRB- msec_NN -RRB-_-RRB- QoS_NN Enabled_VBD ####_CD x_CC ###_CD ##_CD ###_CD ###_CD Best-effort_JJ ###_CD x_CC ###_CD ##_CD ###_CD ###_CD Table_NNP #_# :_: Application_NN QoS_NN Requirements_NNS Figure_NNP #_# :_: Resource_NNP utilization_NN with_IN HyARM_NN Figure_NN #_# :_: Resource_NNP utilization_NN without_IN HyARM_NN rate_NN of_IN the_DT received_VBN video_NN ,_, respectively_RB ._.
+Table_NNP #_# shows_VBZ that_IN HyARM_NN increases_VBZ the_DT resolution_NN and_CC frame_NN video_NN of_IN QoSenabled_NNP applications_NNS ,_, but_CC decreases_VBZ the_DT resolution_NN and_CC frame_NN rate_NN of_IN best_JJS effort_NN applications_NNS ._.
+During_IN over_IN utilization_NN of_IN system_NN resources_NNS ,_, resolution_NN and_CC frame_NN rate_NN of_IN lower_JJR priority_NN applications_NNS are_VBP reduced_VBN to_TO adapt_VB to_TO fluctuations_NNS in_IN application_NN workload_NN and_CC to_TO maintain_VB the_DT utilization_NN of_IN resources_NNS at_IN the_DT specified_VBN set_NN point_NN ._.
+It_PRP can_MD be_VB seen_VBN from_IN Figure_NNP #_# and_CC Figure_NNP #_# that_WDT HyARM_NNP reduces_VBZ the_DT latency_NN and_CC jitter_NN of_IN the_DT received_VBN video_NN significantly_RB ._.
+These_DT figures_NNS show_VBP that_IN the_DT QoS_NN of_IN QoS-enabled_JJ applications_NNS is_VBZ greatly_RB improved_VBN by_IN HyARM_NN ._.
+Although_IN application_NN parameters_NNS ,_, such_JJ as_IN frame_NN rate_NN and_CC resolutions_NNS ,_, which_WDT affect_VBP the_DT soft_JJ QoS_NN requirements_NNS of_IN best-effort_JJ applications_NNS may_MD be_VB compromised_VBN ,_, the_DT hard_JJ QoS_NN requirements_NNS ,_, such_JJ as_IN latency_NN and_CC jitter_NN ,_, of_IN all_DT applications_NNS are_VBP met_VBN ._.
+HyARM_NN responds_VBZ to_TO fluctuation_NN in_IN resource_NN availability_NN and_CC /_: or_CC demand_NN by_IN constant_JJ monitoring_NN of_IN resource_NN utilization_NN ._.
+As_IN shown_VBN in_IN Figure_NNP #_# ,_, when_WRB resources_NNS utilization_NN increases_VBZ above_IN the_DT desired_VBN set_NN point_NN ,_, HyARM_NN lowers_VBZ the_DT utilization_NN by_IN reducing_VBG the_DT QoS_NN of_IN best-effort_JJ applications_NNS ._.
+This_DT adaptation_NN ensures_VBZ that_IN enough_JJ resources_NNS are_VBP available_JJ for_IN QoS-enabled_JJ applications_NNS to_TO meet_VB their_PRP$ QoS_NN needs_VBZ ._.
+Figures_NNS #_# and_CC #_# show_VBP that_IN the_DT values_NNS of_IN latency_NN and_CC jitter_NN of_IN the_DT received_VBN video_NN of_IN the_DT system_NN with_IN HyARM_NN are_VBP nearly_RB half_NN of_IN the_DT corresponding_JJ value_NN of_IN the_DT system_NN without_IN HyARM_NN ._.
+With_IN HyARM_NN ,_, values_NNS of_IN these_DT parameters_NNS are_VBP well_RB below_IN the_DT specified_VBN bounds_NNS ,_, whereas_IN without_IN HyARM_NN ,_, these_DT value_NN are_VBP significantly_RB above_IN the_DT specified_VBN bounds_NNS due_JJ to_TO overutilization_NN of_IN the_DT network_NN bandwidth_NN ,_, which_WDT leads_VBZ to_TO network_NN congestion_NN and_CC results_VBZ in_IN packet_NN loss_NN ._.
+HyARM_NN avoids_VBZ this_DT by_IN reducing_VBG video_NN parameters_NNS such_JJ as_IN resolution_NN ,_, frame-rate_NN ,_, and_CC /_: or_CC modifying_VBG the_DT compression_NN scheme_NN used_VBN to_TO compress_VB the_DT video_NN ._.
+Our_PRP$ conclusions_NNS from_IN analyzing_VBG the_DT results_NNS described_VBN above_IN are_VBP that_IN applying_VBG adaptive_JJ middleware_NN via_IN hybrid_NN control_NN to_TO DRE_NN system_NN helps_VBZ to_TO -LRB-_-LRB- #_# -RRB-_-RRB- improve_VBP application_NN QoS_NN ,_, -LRB-_-LRB- #_# -RRB-_-RRB- increase_NN system_NN resource_NN utilization_NN ,_, and_CC -LRB-_-LRB- #_# -RRB-_-RRB- provide_VBP better_JJR predictability_NN -LRB-_-LRB- lower_JJR latency_NN and_CC inter-frame_JJ delay_NN -RRB-_-RRB- to_TO QoSenabled_NNP applications_NNS ._.
+These_DT improvements_NNS are_VBP achieved_VBN largely_RB due_JJ to_TO monitoring_NN of_IN system_NN resource_NN utilization_NN ,_, efficient_JJ system_NN workload_NN management_NN ,_, and_CC adaptive_JJ resource_NN provisioning_VBG by_IN means_NNS of_IN HyARM_NN ''_'' s_NNS network_NN /_: CPU_NNP resource_NN monitors_NNS ,_, application_NN adapter_NN ,_, and_CC central_JJ controller_NN ,_, respectively_RB ._.
+5_CD ._.
+RELATED_JJ WORK_VBP A_DT number_NN of_IN control_NN theoretic_JJ approaches_NNS have_VBP been_VBN applied_VBN to_TO DRE_NN systems_NNS recently_RB ._.
+These_DT techniques_NNS aid_NN in_IN overcoming_VBG limitations_NNS with_IN traditional_JJ scheduling_NN approaches_NNS that_WDT handle_VBP dynamic_JJ changes_NNS in_IN resource_NN availability_NN poorly_RB and_CC result_VB in_IN a_DT rigidly_RB scheduled_VBN system_NN that_WDT adapts_VBZ poorly_RB to_TO change_VB ._.
+A_DT survey_NN of_IN these_DT techniques_NNS is_VBZ presented_VBN in_IN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+One_CD such_JJ approach_NN is_VBZ feedback_NN control_NN scheduling_NN -LRB-_-LRB- FCS_NN -RRB-_-RRB- -LSB-_-LRB- #_# ,_, 11_CD -RSB-_-RRB- ._.
+FCS_NN algorithms_NNS dynamically_RB adjust_VBP resource_NN allocation_NN by_IN means_NNS of_IN software_NN feedback_NN control_NN loops_NNS ._.
+FCS_NN algorithms_NNS are_VBP modeled_VBN and_CC designed_VBN using_VBG rigorous_JJ controltheoretic_JJ methodologies_NNS ._.
+These_DT algorithms_NNS provide_VBP robust_JJ and_CC analytical_JJ performance_NN assurances_NNS despite_IN uncertainties_NNS in_IN resource_NN availability_NN and_CC /_: or_CC demand_NN ._.
+Although_IN existing_VBG FCS_NN algorithms_NNS have_VBP shown_VBN promise_NN ,_, these_DT algorithms_NNS often_RB assume_VBP that_IN the_DT system_NN has_VBZ continuous_JJ control_NN variable_JJ -LRB-_-LRB- s_NNS -RRB-_-RRB- that_WDT can_MD continuously_RB be_VB adjusted_VBN ._.
+While_IN this_DT assumption_NN holds_VBZ for_IN certain_JJ classes_NNS of_IN systems_NNS ,_, there_EX are_VBP many_JJ classes_NNS of_IN DRE_NN systems_NNS ,_, such_JJ as_IN avionics_NNS and_CC total-ship_NN computing_NN environments_NNS that_WDT only_RB support_VBP a_DT finite_JJ a_DT priori_FW set_NN of_IN discrete_JJ configurations_NNS ._.
+The_DT control_NN variables_NNS in_IN such_JJ systems_NNS are_VBP therefore_RB intrinsically_RB discrete_JJ ._.
+HyARM_NN handles_VBZ both_CC continuous_JJ control_NN variables_NNS ,_, such_JJ as_IN picture_NN resolution_NN ,_, and_CC discrete_JJ control_NN variable_JJ ,_, such_JJ as_IN discrete_JJ set_NN of_IN frame_NN rates_NNS ._.
+HyARM_NN can_MD therefore_RB be_VB applied_VBN to_TO system_NN that_WDT support_VBP continuous_JJ and_CC /_: or_CC discrete_JJ set_NN of_IN control_NN variables_NNS ._.
+The_DT DRE_NN multimedia_NNS system_NN as_IN described_VBN in_IN Section_NN #_# is_VBZ an_DT example_NN DRE_NN system_NN that_WDT offers_VBZ both_DT continuous_JJ -LRB-_-LRB- picture_NN resolution_NN -RRB-_-RRB- and_CC discrete_JJ set_NN -LRB-_-LRB- frame-rate_JJ -RRB-_-RRB- of_IN control_NN variables_NNS ._.
+These_DT variables_NNS are_VBP modified_VBN by_IN HyARM_NN to_TO achieve_VB efficient_JJ resource_NN utilization_NN and_CC improved_VBD application_NN QoS_NN ._.
+6_CD ._.
+CONCLUDING_VBG REMARKS_NNS Article_NNP #_# Figure_NNP #_# :_: Comparison_NN of_IN Video_NNP Latency_NN Figure_NN #_# :_: Comparison_NN of_IN Video_NNP Jitter_NNP Source_NNP Picture_NNP Size_NN /_: Frame_NNP Rate_NNP With_IN HyARM_NN Without_IN HyARM_NN UAV1_NN QoS_NN Enabled_VBD Application_NN ####_CD X_NN ####_CD /_: ##_CD ###_CD X_NN ###_CD /_: ##_CD UAV1_NN Best-effort_NN Application_NN ###_CD X_NN ###_CD /_: ##_CD ###_CD X_NN ###_CD /_: ##_CD UAV2_NN QoS_NN Enabled_VBD Application_NN ####_CD X_NN ####_CD /_: ##_CD ###_CD X_NN ###_CD /_: ##_CD UAV2_NN Best-effort_NN Application_NN ###_CD X_NN ###_CD /_: ##_CD ###_CD X_NN ###_CD /_: ##_CD Table_NNP #_# :_: Comparison_NN of_IN Video_NNP Quality_NNP Many_JJ distributed_VBN real-time_JJ and_CC embedded_JJ -LRB-_-LRB- DRE_NN -RRB-_-RRB- systems_NNS demand_VBP end-to-end_JJ quality_NN of_IN service_NN -LRB-_-LRB- QoS_NN -RRB-_-RRB- enforcement_NN from_IN their_PRP$ underlying_VBG platforms_NNS to_TO operate_VB correctly_RB ._.
+These_DT systems_NNS increasingly_RB run_VBP in_IN open_JJ environments_NNS ,_, where_WRB resource_NN availability_NN is_VBZ subject_JJ to_TO dynamic_JJ change_NN ._.
+To_TO meet_VB end-to-end_JJ QoS_NN in_IN dynamic_JJ environments_NNS ,_, DRE_NN systems_NNS can_MD benefit_VB from_IN an_DT adaptive_JJ middleware_NN that_WDT monitors_VBZ system_NN resources_NNS ,_, performs_VBZ efficient_JJ application_NN workload_NN management_NN ,_, and_CC enables_VBZ efficient_JJ resource_NN provisioning_VBG for_IN executing_VBG applications_NNS ._.
+This_DT paper_NN described_VBN HyARM_NN ,_, an_DT adaptive_JJ middleware_NN ,_, that_WDT provides_VBZ effective_JJ resource_NN management_NN to_TO DRE_NN systems_NNS ._.
+HyARM_NN employs_VBZ hybrid_JJ control_NN techniques_NNS to_TO provide_VB the_DT adaptive_JJ middleware_JJ capabilities_NNS ,_, such_JJ as_IN resource_NN monitoring_NN and_CC application_NN adaptation_NN that_WDT are_VBP key_JJ to_TO providing_VBG the_DT dynamic_JJ resource_NN management_NN capabilities_NNS for_IN open_JJ DRE_NN systems_NNS ._.
+We_PRP employed_VBD HyARM_NN to_TO a_DT representative_JJ DRE_NN multimedia_NNS system_NN that_WDT is_VBZ implemented_VBN using_VBG Real-time_JJ CORBA_NNP and_CC CORBA_NNP A_NNP /_: V_NNP Streaming_NNP Service_NNP ._.
+We_PRP evaluated_VBD the_DT performance_NN of_IN HyARM_NN in_IN a_DT system_NN composed_VBN of_IN three_CD distributed_VBN resources_NNS and_CC two_CD classes_NNS of_IN applications_NNS with_IN two_CD applications_NNS each_DT ._.
+Our_PRP$ empirical_JJ results_NNS indicate_VBP that_IN HyARM_NN ensures_VBZ -LRB-_-LRB- #_# -RRB-_-RRB- efficient_JJ resource_NN utilization_NN by_IN maintaining_VBG the_DT resource_NN utilization_NN of_IN system_NN resources_NNS within_IN the_DT specified_VBN utilization_NN bounds_NNS ,_, -LRB-_-LRB- #_# -RRB-_-RRB- QoS_NN requirements_NNS of_IN QoS-enabled_JJ applications_NNS are_VBP met_VBN at_IN all_DT times_NNS ._.
+Overall_RB ,_, HyARM_NN ensures_VBZ efficient_JJ ,_, predictable_JJ ,_, and_CC adaptive_JJ resource_NN management_NN for_IN DRE_NN systems_NNS ._.
+7_CD ._.
+REFERENCES_NNS -LSB-_-LRB- #_# -RSB-_-RRB- T_NN ._.
+F_NN ._.
+Abdelzaher_NNP ,_, J_NNP ._.
+Stankovic_NNP ,_, C_NNP ._.
+Lu_NNP ,_, R_NN ._.
+Zhang_NNP ,_, and_CC Y_NN ._.
+Lu_NNP ._.
+Feddback_NNP Performance_NNP Control_NNP in_IN Software_NNP Services_NNPS ._.
+IEEE_NNP :_: Control_NNP Systems_NNP ,_, ##_CD -LRB-_-LRB- #_# -RRB-_-RRB- ,_, June_NNP ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- L_NN ._.
+Abeni_NNP ,_, L_NNP ._.
+Palopoli_NNP ,_, G_NNP ._.
+Lipari_NNP ,_, and_CC J_NN ._.
+Walpole_NNP ._.
+Analysis_NN of_IN a_DT reservation-based_JJ feedback_NN scheduler_NN ._.
+In_IN IEEE_NNP Real-Time_NNP Systems_NNPS Symposium_NNP ,_, Dec_NNP ._.
+####_NN ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- S_NN ._.
+Blake_NNP ,_, D_NNP ._.
+Black_NNP ,_, M_NN ._.
+Carlson_NNP ,_, E_NNP ._.
+Davies_NNP ,_, Z_NN ._.
+Wang_NNP ,_, and_CC W_NN ._.
+Weiss_NNP ._.
+An_DT architecture_NN for_IN differentiated_VBN services_NNS ._.
+Network_NNP Information_NNP Center_NNP RFC_NNP ####_CD ,_, Dec_NNP ._.
+####_NN ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- H_NN ._.
+Franke_NNP ,_, S_NN ._.
+Nagar_NNP ,_, C_NNP ._.
+Seetharaman_NNP ,_, and_CC V_NN ._.
+Kashyap_NNP ._.
+Enabling_VBG Autonomic_JJ Workload_NNP Management_NNP in_IN Linux_NNP ._.
+In_IN Proceedings_NNP of_IN the_DT International_NNP Conference_NNP on_IN Autonomic_NNP Computing_NNP -LRB-_-LRB- ICAC_NNP -RRB-_-RRB- ,_, New_NNP York_NNP ,_, New_NNP York_NNP ,_, May_NNP ####_CD ._.
+IEEE_NNP ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- E_NN ._.
+Gamma_NN ,_, R_NN ._.
+Helm_NNP ,_, R_NN ._.
+Johnson_NNP ,_, and_CC J_NN ._.
+Vlissides_NNS ._.
+Design_NN Patterns_NN :_: Elements_NNS of_IN Reusable_JJ Object-Oriented_JJ Software_NNP ._.
+Addison-Wesley_NNP ,_, Reading_NNP ,_, MA_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- G_NN ._.
+Ghinea_NNP and_CC J_NNP ._.
+P_NN ._.
+Thomas_NNP ._.
+Qos_NNS impact_NN on_IN user_NN perception_NN and_CC understanding_NN of_IN multimedia_NNS video_JJ clips_NNS ._.
+In_IN MULTIMEDIA_NNP ''_'' ##_CD :_: Proceedings_NNP of_IN the_DT sixth_JJ ACM_JJ international_JJ conference_NN on_IN Multimedia_NNP ,_, pages_NNS 49-54_CD ,_, Bristol_NNP ,_, United_NNP Kingdom_NNP ,_, ####_CD ._.
+ACM_NNP Press_NNP ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- Internet_NNP Engineering_NNP Task_NNP Force_NNP ._.
+Differentiated_VBN Services_NNPS Working_NNP Group_NNP -LRB-_-LRB- diffserv_NN -RRB-_-RRB- Charter_NNP ._.
+www_NN ._.
+ietf_NN ._.
+org_NN /_: html_NN ._.
+charters_NNS /_: diffserv-charter_JJ ._.
+html_NN ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- X_NN ._.
+Koutsoukos_NNP ,_, R_NN ._.
+Tekumalla_NNP ,_, B_NN ._.
+Natarajan_NNP ,_, and_CC C_NN ._.
+Lu_NNP ._.
+Hybrid_NN Supervisory_NNP Control_NNP of_IN Real-Time_NNP Systems_NNPS ._.
+In_IN 11th_JJ IEEE_NNP Real-Time_NNP and_CC Embedded_VBN Technology_NN and_CC Applications_NNS Symposium_NNP ,_, San_NNP Francisco_NNP ,_, California_NNP ,_, Mar_NNP ._.
+####_NN ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- J_NN ._.
+Lehoczky_NNP ,_, L_NNP ._.
+Sha_NN ,_, and_CC Y_NN ._.
+Ding_NNP ._.
+The_DT Rate_NN Monotonic_NNP Scheduling_NNP Algorithm_NNP :_: Exact_JJ Characterization_NN and_CC Average_JJ Case_NN Behavior_NN ._.
+In_IN Proceedings_NNP of_IN the_DT 10th_JJ IEEE_NNP Real-Time_NNP Systems_NNPS Symposium_NNP -LRB-_-LRB- RTSS_NNP ####_CD -RRB-_-RRB- ,_, pages_NNS 166-171_CD ._.
+IEEE_NNP Computer_NNP Society_NNP Press_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+Loyall_NNP ,_, J_NNP ._.
+Gossett_NNP ,_, C_NNP ._.
+Gill_NNP ,_, R_NN ._.
+Schantz_NNP ,_, J_NNP ._.
+Zinky_NNP ,_, P_NN ._.
+Pal_NN ,_, R_NN ._.
+Shapiro_NNP ,_, C_NNP ._.
+Rodrigues_NNP ,_, M_NN ._.
+Atighetchi_NNP ,_, and_CC D_NN ._.
+Karr_NNP ._.
+Comparing_VBG and_CC Contrasting_VBG Adaptive_JJ Middleware_NNP Support_NN in_IN Wide-Area_NNP and_CC Embedded_VBN Distributed_VBN Object_NNP Applications_NNS ._.
+In_IN Proceedings_NNP of_IN the_DT 21st_CD International_NNP Conference_NNP on_IN Distributed_VBN Computing_NNP Systems_NNP -LRB-_-LRB- ICDCS-21_NN -RRB-_-RRB- ,_, pages_NNS 625-634_CD ._.
+IEEE_NNP ,_, Apr_NNP ._.
+####_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- C_NN ._.
+Lu_NNP ,_, J_NNP ._.
+A_DT ._.
+Stankovic_NNP ,_, G_NNP ._.
+Tao_NNP ,_, and_CC S_NN ._.
+H_NN ._.
+Son_NNP ._.
+Feedback_NNP Control_NNP Real-Time_NNP Scheduling_NNP :_: Framework_NNP ,_, Modeling_NNP ,_, and_CC Algorithms_NNS ._.
+Real-Time_NNP Systems_NNP Journal_NNP ,_, ##_CD -LRB-_-LRB- #_# /_: #_# -RRB-_-RRB- :_: 85-126_CD ,_, July_NNP 2002_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Object_NNP Management_NNP Group_NNP ._.
+Real-time_JJ CORBA_NNP Specification_NNP ,_, OMG_NNP Document_NNP formal_JJ /_: 02-08-02_CD edition_NN ,_, Aug_NN ._.
+####_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- D_NN ._.
+C_NN ._.
+Schmidt_NNP ,_, D_NNP ._.
+L_NN ._.
+Levine_NNP ,_, and_CC S_NN ._.
+Mungee_NNP ._.
+The_DT Design_NN and_CC Performance_NNP of_IN Real-Time_NNP Object_NNP Request_NNP Brokers_NNS ._.
+Computer_NNP Communications_NNPS ,_, ##_NN -LRB-_-LRB- #_# -RRB-_-RRB- :_: 294-324_CD ,_, Apr_NN ._.
+####_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Thomas_NNP Sikora_NNP ._.
+Trends_NNS and_CC Perspectives_NNS in_IN Image_NN and_CC Video_NNP Coding_NNP ._.
+In_IN Proceedings_NNP of_IN the_DT IEEE_NNP ,_, Jan_NNP ._.
+####_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- X_NN ._.
+Wang_NNP ,_, H_NN ._.
+-_: M_NN ._.
+Huang_NNP ,_, V_NNP ._.
+Subramonian_NNP ,_, C_NNP ._.
+Lu_NNP ,_, and_CC C_NN ._.
+Gill_NNP ._.
+CAMRIT_NNP :_: Control-based_JJ Adaptive_JJ Middleware_NN for_IN Real-time_JJ Image_NN Transmission_NNP ._.
+In_IN Proc_NNP ._.
+of_IN the_DT 10th_JJ IEEE_NNP Real-Time_NNP and_CC Embedded_VBD Tech_NNP ._.
+and_CC Applications_NNS Symp_NNP ._.
+-LRB-_-LRB- RTAS_NN -RRB-_-RRB- ,_, Toronto_NNP ,_, Canada_NNP ,_, May_NNP ####_CD ._.
+Article_NNP #_#

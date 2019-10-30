@@ -1,0 +1,589 @@
+Context_NN Sensitive_JJ Stemming_VBG for_IN Web_NN Search_VB Fuchun_NNP Peng_NNP Nawaaz_NNP Ahmed_NNP Xin_NNP Li_NNP Yumao_NNP Lu_NNP Yahoo_NNP !_.
+Inc_NNP ._.
+701_CD First_NNP Avenue_NNP Sunnyvale_NNP ,_, California_NNP #####_CD -LCB-_-LRB- fuchun_NN ,_, nawaaz_NN ,_, xinli_NN ,_, yumaol_NN -RCB-_-RRB- @_SYM yahoo-inc_NN ._.
+com_NN ABSTRACT_NN Traditionally_RB ,_, stemming_VBG has_VBZ been_VBN applied_VBN to_TO Information_NNP Retrieval_NNP tasks_NNS by_IN transforming_VBG words_NNS in_IN documents_NNS to_TO the_DT their_PRP$ root_NN form_NN before_IN indexing_NN ,_, and_CC applying_VBG a_DT similar_JJ transformation_NN to_TO query_VB terms_NNS ._.
+Although_IN it_PRP increases_VBZ recall_NN ,_, this_DT naive_JJ strategy_NN does_VBZ not_RB work_VB well_RB for_IN Web_NN Search_VB since_IN it_PRP lowers_VBZ precision_NN and_CC requires_VBZ a_DT significant_JJ amount_NN of_IN additional_JJ computation_NN ._.
+In_IN this_DT paper_NN ,_, we_PRP propose_VBP a_DT context_NN sensitive_JJ stemming_VBG method_NN that_IN addresses_NNS these_DT two_CD issues_NNS ._.
+Two_CD unique_JJ properties_NNS make_VBP our_PRP$ approach_NN feasible_JJ for_IN Web_NN Search_VB ._.
+First_RB ,_, based_VBN on_IN statistical_JJ language_NN modeling_NN ,_, we_PRP perform_VBP context_NN sensitive_JJ analysis_NN on_IN the_DT query_JJ side_NN ._.
+We_PRP accurately_RB predict_VBP which_WDT of_IN its_PRP$ morphological_JJ variants_NNS is_VBZ useful_JJ to_TO expand_VB a_DT query_NN term_NN with_IN before_IN submitting_VBG the_DT query_NN to_TO the_DT search_NN engine_NN ._.
+This_DT dramatically_RB reduces_VBZ the_DT number_NN of_IN bad_JJ expansions_NNS ,_, which_WDT in_IN turn_NN reduces_VBZ the_DT cost_NN of_IN additional_JJ computation_NN and_CC improves_VBZ the_DT precision_NN at_IN the_DT same_JJ time_NN ._.
+Second_RB ,_, our_PRP$ approach_NN performs_VBZ a_DT context_NN sensitive_JJ document_NN matching_VBG for_IN those_DT expanded_VBN variants_NNS ._.
+This_DT conservative_JJ strategy_NN serves_VBZ as_IN a_DT safeguard_VBP against_IN spurious_JJ stemming_VBG ,_, and_CC it_PRP turns_VBZ out_RP to_TO be_VB very_RB important_JJ for_IN improving_VBG precision_NN ._.
+Using_VBG word_NN pluralization_NN handling_VBG as_IN an_DT example_NN of_IN our_PRP$ stemming_VBG approach_NN ,_, our_PRP$ experiments_NNS on_IN a_DT major_JJ Web_NN search_NN engine_NN show_VBP that_IN stemming_VBG only_RB ##_CD %_NN of_IN the_DT query_NN traffic_NN ,_, we_PRP can_MD improve_VB relevance_NN as_IN measured_VBN by_IN average_JJ Discounted_JJ Cumulative_JJ Gain_NN -LRB-_-LRB- DCG5_NN -RRB-_-RRB- by_IN #_# ._.
+#_# %_NN on_IN these_DT queries_NNS and_CC #_# ._.
+#_# %_NN over_IN all_DT query_NN traffic_NN ._.
+Categories_NNS and_CC Subject_NNP Descriptors_NNPS H_NN ._.
+#_# ._.
+#_# -LSB-_-LRB- Information_NNP Systems_NNP -RSB-_-RRB- :_: Information_NNP Storage_NNP and_CC Retrieval-Query_NNP formulation_NN General_NNP Terms_NNS Algorithms_NNS ,_, Experimentation_NN 1_CD ._.
+INTRODUCTION_NNP Web_NN search_NN has_VBZ now_RB become_VB a_DT major_JJ tool_NN in_IN our_PRP$ daily_JJ lives_NNS for_IN information_NN seeking_VBG ._.
+One_CD of_IN the_DT important_JJ issues_NNS in_IN Web_NN search_NN is_VBZ that_IN user_NN queries_NNS are_VBP often_RB not_RB best_JJS formulated_VBN to_TO get_VB optimal_JJ results_NNS ._.
+For_IN example_NN ,_, running_VBG shoe_NN is_VBZ a_DT query_NN that_WDT occurs_VBZ frequently_RB in_IN query_NN logs_NNS ._.
+However_RB ,_, the_DT query_NN running_NN shoes_NNS is_VBZ much_RB more_RBR likely_JJ to_TO give_VB better_JJR search_NN results_NNS than_IN the_DT original_JJ query_NN because_IN documents_NNS matching_VBG the_DT intent_NN of_IN this_DT query_NN usually_RB contain_VBP the_DT words_NNS running_VBG shoes_NNS ._.
+Correctly_RB formulating_VBG a_DT query_NN requires_VBZ the_DT user_NN to_TO accurately_RB predict_VB which_WDT word_NN form_NN is_VBZ used_VBN in_IN the_DT documents_NNS that_IN best_JJS satisfy_VB his_PRP$ or_CC her_PRP$ information_NN needs_VBZ ._.
+This_DT is_VBZ difficult_JJ even_RB for_IN experienced_JJ users_NNS ,_, and_CC especially_RB difficult_JJ for_IN non-native_JJ speakers_NNS ._.
+One_CD traditional_JJ solution_NN is_VBZ to_TO use_VB stemming_VBG -LSB-_-LRB- ##_CD ,_, ##_CD -RSB-_-RRB- ,_, the_DT process_NN of_IN transforming_VBG inflected_JJ or_CC derived_VBN words_NNS to_TO their_PRP$ root_NN form_NN so_IN that_IN a_DT search_NN term_NN will_MD match_VB and_CC retrieve_VB documents_NNS containing_VBG all_DT forms_NNS of_IN the_DT term_NN ._.
+Thus_RB ,_, the_DT word_NN run_NN will_MD match_VB running_VBG ,_, ran_VBD ,_, runs_VBZ ,_, and_CC shoe_NN will_MD match_VB shoes_NNS and_CC shoeing_NN ._.
+Stemming_VBG can_MD be_VB done_VBN either_RB on_IN the_DT terms_NNS in_IN a_DT document_NN during_IN indexing_NN -LRB-_-LRB- and_CC applying_VBG the_DT same_JJ transformation_NN to_TO the_DT query_NN terms_NNS during_IN query_NN processing_NN -RRB-_-RRB- or_CC by_IN expanding_VBG the_DT query_NN with_IN the_DT variants_NNS during_IN query_NN processing_NN ._.
+Stemming_VBG during_IN indexing_NN allows_VBZ very_RB little_JJ flexibility_NN during_IN query_NN processing_NN ,_, while_IN stemming_VBG by_IN query_NN expansion_NN allows_VBZ handling_VBG each_DT query_NN differently_RB ,_, and_CC hence_RB is_VBZ preferred_VBN ._.
+Although_IN traditional_JJ stemming_VBG increases_NNS recall_VBP by_IN matching_VBG word_NN variants_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, it_PRP can_MD reduce_VB precision_NN by_IN retrieving_VBG too_RB many_JJ documents_NNS that_WDT have_VBP been_VBN incorrectly_RB matched_VBN ._.
+When_WRB examining_VBG the_DT results_NNS of_IN applying_VBG stemming_VBG to_TO a_DT large_JJ number_NN of_IN queries_NNS ,_, one_CD usually_RB finds_VBZ that_IN nearly_RB equal_JJ numbers_NNS of_IN queries_NNS are_VBP helped_VBN and_CC hurt_VBN by_IN the_DT technique_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+In_IN addition_NN ,_, it_PRP reduces_VBZ system_NN performance_NN because_IN the_DT search_NN engine_NN has_VBZ to_TO match_VB all_PDT the_DT word_NN variants_NNS ._.
+As_IN we_PRP will_MD show_VB in_IN the_DT experiments_NNS ,_, this_DT is_VBZ true_JJ even_RB if_IN we_PRP simplify_VBP stemming_VBG to_TO pluralization_NN handling_NN ,_, which_WDT is_VBZ the_DT process_NN of_IN converting_VBG a_DT word_NN from_IN its_PRP$ plural_NN to_TO singular_JJ form_NN ,_, or_CC vice_NN versa_RB ._.
+Thus_RB ,_, one_CD needs_VBZ to_TO be_VB very_RB cautious_JJ when_WRB using_VBG stemming_VBG in_IN Web_NN search_NN engines_NNS ._.
+One_CD problem_NN of_IN traditional_JJ stemming_VBG is_VBZ its_PRP$ blind_JJ transformation_NN of_IN all_DT query_NN terms_NNS ,_, that_DT is_VBZ ,_, it_PRP always_RB performs_VBZ the_DT same_JJ transformation_NN for_IN the_DT same_JJ query_NN word_NN without_IN considering_VBG the_DT context_NN of_IN the_DT word_NN ._.
+For_IN example_NN ,_, the_DT word_NN book_NN has_VBZ four_CD forms_NNS book_NN ,_, books_NNS ,_, booking_NN ,_, booked_VBN ,_, and_CC store_NN has_VBZ four_CD forms_NNS store_NN ,_, stores_NNS ,_, storing_VBG ,_, stored_VBN ._.
+For_IN the_DT query_NN book_NN store_NN ,_, expanding_VBG both_CC words_NNS to_TO all_DT of_IN their_PRP$ variants_NNS significantly_RB increases_VBZ computation_NN cost_NN and_CC hurts_VBZ precision_NN ,_, since_IN not_RB all_DT of_IN the_DT variants_NNS are_VBP useful_JJ for_IN this_DT query_NN ._.
+Transforming_VBG book_NN store_NN to_TO match_VB book_NN stores_NNS is_VBZ fine_JJ ,_, but_CC matching_VBG book_NN storing_VBG or_CC booking_VBG store_NN is_VBZ not_RB ._.
+A_DT weighting_NN method_NN that_WDT gives_VBZ variant_JJ words_NNS smaller_JJR weights_NNS alleviates_VBZ the_DT problems_NNS to_TO a_DT certain_JJ extent_NN if_IN the_DT weights_NNS accurately_RB reflect_VBP the_DT importance_NN of_IN the_DT variant_NN in_IN this_DT particular_JJ query_NN ._.
+However_RB uniform_JJ weighting_NN is_VBZ not_RB going_VBG to_TO work_VB and_CC a_DT query_NN dependent_JJ weighting_NN is_VBZ still_RB a_DT challenging_JJ unsolved_JJ problem_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+A_DT second_JJ problem_NN of_IN traditional_JJ stemming_VBG is_VBZ its_PRP$ blind_JJ matching_NN of_IN all_DT occurrences_NNS in_IN documents_NNS ._.
+For_IN the_DT query_NN book_NN store_NN ,_, a_DT transformation_NN that_IN allows_VBZ the_DT variant_JJ stores_NNS to_TO be_VB matched_VBN will_MD cause_VB every_DT occurrence_NN of_IN stores_NNS in_IN the_DT document_NN to_TO be_VB treated_VBN equivalent_JJ to_TO the_DT query_NN term_NN store_NN ._.
+Thus_RB ,_, a_DT document_NN containing_VBG the_DT fragment_NN reading_VBG a_DT book_NN in_IN coffee_NN stores_NNS will_MD be_VB matched_VBN ,_, causing_VBG many_JJ wrong_JJ documents_NNS to_TO be_VB selected_VBN ._.
+Although_IN we_PRP hope_VBP the_DT ranking_JJ function_NN can_MD correctly_RB handle_VB these_DT ,_, with_IN many_JJ more_JJR candidates_NNS to_TO rank_VB ,_, the_DT risk_NN of_IN making_VBG mistakes_NNS increases_NNS ._.
+To_TO alleviate_VB these_DT two_CD problems_NNS ,_, we_PRP propose_VBP a_DT context_NN sensitive_JJ stemming_VBG approach_NN for_IN Web_NN search_NN ._.
+Our_PRP$ solution_NN consists_VBZ of_IN two_CD context_NN sensitive_JJ analysis_NN ,_, one_CD on_IN the_DT query_JJ side_NN and_CC the_DT other_JJ on_IN the_DT document_NN side_NN ._.
+On_IN the_DT query_JJ side_NN ,_, we_PRP propose_VBP a_DT statistical_JJ language_NN modeling_NN based_VBN approach_NN to_TO predict_VB which_WDT word_NN variants_NNS are_VBP better_JJR forms_NNS than_IN the_DT original_JJ word_NN for_IN search_NN purpose_NN and_CC expanding_VBG the_DT query_NN with_IN only_RB those_DT forms_NNS ._.
+On_IN the_DT document_NN side_NN ,_, we_PRP propose_VBP a_DT conservative_JJ context_NN sensitive_JJ matching_NN for_IN the_DT transformed_VBN word_NN variants_NNS ,_, only_RB matching_VBG document_NN occurrences_NNS in_IN the_DT context_NN of_IN other_JJ terms_NNS in_IN the_DT query_NN ._.
+Our_PRP$ model_NN is_VBZ simple_JJ yet_RB effective_JJ and_CC efficient_JJ ,_, making_VBG it_PRP feasible_JJ to_TO be_VB used_VBN in_IN real_JJ commercial_JJ Web_NN search_NN engines_NNS ._.
+We_PRP use_VBP pluralization_NN handling_NN as_IN a_DT running_VBG example_NN for_IN our_PRP$ stemming_VBG approach_NN ._.
+The_DT motivation_NN for_IN using_VBG pluralization_NN handling_NN as_IN an_DT example_NN is_VBZ to_TO show_VB that_IN even_RB such_JJ simple_JJ stemming_VBG ,_, if_IN handled_VBN correctly_RB ,_, can_MD give_VB significant_JJ benefits_NNS to_TO search_VB relevance_NN ._.
+As_IN far_RB as_IN we_PRP know_VBP ,_, no_DT previous_JJ research_NN has_VBZ systematically_RB investigated_VBN the_DT usage_NN of_IN pluralization_NN in_IN Web_NN search_NN ._.
+As_IN we_PRP have_VBP to_TO point_VB out_RP ,_, the_DT method_NN we_PRP propose_VBP is_VBZ not_RB limited_VBN to_TO pluralization_NN handling_NN ,_, it_PRP is_VBZ a_DT general_JJ stemming_VBG technique_NN ,_, and_CC can_MD also_RB be_VB applied_VBN to_TO general_JJ query_NN expansion_NN ._.
+Experiments_NNS on_IN general_JJ stemming_VBG yield_NN additional_JJ significant_JJ improvements_NNS over_IN pluralization_NN handling_NN for_IN long_JJ queries_NNS ,_, although_IN details_NNS will_MD not_RB be_VB reported_VBN in_IN this_DT paper_NN ._.
+In_IN the_DT rest_NN of_IN the_DT paper_NN ,_, we_PRP first_RB present_VB the_DT related_JJ work_NN and_CC distinguish_VB our_PRP$ method_NN from_IN previous_JJ work_NN in_IN Section_NN #_# ._.
+We_PRP describe_VBP the_DT details_NNS of_IN the_DT context_NN sensitive_JJ stemming_VBG approach_NN in_IN Section_NN #_# ._.
+We_PRP then_RB perform_VBP extensive_JJ experiments_NNS on_IN a_DT major_JJ Web_NN search_NN engine_NN to_TO support_VB our_PRP$ claims_NNS in_IN Section_NN #_# ,_, followed_VBN by_IN discussions_NNS in_IN Section_NN #_# ._.
+Finally_RB ,_, we_PRP conclude_VBP the_DT paper_NN in_IN Section_NN #_# ._.
+2_LS ._.
+RELATED_JJ WORK_VBP Stemming_VBG is_VBZ a_DT long_JJ studied_VBN technology_NN ._.
+Many_JJ stemmers_NNS have_VBP been_VBN developed_VBN ,_, such_JJ as_IN the_DT Lovins_NNP stemmer_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- and_CC the_DT Porter_NNP stemmer_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+The_DT Porter_NNP stemmer_NN is_VBZ widely_RB used_VBN due_JJ to_TO its_PRP$ simplicity_NN and_CC effectiveness_NN in_IN many_JJ applications_NNS ._.
+However_RB ,_, the_DT Porter_NNP stemming_VBG makes_VBZ many_JJ mistakes_NNS because_IN its_PRP$ simple_JJ rules_NNS can_MD not_RB fully_RB describe_VBP English_JJ morphology_NN ._.
+Corpus_NNP analysis_NN is_VBZ used_VBN to_TO improve_VB Porter_NNP stemmer_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- by_IN creating_VBG equivalence_JJ classes_NNS for_IN words_NNS that_WDT are_VBP morphologically_RB similar_JJ and_CC occur_VB in_IN similar_JJ context_NN as_IN measured_VBN by_IN expected_VBN mutual_JJ information_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+We_PRP use_VBP a_DT similar_JJ corpus_NN based_VBN approach_NN for_IN stemming_VBG by_IN computing_VBG the_DT similarity_NN between_IN two_CD words_NNS based_VBN on_IN their_PRP$ distributional_JJ context_NN features_NNS which_WDT can_MD be_VB more_JJR than_IN just_RB adjacent_JJ words_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, and_CC then_RB only_RB keep_VB the_DT morphologically_RB similar_JJ words_NNS as_IN candidates_NNS ._.
+Using_VBG stemming_VBG in_IN information_NN retrieval_NN is_VBZ also_RB a_DT well_RB known_VBN technique_NN -LSB-_-LRB- #_# ,_, ##_NN -RSB-_-RRB- ._.
+However_RB ,_, the_DT effectiveness_NN of_IN stemming_VBG for_IN English_NNP query_NN systems_NNS was_VBD previously_RB reported_VBN to_TO be_VB rather_RB limited_VBN ._.
+Lennon_NNP et_FW al_FW ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- compared_VBD the_DT Lovins_NNP and_CC Porter_NNP algorithms_NNS and_CC found_VBD little_JJ improvement_NN in_IN retrieval_NN performance_NN ._.
+Later_RB ,_, Harman_NNP -LSB-_-LRB- #_# -RSB-_-RRB- compares_VBZ three_CD general_JJ stemming_VBG techniques_NNS in_IN text_NN retrieval_NN experiments_NNS including_VBG pluralization_NN handing_NN -LRB-_-LRB- called_VBN S_NN stemmer_NN in_IN the_DT paper_NN -RRB-_-RRB- ._.
+They_PRP also_RB proposed_VBD selective_JJ stemming_VBG based_VBN on_IN query_NN length_NN and_CC term_NN importance_NN ,_, but_CC no_DT positive_JJ results_NNS were_VBD reported_VBN ._.
+On_IN the_DT other_JJ hand_NN ,_, Krovetz_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- performed_VBN comparisons_NNS over_IN small_JJ numbers_NNS of_IN documents_NNS -LRB-_-LRB- from_IN ###_CD to_TO 12k_CD -RRB-_-RRB- and_CC showed_VBD dramatic_JJ precision_NN improvement_NN -LRB-_-LRB- up_RB to_TO ##_CD %_NN -RRB-_-RRB- ._.
+However_RB ,_, due_JJ to_TO the_DT limited_JJ number_NN of_IN tested_VBN queries_NNS -LRB-_-LRB- less_JJR than_IN ###_CD -RRB-_-RRB- and_CC the_DT small_JJ size_NN of_IN the_DT collection_NN ,_, the_DT results_NNS are_VBP hard_JJ to_TO generalize_VB to_TO Web_NN search_NN ._.
+These_DT mixed_JJ results_NNS ,_, mostly_RB failures_NNS ,_, led_VBD early_JJ IR_NNP researchers_NNS to_TO deem_VB stemming_VBG irrelevant_JJ in_IN general_JJ for_IN English_JJ -LSB-_-LRB- #_# -RSB-_-RRB- ,_, although_IN recent_JJ research_NN has_VBZ shown_VBN stemming_VBG has_VBZ greater_JJR benefits_NNS for_IN retrieval_NN in_IN other_JJ languages_NNS -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+We_PRP suspect_VBP the_DT previous_JJ failures_NNS were_VBD mainly_RB due_JJ to_TO the_DT two_CD problems_NNS we_PRP mentioned_VBD in_IN the_DT introduction_NN ._.
+Blind_NNP stemming_VBG ,_, or_CC a_DT simple_JJ query_NN length_NN based_VBN selective_JJ stemming_VBG as_IN used_VBN in_IN -LSB-_-LRB- #_# -RSB-_-RRB- is_VBZ not_RB enough_RB ._.
+Stemming_VBG has_VBZ to_TO be_VB decided_VBN on_IN case_NN by_IN case_NN basis_NN ,_, not_RB only_RB at_IN the_DT query_NN level_NN but_CC also_RB at_IN the_DT document_NN level_NN ._.
+As_IN we_PRP will_MD show_VB ,_, if_IN handled_VBN correctly_RB ,_, significant_JJ improvement_NN can_MD be_VB achieved_VBN ._.
+A_DT more_JJR general_JJ problem_NN related_JJ to_TO stemming_VBG is_VBZ query_JJ reformulation_NN -LSB-_-LRB- #_# ,_, ##_NN -RSB-_-RRB- and_CC query_NN expansion_NN which_WDT expands_VBZ words_NNS not_RB only_RB with_IN word_NN variants_NNS -LSB-_-LRB- #_# ,_, ##_NN ,_, ##_NN ,_, ##_NN -RSB-_-RRB- ._.
+To_TO decide_VB which_WDT expanded_VBD words_NNS to_TO use_VB ,_, people_NNS often_RB use_VBP pseudorelevance_NN feedback_NN techniquesthat_NN send_VBP the_DT original_JJ query_NN to_TO a_DT search_NN engine_NN and_CC retrieve_VB the_DT top_JJ documents_NNS ,_, extract_NN relevant_JJ words_NNS from_IN these_DT top_JJ documents_NNS as_IN additional_JJ query_NN words_NNS ,_, and_CC resubmit_VB the_DT expanded_VBN query_NN again_RB -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+This_DT normally_RB requires_VBZ sending_VBG a_DT query_NN multiple_JJ times_NNS to_TO search_VB engine_NN and_CC it_PRP is_VBZ not_RB cost_VB effective_JJ for_IN processing_VBG the_DT huge_JJ amount_NN of_IN queries_NNS involved_VBN in_IN Web_NN search_NN ._.
+In_IN addition_NN ,_, query_NN expansion_NN ,_, including_VBG query_NN reformulation_NN -LSB-_-LRB- #_# ,_, ##_NN -RSB-_-RRB- ,_, has_VBZ a_DT high_JJ risk_NN of_IN changing_VBG the_DT user_NN intent_NN -LRB-_-LRB- called_VBN query_NN drift_NN -RRB-_-RRB- ._.
+Since_IN the_DT expanded_VBN words_NNS may_MD have_VB different_JJ meanings_NNS ,_, adding_VBG them_PRP to_TO the_DT query_NN could_MD potentially_RB change_VB the_DT intent_NN of_IN the_DT original_JJ query_NN ._.
+Thus_RB query_JJ expansion_NN based_VBN on_IN pseudorelevance_NN and_CC query_NN reformulation_NN can_MD provide_VB suggestions_NNS to_TO users_NNS for_IN interactive_JJ refinement_NN but_CC can_MD hardly_RB be_VB directly_RB used_VBN for_IN Web_NN search_NN ._.
+On_IN the_DT other_JJ hand_NN ,_, stemming_VBG is_VBZ much_RB more_RBR conservative_JJ since_IN most_JJS of_IN the_DT time_NN ,_, stemming_VBG preserves_VBZ the_DT original_JJ search_NN intent_NN ._.
+While_IN most_JJS work_NN on_IN query_NN expansion_NN focuses_VBZ on_IN recall_NN enhancement_NN ,_, our_PRP$ work_NN focuses_VBZ on_IN increasing_VBG both_CC recall_NN and_CC precision_NN ._.
+The_DT increase_NN on_IN recall_NN is_VBZ obvious_JJ ._.
+With_IN quality_NN stemming_VBG ,_, good_JJ documents_NNS which_WDT were_VBD not_RB selected_VBN before_IN stemming_VBG will_MD be_VB pushed_VBN up_RP and_CC those_DT low_JJ quality_NN documents_NNS will_MD be_VB degraded_VBN ._.
+On_IN selective_JJ query_NN expansion_NN ,_, Cronen-Townsend_NNP et_FW al_FW ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- proposed_VBD a_DT method_NN for_IN selective_JJ query_NN expansion_NN based_VBN on_IN comparing_VBG the_DT Kullback-Leibler_NNP divergence_NN of_IN the_DT results_NNS from_IN the_DT unexpanded_JJ query_NN and_CC the_DT results_NNS from_IN the_DT expanded_VBN query_NN ._.
+This_DT is_VBZ similar_JJ to_TO the_DT relevance_NN feedback_NN in_IN the_DT sense_NN that_IN it_PRP requires_VBZ multiple_JJ passes_NNS retrieval_NN ._.
+If_IN a_DT word_NN can_MD be_VB expanded_VBN into_IN several_JJ words_NNS ,_, it_PRP requires_VBZ running_VBG this_DT process_NN multiple_JJ times_NNS to_TO decide_VB which_WDT expanded_VBD word_NN is_VBZ useful_JJ ._.
+It_PRP is_VBZ expensive_JJ to_TO deploy_VB this_DT in_IN production_NN Web_NN search_NN engines_NNS ._.
+Our_PRP$ method_NN predicts_VBZ the_DT quality_NN of_IN expansion_NN based_VBN on_IN oine_NN information_NN without_IN sending_VBG the_DT query_NN to_TO a_DT search_NN engine_NN ._.
+In_IN summary_NN ,_, we_PRP propose_VBP a_DT novel_JJ approach_NN to_TO attack_VB an_DT old_JJ ,_, yet_RB still_RB important_JJ and_CC challenging_JJ problem_NN for_IN Web_NN search_NN -_: stemming_VBG ._.
+Our_PRP$ approach_NN is_VBZ unique_JJ in_IN that_IN it_PRP performs_VBZ predictive_JJ stemming_VBG on_IN a_DT per_FW query_FW basis_NN without_IN relevance_NN feedback_NN from_IN the_DT Web_NN ,_, using_VBG the_DT context_NN of_IN the_DT variants_NNS in_IN documents_NNS to_TO preserve_VB precision_NN ._.
+It_PRP ''_'' s_NNS simple_JJ ,_, yet_RB very_RB efficient_JJ and_CC effective_JJ ,_, making_VBG real_JJ time_NN stemming_VBG feasible_JJ for_IN Web_NN search_NN ._.
+Our_PRP$ results_NNS will_MD affirm_VB researchers_NNS that_WDT stemming_VBG is_VBZ indeed_RB very_RB important_JJ to_TO large_JJ scale_NN information_NN retrieval_NN ._.
+3_LS ._.
+CONTEXT_NNP SENSITIVE_NNP STEMMING_VBG 3_CD ._.
+#_# Overview_NNP Our_PRP$ system_NN has_VBZ four_CD components_NNS as_IN illustrated_VBN in_IN Figure_NNP #_# :_: candidate_NN generation_NN ,_, query_NN segmentation_NN and_CC head_NN word_NN detection_NN ,_, context_NN sensitive_JJ query_NN stemming_VBG and_CC context_NN sensitive_JJ document_NN matching_NN ._.
+Candidate_NN generation_NN -LRB-_-LRB- component_NN #_# -RRB-_-RRB- is_VBZ performed_VBN oine_NN and_CC generated_VBD candidates_NNS are_VBP stored_VBN in_IN a_DT dictionary_NN ._.
+For_IN an_DT input_NN query_NN ,_, we_PRP first_RB segment_NN query_NN into_IN concepts_NNS and_CC detect_VB the_DT head_NN word_NN for_IN each_DT concept_NN -LRB-_-LRB- component_NN #_# -RRB-_-RRB- ._.
+We_PRP then_RB use_VBP statistical_JJ language_NN modeling_NN to_TO decide_VB whether_IN a_DT particular_JJ variant_NN is_VBZ useful_JJ -LRB-_-LRB- component_NN #_# -RRB-_-RRB- ,_, and_CC finally_RB for_IN the_DT expanded_VBN variants_NNS ,_, we_PRP perform_VBP context_NN sensitive_JJ document_NN matching_NN -LRB-_-LRB- component_NN 4_CD -RRB-_-RRB- ._.
+Below_IN we_PRP discuss_VBP each_DT of_IN the_DT components_NNS in_IN more_JJR detail_NN ._.
+Component_NN #_# :_: context_NN sensitive_JJ document_NN matching_VBG Input_NNP Query_NNP :_: and_CC head_NN word_NN detection_NN Component_NN #_# :_: segment_NN Component_NN #_# :_: candidate_NN generation_NN comparisons_NNS >_JJR comparison_NN Component_NN #_# :_: selective_JJ word_NN expansion_NN decision_NN :_: comparisons_NNS >_JJR comparison_NN example_NN :_: hotel_NN price_NN comparisons_NNS output_NN :_: ''_'' hotel_NN ''_'' ''_'' comparisons_NNS ''_'' hotel_NN >_JJR hotels_NNS Figure_NNP #_# :_: System_NNP Components_NNP 3_CD ._.
+#_# Expansion_NN candidate_NN generation_NN One_CD of_IN the_DT ways_NNS to_TO generate_VB candidates_NNS is_VBZ using_VBG the_DT Porter_NNP stemmer_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+The_DT Porter_NNP stemmer_NN simply_RB uses_VBZ morphological_JJ rules_NNS to_TO convert_VB a_DT word_NN to_TO its_PRP$ base_NN form_NN ._.
+It_PRP has_VBZ no_DT knowledge_NN of_IN the_DT semantic_JJ meaning_NN of_IN the_DT words_NNS and_CC sometimes_RB makes_VBZ serious_JJ mistakes_NNS ,_, such_JJ as_IN executive_NN to_TO execution_NN ,_, news_NN to_TO new_JJ ,_, and_CC paste_VBP to_TO past_NN ._.
+A_DT more_RBR conservative_JJ way_NN is_VBZ based_VBN on_IN using_VBG corpus_NN analysis_NN to_TO improve_VB the_DT Porter_NNP stemmer_NN results_VBZ -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+The_DT corpus_NN analysis_NN we_PRP do_VBP is_VBZ based_VBN on_IN word_NN distributional_JJ similarity_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+The_DT rationale_NN of_IN using_VBG distributional_JJ word_NN similarity_NN is_VBZ that_IN true_JJ variants_NNS tend_VBP to_TO be_VB used_VBN in_IN similar_JJ contexts_NNS ._.
+In_IN the_DT distributional_JJ word_NN similarity_NN calculation_NN ,_, each_DT word_NN is_VBZ represented_VBN with_IN a_DT vector_NN of_IN features_NNS derived_VBN from_IN the_DT context_NN of_IN the_DT word_NN ._.
+We_PRP use_VBP the_DT bigrams_NNS to_TO the_DT left_NN and_CC right_NN of_IN the_DT word_NN as_IN its_PRP$ context_NN features_NNS ,_, by_IN mining_VBG a_DT huge_JJ Web_NN corpus_NN ._.
+The_DT similarity_NN between_IN two_CD words_NNS is_VBZ the_DT cosine_NN similarity_NN between_IN the_DT two_CD corresponding_JJ feature_NN vectors_NNS ._.
+The_DT top_JJ ##_NN similar_JJ words_NNS to_TO develop_VB is_VBZ shown_VBN in_IN the_DT following_VBG table_NN ._.
+rank_JJ candidate_NN score_NN rank_NN candidate_NN score_NN 0_CD develop_VBP #_# ##_CD berts_NNS #_# ._.
+###_NN 1_CD developing_VBG #_# ._.
+###_CD ##_CD wads_NNS #_# ._.
+###_NN 2_CD developed_VBD #_# ._.
+###_CD ##_CD developer_NN #_# ._.
+###_NN 3_CD incubator_NN #_# ._.
+###_CD ##_CD promoting_VBG #_# ._.
+###_NN 4_CD develops_VBZ #_# ._.
+###_CD ##_CD developmental_JJ #_# ._.
+###_CD 5_CD development_NN #_# ._.
+###_CD ##_CD reengineering_VBG #_# ._.
+###_NN 6_CD tutoring_NN #_# ._.
+###_CD ##_CD build_VBP #_# ._.
+###_NN 7_CD analyzing_NN #_# ._.
+###_CD ##_CD construct_NN #_# ._.
+###_NN 8_CD developement_NN #_# ._.
+###_CD ##_CD educational_JJ #_# ._.
+###_CD 9_CD automation_NN #_# ._.
+###_CD ##_CD institute_NN #_# ._.
+###_RB Table_NNP #_# :_: Top_JJ ##_CD most_RBS similar_JJ candidates_NNS to_TO word_NN develop_VB ._.
+Column_NN score_NN is_VBZ the_DT similarity_NN score_NN ._.
+To_TO determine_VB the_DT stemming_VBG candidates_NNS ,_, we_PRP apply_VBP a_DT few_JJ Porter_NNP stemmer_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- morphological_JJ rules_NNS to_TO the_DT similarity_NN list_NN ._.
+After_IN applying_VBG these_DT rules_NNS ,_, for_IN the_DT word_NN develop_VB ,_, the_DT stemming_VBG candidates_NNS are_VBP developing_VBG ,_, developed_VBD ,_, develops_VBZ ,_, development_NN ,_, developement_NN ,_, developer_NN ,_, developmental_JJ ._.
+For_IN the_DT pluralization_NN handling_VBG purpose_NN ,_, only_RB the_DT candidate_NN develops_VBZ is_VBZ retained_VBN ._.
+One_CD thing_NN we_PRP note_VBP from_IN observing_VBG the_DT distributionally_RB similar_JJ words_NNS is_VBZ that_IN they_PRP are_VBP closely_RB related_JJ semantically_RB ._.
+These_DT words_NNS might_MD serve_VB as_IN candidates_NNS for_IN general_JJ query_NN expansion_NN ,_, a_DT topic_NN we_PRP will_MD investigate_VB in_IN the_DT future_NN ._.
+3_LS ._.
+#_# Segmentation_NN and_CC headword_NN identification_NN For_IN long_JJ queries_NNS ,_, it_PRP is_VBZ quite_RB important_JJ to_TO detect_VB the_DT concepts_NNS in_IN the_DT query_NN and_CC the_DT most_RBS important_JJ words_NNS for_IN those_DT concepts_NNS ._.
+We_PRP first_RB break_VB a_DT query_NN into_IN segments_NNS ,_, each_DT segment_NN representing_VBG a_DT concept_NN which_WDT normally_RB is_VBZ a_DT noun_NN phrase_NN ._.
+For_IN each_DT of_IN the_DT noun_NN phrases_NNS ,_, we_PRP then_RB detect_VB the_DT most_RBS important_JJ word_NN which_WDT we_PRP call_VBP the_DT head_NN word_NN ._.
+Segmentation_NN is_VBZ also_RB used_VBN in_IN document_NN sensitive_JJ matching_NN -LRB-_-LRB- section_NN #_# ._.
+#_# -RRB-_-RRB- to_TO enforce_VB proximity_NN ._.
+To_TO break_VB a_DT query_NN into_IN segments_NNS ,_, we_PRP have_VBP to_TO define_VB a_DT criteria_NNS to_TO measure_VB the_DT strength_NN of_IN the_DT relation_NN between_IN words_NNS ._.
+One_CD effective_JJ method_NN is_VBZ to_TO use_VB mutual_JJ information_NN as_IN an_DT indicator_NN on_IN whether_IN or_CC not_RB to_TO split_VB two_CD words_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+We_PRP use_VBP a_DT log_NN of_IN 25M_NN queries_NNS and_CC collect_VB the_DT bigram_NN and_CC unigram_NN frequencies_NNS from_IN it_PRP ._.
+For_IN every_DT incoming_JJ query_NN ,_, we_PRP compute_VBP the_DT mutual_JJ information_NN of_IN two_CD adjacent_JJ words_NNS ;_: if_IN it_PRP passes_VBZ a_DT predefined_JJ threshold_NN ,_, we_PRP do_VBP not_RB split_VB the_DT query_NN between_IN those_DT two_CD words_NNS and_CC move_VB on_IN to_TO next_JJ word_NN ._.
+We_PRP continue_VBP this_DT process_NN until_IN the_DT mutual_JJ information_NN between_IN two_CD words_NNS is_VBZ below_IN the_DT threshold_NN ,_, then_RB create_VB a_DT concept_NN boundary_NN here_RB ._.
+Table_NNP #_# shows_VBZ some_DT examples_NNS of_IN query_NN segmentation_NN ._.
+The_DT ideal_JJ way_NN of_IN finding_VBG the_DT head_NN word_NN of_IN a_DT concept_NN is_VBZ to_TO do_VB syntactic_JJ parsing_NN to_TO determine_VB the_DT dependency_NN structure_NN of_IN the_DT query_NN ._.
+Query_NNP parsing_NN is_VBZ more_RBR difficult_JJ than_IN sentence_NN -LSB-_-LRB- running_VBG shoe_NN -RSB-_-RRB- -LSB-_-LRB- best_JJS -RSB-_-RRB- -LSB-_-LRB- new_JJ york_NN -RSB-_-RRB- -LSB-_-LRB- medical_JJ schools_NNS -RSB-_-RRB- -LSB-_-LRB- pictures_NNS -RSB-_-RRB- -LSB-_-LRB- of_IN -RSB-_-RRB- -LSB-_-LRB- white_JJ house_NN -RSB-_-RRB- -LSB-_-LRB- cookies_NNS -RSB-_-RRB- -LSB-_-LRB- in_IN -RSB-_-RRB- -LSB-_-LRB- san_NN francisco_NN -RSB-_-RRB- -LSB-_-LRB- hotel_NN -RSB-_-RRB- -LSB-_-LRB- price_NN comparison_NN -RSB-_-RRB- Table_NNP #_# :_: Query_NNP segmentation_NN :_: a_DT segment_NN is_VBZ bracketed_VBN ._.
+parsing_VBG since_IN many_JJ queries_NNS are_VBP not_RB grammatical_JJ and_CC are_VBP very_RB short_JJ ._.
+Applying_VBG a_DT parser_NN trained_VBN on_IN sentences_NNS from_IN documents_NNS to_TO queries_NNS will_MD have_VB poor_JJ performance_NN ._.
+In_IN our_PRP$ solution_NN ,_, we_PRP just_RB use_VBP simple_JJ heuristics_NNS rules_NNS ,_, and_CC it_PRP works_VBZ very_RB well_RB in_IN practice_NN for_IN English_NNP ._.
+For_IN an_DT English_JJ noun_NN phrase_NN ,_, the_DT head_NN word_NN is_VBZ typically_RB the_DT last_JJ nonstop_JJ word_NN ,_, unless_IN the_DT phrase_NN is_VBZ of_IN a_DT particular_JJ pattern_NN ,_, like_IN XYZ_NNP of_IN /_: in_IN /_: at_IN /_: from_IN UVW_NNP ._.
+In_IN such_JJ cases_NNS ,_, the_DT head_NN word_NN is_VBZ typically_RB the_DT last_JJ nonstop_JJ word_NN of_IN XYZ_NNP ._.
+3_LS ._.
+#_# Context_NNP sensitive_JJ word_NN expansion_NN After_IN detecting_VBG which_WDT words_NNS are_VBP the_DT most_RBS important_JJ words_NNS to_TO expand_VB ,_, we_PRP have_VBP to_TO decide_VB whether_IN the_DT expansions_NNS will_MD be_VB useful_JJ ._.
+Our_PRP$ statistics_NNS show_VBP that_IN about_IN half_NN of_IN the_DT queries_NNS can_MD be_VB transformed_VBN by_IN pluralization_NN via_IN naive_JJ stemming_VBG ._.
+Among_IN this_DT half_NN ,_, about_IN ##_CD %_NN of_IN the_DT queries_NNS improve_VBP relevance_NN when_WRB transformed_VBN ,_, the_DT majority_NN -LRB-_-LRB- about_IN ##_CD %_NN -RRB-_-RRB- do_VBP not_RB change_VB their_PRP$ top_JJ #_# results_NNS ,_, and_CC the_DT remaining_VBG ##_CD %_NN perform_VBP worse_JJR ._.
+Thus_RB ,_, it_PRP is_VBZ extremely_RB important_JJ to_TO identify_VB which_WDT queries_NNS should_MD not_RB be_VB stemmed_VBN for_IN the_DT purpose_NN of_IN maximizing_VBG relevance_NN improvement_NN and_CC minimizing_VBG stemming_VBG cost_NN ._.
+In_IN addition_NN ,_, for_IN a_DT query_NN with_IN multiple_JJ words_NNS that_WDT can_MD be_VB transformed_VBN ,_, or_CC a_DT word_NN with_IN multiple_JJ variants_NNS ,_, not_RB all_DT of_IN the_DT expansions_NNS are_VBP useful_JJ ._.
+Taking_VBG query_NN hotel_NN price_NN comparison_NN as_IN an_DT example_NN ,_, we_PRP decide_VBP that_IN hotel_NN and_CC price_NN comparison_NN are_VBP two_CD concepts_NNS ._.
+Head_VB words_NNS hotel_NN and_CC comparison_NN can_MD be_VB expanded_VBN to_TO hotels_NNS and_CC comparisons_NNS ._.
+Are_VBP both_CC transformations_NNS useful_JJ ?_.
+To_TO test_VB whether_IN an_DT expansion_NN is_VBZ useful_JJ ,_, we_PRP have_VBP to_TO know_VB whether_IN the_DT expanded_VBN query_NN is_VBZ likely_JJ to_TO get_VB more_JJR relevant_JJ documents_NNS from_IN the_DT Web_NN ,_, which_WDT can_MD be_VB quantified_VBN by_IN the_DT probability_NN of_IN the_DT query_NN occurring_VBG as_IN a_DT string_NN on_IN the_DT Web_NN ._.
+The_DT more_RBR likely_JJ a_DT query_NN to_TO occur_VB on_IN the_DT Web_NN ,_, the_DT more_RBR relevant_JJ documents_NNS this_DT query_NN is_VBZ able_JJ to_TO return_VB ._.
+Now_RB the_DT whole_JJ problem_NN becomes_VBZ how_WRB to_TO calculate_VB the_DT probability_NN of_IN query_NN to_TO occur_VB on_IN the_DT Web_NN ._.
+Calculating_VBG the_DT probability_NN of_IN string_NN occurring_VBG in_IN a_DT corpus_NN is_VBZ a_DT well_RB known_JJ language_NN modeling_NN problem_NN ._.
+The_DT goal_NN of_IN language_NN modeling_NN is_VBZ to_TO predict_VB the_DT probability_NN of_IN naturally_RB occurring_VBG word_NN sequences_NNS ,_, s_NNS =_JJ w1w2_NN ..._: wN_NN ;_: or_CC more_JJR simply_RB ,_, to_TO put_VB high_JJ probability_NN on_IN word_NN sequences_NNS that_WDT actually_RB occur_VBP -LRB-_-LRB- and_CC low_JJ probability_NN on_IN word_NN sequences_NNS that_WDT never_RB occur_VBP -RRB-_-RRB- ._.
+The_DT simplest_JJS and_CC most_RBS successful_JJ approach_NN to_TO language_NN modeling_NN is_VBZ still_RB based_VBN on_IN the_DT n-gram_NN model_NN ._.
+By_IN the_DT chain_NN rule_NN of_IN probability_NN one_CD can_MD write_VB the_DT probability_NN of_IN any_DT word_NN sequence_NN as_IN Pr_NN -LRB-_-LRB- w1w2_NN ..._: wN_NN -RRB-_-RRB- =_JJ NY_NNP i_FW =_JJ #_# Pr_NN -LRB-_-LRB- wi_NN |_CD w1_NN ..._: wi1_NN -RRB-_-RRB- -LRB-_-LRB- #_# -RRB-_-RRB- An_DT n-gram_JJ model_NN approximates_VBZ this_DT probability_NN by_IN assuming_VBG that_IN the_DT only_JJ words_NNS relevant_JJ to_TO predicting_VBG Pr_NN -LRB-_-LRB- wi_NN |_CD w1_NN ..._: wi1_NN -RRB-_-RRB- are_VBP the_DT previous_JJ n_NN #_# words_NNS ;_: i_LS ._.
+e_LS ._.
+Pr_NN -LRB-_-LRB- wi_NN |_CD w1_NN ..._: wi1_NN -RRB-_-RRB- =_JJ Pr_NN -LRB-_-LRB- wi_NN |_CD win_VBP +_CC #_# ..._: wi1_NN -RRB-_-RRB- A_DT straightforward_JJ maximum_NN likelihood_NN estimate_NN of_IN n-gram_NN probabilities_NNS from_IN a_DT corpus_NN is_VBZ given_VBN by_IN the_DT observed_VBN frequency_NN of_IN each_DT of_IN the_DT patterns_NNS Pr_NN -LRB-_-LRB- wi_NN |_CD win_VBP +_CC #_# ..._: wi1_NN -RRB-_-RRB- =_JJ #_# -LRB-_-LRB- win_VB +_CC #_# ..._: wi_NN -RRB-_-RRB- #_# -LRB-_-LRB- win_VB +_CC #_# ..._: wi1_NN -RRB-_-RRB- -LRB-_-LRB- #_# -RRB-_-RRB- where_WRB #_# -LRB-_-LRB- ._. -RRB-_-RRB-
+denotes_VBZ the_DT number_NN of_IN occurrences_NNS of_IN a_DT specified_VBN gram_NN in_IN the_DT training_NN corpus_NN ._.
+Although_IN one_CD could_MD attempt_VB to_TO use_VB simple_JJ n-gram_NN models_NNS to_TO capture_VB long_JJ range_NN dependencies_NNS in_IN language_NN ,_, attempting_VBG to_TO do_VB so_RB directly_RB immediately_RB creates_VBZ sparse_JJ data_NNS problems_NNS :_: Using_VBG grams_NNS of_IN length_NN up_IN to_TO n_NN entails_VBZ estimating_VBG the_DT probability_NN of_IN Wn_NN events_NNS ,_, where_WRB W_NN is_VBZ the_DT size_NN of_IN the_DT word_NN vocabulary_NN ._.
+This_DT quickly_RB overwhelms_VBZ modern_JJ computational_JJ and_CC data_NNS resources_NNS for_IN even_RB modest_JJ choices_NNS of_IN n_NN -LRB-_-LRB- beyond_IN #_# to_TO #_# -RRB-_-RRB- ._.
+Also_RB ,_, because_IN of_IN the_DT heavy_JJ tailed_VBD nature_NN of_IN language_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+Zipf_NNP ''_'' s_VBZ law_NN -RRB-_-RRB- one_CD is_VBZ likely_JJ to_TO encounter_VB novel_JJ n-grams_NNS that_WDT were_VBD never_RB witnessed_VBN during_IN training_NN in_IN any_DT test_NN corpus_NN ,_, and_CC therefore_RB some_DT mechanism_NN for_IN assigning_VBG non-zero_JJ probability_NN to_TO novel_JJ n-grams_NN is_VBZ a_DT central_JJ and_CC unavoidable_JJ issue_NN in_IN statistical_JJ language_NN modeling_NN ._.
+One_CD standard_JJ approach_NN to_TO smoothing_NN probability_NN estimates_VBZ to_TO cope_VB with_IN sparse_JJ data_NNS problems_NNS -LRB-_-LRB- and_CC to_TO cope_VB with_IN potentially_RB missing_VBG n-grams_NNS -RRB-_-RRB- is_VBZ to_TO use_VB some_DT sort_NN of_IN back-off_JJ estimator_NN ._.
+Pr_NN -LRB-_-LRB- wi_NN |_CD win_VBP +_CC #_# ..._: wi1_NN -RRB-_-RRB- =_JJ 8_CD >_JJR >_JJR <_JJR >_JJR >_JJR :_: Pr_NN -LRB-_-LRB- wi_NN |_CD win_VBP +_CC #_# ..._: wi1_NN -RRB-_-RRB- ,_, if_IN #_# -LRB-_-LRB- win_VB +_CC #_# ..._: wi_NN -RRB-_-RRB- >_JJR #_# -LRB-_-LRB- win_VB +_CC #_# ..._: wi1_NN -RRB-_-RRB- Pr_NN -LRB-_-LRB- wi_NN |_CD win_VBP +_CC #_# ..._: wi1_NN -RRB-_-RRB- ,_, otherwise_RB -LRB-_-LRB- #_# -RRB-_-RRB- where_WRB Pr_NN -LRB-_-LRB- wi_NN |_CD win_VBP +_CC #_# ..._: wi1_NN -RRB-_-RRB- =_JJ discount_NN #_# -LRB-_-LRB- win_VB +_CC #_# ..._: wi_NN -RRB-_-RRB- #_# -LRB-_-LRB- win_VB +_CC #_# ..._: wi1_NN -RRB-_-RRB- -LRB-_-LRB- #_# -RRB-_-RRB- is_VBZ the_DT discounted_JJ probability_NN and_CC -LRB-_-LRB- win_VB +_CC #_# ..._: wi1_NN -RRB-_-RRB- is_VBZ a_DT normalization_NN constant_JJ -LRB-_-LRB- win_VB +_CC #_# ..._: wi1_NN -RRB-_-RRB- =_JJ 1_CD X_NN x_NN -LRB-_-LRB- win_VB +_CC #_# ..._: wi1x_NN -RRB-_-RRB- Pr_NN -LRB-_-LRB- x_NN |_CD win_VBP +_CC #_# ..._: wi1_NN -RRB-_-RRB- 1_CD X_NN x_NN -LRB-_-LRB- win_VB +_CC #_# ..._: wi1x_NN -RRB-_-RRB- Pr_NN -LRB-_-LRB- x_NN |_CD win_VBP +_CC #_# ..._: wi1_NN -RRB-_-RRB- -LRB-_-LRB- #_# -RRB-_-RRB- The_DT discounted_JJ probability_NN -LRB-_-LRB- #_# -RRB-_-RRB- can_MD be_VB computed_VBN with_IN different_JJ smoothing_NN techniques_NNS ,_, including_VBG absolute_JJ smoothing_NN ,_, Good-Turing_JJ smoothing_NN ,_, linear_JJ smoothing_NN ,_, and_CC Witten-Bell_NNP smoothing_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+We_PRP used_VBD absolute_JJ smoothing_NN in_IN our_PRP$ experiments_NNS ._.
+Since_IN the_DT likelihood_NN of_IN a_DT string_NN ,_, Pr_NN -LRB-_-LRB- w1w2_NN ..._: wN_NN -RRB-_-RRB- ,_, is_VBZ a_DT very_RB small_JJ number_NN and_CC hard_JJ to_TO interpret_VB ,_, we_PRP use_VBP entropy_NN as_IN defined_VBN below_IN to_TO score_VB the_DT string_NN ._.
+Entropy_NN =_JJ 1_CD N_NN log2_NN Pr_NN -LRB-_-LRB- w1w2_NN ..._: wN_NN -RRB-_-RRB- -LRB-_-LRB- #_# -RRB-_-RRB- Now_RB getting_VBG back_RB to_TO the_DT example_NN of_IN the_DT query_NN hotel_NN price_NN comparisons_NNS ,_, there_EX are_VBP four_CD variants_NNS of_IN this_DT query_NN ,_, and_CC the_DT entropy_NN of_IN these_DT four_CD candidates_NNS are_VBP shown_VBN in_IN Table_NNP #_# ._.
+We_PRP can_MD see_VB that_IN all_DT alternatives_NNS are_VBP less_RBR likely_JJ than_IN the_DT input_NN query_NN ._.
+It_PRP is_VBZ therefore_RB not_RB useful_JJ to_TO make_VB an_DT expansion_NN for_IN this_DT query_NN ._.
+On_IN the_DT other_JJ hand_NN ,_, if_IN the_DT input_NN query_NN is_VBZ hotel_NN price_NN comparisons_NNS which_WDT is_VBZ the_DT second_JJ alternative_NN in_IN the_DT table_NN ,_, then_RB there_EX is_VBZ a_DT better_RBR alternative_JJ than_IN the_DT input_NN query_NN ,_, and_CC it_PRP should_MD therefore_RB be_VB expanded_VBN ._.
+To_TO tolerate_VB the_DT variations_NNS in_IN probability_NN estimation_NN ,_, we_PRP relax_VBP the_DT selection_NN criterion_NN to_TO those_DT query_JJ alternatives_NNS if_IN their_PRP$ scores_NNS are_VBP within_IN a_DT certain_JJ distance_NN -LRB-_-LRB- ##_CD %_NN in_IN our_PRP$ experiments_NNS -RRB-_-RRB- to_TO the_DT best_JJS score_NN ._.
+Query_JJ variations_NNS Entropy_JJ hotel_NN price_NN comparison_NN #_# ._.
+###_NN hotel_NN price_NN comparisons_NNS #_# ._.
+###_CD hotels_NNS price_NN comparison_NN #_# ._.
+###_CD hotels_NNS price_NN comparisons_NNS #_# ._.
+###_RB Table_NNP #_# :_: Variations_NNS of_IN query_NN hotel_NN price_NN comparison_NN ranked_VBD by_IN entropy_JJ score_NN ,_, with_IN the_DT original_JJ query_NN in_IN bold_JJ face_NN ._.
+3_LS ._.
+#_# Context_NNP sensitive_JJ document_NN matching_VBG Even_RB after_IN we_PRP know_VBP which_WDT word_NN variants_NNS are_VBP likely_JJ to_TO be_VB useful_JJ ,_, we_PRP have_VBP to_TO be_VB conservative_JJ in_IN document_NN matching_NN for_IN the_DT expanded_VBN variants_NNS ._.
+For_IN the_DT query_NN hotel_NN price_NN comparisons_NNS ,_, we_PRP decided_VBD that_IN word_NN comparisons_NNS is_VBZ expanded_VBN to_TO include_VB comparison_NN ._.
+However_RB ,_, not_RB every_DT occurrence_NN of_IN comparison_NN in_IN the_DT document_NN is_VBZ of_IN interest_NN ._.
+A_DT page_NN which_WDT is_VBZ about_IN comparing_VBG customer_NN service_NN can_MD contain_VB all_DT of_IN the_DT words_NNS hotel_NN price_NN comparisons_NNS comparison_NN ._.
+This_DT page_NN is_VBZ not_RB a_DT good_JJ page_NN for_IN the_DT query_NN ._.
+If_IN we_PRP accept_VBP matches_NNS of_IN every_DT occurrence_NN of_IN comparison_NN ,_, it_PRP will_MD hurt_VB retrieval_NN precision_NN and_CC this_DT is_VBZ one_CD of_IN the_DT main_JJ reasons_NNS why_WRB most_RBS stemming_VBG approaches_NNS do_VBP not_RB work_VB well_RB for_IN information_NN retrieval_NN ._.
+To_TO address_VB this_DT problem_NN ,_, we_PRP have_VBP a_DT proximity_NN constraint_NN that_WDT considers_VBZ the_DT context_NN around_IN the_DT expanded_VBN variant_NN in_IN the_DT document_NN ._.
+A_DT variant_JJ match_NN is_VBZ considered_VBN valid_JJ only_RB if_IN the_DT variant_JJ occurs_VBZ in_IN the_DT same_JJ context_NN as_IN the_DT original_JJ word_NN does_VBZ ._.
+The_DT context_NN is_VBZ the_DT left_JJ or_CC the_DT right_JJ non-stop_JJ segments_NNS #_# of_IN the_DT original_JJ word_NN ._.
+Taking_VBG the_DT same_JJ query_NN as_IN an_DT example_NN ,_, the_DT context_NN of_IN comparisons_NNS is_VBZ price_NN ._.
+The_DT expanded_VBN word_NN comparison_NN is_VBZ only_RB valid_JJ if_IN it_PRP is_VBZ in_IN the_DT same_JJ context_NN of_IN comparisons_NNS ,_, which_WDT is_VBZ after_IN the_DT word_NN price_NN ._.
+Thus_RB ,_, we_PRP should_MD only_RB match_VB those_DT occurrences_NNS of_IN comparison_NN in_IN the_DT document_NN if_IN they_PRP occur_VBP after_IN the_DT word_NN price_NN ._.
+Considering_VBG the_DT fact_NN that_IN queries_NNS and_CC documents_NNS may_MD not_RB represent_VB the_DT intent_NN in_IN exactly_RB the_DT same_JJ way_NN ,_, we_PRP relax_VBP this_DT proximity_NN constraint_NN to_TO allow_VB variant_JJ occurrences_NNS within_IN a_DT window_NN of_IN some_DT fixed_VBN size_NN ._.
+If_IN the_DT expanded_VBN word_NN comparison_NN occurs_VBZ within_IN the_DT context_NN of_IN price_NN within_IN a_DT window_NN ,_, it_PRP is_VBZ considered_VBN valid_JJ ._.
+The_DT smaller_JJR the_DT window_NN size_NN is_VBZ ,_, the_DT more_RBR restrictive_JJ the_DT matching_NN ._.
+We_PRP use_VBP a_DT window_NN size_NN of_IN #_# ,_, which_WDT typically_RB captures_VBZ contexts_NNS that_WDT include_VBP the_DT containing_VBG and_CC adjacent_JJ noun_NN phrases_NNS ._.
+4_LS ._.
+EXPERIMENTAL_JJ EVALUATION_NN 4_CD ._.
+#_# Evaluation_NN metrics_NNS We_PRP will_MD measure_VB both_DT relevance_NN improvement_NN and_CC the_DT stemming_VBG cost_NN required_VBN to_TO achieve_VB the_DT relevance_NN ._.
+1_CD a_DT context_NN segment_NN can_MD not_RB be_VB a_DT single_JJ stop_NN word_NN ._.
+4_LS ._.
+#_# ._.
+#_# Relevance_NN measurement_NN We_PRP use_VBP a_DT variant_NN of_IN the_DT average_JJ Discounted_JJ Cumulative_JJ Gain_NN -LRB-_-LRB- DCG_NN -RRB-_-RRB- ,_, a_DT recently_RB popularized_VBN scheme_NN to_TO measure_VB search_NN engine_NN relevance_NN -LSB-_-LRB- #_# ,_, ##_NN -RSB-_-RRB- ._.
+Given_VBN a_DT query_NN and_CC a_DT ranked_VBN list_NN of_IN K_NNP documents_NNS -LRB-_-LRB- K_NN is_VBZ set_VBN to_TO #_# in_IN our_PRP$ experiments_NNS -RRB-_-RRB- ,_, the_DT DCG_NNP -LRB-_-LRB- K_NNP -RRB-_-RRB- score_NN for_IN this_DT query_NN is_VBZ calculated_VBN as_IN follows_VBZ :_: DCG_NN -LRB-_-LRB- K_NN -RRB-_-RRB- =_JJ KX_NN k_NN =_JJ #_# gk_SYM log2_NN -LRB-_-LRB- #_# +_CC k_NN -RRB-_-RRB- ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- where_WRB gk_NN is_VBZ the_DT weight_NN for_IN the_DT document_NN at_IN rank_NN k_NN ._.
+Higher_JJR degree_NN of_IN relevance_NN corresponds_VBZ to_TO a_DT higher_JJR weight_NN ._.
+A_DT page_NN is_VBZ graded_VBN into_IN one_CD of_IN the_DT five_CD scales_NNS :_: Perfect_NNP ,_, Excellent_NNP ,_, Good_NNP ,_, Fair_NNP ,_, Bad_NNP ,_, with_IN corresponding_JJ weights_NNS ._.
+We_PRP use_VBP dcg_NN to_TO represent_VB the_DT average_JJ DCG_NN -LRB-_-LRB- #_# -RRB-_-RRB- over_IN a_DT set_NN of_IN test_NN queries_NNS ._.
+4_LS ._.
+#_# ._.
+#_# Stemming_VBG cost_NN Another_DT metric_JJ is_VBZ to_TO measure_VB the_DT additional_JJ cost_NN incurred_VBN by_IN stemming_VBG ._.
+Given_VBN the_DT same_JJ level_NN of_IN relevance_NN improvement_NN ,_, we_PRP prefer_VBP a_DT stemming_VBG method_NN that_WDT has_VBZ less_JJR additional_JJ cost_NN ._.
+We_PRP measure_VB this_DT by_IN the_DT percentage_NN of_IN queries_NNS that_WDT are_VBP actually_RB stemmed_VBN ,_, over_IN all_PDT the_DT queries_NNS that_WDT could_MD possibly_RB be_VB stemmed_VBN ._.
+4_LS ._.
+#_# Data_NNS preparation_NN We_PRP randomly_RB sample_NN ###_CD queries_NNS from_IN a_DT three_CD month_NN query_NN log_NN ,_, with_IN ###_CD from_IN each_DT month_NN ._.
+Among_IN all_PDT these_DT ###_CD queries_NNS ,_, we_PRP remove_VBP all_DT misspelled_VBN queries_NNS since_IN misspelled_VBN queries_NNS are_VBP not_RB of_IN interest_NN to_TO stemming_VBG ._.
+We_PRP also_RB remove_VB all_DT one_CD word_NN queries_NNS since_IN stemming_VBG one_CD word_NN queries_NNS without_IN context_NN has_VBZ a_DT high_JJ risk_NN of_IN changing_VBG query_NN intent_NN ,_, especially_RB for_IN short_JJ words_NNS ._.
+In_IN the_DT end_NN ,_, we_PRP have_VBP ###_CD correctly_RB spelled_VBD queries_NNS with_IN at_IN least_JJS #_# words_NNS ._.
+4_LS ._.
+#_# Naive_JJ stemming_VBG for_IN Web_NN search_NN Before_IN explaining_VBG the_DT experiments_NNS and_CC results_NNS in_IN detail_NN ,_, we_PRP ''_'' d_NN like_IN to_TO describe_VB the_DT traditional_JJ way_NN of_IN using_VBG stemming_VBG for_IN Web_NN search_NN ,_, referred_VBN as_IN the_DT naive_JJ model_NN ._.
+This_DT is_VBZ to_TO treat_VB every_DT word_NN variant_JJ equivalent_NN for_IN all_DT possible_JJ words_NNS in_IN the_DT query_NN ._.
+The_DT query_NN book_NN store_NN will_MD be_VB transformed_VBN into_IN -LRB-_-LRB- book_NN OR_NN books_NNS -RRB-_-RRB- -LRB-_-LRB- store_NN OR_NN stores_NNS -RRB-_-RRB- when_WRB limiting_VBG stemming_VBG to_TO pluralization_NN handling_VBG only_RB ,_, where_WRB OR_NN is_VBZ an_DT operator_NN that_WDT denotes_VBZ the_DT equivalence_JJ of_IN the_DT left_JJ and_CC right_JJ arguments_NNS ._.
+4_LS ._.
+#_# Experimental_JJ setup_NN The_DT baseline_NN model_NN is_VBZ the_DT model_NN without_IN stemming_VBG ._.
+We_PRP first_RB run_VB the_DT naive_JJ model_NN to_TO see_VB how_WRB well_RB it_PRP performs_VBZ over_IN the_DT baseline_NN ._.
+Then_RB we_PRP improve_VBP the_DT naive_JJ stemming_VBG model_NN by_IN document_NN sensitive_JJ matching_NN ,_, referred_VBN as_IN document_NN sensitive_JJ matching_NN model_NN ._.
+This_DT model_NN makes_VBZ the_DT same_JJ stemming_VBG as_IN the_DT naive_JJ model_NN on_IN the_DT query_JJ side_NN ,_, but_CC performs_VBZ conservative_JJ matching_NN on_IN the_DT document_NN side_NN using_VBG the_DT strategy_NN described_VBN in_IN section_NN #_# ._.
+#_# ._.
+The_DT naive_JJ model_NN and_CC document_NN sensitive_JJ matching_NN model_NN stem_VBP the_DT most_RBS queries_NNS ._.
+Out_IN of_IN the_DT 529_CD queries_NNS ,_, there_EX are_VBP ###_CD queries_NNS that_IN they_PRP stem_VBP ,_, corresponding_VBG to_TO ##_CD ._.
+#_# %_NN query_NN traffic_NN -LRB-_-LRB- out_IN of_IN a_DT total_NN of_IN ###_CD -RRB-_-RRB- ._.
+We_PRP then_RB further_RB improve_VB the_DT document_NN sensitive_JJ matching_NN model_NN from_IN the_DT query_JJ side_NN with_IN selective_JJ word_NN stemming_VBG based_VBN on_IN statistical_JJ language_NN modeling_NN -LRB-_-LRB- section_NN #_# ._.
+#_# -RRB-_-RRB- ,_, referred_VBN as_IN selective_JJ stemming_VBG model_NN ._.
+Based_VBN on_IN language_NN modeling_NN prediction_NN ,_, this_DT model_NN stems_VBZ only_RB a_DT subset_NN of_IN the_DT ###_CD queries_NNS stemmed_VBD by_IN the_DT document_NN sensitive_JJ matching_NN model_NN ._.
+We_PRP experiment_NN with_IN unigram_JJ language_NN model_NN and_CC bigram_NN language_NN model_NN ._.
+Since_IN we_PRP only_RB care_VB how_WRB much_JJ we_PRP can_MD improve_VB the_DT naive_JJ model_NN ,_, we_PRP will_MD only_RB use_VB these_DT ###_CD queries_NNS -LRB-_-LRB- all_PDT the_DT queries_NNS that_WDT are_VBP affected_VBN by_IN the_DT naive_JJ stemming_VBG model_NN -RRB-_-RRB- in_IN the_DT experiments_NNS ._.
+To_TO get_VB a_DT sense_NN of_IN how_WRB these_DT models_NNS perform_VBP ,_, we_PRP also_RB have_VBP an_DT oracle_NN model_NN that_WDT gives_VBZ the_DT upper-bound_JJ performance_NN a_DT stemmer_NN can_MD achieve_VB on_IN this_DT data_NNS ._.
+The_DT oracle_NN model_NN only_RB expands_VBZ a_DT word_NN if_IN the_DT stemming_VBG will_MD give_VB better_JJR results_NNS ._.
+To_TO analyze_VB the_DT pluralization_NN handling_VBG influence_NN on_IN different_JJ query_NN categories_NNS ,_, we_PRP divide_VBP queries_NNS into_IN short_JJ queries_NNS and_CC long_JJ queries_NNS ._.
+Among_IN the_DT ###_CD queries_NNS stemmed_VBD by_IN the_DT naive_JJ model_NN ,_, there_EX are_VBP ###_CD short_JJ queries_NNS with_IN #_# or_CC #_# words_NNS ,_, and_CC ###_RB long_JJ queries_NNS with_IN at_IN least_JJS #_# words_NNS ._.
+4_LS ._.
+#_# Results_NNS We_PRP summarize_VBP the_DT overall_JJ results_NNS in_IN Table_NNP #_# ,_, and_CC present_VB the_DT results_NNS on_IN short_JJ queries_NNS and_CC long_JJ queries_NNS separately_RB in_IN Table_NNP #_# ._.
+Each_DT row_NN in_IN Table_NNP #_# is_VBZ a_DT stemming_VBG strategy_NN described_VBN in_IN section_NN #_# ._.
+#_# ._.
+The_DT first_JJ column_NN is_VBZ the_DT name_NN of_IN the_DT strategy_NN ._.
+The_DT second_JJ column_NN is_VBZ the_DT number_NN of_IN queries_NNS affected_VBN by_IN this_DT strategy_NN ;_: this_DT column_NN measures_VBZ the_DT stemming_VBG cost_NN ,_, and_CC the_DT numbers_NNS should_MD be_VB low_JJ for_IN the_DT same_JJ level_NN of_IN dcg_NN ._.
+The_DT third_JJ column_NN is_VBZ the_DT average_JJ dcg_NN score_NN over_IN all_DT tested_VBN queries_NNS in_IN this_DT category_NN -LRB-_-LRB- including_VBG the_DT ones_NNS that_WDT were_VBD not_RB stemmed_VBN by_IN the_DT strategy_NN -RRB-_-RRB- ._.
+The_DT fourth_JJ column_NN is_VBZ the_DT relative_JJ improvement_NN over_IN the_DT baseline_NN ,_, and_CC the_DT last_JJ column_NN is_VBZ the_DT p-value_NN of_IN Wilcoxon_NNP significance_NN test_NN ._.
+There_EX are_VBP several_JJ observations_NNS about_IN the_DT results_NNS ._.
+We_PRP can_MD see_VB the_DT naively_RB stemming_VBG only_RB obtains_VBZ a_DT statistically_RB insignificant_JJ improvement_NN of_IN #_# ._.
+#_# %_NN ._.
+Looking_VBG at_IN Table_NNP #_# ,_, it_PRP gives_VBZ an_DT improvement_NN of_IN #_# ._.
+#_# %_NN on_IN short_JJ queries_NNS ._.
+However_RB ,_, it_PRP also_RB hurts_VBZ long_JJ queries_NNS by_IN -_: #_# ._.
+#_# %_NN ._.
+Overall_RB ,_, the_DT improvement_NN is_VBZ canceled_VBN out_RP ._.
+The_DT reason_NN that_IN it_PRP improves_VBZ short_JJ queries_NNS is_VBZ that_IN most_JJS short_JJ queries_NNS only_RB have_VBP one_CD word_NN that_WDT can_MD be_VB stemmed_VBN ._.
+Thus_RB ,_, blindly_RB pluralizing_VBG short_JJ queries_NNS is_VBZ relatively_RB safe_JJ ._.
+However_RB for_IN long_JJ queries_NNS ,_, most_JJS queries_NNS can_MD have_VB multiple_JJ words_NNS that_WDT can_MD be_VB pluralized_VBN ._.
+Expanding_VBG all_DT of_IN them_PRP without_IN selection_NN will_MD significantly_RB hurt_VB precision_NN ._.
+Document_NNP context_NN sensitive_JJ stemming_VBG gives_VBZ a_DT significant_JJ lift_NN to_TO the_DT performance_NN ,_, from_IN #_# ._.
+#_# %_NN to_TO #_# ._.
+#_# %_NN for_IN short_JJ queries_NNS and_CC from_IN -_: #_# ._.
+#_# %_NN to_TO -1_CD ._.
+#_# %_NN for_IN long_JJ queries_NNS ,_, with_IN an_DT overall_JJ lift_NN from_IN #_# ._.
+#_# %_NN to_TO #_# ._.
+#_# %_NN ._.
+The_DT improvement_NN comes_VBZ from_IN the_DT conservative_JJ context_NN sensitive_JJ document_NN matching_NN ._.
+An_DT expanded_VBN word_NN is_VBZ valid_JJ only_RB if_IN it_PRP occurs_VBZ within_IN the_DT context_NN of_IN original_JJ query_NN in_IN the_DT document_NN ._.
+This_DT reduces_VBZ many_JJ spurious_JJ matches_NNS ._.
+However_RB ,_, we_PRP still_RB notice_VBP that_IN for_IN long_JJ queries_NNS ,_, context_NN sensitive_JJ stemming_VBG is_VBZ not_RB able_JJ to_TO improve_VB performance_NN because_IN it_PRP still_RB selects_VBZ too_RB many_JJ documents_NNS and_CC gives_VBZ the_DT ranking_JJ function_NN a_DT hard_JJ problem_NN ._.
+While_IN the_DT chosen_VBN window_NN size_NN of_IN #_# works_VBZ the_DT best_JJS amongst_IN all_DT the_DT choices_NNS ,_, it_PRP still_RB allows_VBZ spurious_JJ matches_NNS ._.
+It_PRP is_VBZ possible_JJ that_IN the_DT window_NN size_NN needs_VBZ to_TO be_VB chosen_VBN on_IN a_DT per_FW query_FW basis_NN to_TO ensure_VB tighter_JJR proximity_NN constraints_NNS for_IN different_JJ types_NNS of_IN noun_NN phrases_NNS ._.
+Selective_JJ word_NN pluralization_NN further_RB helps_VBZ resolving_VBG the_DT problem_NN faced_VBN by_IN document_NN context_NN sensitive_JJ stemming_VBG ._.
+It_PRP does_VBZ not_RB stem_VB every_DT word_NN that_WDT places_VBZ all_PDT the_DT burden_NN on_IN the_DT ranking_JJ algorithm_NN ,_, but_CC tries_VBZ to_TO eliminate_VB unnecessary_JJ stemming_VBG in_IN the_DT first_JJ place_NN ._.
+By_IN predicting_VBG which_WDT word_NN variants_NNS are_VBP going_VBG to_TO be_VB useful_JJ ,_, we_PRP can_MD dramatically_RB reduce_VB the_DT number_NN of_IN stemmed_VBD words_NNS ,_, thus_RB improving_VBG both_CC the_DT recall_NN and_CC the_DT precision_NN ._.
+With_IN the_DT unigram_JJ language_NN model_NN ,_, we_PRP can_MD reduce_VB the_DT stemming_VBG cost_NN by_IN ##_NN ._.
+#_# %_NN -LRB-_-LRB- from_IN ###_CD /_: ###_CD to_TO ###_CD /_: ###_CD -RRB-_-RRB- and_CC lift_VB the_DT overall_JJ dcg_NN improvement_NN from_IN #_# ._.
+#_# %_NN to_TO #_# ._.
+#_# %_NN ._.
+In_IN particular_JJ ,_, it_PRP gives_VBZ significant_JJ improvements_NNS on_IN long_JJ queries_NNS ._.
+The_DT dcg_NN gain_NN is_VBZ turned_VBN from_IN negative_JJ to_TO positive_JJ ,_, from_IN #_# ._.
+#_# %_NN to_TO #_# ._.
+#_# %_NN ._.
+This_DT confirms_VBZ our_PRP$ hypothesis_NN that_IN reducing_VBG unnecessary_JJ word_NN expansion_NN leads_VBZ to_TO precision_NN improvement_NN ._.
+For_IN short_JJ queries_NNS too_RB ,_, we_PRP observe_VBP both_CC dcg_VBP improvement_NN and_CC stemming_VBG cost_NN reduction_NN with_IN the_DT unigram_JJ language_NN model_NN ._.
+The_DT advantages_NNS of_IN predictive_JJ word_NN expansion_NN with_IN a_DT language_NN model_NN is_VBZ further_JJ boosted_VBD with_IN a_DT better_JJR bigram_NN language_NN model_NN ._.
+The_DT overall_JJ dcg_NN gain_NN is_VBZ lifted_VBN from_IN #_# ._.
+#_# %_NN to_TO #_# ._.
+#_# %_NN ,_, and_CC stemming_VBG cost_NN is_VBZ dramatically_RB reduced_VBN from_IN 408_CD /_: ###_CD to_TO ###_CD /_: ###_CD ,_, corresponding_VBG to_TO only_RB ##_CD %_NN of_IN query_NN traffic_NN -LRB-_-LRB- ###_CD out_IN of_IN ###_CD -RRB-_-RRB- and_CC an_DT overall_JJ #_# ._.
+#_# %_NN dcg_NN improvement_NN overall_RB all_DT query_NN traffic_NN ._.
+For_IN short_JJ queries_NNS ,_, bigram_NN language_NN model_NN improves_VBZ the_DT dcg_NN gain_NN from_IN #_# ._.
+#_# %_NN to_TO #_# ._.
+#_# %_NN ,_, and_CC reduces_VBZ stemming_VBG cost_NN from_IN ###_CD /_: ###_CD to_TO ###_CD /_: ###_CD ._.
+For_IN long_JJ queries_NNS ,_, bigram_NN language_NN model_NN improves_VBZ dcg_NN gain_NN from_IN 1_CD ._.
+#_# %_NN to_TO #_# ._.
+#_# %_NN ,_, and_CC reduces_VBZ stemming_VBG cost_NN from_IN ###_CD /_: ###_CD to_TO 100_CD /_: ###_CD ._.
+We_PRP observe_VBP that_IN the_DT bigram_NN language_NN model_NN gives_VBZ a_DT larger_JJR lift_NN for_IN long_JJ queries_NNS ._.
+This_DT is_VBZ because_IN the_DT uncertainty_NN in_IN long_JJ queries_NNS is_VBZ larger_JJR and_CC a_DT more_RBR powerful_JJ language_NN model_NN is_VBZ needed_VBN ._.
+We_PRP hypothesize_VBP that_IN a_DT trigram_NN language_NN model_NN would_MD give_VB a_DT further_JJ lift_NN for_IN long_JJ queries_NNS and_CC leave_VB this_DT for_IN future_JJ investigation_NN ._.
+Considering_VBG the_DT tight_JJ upper-bound_JJ #_# on_IN the_DT improvement_NN to_TO be_VB gained_VBN from_IN pluralization_NN handling_NN -LRB-_-LRB- via_IN the_DT oracle_NN model_NN -RRB-_-RRB- ,_, the_DT current_JJ performance_NN on_IN short_JJ queries_NNS is_VBZ very_RB satisfying_JJ ._.
+For_IN short_JJ queries_NNS ,_, the_DT dcg_NN gain_NN upper-bound_NN is_VBZ #_# ._.
+#_# %_NN for_IN perfect_JJ pluralization_NN handling_NN ,_, our_PRP$ current_JJ gain_NN is_VBZ #_# ._.
+#_# %_NN with_IN a_DT bigram_NN language_NN model_NN ._.
+For_IN long_JJ queries_NNS ,_, the_DT dcg_NN gain_NN upper-bound_NN is_VBZ #_# ._.
+#_# %_NN for_IN perfect_JJ pluralization_NN handling_NN ,_, our_PRP$ current_JJ gain_NN is_VBZ #_# ._.
+#_# %_NN with_IN a_DT bigram_NN language_NN model_NN ._.
+We_PRP may_MD gain_VB additional_JJ benefit_NN with_IN a_DT more_RBR powerful_JJ language_NN model_NN for_IN long_JJ queries_NNS ._.
+However_RB ,_, the_DT difficulties_NNS of_IN long_JJ queries_NNS come_VBP from_IN many_JJ other_JJ aspects_NNS including_VBG the_DT proximity_NN and_CC the_DT segmentation_NN problem_NN ._.
+These_DT problems_NNS have_VBP to_TO be_VB addressed_VBN separately_RB ._.
+Looking_VBG at_IN the_DT the_DT upper-bound_NN of_IN overhead_JJ reduction_NN for_IN oracle_NN stemming_VBG ,_, ##_CD %_NN -LRB-_-LRB- ###_CD /_: ###_CD -RRB-_-RRB- of_IN the_DT naive_JJ stemmings_NNS are_VBP wasteful_JJ ._.
+We_PRP currently_RB capture_VBP about_IN half_NN of_IN them_PRP ._.
+Further_JJ reduction_NN of_IN the_DT overhead_NN requires_VBZ sacrificing_VBG the_DT dcg_NN gain_NN ._.
+Now_RB we_PRP can_MD compare_VB the_DT stemming_VBG strategies_NNS from_IN a_DT different_JJ aspect_NN ._.
+Instead_RB of_IN looking_VBG at_IN the_DT influence_NN over_IN all_DT queries_NNS as_IN we_PRP described_VBD above_RB ,_, Table_NNP #_# summarizes_VBZ the_DT dcg_NN improvements_NNS over_IN the_DT affected_VBN queries_NNS only_RB ._.
+We_PRP can_MD see_VB that_IN the_DT number_NN of_IN affected_VBN queries_NNS decreases_VBZ as_IN the_DT stemming_VBG strategy_NN becomes_VBZ more_RBR accurate_JJ -LRB-_-LRB- dcg_JJ improvement_NN -RRB-_-RRB- ._.
+For_IN the_DT bigram_NN language_NN model_NN ,_, over_IN the_DT ###_CD /_: ###_CD stemmed_VBD queries_NNS ,_, the_DT dcg_NN improvement_NN is_VBZ #_# ._.
+#_# %_NN ._.
+An_DT interesting_JJ observation_NN is_VBZ the_DT average_JJ dcg_NN decreases_VBZ with_IN a_DT better_JJR model_NN ,_, which_WDT indicates_VBZ a_DT better_JJR stemming_VBG strategy_NN stems_VBZ more_RBR difficult_JJ queries_NNS -LRB-_-LRB- low_JJ dcg_NN queries_NNS -RRB-_-RRB- ._.
+5_CD ._.
+DISCUSSIONS_NNS 5_CD ._.
+#_# Language_NN models_NNS from_IN query_NN vs_CC ._.
+from_IN Web_NN As_IN we_PRP mentioned_VBD in_IN Section_NN #_# ,_, we_PRP are_VBP trying_VBG to_TO predict_VB the_DT probability_NN of_IN a_DT string_NN occurring_VBG on_IN the_DT Web_NN ._.
+The_DT language_NN model_NN should_MD describe_VB the_DT occurrence_NN of_IN the_DT string_NN on_IN the_DT Web_NN ._.
+However_RB ,_, the_DT query_NN log_NN is_VBZ also_RB a_DT good_JJ resource_NN ._.
+2_CD Note_NN that_IN this_DT upperbound_NN is_VBZ for_IN pluralization_NN handling_VBG only_RB ,_, not_RB for_IN general_JJ stemming_VBG ._.
+General_NNP stemming_VBG gives_VBZ a_DT 8_CD %_NN upperbound_NN ,_, which_WDT is_VBZ quite_RB substantial_JJ in_IN terms_NNS of_IN our_PRP$ metrics_NNS ._.
+Affected_VBN Queries_NNPS dcg_NN dcg_NN Improvement_NN p-value_NN baseline_NN #_# /_: ###_CD #_# ._.
+###_NN N_NN /_: A_DT N_NN /_: A_DT naive_JJ model_NN ###_CD /_: ###_CD #_# ._.
+###_NN #_# ._.
+#_# %_NN #_# ._.
+##_NN document_NN context_NN sensitive_JJ model_NN ###_CD /_: ###_CD #_# ._.
+###_NN #_# ._.
+#_# %_NN #_# ._.
+###_NN selective_JJ model_NN :_: unigram_JJ LM_NNP ###_CD /_: ###_CD #_# ._.
+###_NN #_# ._.
+#_# %_NN #_# ._.
+###_NN selective_JJ model_NN :_: bigram_NN LM_NNP ###_CD /_: ###_CD #_# ._.
+###_NN #_# ._.
+#_# %_NN #_# ._.
+###_NN oracle_NN model_NN ###_CD /_: ###_CD #_# ._.
+###_NN #_# ._.
+#_# %_NN #_# ._.
+###_RB Table_NNP #_# :_: Results_NNS comparison_NN of_IN different_JJ stemming_VBG strategies_NNS over_IN all_DT queries_NNS affected_VBN by_IN naive_JJ stemming_VBG Short_JJ Query_NNP Results_NNS Affected_VBN Queries_NNS dcg_VBP Improvement_NN p-value_JJ baseline_NN #_# /_: ###_CD N_NN /_: A_DT N_NN /_: A_DT naive_JJ model_NN ###_CD /_: ###_CD #_# ._.
+#_# %_NN #_# ._.
+##_NN document_NN context_NN sensitive_JJ model_NN ###_CD /_: ###_CD #_# ._.
+#_# %_NN #_# ._.
+###_NN selective_JJ model_NN :_: unigram_JJ LM_NNP ###_CD /_: ###_CD #_# ._.
+#_# %_NN #_# ._.
+###_NN selective_JJ model_NN :_: bigram_NN LM_NNP ###_CD /_: ###_CD #_# ._.
+#_# %_NN #_# ._.
+###_NN oracle_NN model_NN ##_CD /_: ###_CD #_# ._.
+#_# %_NN #_# ._.
+###_CD Long_JJ Query_NNP Results_NNS Affected_VBN Queries_NNS dcg_VBP Improvement_NN p-value_JJ baseline_NN #_# /_: ###_CD N_NN /_: A_DT N_NN /_: A_DT naive_JJ model_NN ###_CD /_: ###_SYM -_: #_# ._.
+#_# %_NN #_# ._.
+##_NN document_NN context_NN sensitive_JJ model_NN ###_CD /_: ###_SYM -_: #_# ._.
+#_# %_NN #_# ._.
+##_NN selective_JJ model_NN :_: unigram_JJ LM_NNP ###_CD /_: ###_CD #_# ._.
+#_# %_NN #_# ._.
+###_NN selective_JJ model_NN :_: bigram_NN LM_NNP ###_CD /_: ###_CD #_# ._.
+#_# %_NN #_# ._.
+###_NN oracle_NN model_NN ##_CD /_: ###_CD #_# ._.
+#_# %_NN #_# ._.
+###_RB Table_NNP #_# :_: Results_NNS comparison_NN of_IN different_JJ stemming_VBG strategies_NNS overall_JJ short_JJ queries_NNS and_CC long_JJ queries_NNS Users_NNS reformulate_VBP a_DT query_NN using_VBG many_JJ different_JJ variants_NNS to_TO get_VB good_JJ results_NNS ._.
+To_TO test_VB the_DT hypothesis_NN that_IN we_PRP can_MD learn_VB reliable_JJ transformation_NN probabilities_NNS from_IN the_DT query_NN log_NN ,_, we_PRP trained_VBD a_DT language_NN model_NN from_IN the_DT same_JJ query_NN top_JJ 25M_NN queries_NNS as_IN used_VBN to_TO learn_VB segmentation_NN ,_, and_CC use_VB that_DT for_IN prediction_NN ._.
+We_PRP observed_VBD a_DT slight_JJ performance_NN decrease_NN compared_VBN to_TO the_DT model_NN trained_VBN on_IN Web_NN frequencies_NNS ._.
+In_IN particular_JJ ,_, the_DT performance_NN for_IN unigram_JJ LM_NN was_VBD not_RB affected_VBN ,_, but_CC the_DT dcg_NN gain_NN for_IN bigram_NN LM_NN changed_VBD from_IN #_# ._.
+#_# %_NN to_TO #_# ._.
+#_# %_NN for_IN short_JJ queries_NNS ._.
+Thus_RB ,_, the_DT query_NN log_NN can_MD serve_VB as_IN a_DT good_JJ approximation_NN of_IN the_DT Web_NN frequencies_NNS ._.
+5_CD ._.
+#_# How_WRB linguistics_NNS helps_VBZ Some_DT linguistic_JJ knowledge_NN is_VBZ useful_JJ in_IN stemming_VBG ._.
+For_IN the_DT pluralization_NN handling_VBG case_NN ,_, pluralization_NN and_CC de-pluralization_NN is_VBZ not_RB symmetric_JJ ._.
+A_DT plural_NN word_NN used_VBN in_IN a_DT query_NN indicates_VBZ a_DT special_JJ intent_NN ._.
+For_IN example_NN ,_, the_DT query_NN new_JJ york_NN hotels_NNS is_VBZ looking_VBG for_IN a_DT list_NN of_IN hotels_NNS in_IN new_JJ york_NN ,_, not_RB the_DT specific_JJ new_JJ york_NN hotel_NN which_WDT might_MD be_VB a_DT hotel_NN located_JJ in_IN California_NNP ._.
+A_DT simple_JJ equivalence_JJ of_IN hotel_NN to_TO hotels_NNS might_MD boost_VB a_DT particular_JJ page_NN about_IN new_JJ york_JJ hotel_NN to_TO top_JJ rank_NN ._.
+To_TO capture_VB this_DT intent_NN ,_, we_PRP have_VBP to_TO make_VB sure_JJ the_DT document_NN is_VBZ a_DT general_JJ page_NN about_IN hotels_NNS in_IN new_JJ york_NN ._.
+We_PRP do_VBP this_DT by_IN requiring_VBG that_IN the_DT plural_NN word_NN hotels_NNS appears_VBZ in_IN the_DT document_NN ._.
+On_IN the_DT other_JJ hand_NN ,_, converting_VBG a_DT singular_JJ word_NN to_TO plural_NN is_VBZ safer_JJR since_IN a_DT general_JJ purpose_NN page_NN normally_RB contains_VBZ specific_JJ information_NN ._.
+We_PRP observed_VBD a_DT slight_JJ overall_JJ dcg_NN decrease_NN ,_, although_IN not_RB statistically_RB significant_JJ ,_, for_IN document_NN context_NN sensitive_JJ stemming_VBG if_IN we_PRP do_VBP not_RB consider_VB this_DT asymmetric_JJ property_NN ._.
+5_CD ._.
+#_# Error_NN analysis_NN One_CD type_NN of_IN mistakes_NNS we_PRP noticed_VBD ,_, though_IN rare_JJ but_CC seriously_RB hurting_VBG relevance_NN ,_, is_VBZ the_DT search_NN intent_NN change_NN after_IN stemming_VBG ._.
+Generally_RB speaking_VBG ,_, pluralization_NN or_CC depluralization_NN keeps_VBZ the_DT original_JJ intent_NN ._.
+However_RB ,_, the_DT intent_NN could_MD change_VB in_IN a_DT few_JJ cases_NNS ._.
+For_IN one_CD example_NN of_IN such_PDT a_DT query_NN ,_, job_NN at_IN apple_NN ,_, we_PRP pluralize_VBP job_NN to_TO jobs_NNS ._.
+This_DT stemming_VBG makes_VBZ the_DT original_JJ query_NN ambiguous_JJ ._.
+The_DT query_NN job_NN OR_NN jobs_NNS at_IN apple_NN has_VBZ two_CD intents_NNS ._.
+One_CD is_VBZ the_DT employment_NN opportunities_NNS at_IN apple_NN ,_, and_CC another_DT is_VBZ a_DT person_NN working_VBG at_IN Apple_NNP ,_, Steve_NNP Jobs_NNP ,_, who_WP is_VBZ the_DT CEO_NNP and_CC co-founder_NN of_IN the_DT company_NN ._.
+Thus_RB ,_, the_DT results_NNS after_IN query_NN stemming_VBG returns_NNS Steve_NNP Jobs_NNP as_IN one_CD of_IN the_DT results_NNS in_IN top_JJ #_# ._.
+One_CD solution_NN is_VBZ performing_VBG results_NNS set_VBN based_JJ analysis_NN to_TO check_VB if_IN the_DT intent_NN is_VBZ changed_VBN ._.
+This_DT is_VBZ similar_JJ to_TO relevance_NN feedback_NN and_CC requires_VBZ second_JJ phase_NN ranking_NN ._.
+A_DT second_JJ type_NN of_IN mistakes_NNS is_VBZ the_DT entity_NN /_: concept_NN recognition_NN problem_NN ,_, These_DT include_VBP two_CD kinds_NNS ._.
+One_CD is_VBZ that_IN the_DT stemmed_VBN word_NN variant_NN now_RB matches_VBZ part_NN of_IN an_DT entity_NN or_CC concept_NN ._.
+For_IN example_NN ,_, query_NN cookies_NNS in_IN san_NN francisco_NN is_VBZ pluralized_VBN to_TO cookies_NNS OR_NN cookie_NN in_IN san_NN francisco_NN ._.
+The_DT results_NNS will_MD match_VB cookie_NN jar_NN in_IN san_NN francisco_NN ._.
+Although_IN cookie_NN still_RB means_VBZ the_DT same_JJ thing_NN as_IN cookies_NNS ,_, cookie_NN jar_NN is_VBZ a_DT different_JJ concept_NN ._.
+Another_DT kind_NN is_VBZ the_DT unstemmed_JJ word_NN matches_VBZ an_DT entity_NN or_CC concept_NN because_IN of_IN the_DT stemming_VBG of_IN the_DT other_JJ words_NNS ._.
+For_IN example_NN ,_, quote_NN ICE_NN is_VBZ pluralized_VBN to_TO quote_VB OR_NN quotes_NNS ICE_NN ._.
+The_DT original_JJ intent_NN for_IN this_DT query_NN is_VBZ searching_VBG for_IN stock_NN quote_NN for_IN ticker_NN ICE_NN ._.
+However_RB ,_, we_PRP noticed_VBD that_IN among_IN the_DT top_JJ results_NNS ,_, one_CD of_IN the_DT results_NNS is_VBZ Food_NNP quotes_NNS :_: Ice_NN cream_NN ._.
+This_DT is_VBZ matched_VBN because_IN of_IN Affected_NNP Queries_NNPS old_JJ dcg_NN new_JJ dcg_NN dcg_NN Improvement_NN naive_JJ model_NN ###_CD /_: ###_CD #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+#_# %_NN document_NN context_NN sensitive_JJ model_NN ###_CD /_: ###_CD #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+#_# %_NN selective_JJ model_NN :_: unigram_JJ LM_NNP ###_CD /_: ###_CD #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+#_# %_NN selective_JJ model_NN :_: bigram_NN LM_NNP ###_CD /_: ###_CD #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+#_# %_NN Table_NNP #_# :_: Results_NNS comparison_NN over_IN the_DT stemmed_VBN queries_NNS only_RB :_: column_NN old_JJ /_: new_JJ dcg_NN is_VBZ the_DT dcg_NN score_NN over_IN the_DT affected_VBN queries_NNS before_IN /_: after_IN applying_VBG stemming_VBG the_DT pluralized_VBN word_NN quotes_NNS ._.
+The_DT unchanged_JJ word_NN ICE_NN matches_VBZ part_NN of_IN the_DT noun_NN phrase_NN ice_NN cream_NN here_RB ._.
+To_TO solve_VB this_DT kind_NN of_IN problem_NN ,_, we_PRP have_VBP to_TO analyze_VB the_DT documents_NNS and_CC recognize_VBP cookie_NN jar_NN and_CC ice_NN cream_NN as_IN concepts_NNS instead_RB of_IN two_CD independent_JJ words_NNS ._.
+A_DT third_JJ type_NN of_IN mistakes_NNS occurs_VBZ in_IN long_JJ queries_NNS ._.
+For_IN the_DT query_NN bar_NN code_NN reader_NN software_NN ,_, two_CD words_NNS are_VBP pluralized_VBN ._.
+code_NN to_TO codes_NNS and_CC reader_NN to_TO readers_NNS ._.
+In_IN fact_NN ,_, bar_NN code_NN reader_NN in_IN the_DT original_JJ query_NN is_VBZ a_DT strong_JJ concept_NN and_CC the_DT internal_JJ words_NNS should_MD not_RB be_VB changed_VBN ._.
+This_DT is_VBZ the_DT segmentation_NN and_CC entity_NN and_CC noun_NN phrase_NN detection_NN problem_NN in_IN queries_NNS ,_, which_WDT we_PRP actively_RB are_VBP attacking_VBG ._.
+For_IN long_JJ queries_NNS ,_, we_PRP should_MD correctly_RB identify_VB the_DT concepts_NNS in_IN the_DT query_NN ,_, and_CC boost_VB the_DT proximity_NN for_IN the_DT words_NNS within_IN a_DT concept_NN ._.
+6_CD ._.
+CONCLUSIONS_NNS AND_CC FUTURE_NNS WORK_VBP We_PRP have_VBP presented_VBN a_DT simple_JJ yet_RB elegant_JJ way_NN of_IN stemming_VBG for_IN Web_NN search_NN ._.
+It_PRP improves_VBZ naive_JJ stemming_VBG in_IN two_CD aspects_NNS :_: selective_JJ word_NN expansion_NN on_IN the_DT query_JJ side_NN and_CC conservative_JJ word_NN occurrence_NN matching_VBG on_IN the_DT document_NN side_NN ._.
+Using_VBG pluralization_NN handling_NN as_IN an_DT example_NN ,_, experiments_NNS on_IN a_DT major_JJ Web_NN search_NN engine_NN data_NNS show_VBP it_PRP significantly_RB improves_VBZ the_DT Web_NN relevance_NN and_CC reduces_VBZ the_DT stemming_VBG cost_NN ._.
+It_PRP also_RB significantly_RB improves_VBZ Web_NN click_VB through_IN rate_NN -LRB-_-LRB- details_NNS not_RB reported_VBN in_IN the_DT paper_NN -RRB-_-RRB- ._.
+For_IN the_DT future_JJ work_NN ,_, we_PRP are_VBP investigating_VBG the_DT problems_NNS we_PRP identified_VBD in_IN the_DT error_NN analysis_NN section_NN ._.
+These_DT include_VBP :_: entity_NN and_CC noun_NN phrase_NN matching_VBG mistakes_NNS ,_, and_CC improved_VBD segmentation_NN ._.
+7_CD ._.
+REFERENCES_NNS -LSB-_-LRB- #_# -RSB-_-RRB- E_NN ._.
+Agichtein_NNP ,_, E_NNP ._.
+Brill_NNP ,_, and_CC S_NN ._.
+T_NN ._.
+Dumais_NNP ._.
+Improving_NN Web_NN Search_VB Ranking_NN by_IN Incorporating_VBG User_NN Behavior_NNP Information_NNP ._.
+In_IN SIGIR_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- E_NN ._.
+Airio_NNP ._.
+Word_NN Normalization_NN and_CC Decompounding_NN in_IN Mono_NN -_: and_CC Bilingual_NNP IR_NNP ._.
+Information_NNP Retrieval_NNP ,_, 9_CD :_: 249-271_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- P_NN ._.
+Anick_NNP ._.
+Using_VBG Terminological_JJ Feedback_NN for_IN Web_NN Search_VB Refinement_NN :_: a_DT Log-based_JJ Study_NN ._.
+In_IN SIGIR_NN ,_, 2003_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- R_NN ._.
+Baeza-Yates_NNS and_CC B_NN ._.
+Ribeiro-Neto_NNP ._.
+Modern_NNP Information_NNP Retrieval_NNP ._.
+ACM_NNP Press_NNP /_: Addison_NNP Wesley_NNP ,_, 1999_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- S_NN ._.
+Chen_NNP and_CC J_NNP ._.
+Goodman_NNP ._.
+An_DT Empirical_JJ Study_NN of_IN Smoothing_NNP Techniques_NNPS for_IN Language_NNP Modeling_NNP ._.
+Technical_NNP Report_NNP TR-10-98_NN ,_, Harvard_NNP University_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- S_NN ._.
+Cronen-Townsend_NNP ,_, Y_NN ._.
+Zhou_NNP ,_, and_CC B_NN ._.
+Croft_NNP ._.
+A_DT Framework_NN for_IN Selective_JJ Query_NNP Expansion_NN ._.
+In_IN CIKM_NNP ,_, 2004_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- H_NN ._.
+Fang_NNP and_CC C_NNP ._.
+Zhai_NNP ._.
+Semantic_NNP Term_NNP Matching_NNP in_IN Axiomatic_NNP Approaches_NNPS to_TO Information_NNP Retrieval_NNP ._.
+In_IN SIGIR_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- W_NN ._.
+B_NN ._.
+Frakes_NNP ._.
+Term_NN Conflation_NNP for_IN Information_NNP Retrieval_NNP ._.
+In_IN C_NN ._.
+J_NN ._.
+Rijsbergen_NNP ,_, editor_NN ,_, Research_NNP and_CC Development_NNP in_IN Information_NNP Retrieval_NNP ,_, pages_NNS 383-389_CD ._.
+Cambridge_NNP University_NNP Press_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- D_NN ._.
+Harman_NNP ._.
+How_WRB Effective_JJ is_VBZ Suffixing_NNP ?_.
+JASIS_NNP ,_, 42_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 7-15_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- D_NN ._.
+Hull_NNP ._.
+Stemming_VBG Algorithms_NNS -_: A_NN Case_NN Study_NN for_IN Detailed_JJ Evaluation_NN ._.
+JASIS_NNP ,_, ##_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 70-84_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- K_NN ._.
+Jarvelin_NNP and_CC J_NNP ._.
+Kekalainen_NNP ._.
+Cumulated_JJ Gain-Based_JJ Evaluation_NN Evaluation_NN of_IN IR_NNP Techniques_NNPS ._.
+ACM_NNP TOIS_NNP ,_, 20_CD :_: 422-446_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- R_NN ._.
+Jones_NNP ,_, B_NN ._.
+Rey_NNP ,_, O_NNP ._.
+Madani_NNP ,_, and_CC W_NN ._.
+Greiner_NNP ._.
+Generating_NNP Query_NNP Substitutions_NNPS ._.
+In_IN WWW_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- W_NN ._.
+Kraaij_NNP and_CC R_NN ._.
+Pohlmann_NNP ._.
+Viewing_VBG Stemming_VBG as_IN Recall_VB Enhancement_NN ._.
+In_IN SIGIR_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- R_NN ._.
+Krovetz_NNP ._.
+Viewing_VBG Morphology_NN as_IN an_DT Inference_NNP Process_VB ._.
+In_IN SIGIR_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- D_NN ._.
+Lin_NNP ._.
+Automatic_NNP Retrieval_NNP and_CC Clustering_NNP of_IN Similar_JJ Words_NNS ._.
+In_IN COLING-ACL_NN ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+B_NN ._.
+Lovins_NNP ._.
+Development_NN of_IN a_DT Stemming_VBG Algorithm_NN ._.
+Mechanical_JJ Translation_NN and_CC Computational_JJ Linguistics_NNS ,_, II_CD :_: 22-31_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- M_NN ._.
+Lennon_NNP and_CC D_NNP ._.
+Peirce_NNP and_CC B_NNP ._.
+Tarry_NNP and_CC P_NN ._.
+Willett_NNP ._.
+An_DT Evaluation_NN of_IN Some_DT Conflation_NNP Algorithms_NNP for_IN Information_NNP Retrieval_NNP ._.
+Journal_NNP of_IN Information_NNP Science_NNP ,_, 3_CD :_: 177-188_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- M_NN ._.
+Porter_NNP ._.
+An_DT Algorithm_NN for_IN Suffix_NNP Stripping_NNP ._.
+Program_NN ,_, ##_NN -LRB-_-LRB- #_# -RRB-_-RRB- :_: 130-137_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- K_NN ._.
+M_NN ._.
+Risvik_NNP ,_, T_NN ._.
+Mikolajewski_NNP ,_, and_CC P_NN ._.
+Boros_NNP ._.
+Query_NNP Segmentation_NNP for_IN Web_NN Search_VB ._.
+In_IN WWW_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- S_NN ._.
+E_NN ._.
+Robertson_NNP ._.
+On_IN Term_NN Selection_NN for_IN Query_NNP Expansion_NN ._.
+Journal_NNP of_IN Documentation_NNP ,_, ##_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 359-364_CD ,_, 1990_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- G_NN ._.
+Salton_NNP and_CC C_NNP ._.
+Buckley_NNP ._.
+Improving_NN Retrieval_NNP Performance_NNP by_IN Relevance_NNP Feedback_NNP ._.
+JASIS_NNP ,_, ##_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: ###_SYM -_: ###_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- R_NN ._.
+Sun_NNP ,_, C_NNP ._.
+-_: H_NN ._.
+Ong_NNP ,_, and_CC T_NN ._.
+-_: S_NN ._.
+Chua_NNP ._.
+Mining_NN Dependency_NNP Relations_NNP for_IN Query_NNP Expansion_NN in_IN Passage_NNP Retrieval_NNP ._.
+In_IN SIGIR_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- C_NN ._.
+Van_NNP Rijsbergen_NNP ._.
+Information_NNP Retrieval_NNP ._.
+Butterworths_NNS ,_, second_JJ version_NN ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- B_NN ._.
+Velez_NNP ,_, R_NN ._.
+Weiss_NNP ,_, M_NN ._.
+A_DT ._.
+Sheldon_NNP ,_, and_CC D_NN ._.
+K_NN ._.
+Gifford_NNP ._.
+Fast_JJ and_CC Effective_JJ Query_NNP Refinement_NNP ._.
+In_IN SIGIR_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+Xu_NN and_CC B_NN ._.
+Croft_NNP ._.
+Query_NNP Expansion_NN using_VBG Local_JJ and_CC Global_JJ Document_NNP Analysis_NN ._.
+In_IN SIGIR_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+Xu_NN and_CC B_NN ._.
+Croft_NNP ._.
+Corpus-based_JJ Stemming_VBG using_VBG Cooccurrence_NN of_IN Word_NN Variants_NNS ._.
+ACM_NNP TOIS_NNP ,_, ##_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 61-81_CD ,_, ####_CD ._.

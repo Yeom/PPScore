@@ -1,0 +1,746 @@
+Clearing_NNP Algorithms_NNPS for_IN Barter_NNP Exchange_NNP Markets_NNPS :_: Enabling_VBG Nationwide_NNP Kidney_NNP Exchanges_NNPS David_NNP J_NNP ._.
+Abraham_NNP Computer_NNP Science_NNP Department_NNP Carnegie_NNP Mellon_NNP University_NNP dabraham_NN @_IN cs_NNS ._.
+cmu_NN ._.
+edu_NN Avrim_NNP Blum_NNP Computer_NNP Science_NNP Department_NNP Carnegie_NNP Mellon_NNP University_NNP avrim_NN @_IN cs_NNS ._.
+cmu_NN ._.
+edu_NN Tuomas_NNP Sandholm_NNP Computer_NNP Science_NNP Department_NNP Carnegie_NNP Mellon_NNP University_NNP sandholm_NN @_IN cs_NNS ._.
+cmu_NN ._.
+edu_NN ABSTRACT_NN In_IN barter-exchange_JJ markets_NNS ,_, agents_NNS seek_VBP to_TO swap_VB their_PRP$ items_NNS with_IN one_CD another_DT ,_, in_IN order_NN to_TO improve_VB their_PRP$ own_JJ utilities_NNS ._.
+These_DT swaps_NNS consist_VBP of_IN cycles_NNS of_IN agents_NNS ,_, with_IN each_DT agent_NN receiving_VBG the_DT item_NN of_IN the_DT next_JJ agent_NN in_IN the_DT cycle_NN ._.
+We_PRP focus_VBP mainly_RB on_IN the_DT upcoming_JJ national_JJ kidney-exchange_NN market_NN ,_, where_WRB patients_NNS with_IN kidney_NN disease_NN can_MD obtain_VB compatible_JJ donors_NNS by_IN swapping_VBG their_PRP$ own_JJ willing_JJ but_CC incompatible_JJ donors_NNS ._.
+With_IN over_IN ##_CD ,_, ###_CD patients_NNS already_RB waiting_VBG for_IN a_DT cadaver_NN kidney_NN in_IN the_DT US_NNP ,_, this_DT market_NN is_VBZ seen_VBN as_IN the_DT only_JJ ethical_JJ way_NN to_TO significantly_RB reduce_VB the_DT #_# ,_, ###_CD deaths_NNS per_IN year_NN attributed_VBD to_TO kidney_NN disease_NN ._.
+The_DT clearing_NN problem_NN involves_VBZ finding_VBG a_DT social_JJ welfare_NN maximizing_VBG exchange_NN when_WRB the_DT maximum_NN length_NN of_IN a_DT cycle_NN is_VBZ fixed_VBN ._.
+Long_JJ cycles_NNS are_VBP forbidden_VBN ,_, since_IN ,_, for_IN incentive_NN reasons_NNS ,_, all_DT transplants_NNS in_IN a_DT cycle_NN must_MD be_VB performed_VBN simultaneously_RB ._.
+Also_RB ,_, in_IN barter-exchanges_NNS generally_RB ,_, more_JJR agents_NNS are_VBP affected_VBN if_IN one_CD drops_VBZ out_IN of_IN a_DT longer_RBR cycle_NN ._.
+We_PRP prove_VBP that_IN the_DT clearing_NN problem_NN with_IN this_DT cycle-length_NN constraint_NN is_VBZ NP-hard_NN ._.
+Solving_VBG it_PRP exactly_RB is_VBZ one_CD of_IN the_DT main_JJ challenges_NNS in_IN establishing_VBG a_DT national_JJ kidney_NN exchange_NN ._.
+We_PRP present_VBP the_DT first_JJ algorithm_NN capable_JJ of_IN clearing_VBG these_DT markets_NNS on_IN a_DT nationwide_JJ scale_NN ._.
+The_DT key_NN is_VBZ incremental_JJ problem_NN formulation_NN ._.
+We_PRP adapt_VBP two_CD paradigms_NNS for_IN the_DT task_NN :_: constraint_NN generation_NN and_CC column_NN generation_NN ._.
+For_IN each_DT ,_, we_PRP develop_VBP techniques_NNS that_WDT dramatically_RB improve_VBP both_CC runtime_VBP and_CC memory_NN usage_NN ._.
+We_PRP conclude_VBP that_IN column_NN generation_NN scales_NNS drastically_RB better_RB than_IN constraint_NN generation_NN ._.
+Our_PRP$ algorithm_NN also_RB supports_VBZ several_JJ generalizations_NNS ,_, as_IN demanded_VBN by_IN real-world_JJ kidney_NN exchanges_NNS ._.
+Our_PRP$ algorithm_NN replaced_VBD CPLEX_NNP as_IN the_DT clearing_NN algorithm_NN of_IN the_DT Alliance_NNP for_IN Paired_NNP Donation_NNP ,_, one_CD of_IN the_DT leading_VBG kidney_NN exchanges_NNS ._.
+The_DT match_NN runs_NNS are_VBP conducted_VBN every_DT two_CD weeks_NNS and_CC transplants_NNS based_VBN on_IN our_PRP$ optimizations_NNS have_VBP already_RB been_VBN conducted_VBN ._.
+Categories_NNS and_CC Subject_NNP Descriptors_NNPS J_NNP ._.
+#_# -LSB-_-LRB- Computer_NNP Applications_NNS -RSB-_-RRB- :_: Social_NNP and_CC Behavioral_NNP Sciences-Economics_NNP ;_: F_NN ._.
+#_# -LSB-_-LRB- Analysis_NN of_IN Algorithms_NNS and_CC Problem_NNP Complexity_NNP -RSB-_-RRB- :_: -LSB-_-LRB- General_NNP -RSB-_-RRB- General_NNP Terms_NNS Algorithms_NNS ,_, Economics_NNP 1_CD ._.
+INTRODUCTION_NN The_DT role_NN of_IN kidneys_NNS is_VBZ to_TO filter_NN waste_NN from_IN blood_NN ._.
+Kidney_NN failure_NN results_VBZ in_IN accumulation_NN of_IN this_DT waste_NN ,_, which_WDT leads_VBZ to_TO death_NN in_IN months_NNS ._.
+One_CD treatment_NN option_NN is_VBZ dialysis_NN ,_, in_IN which_WDT the_DT patient_NN goes_VBZ to_TO a_DT hospital_NN to_TO have_VB his_PRP$ /_: her_PRP$ blood_NN filtered_VBN by_IN an_DT external_JJ machine_NN ._.
+Several_JJ visits_NNS are_VBP required_VBN per_IN week_NN ,_, and_CC each_DT takes_VBZ several_JJ hours_NNS ._.
+The_DT quality_NN of_IN life_NN on_IN dialysis_NN can_MD be_VB extremely_RB low_JJ ,_, and_CC in_IN fact_NN many_JJ patients_NNS opt_VBP to_TO withdraw_VB from_IN dialysis_NN ,_, leading_VBG to_TO a_DT natural_JJ death_NN ._.
+Only_RB ##_CD %_NN of_IN dialysis_NN patients_NNS survive_VBP ##_CD years_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Instead_RB ,_, the_DT preferred_JJ treatment_NN is_VBZ a_DT kidney_NN transplant_NN ._.
+Kidney_NN transplants_NNS are_VBP by_IN far_RB the_DT most_RBS common_JJ transplant_NN ._.
+Unfortunately_RB ,_, the_DT demand_NN for_IN kidneys_NNS far_RB outstrips_VBZ supply_NN ._.
+In_IN the_DT United_NNP States_NNPS in_IN ####_CD ,_, #_# ,_, ###_CD people_NNS died_VBD waiting_VBG for_IN a_DT life-saving_JJ kidney_NN transplant_NN ._.
+During_IN this_DT time_NN ,_, almost_RB 30_CD ,_, ###_CD people_NNS were_VBD added_VBN to_TO the_DT national_JJ waiting_VBG list_NN ,_, while_IN only_RB #_# ,_, ###_CD people_NNS left_VBD the_DT list_NN after_IN receiving_VBG a_DT deceaseddonor_NN kidney_NN ._.
+The_DT waiting_VBG list_NN currently_RB has_VBZ over_IN ##_CD ,_, ###_CD people_NNS ,_, and_CC the_DT median_JJ waiting_VBG time_NN ranges_NNS from_IN #_# to_TO #_# years_NNS ,_, depending_VBG on_IN blood_NN type_NN ._.
+#_# For_IN many_JJ patients_NNS with_IN kidney_NN disease_NN ,_, the_DT best_JJS option_NN is_VBZ to_TO find_VB a_DT living_NN donor_NN ,_, that_WDT is_VBZ ,_, a_DT healthy_JJ person_NN willing_JJ to_TO donate_VB one_CD of_IN his_PRP$ /_: her_PRP$ two_CD kidneys_NNS ._.
+Although_IN there_EX are_VBP marketplaces_NNS for_IN buying_VBG and_CC selling_VBG living-donor_JJ kidneys_NNS ,_, the_DT commercialization_NN of_IN human_JJ organs_NNS is_VBZ almost_RB universally_RB regarded_VBN as_IN unethical_JJ ,_, and_CC the_DT practice_NN is_VBZ often_RB explicitly_RB illegal_JJ ,_, such_JJ as_IN in_IN the_DT US_NNP ._.
+However_RB ,_, in_IN most_JJS countries_NNS ,_, live_VBP donation_NN is_VBZ legal_JJ ,_, provided_VBD it_PRP occurs_VBZ as_IN a_DT gift_NN with_IN no_DT financial_JJ compensation_NN ._.
+In_IN ####_CD ,_, there_EX were_VBD #_# ,_, ###_CD live_JJ donations_NNS in_IN the_DT US_NNP ._.
+The_DT number_NN of_IN live_JJ donations_NNS would_MD have_VB been_VBN much_RB higher_JJR if_IN it_PRP were_VBD not_RB for_IN the_DT fact_NN that_IN ,_, frequently_RB ,_, a_DT potential_JJ donor_NN 1_CD Data_NN from_IN the_DT United_NNP Network_NNP for_IN Organ_NNP Sharing_VBG -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+295_CD and_CC his_PRP$ intended_JJ recipient_JJ are_VBP blood-type_JJ or_CC tissue-type_NN incompatible_JJ ._.
+In_IN the_DT past_NN ,_, the_DT incompatible_JJ donor_NN was_VBD sent_VBN home_NN ,_, leaving_VBG the_DT patient_NN to_TO wait_VB for_IN a_DT deceased-donor_JJ kidney_NN ._.
+However_RB ,_, there_EX are_VBP now_RB a_DT few_JJ regional_JJ kidney_NN exchanges_NNS in_IN the_DT United_NNP States_NNPS ,_, in_IN which_WDT patients_NNS can_MD swap_VB their_PRP$ incompatible_JJ donors_NNS with_IN each_DT other_JJ ,_, in_IN order_NN to_TO each_DT obtain_VB a_DT compatible_JJ donor_NN ._.
+These_DT markets_NNS are_VBP examples_NNS of_IN barter_JJ exchanges_NNS ._.
+In_IN a_DT barter-exchange_JJ market_NN ,_, agents_NNS -LRB-_-LRB- patients_NNS -RRB-_-RRB- seek_VBP to_TO swap_VB their_PRP$ items_NNS -LRB-_-LRB- incompatible_JJ donors_NNS -RRB-_-RRB- with_IN each_DT other_JJ ._.
+These_DT swaps_NNS consist_VBP of_IN cycles_NNS of_IN agents_NNS ,_, with_IN each_DT agent_NN receiving_VBG the_DT item_NN of_IN the_DT next_JJ agent_NN in_IN the_DT cycle_NN ._.
+Barter_NNP exchanges_NNS are_VBP ubiquitous_JJ :_: examples_NNS include_VBP Peerflix_NNP -LRB-_-LRB- DVDs_NNS -RRB-_-RRB- -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, Read_VB It_PRP Swap_VB It_PRP -LRB-_-LRB- books_NNS -RRB-_-RRB- -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, and_CC Intervac_NNP -LRB-_-LRB- holiday_NN houses_NNS -RRB-_-RRB- -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+For_IN many_JJ years_NNS ,_, there_EX has_VBZ even_RB been_VBN a_DT large_JJ shoe_NN exchange_NN in_IN the_DT United_NNP States_NNPS -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+People_NNS with_IN different-sized_JJ feet_NNS use_VBP this_DT to_TO avoid_VB having_VBG to_TO buy_VB two_CD pairs_NNS of_IN shoes_NNS ._.
+Leg_NN amputees_NNS have_VBP a_DT separate_JJ exchange_NN to_TO share_VB the_DT cost_NN of_IN buying_VBG a_DT single_JJ pair_NN of_IN shoes_NNS ._.
+We_PRP can_MD encode_VB a_DT barter_JJ exchange_NN market_NN as_IN a_DT directed_VBN graph_NN G_NN =_JJ -LRB-_-LRB- V_NN ,_, E_NN -RRB-_-RRB- in_IN the_DT following_JJ way_NN ._.
+Construct_VB one_CD vertex_NN for_IN each_DT agent_NN ._.
+Add_VB a_DT weighted_JJ edge_NN e_SYM from_IN one_CD agent_NN vi_LS to_TO another_DT vj_NN ,_, if_IN vi_LS wants_VBZ the_DT item_NN of_IN vj_NN ._.
+The_DT weight_NN we_PRP of_IN e_SYM represents_VBZ the_DT utility_NN to_TO vi_LS of_IN obtaining_VBG vj_NN ''_'' s_NNS item_NN ._.
+A_DT cycle_NN c_NN in_IN this_DT graph_NN represents_VBZ a_DT possible_JJ swap_NN ,_, with_IN each_DT agent_NN in_IN the_DT cycle_NN obtaining_VBG the_DT item_NN of_IN the_DT next_JJ agent_NN ._.
+The_DT weight_NN wc_NN of_IN a_DT cycle_NN c_NN is_VBZ the_DT sum_NN of_IN its_PRP$ edge_NN weights_NNS ._.
+An_DT exchange_NN is_VBZ a_DT collection_NN of_IN disjoint_NN cycles_NNS ._.
+The_DT weight_NN of_IN an_DT exchange_NN is_VBZ the_DT sum_NN of_IN its_PRP$ cycle_NN weights_NNS ._.
+A_DT social_JJ welfare_NN maximizing_VBG exchange_NN is_VBZ one_CD with_IN maximum_JJ weight_NN ._.
+Figure_NNP #_# illustrates_VBZ an_DT example_NN market_NN with_IN #_# agents_NNS ,_, -LCB-_-LRB- v1_NN ,_, v2_NN ,_, ..._: ,_, v5_NN -RCB-_-RRB- ,_, in_IN which_WDT all_DT edges_NNS have_VBP weight_NN #_# ._.
+The_DT market_NN has_VBZ #_# cycles_NNS ,_, c1_NN =_JJ v1_NN ,_, v2_NN ,_, c2_NN =_JJ v2_NN ,_, v3_NN ,_, c3_NN =_JJ v3_NN ,_, v4_NN and_CC c4_NN =_JJ v1_NN ,_, v2_NN ,_, v3_NN ,_, v4_NN ,_, v5_NN ,_, and_CC two_CD -LRB-_-LRB- inclusion_NN -RRB-_-RRB- maximal_JJ exchanges_NNS ,_, namely_RB M1_NN =_JJ -LCB-_-LRB- c4_NN -RCB-_-RRB- and_CC M2_NN =_JJ -LCB-_-LRB- c1_NN ,_, c3_NN -RCB-_-RRB- ._.
+Exchange_NNP M1_NN has_VBZ both_DT maximum_JJ weight_NN and_CC maximum_NN cardinality_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, it_PRP includes_VBZ the_DT most_JJS edges_NNS /_: vertices_NNS -RRB-_-RRB- ._.
+v1_NN v2_NN v3_NN v4_NN v5_NN e1_NN e3_NN e5_NN c1_NN c2_NN c3_NN e8_NN e7_NN e6e4e2_NN c4_NN Figure_NN #_# :_: Example_NN barter_NN exchange_NN market_NN ._.
+The_DT clearing_NN problem_NN is_VBZ to_TO find_VB a_DT maximum-weight_JJ exchange_NN consisting_VBG of_IN cycles_NNS with_IN length_NN at_IN most_JJS some_DT small_JJ constant_JJ L_NN ._.
+This_DT cycle-length_JJ constraint_NN arises_VBZ naturally_RB for_IN several_JJ reasons_NNS ._.
+For_IN example_NN ,_, in_IN a_DT kidney_NN exchange_NN ,_, all_DT operations_NNS in_IN a_DT cycle_NN have_VBP to_TO be_VB performed_VBN simultaneously_RB ;_: otherwise_RB a_DT donor_NN might_MD back_VB out_RP after_IN his_PRP$ incompatible_JJ partner_NN has_VBZ received_VBN a_DT kidney_NN ._.
+-LRB-_-LRB- One_CD can_MD not_RB write_VB a_DT binding_NN contract_NN to_TO donate_VB an_DT organ_NN ._. -RRB-_-RRB-
+This_DT gives_VBZ rise_NN to_TO a_DT logistical_JJ constraint_NN on_IN cycle_NN size_NN :_: even_RB if_IN all_PDT the_DT donors_NNS are_VBP operated_VBN on_IN first_JJ and_CC the_DT same_JJ personnel_NNS and_CC facilities_NNS are_VBP used_VBN to_TO then_RB operate_VB on_IN the_DT donees_NNS ,_, a_DT k-cycle_NN requires_VBZ between_IN 3k_NN and_CC 6k_JJ doctors_NNS ,_, around_IN 4k_NN nurses_NNS ,_, and_CC almost_RB 2k_JJ operating_NN rooms_NNS ._.
+Due_JJ to_TO such_JJ resource_NN constraints_NNS ,_, the_DT upcoming_JJ national_JJ kidney_NN exchange_NN market_NN will_MD likely_RB allow_VB only_RB cycles_NNS of_IN length_NN 2_CD and_CC #_# ._.
+Another_DT motivation_NN for_IN short_JJ cycles_NNS is_VBZ that_IN if_IN the_DT cycle_NN fails_VBZ to_TO exchange_NN ,_, fewer_JJR agents_NNS are_VBP affected_VBN ._.
+For_IN example_NN ,_, last-minute_JJ testing_NN in_IN a_DT kidney_NN exchange_NN often_RB reveals_VBZ new_JJ incompatibilities_NNS that_WDT were_VBD not_RB detected_VBN in_IN the_DT initial_JJ testing_NN -LRB-_-LRB- based_VBN on_IN which_WDT the_DT compatibility_NN graph_NN was_VBD constructed_VBN -RRB-_-RRB- ._.
+More_RBR generally_RB ,_, an_DT agent_NN may_MD drop_VB out_IN of_IN a_DT cycle_NN if_IN his_PRP$ preferences_NNS have_VBP changed_VBN ,_, or_CC he_PRP /_: she_PRP simply_RB fails_VBZ to_TO fulfill_VB his_PRP$ obligations_NNS -LRB-_-LRB- such_JJ as_IN sending_VBG a_DT book_NN to_TO another_DT agent_NN in_IN the_DT cycle_NN -RRB-_-RRB- due_JJ to_TO forgetfulness_NN ._.
+In_IN Section_NN #_# ,_, we_PRP show_VBP that_IN -LRB-_-LRB- the_DT decision_NN version_NN of_IN -RRB-_-RRB- the_DT clearing_NN problem_NN is_VBZ NP-complete_JJ for_IN L_NN #_# ._.
+One_CD approach_NN then_RB might_MD be_VB to_TO look_VB for_IN a_DT good_JJ heuristic_NN or_CC approximation_NN algorithm_NN ._.
+However_RB ,_, for_IN two_CD reasons_NNS ,_, we_PRP aim_VBP for_IN an_DT exact_JJ algorithm_NN based_VBN on_IN an_DT integer-linear_JJ program_NN -LRB-_-LRB- ILP_NN -RRB-_-RRB- formulation_NN ,_, which_WDT we_PRP solve_VBP using_VBG specialized_VBN tree_NN search_NN ._.
+First_RB ,_, any_DT loss_NN of_IN optimality_NN could_MD lead_VB to_TO unnecessary_JJ patient_NN deaths_NNS ._.
+Second_RB ,_, an_DT attractive_JJ feature_NN of_IN using_VBG an_DT ILP_NN formulation_NN is_VBZ that_IN it_PRP allows_VBZ one_CD to_TO easily_RB model_VB a_DT number_NN of_IN variations_NNS on_IN the_DT objective_NN ,_, and_CC to_TO add_VB additional_JJ constraints_NNS to_TO the_DT problem_NN ._.
+For_IN example_NN ,_, if_IN 3-cycles_NNS are_VBP believed_VBN to_TO be_VB more_RBR likely_JJ to_TO fail_VB than_IN 2-cycles_JJ ,_, then_RB one_PRP can_MD simply_RB give_VB them_PRP a_DT weight_NN that_WDT is_VBZ appropriately_RB lower_JJR than_IN #_# /_: #_# the_DT weight_NN of_IN a_DT 2-cycle_NN ._.
+Or_CC ,_, if_IN for_IN various_JJ -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, ethical_JJ -RRB-_-RRB- reasons_NNS one_CD requires_VBZ a_DT maximum_NN cardinality_NN exchange_NN ,_, one_PRP can_MD at_IN least_JJS in_IN a_DT second_JJ pass_NN find_VB the_DT solution_NN -LRB-_-LRB- out_IN of_IN all_DT maximum_NN cardinality_NN solutions_NNS -RRB-_-RRB- that_WDT has_VBZ the_DT fewest_JJS 3-cycles_NNS ._.
+Other_JJ variations_NNS one_CD can_MD solve_VB for_IN include_VBP finding_VBG various_JJ forms_NNS of_IN fault_NN tolerant_JJ -LRB-_-LRB- non-disjoint_JJ -RRB-_-RRB- collections_NNS of_IN cycles_NNS in_IN the_DT event_NN that_WDT certain_JJ pairs_NNS that_WDT were_VBD thought_VBN to_TO be_VB compatible_JJ turn_NN out_RP to_TO be_VB incompatible_JJ after_IN all_DT ._.
+In_IN this_DT paper_NN ,_, we_PRP present_VBP the_DT first_JJ algorithm_NN capable_JJ of_IN clearing_VBG these_DT markets_NNS on_IN a_DT nationwide_JJ scale_NN ._.
+Straight-forward_JJ ILP_NN encodings_NNS are_VBP too_RB large_JJ to_TO even_RB construct_VB on_IN current_JJ hardware_NN -_: not_RB to_TO talk_VB about_IN solving_VBG them_PRP ._.
+The_DT key_JJ then_RB is_VBZ incremental_JJ problem_NN formulation_NN ._.
+We_PRP adapt_VBP two_CD paradigms_NNS for_IN the_DT task_NN :_: constraint_NN generation_NN and_CC column_NN generation_NN ._.
+For_IN each_DT ,_, we_PRP develop_VBP a_DT host_NN of_IN -LRB-_-LRB- mainly_RB problemspecific_JJ -RRB-_-RRB- techniques_NNS that_WDT dramatically_RB improve_VBP both_CC runtime_VBP and_CC memory_NN usage_NN ._.
+1_LS ._.
+#_# Prior_RB Work_NN Several_JJ recent_JJ papers_NNS have_VBP used_VBN simulations_NNS and_CC marketclearing_VBG algorithms_NNS to_TO explore_VB the_DT impact_NN of_IN a_DT national_JJ kidney_NN exchange_NN -LSB-_-LRB- ##_CD ,_, ##_CD ,_, #_# ,_, ##_NN ,_, ##_NN ,_, ##_NN -RSB-_-RRB- ._.
+For_IN example_NN ,_, using_VBG Edmond_NNP ''_'' s_VBZ maximum-matching_JJ algorithm_NN -LSB-_-LRB- #_# -RSB-_-RRB- ,_, -LSB-_-LRB- ##_CD -RSB-_-RRB- shows_VBZ that_IN a_DT national_JJ pairwise-exchange_NN market_NN -LRB-_-LRB- using_VBG length-2_NN cycles_NNS only_RB -RRB-_-RRB- would_MD result_VB in_IN more_JJR transplants_NNS ,_, reduced_VBD waiting_VBG time_NN ,_, and_CC savings_NNS of_IN $_$ ###_CD million_CD in_IN heath_NN care_NN costs_NNS over_IN #_# years_NNS ._.
+Those_DT results_NNS are_VBP conservative_JJ in_IN two_CD ways_NNS ._.
+Firstly_RB ,_, the_DT simulated_JJ market_NN contained_VBD only_RB #_# ,_, ###_CD initial_JJ patients_NNS ,_, with_IN ###_CD patients_NNS added_VBD every_DT #_# months_NNS ._.
+It_PRP has_VBZ been_VBN reported_VBN to_TO us_PRP that_IN the_DT market_NN could_MD be_VB almost_RB double_RB this_DT size_NN ._.
+Secondly_RB ,_, the_DT exchanges_NNS were_VBD restricted_JJ to_TO length-2_NN cycles_NNS -LRB-_-LRB- because_IN that_DT is_VBZ all_DT that_IN can_MD be_VB modeled_VBN as_IN maximum_JJ matching_NN ,_, and_CC solved_VBD using_VBG Edmonds_NNP ''_'' s_VBZ algorithm_NN -RRB-_-RRB- ._.
+Allowing_VBG length-3_NN cycles_NNS leads_VBZ to_TO additional_JJ significant_JJ gains_NNS ._.
+This_DT has_VBZ been_VBN demonstrated_VBN on_IN kidney_NN exchange_NN markets_NNS with_IN 100_CD patients_NNS by_IN using_VBG CPLEX_NNP to_TO solve_VB an_DT integer-program_JJ encoding_NN of_IN the_DT clearing_NN problem_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+In_IN this_DT paper_NN ,_, we_PRP 296_CD present_JJ an_DT alternative_JJ algorithm_NN for_IN this_DT integer_NN program_NN that_WDT can_MD clear_VB markets_NNS with_IN over_IN ##_CD ,_, ###_CD patients_NNS -LRB-_-LRB- and_CC that_IN same_JJ number_NN of_IN willing_JJ donors_NNS -RRB-_-RRB- ._.
+Allowing_VBG cycles_NNS of_IN length_NN more_RBR than_IN #_# often_RB leads_VBZ to_TO no_DT improvement_NN in_IN the_DT size_NN of_IN the_DT exchange_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+-LRB-_-LRB- Furthermore_RB ,_, in_IN a_DT simplified_VBN theoretical_JJ model_NN ,_, any_DT kidney_NN exchange_NN can_MD be_VB converted_VBN into_IN one_CD with_IN cycles_NNS of_IN length_NN at_IN most_JJS #_# -LSB-_-LRB- ##_CD -RSB-_-RRB- ._. -RRB-_-RRB-
+Whilst_IN this_DT does_VBZ not_RB hold_VB for_IN general_JJ barter_NN exchanges_NNS ,_, or_CC even_RB for_IN all_DT kidney_NN exchange_NN markets_NNS ,_, in_IN Section_NN #_# ._.
+#_# ._.
+#_# we_PRP make_VBP use_NN of_IN the_DT observation_NN that_IN short_JJ cycles_NNS suffice_VBP to_TO dramatically_RB increase_VB the_DT speed_NN of_IN our_PRP$ algorithm_NN ._.
+At_IN a_DT high-level_JJ ,_, the_DT clearing_NN problem_NN for_IN barter_JJ exchanges_NNS is_VBZ similar_JJ to_TO the_DT clearing_NN problem_NN -LRB-_-LRB- aka_NN winner_NN determination_NN problem_NN -RRB-_-RRB- in_IN combinatorial_JJ auctions_NNS ._.
+In_IN both_DT settings_NNS ,_, the_DT idea_NN is_VBZ to_TO gather_VB all_PDT the_DT pertinent_JJ information_NN about_IN the_DT agents_NNS into_IN a_DT central_JJ clearing_NN point_NN and_CC to_TO run_VB a_DT centralized_JJ clearing_NN algorithm_NN to_TO determine_VB the_DT allocation_NN ._.
+Both_DT problems_NNS are_VBP NP-hard_NN ._.
+Both_DT are_VBP best_RBS solved_VBN using_VBG tree_NN search_NN techniques_NNS ._.
+Since_IN ####_CD ,_, significant_JJ work_NN has_VBZ been_VBN done_VBN in_IN computer_NN science_NN and_CC operations_NNS research_NN on_IN faster_JJR optimal_JJ tree_NN search_NN algorithms_NNS for_IN clearing_VBG combinatorial_JJ auctions_NNS ._.
+-LRB-_-LRB- For_IN a_DT recent_JJ review_NN ,_, see_VB -LSB-_-LRB- ##_CD -RSB-_-RRB- ._. -RRB-_-RRB-
+However_RB ,_, the_DT kidney_NN exchange_NN clearing_NN problem_NN -LRB-_-LRB- with_IN a_DT limit_NN of_IN #_# or_CC more_RBR on_IN cycle_NN size_NN -RRB-_-RRB- is_VBZ different_JJ from_IN the_DT combinatorial_JJ auction_NN clearing_NN problem_NN in_IN significant_JJ ways_NNS ._.
+The_DT most_RBS important_JJ difference_NN is_VBZ that_IN the_DT natural_JJ formulations_NNS of_IN the_DT combinatorial_JJ auction_NN problem_NN tend_VBP to_TO easily_RB fit_VB in_IN memory_NN ,_, so_IN time_NN is_VBZ the_DT bottleneck_NN in_IN practice_NN ._.
+In_IN contrast_NN ,_, the_DT natural_JJ formulations_NNS of_IN the_DT kidney_NN exchange_NN problem_NN -LRB-_-LRB- with_IN L_NN =_JJ #_# -RRB-_-RRB- take_VBP at_IN least_JJS cubic_JJ space_NN in_IN the_DT number_NN of_IN patients_NNS to_TO even_RB model_VB ,_, and_CC therefore_RB memory_NN becomes_VBZ a_DT bottleneck_NN much_RB before_IN time_NN does_VBZ when_WRB using_VBG standard_JJ tree_NN search_NN ,_, such_JJ as_IN branch-andcut_NN in_IN CPLEX_NNP ,_, to_TO tackle_VB the_DT problem_NN ._.
+-LRB-_-LRB- On_IN a_DT 1GB_NN computer_NN and_CC a_DT realistic_JJ standard_JJ instance_NN generator_NN ,_, discussed_VBN later_RB ,_, CPLEX_NNP ##_CD ._.
+###_RB runs_VBZ out_IN of_IN memory_NN on_IN five_CD of_IN the_DT ten_CD 900patient_JJ instances_NNS and_CC ten_CD of_IN the_DT ten_CD #_# ,_, 000-patient_JJ instances_NNS that_IN we_PRP generated_VBD ._. -RRB-_-RRB-
+Therefore_RB ,_, the_DT approaches_NNS that_WDT have_VBP been_VBN developed_VBN for_IN combinatorial_JJ auctions_NNS can_MD not_RB handle_VB the_DT kidney_NN exchange_NN problem_NN ._.
+1_LS ._.
+#_# Paper_NNP Outline_NNP The_NNP rest_NN of_IN the_DT paper_NN is_VBZ organized_VBN as_IN follows_VBZ ._.
+Section_NN #_# discusses_VBZ the_DT process_NN by_IN which_WDT we_PRP generate_VBP realistic_JJ kidney_NN exchange_NN market_NN data_NNS ,_, in_IN order_NN to_TO benchmark_NN the_DT clearing_NN algorithms_NNS ._.
+Section_NN #_# contains_VBZ a_DT proof_NN that_IN the_DT market_NN clearing_NN decision_NN problem_NN is_VBZ NP-complete_JJ ._.
+Sections_NNS #_# and_CC #_# each_DT contain_VBP an_DT ILP_NN formulation_NN of_IN the_DT clearing_NN problem_NN ._.
+We_PRP also_RB detail_NN in_IN those_DT sections_NNS our_PRP$ techniques_NNS used_VBN to_TO solve_VB those_DT programs_NNS on_IN large_JJ instances_NNS ._.
+Section_NN #_# presents_VBZ experiments_NNS on_IN the_DT various_JJ techniques_NNS ._.
+Section_NN #_# discusses_VBZ recent_JJ fielding_NN of_IN our_PRP$ algorithm_NN ._.
+Finally_RB ,_, we_PRP present_VBP our_PRP$ conclusions_NNS in_IN Section_NN #_# ,_, and_CC suggest_VBP future_JJ research_NN directions_NNS ._.
+2_LS ._.
+MARKET_NN CHARACTERISTICS_NNS AND_CC INSTANCE_NN GENERATOR_NN We_PRP test_VBP the_DT algorithms_NNS on_IN simulated_JJ kidney_NN exchange_NN markets_NNS ,_, which_WDT are_VBP generated_VBN by_IN a_DT process_NN described_VBN in_IN Saidman_NNP et_FW al_FW ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- ._.
+This_DT process_NN is_VBZ based_VBN on_IN the_DT extensive_JJ nationwide_JJ data_NNS maintained_VBN by_IN the_DT United_NNP Network_NNP for_IN Organ_NNP Sharing_VBG -LRB-_-LRB- UNOS_NNS -RRB-_-RRB- -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, so_IN it_PRP generates_VBZ a_DT realistic_JJ instance_NN distribution_NN ._.
+Several_JJ papers_NNS have_VBP used_VBN variations_NNS of_IN this_DT process_NN to_TO demonstrate_VB the_DT effectiveness_NN of_IN a_DT national_JJ kidney_NN exchange_NN -LRB-_-LRB- extrapolating_VBG from_IN small_JJ instances_NNS or_CC restricting_VBG the_DT clearing_NN to_TO 2-cycles_NNS -RRB-_-RRB- -LSB-_-LRB- #_# ,_, ##_CD ,_, ##_CD ,_, ##_CD ,_, ##_CD ,_, ##_CD -RSB-_-RRB- ._.
+Briefly_RB ,_, the_DT process_NN involves_VBZ generating_VBG patients_NNS with_IN a_DT random_JJ blood_NN type_NN ,_, sex_NN ,_, and_CC probability_NN of_IN being_VBG tissue-type_NN incompatible_JJ with_IN a_DT randomly_RB chosen_VBN donor_NN ._.
+These_DT probabilities_NNS are_VBP based_VBN on_IN actual_JJ real-world_JJ population_NN data_NNS ._.
+Each_DT patient_NN is_VBZ assigned_VBN a_DT potential_JJ donor_NN with_IN a_DT random_JJ blood_NN type_NN and_CC relation_NN to_TO the_DT patient_NN ._.
+If_IN the_DT patient_NN and_CC potential_JJ donor_NN are_VBP incompatible_JJ ,_, the_DT two_CD are_VBP entered_VBN into_IN the_DT market_NN ._.
+Blood_NN type_NN and_CC tissue_NN type_NN information_NN is_VBZ then_RB used_VBN to_TO decide_VB on_IN which_WDT patients_NNS and_CC donors_NNS are_VBP compatible_JJ ._.
+One_CD complication_NN ,_, handled_VBN by_IN the_DT generator_NN ,_, is_VBZ that_IN if_IN the_DT patient_NN is_VBZ female_JJ ,_, and_CC she_PRP has_VBZ had_VBD a_DT child_NN with_IN her_PRP$ potential_JJ donor_NN ,_, then_RB the_DT probability_NN that_IN the_DT two_CD are_VBP incompatible_JJ increases_NNS ._.
+-LRB-_-LRB- This_DT is_VBZ because_IN the_DT mother_NN develops_VBZ antibodies_NNS to_TO her_PRP$ partner_NN during_IN pregnancy_NN ._. -RRB-_-RRB-
+Finally_RB ,_, although_IN our_PRP$ algorithms_NNS can_MD handle_VB more_RBR general_JJ weight_NN functions_NNS ,_, patients_NNS have_VBP a_DT utility_NN of_IN #_# for_IN compatible_JJ donors_NNS ,_, since_IN their_PRP$ survival_NN probability_NN is_VBZ not_RB affected_VBN by_IN the_DT choice_NN of_IN donor_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+This_DT means_VBZ that_IN the_DT maximum-weight_JJ exchange_NN has_VBZ maximum_NN cardinality_NN ._.
+Table_NNP #_# gives_VBZ lower_JJR and_CC upper_JJ bounds_NNS on_IN the_DT size_NN of_IN a_DT maximum-cardinality_JJ exchange_NN in_IN the_DT kidney-exchange_JJ market_NN ._.
+The_DT lower_JJR bounds_NNS were_VBD found_VBN by_IN clearing_VBG the_DT market_NN with_IN length-2_NN cycles_NNS only_RB ,_, while_IN the_DT upper_JJ bounds_NNS had_VBD no_DT restriction_NN on_IN cycle_NN length_NN ._.
+For_IN each_DT market_NN size_NN ,_, the_DT bounds_NNS were_VBD computed_VBN over_IN ##_CD randomly_RB generated_VBN markets_NNS ._.
+Note_VB that_IN there_EX can_MD be_VB a_DT large_JJ amount_NN of_IN variability_NN in_IN the_DT markets_NNS -_: in_IN one_CD ####_CD patient_NN market_NN ,_, less_JJR than_IN ####_CD patients_NNS were_VBD in_IN the_DT maximum-cardinality_JJ exchange_NN ._.
+Maximum_NNP exchange_NN size_NN Length-2_NN cycles_NNS only_RB Arbitrary_JJ cycles_NNS Patients_NNS Mean_NN Max_NN Mean_NN Max_NN 100_CD #_# ._.
+00e_NN +_CC #_# #_# ._.
+60e_NN +_CC #_# #_# ._.
+30e_NN +_CC #_# #_# ._.
+10e_NN +_CC #_# 500_CD #_# ._.
+58e_NN +_CC #_# #_# ._.
+80e_NN +_CC #_# #_# ._.
+79e_NN +_CC #_# #_# ._.
+97e_NN +_CC #_# 1000_CD #_# ._.
+35e_NN +_CC #_# #_# ._.
+22e_NN +_CC #_# #_# ._.
+61e_NN +_CC #_# #_# ._.
+30e_NN +_CC #_# 2000_CD #_# ._.
+05e_NN +_CC #_# #_# ._.
+13e_NN +_CC #_# #_# ._.
+09e_NN +_CC #_# #_# ._.
+16e_NN +_CC #_# 3000_CD #_# ._.
+63e_NN +_CC #_# #_# ._.
+70e_NN +_CC #_# #_# ._.
+68e_NN +_CC #_# #_# ._.
+73e_NN +_CC #_# 4000_CD #_# ._.
+15e_NN +_CC #_# #_# ._.
+22e_NN +_CC #_# #_# ._.
+20e_NN +_CC #_# #_# ._.
+27e_NN +_CC #_# 5000_CD #_# ._.
+53e_NN +_CC #_# #_# ._.
+87e_NN +_CC #_# #_# ._.
+59e_NN +_CC #_# #_# ._.
+92e_NN +_CC #_# 6000_CD #_# ._.
+26e_NN +_CC #_# #_# ._.
+32e_NN +_CC #_# #_# ._.
+35e_NN +_CC #_# #_# ._.
+39e_NN +_CC #_# 7000_CD #_# ._.
+80e_NN +_CC #_# #_# ._.
+86e_NN +_CC #_# #_# ._.
+89e_NN +_CC #_# #_# ._.
+97e_NN +_CC #_# 8000_CD #_# ._.
+35e_NN +_CC #_# #_# ._.
+45e_NN +_CC #_# #_# ._.
+46e_NN +_CC #_# #_# ._.
+55e_NN +_CC #_# 9000_CD #_# ._.
+90e_NN +_CC #_# #_# ._.
+96e_NN +_CC #_# #_# ._.
+01e_NN +_CC #_# #_# ._.
+07e_NN +_CC #_# 10000_CD #_# ._.
+47e_NN +_CC #_# #_# ._.
+61e_NN +_CC #_# #_# ._.
+59e_NN +_CC #_# #_# ._.
+73e_NN +_CC #_# Table_NNP #_# :_: Upper_NNP and_CC lower_JJR bounds_NNS on_IN exchange_NN size_NN ._.
+Table_NNP #_# gives_VBZ additional_JJ characteristics_NNS of_IN the_DT kidney-exchange_JJ market_NN ._.
+Note_VB that_IN a_DT market_NN with_IN ####_CD patients_NNS can_MD already_RB have_VB more_JJR than_IN ###_CD million_CD cycles_NNS of_IN length_NN #_# and_CC #_# ._.
+Edges_NNP Length_NN #_# &_CC #_# cycles_NNS Patients_NNS Mean_NN Max_NN Mean_NN Max_NN 100_CD #_# ._.
+38e_NN +_CC #_# #_# ._.
+79e_NN +_CC #_# #_# ._.
+76e_NN +_CC #_# #_# ._.
+90e_NN +_CC #_# 500_CD #_# ._.
+19e_NN +_CC #_# #_# ._.
+68e_NN +_CC #_# #_# ._.
+96e_NN +_CC #_# #_# ._.
+27e_NN +_CC #_# 1000_CD #_# ._.
+44e_NN +_CC #_# #_# ._.
+68e_NN +_CC #_# #_# ._.
+31e_NN +_CC #_# #_# ._.
+57e_NN +_CC #_# 2000_CD #_# ._.
+60e_NN +_CC #_# #_# ._.
+02e_NN +_CC #_# #_# ._.
+50e_NN +_CC #_# #_# ._.
+26e_NN +_CC #_# 3000_CD #_# ._.
+19e_NN +_CC #_# #_# ._.
+28e_NN +_CC #_# #_# ._.
+70e_NN +_CC #_# #_# ._.
+64e_NN +_CC #_# 4000_CD #_# ._.
+86e_NN +_CC #_# #_# ._.
+97e_NN +_CC #_# #_# ._.
+94e_NN +_CC #_# #_# ._.
+14e_NN +_CC #_# 5000_CD #_# ._.
+67e_NN +_CC #_# #_# ._.
+33e_NN +_CC #_# #_# ._.
+60e_NN +_CC #_# #_# ._.
+59e_NN +_CC #_# 6000_CD #_# ._.
+80e_NN +_CC #_# #_# ._.
+95e_NN +_CC #_# 7000_CD #_# ._.
+19e_NN +_CC #_# #_# ._.
+21e_NN +_CC #_# 8000_CD #_# ._.
+56e_NN +_CC #_# #_# ._.
+59e_NN +_CC #_# 9000_CD #_# ._.
+98e_NN +_CC #_# #_# ._.
+02e_NN +_CC #_# 10000_CD #_# ._.
+44e_NN +_CC #_# #_# ._.
+51e_NN +_CC #_# Table_NNP #_# :_: Market_NN characteristics_NNS ._.
+297_CD 3_CD ._.
+PROBLEM_NN COMPLEXITY_NN In_IN this_DT section_NN ,_, we_PRP prove_VBP that_IN -LRB-_-LRB- the_DT decision_NN version_NN of_IN -RRB-_-RRB- the_DT market_NN clearing_NN problem_NN with_IN short_JJ cycles_NNS is_VBZ NP-complete_JJ ._.
+Theorem_NNP #_# ._.
+Given_VBN a_DT graph_NN G_NN =_JJ -LRB-_-LRB- V_NN ,_, E_NN -RRB-_-RRB- and_CC an_DT integer_NN L_NN #_# ,_, the_DT problem_NN of_IN deciding_VBG if_IN G_NN admits_VBZ a_DT perfect_JJ cycle_NN cover_NN containing_VBG cycles_NNS of_IN length_NN at_IN most_JJS L_NN is_VBZ NP-complete_JJ ._.
+Proof_NN ._.
+It_PRP is_VBZ clear_JJ that_IN this_DT problem_NN is_VBZ in_IN NP_NN ._.
+For_IN NPhardness_NN ,_, we_PRP reduce_VBP from_IN 3D-Matching_NN ,_, which_WDT is_VBZ the_DT problem_NN of_IN ,_, given_VBN disjoint_NN sets_NNS X_NN ,_, Y_NN and_CC Z_NN of_IN size_NN q_NN ,_, and_CC a_DT set_NN of_IN triples_NNS T_NN X_NN Y_NN Z_NN ,_, deciding_VBG if_IN there_EX is_VBZ a_DT disjoint_NN subset_NN M_NN of_IN T_NN with_IN size_NN q_NN ._.
+One_CD straightforward_JJ idea_NN is_VBZ to_TO construct_VB a_DT tripartite_JJ graph_NN with_IN vertex_NN sets_NNS X_NN Y_NN Z_NN and_CC directed_VBD edges_NNS -LRB-_-LRB- xa_NN ,_, yb_NN -RRB-_-RRB- ,_, -LRB-_-LRB- yb_NN ,_, zc_NN -RRB-_-RRB- ,_, and_CC -LRB-_-LRB- zc_NN ,_, xa_NN -RRB-_-RRB- for_IN each_DT triple_JJ ti_NN =_JJ -LCB-_-LRB- xa_NN ,_, yb_NN ,_, zc_NN -RCB-_-RRB- T_NN ._.
+However_RB ,_, it_PRP is_VBZ not_RB too_RB hard_JJ to_TO see_VB that_IN this_DT encoding_VBG fails_VBZ because_IN a_DT perfect_JJ cycle_NN cover_NN may_MD include_VB a_DT cycle_NN with_IN no_DT corresponding_JJ triple_JJ ._.
+Instead_RB then_RB ,_, we_PRP use_VBP the_DT following_JJ reduction_NN ._.
+Given_VBN an_DT instance_NN of_IN 3D-Matching_NN ,_, construct_NN one_CD vertex_NN for_IN each_DT element_NN in_IN X_NN ,_, Y_NN and_CC Z_NN ._.
+For_IN each_DT triple_RB ,_, ti_NN =_JJ -LCB-_-LRB- xa_NN ,_, yb_NN ,_, zc_NN -RCB-_-RRB- construct_NN the_DT gadget_NN in_IN Figure_NNP #_# ,_, which_WDT is_VBZ a_DT similar_JJ to_TO one_CD in_IN Garey_NNP and_CC Johnson_NNP -LSB-_-LRB- #_# ,_, pp_NN 68-69_CD -RSB-_-RRB- ._.
+Note_VB that_IN the_DT gadgets_NNS intersect_VBP only_RB on_IN vertices_NNS in_IN X_NN Y_NN Z_NN ._.
+It_PRP is_VBZ clear_JJ that_IN this_DT construction_NN can_MD be_VB done_VBN in_IN polynomial_JJ time_NN ._.
+1_CD ..._: 2_CD #_# y_SYM __CD b_NN ..._: 2_CD #_# z_SYM __CD c_NN y_NN __CD b_NN ^_NN i_FW z_SYM __CD c_NN ^_NN i_FW L1_NN L1_NN L1_NN x_CC __CD a_DT ^_NN i_FW x_CC __FW a_DT ..._: 2_CD ##_CD #_# Figure_NNP #_# :_: NP-completeness_NN gadget_NN for_IN triple_JJ ti_NNS and_CC maximum_JJ cycle_NN length_NN L_NN ._.
+Let_VB M_NN be_VB a_DT perfect_JJ 3D-Matching_NN ._.
+We_PRP will_MD show_VB the_DT construction_NN admits_VBZ a_DT perfect_JJ cycle_NN cover_NN by_IN short_JJ cycles_NNS ._.
+If_IN ti_NN =_JJ -LCB-_-LRB- xa_NN ,_, yb_NN ,_, zc_NN -RCB-_-RRB- M_NN ,_, add_VB from_IN ti_FW ''_'' s_VBZ gadget_NN the_DT three_CD lengthL_NN cycles_NNS containing_VBG xa_NN ,_, yb_NN and_CC zc_NN respectively_RB ._.
+Also_RB add_VB the_DT cycle_NN xi_NN a_DT ,_, yi_NN b_NN ,_, zi_NN c_NN ._.
+Otherwise_RB ,_, if_IN ti_NN /_: M_NN ,_, add_VB the_DT three_CD lengthL_NN cycles_NNS containing_VBG xi_NN a_DT ,_, yi_NN b_NN and_CC zi_NN c_NN respectively_RB ._.
+It_PRP is_VBZ clear_JJ that_IN all_DT vertices_NNS are_VBP covered_VBN ,_, since_IN M_NN partitions_NNS X_NN Y_NN Z_NN ._.
+Conversely_RB ,_, suppose_VB we_PRP have_VBP a_DT perfect_JJ cover_NN by_IN short_JJ cycles_NNS ._.
+Note_VB that_IN the_DT construction_NN only_RB has_VBZ short_JJ cycles_NNS of_IN lengths_NNS #_# and_CC L_NN ,_, and_CC no_DT short_JJ cycle_NN involves_VBZ distinct_JJ vertices_NNS from_IN two_CD different_JJ gadgets_NNS ._.
+It_PRP is_VBZ easy_JJ to_TO see_VB then_RB that_IN in_IN a_DT perfect_JJ cover_NN ,_, each_DT gadget_NN ti_NN contributes_VBZ cycles_NNS according_VBG to_TO the_DT cases_NNS above_IN :_: ti_NN M_NN ,_, or_CC ti_NN /_: M_NN ._.
+Hence_RB ,_, there_EX exists_VBZ a_DT perfect_JJ 3D-Matching_NN in_IN the_DT original_JJ instance_NN ._.
+4_LS ._.
+SOLUTION_NN APPROACHES_NNS BASED_NN ON_IN AN_DT EDGE_NNP FORMULATION_NNP In_IN this_DT section_NN ,_, we_PRP consider_VBP a_DT formulation_NN of_IN the_DT clearing_NN problem_NN as_IN an_DT ILP_NN with_IN one_CD variable_NN for_IN each_DT edge_NN ._.
+This_DT encoding_NN is_VBZ based_VBN on_IN the_DT following_VBG classical_JJ algorithm_NN for_IN solving_VBG the_DT directed_JJ cycle_NN cover_NN problem_NN with_IN no_DT cycle-length_JJ constraints_NNS ._.
+Given_VBN a_DT market_NN G_NN =_JJ -LRB-_-LRB- V_NN ,_, E_NN -RRB-_-RRB- ,_, construct_NN a_DT bipartite_JJ graph_NN with_IN one_CD vertex_NN for_IN each_DT agent_NN ,_, and_CC one_CD vertex_NN for_IN each_DT item_NN ._.
+Add_VB an_DT edge_NN ev_NN with_IN weight_NN #_# between_IN each_DT agent_NN v_LS and_CC its_PRP$ own_JJ item_NN ._.
+At_IN this_DT point_NN ,_, the_DT encoding_NN is_VBZ a_DT perfect_JJ matching_NN ._.
+Now_RB ,_, for_IN each_DT edge_NN e_SYM =_JJ -LRB-_-LRB- vi_LS ,_, vj_NN -RRB-_-RRB- in_IN the_DT original_JJ market_NN ,_, add_VB an_DT edge_NN e_SYM with_IN weight_NN we_PRP between_IN agent_NN vi_LS and_CC the_DT item_NN of_IN vj_NN ._.
+Perfect_NNP matchings_NNS in_IN this_DT encoding_VBG correspond_VBP exactly_RB with_IN cycle_NN covers_NNS ,_, since_IN whenever_WRB an_DT agent_NN ''_'' s_NNS item_NN is_VBZ taken_VBN ,_, it_PRP must_MD receive_VB some_DT other_JJ agent_NN ''_'' s_NNS item_NN ._.
+It_PRP follows_VBZ that_IN the_DT unrestricted_JJ clearing_NN problem_NN can_MD be_VB solved_VBN in_IN polynomial_JJ time_NN by_IN finding_VBG a_DT maximum-weight_JJ perfect_JJ matching_NN ._.
+Figure_NNP #_# contains_VBZ the_DT bipartite_JJ graph_NN encoding_NN of_IN the_DT example_NN market_NN from_IN Figure_NNP #_# ._.
+The_DT weight-0_JJ edges_NNS are_VBP encoded_VBN by_IN dashed_VBN lines_NNS ,_, while_IN the_DT market_NN edges_NNS are_VBP in_IN bold_JJ ._.
+Items_NNS Agents_NNS v1_VBP v2_NN v3_NN v4_NN v5_NN e1_NN e3_NN e8_NN e2_NN v1_NN v2_NN v3_NN v4_NN v5_NN e7e6_NN e5_NN e4_NN Figure_NN #_# :_: Perfect_NNP matching_VBG encoding_NN of_IN the_DT market_NN in_IN Figure_NNP #_# ._.
+Alternatively_RB ,_, we_PRP can_MD solve_VB the_DT problem_NN by_IN encoding_VBG it_PRP as_IN an_DT ILP_NN with_IN one_CD variable_NN for_IN each_DT edge_NN in_IN the_DT original_JJ market_NN graph_NN G_NN ._.
+This_DT ILP_NN ,_, given_VBN below_IN ,_, has_VBZ the_DT advantage_NN that_IN it_PRP can_MD be_VB extended_VBN naturally_RB to_TO deal_VB with_IN cycle_NN length_NN constraints_NNS ._.
+Therefore_RB ,_, for_IN the_DT rest_NN of_IN this_DT section_NN ,_, this_DT is_VBZ the_DT approach_NN we_PRP will_MD pursue_VB ._.
+max_NN eE_NN wee_NN such_JJ that_IN for_IN all_DT vi_LS V_NN ,_, the_DT conservation_NN constraint_NN eout_NN =_JJ -LRB-_-LRB- vi_LS ,_, vj_NN -RRB-_-RRB- eout_NN ein_NN =_JJ -LRB-_-LRB- vj_NN ,_, vi_LS -RRB-_-RRB- ein_NN =_JJ #_# and_CC capacity_NN constraint_NN eout_NN =_JJ -LRB-_-LRB- vi_LS ,_, vj_NN -RRB-_-RRB- eout_NN #_# are_VBP satisfied_JJ ._.
+If_IN cycles_NNS are_VBP allowed_VBN to_TO have_VB length_NN at_IN most_JJS L_NN ,_, it_PRP is_VBZ easy_JJ to_TO see_VB that_IN we_PRP only_RB need_VBP to_TO make_VB the_DT following_VBG changes_NNS to_TO the_DT ILP_NNP ._.
+For_IN each_DT length-L_NN path_NN -LRB-_-LRB- throughout_IN the_DT paper_NN ,_, we_PRP do_VBP not_RB include_VB cycles_NNS in_IN the_DT definition_NN of_IN path_NN -RRB-_-RRB- p_NN =_JJ ep1_NN ,_, ep2_NN ,_, ..._: ,_, epL_NN ,_, add_VB a_DT constraint_NN ep1_NN +_CC ep2_NN +_CC ..._: +_CC epL_NN L_NN #_# ,_, which_WDT precludes_VBZ path_NN p_NN from_IN being_VBG in_IN any_DT feasible_JJ solution_NN ._.
+Unfortunately_RB ,_, in_IN a_DT market_NN with_IN only_RB ####_CD patients_NNS ,_, the_DT number_NN of_IN length-3_NN paths_NNS is_VBZ in_IN excess_NN of_IN ###_CD million_CD ,_, and_CC so_IN we_PRP can_MD not_RB even_RB construct_VB this_DT ILP_NN without_IN running_VBG out_RB of_IN memory_NN ._.
+Therefore_RB ,_, we_PRP use_VBP a_DT tree_NN search_NN with_IN an_DT incremental_JJ formulation_NN approach_NN ._.
+Specifically_RB ,_, we_PRP use_VBP CPLEX_NNP ,_, though_IN 298_CD we_PRP add_VBP constraints_NNS as_IN cutting_VBG planes_NNS during_IN the_DT tree_NN search_NN process_NN ._.
+We_PRP begin_VBP with_IN only_RB a_DT small_JJ subset_NN of_IN the_DT constraints_NNS in_IN the_DT ILP_NNP ._.
+Since_IN this_DT ILP_NN is_VBZ small_JJ ,_, CPLEX_NNP can_MD solve_VB its_PRP$ LP_NN relaxation_NN ._.
+We_PRP then_RB check_VBP whether_IN any_DT of_IN the_DT missing_VBG constraints_NNS are_VBP violated_VBN by_IN the_DT fractional_JJ solution_NN ._.
+If_IN so_RB ,_, we_PRP generate_VBP a_DT set_NN of_IN these_DT constraints_NNS ,_, add_VB them_PRP to_TO the_DT ILP_NNP ,_, and_CC repeat_NN ._.
+Even_RB once_RB all_DT constraints_NNS are_VBP satisfied_JJ ,_, there_EX may_MD be_VB no_DT integral_JJ solution_NN matching_VBG the_DT fractional_JJ upper_JJ bound_VBN ,_, and_CC even_RB if_IN there_EX were_VBD ,_, the_DT LP_NN solver_NN might_MD not_RB find_VB it_PRP ._.
+In_IN these_DT cases_NNS ,_, CPLEX_NNP branches_NNS on_IN a_DT variable_JJ -LRB-_-LRB- we_PRP used_VBD CPLEX_NNP ''_'' s_VBZ default_NN branching_VBG strategy_NN -RRB-_-RRB- ,_, and_CC generates_VBZ one_CD new_JJ search_NN node_NN corresponding_VBG to_TO each_DT of_IN the_DT children_NNS ._.
+At_IN each_DT node_NN of_IN the_DT search_NN tree_NN that_WDT is_VBZ visited_VBN ,_, this_DT process_NN of_IN solving_VBG the_DT LP_NN and_CC adding_VBG constraints_NNS is_VBZ repeated_VBN ._.
+Clearly_RB ,_, this_DT approach_NN yields_VBZ an_DT optimal_JJ solution_NN once_IN the_DT tree_NN search_NN finishes_NNS ._.
+We_PRP still_RB need_VBP to_TO explain_VB the_DT details_NNS of_IN the_DT constraint_NN seeder_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, selecting_VBG which_WDT constraints_NNS to_TO begin_VB with_IN -RRB-_-RRB- and_CC the_DT constraint_NN generation_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, selecting_VBG which_WDT violated_VBD constraints_NNS to_TO include_VB -RRB-_-RRB- ._.
+We_PRP describe_VBP these_DT briefly_NN in_IN the_DT next_JJ two_CD subsections_NNS ,_, respectively_RB ._.
+4_LS ._.
+#_# Constraint_NNP Seeder_NNP The_NNP main_JJ constraint_NN seeder_NN we_PRP developed_VBD forbids_VBZ any_DT path_NN of_IN length_NN L_NN #_# that_WDT does_VBZ not_RB have_VB an_DT edge_NN closing_VBG the_DT cycle_NN from_IN its_PRP$ head_NN to_TO its_PRP$ tail_NN ._.
+While_IN it_PRP is_VBZ computationally_RB expensive_JJ to_TO find_VB these_DT constraints_NNS ,_, their_PRP$ addition_NN focuses_VBZ the_DT search_NN away_RB from_IN paths_NNS that_WDT can_MD not_RB be_VB in_IN the_DT final_JJ solution_NN ._.
+We_PRP also_RB tried_VBD seeding_VBG the_DT LP_NN with_IN a_DT random_JJ collection_NN of_IN constraints_NNS from_IN the_DT ILP_NNP ._.
+4_LS ._.
+#_# Constraint_NNP Generation_NNP We_PRP experimented_VBD with_IN several_JJ constraint_NN generators_NNS ._.
+In_IN each_DT ,_, given_VBN a_DT fractional_JJ solution_NN ,_, we_PRP construct_VBP the_DT subgraph_NN of_IN edges_NNS with_IN positive_JJ value_NN ._.
+This_DT graph_NN is_VBZ much_RB smaller_JJR than_IN the_DT original_JJ graph_NN ,_, so_IN we_PRP can_MD perform_VB the_DT following_VBG computations_NNS efficiently_RB ._.
+In_IN our_PRP$ first_JJ constraint_NN generator_NN ,_, we_PRP simply_RB search_VB for_IN length-L_JJ paths_NNS with_IN value_NN sum_NN more_JJR than_IN L_NN #_# ._.
+For_IN any_DT such_JJ path_NN ,_, we_PRP restrict_VBP its_PRP$ sum_NN to_TO be_VB at_IN most_JJS L_NN #_# ._.
+Note_VB that_IN if_IN there_EX is_VBZ a_DT cycle_NN c_NN with_IN length_NN |_CD c_NN |_CD >_JJR L_NN ,_, it_PRP could_MD contain_VB as_RB many_JJ as_IN |_NN c_NN |_CD violating_VBG paths_NNS ._.
+In_IN our_PRP$ second_JJ constraint_NN generator_NN ,_, we_PRP only_RB add_VBP one_CD constraint_NN for_IN such_JJ cycles_NNS :_: the_DT sum_NN of_IN edges_NNS in_IN the_DT cycle_NN can_MD be_VB at_IN most_JJS |_CD c_NN |_NN -LRB-_-LRB- L_NN #_# -RRB-_-RRB- /_: L_NN ._.
+This_DT generator_NN made_VBD the_DT algorithm_NN slower_JJR ,_, so_IN we_PRP went_VBD in_IN the_DT other_JJ direction_NN in_IN developing_VBG our_PRP$ final_JJ generator_NN ._.
+It_PRP adds_VBZ one_CD constraint_NN per_IN violating_VBG path_NN p_NN ,_, and_CC furthermore_RB ,_, it_PRP adds_VBZ a_DT constraint_NN for_IN each_DT path_NN with_IN the_DT same_JJ interior_JJ vertices_NNS -LRB-_-LRB- not_RB counting_VBG the_DT endpoints_NNS -RRB-_-RRB- as_IN p_NN ._.
+This_DT improved_VBD the_DT overall_JJ speed_NN ._.
+4_LS ._.
+#_# Experimental_JJ performance_NN It_PRP turned_VBD out_RP that_IN even_RB with_IN these_DT improvements_NNS ,_, the_DT edge_NN formulation_NN approach_NN can_MD not_RB clear_VB a_DT kidney_NN exchange_NN with_IN 100_CD vertices_NNS in_IN the_DT time_NN the_DT cycle_NN formulation_NN -LRB-_-LRB- described_VBN later_RB in_IN Section_NN #_# -RRB-_-RRB- can_MD clear_VB one_CD with_IN ##_NN ,_, ###_CD vertices_NNS ._.
+In_IN other_JJ words_NNS ,_, column_NN generation_NN based_VBN approaches_NNS turned_VBD out_RP to_TO be_VB drastically_RB better_JJR than_IN constraint_NN generation_NN based_VBN approaches_NNS ._.
+Therefore_RB ,_, in_IN the_DT rest_NN of_IN the_DT paper_NN ,_, we_PRP will_MD focus_VB on_IN the_DT cycle_NN formulation_NN and_CC the_DT column_NN generation_NN based_VBN approaches_NNS ._.
+5_CD ._.
+SOLUTION_NN APPROACHES_NNS BASED_NN ON_IN A_DT CYCLE_NN FORMULATION_NN In_IN this_DT section_NN ,_, we_PRP consider_VBP a_DT formulation_NN of_IN the_DT clearing_NN problem_NN as_IN an_DT ILP_NN with_IN one_CD variable_NN for_IN each_DT cycle_NN ._.
+This_DT encoding_NN is_VBZ based_VBN on_IN the_DT following_VBG classical_JJ algorithm_NN for_IN solving_VBG the_DT directed_JJ cycle_NN cover_NN problem_NN when_WRB cycles_NNS have_VBP length_NN #_# ._.
+Given_VBN a_DT market_NN G_NN =_JJ -LRB-_-LRB- V_NN ,_, E_NN -RRB-_-RRB- ,_, construct_NN a_DT new_JJ graph_NN on_IN V_NN with_IN a_DT weight_NN wc_NN edge_NN for_IN each_DT cycle_NN c_NN of_IN length_NN #_# ._.
+It_PRP is_VBZ easy_JJ to_TO see_VB that_DT matchings_NNS in_IN this_DT new_JJ graph_NN correspond_VBP to_TO cycle_NN covers_NNS by_IN length-2_NN cycles_NNS in_IN the_DT original_JJ market_NN graph_NN ._.
+Hence_RB ,_, the_DT market_NN clearing_NN problem_NN with_IN L_NN =_JJ #_# can_MD be_VB solved_VBN in_IN polynomial_JJ time_NN by_IN finding_VBG a_DT maximum-weight_JJ matching_NN ._.
+c_NN __CD #_# v_LS #_# v_LS #_# v_LS #_# v_LS #_# c_SYM __SYM 3c_FW __FW #_# Figure_NNP #_# :_: Maximum-weight_JJ matching_JJ encoding_NN of_IN the_DT market_NN in_IN Figure_NNP #_# ._.
+We_PRP can_MD generalize_VB this_DT encoding_VBG for_IN arbitrary_JJ L_NN ._.
+Let_VB C_NN -LRB-_-LRB- L_NN -RRB-_-RRB- be_VB the_DT set_NN of_IN all_DT cycles_NNS of_IN G_NN with_IN length_NN at_IN most_JJS L_NN ._.
+Then_RB the_DT following_VBG ILP_NN finds_VBZ the_DT maximum-weight_JJ cycle_NN cover_NN by_IN C_NN -LRB-_-LRB- L_NN -RRB-_-RRB- cycles_NNS :_: max_NN cC_NN -LRB-_-LRB- L_NN -RRB-_-RRB- wcc_NN subject_NN to_TO c_NN :_: vic_NN c_NN #_# vi_LS V_NN with_IN c_NN -LCB-_-LRB- #_# ,_, #_# -RCB-_-RRB- c_NN C_NN -LRB-_-LRB- L_NN -RRB-_-RRB- 5_CD ._.
+#_# Edge_NNP vs_CC Cycle_NNP Formulation_NNP In_IN this_DT section_NN ,_, we_PRP consider_VBP the_DT merits_NNS of_IN the_DT edge_NN formulation_NN and_CC cycle_NN formulation_NN ._.
+The_DT edge_NN formulation_NN can_MD be_VB solved_VBN in_IN polynomial_JJ time_NN when_WRB there_EX are_VBP no_DT constraints_NNS on_IN the_DT cycle_NN size_NN ._.
+The_DT cycle_NN formulation_NN can_MD be_VB solved_VBN in_IN polynomial_JJ time_NN when_WRB the_DT cycle_NN size_NN is_VBZ at_IN most_JJS #_# ._.
+We_PRP now_RB consider_VBP the_DT case_NN of_IN short_JJ cycles_NNS of_IN length_NN at_IN most_JJS L_NN ,_, where_WRB L_NN #_# ._.
+Our_PRP$ tree_NN search_NN algorithms_NNS use_VBP the_DT LP_NN relaxation_NN of_IN these_DT formulations_NNS to_TO provide_VB upper_JJ bounds_NNS on_IN the_DT optimal_JJ solution_NN ._.
+These_DT bounds_NNS help_VBP prune_VB subtrees_NNS and_CC guide_VB the_DT search_NN in_IN the_DT usual_JJ ways_NNS ._.
+Theorem_NNP #_# ._.
+The_DT LP_NN relaxation_NN of_IN the_DT cycle_NN formulation_NN weakly_RB dominates_VBZ the_DT LP_NN relaxation_NN of_IN the_DT edge_NN formulation_NN ._.
+Proof_NN ._.
+Consider_VB an_DT optimal_JJ solution_NN to_TO the_DT LP_NN relaxation_NN of_IN the_DT cycle_NN formulation_NN ._.
+We_PRP show_VBP how_WRB to_TO construct_VB an_DT equivalent_JJ solution_NN in_IN the_DT edge_NN formulation_NN ._.
+For_IN each_DT edge_NN in_IN the_DT graph_NN ,_, set_VBD its_PRP$ value_NN as_IN the_DT sum_NN of_IN values_NNS of_IN all_PDT the_DT cycles_NNS of_IN which_WDT it_PRP is_VBZ a_DT member_NN ._.
+Also_RB ,_, define_VB the_DT value_NN of_IN a_DT vertex_NN in_IN the_DT same_JJ manner_NN ._.
+Because_IN of_IN the_DT cycle_NN constraints_NNS ,_, the_DT conservation_NN and_CC capacity_NN constraints_NNS of_IN the_DT edge_NN encoding_NN are_VBP clearly_RB satisfied_JJ ._.
+It_PRP remains_VBZ to_TO show_VB that_IN none_NN of_IN the_DT path_NN constraints_NNS are_VBP violated_VBN ._.
+Let_VB p_NN be_VB any_DT length-L_NN path_NN in_IN the_DT graph_NN ._.
+Since_IN p_NN has_VBZ L1_NN interior_JJ vertices_NNS -LRB-_-LRB- not_RB counting_VBG the_DT endpoints_NNS -RRB-_-RRB- ,_, the_DT value_NN sum_NN of_IN these_DT interior_JJ vertices_NNS is_VBZ at_IN most_JJS L1_NN ._.
+Now_RB ,_, for_IN any_DT cycle_NN c_NN of_IN length_NN at_IN most_JJS L_NN ,_, the_DT number_NN of_IN edges_NNS it_PRP has_VBZ in_IN p_NN ,_, which_WDT we_PRP denote_VBP by_IN ec_NN -LRB-_-LRB- p_NN -RRB-_-RRB- ,_, is_VBZ at_IN most_JJS the_DT number_NN of_IN interior_JJ vertices_NNS it_PRP has_VBZ in_IN p_NN ,_, which_WDT we_PRP denote_VBP by_IN vc_NN -LRB-_-LRB- p_NN -RRB-_-RRB- ._.
+Hence_RB ,_, ep_NN e_SYM =_JJ cC_NN -LRB-_-LRB- L_NN -RRB-_-RRB- cec_NN -LRB-_-LRB- p_NN -RRB-_-RRB- cC_NN -LRB-_-LRB- L_NN -RRB-_-RRB- cvc_NN -LRB-_-LRB- p_NN -RRB-_-RRB- =_JJ vp_NN v_LS =_JJ L1_NN ._.
+299_CD The_DT converse_NN of_IN this_DT theorem_NN is_VBZ not_RB true_JJ ._.
+Consider_VB a_DT graph_NN which_WDT is_VBZ simply_RB a_DT cycle_NN with_IN n_NN edges_NNS ._.
+Clearly_RB ,_, the_DT LP_NN relaxation_NN of_IN the_DT cycle_NN formulation_NN has_VBZ optimal_JJ value_NN #_# ,_, since_IN there_EX are_VBP no_DT cycles_NNS of_IN size_NN at_IN most_JJS L_NN ._.
+However_RB ,_, the_DT edge_NN formulation_NN has_VBZ a_DT solution_NN of_IN size_NN n_NN /_: #_# ,_, with_IN each_DT edge_NN having_VBG value_NN #_# /_: #_# ._.
+Hence_RB ,_, the_DT cycle_NN formulation_NN is_VBZ tighter_JJR than_IN the_DT edge_NN formulation_NN ._.
+Additionally_RB ,_, for_IN a_DT graph_NN with_IN m_NN edges_NNS ,_, the_DT edge_NN formulation_NN requires_VBZ O_NN -LRB-_-LRB- m3_NN -RRB-_-RRB- constraints_NNS ,_, while_IN the_DT cycle_NN formulation_NN requires_VBZ only_RB O_NN -LRB-_-LRB- m2_NN -RRB-_-RRB- ._.
+5_CD ._.
+#_# Column_NNP Generation_NNP for_IN the_DT LP_NN Table_NNP #_# shows_VBZ how_WRB the_DT number_NN of_IN cycles_NNS of_IN length_NN at_IN most_JJS 3_CD grows_VBZ with_IN the_DT size_NN of_IN the_DT market_NN ._.
+With_IN one_CD variable_JJ per_IN cycle_NN in_IN the_DT cycle_NN formulation_NN ,_, CPLEX_NNP can_MD not_RB even_RB clear_JJ markets_NNS with_IN #_# ,_, ###_CD patients_NNS without_IN running_VBG out_RB of_IN memory_NN ._.
+To_TO address_VB this_DT problem_NN ,_, we_PRP used_VBD an_DT incremental_JJ formulation_NN approach_NN ._.
+The_DT first_JJ step_NN in_IN LP-guided_JJ tree_NN search_NN is_VBZ to_TO solve_VB the_DT LP_NN relaxation_NN ._.
+Since_IN the_DT cycle_NN formulation_NN does_VBZ not_RB fit_VB in_IN memory_NN ,_, this_DT LP_NN stage_NN would_MD fail_VB immediately_RB without_IN an_DT incremental_JJ formulation_NN approach_NN ._.
+However_RB ,_, motivated_VBN by_IN the_DT observation_NN that_IN an_DT exchange_NN solution_NN can_MD include_VB only_RB a_DT tiny_JJ fraction_NN of_IN the_DT cycles_NNS ,_, we_PRP explored_VBD the_DT approach_NN of_IN using_VBG column_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, cycle_NN -RRB-_-RRB- generation_NN ._.
+The_DT idea_NN of_IN column_NN generation_NN is_VBZ to_TO start_VB with_IN a_DT restricted_JJ LP_NN containing_VBG only_RB a_DT small_JJ number_NN of_IN columns_NNS -LRB-_-LRB- variables_NNS ,_, i_FW ._.
+e_LS ._.
+,_, cycles_NNS -RRB-_-RRB- ,_, and_CC then_RB to_TO repeatedly_RB add_VB columns_NNS until_IN an_DT optimal_JJ solution_NN to_TO this_DT partially_RB formulated_VBN LP_NN is_VBZ an_DT optimal_JJ solution_NN to_TO the_DT original_JJ -LRB-_-LRB- aka_JJ master_NN -RRB-_-RRB- LP_NN ._.
+We_PRP explain_VBP this_DT further_JJ by_IN way_NN of_IN an_DT example_NN ._.
+Consider_VB the_DT market_NN in_IN Figure_NNP #_# with_IN L_NN =_JJ #_# ._.
+Figure_NNP #_# gives_VBZ the_DT corresponding_JJ master_NN LP_NN ,_, P_NN ,_, and_CC its_PRP$ dual_JJ ,_, D_NN ._.
+Primal_JJ P_NN max_NN 2c1_NN +_CC 2c2_NN +_CC 2c3_NN s_NNS ._.
+t_NN ._.
+c1_NN #_# -LRB-_-LRB- v1_NN -RRB-_-RRB- c1_NN +_CC c2_NN #_# -LRB-_-LRB- v2_NN -RRB-_-RRB- +_CC c2_NN +_CC c3_NN #_# -LRB-_-LRB- v3_NN -RRB-_-RRB- +_CC c3_NN #_# -LRB-_-LRB- v4_NN -RRB-_-RRB- with_IN c1_NN ,_, c2_NN ,_, c3_NN #_# Dual_JJ D_NN min_NN v1_NN +_CC v2_NN +_CC v3_NN +_CC v4_NN s_NNS ._.
+t_NN v1_NN +_CC v2_NN #_# -LRB-_-LRB- c1_NN -RRB-_-RRB- +_CC v2_NN +_CC v3_NN #_# -LRB-_-LRB- c2_NN -RRB-_-RRB- +_CC v3_NN +_CC v4_NN #_# -LRB-_-LRB- c3_NN -RRB-_-RRB- with_IN v1_NN ,_, v2_NN ,_, v3_NN ,_, v4_NN #_# Figure_NNP #_# :_: Cycle_NN formulation_NN ._.
+Let_VB P_NN be_VB the_DT restriction_NN of_IN P_NN containing_VBG columns_NNS c1_NN and_CC c3_NN only_RB ._.
+Let_VB D_NNP be_VB the_DT dual_JJ of_IN P_NN ,_, that_WDT is_VBZ ,_, D_NN is_VBZ just_RB D_NN without_IN the_DT constraint_NN c2_NN ._.
+Because_IN P_NN and_CC D_NN are_VBP small_JJ ,_, we_PRP can_MD solve_VB them_PRP to_TO obtain_VB OPT_NN -LRB-_-LRB- P_NN -RRB-_-RRB- =_JJ OPT_NN -LRB-_-LRB- D_NN -RRB-_-RRB- =_JJ #_# ,_, with_IN cOP_NN T_NN -LRB-_-LRB- P_NN -RRB-_-RRB- =_JJ c1_NN =_JJ c3_NN =_JJ #_# and_CC vOP_NN T_NN -LRB-_-LRB- D_NN -RRB-_-RRB- =_JJ v1_NN =_JJ v2_NN =_JJ v3_NN =_JJ v4_NN =_JJ #_# ._.
+While_IN cOP_NN T_NN -LRB-_-LRB- P_NN -RRB-_-RRB- must_MD be_VB a_DT feasible_JJ solution_NN of_IN P_NN ,_, it_PRP turns_VBZ out_RP -LRB-_-LRB- fortunately_RB -RRB-_-RRB- that_WDT vOP_NN T_NN -LRB-_-LRB- D_NN -RRB-_-RRB- is_VBZ feasible_JJ for_IN D_NN ,_, so_RB that_IN OPT_NN -LRB-_-LRB- D_NN -RRB-_-RRB- OPT_NN -LRB-_-LRB- D_NN -RRB-_-RRB- ._.
+We_PRP can_MD verify_VB this_DT by_IN checking_VBG that_IN vOP_NN T_NN -LRB-_-LRB- D_NN -RRB-_-RRB- satisfies_VBZ the_DT constraints_NNS of_IN D_NN not_RB already_RB in_IN Di_NNP ._.
+e_LS ._.
+constraint_NN c2_NN ._.
+It_PRP follows_VBZ that_IN OPT_NN -LRB-_-LRB- P_NN -RRB-_-RRB- =_JJ OPT_NN -LRB-_-LRB- D_NN -RRB-_-RRB- OPT_NN -LRB-_-LRB- D_NN -RRB-_-RRB- =_JJ OPT_NN -LRB-_-LRB- P_NN -RRB-_-RRB- ,_, and_CC so_RB vOP_JJ T_NN -LRB-_-LRB- P_NN -RRB-_-RRB- is_VBZ provably_RB an_DT optimal_JJ solution_NN for_IN P_NN ,_, even_RB though_IN P_NN is_VBZ contains_VBZ a_DT only_RB strict_JJ subset_NN of_IN the_DT columns_NNS of_IN P_NN ._.
+Of_IN course_NN ,_, it_PRP may_MD turn_VB out_RP -LRB-_-LRB- unfortunately_RB -RRB-_-RRB- that_WDT vOP_NN T_NN -LRB-_-LRB- D_NN -RRB-_-RRB- is_VBZ not_RB feasible_JJ for_IN D_NN ._.
+This_DT can_MD happen_VB above_IN if_IN vOP_NN T_NN -LRB-_-LRB- D_NN -RRB-_-RRB- =_JJ v1_NN =_JJ #_# ,_, v2_NN =_JJ #_# ,_, v3_NN =_JJ #_# ,_, v4_NN =_JJ #_# ._.
+Although_IN we_PRP can_MD still_RB see_VB that_DT OPT_NN -LRB-_-LRB- D_NN -RRB-_-RRB- =_JJ OPT_NN -LRB-_-LRB- D_NN -RRB-_-RRB- ,_, in_IN general_JJ we_PRP can_MD not_RB prove_VB this_DT because_IN D_NN and_CC P_NN are_VBP too_RB large_JJ to_TO solve_VB ._.
+Instead_RB ,_, because_IN constraint_NN c2_NN is_VBZ violated_VBN ,_, we_PRP add_VBP column_NN c2_NN to_TO P_NN ,_, update_VBP D_NN ,_, and_CC repeat_NN ._.
+The_DT problem_NN of_IN finding_VBG a_DT violated_VBN constraint_NN is_VBZ called_VBN the_DT pricing_NN problem_NN ._.
+Here_RB ,_, the_DT price_NN of_IN a_DT column_NN -LRB-_-LRB- cycle_NN in_IN our_PRP$ setting_NN -RRB-_-RRB- is_VBZ the_DT difference_NN between_IN its_PRP$ weight_NN ,_, and_CC the_DT dual-value_JJ sum_NN of_IN the_DT cycle_NN ''_'' s_NNS vertices_NNS ._.
+If_IN any_DT column_NN of_IN P_NN has_VBZ a_DT positive_JJ price_NN ,_, its_PRP$ corresponding_JJ constraint_NN is_VBZ violated_VBN and_CC we_PRP have_VBP not_RB yet_RB proven_VBN optimality_NN ._.
+In_IN this_DT case_NN ,_, we_PRP must_MD continue_VB generating_VBG columns_NNS to_TO add_VB to_TO P_NN ._.
+5_CD ._.
+#_# ._.
+#_# Pricing_NN Problem_NNP For_IN smaller_JJR instances_NNS ,_, we_PRP can_MD maintain_VB an_DT explicit_JJ collection_NN of_IN all_DT feasible_JJ cycles_NNS ._.
+This_DT makes_VBZ the_DT pricing_NN problem_NN easy_JJ and_CC efficient_JJ to_TO solve_VB :_: we_PRP simply_RB traverse_VB the_DT collection_NN of_IN cycles_NNS ,_, and_CC look_VB for_IN cycles_NNS with_IN positive_JJ price_NN ._.
+We_PRP can_MD even_RB find_VB cycles_NNS with_IN the_DT most_RBS positive_JJ price_NN ,_, which_WDT are_VBP the_DT ones_NNS most_RBS likely_JJ to_TO improve_VB the_DT objective_JJ value_NN of_IN restricted_JJ LP_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+This_DT approach_NN does_VBZ not_RB scale_NN however_RB ._.
+A_DT market_NN with_IN ####_CD patients_NNS can_MD have_VB as_RB many_JJ as_IN ###_CD million_CD cycles_NNS of_IN length_NN at_IN most_JJS #_# ._.
+This_DT is_VBZ too_RB many_JJ cycles_NNS to_TO keep_VB in_IN memory_NN ._.
+Hence_RB ,_, for_IN larger_JJR instances_NNS ,_, we_PRP have_VBP to_TO generate_VB feasible_JJ cycles_NNS while_IN looking_VBG for_IN one_CD with_IN a_DT positive_JJ price_NN ._.
+We_PRP do_VBP this_DT using_VBG a_DT depth-first_JJ search_NN algorithm_NN on_IN the_DT market_NN graph_NN ._.
+In_IN order_NN to_TO make_VB this_DT search_NN faster_RBR ,_, we_PRP explore_VBP vertices_NNS in_IN non-decreasing_JJ value_NN order_NN ,_, as_IN these_DT vertices_NNS are_VBP more_RBR likely_JJ to_TO belong_VB to_TO cycles_NNS with_IN positive_JJ weight_NN ._.
+We_PRP also_RB use_VBP several_JJ pruning_NN rules_NNS to_TO determine_VB if_IN the_DT current_JJ search_NN path_NN can_MD lead_VB to_TO a_DT positive_JJ weight_NN cycle_NN ._.
+For_IN example_NN ,_, at_IN a_DT given_VBN vertex_NN in_IN the_DT search_NN ,_, we_PRP can_MD prune_VB based_VBN on_IN the_DT fact_NN that_IN every_DT vertex_NN we_PRP visit_VBP from_IN this_DT point_NN onwards_NNS will_MD have_VB value_NN at_IN least_JJS as_RB great_JJ the_DT current_JJ vertex_NN ._.
+Even_RB with_IN these_DT pruning_NN rules_NNS ,_, column_NN generation_NN is_VBZ a_DT bottleneck_NN ._.
+Hence_RB ,_, we_PRP also_RB implemented_VBD the_DT following_VBG optimizations_NNS ._.
+Whenever_NNP the_DT search_NN exhaustively_RB proves_VBZ that_IN a_DT vertex_NN belongs_VBZ to_TO no_DT positive_JJ price_NN cycle_NN ,_, we_PRP mark_VBP the_DT vertex_NN and_CC do_VBP not_RB use_VB it_PRP as_IN the_DT root_NN of_IN a_DT depth-first_JJ search_NN until_IN its_PRP$ dual_JJ value_NN decreases_VBZ ._.
+In_IN this_DT way_NN ,_, we_PRP avoid_VBP unnecessarily_RB repeating_VBG our_PRP$ computational_JJ efforts_NNS from_IN a_DT previous_JJ column_NN generation_NN iteration_NN ._.
+Finally_RB ,_, it_PRP can_MD sometimes_RB be_VB beneficial_JJ for_IN column_NN generation_NN to_TO include_VB several_JJ positive-price_JJ columns_NNS in_IN one_CD iteration_NN ,_, since_IN it_PRP may_MD be_VB faster_RBR to_TO generate_VB a_DT second_JJ column_NN ,_, once_RB the_DT first_JJ one_CD is_VBZ found_VBN ._.
+However_RB ,_, we_PRP avoid_VBP this_DT for_IN the_DT following_VBG reason_NN ._.
+If_IN we_PRP attempt_VBP to_TO find_VB more_JJR positive-price_JJ columns_NNS than_IN there_EX are_VBP to_TO be_VB found_VBN ,_, or_CC if_IN the_DT columns_NNS are_VBP far_RB apart_RB in_IN the_DT search_NN space_NN ,_, we_PRP end_VBP up_RP having_VBG to_TO generate_VB and_CC check_VB a_DT large_JJ part_NN of_IN the_DT collection_NN of_IN feasible_JJ cycles_NNS ._.
+In_IN our_PRP$ experiments_NNS ,_, we_PRP have_VBP seen_VBN this_DT occur_VB in_IN markets_NNS with_IN hundreds_NNS of_IN millions_NNS of_IN cycles_NNS ,_, resulting_VBG in_IN prohibitively_RB expensive_JJ computation_NN costs_NNS ._.
+5_CD ._.
+#_# ._.
+#_# Column_NNP Seeding_NNP Even_RB if_IN there_EX is_VBZ only_RB a_DT small_JJ gap_NN to_TO the_DT master_NN LP_NN relaxation_NN ,_, column_NN generation_NN requires_VBZ many_JJ iterations_NNS to_TO improve_VB the_DT objective_JJ value_NN of_IN the_DT restricted_JJ LP_NN ._.
+Each_DT of_IN these_DT 300_CD iterations_NNS is_VBZ expensive_JJ ,_, as_IN we_PRP must_MD solve_VB the_DT pricing_NN problem_NN ,_, and_CC re-solve_VB the_DT restricted_JJ LP_NN ._.
+Hence_RB ,_, although_IN we_PRP could_MD begin_VB with_IN no_DT columns_NNS in_IN the_DT restricted_JJ LP_NN ,_, it_PRP is_VBZ much_JJ faster_JJR to_TO seed_NN the_DT LP_NN with_IN enough_JJ columns_NNS that_IN the_DT optimal_JJ objective_JJ value_NN is_VBZ not_RB too_RB far_RB from_IN the_DT master_NN LP_NN ._.
+Of_IN course_NN ,_, we_PRP can_MD not_RB include_VB so_RB many_JJ columns_NNS that_IN we_PRP run_VBP out_IN of_IN memory_NN ._.
+We_PRP experimented_VBD with_IN several_JJ column_NN seeders_NNS ._.
+In_IN one_CD class_NN of_IN seeder_NN ,_, we_PRP use_VBP a_DT heuristic_NN to_TO find_VB an_DT exchange_NN ,_, and_CC then_RB add_VB the_DT cycles_NNS of_IN that_DT exchange_NN to_TO the_DT initial_JJ restricted_JJ LP_NN ._.
+We_PRP implemented_VBD two_CD heuristics_NNS ._.
+The_DT first_JJ is_VBZ a_DT greedy_JJ algorithm_NN :_: for_IN each_DT vertex_NN in_IN a_DT random_JJ order_NN ,_, if_IN it_PRP is_VBZ uncovered_JJ ,_, we_PRP attempt_VBP to_TO include_VB a_DT cycle_NN containing_VBG it_PRP and_CC other_JJ uncovered_JJ vertices_NNS ._.
+The_DT other_JJ heuristic_NN uses_VBZ specialized_VBN maximum-weight_JJ matching_NN code_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- to_TO find_VB an_DT optimal_JJ cover_NN by_IN length-2_NN cycles_NNS ._.
+These_DT heuristics_NNS perform_VBP extremely_RB well_RB ,_, especially_RB taking_VBG into_IN account_NN the_DT fact_NN that_IN they_PRP only_RB add_VBP a_DT small_JJ number_NN of_IN columns_NNS ._.
+For_IN example_NN ,_, Table_NNP #_# shows_VBZ that_IN an_DT optimal_JJ cover_NN by_IN length-2_NN cycles_NNS has_VBZ almost_RB as_RB much_JJ weight_NN as_IN the_DT exchange_NN with_IN unrestricted_JJ cycle_NN size_NN ._.
+However_RB ,_, we_PRP have_VBP enough_RB memory_NN to_TO include_VB hundreds-of-thousands_NNS of_IN additional_JJ columns_NNS and_CC thereby_RB get_VB closer_JJR still_RB to_TO the_DT upper_JJ bound_VBN ._.
+Our_PRP$ best_JJS column_NN seeder_NN constructs_NNS a_DT random_JJ collection_NN of_IN feasible_JJ cycles_NNS ._.
+Since_IN a_DT market_NN with_IN ####_CD patients_NNS can_MD have_VB as_RB many_JJ as_IN ###_CD million_CD feasible_JJ cycles_NNS ,_, it_PRP takes_VBZ too_RB long_JJ to_TO generate_VB and_CC traverse_VB all_DT feasible_JJ cycles_NNS ,_, and_CC so_IN we_PRP do_VBP not_RB include_VB a_DT uniformly_RB random_JJ collection_NN ._.
+Instead_RB ,_, we_PRP perform_VBP a_DT random_JJ walk_NN on_IN the_DT market_NN graph_NN -LRB-_-LRB- see_VB ,_, for_IN example_NN ,_, Figure_NNP 1_LS -RRB-_-RRB- ,_, in_IN which_WDT ,_, after_IN each_DT step_NN of_IN the_DT walk_NN ,_, we_PRP test_VBP whether_IN there_EX is_VBZ an_DT edge_NN back_RB onto_IN our_PRP$ path_NN that_IN forms_VBZ a_DT feasible_JJ cycle_NN ._.
+If_IN we_PRP find_VBP a_DT cycle_NN ,_, it_PRP is_VBZ included_VBN in_IN the_DT restricted_JJ LP_NN ,_, and_CC we_PRP start_VBP a_DT new_JJ walk_NN from_IN a_DT random_JJ vertex_NN ._.
+In_IN our_PRP$ experiments_NNS ,_, we_PRP use_VBP this_DT algorithm_NN to_TO seed_NN the_DT LP_NN with_IN ###_CD ,_, ###_CD cycles_NNS ._.
+This_DT last_JJ approach_NN outperforms_VBZ the_DT heuristic_NN seeders_NNS described_VBN above_IN ._.
+However_RB ,_, in_IN our_PRP$ algorithm_NN ,_, we_PRP use_VBP a_DT combination_NN that_WDT takes_VBZ the_DT union_NN of_IN all_DT columns_NNS from_IN all_DT three_CD seeders_NNS ._.
+In_IN Figure_NNP #_# ,_, we_PRP compare_VBP the_DT performance_NN of_IN the_DT combination_NN seeder_NN against_IN the_DT combination_NN without_IN the_DT random_JJ collection_NN seeder_NN ._.
+We_PRP do_VBP not_RB plot_VB the_DT performance_NN of_IN the_DT algorithm_NN without_IN any_DT seeder_NN at_IN all_DT ,_, because_IN it_PRP can_MD take_VB hours_NNS to_TO clear_JJ markets_NNS we_PRP can_MD otherwise_RB clear_VB in_IN a_DT few_JJ minutes_NNS ._.
+5_CD ._.
+#_# ._.
+#_# Proving_VBG Optimality_NNP Recall_VB that_IN our_PRP$ aim_NN is_VBZ to_TO find_VB an_DT optimal_JJ solution_NN to_TO the_DT master_NN LP_NN relaxation_NN ._.
+Using_VBG column_NN generation_NN ,_, we_PRP can_MD prove_VB that_IN a_DT restricted-primal_JJ solution_NN is_VBZ optimal_JJ once_RB all_DT columns_NNS have_VBP non-positive_JJ prices_NNS ._.
+Unfortunately_RB though_RB ,_, our_PRP$ clearing_NN problem_NN has_VBZ the_DT so-called_JJ tailing-off_JJ effect_NN -LSB-_-LRB- #_# ,_, Section_NNP #_# ._.
+#_# -RSB-_-RRB- ,_, in_IN which_WDT ,_, even_RB though_IN the_DT restricted_JJ primal_JJ is_VBZ optimal_JJ in_IN hindsight_NN ,_, a_DT large_JJ number_NN of_IN additional_JJ iterations_NNS are_VBP required_VBN in_IN order_NN to_TO prove_VB optimality_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, eliminate_VB all_DT positive-price_JJ columns_NNS -RRB-_-RRB- ._.
+There_EX is_VBZ no_DT good_JJ general_JJ solution_NN to_TO the_DT tailing-off_JJ effect_NN ._.
+However_RB ,_, to_TO mitigate_VB this_DT effect_NN ,_, we_PRP take_VBP advantage_NN of_IN the_DT following_VBG problem-specific_JJ observation_NN ._.
+Recall_VB from_IN Section_NN #_# ._.
+#_# that_IN ,_, almost_RB always_RB ,_, a_DT maximum-weight_JJ exchange_NN with_IN cycles_NNS of_IN length_NN at_IN most_JJS #_# has_VBZ the_DT same_JJ weight_NN as_IN an_DT unrestricted_JJ maximum-weight_JJ exchange_NN ._.
+-LRB-_-LRB- This_DT does_VBZ not_RB mean_VB that_IN the_DT solver_NN for_IN the_DT unrestricted_JJ case_NN will_MD find_VB a_DT solution_NN with_IN short_JJ cycles_NNS ,_, however_RB ._. -RRB-_-RRB-
+Furthermore_RB ,_, the_DT unrestricted_JJ clearing_NN problem_NN can_MD be_VB solved_VBN in_IN polynomial_JJ time_NN -LRB-_-LRB- recall_NN Section_NN #_# -RRB-_-RRB- ._.
+Hence_RB ,_, we_PRP can_MD efficiently_RB compute_VB an_DT upper_JJ bound_VBN on_IN the_DT master_NN LP_NN relaxation_NN ,_, and_CC ,_, whenever_WRB the_DT restricted_JJ primal_JJ achieves_VBZ this_DT upper_JJ bound_VBN ,_, we_PRP have_VBP proven_VBN optimality_NN without_IN necessarily_RB having_VBG to_TO eliminate_VB all_DT positive-price_JJ columns_NNS !_.
+In_IN order_NN for_IN this_DT to_TO improve_VB the_DT running_VBG time_NN of_IN the_DT overall_JJ algorithm_NN ,_, we_PRP need_VBP to_TO be_VB able_JJ to_TO clear_VB the_DT unrestricted_JJ market_NN in_IN less_JJR time_NN than_IN it_PRP takes_VBZ column_NN generation_NN to_TO eliminate_VB all_PDT the_DT positive-price_JJ cycles_NNS ._.
+Even_RB though_IN the_DT first_JJ problem_NN is_VBZ polynomial-time_JJ solvable_JJ ,_, this_DT is_VBZ not_RB trivial_JJ for_IN large_JJ instances_NNS ._.
+For_IN example_NN ,_, for_IN a_DT market_NN with_IN ##_NN ,_, ###_CD patients_NNS and_CC ##_CD million_CD edges_NNS ,_, specialized_VBN maximum-weight_JJ matching_NN code_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- was_VBD too_RB slow_JJ ,_, and_CC CPLEX_NNP ran_VBD out_IN of_IN memory_NN on_IN the_DT edge_NN formulation_NN encoding_VBG from_IN Section_NN #_# ._.
+To_TO make_VB this_DT idea_NN work_NN then_RB ,_, we_PRP used_VBD column_NN generation_NN to_TO solve_VB the_DT edge_NN formulation_NN ._.
+This_DT involves_VBZ starting_VBG with_IN a_DT small_JJ random_JJ subset_NN of_IN the_DT edges_NNS ,_, and_CC then_RB adding_VBG positive_JJ price_NN edges_NNS one-by-one_RB until_IN none_NN remain_VBP ._.
+We_PRP conduct_VBP this_DT secondary_JJ column_NN generation_NN not_RB in_IN the_DT original_JJ market_NN graph_NN G_NN ,_, but_CC in_IN the_DT perfect_JJ matching_NN bipartite_JJ graph_NN of_IN Figure_NNP #_# ._.
+We_PRP do_VBP this_DT so_IN that_IN we_PRP only_RB need_VBP to_TO solve_VB the_DT LP_NN ,_, not_RB the_DT ILP_NNP ,_, since_IN the_DT integrality_NN gap_NN in_IN the_DT perfect_JJ matching_NN bipartite_JJ graph_NN is_VBZ 1-i_JJ ._.
+e_LS ._.
+there_RB always_RB exists_VBZ an_DT integral_JJ solution_NN that_WDT achieves_VBZ the_DT fractional_JJ upper_JJ bound_VBN ._.
+The_DT resulting_VBG speedup_NN to_TO the_DT overall_JJ algorithm_NN is_VBZ dramatic_JJ ,_, as_IN can_MD be_VB seen_VBN in_IN Figure_NNP #_# ._.
+5_CD ._.
+#_# ._.
+#_# Column_NNP Management_NNP If_IN the_DT optimal_JJ value_NN of_IN the_DT initial_JJ restricted_JJ LP_NN P_NN is_VBZ far_RB from_IN the_DT the_DT master_NN LP_NN P_NN ,_, then_RB a_DT large_JJ number_NN of_IN columns_NNS are_VBP generated_VBN before_IN the_DT gap_NN is_VBZ closed_VBN ._.
+This_DT leads_VBZ to_TO memory_NN problems_NNS on_IN markets_NNS with_IN as_RB few_JJ as_IN #_# ,_, ###_CD patients_NNS ._.
+Also_RB ,_, even_RB before_IN memory_NN becomes_VBZ an_DT issue_NN ,_, the_DT column_NN generation_NN iterations_NNS become_VBP slow_JJ because_IN of_IN the_DT additional_JJ overhead_NN of_IN solving_VBG a_DT larger_JJR LP_NN ._.
+To_TO address_VB these_DT issues_NNS ,_, we_PRP implemented_VBD a_DT column_NN management_NN scheme_NN to_TO limit_VB the_DT size_NN of_IN the_DT restricted_JJ LP_NN ._.
+Whenever_NNP we_PRP add_VBP columns_NNS to_TO the_DT LP_NN ,_, we_PRP check_VBP to_TO see_VB if_IN it_PRP contains_VBZ more_JJR than_IN a_DT threshold_NN number_NN of_IN columns_NNS ._.
+If_IN this_DT is_VBZ the_DT case_NN ,_, we_PRP selectively_RB remove_VB columns_NNS until_IN it_PRP is_VBZ again_RB below_IN the_DT threshold2_NN ._.
+As_IN we_PRP discussed_VBD earlier_RBR ,_, only_RB a_DT tiny_JJ fraction_NN of_IN all_PDT the_DT cycles_NNS will_MD end_VB up_RP in_IN the_DT final_JJ solution_NN ._.
+It_PRP is_VBZ unlikely_JJ that_IN we_PRP delete_VBP such_JJ a_DT cycle_NN ,_, and_CC even_RB if_IN we_PRP do_VBP ,_, it_PRP can_MD always_RB be_VB generated_VBN again_RB ._.
+Of_IN course_NN ,_, we_PRP must_MD not_RB be_VB too_RB aggressive_JJ with_IN the_DT threshold_NN ,_, because_IN doing_VBG so_RB may_MD offset_VB the_DT per-iteration_JJ performance_NN gains_NNS by_IN significantly_RB increasing_VBG the_DT number_NN of_IN iterations_NNS required_VBN to_TO get_VB a_DT suitable_JJ column_NN set_VBN in_IN the_DT LP_NN at_IN the_DT same_JJ time_NN ._.
+There_EX are_VBP some_DT columns_NNS we_PRP never_RB delete_VBP ,_, for_IN example_NN those_DT we_PRP have_VBP branched_VBN on_IN ,_, or_CC those_DT with_IN a_DT non-zero_JJ LP_NN value_NN ._.
+Amongst_IN the_DT rest_NN ,_, we_PRP delete_VBP those_DT with_IN the_DT lowest_JJS price_NN ,_, since_IN those_DT correspond_VBP to_TO the_DT dual_JJ constraints_NNS that_WDT are_VBP most_RBS satisfied_JJ ._.
+This_DT column_NN management_NN scheme_NN works_VBZ well_RB and_CC has_VBZ enabled_VBN us_PRP to_TO clear_JJ markets_NNS with_IN 10_CD ,_, ###_CD patients_NNS ,_, as_IN seen_VBN in_IN Figure_NNP #_# ._.
+5_CD ._.
+#_# Branch-and-Price_NNP Search_VB for_IN the_DT ILP_NNP Given_VBN a_DT large_JJ market_NN clearing_NN problem_NN ,_, we_PRP can_MD successfully_RB solve_VB its_PRP$ LP_NN relaxation_NN to_TO optimality_NN by_IN using_VBG the_DT column_NN generation_NN enhancements_NNS described_VBN above_IN ._.
+However_RB ,_, the_DT solutions_NNS we_PRP find_VBP are_VBP usually_RB fractional_JJ ._.
+Thus_RB the_DT next_JJ 2_CD Based_VBN on_IN memory_NN size_NN ,_, we_PRP set_VBD the_DT threshold_NN at_IN ###_CD ,_, ###_CD ._.
+301_CD step_NN involves_VBZ performing_VBG a_DT branch-and-price_JJ tree_NN search_NN -LSB-_-LRB- #_# -RSB-_-RRB- to_TO find_VB an_DT optimal_JJ integral_JJ solution_NN ._.
+Briefly_RB ,_, this_DT is_VBZ the_DT idea_NN of_IN branch-and-price_NN ._.
+Whenever_NNP we_PRP set_VBD a_DT fractional_JJ variable_NN to_TO #_# or_CC #_# -LRB-_-LRB- branch_NN -RRB-_-RRB- ,_, both_CC the_DT master_NN LP_NN ,_, and_CC the_DT restriction_NN we_PRP are_VBP working_VBG with_IN ,_, are_VBP changed_VBN -LRB-_-LRB- constrained_VBN -RRB-_-RRB- ._.
+By_IN default_NN then_RB ,_, we_PRP need_VBP to_TO perform_VB column_NN generation_NN -LRB-_-LRB- go_VB through_IN the_DT effort_NN of_IN pricing_NN -RRB-_-RRB- at_IN each_DT node_NN of_IN the_DT search_NN tree_NN to_TO prove_VB that_IN the_DT constrained_VBN restriction_NN is_VBZ optimal_JJ for_IN constrained_VBN master_NN LP_NN ._.
+-LRB-_-LRB- However_RB ,_, as_IN discussed_VBN in_IN Section_NN #_# ._.
+#_# ._.
+#_# ,_, we_PRP compute_VBP the_DT integral_JJ upper_JJ bound_VBN for_IN the_DT root_NN node_NN based_VBN on_IN relaxing_VBG the_DT cycle_NN length_NN constraint_NN completely_RB ,_, and_CC whenever_WRB any_DT node_NN ''_'' s_NNS LP_NN in_IN the_DT tree_NN achieves_VBZ that_IN value_NN ,_, we_PRP do_VBP not_RB need_VB to_TO continue_VB pricing_NN columns_NNS at_IN that_DT node_NN ._. -RRB-_-RRB-
+For_IN the_DT clearing_NN problem_NN with_IN cycles_NNS of_IN length_NN at_IN most_JJS #_# ,_, we_PRP have_VBP found_VBN that_IN there_EX is_VBZ rarely_RB a_DT gap_NN between_IN the_DT optimal_JJ integral_JJ and_CC fractional_JJ solutions_NNS ._.
+This_DT means_VBZ we_PRP can_MD largely_RB avoid_VB the_DT expensive_JJ per_IN node_NN pricing_NN step_NN :_: whenever_WRB the_DT constrained_VBN restricted_JJ LP_NN has_VBZ the_DT same_JJ optimal_JJ value_NN as_IN its_PRP$ parent_NN in_IN the_DT tree_NN search_NN ,_, we_PRP can_MD prove_VB LP_NN optimality_NN ,_, as_IN in_IN Section_NN #_# ._.
+#_# ._.
+#_# ,_, without_IN having_VBG to_TO include_VB any_DT additional_JJ columns_NNS in_IN the_DT restricted_JJ LP_NN ._.
+Although_IN CPLEX_NNP can_MD solve_VB ILPs_NNS ,_, it_PRP does_VBZ not_RB support_VB branch-and-price_NN -LRB-_-LRB- for_IN example_NN ,_, because_IN there_EX can_MD be_VB problemspecific_JJ complications_NNS involving_VBG the_DT interaction_NN between_IN the_DT branching_VBG rule_NN and_CC the_DT pricing_NN problem_NN -RRB-_-RRB- ._.
+Hence_RB ,_, we_PRP implemented_VBD our_PRP$ own_JJ branch-and-price_JJ algorithm_NN ,_, which_WDT explores_VBZ the_DT search_NN tree_NN in_IN depth-first_JJ order_NN ._.
+We_PRP also_RB experimented_VBD with_IN the_DT A_NN *_NN node_NN selection_NN order_NN -LSB-_-LRB- #_# ,_, #_# -RSB-_-RRB- ._.
+However_RB ,_, this_DT search_NN strategy_NN requires_VBZ significantly_RB more_JJR memory_NN ,_, which_WDT we_PRP found_VBD was_VBD better_JJR employed_VBN in_IN making_VBG the_DT column_NN generation_NN phase_NN faster_RBR ._.
+The_DT remaining_VBG major_JJ components_NNS of_IN the_DT algorithm_NN are_VBP described_VBN in_IN the_DT next_JJ two_CD subsections_NNS ._.
+5_CD ._.
+#_# ._.
+#_# Primal_JJ Heuristics_NNPS Before_IN branching_VBG on_IN a_DT fractional_JJ variable_NN ,_, we_PRP use_VBP primal_JJ heuristics_NNS to_TO construct_VB a_DT feasible_JJ integral_JJ solution_NN ._.
+These_DT solutions_NNS are_VBP lower_JJR bounds_NNS on_IN the_DT final_JJ optimal_JJ integral_JJ solutions_NNS ._.
+Hence_RB ,_, whenever_WRB a_DT restricted_JJ fractional_JJ solution_NN is_VBZ no_RB better_JJR than_IN the_DT best_JJS integral_JJ solution_NN found_VBN so_RB far_RB ,_, we_PRP prune_VBP the_DT current_JJ subtree_NN ._.
+A_DT primal_JJ heuristic_NN is_VBZ effective_JJ if_IN it_PRP is_VBZ efficient_JJ and_CC constructs_NNS tight_RB lower_JJR bounds_NNS ._.
+We_PRP experimented_VBD with_IN two_CD primal_JJ heuristics_NNS ._.
+The_DT first_JJ is_VBZ a_DT simple_JJ rounding_VBG algorithm_NN -LSB-_-LRB- #_# -RSB-_-RRB- :_: include_VB all_DT cycles_NNS with_IN fractional_JJ value_NN at_IN least_JJS #_# ._.
+#_# ,_, and_CC then_RB ,_, ensuring_VBG feasibility_NN ,_, greedily_RB add_VB the_DT remaining_VBG cycles_NNS ._.
+Whilst_IN this_DT heuristic_NN is_VBZ efficient_JJ ,_, we_PRP found_VBD that_IN the_DT lower_JJR bounds_NNS it_PRP constructs_NNS rarely_RB enable_VBP much_JJ pruning_NN ._.
+We_PRP also_RB tried_VBD using_VBG CPLEX_NNP as_IN a_DT primal_JJ heuristic_NN ._.
+At_IN any_DT given_VBN node_NN of_IN the_DT search_NN tree_NN ,_, we_PRP can_MD convert_VB the_DT restricted_JJ LP_NN relaxation_NN back_RB to_TO an_DT ILP_NN by_IN reintroducing_VBG the_DT integrality_NN constraints_NNS ._.
+CPLEX_NNP has_VBZ several_JJ built-in_JJ primal_JJ heuristics_NNS ,_, which_WDT we_PRP can_MD apply_VB to_TO this_DT ILP_NN ._.
+Moreover_RB ,_, we_PRP can_MD use_VB CPLEX_NNP ''_'' s_VBZ own_JJ tree_NN search_NN to_TO find_VB an_DT optimal_JJ integral_JJ solution_NN ._.
+In_IN general_JJ ,_, this_DT tree_NN search_NN is_VBZ much_JJ faster_JJR than_IN our_PRP$ own_JJ ._.
+If_IN CPLEX_NNP finds_VBZ an_DT integral_JJ solution_NN that_WDT matches_VBZ the_DT fractional_JJ upper_JJ bound_VBN at_IN the_DT root_NN node_NN ,_, we_PRP are_VBP done_VBN ._.
+Otherwise_RB ,_, no_DT such_JJ integral_JJ solution_NN exists_VBZ ,_, or_CC we_PRP don_VBP ''_'' t_NN yet_RB have_VBP the_DT right_JJ combination_NN of_IN cycles_NNS in_IN the_DT restricted_JJ LP_NN ._.
+For_IN kidney-exchange_JJ markets_NNS ,_, it_PRP is_VBZ usually_RB the_DT second_JJ reason_NN that_WDT applies_VBZ ._.
+Hence_RB ,_, at_IN some_DT point_NN in_IN the_DT tree_NN search_NN ,_, once_RB more_JJR columns_NNS have_VBP been_VBN generated_VBN as_IN a_DT result_NN of_IN branching_VBG ,_, the_DT CPLEX_NNP heuristic_NN will_MD find_VB an_DT optimal_JJ integral_JJ solution_NN ._.
+Although_IN CPLEX_NNP tree_NN search_NN is_VBZ faster_RBR than_IN our_PRP$ own_JJ ,_, it_PRP is_VBZ not_RB so_RB fast_JJ that_IN we_PRP can_MD apply_VB it_PRP to_TO every_DT node_NN in_IN our_PRP$ search_NN tree_NN ._.
+Hence_RB ,_, we_PRP make_VBP the_DT following_VBG optimizations_NNS ._.
+Firstly_RB ,_, we_PRP add_VBP a_DT constraint_NN that_WDT requires_VBZ the_DT objective_JJ value_NN of_IN the_DT ILP_NNP to_TO be_VB as_RB large_JJ as_IN the_DT fractional_JJ target_NN ._.
+If_IN this_DT is_VBZ not_RB the_DT case_NN ,_, we_PRP want_VBP to_TO abort_VB and_CC proceed_VB to_TO generate_VB more_JJR columns_NNS with_IN our_PRP$ branch-and-price_NN search_NN ._.
+Secondly_RB ,_, we_PRP limit_VBP the_DT number_NN of_IN nodes_NNS in_IN CPLEX_NNP ''_'' s_VBZ search_NN tree_NN ._.
+This_DT is_VBZ because_IN we_PRP have_VBP observed_VBN that_IN no_DT integral_JJ solution_NN exists_VBZ ,_, CPLEX_NNP can_MD take_VB a_DT very_RB long_JJ time_NN to_TO prove_VB that_DT ._.
+Finally_RB ,_, we_PRP only_RB apply_VBP the_DT CPLEX_NNP heuristic_NN at_IN a_DT node_NN if_IN it_PRP has_VBZ a_DT sufficiently_RB different_JJ set_NN of_IN cycles_NNS from_IN its_PRP$ parent_NN ._.
+Using_VBG CPLEX_NNP as_IN a_DT primal_JJ heuristic_NN has_VBZ a_DT large_JJ impact_NN because_IN it_PRP makes_VBZ the_DT search_NN tree_NN smaller_JJR ,_, so_RB all_PDT the_DT computationally_RB expensive_JJ pricing_NN work_NN is_VBZ avoided_VBN at_IN nodes_NNS that_WDT are_VBP not_RB generated_VBN in_IN this_DT smaller_JJR tree_NN ._.
+5_CD ._.
+#_# ._.
+#_# Cycle_NNP Brancher_NNP We_PRP experimented_VBD with_IN two_CD branching_VBG strategies_NNS ,_, both_DT of_IN which_WDT select_JJ one_CD variable_JJ per_IN node_NN ._.
+The_DT first_JJ strategy_NN ,_, branching_VBG by_IN certainty_NN ,_, randomly_RB selects_VBZ a_DT variable_JJ from_IN those_DT whose_WP$ LP_NN value_NN is_VBZ closest_JJS to_TO #_# ._.
+The_DT second_JJ strategy_NN ,_, branching_VBG by_IN uncertainty_NN ,_, randomly_RB selects_VBZ a_DT variable_JJ whose_WP$ LP_NN value_NN is_VBZ closest_JJS to_TO #_# ._.
+#_# ._.
+In_IN either_DT case_NN ,_, two_CD children_NNS of_IN the_DT node_NN are_VBP generated_VBN corresponding_VBG to_TO two_CD subtrees_NNS ,_, one_CD in_IN which_WDT the_DT variable_NN is_VBZ set_VBN to_TO #_# ,_, the_DT other_JJ in_IN which_WDT it_PRP is_VBZ set_VBN to_TO #_# ._.
+Our_PRP$ depth-first_JJ search_NN always_RB chooses_VBZ to_TO explore_VB first_RB the_DT subtree_NN in_IN which_WDT the_DT value_NN of_IN the_DT variable_NN is_VBZ closest_JJS to_TO its_PRP$ fractional_JJ value_NN ._.
+For_IN our_PRP$ clearing_NN problem_NN with_IN cycles_NNS of_IN length_NN at_IN most_JJS 3_CD ,_, we_PRP found_VBD branching_VBG by_IN uncertainty_NN to_TO be_VB superior_JJ ,_, rarely_RB requiring_VBG any_DT backtracking_NN ._.
+6_CD ._.
+EXPERIMENTAL_JJ RESULTS_NNS All_PDT our_PRP$ experiments_NNS were_VBD performed_VBN in_IN Linux_NN -LRB-_-LRB- Red_JJ Hat_NN 9_CD ._.
+#_# -RRB-_-RRB- ,_, using_VBG a_DT Dell_NNP PC_NN with_IN a_DT 3GHz_NNP Intel_NNP Pentium_NNP #_# processor_NN ,_, and_CC 1GB_NN of_IN RAM_NNP ._.
+Wherever_NNP we_PRP used_VBD CPLEX_NNP -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, in_IN solving_VBG the_DT LP_NN and_CC as_IN a_DT primal_JJ heuristic_NN ,_, as_IN discussed_VBN in_IN the_DT previous_JJ sections_NNS -RRB-_-RRB- ,_, we_PRP used_VBD CPLEX_NNP ##_CD ._.
+###_NN ._.
+Figure_NNP #_# shows_VBZ the_DT runtime_NN performance_NN of_IN four_CD clearing_NN algorithms_NNS ._.
+For_IN each_DT market_NN size_NN listed_VBN ,_, we_PRP randomly_RB generated_VBD ##_JJ markets_NNS ,_, and_CC attempted_VBD to_TO clear_VB them_PRP using_VBG each_DT of_IN the_DT algorithms_NNS ._.
+The_DT first_JJ algorithm_NN is_VBZ CPLEX_NNP on_IN the_DT full_JJ cycle_NN formulation_NN ._.
+This_DT algorithm_NN fails_VBZ to_TO clear_VB any_DT markets_NNS with_IN ####_CD patients_NNS or_CC more_JJR ._.
+Also_RB ,_, its_PRP$ running_VBG time_NN on_IN markets_NNS smaller_JJR than_IN this_DT is_VBZ significantly_RB worse_JJR than_IN the_DT other_JJ algorithms_NNS ._.
+The_DT other_JJ algorithms_NNS are_VBP variations_NNS of_IN the_DT incremental_JJ column_NN generation_NN approach_NN described_VBN in_IN Section_NN #_# ._.
+We_PRP begin_VBP with_IN the_DT following_VBG settings_NNS -LRB-_-LRB- all_DT optimizations_NNS are_VBP switched_VBN on_IN -RRB-_-RRB- :_: Category_NNP Setting_NNP Column_NNP Seeder_NNP Combination_NNP of_IN greedy_JJ exchange_NN and_CC maximum-weight_JJ matching_NN heuristics_NNS ,_, and_CC random_JJ walk_NN seeder_NN -LRB-_-LRB- ###_CD ,_, ###_CD cycles_NNS -RRB-_-RRB- ._.
+Column_NNP Generation_NNP One_CD column_NN at_IN a_DT time_NN ._.
+Column_NNP Management_NNP On_NNP ,_, with_IN ###_CD ,_, ###_CD column_NN limit_NN ._.
+Optimality_NNP Prover_NNP On_NNP ._.
+Primal_JJ Heuristic_NNP Rounding_NNP &_CC CPLEX_NNP tree_NN search_NN ._.
+Branching_VBG Rule_NN Uncertainty_NN ._.
+302_CD The_DT combination_NN of_IN these_DT optimizations_NNS allows_VBZ us_PRP to_TO easily_RB clear_JJ markets_NNS with_IN over_IN ##_CD ,_, ###_CD patients_NNS ._.
+In_IN each_DT of_IN the_DT next_JJ two_CD algorithms_NNS ,_, we_PRP turn_VBP one_CD of_IN these_DT optimizations_NNS off_IN to_TO highlight_VB its_PRP$ effectiveness_NN ._.
+First_RB ,_, we_PRP restrict_VBP the_DT seeder_NN so_IN that_IN it_PRP only_RB begins_VBZ with_IN 10_CD ,_, ###_CD cycles_NNS ._.
+This_DT setting_NN is_VBZ faster_RBR for_IN smaller_JJR instances_NNS ,_, since_IN the_DT LP_NN relaxations_NNS are_VBP smaller_JJR ,_, and_CC faster_JJR to_TO solve_VB ._.
+However_RB ,_, at_IN ####_CD vertices_NNS ,_, this_DT effect_NN starts_VBZ to_TO be_VB offset_VBN by_IN the_DT additional_JJ column_NN generation_NN that_WDT must_MD be_VB performed_VBN ._.
+For_IN larger_JJR instance_NN ,_, this_DT restricted_JJ seeder_NN is_VBZ clearly_RB worse_JJR ._.
+Finally_RB ,_, we_PRP restore_VBP the_DT seeder_NN to_TO its_PRP$ optimized_VBN setting_NN ,_, but_CC this_DT time_NN ,_, remove_VB the_DT optimality_NN prover_NN described_VBN in_IN Section_NN #_# ._.
+#_# ._.
+#_# ._.
+As_IN in_IN many_JJ column_NN generation_NN problems_NNS ,_, the_DT tailing-off_JJ effect_NN is_VBZ substantial_JJ ._.
+By_IN taking_VBG advantage_NN of_IN the_DT properties_NNS of_IN our_PRP$ problem_NN ,_, we_PRP manage_VBP to_TO clear_VB a_DT market_NN with_IN 10_CD ,_, ###_CD patients_NNS in_IN about_IN the_DT same_JJ time_NN it_PRP would_MD otherwise_RB have_VB taken_VBN to_TO clear_VB a_DT ####_JJ patient_NN market_NN ._.
+7_CD ._.
+FIELDING_NN THE_DT TECHNOLOGY_NN Our_PRP$ algorithm_NN and_CC implementation_NN replaced_VBD CPLEX_NNP as_IN the_DT clearing_NN algorithm_NN of_IN the_DT Alliance_NNP for_IN Paired_NNP Donation_NNP ,_, one_CD of_IN the_DT leading_VBG kidney_NN exchanges_NNS ,_, in_IN December_NNP ####_CD ._.
+We_PRP conduct_VBP a_DT match_NN run_VB every_DT two_CD weeks_NNS ,_, and_CC the_DT first_JJ transplants_NNS based_VBN on_IN our_PRP$ solutions_NNS have_VBP already_RB been_VBN conducted_VBN ._.
+While_IN there_EX are_VBP -LRB-_-LRB- for_IN political_JJ /_: inter-personal_JJ reasons_NNS -RRB-_-RRB- at_IN least_JJS four_CD kidney_NN exchanges_NNS in_IN the_DT US_NNP currently_RB ,_, everyone_NN understands_VBZ that_IN a_DT unified_VBN unfragmented_JJ national_JJ exchange_NN would_MD save_VB more_JJR lives_NNS ._.
+We_PRP are_VBP in_IN discussions_NNS with_IN additional_JJ kidney_NN exchanges_NNS that_WDT are_VBP interested_JJ in_IN adopting_VBG our_PRP$ technology_NN ._.
+This_DT way_NN our_PRP$ technology_NN -LRB-_-LRB- and_CC the_DT processes_NNS around_IN it_PRP -RRB-_-RRB- will_MD hopefully_RB serve_VB as_IN a_DT substrate_NN that_WDT will_MD eventually_RB help_VB in_IN unifying_JJ the_DT exchanges_NNS ._.
+At_IN least_JJS computational_JJ scalability_NN is_VBZ no_RB longer_RBR an_DT obstacle_NN ._.
+8_CD ._.
+CONCLUSIONANDFUTURERESEARCH_NNP In_IN this_DT work_NN we_PRP have_VBP developed_VBN the_DT most_RBS scalable_JJ exact_JJ algorithms_NNS for_IN barter_JJ exchanges_NNS to_TO date_NN ,_, with_IN special_JJ focus_NN on_IN the_DT upcoming_JJ national_JJ kidney-exchange_NN market_NN in_IN which_WDT patients_NNS with_IN kidney_NN disease_NN will_MD be_VB matched_VBN with_IN compatible_JJ donors_NNS by_IN swapping_VBG their_PRP$ own_JJ willing_JJ but_CC incompatible_JJ donors_NNS ._.
+With_IN over_IN ##_CD ,_, ###_CD patients_NNS already_RB waiting_VBG for_IN a_DT cadaver_NN kidney_NN in_IN the_DT US_NNP ,_, this_DT market_NN is_VBZ seen_VBN as_IN the_DT only_JJ ethical_JJ way_NN to_TO significantly_RB reduce_VB the_DT #_# ,_, ###_CD deaths_NNS per_IN year_NN attributed_VBD to_TO kidney_NN disease_NN ._.
+Our_PRP$ work_NN presents_VBZ the_DT first_JJ algorithm_NN capable_JJ of_IN clearing_VBG these_DT markets_NNS on_IN a_DT nationwide_JJ scale_NN ._.
+It_PRP optimally_RB solves_VBZ the_DT kidney_NN exchange_NN clearing_NN problem_NN with_IN ##_NN ,_, ###_CD donordonee_NN pairs_NNS ._.
+Thus_RB there_EX is_VBZ no_DT need_NN to_TO resort_VB to_TO approximate_JJ solutions_NNS ._.
+The_DT best_JJS prior_JJ technology_NN -LRB-_-LRB- vanilla_NN CPLEX_NN -RRB-_-RRB- can_MD not_RB handle_VB instances_NNS beyond_IN about_IN ###_CD donor-donee_JJ pairs_NNS because_IN it_PRP runs_VBZ out_IN of_IN memory_NN ._.
+The_DT key_NN to_TO our_PRP$ improvement_NN is_VBZ incremental_JJ problem_NN formulation_NN ._.
+We_PRP adapted_VBD two_CD paradigms_NNS for_IN the_DT task_NN :_: constraint_NN generation_NN and_CC column_NN generation_NN ._.
+For_IN each_DT ,_, we_PRP developed_VBD a_DT host_NN of_IN techniques_NNS that_WDT substantially_RB improve_VBP both_CC runtime_VBP and_CC memory_NN usage_NN ._.
+Some_DT of_IN the_DT techniques_NNS use_VBP domain-specific_JJ observations_NNS while_IN others_NNS are_VBP domain_NN independent_JJ ._.
+We_PRP conclude_VBP that_IN column_NN generation_NN scales_NNS dramatically_RB better_JJR than_IN constraint_NN generation_NN ._.
+For_IN column_NN generation_NN in_IN the_DT LP_NN ,_, our_PRP$ enhancements_NNS include_VBP pricing_NN techniques_NNS ,_, column_NN seeding_NN techniques_NNS ,_, techniques_NNS for_IN proving_VBG optimality_NN without_IN having_VBG to_TO bring_VB in_RP all_DT positive-price_JJ columns_NNS -LRB-_-LRB- and_CC using_VBG another_DT column-generation_NN process_NN in_IN a_DT different_JJ formulation_NN to_TO do_VB so_RB -RRB-_-RRB- ,_, and_CC column_NN removal_NN techniques_NNS ._.
+For_IN the_DT branch-andprice_JJ search_NN in_IN the_DT integer_NN program_NN that_WDT surrounds_VBZ the_DT LP_NN ,_, our_PRP$ enhancements_NNS include_VBP primal_JJ heuristics_NNS and_CC we_PRP also_RB compared_VBD branching_VBG strategies_NNS ._.
+Undoubtedly_NNP ,_, further_JJ parameter_NN tuning_NN and_CC perhaps_RB additional_JJ speed_NN improvement_NN techniques_NNS could_MD be_VB used_VBN to_TO make_VB the_DT algorithm_NN even_RB faster_RBR ._.
+Our_PRP$ algorithm_NN also_RB supports_VBZ several_JJ generalizations_NNS ,_, as_IN desired_VBN by_IN real-world_JJ kidney_NN exchanges_NNS ._.
+These_DT include_VBP multiple_JJ alternative_JJ donors_NNS per_IN patient_NN ,_, weighted_JJ edges_NNS in_IN the_DT market_NN graph_NN -LRB-_-LRB- to_TO encode_VB differences_NNS in_IN expected_VBN life_NN years_NNS added_VBD based_VBN on_IN degrees_NNS of_IN compatibility_NN ,_, patient_NN age_NN and_CC weight_NN ,_, etc_FW ._.
+,_, as_RB well_RB as_IN the_DT probability_NN of_IN last-minute_JJ incompatibility_NN -RRB-_-RRB- ,_, angel-triggered_JJ chains_NNS -LRB-_-LRB- chains_NNS of_IN transplants_NNS triggered_VBN by_IN altruistic_JJ donors_NNS who_WP do_VBP not_RB have_VB patients_NNS associated_VBN with_IN them_PRP ,_, each_DT chain_NN ending_VBG with_IN a_DT left-over_JJ kidney_NN -RRB-_-RRB- ,_, and_CC additional_JJ issues_NNS -LRB-_-LRB- such_JJ as_IN different_JJ scores_NNS for_IN saving_VBG different_JJ altruistic_JJ donors_NNS or_CC left-over_JJ kidneys_NNS for_IN future_JJ match_NN runs_VBZ based_VBN on_IN blood_NN type_NN ,_, tissue_NN type_NN ,_, and_CC likelihood_NN that_IN the_DT organ_NN would_MD not_RB disappear_VB from_IN the_DT market_NN by_IN the_DT donor_NN getting_VBG second_JJ thoughts_NNS -RRB-_-RRB- ._.
+Because_IN we_PRP use_VBP an_DT ILP_NN methodology_NN ,_, we_PRP can_MD also_RB support_VB a_DT variety_NN of_IN side_NN constraints_NNS ,_, which_WDT often_RB play_VBP an_DT important_JJ role_NN in_IN markets_NNS in_IN practice_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+We_PRP can_MD also_RB support_VB forcing_VBG part_NN of_IN the_DT allocation_NN ,_, for_IN example_NN ,_, This_DT acutely_RB sick_JJ teenager_NN has_VBZ to_TO get_VB a_DT kidney_NN if_IN possible_JJ ._.
+Our_PRP$ work_NN has_VBZ treated_VBN the_DT kidney_NN exchange_NN as_IN a_DT batch_NN problem_NN with_IN full_JJ information_NN -LRB-_-LRB- at_IN least_JJS in_IN the_DT short_JJ run_NN ,_, kidney_NN exchanges_NNS will_MD most_RBS likely_JJ continue_VBP to_TO run_VB in_IN batch_NN mode_NN every_DT so_RB often_RB -RRB-_-RRB- ._.
+Two_CD important_JJ directions_NNS for_IN future_JJ work_NN are_VBP to_TO explicitly_RB address_VB both_DT online_NN and_CC limited-information_NN aspects_NNS of_IN the_DT problem_NN ._.
+The_DT online_JJ aspect_NN is_VBZ that_IN donees_NNS and_CC donors_NNS will_MD be_VB arriving_VBG into_IN the_DT system_NN over_IN time_NN ,_, and_CC it_PRP may_MD be_VB best_RB to_TO not_RB execute_VB the_DT myopically_RB optimal_JJ exchange_NN now_RB ,_, but_CC rather_RB save_VB part_NN of_IN the_DT current_JJ market_NN for_IN later_JJ matches_NNS ._.
+In_IN fact_NN ,_, some_DT work_NN has_VBZ been_VBN done_VBN on_IN this_DT in_IN certain_JJ restricted_JJ settings_NNS -LSB-_-LRB- ##_NNS ,_, ##_NN -RSB-_-RRB- ._.
+The_DT limited-information_NN aspect_NN is_VBZ that_IN even_RB in_IN batch_NN mode_NN ,_, the_DT graph_NN provided_VBN as_IN input_NN is_VBZ not_RB completely_RB correct_JJ :_: a_DT number_NN of_IN donor-donee_JJ pairs_NNS believed_VBN to_TO be_VB compatible_JJ turn_NN out_RP to_TO be_VB incompatible_JJ when_WRB more_RBR expensive_JJ last-minute_JJ tests_NNS are_VBP performed_VBN ._.
+Therefore_RB ,_, it_PRP would_MD be_VB desirable_JJ to_TO perform_VB an_DT optimization_NN with_IN this_DT in_IN mind_NN ,_, such_JJ as_IN outputting_VBG a_DT low-degree_JJ robust_JJ subgraph_NN to_TO be_VB tested_VBN before_IN the_DT final_JJ match_NN is_VBZ produced_VBN ,_, or_CC to_TO output_NN a_DT contingency_NN plan_NN in_IN case_NN of_IN failure_NN ._.
+We_PRP are_VBP currently_RB exploring_VBG a_DT number_NN of_IN questions_NNS along_IN these_DT lines_NNS but_CC there_EX is_VBZ certainly_RB much_RB more_JJR to_TO be_VB done_VBN ._.
+Acknowledgments_NNS We_PRP thank_VBP economists_NNS Al_NNP Roth_NNP and_CC Utku_NNP Unver_NNP ,_, as_RB well_RB as_IN kidney_NN transplant_NN surgeon_NN Michael_NNP Rees_NNP ,_, for_IN alerting_VBG us_PRP to_TO the_DT fact_NN that_IN prior_JJ technology_NN was_VBD inadequate_JJ for_IN the_DT clearing_NN problem_NN on_IN a_DT national_JJ scale_NN ,_, supplying_VBG initial_JJ data_NNS sets_NNS ,_, and_CC discussions_NNS on_IN details_NNS of_IN the_DT kidney_NN exchange_NN process_NN ._.
+We_PRP also_RB thank_VBP Don_NNP Sheehy_NNP for_IN bringing_VBG to_TO our_PRP$ attention_NN the_DT idea_NN of_IN shoe_NN exchange_NN ._.
+This_DT work_NN was_VBD supported_VBN in_IN part_NN by_IN the_DT National_NNP Science_NNP Foundation_NNP under_IN grants_NNS IIS-0427858_NN and_CC CCF-0514922_NN ._.
+9_CD ._.
+REFERENCES_NNS -LSB-_-LRB- #_# -RSB-_-RRB- C_NN ._.
+Barnhart_NNP ,_, E_NNP ._.
+L_NN ._.
+Johnson_NNP ,_, G_NNP ._.
+L_NN ._.
+Nemhauser_NNP ,_, M_NN ._.
+W_NN ._.
+P_NN ._.
+Savelsbergh_NNP ,_, and_CC P_NN ._.
+H_NN ._.
+Vance_NNP ._.
+303_CD 0_CD 500_CD 1000_CD 1500_CD 2000_CD 2500_CD 3000_CD 3500_CD 4000_CD 0_CD ####_CD ####_CD ####_CD ####_CD #####_CD Clearingtime_NN -LRB-_-LRB- seconds_NNS -RRB-_-RRB- Number_NN of_IN patients_NNS Our_PRP$ algorithm_NN Our_PRP$ algorithm_NN with_IN restricted_JJ column_NN seeder_NN Our_PRP$ algorithm_NN with_IN no_DT optimality_NN prover_NN CPLEX_NN cycle_NN formulation_NN Figure_NN #_# :_: Experimental_JJ results_NNS :_: average_JJ runtime_NN with_IN standard_JJ deviation_NN bars_NNS ._.
+Branch-and-price_NN :_: Column_NNP generation_NN for_IN solving_VBG huge_JJ integer_NN programs_NNS ._.
+Operations_NNP Research_NNP ,_, ##_CD :_: 316-329_CD ,_, May-June_NNP ####_NNP ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- R_NN ._.
+Dechter_NNP and_CC J_NNP ._.
+Pearl_NNP ._.
+Generalized_NNP best-first_JJS search_NN strategies_NNS and_CC the_DT optimality_NN of_IN A_DT *_NN ._.
+Journal_NNP of_IN the_DT ACM_NNP ,_, ##_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 505-536_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- F_NN ._.
+L_NN ._.
+Delmonico_NNP ._.
+Exchanging_VBG kidneys_NNS -_: advances_NNS in_IN living-donor_JJ transplantation_NN ._.
+New_NNP England_NNP Journal_NNP of_IN Medicine_NNP ,_, ###_CD :_: 1812-1814_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- J_NN ._.
+Edmonds_NNP ._.
+Path_NN ,_, trees_NNS ,_, and_CC flowers_NNS ._.
+Canadian_JJ Journal_NNP of_IN Mathematics_NNP ,_, ##_CD :_: 449-467_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- M_NN ._.
+R_NN ._.
+Garey_NNP and_CC D_NNP ._.
+S_NN ._.
+Johnson_NNP ._.
+Computers_NNS and_CC Intractability_NN ;_: A_DT Guide_NNP to_TO the_DT Theory_NNP of_IN NP-Completeness_NN ._.
+####_NN ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- S_NN ._.
+E_NN ._.
+Gentry_NNP ,_, D_NNP ._.
+L_NN ._.
+Segev_NNP ,_, and_CC R_NN ._.
+A_DT ._.
+Montgomery_NNP ._.
+A_DT comparison_NN of_IN populations_NNS served_VBN by_IN kidney_NN paired_JJ donation_NN and_CC list_NN paired_JJ donation_NN ._.
+American_NNP Journal_NNP of_IN Transplantation_NNP ,_, #_# -LRB-_-LRB- #_# -RRB-_-RRB- :_: 1914-1921_CD ,_, August_NNP ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- P_NN ._.
+Hart_NNP ,_, N_NNP ._.
+Nilsson_NNP ,_, and_CC B_NN ._.
+Raphael_NNP ._.
+A_DT formal_JJ basis_NN for_IN the_DT heuristic_NN determination_NN of_IN minimum_JJ cost_NN paths_NNS ._.
+IEEE_NNP Transactions_NNS on_IN Systems_NNP Science_NNP and_CC Cybernetics_NNP ,_, #_# -LRB-_-LRB- #_# -RRB-_-RRB- :_: 100-107_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- K_NNP ._.
+Hoffman_NNP and_CC M_NN ._.
+Padberg_NNP ._.
+Solving_VBG airline_NN crew-scheduling_JJ problems_NNS by_IN branch-and-cut_NN ._.
+Management_NNP Science_NNP ,_, ##_CD :_: 657-682_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- Intervac_NNP ._.
+http_NN :_: /_: /_: intervac-online_NN ._.
+com_NN /_: ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- National_NNP odd_JJ shoe_NN exchange_NN ._.
+http_NN :_: /_: /_: www_NN ._.
+oddshoe_NN ._.
+org_NN /_: ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Peerflix_NNP ._.
+http_NN :_: /_: /_: www_NN ._.
+peerflix_NN ._.
+com_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Read_VB it_PRP swap_VB it_PRP ._.
+http_NN :_: /_: /_: www_NN ._.
+readitswapit_NN ._.
+co_NN ._.
+uk_NN /_: ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- A_DT ._.
+E_NN ._.
+Roth_NNP ,_, T_NN ._.
+Sonmez_NNP ,_, and_CC M_NN ._.
+U_NNP ._.
+Unver_NNP ._.
+Kidney_NN exchange_NN ._.
+Quarterly_JJ Journal_NNP of_IN Economics_NNP ,_, 119_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 457-488_CD ,_, May_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- A_DT ._.
+E_NN ._.
+Roth_NNP ,_, T_NN ._.
+Sonmez_NNP ,_, and_CC M_NN ._.
+U_NNP ._.
+Unver_NNP ._.
+A_DT kidney_NN exchange_NN clearinghouse_NN in_IN New_NNP England_NNP ._.
+American_JJ Economic_NNP Review_NNP ,_, ##_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 376-380_CD ,_, May_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- A_DT ._.
+E_NN ._.
+Roth_NNP ,_, T_NN ._.
+Sonmez_NNP ,_, and_CC M_NN ._.
+U_NNP ._.
+Unver_NNP ._.
+Efficient_JJ kidney_NN exchange_NN :_: Coincidence_NN of_IN wants_VBZ in_IN a_DT market_NN with_IN compatibility-based_JJ preferences_NNS ._.
+American_JJ Economic_NNP Review_NNP ,_, forthcoming_JJ ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- E_NN ._.
+Rothberg_NNP ._.
+Gabow_NNP ''_'' s_VBZ n3_NN maximum-weight_JJ matching_NN algorithm_NN :_: an_DT implementation_NN ._.
+The_DT First_NNP DIMACS_NNP Implementation_NNP Challenge_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- S_NN ._.
+L_NN ._.
+Saidman_NNP ,_, A_NNP ._.
+E_NN ._.
+Roth_NNP ,_, T_NN ._.
+Snmez_NNP ,_, M_NN ._.
+U_NNP ._.
+Unver_NNP ,_, and_CC F_NN ._.
+L_NN ._.
+Delmonico_NNP ._.
+Increasing_VBG the_DT opportunity_NN of_IN live_JJ kidney_NN donation_NN by_IN matching_VBG for_IN two_CD and_CC three_CD way_NN exchanges_NNS ._.
+Transplantation_NN ,_, ##_NN -LRB-_-LRB- #_# -RRB-_-RRB- :_: 773-782_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- T_NN ._.
+Sandholm_NNP ._.
+Optimal_JJ winner_NN determination_NN algorithms_NNS ._.
+In_IN Combinatorial_JJ Auctions_NNS ,_, Cramton_NNP ,_, Shoham_NNP ,_, and_CC Steinberg_NNP ,_, eds_NNS ._.
+MIT_NNP Press_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- T_NN ._.
+Sandholm_NNP and_CC S_NN ._.
+Suri_NNP ._.
+Side_NN constraints_NNS and_CC non-price_JJ attributes_NNS in_IN markets_NNS ._.
+In_IN IJCAI-2001_NN Workshop_NNP on_IN Distributed_VBN Constraint_NN Reasoning_NN ,_, pages_NNS 55-61_CD ,_, Seattle_NNP ,_, WA_NNP ,_, ####_CD ._.
+To_TO appear_VB in_IN Games_NNP and_CC Economic_NNP Behavior_NNP ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- D_NN ._.
+L_NN ._.
+Segev_NNP ,_, S_NN ._.
+E_NN ._.
+Gentry_NNP ,_, D_NNP ._.
+S_NN ._.
+Warren_NNP ,_, B_NN ._.
+Reeb_NNP ,_, and_CC R_NN ._.
+A_DT ._.
+Montgomery_NNP ._.
+Kidney_NN paired_JJ donation_NN and_CC optimizing_VBG the_DT use_NN of_IN live_JJ donor_NN organs_NNS ._.
+Journal_NNP of_IN the_DT American_NNP Medical_NNP Association_NNP ,_, ###_CD -LRB-_-LRB- ##_CD -RRB-_-RRB- :_: 1883-1890_CD ,_, April_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- United_NNP Network_NNP for_IN Organ_NNP Sharing_VBG -LRB-_-LRB- UNOS_NNS -RRB-_-RRB- ._.
+http_NN :_: /_: /_: www_NN ._.
+unos_NNS ._.
+org_NN /_: ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- M_NN ._.
+U_NNP ._.
+Unver_NNP ._.
+Dynamic_NNP kidney_NN exchange_NN ._.
+Working_VBG paper_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- United_NNP States_NNPS Renal_JJ Data_NNS System_NN -LRB-_-LRB- USRDS_NN -RRB-_-RRB- ._.
+http_NN :_: /_: /_: www_NN ._.
+usrds_NNS ._.
+org_NN /_: ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- S_NN ._.
+A_DT ._.
+Zenios_NNP ._.
+Optimal_JJ control_NN of_IN a_DT paired-kidney_JJ exchange_NN program_NN ._.
+Management_NNP Science_NNP ,_, 48_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 328-342_CD ,_, March_NNP ####_CD ._.
+304_CD

@@ -1,0 +1,557 @@
+Analyzing_VBG Feature_NNP Trajectories_NNPS for_IN Event_NNP Detection_NN Qi_NNP He_PRP qihe_VBD @_SYM pmail_NN ._.
+ntu_NN ._.
+edu_NN ._.
+sg_NN Kuiyu_NNP Chang_NNP ASKYChang_NNP @_IN ntu_NN ._.
+edu_NN ._.
+sg_NN Ee-Peng_NNP Lim_NNP ASEPLim_NNP @_IN ntu_NN ._.
+edu_NN ._.
+sg_NNP School_NNP of_IN Computer_NNP Engineering_NNP Nanyang_NNP Technological_NNP University_NNP Block_NNP N4_NN ,_, Nanyang_NNP Avenue_NNP ,_, Singapore_NNP ######_CD ABSTRACT_NN We_PRP consider_VBP the_DT problem_NN of_IN analyzing_VBG word_NN trajectories_NNS in_IN both_DT time_NN and_CC frequency_NN domains_NNS ,_, with_IN the_DT specific_JJ goal_NN of_IN identifying_VBG important_JJ and_CC less-reported_JJ ,_, periodic_JJ and_CC aperiodic_JJ words_NNS ._.
+A_DT set_NN of_IN words_NNS with_IN identical_JJ trends_NNS can_MD be_VB grouped_VBN together_RB to_TO reconstruct_VB an_DT event_NN in_IN a_DT completely_RB unsupervised_JJ manner_NN ._.
+The_DT document_NN frequency_NN of_IN each_DT word_NN across_IN time_NN is_VBZ treated_VBN like_IN a_DT time_NN series_NN ,_, where_WRB each_DT element_NN is_VBZ the_DT document_NN frequency_NN -_: inverse_JJ document_NN frequency_NN -LRB-_-LRB- DFIDF_NN -RRB-_-RRB- score_NN at_IN one_CD time_NN point_NN ._.
+In_IN this_DT paper_NN ,_, we_PRP #_# -RRB-_-RRB- first_RB applied_VBD spectral_JJ analysis_NN to_TO categorize_VB features_NNS for_IN different_JJ event_NN characteristics_NNS :_: important_JJ and_CC less-reported_JJ ,_, periodic_JJ and_CC aperiodic_JJ ;_: #_# -RRB-_-RRB- modeled_VBD aperiodic_JJ features_NNS with_IN Gaussian_JJ density_NN and_CC periodic_JJ features_NNS with_IN Gaussian_JJ mixture_NN densities_NNS ,_, and_CC subsequently_RB detected_VBN each_DT feature_NN ''_'' s_NNS burst_NN by_IN the_DT truncated_VBN Gaussian_JJ approach_NN ;_: #_# -RRB-_-RRB- proposed_VBD an_DT unsupervised_JJ greedy_JJ event_NN detection_NN algorithm_NN to_TO detect_VB both_CC aperiodic_JJ and_CC periodic_JJ events_NNS ._.
+All_DT of_IN the_DT above_JJ methods_NNS can_MD be_VB applied_VBN to_TO time_NN series_NN data_NNS in_IN general_JJ ._.
+We_PRP extensively_RB evaluated_VBD our_PRP$ methods_NNS on_IN the_DT 1-year_JJ Reuters_NNP News_NNP Corpus_NNP -LSB-_-LRB- #_# -RSB-_-RRB- and_CC showed_VBD that_IN they_PRP were_VBD able_JJ to_TO uncover_VB meaningful_JJ aperiodic_JJ and_CC periodic_JJ events_NNS ._.
+Categories_NNS and_CC Subject_NNP Descriptors_NNPS :_: H_NN ._.
+#_# ._.
+#_# -LSB-_-LRB- Information_NNP Storage_NNP and_CC Retrieval_NNP -RSB-_-RRB- :_: Information_NNP Search_VB and_CC Retrieval_NNP General_NNP Terms_NNS :_: Algorithms_NNS ,_, Experimentation_NN ._.
+1_LS ._.
+INTRODUCTION_NNP There_EX are_VBP more_JJR than_IN #_# ,_, ###_CD online_JJ news_NN sources_NNS in_IN the_DT world_NN ._.
+Manually_RB monitoring_VBG all_DT of_IN them_PRP for_IN important_JJ events_NNS has_VBZ become_VBN difficult_JJ or_CC practically_RB impossible_JJ ._.
+In_IN fact_NN ,_, the_DT topic_NN detection_NN and_CC tracking_NN -LRB-_-LRB- TDT_NN -RRB-_-RRB- community_NN has_VBZ for_IN many_JJ years_NNS been_VBN trying_VBG to_TO come_VB up_RP with_IN a_DT practical_JJ solution_NN to_TO help_VB people_NNS monitor_VB news_NN effectively_RB ._.
+Unfortunately_RB ,_, the_DT holy_JJ grail_NN is_VBZ still_RB elusive_JJ ,_, because_IN the_DT vast_JJ majority_NN of_IN TDT_NN solutions_NNS proposed_VBN for_IN event_NN detection_NN -LSB-_-LRB- ##_CD ,_, #_# ,_, ##_NN ,_, #_# ,_, ##_NN ,_, #_# ,_, ##_NN ,_, 10_CD -RSB-_-RRB- are_VBP either_RB too_RB simplistic_JJ -LRB-_-LRB- based_VBN on_IN cosine_NN similarity_NN -LSB-_-LRB- #_# -RSB-_-RRB- -RRB-_-RRB- or_CC impractical_JJ due_JJ to_TO the_DT need_NN to_TO tune_VB a_DT large_JJ number_NN of_IN parameters_NNS -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+The_DT ineffectiveness_NN of_IN current_JJ TDT_NNP technologies_NNS can_MD be_VB easily_RB illustrated_VBN by_IN subscribing_VBG to_TO any_DT of_IN the_DT many_JJ online_JJ news_NN alerts_VBZ services_NNS such_JJ as_IN the_DT industryleading_VBG Google_NNP News_NNP Alerts_VBZ -LSB-_-LRB- #_# -RSB-_-RRB- ,_, which_WDT generates_VBZ more_JJR than_IN 50_CD %_NN false_JJ alarms_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+As_IN further_JJ proof_NN ,_, portals_NNS like_IN Yahoo_NNP take_VB a_DT more_RBR pragmatic_JJ approach_NN by_IN requiring_VBG all_DT machine_NN generated_VBD news_NN alerts_VBZ to_TO go_VB through_IN a_DT human_JJ operator_NN for_IN confirmation_NN before_IN sending_VBG them_PRP out_RP to_TO subscribers_NNS ._.
+Instead_RB of_IN attacking_VBG the_DT problem_NN with_IN variations_NNS of_IN the_DT same_JJ hammer_NN -LRB-_-LRB- cosine_NN similarity_NN and_CC TFIDF_NN -RRB-_-RRB- ,_, a_DT fundamental_JJ understanding_NN of_IN the_DT characteristics_NNS of_IN news_NN stream_NN data_NNS is_VBZ necessary_JJ before_IN any_DT major_JJ breakthroughs_NNS can_MD be_VB made_VBN in_IN TDT_NNP ._.
+Thus_RB in_IN this_DT paper_NN ,_, we_PRP look_VBP at_IN news_NN stories_NNS and_CC feature_NN trends_NNS from_IN the_DT perspective_NN of_IN analyzing_VBG a_DT time-series_JJ word_NN signal_NN ._.
+Previous_JJ work_NN like_IN -LSB-_-LRB- #_# -RSB-_-RRB- has_VBZ attempted_VBN to_TO reconstruct_VB an_DT event_NN with_IN its_PRP$ representative_JJ features_NNS ._.
+However_RB ,_, in_IN many_JJ predictive_JJ event_NN detection_NN tasks_NNS -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, retrospective_JJ event_NN detection_NN -RRB-_-RRB- ,_, there_EX is_VBZ a_DT vast_JJ set_NN of_IN potential_JJ features_NNS only_RB for_IN a_DT fixed_VBN set_NN of_IN observations_NNS -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, the_DT obvious_JJ bursts_NNS -RRB-_-RRB- ._.
+Of_IN these_DT features_NNS ,_, often_RB only_RB a_DT small_JJ number_NN are_VBP expected_VBN to_TO be_VB useful_JJ ._.
+In_IN particular_JJ ,_, we_PRP study_VBP the_DT novel_JJ problem_NN of_IN analyzing_VBG feature_NN trajectories_NNS for_IN event_NN detection_NN ,_, borrowing_VBG a_DT well-known_JJ technique_NN from_IN signal_NN processing_NN :_: identifying_VBG distributional_JJ correlations_NNS among_IN all_DT features_NNS by_IN spectral_JJ analysis_NN ._.
+To_TO evaluate_VB our_PRP$ method_NN ,_, we_PRP subsequently_RB propose_VBP an_DT unsupervised_JJ event_NN detection_NN algorithm_NN for_IN news_NN streams_NNS ._.
+0_CD 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 8_CD /_: ##_CD /_: ####_CD ##_CD /_: #_# /_: ####_CD #_# /_: ##_CD /_: ####_CD #_# /_: ##_CD /_: ####_CD Easter_NNP April_NNP -LRB-_-LRB- a_DT -RRB-_-RRB- aperiodic_JJ event_NN 0_CD 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 8_CD /_: ##_CD /_: ####_CD ##_CD /_: #_# /_: ####_CD #_# /_: ##_CD /_: ####_CD #_# /_: ##_CD /_: ####_CD Unaudited_NNP Ended_NNP -LRB-_-LRB- b_NN -RRB-_-RRB- periodic_JJ event_NN Figure_NN #_# :_: Feature_NN correlation_NN -LRB-_-LRB- DFIDF_NN :_: time_NN -RRB-_-RRB- between_IN a_DT -RRB-_-RRB- Easter_NNP and_CC April_NNP b_NN -RRB-_-RRB- Unaudited_JJ and_CC Ended_JJ ._.
+As_IN an_DT illustrative_JJ example_NN ,_, consider_VB the_DT correlation_NN between_IN the_DT words_NNS Easter_NNP and_CC April_NNP from_IN the_DT Reuters_NNP Corpus1_NN ._.
+From_IN the_DT plot_NN of_IN their_PRP$ normalized_VBN DFIDF_NN in_IN Figure_NNP 1_CD -LRB-_-LRB- a_DT -RRB-_-RRB- ,_, we_PRP observe_VBP the_DT heavy_JJ overlap_VBP between_IN the_DT two_CD words_NNS circa_VBP ##_CD /_: ####_CD ,_, which_WDT means_VBZ they_PRP probably_RB both_DT belong_VBP to_TO the_DT same_JJ event_NN during_IN that_DT time_NN -LRB-_-LRB- Easter_NNP feast_NN -RRB-_-RRB- ._.
+In_IN this_DT example_NN ,_, the_DT hidden_JJ event_NN Easter_NNP feast_NN is_VBZ a_DT typical_JJ important_JJ aperiodic_JJ event_NN over_IN 1-year_JJ data_NNS ._.
+Another_DT example_NN is_VBZ given_VBN by_IN Figure_NNP #_# -LRB-_-LRB- b_NN -RRB-_-RRB- ,_, where_WRB both_CC the_DT words_NNS Unaudited_NNP and_CC Ended_NNP 1_CD Reuters_NNP Corpus_NNP is_VBZ the_DT default_NN dataset_NN for_IN all_DT examples_NNS ._.
+exhibit_NN similar_JJ behaviour_NN over_IN periods_NNS of_IN #_# months_NNS ._.
+These_DT two_CD words_NNS actually_RB originated_VBP from_IN the_DT same_JJ periodic_JJ event_NN ,_, net_JJ income-loss_NN reports_NNS ,_, which_WDT are_VBP released_VBN quarterly_JJ by_IN publicly_RB listed_VBN companies_NNS ._.
+Other_JJ observations_NNS drawn_VBN from_IN Figure_NNP #_# are_VBP :_: #_# -RRB-_-RRB- the_DT bursty_JJ period_NN of_IN April_NNP is_VBZ much_RB longer_JJR than_IN Easter_NNP ,_, which_WDT suggests_VBZ that_IN April_NNP may_MD exist_VB in_IN other_JJ events_NNS during_IN the_DT same_JJ period_NN ;_: 2_LS -RRB-_-RRB- Unaudited_NNP has_VBZ a_DT higher_JJR average_JJ DFIDF_NN value_NN than_IN Ended_JJ ,_, which_WDT indicates_VBZ Unaudited_NNP to_TO be_VB more_RBR representative_JJ for_IN the_DT underlying_VBG event_NN ._.
+These_DT two_CD examples_NNS are_VBP but_CC the_DT tip_NN of_IN the_DT iceberg_NN among_IN all_DT word_NN trends_NNS and_CC correlations_NNS hidden_VBN in_IN a_DT news_NN stream_NN like_IN Reuters_NNP ._.
+If_IN a_DT large_JJ number_NN of_IN them_PRP can_MD be_VB uncovered_VBN ,_, it_PRP could_MD significantly_RB aid_VB TDT_NN tasks_NNS ._.
+In_IN particular_JJ ,_, it_PRP indicates_VBZ the_DT significance_NN of_IN mining_NN correlating_VBG features_NNS for_IN detecting_VBG corresponding_JJ events_NNS ._.
+To_TO summarize_VB ,_, we_PRP postulate_VBP that_IN :_: #_# -RRB-_-RRB- An_DT event_NN is_VBZ described_VBN by_IN its_PRP$ representative_JJ features_NNS ._.
+A_DT periodic_JJ event_NN has_VBZ a_DT list_NN of_IN periodic_JJ features_NNS and_CC an_DT aperiodic_JJ event_NN has_VBZ a_DT list_NN of_IN aperiodic_JJ features_NNS ;_: #_# -RRB-_-RRB- Representative_NNP features_NNS from_IN the_DT same_JJ event_NN share_NN similar_JJ distributions_NNS over_IN time_NN and_CC are_VBP highly_RB correlated_VBN ;_: #_# -RRB-_-RRB- An_DT important_JJ event_NN has_VBZ a_DT set_NN of_IN active_JJ -LRB-_-LRB- largely_RB reported_VBN -RRB-_-RRB- representative_JJ features_NNS ,_, whereas_IN an_DT unimportant_JJ event_NN has_VBZ a_DT set_NN of_IN inactive_JJ -LRB-_-LRB- less-reported_JJ -RRB-_-RRB- representative_JJ features_NNS ;_: #_# -RRB-_-RRB- A_DT feature_NN may_MD be_VB included_VBN by_IN several_JJ events_NNS with_IN overlaps_VBZ in_IN time_NN frames_NNS ._.
+Based_VBN on_IN these_DT observations_NNS ,_, we_PRP can_MD either_RB mine_VB representative_JJ features_NNS given_VBN an_DT event_NN or_CC detect_VB an_DT event_NN from_IN a_DT list_NN of_IN highly_RB correlated_VBN features_NNS ._.
+In_IN this_DT paper_NN ,_, we_PRP focus_VBP on_IN the_DT latter_JJ ,_, i_FW ._.
+e_LS ._.
+,_, how_WRB correlated_VBD features_NNS can_MD be_VB uncovered_VBN to_TO form_VB an_DT event_NN in_IN an_DT unsupervised_JJ manner_NN ._.
+1_LS ._.
+#_# Contributions_NNPS This_DT paper_NN has_VBZ three_CD main_JJ contributions_NNS :_: To_TO the_DT best_JJS of_IN our_PRP$ knowledge_NN ,_, our_PRP$ approach_NN is_VBZ the_DT first_JJ to_TO categorize_VB word_NN features_NNS for_IN heterogenous_JJ events_NNS ._.
+Specifically_RB ,_, every_DT word_NN feature_NN is_VBZ categorized_VBN into_IN one_CD of_IN the_DT following_VBG five_CD feature_NN types_NNS based_VBN on_IN its_PRP$ power_NN spectrum_NN strength_NN and_CC periodicity_NN :_: #_# -RRB-_-RRB- HH_NN -LRB-_-LRB- high_JJ power_NN and_CC high_JJ /_: long_JJ periodicity_NN -RRB-_-RRB- :_: important_JJ aperiodic_JJ events_NNS ,_, 2_LS -RRB-_-RRB- HL_NN -LRB-_-LRB- high_JJ power_NN and_CC low_JJ periodicity_NN -RRB-_-RRB- :_: important_JJ periodic_JJ events_NNS ,_, #_# -RRB-_-RRB- LH_NN -LRB-_-LRB- low_JJ power_NN and_CC high_JJ periodicity_NN -RRB-_-RRB- :_: unimportant_JJ aperiodic_JJ events_NNS ,_, #_# -RRB-_-RRB- LL_NN -LRB-_-LRB- low_JJ power_NN and_CC low_JJ periodicity_NN -RRB-_-RRB- :_: non-events_NNS ,_, and_CC #_# -RRB-_-RRB- SW_NN -LRB-_-LRB- stopwords_NNS -RRB-_-RRB- ,_, a_DT higher_JJR power_NN and_CC periodicity_NN subset_NN of_IN LL_NN comprising_VBG stopwords_NNS ,_, which_WDT contains_VBZ no_DT information_NN ._.
+We_PRP propose_VBP a_DT simple_JJ and_CC effective_JJ mixture_NN densitybased_VBN approach_NN to_TO model_NN and_CC detect_VB feature_NN bursts_NNS ._.
+We_PRP come_VBP up_RP with_IN an_DT unsupervised_JJ event_NN detection_NN algorithm_NN to_TO detect_VB both_CC aperiodic_JJ and_CC periodic_JJ events_NNS ._.
+Our_PRP$ algorithm_NN has_VBZ been_VBN evaluated_VBN on_IN a_DT real_JJ news_NN stream_NN to_TO show_VB its_PRP$ effectiveness_NN ._.
+2_LS ._.
+RELATED_JJ WORK_VBP This_DT work_NN is_VBZ largely_RB motivated_VBN by_IN a_DT broader_JJR family_NN of_IN problems_NNS collectively_RB known_VBN as_IN Topic_NNP Detection_NN and_CC Tracking_VBG -LRB-_-LRB- TDT_NN -RRB-_-RRB- -LSB-_-LRB- ##_CD ,_, #_# ,_, ##_NN ,_, #_# ,_, ##_NN ,_, #_# ,_, ##_NN ,_, ##_NN -RSB-_-RRB- ._.
+Moreover_RB ,_, most_RBS TDT_JJ research_NN so_RB far_RB has_VBZ been_VBN concerned_VBN with_IN clustering_NN /_: classifying_VBG documents_NNS into_IN topic_NN types_NNS ,_, identifying_VBG novel_JJ sentences_NNS -LSB-_-LRB- #_# -RSB-_-RRB- for_IN new_JJ events_NNS ,_, etc_FW ._.
+,_, without_IN much_JJ regard_NN to_TO analyzing_VBG the_DT word_NN trajectory_NN with_IN respect_NN to_TO time_NN ._.
+Swan_NN and_CC Allan_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- first_RB attempted_VBN using_VBG co-occuring_JJ terms_NNS to_TO construct_VB an_DT event_NN ._.
+However_RB ,_, they_PRP only_RB considered_VBD named_VBN entities_NNS and_CC noun_NN phrase_NN pairs_NNS ,_, without_IN considering_VBG their_PRP$ periodicities_NNS ._.
+On_IN the_DT contrary_NN ,_, our_PRP$ paper_NN considers_VBZ all_DT of_IN the_DT above_JJ ._.
+Recently_RB ,_, there_EX has_VBZ been_VBN significant_JJ interest_NN in_IN modeling_NN an_DT event_NN in_IN text_NN streams_NNS as_IN a_DT burst_NN of_IN activities_NNS by_IN incorporating_VBG temporal_JJ information_NN ._.
+Kleinberg_NNP ''_'' s_VBZ seminal_JJ work_NN described_VBD how_WRB bursty_JJ features_NNS can_MD be_VB extracted_VBN from_IN text_NN streams_NNS using_VBG an_DT infinite_JJ automaton_NN model_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, which_WDT inspired_VBD a_DT whole_JJ series_NN of_IN applications_NNS such_JJ as_IN Kumar_NNP ''_'' s_VBZ identification_NN of_IN bursty_JJ communities_NNS from_IN Weblog_NNP graphs_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, Mei_NNP ''_'' s_VBZ summarization_NN of_IN evolutionary_JJ themes_NNS in_IN text_NN streams_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, He_PRP ''_'' s_VBZ clustering_NN of_IN text_NN streams_NNS using_VBG bursty_JJ features_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, etc_FW ._.
+Nevertheless_RB ,_, none_NN of_IN the_DT existing_VBG work_NN specifically_RB identified_VBD features_NNS for_IN events_NNS ,_, except_IN for_IN Fung_NNP et_FW al_FW ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- ,_, who_WP clustered_VBD busty_JJ features_NNS to_TO identify_VB various_JJ bursty_JJ events_NNS ._.
+Our_PRP$ work_NN differs_VBZ from_IN -LSB-_-LRB- #_# -RSB-_-RRB- in_IN several_JJ ways_NNS :_: #_# -RRB-_-RRB- we_PRP analyze_VBP every_DT single_JJ feature_NN ,_, not_RB only_RB bursty_JJ features_NNS ;_: #_# -RRB-_-RRB- we_PRP classify_VBP features_NNS along_IN two_CD categorical_JJ dimensions_NNS -LRB-_-LRB- periodicity_NN and_CC power_NN -RRB-_-RRB- ,_, yielding_VBG altogether_RB five_CD primary_JJ feature_NN types_NNS ;_: #_# -RRB-_-RRB- we_PRP do_VBP not_RB restrict_VB each_DT feature_NN to_TO exclusively_RB belong_VB to_TO only_RB one_CD event_NN ._.
+Spectral_JJ analysis_NN techniques_NNS have_VBP previously_RB been_VBN used_VBN by_IN Vlachos_NNP et_FW al_FW ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- to_TO identify_VB periodicities_NNS and_CC bursts_NNS from_IN query_NN logs_NNS ._.
+Their_PRP$ focus_NN was_VBD on_IN detecting_VBG multiple_JJ periodicities_NNS from_IN the_DT power_NN spectrum_NN graph_NN ,_, which_WDT were_VBD then_RB used_VBN to_TO index_NN words_NNS for_IN query-by-burst_JJ search_NN ._.
+In_IN this_DT paper_NN ,_, we_PRP use_VBP spectral_JJ analysis_NN to_TO classify_VB word_NN features_NNS along_IN two_CD dimensions_NNS ,_, namely_RB periodicity_NN and_CC power_NN spectrum_NN ,_, with_IN the_DT ultimate_JJ goal_NN of_IN identifying_VBG both_CC periodic_JJ and_CC aperiodic_JJ bursty_JJ events_NNS ._.
+3_LS ._.
+DATA_NNP REPRESENTATION_NNP Let_VB T_NN be_VB the_DT duration_NN /_: period_NN -LRB-_-LRB- in_IN days_NNS -RRB-_-RRB- of_IN a_DT news_NN stream_NN ,_, and_CC F_NN represents_VBZ the_DT complete_JJ word_NN feature_NN space_NN in_IN the_DT classical_JJ static_JJ Vector_NNP Space_NNP Model_NNP -LRB-_-LRB- VSM_NNP -RRB-_-RRB- ._.
+3_LS ._.
+#_# Event_NNP Periodicity_NNP Classification_NN Within_IN T_NN ,_, there_EX may_MD exist_VB certain_JJ events_NNS that_WDT occur_VBP only_RB once_RB ,_, e_LS ._.
+g_NN ._.
+,_, Tony_NNP Blair_NNP elected_VBD as_IN Prime_NNP Minister_NNP of_IN U_NNP ._.
+K_NN ._.
+,_, and_CC other_JJ recurring_VBG events_NNS of_IN various_JJ periodicities_NNS ,_, e_LS ._.
+g_NN ._.
+,_, weekly_JJ soccer_NN matches_NNS ._.
+We_PRP thus_RB categorize_VBP all_DT events_NNS into_IN two_CD types_NNS :_: aperiodic_JJ and_CC periodic_JJ ,_, defined_VBN as_IN follows_VBZ ._.
+Definition_NN #_# ._.
+-LRB-_-LRB- Aperiodic_JJ Event_NN -RRB-_-RRB- An_DT event_NN is_VBZ aperiodic_JJ within_IN T_NN if_IN it_PRP only_RB happens_VBZ once_RB ._.
+Definition_NN #_# ._.
+-LRB-_-LRB- Periodic_JJ Event_NN -RRB-_-RRB- If_IN events_NNS of_IN a_DT certain_JJ event_NN genre_NN occur_VBP regularly_RB with_IN a_DT fixed_VBN periodicity_NN P_NN T_NN /_: #_# ,_, we_PRP say_VBP that_IN this_DT particular_JJ event_NN genre_NN is_VBZ periodic_JJ ,_, with_IN each_DT member_NN event_NN qualified_VBD as_IN a_DT periodic_JJ event_NN ._.
+Note_VB that_IN the_DT definition_NN of_IN aperiodic_JJ is_VBZ relative_JJ ,_, i_FW ._.
+e_LS ._.
+,_, it_PRP is_VBZ true_JJ only_RB for_IN a_DT given_VBN T_NN ,_, and_CC may_MD be_VB invalid_JJ for_IN any_DT other_JJ T_NN >_JJR T_NN ._.
+For_IN example_NN ,_, the_DT event_NN Christmas_NNP feast_NN is_VBZ aperiodic_JJ for_IN T_NN ###_CD but_CC periodic_JJ for_IN T_NN ###_CD ._.
+3_LS ._.
+#_# Representative_NNP Features_VBZ Intuitively_RB ,_, an_DT event_NN can_MD be_VB described_VBN very_RB concisely_RB by_IN a_DT few_JJ discriminative_JJ and_CC representative_JJ word_NN features_NNS and_CC vice-versa_NN ,_, e_LS ._.
+g_NN ._.
+,_, hurricane_NN ,_, sweep_NN ,_, and_CC strike_NN could_MD be_VB representative_JJ features_NNS of_IN a_DT Hurricane_NNP genre_NN event_NN ._.
+Likewise_RB ,_, a_DT set_NN of_IN strongly_RB correlated_VBN features_NNS could_MD be_VB used_VBN to_TO reconstruct_VB an_DT event_NN description_NN ,_, assuming_VBG that_IN strongly_RB correlated_VBN features_NNS are_VBP representative_JJ ._.
+The_DT representation_NN vector_NN of_IN a_DT word_NN feature_NN is_VBZ defined_VBN as_IN follows_VBZ :_: Definition_NN #_# ._.
+-LRB-_-LRB- Feature_NNP Trajectory_NNP -RRB-_-RRB- The_DT trajectory_NN of_IN a_DT word_NN feature_NN f_FW can_MD be_VB written_VBN as_IN the_DT sequence_NN yf_NN =_JJ -LSB-_-LRB- yf_NN -LRB-_-LRB- #_# -RRB-_-RRB- ,_, yf_NN -LRB-_-LRB- #_# -RRB-_-RRB- ,_, ..._: ,_, yf_NN -LRB-_-LRB- T_NN -RRB-_-RRB- -RSB-_-RRB- ,_, where_WRB each_DT element_NN yf_NN -LRB-_-LRB- t_NN -RRB-_-RRB- is_VBZ a_DT measure_NN of_IN feature_NN f_FW at_IN time_NN t_NN ,_, which_WDT could_MD be_VB defined_VBN using_VBG the_DT normalized_VBN DFIDF_NN score2_NN yf_NN -LRB-_-LRB- t_NN -RRB-_-RRB- =_JJ DFf_NN -LRB-_-LRB- t_NN -RRB-_-RRB- N_NN -LRB-_-LRB- t_NN -RRB-_-RRB- log_NN -LRB-_-LRB- N_NN DFf_NN -RRB-_-RRB- ,_, where_WRB DFf_NN -LRB-_-LRB- t_NN -RRB-_-RRB- is_VBZ the_DT number_NN of_IN documents_NNS -LRB-_-LRB- local_JJ DF_NN -RRB-_-RRB- containing_VBG feature_NN f_FW at_IN day_NN t_NN ,_, DFf_NN is_VBZ the_DT total_JJ number_NN of_IN documents_NNS -LRB-_-LRB- global_JJ DF_NN -RRB-_-RRB- containing_VBG feature_NN f_FW over_IN T_NN ,_, N_NN -LRB-_-LRB- t_NN -RRB-_-RRB- is_VBZ the_DT number_NN of_IN documents_NNS for_IN day_NN t_NN ,_, and_CC N_NN is_VBZ the_DT total_JJ number_NN of_IN documents_NNS over_IN T_NN ._.
+4_LS ._.
+IDENTIFYING_VBG FEATURES_NNS FOR_IN EVENTS_NNS In_IN this_DT section_NN ,_, we_PRP show_VBP how_WRB representative_JJ features_NNS can_MD be_VB extracted_VBN for_IN -LRB-_-LRB- un_NN -RRB-_-RRB- important_JJ or_CC -LRB-_-LRB- a_LS -RRB-_-RRB- periodic_JJ events_NNS ._.
+4_LS ._.
+#_# Spectral_JJ Analysis_NN for_IN Dominant_JJ Period_NN Given_VBN a_DT feature_NN f_FW ,_, we_PRP decompose_VBP its_PRP$ feature_NN trajectory_NN yf_NN =_JJ -LSB-_-LRB- yf_NN -LRB-_-LRB- #_# -RRB-_-RRB- ,_, yf_NN -LRB-_-LRB- #_# -RRB-_-RRB- ,_, ..._: ,_, yf_NN -LRB-_-LRB- T_NN -RRB-_-RRB- -RSB-_-RRB- into_IN the_DT sequence_NN of_IN T_NN complex_JJ numbers_NNS -LSB-_-LRB- X1_NN ,_, ..._: ,_, XT_NN -RSB-_-RRB- via_IN the_DT discrete_JJ Fourier_NN transform_VB -LRB-_-LRB- DFT_NN -RRB-_-RRB- :_: Xk_NN =_JJ T_NN t_NN =_JJ #_# yf_FW -LRB-_-LRB- t_NN -RRB-_-RRB- e_SYM 2i_FW T_NN -LRB-_-LRB- k1_NN -RRB-_-RRB- t_NN ,_, k_NN =_JJ #_# ,_, #_# ,_, ..._: ,_, T_NN ._.
+DFT_NN can_MD represent_VB the_DT original_JJ time_NN series_NN as_IN a_DT linear_JJ combination_NN of_IN complex_JJ sinusoids_NNS ,_, which_WDT is_VBZ illustrated_VBN by_IN the_DT inverse_JJ discrete_JJ Fourier_NN transform_VB -LRB-_-LRB- IDFT_NN -RRB-_-RRB- :_: yf_NN -LRB-_-LRB- t_NN -RRB-_-RRB- =_JJ 1_CD T_NN T_NN k_NN =_JJ #_# Xke_NNP 2i_JJ T_NN -LRB-_-LRB- k1_NN -RRB-_-RRB- t_NN ,_, t_NN =_JJ #_# ,_, #_# ,_, ..._: ,_, T_NN ,_, where_WRB the_DT Fourier_NN coefficient_NN Xk_NN denotes_VBZ the_DT amplitude_NN of_IN the_DT sinusoid_NN with_IN frequency_NN k_NN /_: T_NN ._.
+The_DT original_JJ trajectory_NN can_MD be_VB reconstructed_VBN with_IN just_RB the_DT dominant_JJ frequencies_NNS ,_, which_WDT can_MD be_VB determined_VBN from_IN the_DT power_NN spectrum_NN using_VBG the_DT popular_JJ periodogram_NN estimator_NN ._.
+The_DT periodogram_NN is_VBZ a_DT sequence_NN of_IN the_DT squared_VBN magnitude_NN of_IN the_DT Fourier_NN coefficients_NNS ,_, Xk_NN 2_CD ,_, k_NN =_JJ #_# ,_, #_# ,_, ..._: ,_, T_NN /_: #_# ,_, which_WDT indicates_VBZ the_DT signal_NN power_NN at_IN frequency_NN k_NN /_: T_NN in_IN the_DT spectrum_NN ._.
+From_IN the_DT power_NN spectrum_NN ,_, the_DT dominant_JJ period_NN is_VBZ chosen_VBN as_IN the_DT inverse_NN of_IN the_DT frequency_NN with_IN the_DT highest_JJS power_NN spectrum_NN ,_, as_IN follows_VBZ ._.
+Definition_NN #_# ._.
+-LRB-_-LRB- Dominant_JJ Period_NN -RRB-_-RRB- The_DT dominant_JJ period_NN -LRB-_-LRB- DP_NN -RRB-_-RRB- of_IN a_DT given_VBN feature_NN f_FW is_VBZ Pf_NN =_JJ T_NN /_: arg_NN max_NN k_NN Xk_NN 2_CD ._.
+Accordingly_RB ,_, we_PRP have_VBP Definition_NNP #_# ._.
+-LRB-_-LRB- Dominant_JJ Power_NN Spectrum_NN -RRB-_-RRB- The_DT dominant_JJ power_NN spectrum_NN -LRB-_-LRB- DPS_NN -RRB-_-RRB- of_IN a_DT given_VBN feature_NN f_FW is_VBZ Sf_NN =_JJ Xk_NN 2_CD ,_, with_IN Xk_NN 2_CD Xj_NN 2_CD ,_, j_NN =_JJ k_NN ._.
+4_LS ._.
+#_# Categorizing_VBG Features_NNS The_DT DPS_NN of_IN a_DT feature_NN trajectory_NN is_VBZ a_DT strong_JJ indicator_NN of_IN its_PRP$ activeness_NN at_IN the_DT specified_VBN frequency_NN ;_: the_DT higher_JJR the_DT DPS_NNP ,_, the_DT more_RBR likely_JJ for_IN the_DT feature_NN to_TO be_VB bursty_JJ ._.
+Combining_VBG DPS_NN with_IN DP_NN ,_, we_PRP therefore_RB categorize_VBP all_DT features_NNS into_IN four_CD types_NNS :_: 2_CD We_PRP normalize_VBP yf_NN -LRB-_-LRB- t_NN -RRB-_-RRB- as_IN yf_NN -LRB-_-LRB- t_NN -RRB-_-RRB- =_JJ yf_NN -LRB-_-LRB- t_NN -RRB-_-RRB- /_: T_NN i_FW =_JJ #_# yf_FW -LRB-_-LRB- i_LS -RRB-_-RRB- so_IN that_IN it_PRP could_MD be_VB interpreted_VBN as_IN a_DT probability_NN ._.
+HH_NNP :_: high_JJ Sf_NN ,_, aperiodic_JJ or_CC long-term_JJ periodic_JJ -LRB-_-LRB- Pf_NN >_JJR T_NN /_: #_# -RRB-_-RRB- ;_: HL_NNS :_: high_JJ Sf_NN ,_, short-term_JJ periodic_JJ -LRB-_-LRB- Pf_NN T_NN /_: #_# -RRB-_-RRB- ;_: LH_NNP :_: low_JJ Sf_NN ,_, aperiodic_JJ or_CC long-term_JJ periodic_JJ ;_: LL_NN :_: low_JJ Sf_NN ,_, short-term_JJ periodic_JJ ._.
+The_DT boundary_NN between_IN long-term_JJ and_CC short-term_JJ periodic_JJ is_VBZ set_VBN to_TO T_NN /_: #_# ._.
+However_RB ,_, distinguishing_VBG between_IN a_DT high_JJ and_CC low_JJ DPS_NN is_VBZ not_RB straightforward_JJ ,_, which_WDT will_MD be_VB tackled_VBN later_RB ._.
+Properties_NNP of_IN Different_NNP Feature_NNP Sets_VBZ To_TO better_RBR understand_VB the_DT properties_NNS of_IN HH_NN ,_, HL_NN ,_, LH_NN and_CC LL_NN ,_, we_PRP select_VBP four_CD features_NNS ,_, Christmas_NNP ,_, soccer_NN ,_, DBS_NNP and_CC your_PRP$ as_IN illustrative_JJ examples_NNS ._.
+Since_IN the_DT boundary_NN between_IN high_JJ and_CC low_JJ power_NN spectrum_NN is_VBZ unclear_JJ ,_, these_DT chosen_VBN examples_NNS have_VBP relative_JJ wide_JJ range_NN of_IN power_NN spectrum_NN values_NNS ._.
+Figure_NNP #_# -LRB-_-LRB- a_DT -RRB-_-RRB- shows_VBZ the_DT DFIDF_NN trajectory_NN for_IN Christmas_NNP with_IN a_DT distinct_JJ burst_NN around_IN Christmas_NNP day_NN ._.
+For_IN the_DT 1-year_JJ Reuters_NNP dataset_NNP ,_, Christmas_NNP is_VBZ classified_VBN as_IN a_DT typical_JJ aperiodic_JJ event_NN with_IN Pf_NN =_JJ ###_CD and_CC Sf_NN =_JJ ###_CD ._.
+##_NN ,_, as_IN shown_VBN in_IN Figure_NNP #_# -LRB-_-LRB- b_NN -RRB-_-RRB- ._.
+Clearly_RB ,_, the_DT value_NN of_IN Sf_NN =_JJ ###_CD ._.
+##_NN is_VBZ reasonable_JJ for_IN a_DT well-known_JJ bursty_JJ event_NN like_IN Christmas_NNP ._.
+0_CD 0_CD ._.
+#_# 1_CD 1_CD ._.
+#_# 8_CD /_: ##_CD /_: ####_CD ##_CD /_: #_# /_: ####_CD #_# /_: ##_CD /_: ####_CD #_# /_: ##_CD /_: ####_CD -LRB-_-LRB- a_DT -RRB-_-RRB- Christmas_NNP -LRB-_-LRB- DFIDF_NNP :_: time_NN -RRB-_-RRB- 0_CD 50_CD 100_CD 150_CD 0_CD ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN P_NN =_JJ ###_CD S_NN =_JJ ###_CD ._.
+##_NN -LRB-_-LRB- b_NN -RRB-_-RRB- Christmas_NNP -LRB-_-LRB- S_NN :_: frequency_NN -RRB-_-RRB- Figure_NN #_# :_: Feature_VB Christmas_NNP with_IN relative_JJ high_JJ Sf_NN and_CC long-term_JJ Pf_NN ._.
+The_DT DFIDF_NN trajectory_NN for_IN soccer_NN is_VBZ shown_VBN in_IN Figure_NNP #_# -LRB-_-LRB- a_DT -RRB-_-RRB- ,_, from_IN which_WDT we_PRP can_MD observe_VB that_IN there_EX is_VBZ a_DT regular_JJ burst_NN every_DT 7_CD days_NNS ,_, which_WDT is_VBZ again_RB verified_VBN by_IN its_PRP$ computed_JJ value_NN of_IN Pf_NN =_JJ 7_CD ,_, as_IN shown_VBN in_IN Figure_NNP #_# -LRB-_-LRB- b_NN -RRB-_-RRB- ._.
+Using_VBG the_DT domain_NN knowledge_NN that_WDT soccer_NN games_NNS have_VBP more_JJR matches_NNS every_DT Saturday_NNP ,_, which_WDT makes_VBZ it_PRP a_DT typical_JJ and_CC heavily_RB reported_VBD periodic_JJ event_NN ,_, we_PRP thus_RB consider_VBP the_DT value_NN of_IN Sf_NN =_JJ ###_CD ._.
+##_NN to_TO be_VB high_JJ ._.
+0_CD 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 8_CD /_: ##_CD /_: ####_CD ##_CD /_: #_# /_: ####_CD #_# /_: ##_CD /_: ####_CD #_# /_: ##_CD /_: ####_CD -LRB-_-LRB- a_DT -RRB-_-RRB- soccer_NN -LRB-_-LRB- DFIDF_NN :_: time_NN -RRB-_-RRB- 0_CD 50_CD 100_CD 150_CD 200_CD 0_CD ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN P_NN =_JJ #_# S_NN =_JJ ###_CD ._.
+##_NN -LRB-_-LRB- b_NN -RRB-_-RRB- soccer_NN -LRB-_-LRB- S_NN :_: frequency_NN -RRB-_-RRB- Figure_NN #_# :_: Feature_NN soccer_NN with_IN relative_JJ high_JJ Sf_NN and_CC short-term_JJ Pf_NN ._.
+From_IN the_DT DFIDF_NN trajectory_NN for_IN DBS_NNP in_IN Figure_NNP #_# -LRB-_-LRB- a_DT -RRB-_-RRB- ,_, we_PRP can_MD immediately_RB deduce_VB DBS_NNP to_TO be_VB an_DT infrequent_JJ word_NN with_IN a_DT trivial_JJ burst_NN on_IN ##_CD /_: ##_CD /_: ####_CD corresponding_VBG to_TO DBS_NNP Land_NNP Raes_NNP Holdings_NNP plans_NNS ._.
+This_DT is_VBZ confirmed_VBN by_IN the_DT long_JJ period_NN of_IN Pf_NN =_JJ ###_CD and_CC low_JJ power_NN of_IN Sf_NN =_JJ #_# ._.
+####_RB as_IN shown_VBN in_IN Figure_NNP #_# -LRB-_-LRB- b_NN -RRB-_-RRB- ._.
+Moreover_RB ,_, since_IN this_DT aperiodic_JJ event_NN is_VBZ only_RB reported_VBN in_IN a_DT few_JJ news_NN stories_NNS over_IN a_DT very_RB short_JJ time_NN of_IN few_JJ days_NNS ,_, we_PRP therefore_RB say_VBP that_IN its_PRP$ low_JJ power_NN value_NN of_IN Sf_NN =_JJ 0_CD ._.
+####_NN is_VBZ representative_NN of_IN unimportant_JJ events_NNS ._.
+The_DT most_RBS confusing_JJ example_NN is_VBZ shown_VBN in_IN Figure_NNP #_# for_IN the_DT word_NN feature_NN your_PRP$ ,_, which_WDT looks_VBZ very_RB similar_JJ to_TO the_DT graph_NN for_IN soccer_NN in_IN Figure_NNP #_# ._.
+At_IN first_JJ glance_NN ,_, we_PRP may_MD be_VB tempted_VBN to_TO group_NN both_CC your_PRP$ and_CC soccer_NN into_IN the_DT same_JJ category_NN of_IN HL_NN or_CC LL_NN since_IN both_DT distributions_NNS look_VBP similar_JJ and_CC have_VBP the_DT same_JJ dominant_JJ period_NN of_IN approximately_RB a_DT week_NN ._.
+However_RB ,_, further_RB 0_CD 0_CD ._.
+##_NN 0_CD ._.
+#_# 0_CD ._.
+##_NN 8_CD /_: ##_CD /_: ####_CD ##_CD /_: #_# /_: ####_CD #_# /_: ##_CD /_: ####_CD #_# /_: ##_CD /_: ####_CD -LRB-_-LRB- a_DT -RRB-_-RRB- DBS_NN -LRB-_-LRB- DFIDF_NN :_: time_NN -RRB-_-RRB- 0_CD 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN P_NN =_JJ ###_CD S_NN =_JJ #_# ._.
+####_NN -LRB-_-LRB- b_NN -RRB-_-RRB- DBS_NN -LRB-_-LRB- S_NN :_: frequency_NN -RRB-_-RRB- Figure_NN #_# :_: Feature_NNP DBS_NNP with_IN relative_JJ low_JJ Sf_NN and_CC long-term_JJ Pf_NN ._.
+analysis_NN indicates_VBZ that_IN the_DT periodicity_NN of_IN your_PRP$ is_VBZ due_JJ to_TO the_DT differences_NNS in_IN document_NN counts_NNS for_IN weekdays_NNS -LRB-_-LRB- average_JJ #_# ,_, ###_CD per_IN day_NN -RRB-_-RRB- and_CC weekends3_NN -LRB-_-LRB- average_JJ ###_CD per_IN day_NN -RRB-_-RRB- ._.
+One_CD would_MD have_VB expected_VBN the_DT periodicity_NN of_IN a_DT stopword_NN like_IN your_PRP$ to_TO be_VB a_DT day_NN ._.
+Moreover_RB ,_, despite_IN our_PRP$ DFIDF_NN normalization_NN ,_, the_DT weekday_NN /_: weekend_NN imbalance_NN still_RB prevailed_VBD ;_: stopwords_NNS occur_VBP #_# times_NNS more_RBR frequently_RB on_IN weekends_NNS than_IN on_IN weekdays_NNS ._.
+Thus_RB ,_, the_DT DPS_NN remains_VBZ the_DT only_JJ distinguishing_JJ factor_NN between_IN your_PRP$ -LRB-_-LRB- Sf_NN =_JJ #_# ._.
+##_NN -RRB-_-RRB- and_CC soccer_NN -LRB-_-LRB- Sf_NN =_JJ ###_CD ._.
+##_NN -RRB-_-RRB- ._.
+However_RB ,_, it_PRP is_VBZ very_RB dangerous_JJ to_TO simply_RB conclude_VB that_IN a_DT power_NN value_NN of_IN S_NN =_JJ #_# ._.
+##_NN corresponds_VBZ to_TO a_DT stopword_NN feature_NN ._.
+0_CD 0_CD ._.
+##_NN 0_CD ._.
+#_# 0_CD ._.
+##_NN 0_CD ._.
+#_# 8_CD /_: ##_CD /_: ####_CD ##_CD /_: #_# /_: ####_CD #_# /_: ##_CD /_: ####_CD #_# /_: ##_CD /_: ####_CD -LRB-_-LRB- a_DT -RRB-_-RRB- your_PRP$ -LRB-_-LRB- DFIDF_NN :_: time_NN -RRB-_-RRB- 0_CD 5_CD 10_CD 0_CD ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN P_NN =_JJ #_# S_NN =_JJ #_# ._.
+##_NN -LRB-_-LRB- b_NN -RRB-_-RRB- your_PRP$ -LRB-_-LRB- S_NN :_: frequency_NN -RRB-_-RRB- Figure_NN #_# :_: Feature_VB your_PRP$ as_IN an_DT example_NN confusing_VBG with_IN feature_NN soccer_NN ._.
+Before_IN introducing_VBG our_PRP$ solution_NN to_TO this_DT problem_NN ,_, let_VB ''_'' s_VBZ look_NN at_IN another_DT LL_NN example_NN as_IN shown_VBN in_IN Figure_NNP #_# for_IN beenb_NN ,_, which_WDT is_VBZ actually_RB a_DT confirmed_VBN typo_NN ._.
+We_PRP therefore_RB classify_VBP beenb_NN as_IN a_DT noisy_JJ feature_NN that_WDT does_VBZ not_RB contribute_VB to_TO any_DT event_NN ._.
+Clearly_RB ,_, the_DT trajectory_NN of_IN your_PRP$ is_VBZ very_RB different_JJ from_IN beenb_NN ,_, which_WDT means_VBZ that_IN the_DT former_JJ has_VBZ to_TO be_VB considered_VBN separately_RB ._.
+0_CD 0_CD ._.
+###_NN 0_CD ._.
+###_NN 0_CD ._.
+###_NN 0_CD ._.
+###_NN 8_CD /_: ##_CD /_: ####_CD ##_CD /_: #_# /_: ####_CD #_# /_: ##_CD /_: ####_CD #_# /_: ##_CD /_: ####_CD -LRB-_-LRB- a_DT -RRB-_-RRB- beenb_NN -LRB-_-LRB- DFIDF_NN :_: time_NN -RRB-_-RRB- 1_CD ._.
+20E-05_NN 1_CD ._.
+20E-05_NN 1_CD ._.
+20E-05_NN 1_CD ._.
+20E-05_NN 1_CD ._.
+20E-05_NN 0_CD ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN P_NN =_JJ #_# S_NN =_JJ #_# ._.
+20E-05_NN -LRB-_-LRB- b_NN -RRB-_-RRB- beenb_NN -LRB-_-LRB- S_NN :_: frequency_NN -RRB-_-RRB- Figure_NN #_# :_: Feature_NN beenb_NN with_IN relative_JJ low_JJ Sf_NN and_CC short-term_JJ Pf_NN ._.
+Stop_VB Words_NNS -LRB-_-LRB- SW_NN -RRB-_-RRB- Feature_JJ Set_VB Based_VBN on_IN the_DT above_JJ analysis_NN ,_, we_PRP realize_VBP that_IN there_EX must_MD be_VB another_DT feature_NN set_NN between_IN HL_NNS and_CC LL_NN that_WDT corresponds_VBZ to_TO the_DT set_NN of_IN stopwords_NNS ._.
+Features_NNS from_IN this_DT set_NN has_VBZ moderate_JJ DPS_NN and_CC low_JJ but_CC known_JJ dominant_JJ period_NN ._.
+Since_IN it_PRP is_VBZ hard_JJ to_TO distinguish_VB this_DT feature_NN set_VBN from_IN HL_NN and_CC LL_NN only_RB based_VBN on_IN DPS_NNP ,_, we_PRP introduce_VBP another_DT factor_NN called_VBN average_JJ DFIDF_NN -LRB-_-LRB- DFIDF_NN -RRB-_-RRB- ._.
+As_IN shown_VBN in_IN Figure_NNP #_# ,_, features_NNS like_IN your_PRP$ usually_RB have_VBP a_DT lower_JJR DPS_NN than_IN a_DT HL_NN feature_NN like_IN soccer_NN ,_, but_CC have_VBP a_DT much_RB higher_JJR DFIDF_NN than_IN another_DT LL_NN noisy_JJ feature_NN such_JJ as_IN beenb_NN ._.
+Since_IN such_JJ properties_NNS are_VBP usually_RB characteristics_NNS of_IN stopwords_NNS ,_, we_PRP group_NN features_NNS like_IN your_PRP$ into_IN the_DT newly_RB defined_VBN stopword_NN -LRB-_-LRB- SW_NN -RRB-_-RRB- feature_NN set_NN ._.
+Since_IN setting_VBG the_DT DPS_NN and_CC DFIDF_NN thresholds_NNS for_IN identifying_VBG stopwords_NNS is_VBZ more_JJR of_IN an_DT art_NN than_IN science_NN ,_, we_PRP proposed_VBD a_DT heuristic_NN HS_NN algorithm_NN ,_, Algorithm_NNP #_# ._.
+The_DT basic_JJ idea_NN is_VBZ to_TO only_RB use_VB news_NN stories_NNS from_IN weekdays_NNS to_TO identify_VB stopwords_NNS ._.
+3_CD The_DT weekends_NNS here_RB also_RB include_VBP public_JJ holidays_NNS falling_VBG on_IN weekdays_NNS ._.
+The_DT SW_NN set_NN is_VBZ initially_RB seeded_VBN with_IN a_DT small_JJ set_NN of_IN ##_CD popular_JJ stopwords_NNS utilized_VBN by_IN Google_NNP search_NN engine_NN ._.
+Algorithm_NN #_# Heuristic_NNP Stopwords_NNP detection_NN -LRB-_-LRB- HS_NN -RRB-_-RRB- Input_NN :_: Seed_NN SW_NN set_NN ,_, weekday_NN trajectories_NNS of_IN all_DT words_NNS 1_CD :_: From_IN the_DT seed_NN set_VBN SW_NNP ,_, compute_VBP the_DT maximum_NN DPS_NNP as_IN UDPS_NNP ,_, maximum_NN DFIDF_NN as_IN UDFIDF_NN ,_, and_CC minimum_NN of_IN DFIDF_NN as_IN LDFIDF_NN ._.
+2_CD :_: for_IN fi_NN F_NN do_VBP 3_CD :_: Compute_VB DFT_NNP for_IN fi_NNP ._.
+4_CD :_: if_IN Sfi_NNP UDPS_NNP and_CC DFIDFfi_NNP -LSB-_-LRB- LDFIDF_NNP ,_, UDFIDF_NNP -RSB-_-RRB- then_RB 5_CD :_: fi_NN SW_NN 6_CD :_: F_NN =_JJ F_NN fi_NN 7_CD :_: end_VB if_IN 8_CD :_: end_NN for_IN Overview_NN of_IN Feature_NNP Categorization_NNP After_IN the_DT SW_NNP set_NN is_VBZ generated_VBN ,_, all_DT stopwords_NNS are_VBP removed_VBN from_IN F_NN ._.
+We_PRP then_RB set_VBD the_DT boundary_NN between_IN high_JJ and_CC low_JJ DPS_NN to_TO be_VB the_DT upper_JJ bound_VBN of_IN the_DT SW_NNP set_NN ''_'' s_NNS DPS_NNS ._.
+An_DT overview_NN of_IN all_DT five_CD feature_NN sets_NNS is_VBZ shown_VBN in_IN Figure_NNP #_# ._.
+Figure_NNP #_# :_: The_DT #_# feature_VBP sets_NNS for_IN events_NNS ._.
+5_CD ._.
+IDENTIFYING_VBG BURSTS_NNS FOR_IN FEATURES_NNS Since_IN only_RB features_VBZ from_IN HH_NN ,_, HL_NN and_CC LH_NN are_VBP meaningful_JJ and_CC could_MD potentially_RB be_VB representative_JJ to_TO some_DT events_NNS ,_, we_PRP pruned_VBD all_DT other_JJ feature_NN classified_VBN as_IN LL_NN or_CC SW_NN ._.
+In_IN this_DT section_NN ,_, we_PRP describe_VBP how_WRB bursts_NNS can_MD be_VB identified_VBN from_IN the_DT remaining_VBG features_NNS ._.
+Unlike_IN Kleinberg_NNP ''_'' s_VBZ burst_NN identification_NN algorithm_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, we_PRP can_MD identify_VB both_DT significant_JJ and_CC trivial_JJ bursts_NNS without_IN the_DT need_NN to_TO set_VB any_DT parameters_NNS ._.
+5_CD ._.
+#_# Detecting_VBG Aperiodic_JJ Features_NNS ''_'' Bursts_NNS For_IN each_DT feature_NN in_IN HH_NN and_CC HL_NN ,_, we_PRP truncate_VBP its_PRP$ trajectory_NN by_IN keeping_VBG only_RB the_DT bursty_JJ period_NN ,_, which_WDT is_VBZ modeled_VBN with_IN a_DT Gaussian_JJ distribution_NN ._.
+For_IN example_NN ,_, Figure_NNP #_# shows_VBZ the_DT word_NN feature_NN Iraq_NNP with_IN a_DT burst_NN circa_NN ##_CD /_: ##_CD /_: ####_CD being_VBG modeled_VBN as_IN a_DT Gaussian_NNP ._.
+Its_PRP$ bursty_JJ period_NN is_VBZ defined_VBN by_IN -LSB-_-LRB- f_FW f_FW ,_, f_FW +_CC f_FW -RSB-_-RRB- as_IN shown_VBN in_IN Figure_NNP #_# -LRB-_-LRB- b_NN -RRB-_-RRB- ._.
+5_CD ._.
+#_# Detecting_VBG Periodic_JJ Features_NNS ''_'' Bursts_NNS Since_IN we_PRP have_VBP computed_VBN the_DT DP_NN for_IN a_DT periodic_JJ feature_NN f_FW ,_, we_PRP can_MD easily_RB model_VB its_PRP$ periodic_JJ feature_NN trajectory_NN yf_NN using_VBG 0_CD 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 8_CD /_: ##_CD /_: ##_CD ##_CD /_: #_# /_: ##_CD #_# /_: ##_CD /_: ##_CD #_# /_: ##_CD /_: ##_CD -LRB-_-LRB- a_DT -RRB-_-RRB- original_JJ DFIDF_NNP :_: time_NN 0_CD 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 8_CD /_: ##_CD /_: ##_CD ##_CD /_: #_# /_: ##_CD #_# /_: ##_CD /_: ##_CD #_# /_: ##_CD /_: ##_CD burst_NN =_JJ -LSB-_-LRB- -_: ,_, +_CC -RSB-_-RRB- -LRB-_-LRB- b_NN -RRB-_-RRB- identifying_VBG burst_NN Figure_NN #_# :_: Modeling_VBG Iraq_NNP ''_'' s_VBZ time_NN series_NN as_IN a_DT truncated_VBN Gaussian_JJ with_IN =_JJ ##_CD /_: ##_CD /_: ####_CD and_CC =_JJ #_# ._.
+##_NN ._.
+a_DT mixture_NN of_IN K_NN =_JJ T_NN /_: Pf_NN Gaussians_NNS :_: f_LS -LRB-_-LRB- yf_NN =_JJ yf_NN -LRB-_-LRB- t_NN -RRB-_-RRB- |_CD f_LS -RRB-_-RRB- =_JJ K_NN k_NN =_JJ #_# k_NN 1_CD 22_CD k_NN e_SYM #_# 22_CD k_NN -LRB-_-LRB- yf_NN -LRB-_-LRB- t_NN -RRB-_-RRB- k_NN -RRB-_-RRB- #_# ,_, where_WRB the_DT parameter_NN set_VBN f_SYM =_SYM -LCB-_-LRB- k_NN ,_, k_NN ,_, k_NN -RCB-_-RRB- K_NNP k_NN =_JJ #_# comprises_VBZ :_: k_NN is_VBZ the_DT probability_NN of_IN assigning_VBG yf_NN into_IN the_DT kth_NN Gaussian_NNP ._.
+k_NN >_JJR #_# ,_, k_NN -LSB-_-LRB- #_# ,_, K_NN -RSB-_-RRB- and_CC K_NN k_NN =_JJ #_# k_NN =_JJ #_# ;_: k_NN /_: k_NN is_VBZ mean_JJ /_: standard_JJ deviation_NN of_IN the_DT kth_NN Gaussian_NNP ._.
+The_DT well_RB known_VBN Expectation_NN Maximization_NN -LRB-_-LRB- EM_NN -RRB-_-RRB- -LSB-_-LRB- #_# -RSB-_-RRB- algorithm_NN is_VBZ used_VBN to_TO compute_VB the_DT mixing_VBG proportions_NNS k_NN ,_, as_RB well_RB as_IN the_DT individual_JJ Gaussian_JJ density_NN parameters_NNS k_NN and_CC K_NN ._.
+Each_DT Gaussian_NNP represents_VBZ one_CD periodic_JJ event_NN ,_, and_CC is_VBZ modeled_VBN similarly_RB as_IN mentioned_VBN in_IN Section_NN #_# ._.
+#_# ._.
+6_CD ._.
+EVENTS_NNS FROM_IN FEATURES_NNS After_IN identifying_VBG and_CC modeling_NN bursts_NNS for_IN all_DT features_NNS ,_, the_DT next_JJ task_NN is_VBZ to_TO paint_VB a_DT picture_NN of_IN the_DT event_NN with_IN a_DT potential_JJ set_NN of_IN representative_JJ features_NNS ._.
+6_CD ._.
+#_# Feature_NNP Correlation_NN If_IN two_CD features_NNS fi_NN and_CC fj_NN are_VBP representative_NN of_IN the_DT same_JJ event_NN ,_, they_PRP must_MD satisfy_VB the_DT following_VBG necessary_JJ conditions_NNS :_: 1_CD ._.
+fi_NN and_CC fj_NN are_VBP identically_RB distributed_VBN :_: yfi_NN yfj_NN ._.
+2_LS ._.
+fi_NN and_CC fj_NN have_VBP a_DT high_JJ document_NN overlap_VBP ._.
+Measuring_VBG Feature_NNP Distribution_NN Similarity_NN We_PRP measure_VBP the_DT similarity_NN between_IN two_CD features_NNS fi_NN and_CC fj_NN using_VBG discrete_JJ KL-divergence_NN defined_VBN as_IN follows_VBZ ._.
+Definition_NN #_# ._.
+-LRB-_-LRB- feature_NN similarity_NN -RRB-_-RRB- KL_NN -LRB-_-LRB- fi_NN ,_, fj_NN -RRB-_-RRB- is_VBZ given_VBN by_IN max_NN -LRB-_-LRB- KL_NN -LRB-_-LRB- fi_NN |_CD fj_NN -RRB-_-RRB- ,_, KL_NN -LRB-_-LRB- fj_NN |_CD fi_NN -RRB-_-RRB- -RRB-_-RRB- ,_, where_WRB KL_NN -LRB-_-LRB- fi_NN |_CD fj_NN -RRB-_-RRB- =_JJ T_NN t_NN =_JJ #_# f_FW -LRB-_-LRB- yfi_NN -LRB-_-LRB- t_NN -RRB-_-RRB- |_CD fi_NN -RRB-_-RRB- log_NN f_FW -LRB-_-LRB- yfi_NN -LRB-_-LRB- t_NN -RRB-_-RRB- |_CD fi_NN -RRB-_-RRB- f_FW -LRB-_-LRB- yfj_NN -LRB-_-LRB- t_NN -RRB-_-RRB- |_VBP fj_NN -RRB-_-RRB- ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- Since_IN KL-divergence_NN is_VBZ not_RB symmetric_JJ ,_, we_PRP define_VBP the_DT similarity_NN between_IN between_IN fi_NN and_CC fj_NN as_IN the_DT maximum_NN of_IN KL_NN -LRB-_-LRB- fi_NN |_CD fj_NN -RRB-_-RRB- and_CC KL_NN -LRB-_-LRB- fj_NN |_CD fi_NN -RRB-_-RRB- ._.
+Further_RB ,_, the_DT similarity_NN between_IN two_CD aperiodic_JJ features_NNS can_MD be_VB computed_VBN using_VBG a_DT closed_JJ form_NN of_IN the_DT KL-divergence_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+The_DT same_JJ discrete_JJ KL-divergence_NN formula_NN of_IN Eq_NN ._.
+#_# is_VBZ employed_VBN to_TO compute_VB the_DT similarity_NN between_IN two_CD periodic_JJ features_NNS ,_, Next_RB ,_, we_PRP define_VBP the_DT overal_JJ similarity_NN among_IN a_DT set_NN of_IN features_NNS R_NN using_VBG the_DT maximum_NN inter-feature_JJ KL-Divergence_NN value_NN as_IN follows_VBZ ._.
+Definition_NN #_# ._.
+-LRB-_-LRB- set_NN ''_'' s_NNS similarity_NN -RRB-_-RRB- KL_NN -LRB-_-LRB- R_NN -RRB-_-RRB- =_JJ max_NN fi_NN ,_, fj_NN R_NN KL_NN -LRB-_-LRB- fi_NN ,_, fj_NN -RRB-_-RRB- ._.
+Document_NNP Overlap_NNP Let_VB Mi_NNP be_VB the_DT set_NN of_IN all_DT documents_NNS containing_VBG feature_NN fi_NN ._.
+Given_VBN two_CD features_NNS fi_NN and_CC fj_NN ,_, the_DT overlapping_VBG document_NN set_NN containing_VBG both_CC features_NNS is_VBZ Mi_NNP Mj_NNP ._.
+Intuitively_RB ,_, the_DT higher_JJR the_DT |_CD Mi_NNP Mj_NNP |_NN ,_, the_DT more_RBR likelty_JJ that_IN fi_NN and_CC fj_NN will_MD be_VB highly_RB correlated_VBN ._.
+We_PRP define_VBP the_DT degree_NN of_IN document_NN overlap_VBP between_IN two_CD features_NNS fi_NN and_CC fj_NN as_IN follows_VBZ ._.
+Definition_NN #_# ._.
+-LRB-_-LRB- Feature_NN DF_NN Overlap_NN -RRB-_-RRB- d_NN -LRB-_-LRB- fi_NN ,_, fj_NN -RRB-_-RRB- =_JJ |_CD MiMj_NNP |_CD min_NN -LRB-_-LRB- |_CD Mi_NNP |_CD ,_, |_CD Mj_NNP |_CD -RRB-_-RRB- ._.
+Accordingly_RB ,_, the_DT DF_NN Overlap_NN among_IN a_DT set_NN of_IN features_NNS R_NN is_VBZ also_RB defined_VBN ._.
+Definition_NN #_# ._.
+-LRB-_-LRB- Set_VB DF_NN Overlap_NN -RRB-_-RRB- d_NN -LRB-_-LRB- R_NN -RRB-_-RRB- =_JJ min_NN fi_NN ,_, fj_NN R_NN d_NN -LRB-_-LRB- fi_NN ,_, fj_NN -RRB-_-RRB- ._.
+6_CD ._.
+#_# Unsupervised_JJ Greedy_NNP Event_NNP Detection_NN We_PRP use_VBP features_NNS from_IN HH_NN to_TO detect_VB important_JJ aperiodic_JJ events_NNS ,_, features_NNS from_IN LH_NN to_TO detect_VB less-reported_JJ /_: unimportant_JJ aperiodic_JJ events_NNS ,_, and_CC features_NNS from_IN HL_NNS to_TO detect_VB periodic_JJ events_NNS ._.
+All_DT of_IN them_PRP share_VBP the_DT same_JJ algorithm_NN ._.
+Given_VBN bursty_JJ feature_NN fi_NN HH_NN ,_, the_DT goal_NN is_VBZ to_TO find_VB highly_RB correlated_VBN features_NNS from_IN HH_NN ._.
+The_DT set_NN of_IN features_NNS similar_JJ to_TO fi_NN can_MD then_RB collectively_RB describe_VBP an_DT event_NN ._.
+Specifically_RB ,_, we_PRP need_VBP to_TO find_VB a_DT subset_NN Ri_NN of_IN HH_NN that_WDT minimizes_VBZ the_DT following_VBG cost_NN function_NN :_: C_NN -LRB-_-LRB- Ri_NN -RRB-_-RRB- =_JJ KL_NN -LRB-_-LRB- Ri_NN -RRB-_-RRB- d_NN -LRB-_-LRB- Ri_NN -RRB-_-RRB- fj_NN Ri_NNP Sfj_NNP ,_, Ri_NNP HH_NNP ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- The_DT underlying_VBG event_NN e_SYM -LRB-_-LRB- associated_VBN with_IN the_DT burst_NN of_IN fi_NN -RRB-_-RRB- can_MD be_VB represented_VBN by_IN Ri_NNP as_IN y_NN -LRB-_-LRB- e_LS -RRB-_-RRB- =_JJ fj_NN Ri_NNP Sfj_NNP fuRi_NNP Sfu_NNP yfj_NN ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- The_DT burst_NN analysis_NN for_IN event_NN e_SYM is_VBZ exactly_RB the_DT same_JJ as_IN the_DT feature_NN trajectory_NN ._.
+The_DT cost_NN in_IN Eq_NN ._.
+#_# can_MD be_VB minimized_VBN using_VBG our_PRP$ unsupervised_JJ greedy_JJ UG_NN event_NN detection_NN algorithm_NN ,_, which_WDT is_VBZ described_VBN in_IN Algorithm_NNP #_# ._.
+The_DT UG_NN algorithm_NN allows_VBZ a_DT feature_NN Algorithm_NN #_# Unsupervised_JJ Greedy_JJ event_NN detection_NN -LRB-_-LRB- UG_NN -RRB-_-RRB- ._.
+Input_NN :_: HH_NN ,_, document_NN index_NN for_IN each_DT feature_NN ._.
+1_CD :_: Sort_NN and_CC select_JJ features_NNS in_IN descending_VBG DPS_NNP order_NN :_: Sf1_NN Sf2_NN ..._: Sf_FW |_FW HH_FW |_NN ._.
+2_CD :_: k_NN =_JJ #_# ._.
+3_CD :_: for_IN fi_NN HH_NN do_VBP 4_CD :_: k_NN =_JJ k_NN +_CC #_# ._.
+5_CD :_: Init_NNP :_: Ri_NNP fi_NNP ,_, C_NNP -LRB-_-LRB- Ri_NNP -RRB-_-RRB- =_JJ #_# /_: Sfi_NNP and_CC HH_NN =_JJ HH_NN fi_NN ._.
+6_CD :_: while_IN HH_NN not_RB empty_JJ do_VBP 7_CD :_: m_NN =_JJ arg_NN min_NN m_NN C_NN -LRB-_-LRB- Ri_NN fm_NN -RRB-_-RRB- ._.
+8_CD :_: if_IN C_NN -LRB-_-LRB- Ri_NN fm_NN -RRB-_-RRB- <_JJR C_NN -LRB-_-LRB- Ri_NN -RRB-_-RRB- then_RB 9_CD :_: Ri_NNP fm_NN and_CC HH_NN =_JJ HH_NN fm_NN ._.
+10_CD :_: else_RB 11_CD :_: break_NN while_IN ._.
+12_CD :_: end_VB if_IN 13_CD :_: end_NN while_IN 14_CD :_: Output_NN ek_NN as_IN Eq_NN ._.
+#_# ._.
+15_CD :_: end_VB for_IN to_TO be_VB contained_VBN in_IN multiple_JJ events_NNS so_IN that_IN we_PRP can_MD detect_VB several_JJ events_NNS happening_VBG at_IN the_DT same_JJ time_NN ._.
+Furthermore_RB ,_, trivial_JJ events_NNS only_RB containing_VBG year_NN /_: month_NN features_NNS -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, an_DT event_NN only_RB containing_VBG #_# feature_NN Aug_NN could_MD be_VB identified_VBN over_IN a_DT 1year_JJ news_NN stream_NN -RRB-_-RRB- could_MD be_VB removed_VBN ,_, although_IN such_JJ events_NNS will_MD have_VB inherent_JJ high_JJ cost_NN and_CC should_MD already_RB be_VB ranked_VBN very_RB low_JJ ._.
+Note_VB that_IN our_PRP$ UG_NN algorithm_NN only_RB requires_VBZ one_CD data-dependant_JJ parameter_NN ,_, the_DT boundary_NN between_IN high_JJ and_CC low_JJ power_NN spectrum_NN ,_, to_TO be_VB set_VBN once_RB ,_, and_CC this_DT parameter_NN can_MD be_VB easily_RB estimated_VBN using_VBG the_DT HS_NN algorithm_NN -LRB-_-LRB- Algorithm_NN #_# -RRB-_-RRB- ._.
+7_CD ._.
+EXPERIMENTS_NNS In_IN this_DT section_NN ,_, we_PRP study_VBP the_DT performances_NNS of_IN our_PRP$ feature_NN categorizing_VBG method_NN and_CC event_NN detection_NN algorithm_NN ._.
+We_PRP first_RB introduce_VB the_DT dataset_NN and_CC experimental_JJ setup_NN ,_, then_RB we_PRP subjectively_RB evaluate_VBP the_DT categorization_NN of_IN features_NNS for_IN HH_NN ,_, HL_NN ,_, LH_NN ,_, LL_NN and_CC SW_NN ._.
+Finally_RB ,_, we_PRP study_VBP the_DT -LRB-_-LRB- a_DT -RRB-_-RRB- periodic_JJ event_NN detection_NN problem_NN with_IN Algorithm_NN #_# ._.
+7_CD ._.
+#_# Dataset_NNP and_CC Experimental_JJ Setup_NN The_DT Reuters_NNP Corpus_NNP contains_VBZ ###_CD ,_, ###_CD English_JJ news_NN stories_NNS from_IN ##_CD /_: ##_CD /_: ####_CD to_TO ##_CD /_: ##_CD /_: ####_CD at_IN a_DT day_NN resolution_NN ._.
+Version_NN 2_CD of_IN the_DT open_JJ source_NN Lucene_NN software_NN -LSB-_-LRB- #_# -RSB-_-RRB- was_VBD used_VBN to_TO tokenize_VB the_DT news_NN text_NN content_NN and_CC generate_VB the_DT document-word_NN vector_NN ._.
+In_IN order_NN to_TO preserve_VB the_DT time-sensitive_JJ past_JJ /_: present_JJ /_: future_JJ tenses_NNS of_IN verbs_NNS and_CC the_DT differences_NNS between_IN lower_JJR case_NN nouns_NNS and_CC upper_JJ case_NN named_VBN entities_NNS ,_, no_DT stemming_VBG was_VBD done_VBN ._.
+Since_IN dynamic_JJ stopword_NN removal_NN is_VBZ one_CD of_IN the_DT functionalities_NNS of_IN our_PRP$ method_NN ,_, no_DT stopword_NN was_VBD removed_VBN ._.
+We_PRP did_VBD remove_VB nonEnglish_JJ characters_NNS ,_, however_RB ,_, after_IN which_WDT the_DT number_NN of_IN word_NN features_NNS amounts_VBZ to_TO ###_CD ,_, ###_CD ._.
+All_DT experiments_NNS were_VBD implemented_VBN in_IN Java_NNP and_CC conducted_VBN on_IN a_DT #_# ._.
+#_# GHz_NNP Pentium_NNP #_# PC_NN running_VBG Windows_NNP ####_NNP Server_NN with_IN #_# GB_NN of_IN memory_NN ._.
+7_CD ._.
+#_# Categorizing_VBG Features_NNS We_PRP downloaded_VBD ##_CD well-known_JJ stopwords_NNS utilized_VBN by_IN the_DT Google_NNP search_NN engine_NN as_IN our_PRP$ seed_NN training_NN features_NNS ,_, which_WDT includes_VBZ a_DT ,_, about_RB ,_, an_DT ,_, are_VBP ,_, as_RB ,_, at_IN ,_, be_VB ,_, by_IN ,_, de_IN ,_, for_IN ,_, from_IN ,_, how_WRB ,_, in_IN ,_, is_VBZ ,_, it_PRP ,_, of_IN ,_, on_IN ,_, or_CC ,_, that_IN ,_, the_DT ,_, this_DT ,_, to_TO ,_, was_VBD ,_, what_WP ,_, when_WRB ,_, where_WRB ,_, who_WP ,_, will_MD ,_, with_IN ,_, la_NNP ,_, com_NN ,_, und_NN ,_, en_IN and_CC www_NN ._.
+We_PRP excluded_VBD the_DT last_JJ five_CD stopwords_NNS as_IN they_PRP are_VBP uncommon_JJ in_IN news_NN stories_NNS ._.
+By_IN only_RB analyzing_VBG news_NN stories_NNS over_IN ###_CD weekdays_NNS ,_, we_PRP computed_VBD the_DT upper_JJ bound_VBN of_IN the_DT power_NN spectrum_NN for_IN stopwords_NNS at_IN ##_CD ._.
+##_NN and_CC corresponding_JJ DFIDF_NN ranges_NNS from_IN 0_CD ._.
+####_CD to_TO #_# ._.
+####_NN ._.
+Any_DT feature_NN f_FW satisfying_VBG Sf_NN <_JJR =_JJ ##_NN ._.
+##_NN and_CC #_# ._.
+####_NN <_JJR =_JJ DFIDFf_NN <_JJR =_JJ #_# ._.
+####_NN over_IN weekdays_NNS will_MD be_VB considered_VBN a_DT stopword_NN ._.
+In_IN this_DT manner_NN ,_, ###_CD stopwords_NNS were_VBD found_VBN and_CC removed_VBN as_IN visualized_VBN in_IN Figure_NNP #_# ._.
+Some_DT detected_VBD stopwords_NNS are_VBP A_NN -LRB-_-LRB- P_NN =_JJ ##_CD ,_, S_NN =_JJ #_# ._.
+##_NN ,_, DFIDF_NN =_JJ #_# ._.
+####_NN -RRB-_-RRB- ,_, At_IN -LRB-_-LRB- P_NN =_JJ ###_CD ,_, S_NN =_JJ #_# ._.
+##_NN ,_, DFIDF_NN =_JJ #_# ._.
+####_NN -RRB-_-RRB- ,_, GMT_NN -LRB-_-LRB- P_NN =_JJ ###_CD ,_, S_NN =_JJ #_# ._.
+##_NN ,_, DFIDF_NN =_JJ #_# ._.
+####_NN -RRB-_-RRB- and_CC much_JJ -LRB-_-LRB- P_NN =_JJ ##_CD ,_, S_NN =_JJ #_# ._.
+##_NN ,_, DFIDF_NN =_JJ #_# ._.
+####_NN -RRB-_-RRB- ._.
+After_IN the_DT removal_NN of_IN these_DT stopwords_NNS ,_, the_DT distribution_NN of_IN weekday_NN and_CC weekend_NN news_NN are_VBP more_RBR or_CC less_RBR matched_VBN ,_, and_CC in_IN the_DT ensuing_VBG experiments_NNS ,_, we_PRP shall_MD make_VB use_NN of_IN the_DT full_JJ corpus_NN -LRB-_-LRB- weekdays_NNS and_CC weekends_NNS -RRB-_-RRB- ._.
+The_DT upper_JJ bound_VBN power_NN spectrum_NN value_NN of_IN ##_NN ._.
+##_NN for_IN stopwords_NNS training_NN was_VBD selected_VBN as_IN the_DT boundary_NN between_IN the_DT high_JJ power_NN and_CC low_JJ power_NN spectrum_NN ._.
+The_DT boundary_NN between_IN high_JJ and_CC low_JJ periodicity_NN was_VBD set_VBN to_TO ###_VB /_: #_# =_SYM ###_CD ._.
+All_DT ###_CD ,_, ###_CD -LRB-_-LRB- ######_CD ###_CD -RRB-_-RRB- word_NN features_NNS were_VBD categorized_VBN into_IN #_# feature_NN sets_NNS :_: HH_NN -LRB-_-LRB- ##_CD features_NNS -RRB-_-RRB- ,_, HL_NN -LRB-_-LRB- #_# ,_, ###_CD features_NNS -RRB-_-RRB- ,_, LH_NN -LRB-_-LRB- ##_CD ,_, ###_CD features_NNS -RRB-_-RRB- ,_, and_CC LL_NN -LRB-_-LRB- ###_CD ,_, ###_CD features_NNS -RRB-_-RRB- as_IN shown_VBN in_IN Figure_NNP ##_NNP ._.
+In_IN Figure_NNP ##_NNP ,_, each_DT gray_JJ level_NN denotes_VBZ the_DT relative_JJ density_NN of_IN features_NNS in_IN a_DT square_JJ region_NN ,_, measured_VBN by_IN log10_NN -LRB-_-LRB- #_# +_CC Dk_NN -RRB-_-RRB- ,_, where_WRB Dk_NN is_VBZ the_DT number_NN of_IN features_NNS within_IN the_DT k-th_JJ square_JJ region_NN ._.
+From_IN the_DT figure_NN ,_, we_PRP can_MD make_VB the_DT 0_CD #_# #_# #_# #_# ##_CD ._.
+##_NN #####_CD ._.
+##_NN 1_CD 65_CD 100_CD 130_CD 259_CD S_NN -LRB-_-LRB- f_LS -RRB-_-RRB- P_NN -LRB-_-LRB- f_LS -RRB-_-RRB- LH_NN HH_NN LL_NN HL_NN Figure_NN #_# :_: Distribution_NN of_IN SW_NN -LRB-_-LRB- stopwords_NNS -RRB-_-RRB- in_IN the_DT HH_NN ,_, HL_NN ,_, LH_NN ,_, and_CC LL_NN regions_NNS ._.
+0_CD #_# ##_CD ._.
+##_NN ##_CD ###_CD ###_CD ###_CD ###_CD ###_CD ####_CD #####_CD ._.
+##_NN 1_CD 2_CD 4_CD 6_CD 8_CD 20_CD 50_CD 100_CD 183_CD 364_CD 365_CD S_NN -LRB-_-LRB- f_LS -RRB-_-RRB- P_NN -LRB-_-LRB- f_LS -RRB-_-RRB- 0_CD 0_CD ._.
+#_# 1_CD 1_CD ._.
+#_# 2_CD 2_CD ._.
+#_# 3_CD 3_CD ._.
+#_# 4_CD 4_CD ._.
+#_# LH_NNP HH_NNP LL_NNP HL_NN Figure_NN ##_CD :_: Distribution_NN of_IN categorized_VBN features_NNS over_IN the_DT four_CD quadrants_NNS -LRB-_-LRB- shading_VBG in_IN log_NN scale_NN -RRB-_-RRB- ._.
+following_VBG observations_NNS :_: 1_CD ._.
+Most_JJS features_NNS have_VBP low_JJ S_NN and_CC are_VBP easily_RB distinguishable_JJ from_IN those_DT features_NNS having_VBG a_DT much_RB higher_JJR S_NN ,_, which_WDT allows_VBZ us_PRP to_TO detect_VB important_JJ -LRB-_-LRB- a_DT -RRB-_-RRB- periodic_JJ events_NNS from_IN trivial_JJ events_NNS by_IN selecting_VBG features_NNS with_IN high_JJ S_NN ._.
+2_LS ._.
+Features_NNS in_IN the_DT HH_NN and_CC LH_NN quadrants_NNS are_VBP aperiodic_JJ ,_, which_WDT are_VBP nicely_RB separated_VBN -LRB-_-LRB- big_JJ horizontal_JJ gap_NN -RRB-_-RRB- from_IN the_DT periodic_JJ features_NNS ._.
+This_DT allows_VBZ reliably_RB detecting_VBG aperiodic_JJ events_NNS and_CC periodic_JJ events_NNS independently_RB ._.
+3_LS ._.
+The_DT -LRB-_-LRB- vertical_JJ -RRB-_-RRB- boundary_NN between_IN high_JJ and_CC low_JJ power_NN spectrum_NN is_VBZ not_RB as_IN clearcut_JJ and_CC the_DT exact_JJ value_NN will_MD be_VB application_NN specific_JJ ._.
+By_IN checking_VBG the_DT scatter_NN distribution_NN of_IN features_NNS from_IN SW_NN on_IN HH_NN ,_, HL_NN ,_, LH_NN ,_, and_CC LL_NN as_IN shown_VBN in_IN Figure_NNP #_# ,_, we_PRP found_VBD that_IN 87_CD ._.
+##_CD %_NN -LRB-_-LRB- ###_CD /_: ###_CD -RRB-_-RRB- of_IN the_DT detected_VBN stopwords_NNS originated_VBD from_IN LL_NN ._.
+The_DT LL_NN classification_NN and_CC high_JJ DFIDF_NN scores_NNS of_IN stopwords_NNS agree_VBP with_IN the_DT generally_RB accepted_VBN notion_NN that_IN stopwords_NNS are_VBP equally_RB frequent_JJ over_IN all_DT time_NN ._.
+Therefore_RB ,_, setting_VBG the_DT boundary_NN between_IN high_JJ and_CC low_JJ power_NN spectrum_NN using_VBG the_DT upper_JJ bound_VBN Sf_NN of_IN SW_NN is_VBZ a_DT reasonable_JJ heuristic_NN ._.
+7_CD ._.
+#_# Detecting_VBG Aperiodic_JJ Events_NNS We_PRP shall_MD evaluate_VB our_PRP$ two_CD hypotheses_NNS ,_, #_# -RRB-_-RRB- important_JJ aperiodic_JJ events_NNS can_MD be_VB defined_VBN by_IN a_DT set_NN of_IN HH_NN features_NNS ,_, and_CC 2_LS -RRB-_-RRB- less_RBR reported_VBN aperiodic_JJ events_NNS can_MD be_VB defined_VBN by_IN a_DT set_NN of_IN LH_NN features_NNS ._.
+Since_IN no_DT benchmark_JJ news_NN streams_NNS exist_VBP for_IN event_NN detection_NN -LRB-_-LRB- TDT_NN datasets_NNS are_VBP not_RB proper_JJ streams_NNS -RRB-_-RRB- ,_, we_PRP evaluate_VBP the_DT quality_NN of_IN the_DT automatically_RB detected_VBN events_NNS by_IN comparing_VBG them_PRP to_TO manually-confirmed_JJ events_NNS by_IN searching_VBG through_IN the_DT corpus_NN ._.
+Among_IN the_DT ##_CD HH_NN features_NNS ,_, we_PRP detected_VBD ##_RB important_JJ aperiodic_JJ events_NNS as_IN shown_VBN in_IN Table_NNP #_# -LRB-_-LRB- e1_NN e17_NN -RRB-_-RRB- ._.
+Note_VB that_IN the_DT entire_JJ identification_NN took_VBD less_JJR than_IN #_# second_RB ,_, after_IN removing_VBG events_NNS containing_VBG only_RB the_DT month_NN feature_NN ._.
+Among_IN the_DT 17_CD events_NNS ,_, other_JJ than_IN the_DT overlaps_VBZ between_IN e3_NN and_CC e4_NN -LRB-_-LRB- both_DT describes_VBZ the_DT same_JJ hostage_NN event_NN -RRB-_-RRB- ,_, e11_NN and_CC e16_NN -LRB-_-LRB- both_DT about_IN company_NN reports_NNS -RRB-_-RRB- ,_, the_DT ##_NN identified_VBD events_NNS are_VBP extremely_RB accurate_JJ and_CC correspond_VBP very_RB well_RB to_TO the_DT major_JJ events_NNS of_IN the_DT period_NN ._.
+For_IN example_NN ,_, the_DT defeat_NN of_IN Bob_NNP Dole_NNP ,_, election_NN of_IN Tony_NNP Blair_NNP ,_, Missile_NNP attack_NN on_IN Iraq_NNP ,_, etc_FW ._.
+Recall_VB that_DT selecting_VBG the_DT features_NNS for_IN one_CD event_NN should_MD minimize_VB the_DT cost_NN in_IN Eq_NN ._.
+2_CD such_JJ that_IN #_# -RRB-_-RRB- the_DT number_NN of_IN features_NNS span_VBP different_JJ events_NNS ,_, and_CC #_# -RRB-_-RRB- not_RB all_DT features_NNS relevant_JJ to_TO an_DT event_NN will_MD be_VB selected_VBN ,_, e_LS ._.
+g_NN ._.
+,_, the_DT feature_NN Clinton_NNP is_VBZ representative_JJ to_TO e12_NN but_CC since_IN Clinton_NNP relates_VBZ to_TO many_JJ other_JJ events_NNS ,_, its_PRP$ time_NN domain_NN signal_NN is_VBZ far_RB different_JJ from_IN those_DT of_IN other_JJ representative_JJ features_NNS like_IN Dole_NNP and_CC Bob_NNP ._.
+The_DT number_NN of_IN documents_NNS of_IN a_DT detected_VBN event_NN is_VBZ roughly_RB estimated_VBN by_IN the_DT number_NN of_IN indexed_VBN documents_NNS containing_VBG the_DT representative_JJ features_NNS ._.
+We_PRP can_MD see_VB that_IN all_DT 17_CD important_JJ aperiodic_JJ events_NNS are_VBP popularly_RB reported_VBN events_NNS ._.
+After_IN ###_CD minutes_NNS of_IN computation_NN time_NN ,_, we_PRP detected_VBD ##_CD ,_, ###_CD less_JJR reported_VBD aperiodic_JJ events_NNS from_IN ##_CD ,_, ###_CD LH_NN features_NNS ._.
+Table_NNP #_# lists_VBZ the_DT top_JJ #_# detected_VBN aperiodic_JJ events_NNS -LRB-_-LRB- e18_NN e22_NN -RRB-_-RRB- with_IN respect_NN to_TO the_DT cost_NN ._.
+We_PRP found_VBD that_IN these_DT #_# events_NNS are_VBP actually_RB very_RB trivial_JJ events_NNS with_IN only_RB a_DT few_JJ news_NN reports_NNS ,_, and_CC are_VBP usually_RB subsumed_VBN by_IN some_DT larger_JJR topics_NNS ._.
+For_IN example_NN ,_, e22_NN is_VBZ one_CD of_IN the_DT rescue_NN events_NNS in_IN an_DT airplane_NN hijack_NN topic_NN ._.
+One_CD advantage_NN of_IN our_PRP$ UG_NNP Algorithm_NNP for_IN discovering_VBG less-reported_JJ aperiodic_JJ events_NNS is_VBZ that_IN we_PRP are_VBP able_JJ to_TO precisely_RB detect_VB the_DT true_JJ event_NN period_NN ._.
+7_CD ._.
+#_# Detecting_VBG Periodic_JJ Events_NNS Among_IN the_DT #_# ,_, ###_CD HL_NN features_NNS ,_, ###_RB important_JJ periodic_JJ events_NNS were_VBD detected_VBN within_IN ##_CD minutes_NNS of_IN computing_NN time_NN ._.
+Table_NNP #_# lists_VBZ the_DT top_JJ #_# detected_VBN periodic_JJ events_NNS with_IN respect_NN to_TO the_DT cost_NN -LRB-_-LRB- e23_NN e27_NN -RRB-_-RRB- ._.
+All_DT of_IN the_DT detected_VBN periodic_JJ events_NNS are_VBP indeed_RB valid_JJ ,_, and_CC correspond_VBP to_TO real_JJ life_NN periodic_JJ events_NNS ._.
+The_DT GMM_NNP model_NN is_VBZ able_JJ to_TO detect_VB and_CC estimate_VB the_DT bursty_JJ period_NN nicely_RB although_IN it_PRP can_MD not_RB distinguish_VB the_DT slight_JJ difference_NN between_IN every_DT Monday-Friday_NNP and_CC all_DT weekdays_NNS as_IN shown_VBN in_IN e23_NN ._.
+We_PRP also_RB notice_VBP that_IN e26_NN is_VBZ actually_RB a_DT subset_NN of_IN e27_NN -LRB-_-LRB- soccer_NN game_NN -RRB-_-RRB- ,_, which_WDT is_VBZ acceptable_JJ since_IN the_DT Sheffield_NNP league_NN results_NNS are_VBP announced_VBN independently_RB every_DT weekend_NN ._.
+8_CD ._.
+CONCLUSIONS_NNS This_DT paper_NN took_VBD a_DT whole_JJ new_JJ perspective_NN of_IN analyzing_VBG feature_NN trajectories_NNS as_IN time_NN domain_NN signals_NNS ._.
+By_IN considering_VBG the_DT word_NN document_NN frequencies_NNS in_IN both_DT time_NN and_CC frequency_NN domains_NNS ,_, we_PRP were_VBD able_JJ to_TO derive_VB many_JJ new_JJ characteristics_NNS about_IN news_NN streams_NNS that_WDT were_VBD previously_RB unknown_JJ ,_, e_LS ._.
+g_NN ._.
+,_, the_DT different_JJ distributions_NNS of_IN stopwords_NNS during_IN weekdays_NNS and_CC weekends_NNS ._.
+For_IN the_DT first_JJ time_NN in_IN the_DT area_NN of_IN TDT_NNP ,_, we_PRP applied_VBD a_DT systematic_JJ approach_NN to_TO automatically_RB detect_VB important_JJ and_CC less-reported_JJ ,_, periodic_JJ and_CC aperiodic_JJ events_NNS ._.
+The_DT key_JJ idea_NN of_IN our_PRP$ work_NN lies_VBZ in_IN the_DT observations_NNS that_WDT -LRB-_-LRB- a_DT -RRB-_-RRB- periodic_JJ events_NNS have_VBP -LRB-_-LRB- a_DT -RRB-_-RRB- periodic_JJ representative_NN features_NNS and_CC -LRB-_-LRB- un_NN -RRB-_-RRB- important_JJ events_NNS have_VBP -LRB-_-LRB- in_IN -RRB-_-RRB- active_JJ representative_NN features_NNS ,_, differentiated_VBN by_IN their_PRP$ power_NN spectrums_NNS and_CC time_NN periods_NNS ._.
+To_TO address_VB the_DT real_JJ event_NN detection_NN problem_NN ,_, a_DT simple_JJ and_CC effective_JJ mixture_NN density-based_JJ approach_NN was_VBD used_VBN to_TO identify_VB feature_NN bursts_NNS and_CC their_PRP$ associated_VBN bursty_NN periods_NNS ._.
+We_PRP also_RB designed_VBD an_DT unsupervised_JJ greedy_JJ algorithm_NN to_TO detect_VB both_CC aperiodic_JJ and_CC periodic_JJ events_NNS ,_, which_WDT was_VBD successful_JJ in_IN detecting_VBG real_JJ events_NNS as_IN shown_VBN in_IN the_DT evaluation_NN on_IN a_DT real_JJ news_NN stream_NN ._.
+Although_IN we_PRP have_VBP not_RB made_VBN any_DT benchmark_JJ comparison_NN against_IN another_DT approach_NN ,_, simply_RB because_IN there_EX is_VBZ no_DT previous_JJ work_NN in_IN the_DT addressed_VBN problem_NN ._.
+Future_JJ work_NN includes_VBZ evaluating_VBG the_DT recall_NN of_IN detected_VBN events_NNS for_IN a_DT labeled_VBN news_NN stream_NN ,_, and_CC comparing_VBG our_PRP$ model_NN against_IN the_DT closest_JJS equivalent_JJ methods_NNS ,_, which_WDT currently_RB are_VBP limited_VBN to_TO the_DT methods_NNS of_IN Kleinberg_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- -LRB-_-LRB- which_WDT can_MD only_RB detect_VB certain_JJ type_NN of_IN bursty_JJ events_NNS depending_VBG on_IN parameter_NN settings_NNS -RRB-_-RRB- ,_, Fung_NNP et_FW al_FW ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- ,_, and_CC Swan_NN and_CC Allan_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Nevertheless_RB ,_, we_PRP believe_VBP our_PRP$ simple_JJ and_CC effective_JJ method_NN will_MD be_VB useful_JJ for_IN all_DT TDT_NNP practitioners_NNS ,_, and_CC will_MD be_VB especially_RB useful_JJ for_IN the_DT initial_JJ exploratory_NN analysis_NN of_IN news_NN streams_NNS ._.
+9_CD ._.
+REFERENCES_NNS -LSB-_-LRB- #_# -RSB-_-RRB- Apache_NNP lucene-core_NN #_# ._.
+#_# ._.
+#_# ,_, http_NN :_: /_: /_: lucene_NN ._.
+apache_NN ._.
+org_NN ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- Google_NNP news_NN alerts_VBZ ,_, http_NN :_: /_: /_: www_NN ._.
+google_NN ._.
+com_NN /_: alerts_VBZ ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- Reuters_NNP corpus_NN ,_, http_NN :_: /_: /_: www_NN ._.
+reuters_NNS ._.
+com_NN /_: researchandstandards_NNS /_: corpus_NN /_: ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- J_NN ._.
+Allan_NNP ._.
+Topic_NN Detection_NN and_CC Tracking_VBG ._.
+Event-based_JJ Information_NNP Organization_NNP ._.
+Kluwer_NNP Academic_NNP Publishers_NNPS ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- J_NN ._.
+Allan_NNP ,_, V_NNP ._.
+Lavrenko_NNP ,_, and_CC H_NN ._.
+Jin_NNP ._.
+First_JJ story_NN detection_NN in_IN tdt_NN is_VBZ hard_RB ._.
+In_IN CIKM_NNP ,_, pages_NNS 374-381_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- J_NN ._.
+Allan_NNP ,_, C_NNP ._.
+Wade_NNP ,_, and_CC A_NN ._.
+Bolivar_NNP ._.
+Retrieval_NN and_CC novelty_NN detection_NN at_IN the_DT sentence_NN level_NN ._.
+In_IN SIGIR_NN ,_, pages_NNS 314-321_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- T_NN ._.
+Brants_NNPS ,_, F_NN ._.
+Chen_NNP ,_, and_CC A_NN ._.
+Farahat_NNP ._.
+A_DT system_NN for_IN new_JJ event_NN detection_NN ._.
+In_IN SIGIR_NN ,_, pages_NNS 330-337_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- A_DT ._.
+P_NN ._.
+Dempster_NNP ,_, N_NNP ._.
+M_NN ._.
+Laird_NNP ,_, and_CC D_NN ._.
+B_NN ._.
+Rubin_NNP ._.
+Maximum_NNP likelihood_NN from_IN incomplete_JJ data_NNS via_IN the_DT EM_NNP algorithm_NN ._.
+Journal_NNP of_IN the_DT Royal_NNP Statistical_NNP Society_NNP ,_, ##_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 1-38_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- G_NN ._.
+P_NN ._.
+C_NN ._.
+Fung_NNP ,_, J_NNP ._.
+X_NN ._.
+Yu_NNP ,_, P_NN ._.
+S_NN ._.
+Yu_NNP ,_, and_CC H_NN ._.
+Lu_NNP ._.
+Parameter_NN free_JJ bursty_JJ events_NNS detection_NN in_IN text_NN streams_NNS ._.
+In_IN VLDB_NNP ,_, pages_NNS 181-192_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Q_NNP ._.
+He_PRP ,_, K_NNP ._.
+Chang_NNP ,_, and_CC E_NN ._.
+-_: P_NN ._.
+Lim_NNP ._.
+A_DT model_NN for_IN anticipatory_JJ event_NN detection_NN ._.
+In_IN ER_NN ,_, pages_NNS 168-181_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Q_NNP ._.
+He_PRP ,_, K_NNP ._.
+Chang_NNP ,_, E_NNP ._.
+-_: P_NN ._.
+Lim_NNP ,_, and_CC J_NN ._.
+Zhang_NNP ._.
+Bursty_NNP feature_NN reprensentation_NN for_IN clustering_NN text_NN streams_NNS ._.
+In_IN SDM_NNP ,_, accepted_VBD ,_, 2007_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+Kleinberg_NNP ._.
+Bursty_NNP and_CC hierarchical_JJ structure_NN in_IN streams_NNS ._.
+In_IN SIGKDD_NNP ,_, pages_NNS 91-101_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- R_NN ._.
+Kumar_NNP ,_, J_NNP ._.
+Novak_NNP ,_, P_NN ._.
+Raghavan_NNP ,_, and_CC A_NN ._.
+Tomkins_NNP ._.
+On_IN the_DT bursty_JJ evolution_NN of_IN blogspace_NN ._.
+In_IN WWW_NNP ,_, pages_NNS 159-178_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- G_NN ._.
+Kumaran_NNP and_CC J_NNP ._.
+Allan_NNP ._.
+Text_VB classification_NN and_CC named_VBN entities_NNS for_IN new_JJ event_NN detection_NN ._.
+In_IN SIGIR_NN ,_, pages_NNS 297-304_CD ,_, 2004_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Q_NNP ._.
+Mei_NNP and_CC C_NNP ._.
+Zhai_NNP ._.
+Discovering_VBG evolutionary_JJ theme_NN patterns_NNS from_IN text_NN :_: an_DT exploration_NN of_IN temporal_JJ text_NN mining_NN ._.
+In_IN SIGKDD_NNP ,_, pages_NNS 198-207_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- W_NN ._.
+D_NN ._.
+Penny_NN ._.
+Kullback-liebler_JJR divergences_NNS of_IN normal_JJ ,_, gamma_NN ,_, dirichlet_NN and_CC wishart_NN densities_NNS ._.
+Technical_NNP report_NN ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- N_NN ._.
+Stokes_NNP and_CC J_NNP ._.
+Carthy_NNP ._.
+Combining_VBG semantic_JJ and_CC syntactic_JJ document_NN classifiers_NNS to_TO improve_VB first_RB story_NN detection_NN ._.
+In_IN SIGIR_NN ,_, pages_NNS 424-425_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- R_NN ._.
+Swan_NN and_CC J_NN ._.
+Allan_NNP ._.
+Automatic_NNP generation_NN of_IN overview_NN timelines_NNS ._.
+In_IN SIGIR_NN ,_, pages_NNS 49-56_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- M_NN ._.
+Vlachos_NNP ,_, C_NNP ._.
+Meek_NNP ,_, Z_NN ._.
+Vagena_NNP ,_, and_CC D_NN ._.
+Gunopulos_NNP ._.
+Identifying_VBG similarities_NNS ,_, periodicities_NNS and_CC bursts_NNS for_IN online_JJ search_NN queries_NNS ._.
+In_IN SIGMOD_NNP ,_, pages_NNS 131-142_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Y_NN ._.
+Yang_NNP ,_, T_NN ._.
+Pierce_NNP ,_, and_CC J_NN ._.
+Carbonell_NNP ._.
+A_DT study_NN of_IN retrospective_NN and_CC on-line_JJ event_NN detection_NN ._.
+In_IN SIGIR_NN ,_, pages_NNS 28-36_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Y_NN ._.
+Yang_NNP ,_, J_NNP ._.
+Zhang_NNP ,_, J_NNP ._.
+Carbonell_NNP ,_, and_CC C_NN ._.
+Jin_NNP ._.
+Topic-conditioned_JJ novelty_NN detection_NN ._.
+In_IN SIGKDD_NNP ,_, pages_NNS 688-693_CD ,_, ####_CD ._.
+Table_NNP #_# :_: All_DT important_JJ aperiodic_JJ events_NNS -LRB-_-LRB- e1_NN e17_NN -RRB-_-RRB- ,_, top_JJ #_# less-reported_JJ aperiodic_JJ events_NNS -LRB-_-LRB- e18_NN e22_NN -RRB-_-RRB- and_CC top_JJ #_# important_JJ periodic_JJ events_NNS -LRB-_-LRB- e23_NN e27_NN -RRB-_-RRB- ._.
+Detected_VBN Event_NN and_CC Bursty_NNP Period_NN Doc_NNP #_# True_JJ Event_NN e1_NN -LRB-_-LRB- Sali_NNS ,_, Berisha_NNP ,_, Albania_NNP ,_, Albanian_NNP ,_, March_NNP -RRB-_-RRB- 02_CD /_: ##_CD /_: ######_CD /_: ##_CD /_: ####_CD 1409_CD Albanian_NNP ''_'' s_NNS president_NN Sali_NNP Berisha_NNP lost_VBD in_IN an_DT early_JJ election_NN and_CC resigned_VBD ,_, ##_CD /_: 1996-07_CD /_: ####_CD ._.
+e2_NN -LRB-_-LRB- Seko_NN ,_, Mobutu_NNP ,_, Sese_NNP ,_, Kabila_NNP -RRB-_-RRB- ##_CD /_: ##_CD /_: 1997-06_CD /_: ##_CD /_: ####_CD ####_CD Zaire_NNP ''_'' s_VBZ president_NN Mobutu_NNP Sese_NNP coordinated_VBN the_DT native_JJ rebellion_NN and_CC failed_VBD on_IN ##_CD /_: ##_CD /_: ####_CD ._.
+e3_NN -LRB-_-LRB- Marxist_JJ ,_, Peruvian_JJ -RRB-_-RRB- ##_CD /_: ##_CD /_: 1996-03_CD /_: ##_CD /_: ####_CD ###_CD Peru_NNP rebels_NNS -LRB-_-LRB- Tupac_NNP Amaru_NNP revolutionary_JJ Movement_NNP -RRB-_-RRB- led_VBD a_DT hostage_NN siege_NN in_IN Lima_NNP in_IN early_JJ ####_NN ._.
+e4_NN -LRB-_-LRB- Movement_NNP ,_, Tupac_NNP ,_, Amaru_NNP ,_, Lima_NNP ,_, hostage_NN ,_, hostages_NNS -RRB-_-RRB- 11_CD /_: ##_CD /_: 1996-03_CD /_: ##_CD /_: ####_CD 824_CD The_DT same_JJ as_IN e3_NN ._.
+e5_NN -LRB-_-LRB- Kinshasa_NNP ,_, Kabila_NNP ,_, Laurent_NNP ,_, Congo_NNP -RRB-_-RRB- 03_CD /_: ##_CD /_: ######_CD /_: ##_CD /_: ####_CD 1378_CD Zaire_NNP was_VBD renamed_VBN the_DT Democratic_JJ Republic_NN of_IN Congo_NNP on_IN 05_CD /_: ##_CD /_: ####_CD ._.
+e6_NN -LRB-_-LRB- Jospin_NNP ,_, Lionel_NNP ,_, June_NNP -RRB-_-RRB- ##_CD /_: ##_CD /_: 1997-07_CD /_: ##_CD /_: ####_CD ###_CD Following_VBG the_DT early_JJ General_NNP Elections_NNPS circa_NN ##_CD /_: ####_CD ,_, Lionel_NNP Jospin_NNP was_VBD appointed_VBN Prime_NNP Minister_NNP on_IN ##_CD /_: ##_CD /_: ####_CD ._.
+e7_NN -LRB-_-LRB- Iraq_NNP ,_, missile_NN -RRB-_-RRB- ##_CD /_: ##_CD /_: 1996-09_CD /_: ##_CD /_: ####_CD ####_CD U_NNP ._.
+S_NN ._.
+fired_VBN missile_NN at_IN Iraq_NNP on_IN ##_CD /_: ##_CD /_: ####_CD and_CC ##_CD /_: ##_CD /_: ####_CD ._.
+e8_NN -LRB-_-LRB- Kurdish_JJ ,_, Baghdad_NNP ,_, Iraqi_JJ -RRB-_-RRB- ##_CD /_: ##_CD /_: 1996-09_CD /_: ##_CD /_: ####_CD ####_CD Iraqi_JJ troop_NN fought_VBN with_IN Kurdish_JJ faction_NN circa_NN ##_CD /_: ####_CD ._.
+e9_NN -LRB-_-LRB- May_NNP ,_, Blair_NNP -RRB-_-RRB- ##_CD /_: ##_CD /_: 1997-07_CD /_: ##_CD /_: ####_CD ####_CD Tony_NNP Blair_NNP became_VBD the_DT Primary_JJ Minister_NNP of_IN the_DT United_NNP Kingdom_NNP on_IN ##_CD /_: ##_CD /_: ####_CD ._.
+e10_NN -LRB-_-LRB- slalom_NN ,_, skiing_NN -RRB-_-RRB- ##_CD /_: ##_CD /_: 1996-03_CD /_: ##_CD /_: ####_CD ###_CD Slalom_NNP Game_NNP of_IN Alpine_NNP Skiing_NN in_IN ##_CD /_: 1997-02_CD /_: ####_CD ._.
+e11_NN -LRB-_-LRB- Interim_NN ,_, months_NNS -RRB-_-RRB- ##_VBP /_: ##_CD /_: 1996-12_CD /_: ##_CD /_: ####_CD ####_CD Tokyo_NNP released_VBN company_NN interim_JJ results_NNS for_IN the_DT past_JJ several_JJ months_NNS in_IN ##_CD /_: 1996-12_CD /_: ####_CD ._.
+e12_NN -LRB-_-LRB- Dole_NNP ,_, Bob_NNP -RRB-_-RRB- ##_CD /_: ##_CD /_: 1996-11_CD /_: ##_CD /_: ####_CD ####_CD Dole_NNP Bob_NNP lost_VBD the_DT ####_CD US_NNP presidential_JJ election_NN ._.
+e13_NN -LRB-_-LRB- July_NNP ,_, Sen_NNP -RRB-_-RRB- ##_CD /_: ##_CD /_: 1997-06_CD /_: ##_CD /_: ####_CD ###_CD Cambodia_NNP ''_'' s_VBZ Prime_NNP Minister_NNP Hun_NNP Sen_NNP launched_VBD a_DT bloody_JJ military_JJ coup_NN in_IN ##_CD /_: ####_CD ._.
+e14_NN -LRB-_-LRB- Hebron_NN -RRB-_-RRB- ##_CD /_: ##_CD /_: 1996-02_CD /_: ##_CD /_: ####_CD ####_CD Hebron_NNP was_VBD divided_VBN into_IN two_CD sectors_NNS in_IN early_JJ ####_NN ._.
+e15_NN -LRB-_-LRB- April_NNP ,_, Easter_NNP -RRB-_-RRB- ##_CD /_: ##_CD /_: 1997-05_CD /_: ##_CD /_: ####_CD ###_CD Easter_NNP feasts_NNS circa_VBP ##_CD /_: ####_CD -LRB-_-LRB- for_IN western_JJ and_CC Orthodox_NN -RRB-_-RRB- ._.
+e16_NN -LRB-_-LRB- Diluted_VBN ,_, Group_NNP -RRB-_-RRB- ##_CD /_: ##_CD /_: 1997-07_CD /_: ##_CD /_: ####_CD ####_CD Tokyo_NNP released_VBD all_DT ##_CD /_: ##_CD group_NN results_VBZ in_IN 04_CD /_: ######_CD /_: ####_CD ._.
+e17_NN -LRB-_-LRB- December_NNP ,_, Christmas_NNP -RRB-_-RRB- ##_CD /_: ##_CD /_: 1996-01_CD /_: ##_CD /_: ####_CD ####_CD Christmas_NNP feast_NN in_IN late_JJ ##_NN /_: ####_CD ._.
+e18_NN -LRB-_-LRB- Kolaceva_NNP ,_, winter_NN ,_, Together_RB ,_, promenades_NNS ,_, Zajedno_NNP ,_, Slobodan_NNP ,_, Belgrade_NNP ,_, Serbian_NNP ,_, Serbia_NNP ,_, Draskovic_NNP ,_, municipal_JJ ,_, Kragujevac_NNP -RRB-_-RRB- #_# /_: ##_CD /_: ####_CD 3_CD University_NNP students_NNS organized_VBD a_DT vigil_NN on_IN Kolaceva_NNP street_NN against_IN government_NN on_IN #_# /_: ##_CD /_: ####_CD ._.
+e19_NN -LRB-_-LRB- Tutsi_NN ,_, Luvengi_NNP ,_, Burundi_NNP ,_, Uvira_NNP ,_, fuel_NN ,_, Banyamulenge_NNP ,_, Burundian_NNP ,_, Kivu_NNP ,_, Kiliba_NNP ,_, Runingo_NNP ,_, Kagunga_NNP ,_, Bwegera_NNP -RRB-_-RRB- 10_CD /_: ##_CD /_: ####_CD 6_CD Fresh_JJ fighting_VBG erupted_VBD around_RP Uvira_NNP between_IN Zaire_NNP armed_JJ forces_NNS and_CC Banyamulengs_NNS Tutsi_JJ rebels_NNS on_IN ##_CD /_: ##_CD /_: ####_CD ._.
+e20_NN -LRB-_-LRB- Malantacchi_NNP ,_, Korea_NNP ,_, Guy_NNP ,_, Rider_NNP ,_, Unions_NNS ,_, labour_NN ,_, Trade_NNP ,_, unions_NNS ,_, Confederation_NNP ,_, rammed_VBD ,_, Geneva_NNP ,_, stoppages_NNS ,_, Virgin_NN ,_, hire_NN ,_, Myongdong_NNP ,_, Metalworkers_NNPS -RRB-_-RRB- #_# /_: ##_CD /_: ####_CD 2_CD Marcello_NNP Malantacchi_NNP secretary_NN general_NN of_IN the_DT International_NNP Metalworkers_NNPS Federation_NNP and_CC Guy_NNP Rider_NNP who_WP heads_VBZ the_DT Geneva_NNP office_NN of_IN the_DT International_NNP Confederation_NNP of_IN Free_NNP Trade_NNP Unions_NNS attacked_VBD the_DT new_JJ labour_NN law_NN of_IN South_NNP Korea_NNP on_IN #_# /_: ##_CD /_: ####_CD ._.
+e21_NN -LRB-_-LRB- DBS_NN ,_, Raes_NNP -RRB-_-RRB- #_# /_: ##_CD /_: ####_CD #_# The_DT list_NN of_IN the_DT unit_NN of_IN Singapore_NNP DBS_NNP Land_NNP Raes_NNP Holdings_NNP plans_VBZ on_IN #_# /_: ##_CD /_: ####_CD ._.
+e22_NN -LRB-_-LRB- preserver_NN ,_, fuel_NN ,_, Galawa_NNP ,_, Huddle_NNP ,_, Leul_NNP ,_, Beausse_NNP -RRB-_-RRB- 11_CD /_: ##_CD /_: ####_CD 3_CD Rescued_VBN a_DT woman_NN and_CC her_PRP$ baby_NN during_IN a_DT hijacked_VBN Ethiopian_JJ plane_NN that_WDT ran_VBD out_IN of_IN fuel_NN and_CC crashed_VBD into_IN the_DT sea_NN near_IN Le_NNP Galawa_NNP beach_NN on_IN ##_CD /_: ##_CD /_: ####_CD ._.
+e23_NN -LRB-_-LRB- PRICE_NN ,_, LISTING_NN ,_, MLN_NNP ,_, MATURITY_NNP ,_, COUPON_NNP ,_, MOODY_NNP ,_, AMT_NNP ,_, FIRST_NNP ,_, ISS_NNP ,_, TYPE_NNP ,_, PAY_NN ,_, BORROWER_NN -RRB-_-RRB- Monday-Friday_NNP /_: week_NN 7966_CD Announce_NNP bond_NN price_NN on_IN all_DT weekdays_NNS ._.
+e24_NN -LRB-_-LRB- Unaudited_JJ ,_, Ended_JJ ,_, Months_NNS ,_, Weighted_NNP ,_, Provision_NNP ,_, Cost_NN ,_, Selling_VBG ,_, Revenues_NNS ,_, Loss_NN ,_, Income_NN ,_, except_IN ,_, Shrs_NNP ,_, Revs_NNP -RRB-_-RRB- every_DT season_NN 2264_CD Net_JJ income-loss_JJ reports_NNS released_VBN by_IN companies_NNS in_IN every_DT season_NN ._.
+e25_NN -LRB-_-LRB- rating_NN ,_, Wall_NNP ,_, Street_NNP ,_, Ian_NNP -RRB-_-RRB- Monday-Friday_NNP /_: week_NN #####_NNP Stock_NNP reports_VBZ from_IN Wall_NNP Street_NNP on_IN all_DT weekdays_NNS ._.
+e26_NN -LRB-_-LRB- Sheffield_NNP ,_, league_NN ,_, scoring_VBG ,_, goals_NNS ,_, striker_NN ,_, games_NNS -RRB-_-RRB- every_DT Friday_NNP ,_, Saturday_NNP and_CC Sunday_NNP 574_CD Match_NNP results_NNS of_IN Sheffield_NNP soccer_NN league_NN were_VBD published_VBN on_IN Friday_NNP ,_, Saturday_NNP and_CC Sunday_NNP ##_CD times_NNS than_IN other_JJ #_# days_NNS ._.
+e27_NN -LRB-_-LRB- soccer_NN ,_, matches_NNS ,_, Results_NNS ,_, season_NN ,_, game_NN ,_, Cup_NNP ,_, match_NN ,_, victory_NN ,_, beat_NN ,_, played_VBD ,_, play_VB ,_, division_NN -RRB-_-RRB- every_DT Friday_NNP ,_, Saturday_NNP and_CC Sunday_NNP 2396_CD Soccer_NNP games_NNS held_VBN on_IN Friday_NNP ,_, Saturday_NNP and_CC Sunday_NNP #_# times_NNS than_IN other_JJ #_# days_NNS ._.

@@ -1,0 +1,570 @@
+A_DT Support_NN Vector_NNP Method_NNP for_IN Optimizing_NNP Average_NNP Precision_NNP Yisong_NNP Yue_NNP Cornell_NNP University_NNP Ithaca_NNP ,_, NY_NNP ,_, USA_NNP yyue_NN @_IN cs_NNS ._.
+cornell_NN ._.
+edu_NN Thomas_NNP Finley_NNP Cornell_NNP University_NNP Ithaca_NNP ,_, NY_NNP ,_, USA_NNP tomf_NN @_IN cs_NNS ._.
+cornell_NN ._.
+edu_NN Filip_NNP Radlinski_NNP Cornell_NNP University_NNP Ithaca_NNP ,_, NY_NNP ,_, USA_NNP filip_NN @_IN cs_NNS ._.
+cornell_NN ._.
+edu_NN Thorsten_NNP Joachims_NNP Cornell_NNP University_NNP Ithaca_NNP ,_, NY_NNP ,_, USA_NNP tj_NN @_IN cs_NNS ._.
+cornell_NN ._.
+edu_NN ABSTRACT_NN Machine_NN learning_NN is_VBZ commonly_RB used_VBN to_TO improve_VB ranked_VBD retrieval_NN systems_NNS ._.
+Due_JJ to_TO computational_JJ difficulties_NNS ,_, few_JJ learning_VBG techniques_NNS have_VBP been_VBN developed_VBN to_TO directly_RB optimize_VB for_IN mean_JJ average_JJ precision_NN -LRB-_-LRB- MAP_NN -RRB-_-RRB- ,_, despite_IN its_PRP$ widespread_JJ use_NN in_IN evaluating_VBG such_JJ systems_NNS ._.
+Existing_VBG approaches_NNS optimizing_VBG MAP_NN either_CC do_VBP not_RB find_VB a_DT globally_RB optimal_JJ solution_NN ,_, or_CC are_VBP computationally_RB expensive_JJ ._.
+In_IN contrast_NN ,_, we_PRP present_VBP a_DT general_JJ SVM_NN learning_VBG algorithm_NN that_WDT efficiently_RB finds_VBZ a_DT globally_RB optimal_JJ solution_NN to_TO a_DT straightforward_JJ relaxation_NN of_IN MAP_NN ._.
+We_PRP evaluate_VBP our_PRP$ approach_NN using_VBG the_DT TREC_NN #_# and_CC TREC_NN ##_CD Web_NN Track_NNP corpora_NN -LRB-_-LRB- WT10g_NN -RRB-_-RRB- ,_, comparing_VBG against_IN SVMs_NNS optimized_VBN for_IN accuracy_NN and_CC ROCArea_NN ._.
+In_IN most_JJS cases_NNS we_PRP show_VBP our_PRP$ method_NN to_TO produce_VB statistically_RB significant_JJ improvements_NNS in_IN MAP_NN scores_NNS ._.
+Categories_NNS and_CC Subject_NNP Descriptors_NNPS H_NN ._.
+#_# ._.
+#_# -LSB-_-LRB- Information_NNP Search_VB and_CC Retrieval_NN -RSB-_-RRB- :_: Retrieval_NNP Models_NNS General_NNP Terms_NNS Algorithm_NNP ,_, Theory_NNP ,_, Experimentation_NN 1_CD ._.
+INTRODUCTION_NN State_NN of_IN the_DT art_NN information_NN retrieval_NN systems_NNS commonly_RB use_VBP machine_NN learning_NN techniques_NNS to_TO learn_VB ranking_JJ functions_NNS ._.
+However_RB ,_, most_RBS current_JJ approaches_NNS do_VBP not_RB optimize_VB for_IN the_DT evaluation_NN measure_NN most_RBS often_RB used_VBN ,_, namely_RB Mean_NN Average_JJ Precision_NN -LRB-_-LRB- MAP_NN -RRB-_-RRB- ._.
+Instead_RB ,_, current_JJ algorithms_NNS tend_VBP to_TO take_VB one_CD of_IN two_CD general_JJ approaches_NNS ._.
+The_DT first_JJ approach_NN is_VBZ to_TO learn_VB a_DT model_NN that_WDT estimates_VBZ the_DT probability_NN of_IN a_DT document_NN being_VBG relevant_JJ given_VBN a_DT query_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, -LSB-_-LRB- ##_CD ,_, ##_CD -RSB-_-RRB- -RRB-_-RRB- ._.
+If_IN solved_VBN effectively_RB ,_, the_DT ranking_JJ with_IN best_JJS MAP_NN performance_NN can_MD easily_RB be_VB derived_VBN from_IN the_DT probabilities_NNS of_IN relevance_NN ._.
+However_RB ,_, achieving_VBG high_JJ MAP_NN only_RB requires_VBZ finding_VBG a_DT good_JJ ordering_VBG of_IN the_DT documents_NNS ._.
+As_IN a_DT result_NN ,_, finding_VBG good_JJ probabilities_NNS requires_VBZ solving_VBG a_DT more_RBR difficult_JJ problem_NN than_IN necessary_JJ ,_, likely_JJ requiring_VBG more_JJR training_NN data_NNS to_TO achieve_VB the_DT same_JJ MAP_NN performance_NN ._.
+The_DT second_JJ common_JJ approach_NN is_VBZ to_TO learn_VB a_DT function_NN that_WDT maximizes_VBZ a_DT surrogate_JJ measure_NN ._.
+Performance_NNP measures_VBZ optimized_VBN include_VBP accuracy_NN -LSB-_-LRB- ##_CD ,_, ##_CD -RSB-_-RRB- ,_, ROCArea_NN -LSB-_-LRB- #_# ,_, #_# ,_, ##_NN ,_, ##_NN ,_, 13_CD ,_, ##_CD -RSB-_-RRB- or_CC modifications_NNS of_IN ROCArea_NN -LSB-_-LRB- #_# -RSB-_-RRB- ,_, and_CC NDCG_NN -LSB-_-LRB- #_# ,_, #_# -RSB-_-RRB- ._.
+Learning_VBG a_DT model_NN to_TO optimize_VB for_IN such_JJ measures_NNS might_MD result_VB in_IN suboptimal_JJ MAP_NN performance_NN ._.
+In_IN fact_NN ,_, although_IN some_DT previous_JJ systems_NNS have_VBP obtained_VBN good_JJ MAP_NN performance_NN ,_, it_PRP is_VBZ known_VBN that_IN neither_CC achieving_VBG optimal_JJ accuracy_NN nor_CC ROCArea_NN can_MD guarantee_VB optimal_JJ MAP_NN performance_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+In_IN this_DT paper_NN ,_, we_PRP present_VBP a_DT general_JJ approach_NN for_IN learning_VBG ranking_JJ functions_NNS that_WDT maximize_VBP MAP_NN performance_NN ._.
+Specifically_RB ,_, we_PRP present_VBP an_DT SVM_NN algorithm_NN that_WDT globally_RB optimizes_VBZ a_DT hinge-loss_JJ relaxation_NN of_IN MAP_NN ._.
+This_DT approach_NN simplifies_VBZ the_DT process_NN of_IN obtaining_VBG ranking_JJ functions_NNS with_IN high_JJ MAP_NN performance_NN by_IN avoiding_VBG additional_JJ intermediate_JJ steps_NNS and_CC heuristics_NNS ._.
+The_DT new_JJ algorithm_NN also_RB makes_VBZ it_PRP conceptually_RB just_RB as_IN easy_JJ to_TO optimize_VB SVMs_NNS for_IN MAP_NN as_IN was_VBD previously_RB possible_JJ only_RB for_IN accuracy_NN and_CC ROCArea_NN ._.
+In_IN contrast_NN to_TO recent_JJ work_NN directly_RB optimizing_VBG for_IN MAP_NN performance_NN by_IN Metzler_NNP &_CC Croft_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- and_CC Caruana_NNP et_FW al_FW ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- ,_, our_PRP$ technique_NN is_VBZ computationally_RB efficient_JJ while_IN finding_VBG a_DT globally_RB optimal_JJ solution_NN ._.
+Like_IN -LSB-_-LRB- #_# ,_, ##_NN -RSB-_-RRB- ,_, our_PRP$ method_NN learns_VBZ a_DT linear_JJ model_NN ,_, but_CC is_VBZ much_RB more_RBR efficient_JJ in_IN practice_NN and_CC ,_, unlike_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ,_, can_MD handle_VB many_JJ thousands_NNS of_IN features_NNS ._.
+We_PRP now_RB describe_VBP the_DT algorithm_NN in_IN detail_NN and_CC provide_VB proof_NN of_IN correctness_NN ._.
+Following_VBG this_DT ,_, we_PRP provide_VBP an_DT analysis_NN of_IN running_VBG time_NN ._.
+We_PRP finish_VBP with_IN empirical_JJ results_NNS from_IN experiments_NNS on_IN the_DT TREC_NN #_# and_CC TREC_NN ##_CD Web_NN Track_NNP corpus_NN ._.
+We_PRP have_VBP also_RB developed_VBN a_DT software_NN package_NN implementing_VBG our_PRP$ algorithm_NN that_WDT is_VBZ available_JJ for_IN public_JJ use1_NN ._.
+2_LS ._.
+THE_DT LEARNING_VBG PROBLEM_NN Following_VBG the_DT standard_JJ machine_NN learning_VBG setup_NN ,_, our_PRP$ goal_NN is_VBZ to_TO learn_VB a_DT function_NN h_NN :_: X_NN Y_NN between_IN an_DT input_NN space_NN X_NN -LRB-_-LRB- all_DT possible_JJ queries_NNS -RRB-_-RRB- and_CC output_NN space_NN Y_NN -LRB-_-LRB- rankings_NNS over_IN a_DT corpus_NN -RRB-_-RRB- ._.
+In_IN order_NN to_TO quantify_VB the_DT quality_NN of_IN a_DT prediction_NN ,_, y_NN =_JJ h_NN -LRB-_-LRB- x_NN -RRB-_-RRB- ,_, we_PRP will_MD consider_VB a_DT loss_NN function_NN :_: Y_NN Y_NN ._.
+-LRB-_-LRB- y_NN ,_, y_NN -RRB-_-RRB- quantifies_VBZ the_DT penalty_NN for_IN making_VBG prediction_NN y_NN if_IN the_DT correct_JJ output_NN is_VBZ y_NN ._.
+The_DT loss_NN function_NN allows_VBZ us_PRP to_TO incorporate_VB specific_JJ performance_NN measures_NNS ,_, which_WDT we_PRP will_MD exploit_VB 1_CD http_NN :_: /_: /_: svmrank_NN ._.
+yisongyue_NN ._.
+com_NN for_IN optimizing_VBG MAP_NN ._.
+We_PRP restrict_VBP ourselves_PRP to_TO the_DT supervised_JJ learning_NN scenario_NN ,_, where_WRB input_NN /_: output_NN pairs_NNS -LRB-_-LRB- x_NN ,_, y_NN -RRB-_-RRB- are_VBP available_JJ for_IN training_NN and_CC are_VBP assumed_VBN to_TO come_VB from_IN some_DT fixed_JJ distribution_NN P_NN -LRB-_-LRB- x_NN ,_, y_NN -RRB-_-RRB- ._.
+The_DT goal_NN is_VBZ to_TO find_VB a_DT function_NN h_NN such_JJ that_IN the_DT risk_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, expected_VBN loss_NN -RRB-_-RRB- ,_, R_NN P_NN -LRB-_-LRB- h_NN -RRB-_-RRB- =_JJ Z_NN XY_NN -LRB-_-LRB- y_NN ,_, h_NN -LRB-_-LRB- x_NN -RRB-_-RRB- -RRB-_-RRB- dP_NN -LRB-_-LRB- x_NN ,_, y_NN -RRB-_-RRB- ,_, is_VBZ minimized_VBN ._.
+Of_IN course_NN ,_, P_NN -LRB-_-LRB- x_NN ,_, y_NN -RRB-_-RRB- is_VBZ unknown_JJ ._.
+But_CC given_VBN a_DT finite_JJ set_NN of_IN training_NN pairs_NNS ,_, S_NN =_JJ -LCB-_-LRB- -LRB-_-LRB- xi_NN ,_, yi_NN -RRB-_-RRB- X_NN Y_NN :_: i_FW =_JJ 1_CD ,_, ..._: ,_, n_NN -RCB-_-RRB- ,_, the_DT performance_NN of_IN h_NN on_IN S_NN can_MD be_VB measured_VBN by_IN the_DT empirical_JJ risk_NN ,_, R_NN S_NN -LRB-_-LRB- h_NN -RRB-_-RRB- =_JJ 1_CD n_NN nX_NN i_FW =_JJ #_# -LRB-_-LRB- yi_NN ,_, h_NN -LRB-_-LRB- xi_NN -RRB-_-RRB- -RRB-_-RRB- ._.
+In_IN the_DT case_NN of_IN learning_VBG a_DT ranked_VBN retrieval_NN function_NN ,_, X_NN denotes_VBZ a_DT space_NN of_IN queries_NNS ,_, and_CC Y_NN the_DT space_NN of_IN -LRB-_-LRB- possibly_RB weak_JJ -RRB-_-RRB- rankings_NNS over_IN some_DT corpus_NN of_IN documents_NNS C_NN =_JJ -LCB-_-LRB- d1_NN ,_, ..._: ,_, d_NN |_NN C_NN |_CD -RCB-_-RRB- ._.
+We_PRP can_MD define_VB average_JJ precision_NN loss_NN as_IN map_NN -LRB-_-LRB- y_NN ,_, y_NN -RRB-_-RRB- =_JJ #_# MAP_NN -LRB-_-LRB- rank_NN -LRB-_-LRB- y_NN -RRB-_-RRB- ,_, rank_NN -LRB-_-LRB- y_NN -RRB-_-RRB- -RRB-_-RRB- ,_, where_WRB rank_NN -LRB-_-LRB- y_NN -RRB-_-RRB- is_VBZ a_DT vector_NN of_IN the_DT rank_NN values_NNS of_IN each_DT document_NN in_IN C_NN ._.
+For_IN example_NN ,_, for_IN a_DT corpus_NN of_IN two_CD documents_NNS ,_, -LCB-_-LRB- d1_NN ,_, d2_NN -RCB-_-RRB- ,_, with_IN d1_NN having_VBG higher_JJR rank_NN than_IN d2_NN ,_, rank_NN -LRB-_-LRB- y_NN -RRB-_-RRB- =_JJ -LRB-_-LRB- #_# ,_, #_# -RRB-_-RRB- ._.
+We_PRP assume_VBP true_JJ rankings_NNS have_VBP two_CD rank_JJ values_NNS ,_, where_WRB relevant_JJ documents_NNS have_VBP rank_JJ value_NN #_# and_CC non-relevant_JJ documents_NNS rank_VBP value_NN #_# ._.
+We_PRP further_RB assume_VB that_IN all_DT predicted_VBN rankings_NNS are_VBP complete_JJ rankings_NNS -LRB-_-LRB- no_DT ties_NNS -RRB-_-RRB- ._.
+Let_VB p_NN =_JJ rank_NN -LRB-_-LRB- y_NN -RRB-_-RRB- and_CC p_NN =_JJ rank_NN -LRB-_-LRB- y_NN -RRB-_-RRB- ._.
+The_DT average_JJ precision_NN score_NN is_VBZ defined_VBN as_IN MAP_NN -LRB-_-LRB- p_NN ,_, p_NN -RRB-_-RRB- =_JJ 1_CD rel_NN X_NN j_NN :_: pj_NN =_JJ #_# Prec_NNP @_IN j_NN ,_, where_WRB rel_NN =_JJ |_CD -LCB-_-LRB- i_FW :_: pi_NN =_JJ #_# -RCB-_-RRB- |_CD is_VBZ the_DT number_NN of_IN relevant_JJ documents_NNS ,_, and_CC Prec_NNP @_IN j_NN is_VBZ the_DT percentage_NN of_IN relevant_JJ documents_NNS in_IN the_DT top_JJ j_NN documents_NNS in_IN predicted_VBN ranking_JJ y_NN ._.
+MAP_NN is_VBZ the_DT mean_NN of_IN the_DT average_JJ precision_NN scores_NNS of_IN a_DT group_NN of_IN queries_NNS ._.
+2_LS ._.
+#_# MAP_NN vs_CC ROCArea_NN Most_JJS learning_VBG algorithms_NNS optimize_VB for_IN accuracy_NN or_CC ROCArea_NN ._.
+While_IN optimizing_VBG for_IN these_DT measures_NNS might_MD achieve_VB good_JJ MAP_NN performance_NN ,_, we_PRP use_VBP two_CD simple_JJ examples_NNS to_TO show_VB it_PRP can_MD also_RB be_VB suboptimal_JJ in_IN terms_NNS of_IN MAP_NN ._.
+ROCArea_NN assigns_VBZ equal_JJ penalty_NN to_TO each_DT misordering_NN of_IN a_DT relevant_JJ /_: non-relevant_JJ pair_NN ._.
+In_IN contrast_NN ,_, MAP_NN assigns_VBZ greater_JJR penalties_NNS to_TO misorderings_NNS higher_JJR up_IN in_IN the_DT predicted_VBN ranking_NN ._.
+Using_VBG our_PRP$ notation_NN ,_, ROCArea_NN can_MD be_VB defined_VBN as_IN ROC_NN -LRB-_-LRB- p_NN ,_, p_NN -RRB-_-RRB- =_JJ 1_CD rel_NN -LRB-_-LRB- |_CD C_NN |_CD rel_NN -RRB-_-RRB- X_NN i_FW :_: pi_NN =_JJ #_# X_NN j_NN :_: pj_NN =_JJ #_# 1_CD -LSB-_-LRB- pi_NN >_JJR pj_NN -RSB-_-RRB- ,_, where_WRB p_NN is_VBZ the_DT true_JJ -LRB-_-LRB- weak_JJ -RRB-_-RRB- ranking_NN ,_, p_NN is_VBZ the_DT predicted_VBN ranking_NN ,_, and_CC #_# -LSB-_-LRB- b_NN -RSB-_-RRB- is_VBZ the_DT indicator_NN function_NN conditioned_VBN on_IN b_NN ._.
+Doc_NNP ID_NNP #_# #_# #_# #_# #_# #_# #_# #_# p_NN #_# #_# #_# #_# #_# #_# #_# #_# rank_NN -LRB-_-LRB- h1_NN -LRB-_-LRB- x_NN -RRB-_-RRB- -RRB-_-RRB- #_# #_# #_# #_# #_# #_# #_# #_# rank_NN -LRB-_-LRB- h2_NN -LRB-_-LRB- x_NN -RRB-_-RRB- -RRB-_-RRB- #_# #_# #_# #_# #_# #_# #_# #_# Table_NNP #_# :_: Toy_NNP Example_NNP and_CC Models_NNS Suppose_VB we_PRP have_VBP a_DT hypothesis_NN space_NN with_IN only_RB two_CD hypothesis_NN functions_NNS ,_, h1_NN and_CC h2_NN ,_, as_IN shown_VBN in_IN Table_NNP #_# ._.
+These_DT two_CD hypotheses_NNS predict_VBP a_DT ranking_NN for_IN query_NN x_NN over_IN a_DT corpus_NN of_IN eight_CD documents_NNS ._.
+Hypothesis_NN MAP_NN ROCArea_NN h1_NN -LRB-_-LRB- x_NN -RRB-_-RRB- #_# ._.
+##_NN #_# ._.
+##_NN h2_NN -LRB-_-LRB- x_NN -RRB-_-RRB- #_# ._.
+##_NN #_# ._.
+##_RB Table_NNP #_# :_: Performance_NNP of_IN Toy_NNP Models_NNS Table_NNP #_# shows_VBZ the_DT MAP_NN and_CC ROCArea_NN scores_NNS of_IN h1_NN and_CC h2_NN ._.
+Here_RB ,_, a_DT learning_NN method_NN which_WDT optimizes_VBZ for_IN ROCArea_NN would_MD choose_VB h2_NN since_IN that_DT results_VBZ in_IN a_DT higher_JJR ROCArea_NN score_NN ,_, but_CC this_DT yields_VBZ a_DT suboptimal_JJ MAP_NN score_NN ._.
+2_LS ._.
+#_# MAP_NN vs_CC Accuracy_NNP Using_VBG a_DT very_RB similar_JJ example_NN ,_, we_PRP now_RB demonstrate_VBP how_WRB optimizing_VBG for_IN accuracy_NN might_MD result_VB in_IN suboptimal_JJ MAP_NN ._.
+Models_NNS which_WDT optimize_VBP for_IN accuracy_NN are_VBP not_RB directly_RB concerned_VBN with_IN the_DT ranking_NN ._.
+Instead_RB ,_, they_PRP learn_VBP a_DT threshold_NN such_JJ that_IN documents_NNS scoring_VBG higher_JJR than_IN the_DT threshold_NN can_MD be_VB classified_VBN as_IN relevant_JJ and_CC documents_NNS scoring_VBG lower_JJR as_IN nonrelevant_JJ ._.
+Doc_NNP ID_NNP #_# #_# #_# #_# #_# #_# #_# #_# #_# ##_CD ##_CD p_NN #_# #_# #_# #_# #_# #_# #_# #_# #_# #_# #_# rank_NN -LRB-_-LRB- h1_NN -LRB-_-LRB- x_NN -RRB-_-RRB- -RRB-_-RRB- ##_CD ##_CD #_# #_# #_# #_# #_# #_# #_# #_# #_# rank_NN -LRB-_-LRB- h2_NN -LRB-_-LRB- x_NN -RRB-_-RRB- -RRB-_-RRB- #_# #_# #_# #_# #_# #_# #_# #_# #_# ##_CD ##_CD Table_NNP #_# :_: Toy_NNP Example_NNP and_CC Models_NNS We_PRP consider_VBP again_RB a_DT hypothesis_NN space_NN with_IN two_CD hypotheses_NNS ._.
+Table_NNP #_# shows_VBZ the_DT predictions_NNS of_IN the_DT two_CD hypotheses_NNS on_IN a_DT single_JJ query_NN x_NN ._.
+Hypothesis_NN MAP_NN Best_NN Acc_NN ._.
+h1_NN -LRB-_-LRB- q_NN -RRB-_-RRB- #_# ._.
+##_NN #_# ._.
+##_NN h2_NN -LRB-_-LRB- q_NN -RRB-_-RRB- #_# ._.
+##_NN #_# ._.
+##_RB Table_NNP #_# :_: Performance_NNP of_IN Toy_NNP Models_NNS Table_NNP #_# shows_VBZ the_DT MAP_NN and_CC best_JJS accuracy_NN scores_NNS of_IN h1_NN -LRB-_-LRB- q_NN -RRB-_-RRB- and_CC h2_NN -LRB-_-LRB- q_NN -RRB-_-RRB- ._.
+The_DT best_JJS accuracy_NN refers_VBZ to_TO the_DT highest_JJS achievable_JJ accuracy_NN on_IN that_DT ranking_JJ when_WRB considering_VBG all_DT possible_JJ thresholds_NNS ._.
+For_IN instance_NN ,_, with_IN h1_NN -LRB-_-LRB- q_NN -RRB-_-RRB- ,_, a_DT threshold_NN between_IN documents_NNS #_# and_CC #_# gives_VBZ #_# errors_NNS -LRB-_-LRB- documents_NNS 6-9_CD incorrectly_RB classified_VBN as_IN non-relevant_JJ -RRB-_-RRB- ,_, yielding_VBG an_DT accuracy_NN of_IN 0_CD ._.
+##_NN ._.
+Similarly_RB ,_, with_IN h2_NN -LRB-_-LRB- q_NN -RRB-_-RRB- ,_, a_DT threshold_NN between_IN documents_NNS 5_CD and_CC #_# gives_VBZ #_# errors_NNS -LRB-_-LRB- documents_NNS 10-11_CD incorrectly_RB classified_VBN as_IN relevant_JJ ,_, and_CC document_NN #_# as_IN non-relevant_JJ -RRB-_-RRB- ,_, yielding_VBG an_DT accuracy_NN of_IN #_# ._.
+##_NN ._.
+A_DT learning_NN method_NN which_WDT optimizes_VBZ for_IN accuracy_NN would_MD choose_VB h2_NN since_IN that_DT results_VBZ in_IN a_DT higher_JJR accuracy_NN score_NN ,_, but_CC this_DT yields_VBZ a_DT suboptimal_JJ MAP_NN score_NN ._.
+3_LS ._.
+OPTIMIZING_NNP AVERAGE_NNP PRECISION_NNP We_PRP build_VBP upon_IN the_DT approach_NN used_VBN by_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- for_IN optimizing_VBG ROCArea_NN ._.
+Unlike_IN ROCArea_NN ,_, however_RB ,_, MAP_NN does_VBZ not_RB decompose_VB linearly_RB in_IN the_DT examples_NNS and_CC requires_VBZ a_DT substantially_RB extended_VBN algorithm_NN ,_, which_WDT we_PRP describe_VBP in_IN this_DT section_NN ._.
+Recall_VB that_IN the_DT true_JJ ranking_NN is_VBZ a_DT weak_JJ ranking_NN with_IN two_CD rank_NN values_NNS -LRB-_-LRB- relevant_JJ and_CC non-relevant_JJ -RRB-_-RRB- ._.
+Let_VB Cx_NNP and_CC Cx_NNP denote_VBP the_DT set_NN of_IN relevant_JJ and_CC non-relevant_JJ documents_NNS of_IN C_NN for_IN query_NN x_NN ,_, respectively_RB ._.
+We_PRP focus_VBP on_IN functions_NNS which_WDT are_VBP parametrized_VBN by_IN a_DT weight_NN vector_NN w_NN ,_, and_CC thus_RB wish_NN to_TO find_VB w_NN to_TO minimize_VB the_DT empirical_JJ risk_NN ,_, R_NN S_NN -LRB-_-LRB- w_NN -RRB-_-RRB- R_NN S_NN -LRB-_-LRB- h_NN -LRB-_-LRB- ;_: w_NN -RRB-_-RRB- -RRB-_-RRB- ._.
+Our_PRP$ approach_NN is_VBZ to_TO learn_VB a_DT discriminant_JJ function_NN F_NN :_: X_NN Y_NN over_IN input-output_JJ pairs_NNS ._.
+Given_VBN query_NN x_NN ,_, we_PRP can_MD derive_VB a_DT prediction_NN by_IN finding_VBG the_DT ranking_JJ y_NN that_WDT maximizes_VBZ the_DT discriminant_JJ function_NN :_: h_NN -LRB-_-LRB- x_NN ;_: w_NN -RRB-_-RRB- =_JJ argmax_NN yY_NN F_NN -LRB-_-LRB- x_NN ,_, y_NN ;_: w_NN -RRB-_-RRB- ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- We_PRP assume_VBP F_NN to_TO be_VB linear_JJ in_IN some_DT combined_JJ feature_NN representation_NN of_IN inputs_NNS and_CC outputs_NNS -LRB-_-LRB- x_NN ,_, y_NN -RRB-_-RRB- RN_NN ,_, i_FW ._.
+e_LS ._.
+,_, F_NN -LRB-_-LRB- x_NN ,_, y_NN ;_: w_NN -RRB-_-RRB- =_JJ wT_NN -LRB-_-LRB- x_NN ,_, y_NN -RRB-_-RRB- ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- The_DT combined_JJ feature_NN function_NN we_PRP use_VBP is_VBZ -LRB-_-LRB- x_NN ,_, y_NN -RRB-_-RRB- =_JJ 1_CD |_CD Cx_NN |_CD |_CD Cx_NN |_NN X_NN i_FW :_: diCx_NN X_NN j_NN :_: dj_NN Cx_NN -LSB-_-LRB- yij_NN -LRB-_-LRB- -LRB-_-LRB- x_NN ,_, di_FW -RRB-_-RRB- -LRB-_-LRB- x_NN ,_, dj_NN -RRB-_-RRB- -RRB-_-RRB- -RSB-_-RRB- ,_, where_WRB :_: X_NN C_NN N_NN is_VBZ a_DT feature_NN mapping_NN function_NN from_IN a_DT query_NN /_: document_NN pair_NN to_TO a_DT point_NN in_IN N_NN dimensional_JJ space2_NN ._.
+We_PRP represent_VBP rankings_NNS as_IN a_DT matrix_NN of_IN pairwise_JJ orderings_NNS ,_, Y_NN -LCB-_-LRB- #_# ,_, #_# ,_, +_CC #_# -RCB-_-RRB- |_CD C_NN |_CD |_NN C_NN |_NN ._.
+For_IN any_DT y_NN Y_NN ,_, yij_NN =_JJ +_CC #_# if_IN di_FW is_VBZ ranked_VBN ahead_RB of_IN dj_NN ,_, and_CC yij_NN =_JJ #_# if_IN dj_NN is_VBZ ranked_VBN ahead_RB of_IN di_FW ,_, and_CC yij_NN =_JJ #_# if_IN di_FW and_CC dj_NN have_VBP equal_JJ rank_NN ._.
+We_PRP consider_VBP only_RB matrices_NNS which_WDT correspond_VBP to_TO valid_JJ rankings_NNS -LRB-_-LRB- i_FW ._.
+e_LS ,_, obeying_VBG antisymmetry_JJ and_CC transitivity_NN -RRB-_-RRB- ._.
+Intuitively_RB ,_, is_VBZ a_DT summation_NN over_IN the_DT vector_NN differences_NNS of_IN all_DT relevant_JJ /_: non-relevant_JJ document_NN pairings_NNS ._.
+Since_IN we_PRP assume_VBP predicted_VBN rankings_NNS to_TO be_VB complete_JJ rankings_NNS ,_, yij_NN is_VBZ either_CC +_CC #_# or_CC #_# -LRB-_-LRB- never_RB #_# -RRB-_-RRB- ._.
+Given_VBN a_DT learned_VBN weight_NN vector_NN w_NN ,_, predicting_VBG a_DT ranking_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+solving_VBG equation_NN -LRB-_-LRB- #_# -RRB-_-RRB- -RRB-_-RRB- given_VBN query_NN x_NN reduces_VBZ to_TO picking_VBG each_DT yij_NN to_TO maximize_VB wT_NN -LRB-_-LRB- x_NN ,_, y_NN -RRB-_-RRB- ._.
+As_IN is_VBZ also_RB discussed_VBN in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ,_, this_DT is_VBZ attained_VBN by_IN sorting_VBG the_DT documents_NNS by_IN wT_NN -LRB-_-LRB- x_NN ,_, d_NN -RRB-_-RRB- in_IN descending_VBG order_NN ._.
+We_PRP will_MD discuss_VB later_RB the_DT choices_NNS of_IN we_PRP used_VBD for_IN our_PRP$ experiments_NNS ._.
+3_LS ._.
+#_# Structural_JJ SVMs_NNS The_DT above_IN formulation_NN is_VBZ very_RB similar_JJ to_TO learning_VBG a_DT straightforward_JJ linear_JJ model_NN while_IN training_NN on_IN the_DT pairwise_JJ difference_NN of_IN relevant_JJ /_: non-relevant_JJ document_NN pairings_NNS ._.
+Many_JJ SVM-based_JJ approaches_NNS optimize_VBP over_IN these_DT pairwise_JJ differences_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, -LSB-_-LRB- #_# ,_, ##_NN ,_, ##_NN ,_, #_# -RSB-_-RRB- -RRB-_-RRB- ,_, although_IN these_DT methods_NNS do_VBP not_RB optimize_VB for_IN MAP_NN during_IN training_NN ._.
+Previously_RB ,_, it_PRP was_VBD not_RB clear_JJ how_WRB to_TO incorporate_VB non-linear_JJ multivariate_JJ loss_NN functions_NNS such_JJ as_IN MAP_NN loss_NN directly_RB into_IN global_JJ optimization_NN problems_NNS such_JJ as_IN SVM_NN training_NN ._.
+We_PRP now_RB present_VBP a_DT method_NN based_VBN on_IN structural_JJ SVMs_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- to_TO address_VB this_DT problem_NN ._.
+We_PRP use_VBP the_DT structural_JJ SVM_NN formulation_NN ,_, presented_VBN in_IN Optimization_NNP Problem_NNP #_# ,_, to_TO learn_VB a_DT w_NN RN_NN ._.
+Optimization_NNP Problem_NNP #_# ._.
+-LRB-_-LRB- Structural_JJ SVM_NN -RRB-_-RRB- min_NN w_NN ,_, #_# 1_CD 2_CD w_NN #_# +_CC C_NN n_NN nX_NN i_FW =_JJ #_# i_FW -LRB-_-LRB- #_# -RRB-_-RRB- s_NNS ._.
+t_NN ._.
+i_LS ,_, y_JJ Y_NN \_CD yi_NNS :_: wT_NN -LRB-_-LRB- xi_NN ,_, yi_NN -RRB-_-RRB- wT_NN -LRB-_-LRB- xi_NN ,_, y_NN -RRB-_-RRB- +_CC -LRB-_-LRB- yi_NN ,_, y_NN -RRB-_-RRB- i_FW -LRB-_-LRB- #_# -RRB-_-RRB- The_DT objective_JJ function_NN to_TO be_VB minimized_VBN -LRB-_-LRB- #_# -RRB-_-RRB- is_VBZ a_DT tradeoff_NN between_IN model_NN complexity_NN ,_, w_NN #_# ,_, and_CC a_DT hinge_NN loss_NN relaxation_NN of_IN MAP_NN loss_NN ,_, P_NN i_FW ._.
+As_IN is_VBZ usual_JJ in_IN SVM_NN training_NN ,_, C_NN is_VBZ a_DT 2_CD For_IN example_NN ,_, one_CD dimension_NN might_MD be_VB the_DT number_NN of_IN times_NNS the_DT query_NN words_NNS appear_VBP in_IN the_DT document_NN ._.
+Algorithm_NN #_# Cutting_VBG plane_NN algorithm_NN for_IN solving_VBG OP_NN #_# within_IN tolerance_NN ._.
+1_CD :_: Input_NNP :_: -LRB-_-LRB- x1_NN ,_, y1_NN -RRB-_-RRB- ,_, ..._: ,_, -LRB-_-LRB- xn_NN ,_, yn_NN -RRB-_-RRB- ,_, C_NN ,_, 2_CD :_: Wi_NN for_IN all_DT i_FW =_JJ #_# ,_, ..._: ,_, n_NN 3_CD :_: repeat_NN 4_CD :_: for_IN i_FW =_JJ #_# ,_, ..._: ,_, n_NN do_VBP 5_CD :_: H_NN -LRB-_-LRB- y_NN ;_: w_NN -RRB-_-RRB- -LRB-_-LRB- yi_NN ,_, y_NN -RRB-_-RRB- +_CC wT_NN -LRB-_-LRB- xi_NN ,_, y_NN -RRB-_-RRB- wT_NN -LRB-_-LRB- xi_NN ,_, yi_NN -RRB-_-RRB- 6_CD :_: compute_VB y_NN =_JJ argmaxyY_NN H_NN -LRB-_-LRB- y_NN ;_: w_NN -RRB-_-RRB- 7_CD :_: compute_VB i_FW =_JJ max_NN -LCB-_-LRB- #_# ,_, maxyWi_NN H_NN -LRB-_-LRB- y_NN ;_: w_NN -RRB-_-RRB- -RCB-_-RRB- 8_CD :_: if_IN H_NN -LRB-_-LRB- y_NN ;_: w_NN -RRB-_-RRB- >_JJR i_FW +_CC then_RB 9_CD :_: Wi_NN Wi_NN -LCB-_-LRB- y_NN -RCB-_-RRB- 10_CD :_: w_VB optimize_VB -LRB-_-LRB- #_# -RRB-_-RRB- over_IN W_NN =_JJ S_NN i_FW Wi_FW 11_CD :_: end_VB if_IN 12_CD :_: end_VB for_IN 13_CD :_: until_IN no_DT Wi_NN has_VBZ changed_VBN during_IN iteration_NN parameter_NN that_WDT controls_VBZ this_DT tradeoff_NN and_CC can_MD be_VB tuned_VBN to_TO achieve_VB good_JJ performance_NN in_IN different_JJ training_NN tasks_NNS ._.
+For_IN each_DT -LRB-_-LRB- xi_NN ,_, yi_NN -RRB-_-RRB- in_IN the_DT training_NN set_NN ,_, a_DT set_NN of_IN constraints_NNS of_IN the_DT form_NN in_IN equation_NN -LRB-_-LRB- #_# -RRB-_-RRB- is_VBZ added_VBN to_TO the_DT optimization_NN problem_NN ._.
+Note_VB that_DT wT_NN -LRB-_-LRB- x_NN ,_, y_NN -RRB-_-RRB- is_VBZ exactly_RB our_PRP$ discriminant_JJ function_NN F_NN -LRB-_-LRB- x_NN ,_, y_NN ;_: w_NN -RRB-_-RRB- -RRB-_-RRB- ._.
+During_IN prediction_NN ,_, our_PRP$ model_NN chooses_VBZ the_DT ranking_NN which_WDT maximizes_VBZ the_DT discriminant_JJ -LRB-_-LRB- #_# -RRB-_-RRB- ._.
+If_IN the_DT discriminant_JJ value_NN for_IN an_DT incorrect_JJ ranking_JJ y_NN is_VBZ greater_JJR than_IN for_IN the_DT true_JJ ranking_JJ yi_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, F_NN -LRB-_-LRB- xi_NN ,_, y_NN ;_: w_NN -RRB-_-RRB- >_JJR F_NN -LRB-_-LRB- xi_NN ,_, yi_NN ;_: w_NN -RRB-_-RRB- -RRB-_-RRB- ,_, then_RB corresponding_VBG slack_NN variable_NN ,_, i_FW ,_, must_MD be_VB at_IN least_JJS -LRB-_-LRB- yi_NN ,_, y_NN -RRB-_-RRB- for_IN that_DT constraint_NN to_TO be_VB satisfied_VBN ._.
+Therefore_RB ,_, the_DT sum_NN of_IN slacks_NNS ,_, P_NN i_FW ,_, upper_JJ bounds_NNS the_DT MAP_NN loss_NN ._.
+This_DT is_VBZ stated_VBN formally_RB in_IN Proposition_NNP #_# ._.
+Proposition_NN #_# ._.
+Let_VB -LRB-_-LRB- w_NN -RRB-_-RRB- be_VB the_DT optimal_JJ solution_NN of_IN the_DT slack_NN variables_NNS for_IN OP_NN #_# for_IN a_DT given_VBN weight_NN vector_NN w_NN ._.
+Then_RB 1_CD n_NN Pn_NN i_FW =_JJ #_# i_FW is_VBZ an_DT upper_JJ bound_VBN on_IN the_DT empirical_JJ risk_NN R_NN S_NN -LRB-_-LRB- w_NN -RRB-_-RRB- ._.
+Proposition_NN #_# shows_VBZ that_IN OP_NN #_# learns_VBZ a_DT ranking_JJ function_NN that_WDT optimizes_VBZ an_DT upper_JJ bound_VBN on_IN MAP_NN error_NN on_IN the_DT training_NN set_NN ._.
+Unfortunately_RB there_EX is_VBZ a_DT problem_NN :_: a_DT constraint_NN is_VBZ required_VBN for_IN every_DT possible_JJ wrong_JJ output_NN y_NN ,_, and_CC the_DT number_NN of_IN possible_JJ wrong_JJ outputs_NNS is_VBZ exponential_JJ in_IN the_DT size_NN of_IN C_NN ._.
+Fortunately_RB ,_, we_PRP may_MD employ_VB Algorithm_NNP #_# to_TO solve_VB OP_NN #_# ._.
+Algorithm_NN #_# is_VBZ a_DT cutting_VBG plane_NN algorithm_NN ,_, iteratively_RB introducing_VBG constraints_NNS until_IN we_PRP have_VBP solved_VBN the_DT original_JJ problem_NN within_IN a_DT desired_VBN tolerance_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+The_DT algorithm_NN starts_VBZ with_IN no_DT constraints_NNS ,_, and_CC iteratively_RB finds_VBZ for_IN each_DT example_NN -LRB-_-LRB- xi_NN ,_, yi_NN -RRB-_-RRB- the_DT output_NN y_NN associated_VBN with_IN the_DT most_RBS violated_VBN constraint_NN ._.
+If_IN the_DT corresponding_JJ constraint_NN is_VBZ violated_VBN by_IN more_JJR than_IN we_PRP introduce_VBP y_NN into_IN the_DT working_VBG set_NN Wi_NNS of_IN active_JJ constraints_NNS for_IN example_NN i_FW ,_, and_CC re-solve_NN -LRB-_-LRB- #_# -RRB-_-RRB- using_VBG the_DT updated_VBN W_NN ._.
+It_PRP can_MD be_VB shown_VBN that_IN Algorithm_NNP #_# ''_'' s_VBZ outer_JJ loop_NN is_VBZ guaranteed_VBN to_TO halt_VB within_IN a_DT polynomial_JJ number_NN of_IN iterations_NNS for_IN any_DT desired_VBN precision_NN ._.
+Theorem_NNP #_# ._.
+Let_VB R_NN =_JJ maxi_NN maxy_NN -LRB-_-LRB- xi_NN ,_, yi_NN -RRB-_-RRB- -LRB-_-LRB- xi_NN ,_, y_NN -RRB-_-RRB- ,_, =_JJ maxi_NN maxy_NN -LRB-_-LRB- yi_NN ,_, y_NN -RRB-_-RRB- ,_, and_CC for_IN any_DT >_JJR #_# ,_, Algorithm_NNP #_# terminates_VBZ after_IN adding_VBG at_IN most_JJS max_FW 2n_FW ,_, 8C_NN R2_NN 2_CD ff_NN constraints_NNS to_TO the_DT working_VBG set_NN W_NN ._.
+However_RB ,_, within_IN the_DT inner_JJ loop_NN of_IN this_DT algorithm_NN we_PRP have_VBP to_TO compute_VB argmaxyY_NN H_NN -LRB-_-LRB- y_NN ;_: w_NN -RRB-_-RRB- ,_, where_WRB H_NN -LRB-_-LRB- y_NN ;_: w_NN -RRB-_-RRB- =_JJ -LRB-_-LRB- yi_NN ,_, y_NN -RRB-_-RRB- +_CC wT_NN -LRB-_-LRB- xi_NN ,_, y_NN -RRB-_-RRB- wT_NN -LRB-_-LRB- xi_NN ,_, yi_NN -RRB-_-RRB- ,_, or_CC equivalently_RB ,_, argmax_NN yY_NN -LRB-_-LRB- yi_NN ,_, y_NN -RRB-_-RRB- +_CC wT_NN -LRB-_-LRB- xi_NN ,_, y_NN -RRB-_-RRB- ,_, since_IN wT_NN -LRB-_-LRB- xi_NN ,_, yi_NN -RRB-_-RRB- is_VBZ constant_JJ with_IN respect_NN to_TO y_VB ._.
+Though_IN closely_RB related_JJ to_TO the_DT classification_NN procedure_NN ,_, this_DT has_VBZ the_DT substantial_JJ complication_NN that_IN we_PRP must_MD contend_VB with_IN the_DT additional_JJ -LRB-_-LRB- yi_NN ,_, y_NN -RRB-_-RRB- term_NN ._.
+Without_IN the_DT ability_NN to_TO efficiently_RB find_VB the_DT most_RBS violated_VBN constraint_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, solve_VB argmaxyY_NN H_NN -LRB-_-LRB- y_NN ,_, w_NN -RRB-_-RRB- -RRB-_-RRB- ,_, the_DT constraint_NN generation_NN procedure_NN is_VBZ not_RB tractable_JJ ._.
+3_LS ._.
+#_# Finding_VBG the_DT Most_JJS Violated_VBN Constraint_NNP Using_VBG OP_NN #_# and_CC optimizing_VBG to_TO ROCArea_NN loss_NN -LRB-_-LRB- roc_NN -RRB-_-RRB- ,_, the_DT problem_NN of_IN finding_VBG the_DT most_RBS violated_VBN constraint_NN ,_, or_CC solving_VBG argmaxyY_NN H_NN -LRB-_-LRB- y_NN ,_, w_NN -RRB-_-RRB- -LRB-_-LRB- henceforth_NN argmax_NN H_NN -RRB-_-RRB- ,_, is_VBZ addressed_VBN in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ._.
+Solving_VBG argmax_NN H_NN for_IN map_NN is_VBZ more_RBR difficult_JJ ._.
+This_DT is_VBZ primarily_RB because_IN ROCArea_NN decomposes_VBZ nicely_RB into_IN a_DT sum_NN of_IN scores_NNS computed_VBN independently_RB on_IN each_DT relative_JJ ordering_VBG of_IN a_DT relevant_JJ /_: non-relevant_JJ document_NN pair_NN ._.
+MAP_NN ,_, on_IN the_DT other_JJ hand_NN ,_, does_VBZ not_RB decompose_VB in_IN the_DT same_JJ way_NN as_IN ROCArea_NN ._.
+The_DT main_JJ algorithmic_JJ contribution_NN of_IN this_DT paper_NN is_VBZ an_DT efficient_JJ method_NN for_IN solving_VBG argmax_NN H_NN for_IN map_NN ._.
+One_CD useful_JJ property_NN of_IN map_NN is_VBZ that_IN it_PRP is_VBZ invariant_JJ to_TO swapping_VBG two_CD documents_NNS with_IN equal_JJ relevance_NN ._.
+For_IN example_NN ,_, if_IN documents_NNS da_NN and_CC db_NN are_VBP both_DT relevant_JJ ,_, then_RB swapping_VBG the_DT positions_NNS of_IN da_NN and_CC db_NN in_IN any_DT ranking_NN does_VBZ not_RB affect_VB map_NN ._.
+By_IN extension_NN ,_, map_NN is_VBZ invariant_JJ to_TO any_DT arbitrary_JJ permutation_NN of_IN the_DT relevant_JJ documents_NNS amongst_IN themselves_PRP and_CC of_IN the_DT non-relevant_JJ documents_NNS amongst_IN themselves_PRP ._.
+However_RB ,_, this_DT reshuing_NN will_MD affect_VB the_DT discriminant_JJ score_NN ,_, wT_NN -LRB-_-LRB- x_NN ,_, y_NN -RRB-_-RRB- ._.
+This_DT leads_VBZ us_PRP to_TO Observation_NNP #_# ._.
+Observation_NN #_# ._.
+Consider_VB rankings_NNS which_WDT are_VBP constrained_VBN by_IN fixing_VBG the_DT relevance_NN at_IN each_DT position_NN in_IN the_DT ranking_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, the_DT 3rd_JJ document_NN in_IN the_DT ranking_NN must_MD be_VB relevant_JJ -RRB-_-RRB- ._.
+Every_DT ranking_NN which_WDT satisfies_VBZ the_DT same_JJ set_NN of_IN constraints_NNS will_MD have_VB the_DT same_JJ map_NN ._.
+If_IN the_DT relevant_JJ documents_NNS are_VBP sorted_VBN by_IN wT_NN -LRB-_-LRB- x_NN ,_, d_NN -RRB-_-RRB- in_IN descending_VBG order_NN ,_, and_CC the_DT non-relevant_JJ documents_NNS are_VBP likewise_RB sorted_VBN by_IN wT_NN -LRB-_-LRB- x_NN ,_, d_NN -RRB-_-RRB- ,_, then_RB the_DT interleaving_NN of_IN the_DT two_CD sorted_VBD lists_NNS which_WDT satisfies_VBZ the_DT constraints_NNS will_MD maximize_VB H_NN for_IN that_DT constrained_VBD set_NN of_IN rankings_NNS ._.
+Observation_NN #_# implies_VBZ that_IN in_IN the_DT ranking_NN which_WDT maximizes_VBZ H_NN ,_, the_DT relevant_JJ documents_NNS will_MD be_VB sorted_VBN by_IN wT_NN -LRB-_-LRB- x_NN ,_, d_NN -RRB-_-RRB- ,_, and_CC the_DT non-relevant_JJ documents_NNS will_MD also_RB be_VB sorted_VBN likewise_RB ._.
+By_IN first_JJ sorting_VBG the_DT relevant_JJ and_CC non-relevant_JJ documents_NNS ,_, the_DT problem_NN is_VBZ simplified_VBN to_TO finding_VBG the_DT optimal_JJ interleaving_NN of_IN two_CD sorted_VBD lists_NNS ._.
+For_IN the_DT rest_NN of_IN our_PRP$ discussion_NN ,_, we_PRP assume_VBP that_IN the_DT relevant_JJ documents_NNS and_CC non-relevant_JJ documents_NNS are_VBP both_DT sorted_VBN by_IN descending_VBG wT_NN -LRB-_-LRB- x_NN ,_, d_NN -RRB-_-RRB- ._.
+For_IN convenience_NN ,_, we_PRP also_RB refer_VBP to_TO relevant_JJ documents_NNS as_IN -LCB-_-LRB- dx_NN 1_CD ,_, ..._: dx_NN |_CD Cx_NNP |_CD -RCB-_-RRB- =_JJ Cx_NN ,_, and_CC non-relevant_JJ documents_NNS as_IN -LCB-_-LRB- dx_NN 1_CD ,_, ..._: dx_NN |_CD Cx_NNP |_CD -RCB-_-RRB- =_JJ Cx_NN ._.
+We_PRP define_VBP j_NN -LRB-_-LRB- i1_NN ,_, i2_NN -RRB-_-RRB- ,_, with_IN i1_NN <_JJR i2_CD ,_, as_IN the_DT change_NN in_IN H_NN from_IN when_WRB the_DT highest_JJS ranked_VBD relevant_JJ document_NN ranked_VBD after_IN dx_NN j_NN is_VBZ dx_NN i1_NN to_TO when_WRB it_PRP is_VBZ dx_NN i2_NN ._.
+For_IN i2_NN =_JJ i1_NN +_CC #_# ,_, we_PRP have_VBP j_NN -LRB-_-LRB- i_FW ,_, i_FW +_CC #_# -RRB-_-RRB- =_JJ 1_CD |_CD Cx_NN |_NN j_NN j_NN +_CC i_FW j_FW #_# j_NN +_CC i_FW #_# #_# -LRB-_-LRB- sx_NN i_FW sx_FW j_NN -RRB-_-RRB- ,_, -LRB-_-LRB- #_# -RRB-_-RRB- where_WRB si_NN =_JJ wT_NN -LRB-_-LRB- x_NN ,_, di_FW -RRB-_-RRB- ._.
+The_DT first_JJ term_NN in_IN -LRB-_-LRB- #_# -RRB-_-RRB- is_VBZ the_DT change_NN in_IN map_NN when_WRB the_DT ith_NN relevant_JJ document_NN has_VBZ j_VBN non-relevant_JJ documents_NNS ranked_VBD before_IN it_PRP ,_, as_IN opposed_VBN to_TO j_VB #_# ._.
+The_DT second_JJ term_NN is_VBZ the_DT change_NN in_IN the_DT discriminant_JJ score_NN ,_, wT_NN -LRB-_-LRB- x_NN ,_, y_NN -RRB-_-RRB- ,_, when_WRB yij_NN changes_NNS from_IN +_CC #_# to_TO #_# ._.
+..._: ,_, dx_NN i_FW ,_, dx_NN j_NN ,_, dx_NN i_FW +_CC #_# ,_, ..._: ..._: ,_, dx_NN j_NN ,_, dx_NN i_FW ,_, dx_NN i_FW +_CC #_# ,_, ..._: Figure_NNP #_# :_: Example_NN for_IN j_NN -LRB-_-LRB- i_FW ,_, i_FW +_CC #_# -RRB-_-RRB- Figure_NNP #_# gives_VBZ a_DT conceptual_JJ example_NN for_IN j_NN -LRB-_-LRB- i_FW ,_, i_FW +_CC #_# -RRB-_-RRB- ._.
+The_DT bottom_JJ ranking_JJ differs_VBZ from_IN the_DT top_NN only_RB where_WRB dx_NN j_NN slides_VBZ up_RP one_CD rank_NN ._.
+The_DT difference_NN in_IN the_DT value_NN of_IN H_NN for_IN these_DT two_CD rankings_NNS is_VBZ exactly_RB j_NN -LRB-_-LRB- i_FW ,_, i_FW +_CC #_# -RRB-_-RRB- ._.
+For_IN any_DT i1_NN <_JJR i2_CD ,_, we_PRP can_MD then_RB define_VB j_NN -LRB-_-LRB- i1_NN ,_, i2_NN -RRB-_-RRB- as_IN j_NN -LRB-_-LRB- i1_NN ,_, i2_NN -RRB-_-RRB- =_JJ i21_NN X_NN k_NN =_JJ i1_NN j_NN -LRB-_-LRB- k_NN ,_, k_NN +_CC #_# -RRB-_-RRB- ,_, -LRB-_-LRB- #_# -RRB-_-RRB- or_CC equivalently_RB ,_, j_NN -LRB-_-LRB- i1_NN ,_, i2_NN -RRB-_-RRB- =_JJ i21_NN X_NN k_NN =_JJ i1_NN 1_CD |_CD Cx_NN |_NN j_NN j_NN +_CC k_NN j_NN #_# j_NN +_CC k_NN #_# #_# -LRB-_-LRB- sx_NN k_NN sx_NN j_NN -RRB-_-RRB- ._.
+Let_VB o1_NN ,_, ..._: ,_, o_NN |_CD Cx_NN |_CD encode_VBP the_DT positions_NNS of_IN the_DT non-relevant_JJ documents_NNS ,_, where_WRB dx_NN oj_NN is_VBZ the_DT highest_JJS ranked_VBD relevant_JJ document_NN ranked_VBD after_IN the_DT jth_NN non-relevant_JJ document_NN ._.
+Due_JJ to_TO Observation_NN #_# ,_, this_DT encoding_VBG uniquely_RB identifies_VBZ a_DT complete_JJ ranking_NN ._.
+We_PRP can_MD recover_VB the_DT ranking_NN as_IN yij_NN =_JJ 8_CD >_JJR >_JJR >_JJR <_JJR >_JJR >_JJR >_JJR :_: 0_CD if_IN i_FW =_JJ j_NN sign_NN -LRB-_-LRB- si_FW sj_FW -RRB-_-RRB- if_IN di_FW ,_, dj_NN equal_JJ relevance_NN sign_NN -LRB-_-LRB- oj_NN i_FW #_# ._.
+#_# -RRB-_-RRB- if_IN di_FW =_JJ dx_NN i_FW ,_, dj_NN =_JJ dx_NN j_NN sign_NN -LRB-_-LRB- j_NN oi_NN +_CC #_# ._.
+#_# -RRB-_-RRB- if_IN di_FW =_JJ dx_NN i_FW ,_, dj_NN =_JJ dx_NN j_NN ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- We_PRP can_MD now_RB reformulate_VB H_NN into_IN a_DT new_JJ objective_JJ function_NN ,_, H_NN -LRB-_-LRB- o1_NN ,_, ..._: ,_, o_NN |_CD Cx_NNP |_CD |_CD w_NN -RRB-_-RRB- =_JJ H_NN -LRB-_-LRB- y_NN |_CD w_NN -RRB-_-RRB- +_CC |_CD Cx_NN |_NN X_NN k_NN =_JJ #_# k_NN -LRB-_-LRB- ok_NN ,_, |_CD Cx_NN |_NN +_CC #_# -RRB-_-RRB- ,_, where_WRB y_NN is_VBZ the_DT true_JJ -LRB-_-LRB- weak_JJ -RRB-_-RRB- ranking_NN ._.
+Conceptually_RB H_NN starts_VBZ with_IN a_DT perfect_JJ ranking_JJ y_NN ,_, and_CC adds_VBZ the_DT change_NN in_IN H_NN when_WRB each_DT successive_JJ non-relevant_JJ document_NN slides_VBZ up_RP the_DT ranking_NN ._.
+We_PRP can_MD then_RB reformulate_VB the_DT argmax_NN H_NN problem_NN as_IN argmax_NN H_NN =_JJ argmax_NN o1_NN ,_, ..._: ,_, o_NN |_CD Cx_NN |_CD |_CD Cx_NN |_NN X_NN k_NN =_JJ #_# k_NN -LRB-_-LRB- ok_NN ,_, |_CD Cx_NN |_NN +_CC #_# -RRB-_-RRB- -LRB-_-LRB- #_# -RRB-_-RRB- s_NNS ._.
+t_NN ._.
+o1_NN ..._: o_NN |_CD Cx_NN |_NN ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- Algorithm_NN #_# describes_VBZ the_DT algorithm_NN used_VBN to_TO solve_VB equation_NN -LRB-_-LRB- #_# -RRB-_-RRB- ._.
+Conceptually_RB ,_, Algorithm_NNP #_# starts_VBZ with_IN a_DT perfect_JJ ranking_NN ._.
+Then_RB for_IN each_DT successive_JJ non-relevant_JJ document_NN ,_, the_DT algorithm_NN modifies_VBZ the_DT solution_NN by_IN sliding_VBG that_IN document_NN up_IN the_DT ranking_JJ to_TO locally_RB maximize_VB H_NN while_IN keeping_VBG the_DT positions_NNS of_IN the_DT other_JJ non-relevant_JJ documents_NNS constant_JJ ._.
+3_LS ._.
+#_# ._.
+#_# Proof_NNP of_IN Correctness_NNP Algorithm_NNP #_# is_VBZ greedy_JJ in_IN the_DT sense_NN that_IN it_PRP finds_VBZ the_DT best_JJS position_NN of_IN each_DT non-relevant_JJ document_NN independently_RB from_IN the_DT other_JJ non-relevant_JJ documents_NNS ._.
+In_IN other_JJ words_NNS ,_, the_DT algorithm_NN maximizes_VBZ H_NN for_IN each_DT non-relevant_JJ document_NN ,_, dx_NN j_NN ,_, Algorithm_NNP #_# Finding_VBG the_DT Most_JJS Violated_VBN Constraint_NN -LRB-_-LRB- argmax_NN H_NN -RRB-_-RRB- for_IN Algorithm_NNP #_# with_IN map_NN 1_CD :_: Input_NNP :_: w_NN ,_, Cx_NN ,_, Cx_NN 2_CD :_: sort_NN Cx_NN and_CC Cx_NN in_IN descending_VBG order_NN of_IN wT_NN -LRB-_-LRB- x_NN ,_, d_NN -RRB-_-RRB- 3_CD :_: sx_NN i_FW wT_FW -LRB-_-LRB- x_NN ,_, dx_NN i_LS -RRB-_-RRB- ,_, i_FW =_JJ #_# ,_, ..._: ,_, |_CD Cx_NN |_CD 4_CD :_: sx_NN i_FW wT_FW -LRB-_-LRB- x_NN ,_, dx_NN i_LS -RRB-_-RRB- ,_, i_FW =_JJ #_# ,_, ..._: ,_, |_CD Cx_NN |_CD 5_CD :_: for_IN j_NN =_JJ #_# ,_, ..._: ,_, |_CD Cx_NN |_CD do_VBP 6_CD :_: optj_NN argmaxk_NN j_NN -LRB-_-LRB- k_NN ,_, |_CD Cx_NN |_NN +_CC #_# -RRB-_-RRB- 7_CD :_: end_VB for_IN 8_CD :_: encode_VBP y_NN according_VBG to_TO -LRB-_-LRB- #_# -RRB-_-RRB- 9_CD :_: return_NN y_NN without_IN considering_VBG the_DT positions_NNS of_IN the_DT other_JJ non-relevant_JJ documents_NNS ,_, and_CC thus_RB ignores_VBZ the_DT constraints_NNS of_IN -LRB-_-LRB- #_# -RRB-_-RRB- ._.
+In_IN order_NN for_IN the_DT solution_NN to_TO be_VB feasible_JJ ,_, the_DT jth_NN non-relevant_JJ document_NN must_MD be_VB ranked_VBN after_IN the_DT first_JJ j_NN #_# non-relevant_JJ documents_NNS ,_, thus_RB satisfying_VBG opt1_NN opt2_NN ..._: opt_VB |_CD Cx_NNP |_CD ._.
+-LRB-_-LRB- ##_NN -RRB-_-RRB- If_IN the_DT solution_NN is_VBZ feasible_JJ ,_, the_DT it_PRP clearly_RB solves_VBZ -LRB-_-LRB- #_# -RRB-_-RRB- ._.
+Therefore_RB ,_, it_PRP suffices_VBZ to_TO prove_VB that_IN Algorithm_NNP #_# satisfies_NNS -LRB-_-LRB- ##_NNS -RRB-_-RRB- ._.
+We_PRP first_RB prove_VBP that_IN j_NN -LRB-_-LRB- ,_, -RRB-_-RRB- is_VBZ monotonically_RB decreasing_VBG in_IN j_NN ._.
+Lemma_NNP #_# ._.
+For_IN any_DT #_# i1_NN <_JJR i2_CD |_NN Cx_NN |_NN +_CC #_# and_CC #_# j_SYM <_JJR |_CD Cx_NN |_NN ,_, it_PRP must_MD be_VB the_DT case_NN that_IN j_NN +_CC #_# -LRB-_-LRB- i1_NN ,_, i2_NN -RRB-_-RRB- j_NN -LRB-_-LRB- i1_NN ,_, i2_NN -RRB-_-RRB- ._.
+Proof_NN ._.
+Recall_VB from_IN -LRB-_-LRB- #_# -RRB-_-RRB- that_WDT both_CC j_NN -LRB-_-LRB- i1_NN ,_, i2_NN -RRB-_-RRB- and_CC j_NN +_CC #_# -LRB-_-LRB- i1_NN ,_, i2_NN -RRB-_-RRB- are_VBP summations_NNS of_IN i2_NN i1_NN terms_NNS ._.
+We_PRP will_MD show_VB that_IN each_DT term_NN in_IN the_DT summation_NN of_IN j_NN +_CC #_# -LRB-_-LRB- i1_NN ,_, i2_NN -RRB-_-RRB- is_VBZ no_DT greater_JJR than_IN the_DT corresponding_JJ term_NN in_IN j_NN -LRB-_-LRB- i1_NN ,_, i2_NN -RRB-_-RRB- ,_, or_CC j_NN +_CC #_# -LRB-_-LRB- k_NN ,_, k_NN +_CC #_# -RRB-_-RRB- j_NN -LRB-_-LRB- k_NN ,_, k_NN +_CC #_# -RRB-_-RRB- for_IN k_NN =_JJ i1_NN ,_, ..._: ,_, i2_NN #_# ._.
+Each_DT term_NN in_IN j_NN -LRB-_-LRB- k_NN ,_, k_NN +_CC #_# -RRB-_-RRB- and_CC j_NN +_CC #_# -LRB-_-LRB- k_NN ,_, k_NN +_CC #_# -RRB-_-RRB- can_MD be_VB further_JJ decomposed_VBN into_IN two_CD parts_NNS -RRB-_-RRB- ._.
+We_PRP will_MD show_VB that_IN each_DT part_NN of_IN j_NN +_CC #_# -LRB-_-LRB- k_NN ,_, k_NN +_CC #_# -RRB-_-RRB- is_VBZ no_DT greater_JJR than_IN the_DT corresponding_JJ part_NN in_IN j_NN -LRB-_-LRB- k_NN ,_, k_NN +_CC #_# -RRB-_-RRB- ._.
+In_IN other_JJ words_NNS ,_, we_PRP will_MD show_VB that_IN both_DT j_NN +_CC #_# j_NN +_CC k_NN +_CC #_# j_FW j_FW +_CC k_NN j_NN j_NN +_CC k_NN j_NN #_# j_NN +_CC k_NN #_# -LRB-_-LRB- ##_CD -RRB-_-RRB- and_CC 2_CD -LRB-_-LRB- sx_NN k_NN sx_NN j_NN +_CC #_# -RRB-_-RRB- #_# -LRB-_-LRB- sx_NN k_NN sx_NN j_NN -RRB-_-RRB- -LRB-_-LRB- ##_CD -RRB-_-RRB- are_VBP true_JJ for_IN the_DT aforementioned_JJ values_NNS of_IN j_NN and_CC k_NN ._.
+It_PRP is_VBZ easy_JJ to_TO see_VB that_IN -LRB-_-LRB- ##_NN -RRB-_-RRB- is_VBZ true_JJ by_IN observing_VBG that_IN for_IN any_DT two_CD positive_JJ integers_NNS #_# a_DT <_JJR b_NN ,_, a_DT +_CC #_# b_NN +_CC #_# a_DT b_NN a_DT b_NN a_DT #_# b_SYM #_# ,_, and_CC choosing_VBG a_DT =_JJ j_NN and_CC b_NN =_JJ j_NN +_CC k_NN ._.
+The_DT second_JJ inequality_NN -LRB-_-LRB- ##_NN -RRB-_-RRB- holds_VBZ because_IN Algorithm_NNP #_# first_RB sorts_NNS dx_NN in_IN descending_VBG order_NN of_IN sx_NN ,_, implying_VBG sx_NN j_NN +_CC #_# sx_FW j_FW ._.
+Thus_RB we_PRP see_VBP that_IN each_DT term_NN in_IN j_NN +_CC #_# is_VBZ no_DT greater_JJR than_IN the_DT corresponding_JJ term_NN in_IN j_NN ,_, which_WDT completes_VBZ the_DT proof_NN ._.
+The_DT result_NN of_IN Lemma_NNP #_# leads_VBZ directly_RB to_TO our_PRP$ main_JJ correctness_NN result_NN :_: Theorem_NNP #_# ._.
+In_IN Algorithm_NNP #_# ,_, the_DT computed_JJ values_NNS of_IN optj_NN satisfy_VBP -LRB-_-LRB- ##_CD -RRB-_-RRB- ,_, implying_VBG that_IN the_DT solution_NN returned_VBN by_IN Algorithm_NN 2_CD is_VBZ feasible_JJ and_CC thus_RB optimal_JJ ._.
+Proof_NN ._.
+We_PRP will_MD prove_VB that_IN optj_NN optj_NN +_CC #_# holds_VBZ for_IN any_DT #_# j_SYM <_JJR |_CD Cx_NN |_NN ,_, thus_RB implying_VBG -LRB-_-LRB- ##_CD -RRB-_-RRB- ._.
+Since_IN Algorithm_NNP #_# computes_VBZ optj_NN as_IN optj_NN =_JJ argmax_NN k_NN j_NN -LRB-_-LRB- k_NN ,_, |_CD Cx_NN |_NN +_CC #_# -RRB-_-RRB- ,_, -LRB-_-LRB- ##_CD -RRB-_-RRB- then_RB by_IN definition_NN of_IN j_NN -LRB-_-LRB- #_# -RRB-_-RRB- ,_, for_IN any_DT #_# i_FW <_JJR optj_CD ,_, j_NN -LRB-_-LRB- i_FW ,_, optj_NN -RRB-_-RRB- =_JJ j_NN -LRB-_-LRB- i_FW ,_, |_CD Cx_NN |_NN +_CC #_# -RRB-_-RRB- j_NN -LRB-_-LRB- optj_NN ,_, |_CD Cx_NN |_NN +_CC #_# -RRB-_-RRB- <_JJR #_# ._.
+Using_VBG Lemma_NNP #_# ,_, we_PRP know_VBP that_IN j_NN +_CC #_# -LRB-_-LRB- i_FW ,_, optj_NN -RRB-_-RRB- j_NN -LRB-_-LRB- i_FW ,_, optj_NN -RRB-_-RRB- <_JJR #_# ,_, which_WDT implies_VBZ that_IN for_IN any_DT #_# i_FW <_JJR optj_CD ,_, j_NN +_CC #_# -LRB-_-LRB- i_FW ,_, |_CD Cx_NN |_NN +_CC #_# -RRB-_-RRB- j_NN +_CC #_# -LRB-_-LRB- optj_NN ,_, |_CD Cx_NN |_NN +_CC #_# -RRB-_-RRB- <_JJR #_# ._.
+Suppose_VB for_IN contradiction_NN that_IN optj_NN +_CC #_# <_JJR optj_CD ._.
+Then_RB j_NN +_CC #_# -LRB-_-LRB- optj_NN +_CC #_# ,_, |_CD Cx_NN |_NN +_CC #_# -RRB-_-RRB- <_JJR j_NN +_CC #_# -LRB-_-LRB- optj_NN ,_, |_CD Cx_NN |_NN +_CC #_# -RRB-_-RRB- ,_, which_WDT contradicts_VBZ -LRB-_-LRB- ##_CD -RRB-_-RRB- ._.
+Therefore_RB ,_, it_PRP must_MD be_VB the_DT case_NN that_WDT optj_VBP optj_NN +_CC #_# ,_, which_WDT completes_VBZ the_DT proof_NN ._.
+3_LS ._.
+#_# ._.
+#_# Running_VBG Time_NNP The_DT running_VBG time_NN of_IN Algorithm_NNP #_# can_MD be_VB split_VBN into_IN two_CD parts_NNS ._.
+The_DT first_JJ part_NN is_VBZ the_DT sort_NN by_IN wT_NN -LRB-_-LRB- x_NN ,_, d_NN -RRB-_-RRB- ,_, which_WDT requires_VBZ O_NN -LRB-_-LRB- n_NN log_NN n_NN -RRB-_-RRB- time_NN ,_, where_WRB n_NN =_JJ |_CD Cx_NN |_NN +_CC |_CD Cx_NN |_NN ._.
+The_DT second_JJ part_NN computes_VBZ each_DT optj_NN ,_, which_WDT requires_VBZ O_NN -LRB-_-LRB- |_CD Cx_NN |_CD |_CD Cx_NN |_NN -RRB-_-RRB- time_NN ._.
+Though_NNP in_IN the_DT worst_JJS case_NN this_DT is_VBZ O_NN -LRB-_-LRB- n2_NN -RRB-_-RRB- ,_, the_DT number_NN of_IN relevant_JJ documents_NNS ,_, |_CD Cx_NN |_NN ,_, is_VBZ often_RB very_RB small_JJ -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, constant_JJ with_IN respect_NN to_TO n_NN -RRB-_-RRB- ,_, in_IN which_WDT case_NN the_DT running_VBG time_NN for_IN the_DT second_JJ part_NN is_VBZ simply_RB O_NN -LRB-_-LRB- n_NN -RRB-_-RRB- ._.
+For_IN most_JJS real-world_JJ datasets_NNS ,_, Algorithm_NNP #_# is_VBZ dominated_VBN by_IN the_DT sort_NN and_CC has_VBZ complexity_NN O_NN -LRB-_-LRB- n_NN log_NN n_NN -RRB-_-RRB- ._.
+Algorithm_NN #_# is_VBZ guaranteed_VBN to_TO halt_VB in_IN a_DT polynomial_JJ number_NN of_IN iterations_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, and_CC each_DT iteration_NN runs_VBZ Algorithm_NNP #_# ._.
+Virtually_RB all_DT well-performing_JJ models_NNS were_VBD trained_VBN in_IN a_DT reasonable_JJ amount_NN of_IN time_NN -LRB-_-LRB- usually_RB less_JJR than_IN one_CD hour_NN -RRB-_-RRB- ._.
+Once_RB training_NN is_VBZ complete_JJ ,_, making_VBG predictions_NNS on_IN query_NN x_NN using_VBG the_DT resulting_VBG hypothesis_NN h_NN -LRB-_-LRB- x_NN |_CD w_NN -RRB-_-RRB- requires_VBZ only_RB sorting_VBG by_IN wT_NN -LRB-_-LRB- x_NN ,_, d_NN -RRB-_-RRB- ._.
+We_PRP developed_VBD our_PRP$ software_NN using_VBG a_DT Python_NNP interface3_NN to_TO SVMstruct_NN ,_, since_IN the_DT Python_NNP language_NN greatly_RB simplified_VBD the_DT coding_VBG process_NN ._.
+To_TO improve_VB performance_NN ,_, it_PRP is_VBZ advisable_JJ to_TO use_VB the_DT standard_JJ C_NN implementation4_NN of_IN SVMstruct_NN ._.
+4_LS ._.
+EXPERIMENT_NN SETUP_NN The_DT main_JJ goal_NN of_IN our_PRP$ experiments_NNS is_VBZ to_TO evaluate_VB whether_IN directly_RB optimizing_VBG MAP_NN leads_VBZ to_TO improved_VBN MAP_NN performance_NN compared_VBN to_TO conventional_JJ SVM_NN methods_NNS that_WDT optimize_VBP a_DT substitute_JJ loss_NN such_JJ as_IN accuracy_NN or_CC ROCArea_NN ._.
+We_PRP empirically_RB evaluate_VB our_PRP$ method_NN using_VBG two_CD sets_NNS of_IN TREC_NN Web_NN Track_NNP queries_NNS ,_, one_CD each_DT from_IN TREC_NN #_# and_CC TREC_NN ##_NN -LRB-_-LRB- topics_NNS 451-500_CD and_CC 501-550_CD -RRB-_-RRB- ,_, both_DT of_IN which_WDT used_VBD the_DT WT10g_NN corpus_NN ._.
+For_IN each_DT query_NN ,_, TREC_NN provides_VBZ the_DT relevance_NN judgments_NNS of_IN the_DT documents_NNS ._.
+We_PRP generated_VBD our_PRP$ features_NNS using_VBG the_DT scores_NNS of_IN existing_VBG retrieval_NN functions_NNS on_IN these_DT queries_NNS ._.
+While_IN our_PRP$ method_NN is_VBZ agnostic_JJ to_TO the_DT meaning_NN of_IN the_DT features_NNS ,_, we_PRP chose_VBD to_TO use_VB existing_VBG retrieval_NN functions_NNS as_IN a_DT simple_JJ yet_RB effective_JJ way_NN of_IN acquiring_VBG useful_JJ features_NNS ._.
+As_IN such_JJ ,_, our_PRP$ 3_CD http_NN :_: /_: /_: www_NN ._.
+cs_NNS ._.
+cornell_NN ._.
+edu_NN /_: ~_CD tomf_NN /_: svmpython_NN /_: 4_CD http_NN :_: /_: /_: svmlight_NN ._.
+joachims_NNS ._.
+org_NN /_: svm_NN __CD struct_NN ._.
+html_NN Dataset_NNP Base_NNP Funcs_NNP Features_VBZ TREC_NN #_# Indri_NNP ##_CD ###_CD TREC_NN ##_CD Indri_NNP ##_CD ###_CD TREC_NN #_# Submissions_NNPS ##_VBP ####_CD TREC_NNS ##_VBD Submissions_NNS ##_CD ###_CD Table_NNP #_# :_: Dataset_NNP Statistics_NNPS experiments_NNS essentially_RB test_VB our_PRP$ method_NN ''_'' s_NNS ability_NN to_TO re-rank_VB the_DT highly_RB ranked_VBN documents_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, re-combine_NN the_DT scores_NNS of_IN the_DT retrieval_NN functions_NNS -RRB-_-RRB- to_TO improve_VB MAP_NN ._.
+We_PRP compare_VBP our_PRP$ method_NN against_IN the_DT best_JJS retrieval_NN functions_NNS trained_VBN on_IN -LRB-_-LRB- henceforth_NN base_NN functions_NNS -RRB-_-RRB- ,_, as_RB well_RB as_IN against_IN previously_RB proposed_VBN SVM_NNP methods_NNS ._.
+Comparing_VBG with_IN the_DT best_JJS base_NN functions_NNS tests_VBZ our_PRP$ method_NN ''_'' s_NNS ability_NN to_TO learn_VB a_DT useful_JJ combination_NN ._.
+Comparing_VBG with_IN previous_JJ SVM_NN methods_NNS allows_VBZ us_PRP to_TO test_VB whether_IN optimizing_VBG directly_RB for_IN MAP_NN -LRB-_-LRB- as_IN opposed_VBN to_TO accuracy_NN or_CC ROCArea_NN -RRB-_-RRB- achieves_VBZ a_DT higher_JJR MAP_NN score_NN in_IN practice_NN ._.
+The_DT rest_NN of_IN this_DT section_NN describes_VBZ the_DT base_NN functions_NNS and_CC the_DT feature_NN generation_NN method_NN in_IN detail_NN ._.
+4_LS ._.
+#_# Choosing_VBG Retrieval_NNP Functions_NNPS We_PRP chose_VBD two_CD sets_NNS of_IN base_NN functions_NNS for_IN our_PRP$ experiments_NNS ._.
+For_IN the_DT first_JJ set_NN ,_, we_PRP generated_VBD three_CD indices_NNS over_IN the_DT WT10g_NN corpus_NN using_VBG Indri5_NN ._.
+The_DT first_JJ index_NN was_VBD generated_VBN using_VBG default_NN settings_NNS ,_, the_DT second_JJ used_VBN Porter-stemming_NN ,_, and_CC the_DT last_JJ used_JJ Porter-stemming_NN and_CC Indri_NNP ''_'' s_VBZ default_NN stopwords_NNS ._.
+For_IN both_DT TREC_NN #_# and_CC TREC_NN ##_NN ,_, we_PRP used_VBD the_DT description_NN portion_NN of_IN each_DT query_NN and_CC scored_VBD the_DT documents_NNS using_VBG five_CD of_IN Indri_NNP ''_'' s_VBZ built-in_JJ retrieval_NN methods_NNS ,_, which_WDT are_VBP Cosine_NNP Similarity_NNP ,_, TFIDF_NN ,_, Okapi_NNP ,_, Language_NNP Model_NNP with_IN Dirichlet_NNP Prior_RB ,_, and_CC Language_NNP Model_NNP with_IN Jelinek-Mercer_NNP Prior_RB ._.
+All_DT parameters_NNS were_VBD kept_VBN as_IN their_PRP$ defaults_NNS ._.
+We_PRP computed_VBD the_DT scores_NNS of_IN these_DT five_CD retrieval_NN methods_NNS over_IN the_DT three_CD indices_NNS ,_, giving_VBG ##_CD base_NN functions_NNS in_IN total_NN ._.
+For_IN each_DT query_NN ,_, we_PRP considered_VBD the_DT scores_NNS of_IN documents_NNS found_VBN in_IN the_DT union_NN of_IN the_DT top_JJ ####_CD documents_NNS of_IN each_DT base_NN function_NN ._.
+For_IN our_PRP$ second_JJ set_NN of_IN base_NN functions_NNS ,_, we_PRP used_VBD scores_NNS from_IN the_DT TREC_NN #_# -LSB-_-LRB- #_# -RSB-_-RRB- and_CC TREC_NN ##_NN -LSB-_-LRB- #_# -RSB-_-RRB- Web_NN Track_NNP submissions_NNS ._.
+We_PRP used_VBD only_RB the_DT non-manual_JJ ,_, non-short_JJ submissions_NNS from_IN both_DT years_NNS ._.
+For_IN TREC_NN #_# and_CC TREC_NN ##_NN ,_, there_EX were_VBD ##_NN and_CC 18_CD such_JJ submissions_NNS ,_, respectively_RB ._.
+A_DT typical_JJ submission_NN contained_VBD scores_NNS of_IN its_PRP$ top_JJ ####_CD documents_NNS ._.
+b_NN ca_MD wT_VB -LRB-_-LRB- x_NN ,_, d_NN -RRB-_-RRB- f_FW -LRB-_-LRB- d_NN |_CD x_NN -RRB-_-RRB- Figure_NN #_# :_: Example_NNP Feature_NNP Binning_NNP 4_CD ._.
+#_# Generating_NNP Features_VBZ In_IN order_NN to_TO generate_VB input_NN examples_NNS for_IN our_PRP$ method_NN ,_, a_DT concrete_JJ instantiation_NN of_IN must_MD be_VB provided_VBN ._.
+For_IN each_DT doc5_NN http_NN :_: /_: /_: www_NN ._.
+lemurproject_NN ._.
+org_NN TREC_NN #_# TREC_NNS ##_VBP Model_NNP MAP_NN W_NN /_: L_NN MAP_NN W_NN /_: L_NN SVM_NN map_NN #_# ._.
+###_SYM -_: 0_CD ._.
+236Best_JJS Func_NN ._.
+#_# ._.
+###_CD ##_CD /_: ##_CD *_SYM *_SYM #_# ._.
+###_CD ##_CD /_: ##_CD *_SYM *_SYM 2nd_JJ Best_JJS #_# ._.
+###_CD ##_CD /_: ##_CD *_SYM *_SYM #_# ._.
+###_CD ##_CD /_: #_# *_SYM *_SYM 3rd_CD Best_JJS #_# ._.
+###_CD ##_CD /_: ##_CD *_SYM *_SYM #_# ._.
+###_CD ##_CD /_: ##_CD *_SYM *_SYM Table_NNP #_# :_: Comparison_NN with_IN Indri_NNP Functions_NNS ument_NN d_NN scored_VBN by_IN a_DT set_NN of_IN retrieval_NN functions_NNS F_NN on_IN query_NN x_NN ,_, we_PRP generate_VBP the_DT features_NNS as_IN a_DT vector_NN -LRB-_-LRB- x_NN ,_, d_NN -RRB-_-RRB- =_JJ #_# -LSB-_-LRB- f_FW -LRB-_-LRB- d_NN |_CD x_NN -RRB-_-RRB- >_JJR k_NN -RSB-_-RRB- :_: f_LS F_NN ,_, k_NN Kf_NN ,_, where_WRB f_FW -LRB-_-LRB- d_NN |_CD x_NN -RRB-_-RRB- denotes_VBZ the_DT score_NN that_WDT retrieval_NN function_NN f_FW assigns_VBZ to_TO document_VB d_NN for_IN query_NN x_NN ,_, and_CC each_DT Kf_NN is_VBZ a_DT set_NN of_IN real_JJ values_NNS ._.
+From_IN a_DT high_JJ level_NN ,_, we_PRP are_VBP expressing_VBG the_DT score_NN of_IN each_DT retrieval_NN function_NN using_VBG |_CD Kf_NN |_NN +_CC #_# bins_NNS ._.
+Since_IN we_PRP are_VBP using_VBG linear_JJ kernels_NNS ,_, one_PRP can_MD think_VB of_IN the_DT learning_NN problem_NN as_IN finding_VBG a_DT good_JJ piecewise-constant_JJ combination_NN of_IN the_DT scores_NNS of_IN the_DT retrieval_NN functions_NNS ._.
+Figure_NNP #_# shows_VBZ an_DT example_NN of_IN our_PRP$ feature_NN mapping_NN method_NN ._.
+In_IN this_DT example_NN we_PRP have_VBP a_DT single_JJ feature_NN F_NN =_JJ -LCB-_-LRB- f_FW -RCB-_-RRB- ._.
+Here_RB ,_, Kf_NN =_JJ -LCB-_-LRB- a_DT ,_, b_NN ,_, c_NN -RCB-_-RRB- ,_, and_CC the_DT weight_NN vector_NN is_VBZ w_NN =_JJ wa_NN ,_, wb_NN ,_, wc_NN ._.
+For_IN any_DT document_NN d_NN and_CC query_NN x_NN ,_, we_PRP have_VBP wT_NN -LRB-_-LRB- x_NN ,_, d_NN -RRB-_-RRB- =_JJ 8_CD >_JJR >_JJR <_JJR >_JJR >_JJR :_: 0_CD if_IN f_FW -LRB-_-LRB- d_NN |_CD x_NN -RRB-_-RRB- <_JJR a_DT wa_NN if_IN a_DT f_FW -LRB-_-LRB- d_NN |_CD x_NN -RRB-_-RRB- <_JJR b_NN wa_NN +_CC wb_NN if_IN b_NN f_FW -LRB-_-LRB- d_NN |_CD x_NN -RRB-_-RRB- <_JJR c_NN wa_NN +_CC wb_NN +_CC wc_NN if_IN c_NN f_FW -LRB-_-LRB- d_NN |_CD x_NN -RRB-_-RRB- ._.
+This_DT is_VBZ expressed_VBN qualitatively_RB in_IN Figure_NNP #_# ,_, where_WRB wa_NN and_CC wb_NN are_VBP positive_JJ ,_, and_CC wc_NN is_VBZ negative_JJ ._.
+We_PRP ran_VBD our_PRP$ main_JJ experiments_NNS using_VBG four_CD choices_NNS of_IN F_NN :_: the_DT set_NN of_IN aforementioned_JJ Indri_NNP retrieval_NN functions_NNS for_IN TREC_NN #_# and_CC TREC_NN ##_NN ,_, and_CC the_DT Web_NN Track_NNP submissions_NNS for_IN TREC_NNS 9_CD and_CC TREC_NNP ##_CD ._.
+For_IN each_DT F_NN and_CC each_DT function_NN f_FW F_NN ,_, we_PRP chose_VBD ##_CD values_NNS for_IN Kf_NN which_WDT are_VBP reasonably_RB spaced_VBN and_CC capture_VB the_DT sensitive_JJ region_NN of_IN f_FW ._.
+Using_VBG the_DT four_CD choices_NNS of_IN F_NN ,_, we_PRP generated_VBD four_CD datasets_NNS for_IN our_PRP$ main_JJ experiments_NNS ._.
+Table_NNP #_# contains_VBZ statistics_NNS of_IN the_DT generated_VBN datasets_NNS ._.
+There_EX are_VBP many_JJ ways_NNS to_TO generate_VB features_NNS ,_, and_CC we_PRP are_VBP not_RB advocating_VBG our_PRP$ method_NN over_IN others_NNS ._.
+This_DT was_VBD simply_RB an_DT efficient_JJ means_NNS to_TO normalize_VB the_DT outputs_NNS of_IN different_JJ functions_NNS and_CC allow_VB for_IN a_DT more_RBR expressive_JJ model_NN ._.
+5_CD ._.
+EXPERIMENTS_NNS For_IN each_DT dataset_NN in_IN Table_NNP #_# ,_, we_PRP performed_VBD ##_CD trials_NNS ._.
+For_IN each_DT trial_NN ,_, we_PRP train_VBP on_IN ##_NN randomly_RB selected_VBN queries_NNS ,_, and_CC select_JJ another_DT #_# queries_NNS at_IN random_JJ for_IN a_DT validation_NN set_NN ._.
+Models_NNS were_VBD trained_VBN using_VBG a_DT wide_JJ range_NN of_IN C_NN values_NNS ._.
+The_DT model_NN which_WDT performed_VBD best_JJS on_IN the_DT validation_NN set_NN was_VBD selected_VBN and_CC tested_VBN on_IN the_DT remaining_VBG ##_CD queries_NNS ._.
+All_DT queries_NNS were_VBD selected_VBN to_TO be_VB in_IN the_DT training_NN ,_, validation_NN and_CC test_NN sets_VBZ the_DT same_JJ number_NN of_IN times_NNS ._.
+Using_VBG this_DT setup_NN ,_, we_PRP performed_VBD the_DT same_JJ experiments_NNS while_IN using_VBG our_PRP$ method_NN -LRB-_-LRB- SVM_NN map_NN -RRB-_-RRB- ,_, an_DT SVM_NN optimizing_VBG for_IN ROCArea_NN -LRB-_-LRB- SVM_NN roc_NN -RRB-_-RRB- -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, and_CC a_DT conventional_JJ classification_NN SVM_NN -LRB-_-LRB- SVMacc_NN -RRB-_-RRB- -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+All_DT SVM_NNP methods_NNS used_VBD a_DT linear_JJ kernel_NN ._.
+We_PRP reported_VBD the_DT average_JJ performance_NN of_IN all_DT models_NNS over_IN the_DT ##_NN trials_NNS ._.
+5_CD ._.
+#_# Comparison_NN with_IN Base_NN Functions_NNS In_IN analyzing_VBG our_PRP$ results_NNS ,_, the_DT first_JJ question_NN to_TO answer_VB is_VBZ ,_, can_MD SVM_NNP map_NN learn_VBP a_DT model_NN which_WDT outperforms_VBZ the_DT best_JJS base_NN TREC_NN #_# TREC_NNS ##_VBP Model_NNP MAP_NN W_NN /_: L_NN MAP_NN W_NN /_: L_NN SVM_NN map_NN #_# ._.
+###_SYM -_: 0_CD ._.
+287Best_JJ Func_NN ._.
+#_# ._.
+###_CD ##_CD /_: ##_CD #_# ._.
+###_CD ##_CD /_: ##_CD 2nd_JJ Best_JJS #_# ._.
+###_CD ##_CD /_: ##_CD #_# ._.
+###_CD ##_CD /_: ##_CD *_SYM *_SYM 3rd_CD Best_JJS #_# ._.
+###_CD ##_CD /_: ##_CD #_# ._.
+###_CD ##_CD /_: ##_CD *_SYM *_SYM Table_NNP #_# :_: Comparison_NN with_IN TREC_NN Submissions_NNS TREC_NN #_# TREC_NNS ##_VBP Model_NNP MAP_NN W_NN /_: L_NN MAP_NN W_NN /_: L_NN SVM_NN map_NN #_# ._.
+###_SYM -_: 0_CD ._.
+288Best_JJ Func_NN ._.
+#_# ._.
+###_CD ##_CD /_: ##_CD #_# ._.
+###_CD ##_CD /_: ##_CD 2nd_JJ Best_JJS #_# ._.
+###_CD ##_CD /_: ##_CD #_# ._.
+###_CD ##_CD /_: ##_CD *_SYM *_SYM 3rd_CD Best_JJS #_# ._.
+###_CD ##_CD /_: ##_CD #_# ._.
+###_CD ##_CD /_: ##_CD *_SYM *_SYM Table_NNP #_# :_: Comparison_NN with_IN TREC_NN Subm_NN ._.
+-LRB-_-LRB- w_NN /_: o_NN best_JJS -RRB-_-RRB- functions_NNS ?_.
+Table_NNP #_# presents_VBZ the_DT comparison_NN of_IN SVM_NNP map_NN with_IN the_DT best_JJS Indri_NN base_NN functions_NNS ._.
+Each_DT column_NN group_NN contains_VBZ the_DT macro-averaged_JJ MAP_NN performance_NN of_IN SVM_NNP map_NN or_CC a_DT base_NN function_NN ._.
+The_DT W_NNP /_: L_NN columns_NNS show_VBP the_DT number_NN of_IN queries_NNS where_WRB SVM_NNP map_NN achieved_VBD a_DT higher_JJR MAP_NN score_NN ._.
+Significance_NN tests_NNS were_VBD performed_VBN using_VBG the_DT two-tailed_JJ Wilcoxon_NNP signed_VBD rank_JJ test_NN ._.
+Two_CD stars_NNS indicate_VBP a_DT significance_NN level_NN of_IN #_# ._.
+##_NN ._.
+All_DT tables_NNS displaying_VBG our_PRP$ experimental_JJ results_NNS are_VBP structured_VBN identically_RB ._.
+Here_RB ,_, we_PRP find_VBP that_IN SVM_NNP map_NN significantly_RB outperforms_VBZ the_DT best_JJS base_NN functions_NNS ._.
+Table_NNP #_# shows_VBZ the_DT comparison_NN when_WRB trained_VBN on_IN TREC_NN submissions_NNS ._.
+While_IN achieving_VBG a_DT higher_JJR MAP_NN score_NN than_IN the_DT best_JJS base_NN functions_NNS ,_, the_DT performance_NN difference_NN between_IN SVM_NNP map_VBP the_DT base_NN functions_NNS is_VBZ not_RB significant_JJ ._.
+Given_VBN that_IN many_JJ of_IN these_DT submissions_NNS use_VBP scoring_VBG functions_NNS which_WDT are_VBP carefully_RB crafted_VBN to_TO achieve_VB high_JJ MAP_NN ,_, it_PRP is_VBZ possible_JJ that_IN the_DT best_JJS performing_VBG submissions_NNS use_VBP techniques_NNS which_WDT subsume_VBP the_DT techniques_NNS of_IN the_DT other_JJ submissions_NNS ._.
+As_IN a_DT result_NN ,_, SVM_NNP map_NN would_MD not_RB be_VB able_JJ to_TO learn_VB a_DT hypothesis_NN which_WDT can_MD significantly_RB out-perform_VB the_DT best_JJS submission_NN ._.
+Hence_RB ,_, we_PRP ran_VBD the_DT same_JJ experiments_NNS using_VBG a_DT modified_VBN dataset_NN where_WRB the_DT features_NNS computed_VBN using_VBG the_DT best_JJS submission_NN were_VBD removed_VBN ._.
+Table_NNP #_# shows_VBZ the_DT results_NNS -LRB-_-LRB- note_NN that_IN we_PRP are_VBP still_RB comparing_VBG against_IN the_DT best_JJS submission_NN though_IN we_PRP are_VBP not_RB using_VBG it_PRP for_IN training_NN -RRB-_-RRB- ._.
+Notice_NNP that_WDT while_IN the_DT performance_NN of_IN SVM_NNP map_NN degraded_VBD slightly_RB ,_, the_DT performance_NN was_VBD still_RB comparable_JJ with_IN that_DT of_IN the_DT best_JJS submission_NN ._.
+5_CD ._.
+#_# Comparison_NN w_NN /_: Previous_JJ SVM_NNP Methods_NNS The_DT next_JJ question_NN to_TO answer_VB is_VBZ ,_, does_VBZ SVM_NNP map_VB produce_VB higher_JJR MAP_NN scores_NNS than_IN previous_JJ SVM_NN methods_NNS ?_.
+Tables_NNS #_# and_CC ##_CD present_JJ the_DT results_NNS of_IN SVM_NNP map_NN ,_, SVM_NN roc_NN ,_, and_CC SVMacc_NN when_WRB trained_VBN on_IN the_DT Indri_NNP retrieval_NN functions_NNS and_CC TREC_NN submissions_NNS ,_, respectively_RB ._.
+Table_NNP ##_NN contains_VBZ the_DT corresponding_JJ results_NNS when_WRB trained_VBN on_IN the_DT TREC_NN submissions_NNS without_IN the_DT best_JJS submission_NN ._.
+To_TO start_VB with_IN ,_, our_PRP$ results_NNS indicate_VBP that_IN SVMacc_NN was_VBD not_RB competitive_JJ with_IN SVM_NNP map_NN and_CC SVM_NN roc_NN ,_, and_CC at_IN times_NNS underperformed_VBD dramatically_RB ._.
+As_IN such_JJ ,_, we_PRP tried_VBD several_JJ approaches_NNS to_TO improve_VB the_DT performance_NN of_IN SVMacc_NN ._.
+5_CD ._.
+#_# ._.
+#_# Alternate_JJ SVMacc_NN Methods_NNS One_CD issue_NN which_WDT may_MD cause_VB SVMacc_NN to_TO underperform_VB is_VBZ the_DT severe_JJ imbalance_NN between_IN relevant_JJ and_CC non-relevant_JJ docTREC_NN #_# TREC_NNS ##_VBP Model_NNP MAP_NN W_NN /_: L_NN MAP_NN W_NN /_: L_NN SVM_NN map_NN #_# ._.
+###_SYM -_: 0_CD ._.
+236SVM_NN roc_NN #_# ._.
+###_CD ##_CD /_: ##_CD #_# ._.
+###_CD ##_CD /_: ##_CD SVMacc_NN #_# ._.
+###_CD ##_CD /_: #_# *_SYM *_SYM #_# ._.
+###_CD ##_CD /_: #_# *_SYM *_SYM SVMacc2_NN #_# ._.
+###_CD ##_CD /_: ##_CD *_SYM *_SYM #_# ._.
+###_CD ##_CD /_: #_# *_SYM *_SYM SVMacc3_NN #_# ._.
+###_CD ##_CD /_: #_# *_SYM *_SYM #_# ._.
+###_CD ##_CD /_: #_# *_SYM *_SYM SVMacc4_NN #_# ._.
+###_CD ##_CD /_: #_# *_SYM *_SYM #_# ._.
+###_CD ##_CD /_: #_# *_SYM *_SYM Table_NNP #_# :_: Trained_VBN on_IN Indri_NNP Functions_NNS TREC_NN #_# TREC_NNS ##_VBP Model_NNP MAP_NN W_NN /_: L_NN MAP_NN W_NN /_: L_NN SVM_NN map_NN #_# ._.
+###_SYM -_: 0_CD ._.
+287SVM_NN roc_NN #_# ._.
+###_CD ##_CD /_: ##_CD #_# ._.
+###_CD ##_CD /_: ##_CD *_SYM *_SYM SVMacc_NN #_# ._.
+###_CD ##_CD /_: #_# *_SYM *_SYM #_# ._.
+###_CD ##_CD /_: #_# *_SYM *_SYM SVMacc2_NN #_# ._.
+###_CD ##_CD /_: ##_CD *_SYM *_SYM #_# ._.
+###_CD ##_CD /_: #_# *_SYM *_SYM SVMacc3_NN #_# ._.
+###_CD ##_CD /_: #_# *_SYM *_SYM #_# ._.
+###_CD ##_CD /_: #_# *_SYM *_SYM SVMacc4_NN #_# ._.
+###_CD ##_CD /_: #_# *_SYM *_SYM #_# ._.
+###_CD ##_CD /_: #_# *_SYM *_SYM Table_NNP ##_CD :_: Trained_VBN on_IN TREC_NNP Submissions_NNPS uments_NNS ._.
+The_DT vast_JJ majority_NN of_IN the_DT documents_NNS are_VBP not_RB relevant_JJ ._.
+SVMacc2_NN addresses_NNS this_DT problem_NN by_IN assigning_VBG more_JJR penalty_NN to_TO false_JJ negative_JJ errors_NNS ._.
+For_IN each_DT dataset_NN ,_, the_DT ratio_NN of_IN the_DT false_JJ negative_JJ to_TO false_JJ positive_JJ penalties_NNS is_VBZ equal_JJ to_TO the_DT ratio_NN of_IN the_DT number_NN non-relevant_JJ and_CC relevant_JJ documents_NNS in_IN that_DT dataset_NN ._.
+Tables_NNS #_# ,_, ##_NN and_CC ##_NN indicate_VBP that_IN SVMacc2_NN still_RB performs_VBZ significantly_RB worse_JJR than_IN SVM_NNP map_NN ._.
+Another_DT possible_JJ issue_NN is_VBZ that_IN SVMacc_NN attempts_NNS to_TO find_VB just_RB one_CD discriminating_VBG threshold_NN b_NN that_WDT is_VBZ query-invariant_JJ ._.
+It_PRP may_MD be_VB that_IN different_JJ queries_NNS require_VBP different_JJ values_NNS of_IN b_NN ._.
+Having_VBG the_DT learning_NN method_NN trying_VBG to_TO find_VB a_DT good_JJ b_NN value_NN -LRB-_-LRB- when_WRB one_CD does_VBZ not_RB exist_VB -RRB-_-RRB- may_MD be_VB detrimental_JJ ._.
+We_PRP took_VBD two_CD approaches_NNS to_TO address_VB this_DT issue_NN ._.
+The_DT first_JJ method_NN ,_, SVMacc3_NN ,_, converts_VBZ the_DT retrieval_NN function_NN scores_NNS into_IN percentiles_NNS ._.
+For_IN example_NN ,_, for_IN document_NN d_NN ,_, query_NN q_NN and_CC retrieval_NN function_NN f_FW ,_, if_IN the_DT score_NN f_FW -LRB-_-LRB- d_NN |_CD q_NN -RRB-_-RRB- is_VBZ in_IN the_DT top_JJ ##_CD %_NN of_IN the_DT scores_NNS f_LS -LRB-_-LRB- |_CD q_NN -RRB-_-RRB- for_IN query_NN q_NN ,_, then_RB the_DT converted_JJ score_NN is_VBZ f_FW -LRB-_-LRB- d_NN |_CD q_NN -RRB-_-RRB- =_JJ #_# ._.
+#_# ._.
+Each_DT Kf_NN contains_VBZ ##_CD evenly_RB spaced_VBN values_NNS between_IN #_# and_CC #_# ._.
+Tables_NNS #_# ,_, ##_NN and_CC ##_NN show_VBP that_IN the_DT performance_NN of_IN SVMacc3_NN was_VBD also_RB not_RB competitive_JJ with_IN SVM_NNP map_NN ._.
+The_DT second_JJ method_NN ,_, SVMacc4_NN ,_, normalizes_VBZ the_DT scores_NNS given_VBN by_IN f_FW for_IN each_DT query_NN ._.
+For_IN example_NN ,_, assume_VB for_IN query_NN q_IN that_DT f_FW outputs_FW scores_NNS in_IN the_DT range_NN #_# ._.
+#_# to_TO #_# ._.
+#_# ._.
+Then_RB for_IN document_NN d_NN ,_, if_IN f_FW -LRB-_-LRB- d_NN |_CD q_NN -RRB-_-RRB- =_JJ #_# ._.
+#_# ,_, the_DT converted_JJ score_NN would_MD be_VB f_FW -LRB-_-LRB- d_NN |_CD q_NN -RRB-_-RRB- =_JJ -LRB-_-LRB- #_# ._.
+#_# #_# ._.
+#_# -RRB-_-RRB- /_: -LRB-_-LRB- #_# ._.
+#_# #_# ._.
+#_# -RRB-_-RRB- =_JJ #_# ._.
+#_# ._.
+Each_DT Kf_NN contains_VBZ ##_CD evenly_RB spaced_VBN values_NNS between_IN #_# and_CC #_# ._.
+Again_RB ,_, Tables_NNP #_# ,_, ##_NN and_CC ##_NN show_VBP that_IN SVMacc4_NN was_VBD not_RB competitive_JJ with_IN SVM_NN map_NN 5_CD ._.
+#_# ._.
+#_# MAP_NN vs_CC ROCArea_NN SVM_NN roc_NN performed_VBD much_RB better_JJR than_IN SVMacc_NN in_IN our_PRP$ experiments_NNS ._.
+When_WRB trained_VBN on_IN Indri_NNP retrieval_NN functions_NNS -LRB-_-LRB- see_VB Table_NNP #_# -RRB-_-RRB- ,_, the_DT performance_NN of_IN SVM_NN roc_NN was_VBD slight_JJ ,_, though_IN not_RB significantly_RB ,_, worse_JJR than_IN the_DT performances_NNS of_IN SVM_NNP map_NN ._.
+However_RB ,_, Table_NNP ##_NN shows_VBZ that_IN SVM_NNP map_NN did_VBD significantly_RB outperform_JJ SVM_NN roc_NN when_WRB trained_VBN on_IN the_DT TREC_NN submissions_NNS ._.
+Table_NNP ##_NN shows_VBZ the_DT performance_NN of_IN the_DT models_NNS when_WRB trained_VBN on_IN the_DT TREC_NN submissions_NNS with_IN the_DT best_JJS submission_NN removed_VBD ._.
+The_DT performance_NN of_IN most_JJS models_NNS degraded_VBN by_IN a_DT small_JJ amount_NN ,_, with_IN SVM_NNP map_NN still_RB having_VBG the_DT best_JJS performance_NN ._.
+TREC_NN #_# TREC_NNS ##_VBP Model_NNP MAP_NN W_NN /_: L_NN MAP_NN W_NN /_: L_NN SVM_NN map_NN #_# ._.
+###_SYM -_: 0_CD ._.
+288SVM_NN roc_NN #_# ._.
+###_CD ##_CD /_: ##_CD *_SYM *_SYM #_# ._.
+###_CD ##_CD /_: ##_CD *_SYM *_SYM SVMacc_NN #_# ._.
+###_CD ##_CD /_: #_# *_SYM *_SYM #_# ._.
+###_CD ##_CD /_: #_# *_SYM *_SYM SVMacc2_NN #_# ._.
+###_CD ##_CD /_: ##_CD *_SYM *_SYM #_# ._.
+###_CD ##_CD /_: #_# *_SYM *_SYM SVMacc3_NN #_# ._.
+###_CD ##_CD /_: #_# *_SYM *_SYM #_# ._.
+###_CD ##_CD /_: #_# *_SYM *_SYM SVMacc4_NN #_# ._.
+###_CD ##_CD /_: #_# *_SYM *_SYM #_# ._.
+###_CD ##_CD /_: #_# *_SYM *_SYM Table_NNP ##_CD :_: Trained_VBN on_IN TREC_NN Subm_NN ._.
+-LRB-_-LRB- w_NN /_: o_NN Best_NN -RRB-_-RRB- 6_CD ._.
+CONCLUSIONS_NNS AND_CC FUTURE_NNS WORK_VBP We_PRP have_VBP presented_VBN an_DT SVM_NN method_NN that_WDT directly_RB optimizes_VBZ MAP_NN ._.
+It_PRP provides_VBZ a_DT principled_JJ approach_NN and_CC avoids_VBZ difficult_JJ to_TO control_VB heuristics_NNS ._.
+We_PRP formulated_VBD the_DT optimization_NN problem_NN and_CC presented_VBD an_DT algorithm_NN which_WDT provably_RB finds_VBZ the_DT solution_NN in_IN polynomial_JJ time_NN ._.
+We_PRP have_VBP shown_VBN empirically_RB that_IN our_PRP$ method_NN is_VBZ generally_RB superior_JJ to_TO or_CC competitive_JJ with_IN conventional_JJ SVMs_NNS methods_NNS ._.
+Our_PRP$ new_JJ method_NN makes_VBZ it_PRP conceptually_RB just_RB as_IN easy_JJ to_TO optimize_VB SVMs_NNS for_IN MAP_NN as_IN was_VBD previously_RB possible_JJ only_RB for_IN Accuracy_NNP and_CC ROCArea_NNP ._.
+The_DT computational_JJ cost_NN for_IN training_NN is_VBZ very_RB reasonable_JJ in_IN practice_NN ._.
+Since_IN other_JJ methods_NNS typically_RB require_VBP tuning_NN multiple_JJ heuristics_NNS ,_, we_PRP also_RB expect_VBP to_TO train_VB fewer_JJR models_NNS before_IN finding_VBG one_CD which_WDT achieves_VBZ good_JJ performance_NN ._.
+The_DT learning_NN framework_NN used_VBN by_IN our_PRP$ method_NN is_VBZ fairly_RB general_JJ ._.
+A_DT natural_JJ extension_NN of_IN this_DT framework_NN would_MD be_VB to_TO develop_VB methods_NNS to_TO optimize_VB for_IN other_JJ important_JJ IR_NN measures_NNS ,_, such_JJ as_IN Normalized_NNP Discounted_VBD Cumulative_JJ Gain_NN -LSB-_-LRB- #_# ,_, 3_CD ,_, #_# ,_, ##_NN -RSB-_-RRB- and_CC Mean_NN Reciprocal_JJ Rank_NNP ._.
+7_CD ._.
+ACKNOWLEDGMENTS_NNS This_DT work_NN was_VBD funded_VBN under_IN NSF_NNP Award_NN IIS-0412894_NN ,_, NSF_NNP CAREER_NNP Award_NN #######_CD ,_, and_CC a_DT gift_NN from_IN Yahoo_NNP !_.
+Research_NNP ._.
+The_DT third_JJ author_NN was_VBD also_RB partly_RB supported_VBN by_IN a_DT Microsoft_NNP Research_NNP Fellowship_NNP ._.
+8_CD ._.
+REFERENCES_NNS -LSB-_-LRB- #_# -RSB-_-RRB- B_NN ._.
+T_NN ._.
+Bartell_NNP ,_, G_NNP ._.
+W_NN ._.
+Cottrell_NNP ,_, and_CC R_NN ._.
+K_NN ._.
+Belew_NNP ._.
+Automatic_NNP combination_NN of_IN multiple_JJ ranked_VBD retrieval_NN systems_NNS ._.
+In_IN Proceedings_NNP of_IN the_DT ACM_NNP Conference_NN on_IN Research_NNP and_CC Development_NNP in_IN Information_NNP Retrieval_NNP -LRB-_-LRB- SIGIR_NNP -RRB-_-RRB- ,_, ####_NN ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- C_NN ._.
+Burges_NNP ,_, T_NN ._.
+Shaked_NNP ,_, E_NNP ._.
+Renshaw_NNP ,_, A_NNP ._.
+Lazier_NNP ,_, M_NN ._.
+Deeds_NNS ,_, N_NN ._.
+Hamilton_NNP ,_, and_CC G_NN ._.
+Hullender_NNP ._.
+Learning_VBG to_TO rank_VB using_VBG gradient_NN descent_NN ._.
+In_IN Proceedings_NNP of_IN the_DT International_NNP Conference_NNP on_IN Machine_NNP Learning_NNP -LRB-_-LRB- ICML_NN -RRB-_-RRB- ,_, ####_NN ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- C_NN ._.
+J_NN ._.
+C_NN ._.
+Burges_NNS ,_, R_NN ._.
+Ragno_NNP ,_, and_CC Q_NNP ._.
+Le_NNP ._.
+Learning_VBG to_TO rank_VB with_IN non-smooth_JJ cost_NN functions_NNS ._.
+In_IN Proceedings_NNP of_IN the_DT International_NNP Conference_NN on_IN Advances_NNS in_IN Neural_NNP Information_NNP Processing_NNP Systems_NNP -LRB-_-LRB- NIPS_NNP -RRB-_-RRB- ,_, ####_NN ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- Y_NN ._.
+Cao_NNP ,_, J_NNP ._.
+Xu_NNP ,_, T_NN ._.
+-_: Y_NN ._.
+Liu_NNP ,_, H_NN ._.
+Li_NNP ,_, Y_NN ._.
+Huang_NNP ,_, and_CC H_NN ._.
+-_: W_NN ._.
+Hon_NNP ._.
+Adapting_VBG ranking_JJ SVM_NNP to_TO document_VB retrieval_NN ._.
+In_IN Proceedings_NNP of_IN the_DT ACM_NNP Conference_NN on_IN Research_NNP and_CC Development_NNP in_IN Information_NNP Retrieval_NNP -LRB-_-LRB- SIGIR_NNP -RRB-_-RRB- ,_, ####_NN ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- B_NN ._.
+Carterette_NNP and_CC D_NNP ._.
+Petkova_NNP ._.
+Learning_VBG a_DT ranking_NN from_IN pairwise_JJ preferences_NNS ._.
+In_IN Proceedings_NNP of_IN the_DT ACM_NNP Conference_NN on_IN Research_NNP and_CC Development_NNP in_IN Information_NNP Retrieval_NNP -LRB-_-LRB- SIGIR_NNP -RRB-_-RRB- ,_, ####_NN ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- R_NN ._.
+Caruana_NNP ,_, A_NNP ._.
+Niculescu-Mizil_NNP ,_, G_NNP ._.
+Crew_NNP ,_, and_CC A_NN ._.
+Ksikes_NN ._.
+Ensemble_NN selection_NN from_IN libraries_NNS of_IN models_NNS ._.
+In_IN Proceedings_NNP of_IN the_DT International_NNP Conference_NNP on_IN Machine_NNP Learning_NNP -LRB-_-LRB- ICML_NN -RRB-_-RRB- ,_, ####_NN ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- J_NN ._.
+Davis_NNP and_CC M_NN ._.
+Goadrich_NNP ._.
+The_DT relationship_NN between_IN precision-recall_JJ and_CC ROC_NN curves_NNS ._.
+In_IN Proceedings_NNP of_IN the_DT International_NNP Conference_NNP on_IN Machine_NNP Learning_NNP -LRB-_-LRB- ICML_NN -RRB-_-RRB- ,_, ####_NN ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- D_NN ._.
+Hawking_VBG ._.
+Overview_NN of_IN the_DT TREC-9_NN web_NN track_NN ._.
+In_IN Proceedings_NNP of_IN TREC-2000_NN ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- D_NN ._.
+Hawking_VBG and_CC N_NN ._.
+Craswell_NNP ._.
+Overview_NN of_IN the_DT TREC-2001_NN web_NN track_NN ._.
+In_IN Proceedings_NNP of_IN TREC-2001_NN ,_, Nov_NNP ._.
+####_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- R_NN ._.
+Herbrich_NNP ,_, T_NN ._.
+Graepel_NN ,_, and_CC K_NN ._.
+Obermayer_NNP ._.
+Large_JJ margin_NN rank_NN boundaries_NNS for_IN ordinal_JJ regression_NN ._.
+Advances_NNS in_IN large_JJ margin_NN classifiers_NNS ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- A_DT ._.
+Herschtal_JJ and_CC B_NN ._.
+Raskutti_NN ._.
+Optimising_VBG area_NN under_IN the_DT ROC_NN curve_NN using_VBG gradient_NN descent_NN ._.
+In_IN Proceedings_NNP of_IN the_DT International_NNP Conference_NNP on_IN Machine_NNP Learning_NNP -LRB-_-LRB- ICML_NN -RRB-_-RRB- ,_, ####_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- K_NN ._.
+Jarvelin_NNP and_CC J_NNP ._.
+Kekalainen_NNP ._.
+Ir_NNP evaluation_NN methods_NNS for_IN retrieving_VBG highly_RB relevant_JJ documents_NNS ._.
+In_IN Proceedings_NNP of_IN the_DT ACM_NNP Conference_NN on_IN Research_NNP and_CC Development_NNP in_IN Information_NNP Retrieval_NNP -LRB-_-LRB- SIGIR_NNP -RRB-_-RRB- ,_, ####_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- T_NN ._.
+Joachims_NNP ._.
+A_DT support_NN vector_NN method_NN for_IN multivariate_JJ performance_NN measures_NNS ._.
+In_IN Proceedings_NNP of_IN the_DT International_NNP Conference_NNP on_IN Machine_NNP Learning_NNP -LRB-_-LRB- ICML_NN -RRB-_-RRB- ,_, pages_NNS 377-384_CD ,_, New_NNP York_NNP ,_, NY_NNP ,_, USA_NNP ,_, ####_CD ._.
+ACM_NNP Press_NNP ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+Lafferty_NNP and_CC C_NNP ._.
+Zhai_NNP ._.
+Document_NNP language_NN models_NNS ,_, query_NN models_NNS ,_, and_CC risk_NN minimization_NN for_IN information_NN retrieval_NN ._.
+In_IN Proceedings_NNP of_IN the_DT ACM_NNP Conference_NN on_IN Research_NNP and_CC Development_NNP in_IN Information_NNP Retrieval_NNP -LRB-_-LRB- SIGIR_NNP -RRB-_-RRB- ,_, pages_NNS 111-119_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Y_NN ._.
+Lin_NNP ,_, Y_NN ._.
+Lee_NNP ,_, and_CC G_NN ._.
+Wahba_NNP ._.
+Support_NN vector_NN machines_NNS for_IN classification_NN in_IN nonstandard_JJ situations_NNS ._.
+Machine_NN Learning_NNP ,_, ##_CD :_: 191-202_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- D_NN ._.
+Metzler_NNP and_CC W_NNP ._.
+B_NN ._.
+Croft_NNP ._.
+A_DT markov_NN random_JJ field_NN model_NN for_IN term_NN dependencies_NNS ._.
+In_IN Proceedings_NNP of_IN the_DT 28th_JJ Annual_JJ International_NNP ACM_NNP SIGIR_NNP Conference_NNP on_IN Research_NNP and_CC Development_NNP in_IN Information_NNP Retrieval_NNP ,_, pages_NNS 472-479_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- K_NN ._.
+Morik_NNP ,_, P_NN ._.
+Brockhausen_NNP ,_, and_CC T_NN ._.
+Joachims_NNP ._.
+Combining_VBG statistical_JJ learning_NN with_IN a_DT knowledge-based_JJ approach_NN ._.
+In_IN Proceedings_NNP of_IN the_DT International_NNP Conference_NN on_IN Machine_NN Learning_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- S_NN ._.
+Robertson_NNP ._.
+The_DT probability_NN ranking_JJ principle_NN in_IN ir_NN ._.
+journal_NN of_IN documentation_NN ._.
+Journal_NNP of_IN Documentation_NNP ,_, 33_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 294-304_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- I_PRP ._.
+Tsochantaridis_NNP ,_, T_NN ._.
+Hofmann_NNP ,_, T_NN ._.
+Joachims_NNP ,_, and_CC Y_NN ._.
+Altun_NNP ._.
+Large_JJ margin_NN methods_NNS for_IN structured_JJ and_CC interdependent_JJ output_NN variables_NNS ._.
+Journal_NNP of_IN Machine_NNP Learning_NNP Research_NNP -LRB-_-LRB- JMLR_NNP -RRB-_-RRB- ,_, #_# -LRB-_-LRB- Sep_NN -RRB-_-RRB- :_: 1453-1484_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- V_NN ._.
+Vapnik_NNP ._.
+Statistical_JJ Learning_NNP Theory_NNP ._.
+Wiley_NNP and_CC Sons_NNPS Inc_NNP ._.
+,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- L_NN ._.
+Yan_NNP ,_, R_NN ._.
+Dodier_NNP ,_, M_NN ._.
+Mozer_NNP ,_, and_CC R_NN ._.
+Wolniewicz_NNP ._.
+Optimizing_VBG classifier_NN performance_NN via_IN approximation_NN to_TO the_DT Wilcoxon-Mann-Witney_NNP statistic_NN ._.
+In_IN Proceedings_NNP of_IN the_DT International_NNP Conference_NNP on_IN Machine_NNP Learning_NNP -LRB-_-LRB- ICML_NN -RRB-_-RRB- ,_, ####_NN ._.

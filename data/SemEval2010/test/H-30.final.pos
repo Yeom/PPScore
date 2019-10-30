@@ -1,0 +1,596 @@
+Latent_JJ Concept_NNP Expansion_NN Using_VBG Markov_NNP Random_NNP Fields_NNP Donald_NNP Metzler_NNP metzler_NN @_IN cs_NNS ._.
+umass_NN ._.
+edu_NN W_NN ._.
+Bruce_NNP Croft_NNP croft_NN @_IN cs_NNS ._.
+umass_NN ._.
+edu_NN Center_NN for_IN Intelligent_NNP Information_NNP Retrieval_NNP Department_NNP of_IN Computer_NNP Science_NNP University_NNP of_IN Massachusetts_NNP Amherst_NNP ,_, MA_NNP #####_CD ABSTRACT_NN Query_JJ expansion_NN ,_, in_IN the_DT form_NN of_IN pseudo-relevance_NN feedback_NN or_CC relevance_NN feedback_NN ,_, is_VBZ a_DT common_JJ technique_NN used_VBN to_TO improve_VB retrieval_NN effectiveness_NN ._.
+Most_JJS previous_JJ approaches_NNS have_VBP ignored_VBN important_JJ issues_NNS ,_, such_JJ as_IN the_DT role_NN of_IN features_NNS and_CC the_DT importance_NN of_IN modeling_NN term_NN dependencies_NNS ._.
+In_IN this_DT paper_NN ,_, we_PRP propose_VBP a_DT robust_JJ query_NN expansion_NN technique_NN based_VBN on_IN the_DT Markov_NNP random_JJ field_NN model_NN for_IN information_NN retrieval_NN ._.
+The_DT technique_NN ,_, called_VBN latent_JJ concept_NN expansion_NN ,_, provides_VBZ a_DT mechanism_NN for_IN modeling_NN term_NN dependencies_NNS during_IN expansion_NN ._.
+Furthermore_RB ,_, the_DT use_NN of_IN arbitrary_JJ features_NNS within_IN the_DT model_NN provides_VBZ a_DT powerful_JJ framework_NN for_IN going_VBG beyond_IN simple_JJ term_NN occurrence_NN features_VBZ that_DT are_VBP implicitly_RB used_VBN by_IN most_JJS other_JJ expansion_NN techniques_NNS ._.
+We_PRP evaluate_VBP our_PRP$ technique_NN against_IN relevance_NN models_NNS ,_, a_DT state-of-the-art_JJ language_NN modeling_NN query_NN expansion_NN technique_NN ._.
+Our_PRP$ model_NN demonstrates_VBZ consistent_JJ and_CC significant_JJ improvements_NNS in_IN retrieval_NN effectiveness_NN across_IN several_JJ TREC_NNS data_NNS sets_NNS ._.
+We_PRP also_RB describe_VBP how_WRB our_PRP$ technique_NN can_MD be_VB used_VBN to_TO generate_VB meaningful_JJ multi-term_JJ concepts_NNS for_IN tasks_NNS such_JJ as_IN query_NN suggestion_NN /_: reformulation_NN ._.
+Categories_NNS and_CC Subject_NNP Descriptors_NNPS H_NN ._.
+#_# ._.
+#_# -LSB-_-LRB- Information_NNP Storage_NNP and_CC Retrieval_NNP -RSB-_-RRB- :_: Information_NNP Search_VB and_CC Retrieval_NNP General_NNP Terms_NNS Algorithms_NNS ,_, Experimentation_NN ,_, Theory_NNP 1_CD ._.
+INTRODUCTION_NN Users_NNS of_IN information_NN retrieval_NN systems_NNS are_VBP required_VBN to_TO express_VB complex_NN information_NN needs_VBZ in_IN terms_NNS of_IN Boolean_JJ expressions_NNS ,_, a_DT short_JJ list_NN of_IN keywords_NNS ,_, a_DT sentence_NN ,_, a_DT question_NN ,_, or_CC possibly_RB a_DT longer_RBR narrative_JJ ._.
+A_DT great_JJ deal_NN of_IN information_NN is_VBZ lost_VBN during_IN the_DT process_NN of_IN translating_VBG from_IN the_DT information_NN need_NN to_TO the_DT actual_JJ query_NN ._.
+For_IN this_DT reason_NN ,_, there_EX has_VBZ been_VBN a_DT strong_JJ interest_NN in_IN query_NN expansion_NN techniques_NNS ._.
+Such_JJ techniques_NNS are_VBP used_VBN to_TO augment_VB the_DT original_JJ query_NN to_TO produce_VB a_DT representation_NN that_WDT better_JJR reflects_VBZ the_DT underlying_VBG information_NN need_NN ._.
+Query_NNP expansion_NN techniques_NNS have_VBP been_VBN well_RB studied_VBN for_IN various_JJ models_NNS in_IN the_DT past_NN and_CC have_VBP shown_VBN to_TO significantly_RB improve_VB effectiveness_NN in_IN both_CC the_DT relevance_NN feedback_NN and_CC pseudo-relevance_NN feedback_NN setting_NN -LSB-_-LRB- ##_CD ,_, ##_CD ,_, ##_CD ,_, ##_CD -RSB-_-RRB- ._.
+Recently_RB ,_, a_DT Markov_NNP random_JJ field_NN -LRB-_-LRB- MRF_NN -RRB-_-RRB- model_NN for_IN information_NN retrieval_NN was_VBD proposed_VBN that_IN goes_VBZ beyond_IN the_DT simplistic_JJ bag_NN of_IN words_NNS assumption_NN that_IN underlies_VBZ BM25_NN and_CC the_DT -LRB-_-LRB- unigram_NN -RRB-_-RRB- language_NN modeling_NN approach_NN to_TO information_NN retrieval_NN -LSB-_-LRB- ##_CD ,_, ##_CD -RSB-_-RRB- ._.
+The_DT MRF_NNP model_NN generalizes_VBZ the_DT unigram_NN ,_, bigram_NN ,_, and_CC other_JJ various_JJ dependence_NN models_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Most_JJS past_JJ term_NN dependence_NN models_NNS have_VBP failed_VBN to_TO show_VB consistent_JJ ,_, significant_JJ improvements_NNS over_IN unigram_JJ baselines_NNS ,_, with_IN few_JJ exceptions_NNS -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+The_DT MRF_NNP model_NN ,_, however_RB ,_, has_VBZ been_VBN shown_VBN to_TO be_VB highly_RB effective_JJ across_IN a_DT number_NN of_IN tasks_NNS ,_, including_VBG ad_NN hoc_FW retrieval_NN -LSB-_-LRB- ##_CD ,_, ##_CD -RSB-_-RRB- ,_, named-page_JJ finding_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, and_CC Japanese_JJ language_NN web_NN search_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+Until_IN now_RB ,_, the_DT model_NN has_VBZ been_VBN solely_RB used_VBN for_IN ranking_VBG documents_NNS in_IN response_NN to_TO a_DT given_VBN query_NN ._.
+In_IN this_DT work_NN ,_, we_PRP show_VBP how_WRB the_DT model_NN can_MD be_VB extended_VBN and_CC used_VBN for_IN query_NN expansion_NN using_VBG a_DT technique_NN that_IN we_PRP call_VBP latent_JJ concept_NN expansion_NN -LRB-_-LRB- LCE_NN -RRB-_-RRB- ._.
+There_EX are_VBP three_CD primary_JJ contributions_NNS of_IN our_PRP$ work_NN ._.
+First_RB ,_, LCE_NN provides_VBZ a_DT mechanism_NN for_IN combining_VBG term_NN dependence_NN with_IN query_NN expansion_NN ._.
+Previous_JJ query_NN expansion_NN techniques_NNS are_VBP based_VBN on_IN bag_NN of_IN words_NNS models_NNS ._.
+Therefore_RB ,_, by_IN performing_VBG query_NN expansion_NN using_VBG the_DT MRF_NNP model_NN ,_, we_PRP are_VBP able_JJ to_TO study_VB the_DT dynamics_NNS between_IN term_NN dependence_NN and_CC query_NN expansion_NN ._.
+Next_RB ,_, as_IN we_PRP will_MD show_VB ,_, the_DT MRF_NNP model_NN allows_VBZ arbitrary_JJ features_NNS to_TO be_VB used_VBN within_IN the_DT model_NN ._.
+Query_NNP expansion_NN techniques_NNS in_IN the_DT past_NN have_VBP implicitly_RB only_RB made_VBN use_NN of_IN term_NN occurrence_NN features_NNS ._.
+By_IN using_VBG more_JJR robust_JJ feature_NN sets_NNS ,_, it_PRP is_VBZ possible_JJ to_TO produce_VB better_JJR expansion_NN terms_NNS that_WDT discriminate_VBP between_IN relevant_JJ and_CC non-relevant_JJ documents_NNS better_RBR ._.
+Finally_RB ,_, our_PRP$ proposed_VBN approach_NN seamlessly_RB provides_VBZ a_DT mechanism_NN for_IN generating_VBG both_CC single_JJ and_CC multi-term_JJ concepts_NNS ._.
+Most_JJS previous_JJ techniques_NNS ,_, by_IN default_NN ,_, generate_VBP terms_NNS independently_RB ._.
+There_EX have_VBP been_VBN several_JJ approaches_NNS that_WDT make_VBP use_NN of_IN generalized_VBN concepts_NNS ,_, however_RB such_JJ approaches_NNS were_VBD somewhat_RB heuristic_NN and_CC done_VBN outside_NN of_IN the_DT model_NN -LSB-_-LRB- ##_CD ,_, ##_CD -RSB-_-RRB- ._.
+Our_PRP$ approach_NN is_VBZ both_CC formally_RB motivated_JJ and_CC a_DT natural_JJ extension_NN of_IN the_DT underlying_VBG model_NN ._.
+The_DT remainder_NN of_IN this_DT paper_NN is_VBZ laid_VBN out_RP as_IN follows_VBZ ._.
+In_IN Section_NN #_# we_PRP describe_VBP related_JJ query_NN expansion_NN approaches_NNS ._.
+Section_NN #_# provides_VBZ an_DT overview_NN of_IN the_DT MRF_NNP model_NN and_CC details_NNS our_PRP$ proposed_VBN latent_JJ concept_NN expansion_NN technique_NN ._.
+In_IN Section_NN #_# we_PRP evaluate_VBP our_PRP$ proposed_VBN model_NN and_CC analyze_VBP the_DT results_NNS ._.
+Finally_RB ,_, Section_NN #_# concludes_VBZ the_DT paper_NN and_CC summarizes_VBZ the_DT major_JJ results_NNS ._.
+2_LS ._.
+RELATED_JJ WORK_VBP One_CD of_IN the_DT classic_JJ and_CC most_RBS widely_RB used_VBN approaches_NNS to_TO query_VB expansion_NN is_VBZ the_DT Rocchio_NNP algorithm_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Rocchio_NNP ''_'' s_VBZ approach_NN ,_, which_WDT was_VBD developed_VBN within_IN the_DT vector_NN space_NN model_NN ,_, reweights_VBZ the_DT original_JJ query_NN vector_NN by_IN moving_VBG the_DT weights_NNS towards_IN the_DT set_NN of_IN relevant_JJ or_CC pseudo-relevant_JJ documents_NNS and_CC away_RB from_IN the_DT non-relevant_JJ documents_NNS ._.
+Unfortunately_RB ,_, it_PRP is_VBZ not_RB possible_JJ to_TO formally_RB apply_VB Rocchio_NNP ''_'' s_NNS approach_VBP to_TO a_DT statistical_JJ retrieval_NN model_NN ,_, such_JJ as_IN language_NN modeling_NN for_IN information_NN retrieval_NN ._.
+A_DT number_NN of_IN formalized_VBN query_NN expansion_NN techniques_NNS have_VBP been_VBN developed_VBN for_IN the_DT language_NN modeling_NN framework_NN ,_, including_VBG Zhai_NNP and_CC Lafferty_NNP ''_'' s_VBZ model-based_JJ feedback_NN and_CC Lavrenko_NN and_CC Croft_NN ''_'' s_NNS relevance_NN models_NNS -LSB-_-LRB- ##_NNS ,_, ##_NN -RSB-_-RRB- ._.
+Both_DT approaches_NNS attempt_VBP to_TO use_VB pseudo-relevant_JJ or_CC relevant_JJ documents_NNS to_TO estimate_VB a_DT better_JJR query_NN model_NN ._.
+Model-based_JJ feedback_NN finds_VBZ the_DT model_NN that_WDT best_JJS describes_VBZ the_DT relevant_JJ documents_NNS while_IN taking_VBG a_DT background_NN -LRB-_-LRB- noise_NN -RRB-_-RRB- model_NN into_IN consideration_NN ._.
+This_DT separates_VBZ the_DT content_NN model_NN from_IN the_DT background_NN model_NN ._.
+The_DT content_NN model_NN is_VBZ then_RB interpolated_VBN with_IN the_DT original_JJ query_NN model_NN to_TO form_VB the_DT expanded_VBN query_NN ._.
+The_DT other_JJ technique_NN ,_, relevance_NN models_NNS ,_, is_VBZ more_RBR closely_RB related_JJ to_TO our_PRP$ work_NN ._.
+Therefore_RB ,_, we_PRP go_VBP into_IN the_DT details_NNS of_IN the_DT model_NN ._.
+Much_RB like_IN model-based_JJ feedback_NN ,_, relevance_NN models_NNS estimate_VBP an_DT improved_VBN query_NN model_NN ._.
+The_DT only_JJ difference_NN between_IN the_DT two_CD approaches_NNS is_VBZ that_IN relevance_NN models_NNS do_VBP not_RB explicitly_RB model_VB the_DT relevant_JJ or_CC pseudo-relevant_JJ documents_NNS ._.
+Instead_RB ,_, they_PRP model_VBP a_DT more_JJR generalized_VBN notion_NN of_IN relevance_NN ,_, as_IN we_PRP now_RB show_VBP ._.
+Given_VBN a_DT query_NN Q_NNP ,_, a_DT relevance_NN model_NN is_VBZ a_DT multinomial_JJ distribution_NN ,_, P_NN -LRB-_-LRB- |_CD Q_NNP -RRB-_-RRB- ,_, that_WDT encodes_VBZ the_DT likelihood_NN of_IN each_DT term_NN given_VBN the_DT query_NN as_IN evidence_NN ._.
+It_PRP is_VBZ computed_VBN as_IN :_: P_NN -LRB-_-LRB- w_NN |_CD Q_NNP -RRB-_-RRB- =_JJ D_NN P_NN -LRB-_-LRB- w_NN |_NN D_NN -RRB-_-RRB- P_NN -LRB-_-LRB- D_NN |_CD Q_NNP -RRB-_-RRB- DRQ_NN P_NN -LRB-_-LRB- w_NN |_NN D_NN -RRB-_-RRB- P_NN -LRB-_-LRB- Q_NNP |_NN D_NN -RRB-_-RRB- P_NN -LRB-_-LRB- D_NN -RRB-_-RRB- w_NN DRQ_NN P_NN -LRB-_-LRB- w_NN |_NN D_NN -RRB-_-RRB- P_NN -LRB-_-LRB- Q_NNP |_NN D_NN -RRB-_-RRB- P_NN -LRB-_-LRB- D_NN -RRB-_-RRB- -LRB-_-LRB- #_# -RRB-_-RRB- where_WRB RQ_NN is_VBZ the_DT set_NN of_IN documents_NNS that_WDT are_VBP relevant_JJ or_CC pseudorelevant_JJ to_TO query_VB Q_NNP ._.
+In_IN the_DT pseudo-relevant_JJ case_NN ,_, these_DT are_VBP the_DT top_JJ ranked_VBD documents_NNS for_IN query_NN Q_NNP ._.
+Furthermore_RB ,_, it_PRP is_VBZ assumed_VBN that_IN P_NN -LRB-_-LRB- D_NN -RRB-_-RRB- is_VBZ uniform_JJ over_IN this_DT set_NN ._.
+These_DT mild_JJ assumptions_NNS make_VBP computing_VBG the_DT Bayesian_JJ posterior_NN more_RBR practical_JJ ._.
+After_IN the_DT model_NN is_VBZ estimated_VBN ,_, documents_NNS are_VBP ranked_VBN by_IN clipping_JJ the_DT relevance_NN model_NN by_IN choosing_VBG the_DT k_NN most_RBS likely_JJ terms_NNS from_IN P_NN -LRB-_-LRB- |_CD Q_NNP -RRB-_-RRB- ._.
+This_DT clipped_VBD distribution_NN is_VBZ then_RB interpolated_VBN with_IN with_IN the_DT original_JJ ,_, maximum_JJ likelihood_NN query_NN model_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+This_DT can_MD be_VB thought_VBN of_IN as_IN expanding_VBG the_DT original_JJ query_NN by_IN k_NN weighted_JJ terms_NNS ._.
+Throughout_IN the_DT remainder_NN of_IN this_DT work_NN ,_, we_PRP refer_VBP to_TO this_DT instantiation_NN of_IN relevance_NN models_NNS as_IN RM3_NN ._.
+There_EX has_VBZ been_VBN relatively_RB little_JJ work_NN done_VBN in_IN the_DT area_NN of_IN query_NN expansion_NN in_IN the_DT context_NN of_IN dependence_NN models_NNS -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+However_RB ,_, there_EX have_VBP been_VBN several_JJ attempts_NNS to_TO expand_VB using_VBG multi-term_JJ concepts_NNS ._.
+Xu_NN and_CC Croft_NN ''_'' s_NNS local_JJ context_NN analysis_NN -LRB-_-LRB- LCA_NN -RRB-_-RRB- method_NN combined_VBN passage-level_JJ retrieval_NN with_IN concept_NN expansion_NN ,_, where_WRB concepts_NNS were_VBD single_JJ terms_NNS and_CC phrases_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Expansion_NN concepts_NNS were_VBD chosen_VBN and_CC weighted_VBN using_VBG a_DT metric_JJ based_VBN on_IN co-occurrence_NN statistics_NNS ._.
+However_RB ,_, it_PRP is_VBZ not_RB clear_JJ based_VBN on_IN the_DT analysis_NN done_VBN how_WRB much_RB the_DT phrases_NNS helped_VBD over_IN the_DT single_JJ terms_NNS alone_RB ._.
+Papka_NN and_CC Allan_NNP investigate_VBP using_VBG relevance_NN feedback_NN to_TO perform_VB multi-term_JJ concept_NN expansion_NN for_IN document_NN routing_VBG -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+The_DT concepts_NNS used_VBN in_IN their_PRP$ work_NN are_VBP more_RBR general_JJ than_IN those_DT used_VBN in_IN LCA_NNP ,_, and_CC include_VBP InQuery_NNP query_NN language_NN structures_NNS ,_, such_JJ as_IN #_# UW50_NN -LRB-_-LRB- white_JJ house_NN -RRB-_-RRB- ,_, which_WDT corresponds_VBZ to_TO the_DT concept_NN the_DT terms_NNS white_JJ and_CC house_NN occur_VBP ,_, in_IN any_DT order_NN ,_, within_IN ##_CD terms_NNS of_IN each_DT other_JJ ._.
+Results_NNS showed_VBD that_IN combining_VBG single_JJ term_NN and_CC large_JJ window_NN multi-term_JJ concepts_NNS significantly_RB improved_VBD effectiveness_NN ._.
+However_RB ,_, it_PRP is_VBZ unclear_JJ whether_IN the_DT same_JJ approach_NN is_VBZ also_RB effective_JJ for_IN ad_NN hoc_FW retrieval_NN ,_, due_JJ to_TO the_DT differences_NNS in_IN the_DT tasks_NNS ._.
+3_LS ._.
+MODEL_NN This_DT section_NN details_NNS our_PRP$ proposed_VBN latent_JJ concept_NN expansion_NN technique_NN ._.
+As_IN mentioned_VBN previously_RB ,_, the_DT technique_NN is_VBZ an_DT extension_NN of_IN the_DT MRF_NNP model_NN for_IN information_NN retrieval_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Therefore_RB ,_, we_PRP begin_VBP by_IN providing_VBG an_DT overview_NN of_IN the_DT MRF_NNP model_NN and_CC our_PRP$ proposed_VBN extensions_NNS ._.
+3_LS ._.
+#_# MRFs_NNS for_IN IR_NNP 3_CD ._.
+#_# ._.
+#_# Basics_NNPS Markov_NNP random_JJ fields_NNS ,_, which_WDT are_VBP undirected_JJ graphical_JJ models_NNS ,_, provide_VBP a_DT compact_JJ ,_, robust_JJ way_NN of_IN modeling_NN a_DT joint_JJ distribution_NN ._.
+Here_RB ,_, we_PRP are_VBP interested_JJ in_IN modeling_NN the_DT joint_JJ distribution_NN over_IN a_DT query_NN Q_NNP =_JJ q1_NN ,_, ..._: ,_, qn_NN and_CC a_DT document_NN D_NN ._.
+It_PRP is_VBZ assumed_VBN the_DT underlying_JJ distribution_NN over_IN pairs_NNS of_IN documents_NNS and_CC queries_NNS is_VBZ a_DT relevance_NN distribution_NN ._.
+That_DT is_VBZ ,_, sampling_NN from_IN the_DT distribution_NN gives_VBZ pairs_NNS of_IN documents_NNS and_CC queries_NNS ,_, such_JJ that_IN the_DT document_NN is_VBZ relevant_JJ to_TO the_DT query_NN ._.
+A_DT MRF_NN is_VBZ defined_VBN by_IN a_DT graph_NN G_NN and_CC a_DT set_NN of_IN non-negative_JJ potential_JJ functions_NNS over_IN the_DT cliques_NNS in_IN G_NN ._.
+The_DT nodes_NNS in_IN the_DT graph_NN represent_VBP the_DT random_JJ variables_NNS and_CC the_DT edges_NNS define_VBP the_DT independence_NN semantics_NNS of_IN the_DT distribution_NN ._.
+A_DT MRF_NN satisfies_VBZ the_DT Markov_NNP property_NN ,_, which_WDT states_VBZ that_IN a_DT node_NN is_VBZ independent_JJ of_IN all_DT of_IN its_PRP$ non-neighboring_JJ nodes_NNS given_VBN observed_VBD values_NNS for_IN its_PRP$ neighbors_NNS ._.
+Given_VBN a_DT graph_NN G_NN ,_, a_DT set_NN of_IN potentials_NNS i_LS ,_, and_CC a_DT parameter_NN vector_NN ,_, the_DT joint_JJ distribution_NN over_IN Q_NNP and_CC D_NNP is_VBZ given_VBN by_IN :_: PG_NN ,_, -LRB-_-LRB- Q_NNP ,_, D_NNP -RRB-_-RRB- =_JJ 1_CD Z_NN cC_NN -LRB-_-LRB- G_NN -RRB-_-RRB- -LRB-_-LRB- c_NN ;_: -RRB-_-RRB- where_WRB Z_NN is_VBZ a_DT normalizing_VBG constant_NN ._.
+We_PRP follow_VBP common_JJ convention_NN and_CC parameterize_VB the_DT potentials_NNS as_IN i_FW -LRB-_-LRB- c_NN ;_: -RRB-_-RRB- =_JJ exp_NN -LSB-_-LRB- ifi_NN -LRB-_-LRB- c_NN -RRB-_-RRB- -RSB-_-RRB- ,_, where_WRB fi_NN -LRB-_-LRB- c_NN -RRB-_-RRB- is_VBZ a_DT real-valued_JJ feature_NN function_NN ._.
+3_LS ._.
+#_# ._.
+#_# Constructing_VBG G_NN Given_VBN a_DT query_NN Q_NNP ,_, the_DT graph_NN G_NN can_MD be_VB constructed_VBN in_IN a_DT number_NN of_IN ways_NNS ._.
+However_RB ,_, following_VBG previous_JJ work_NN ,_, we_PRP consider_VBP three_CD simple_JJ variants_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+These_DT variants_NNS are_VBP full_JJ independence_NN ,_, where_WRB each_DT query_NN term_NN is_VBZ independent_JJ of_IN each_DT other_JJ given_VBN a_DT document_NN ,_, sequential_JJ dependence_NN ,_, which_WDT assumes_VBZ a_DT dependence_NN exists_VBZ between_IN adjacent_JJ query_NN terms_NNS ,_, and_CC full_JJ dependence_NN ,_, which_WDT makes_VBZ no_DT independence_NN assumptions_NNS ._.
+3_LS ._.
+#_# ._.
+#_# Parameterization_NN MRFs_NNS are_VBP commonly_RB parameterized_VBN based_VBN on_IN the_DT maximal_JJ cliques_NNS of_IN G_NN ._.
+However_RB ,_, such_PDT a_DT parameterization_NN is_VBZ too_RB coarse_JJ for_IN our_PRP$ needs_NNS ._.
+We_PRP need_VBP a_DT parameterization_NN that_WDT allows_VBZ us_PRP to_TO associate_VB feature_NN functions_NNS with_IN cliques_NNS on_IN a_DT more_RBR fine_JJ grained_JJ level_NN ,_, while_IN keeping_VBG the_DT number_NN of_IN features_NNS ,_, and_CC thus_RB the_DT number_NN of_IN parameters_NNS ,_, reasonable_JJ ._.
+Therefore_RB ,_, we_PRP allow_VBP cliques_NNS to_TO share_VB feature_NN functions_NNS and_CC parameters_NNS based_VBN on_IN clique_JJ sets_NNS ._.
+That_DT is_VBZ ,_, all_DT of_IN the_DT cliques_NNS within_IN a_DT clique_JJ set_NN are_VBP associated_VBN with_IN the_DT same_JJ feature_NN function_NN and_CC share_NN a_DT single_JJ parameter_NN ._.
+This_DT effectively_RB ties_NNS together_RB the_DT parameters_NNS of_IN the_DT features_NNS associated_VBN with_IN each_DT set_NN ,_, which_WDT significantly_RB reduces_VBZ the_DT number_NN of_IN parameters_NNS while_IN still_RB providing_VBG a_DT mechanism_NN for_IN fine-tuning_NN on_IN the_DT level_NN of_IN clique_JJ sets_NNS ._.
+We_PRP propose_VBP seven_CD clique_JJ sets_NNS for_IN use_NN with_IN information_NN retrieval_NN ._.
+The_DT first_JJ three_CD clique_JJ sets_NNS consist_VBP of_IN cliques_NNS that_WDT contain_VBP one_CD or_CC more_JJR query_NN terms_NNS and_CC the_DT document_NN node_NN ._.
+Features_NNS over_IN these_DT cliques_NNS should_MD encode_VB how_WRB well_RB the_DT terms_NNS in_IN the_DT clique_JJ configuration_NN describe_VBP the_DT document_NN ._.
+These_DT sets_NNS are_VBP :_: TD_SYM -_: set_NN of_IN cliques_NNS containing_VBG the_DT document_NN node_NN and_CC exactly_RB one_CD query_NN term_NN ._.
+OD_SYM -_: set_NN of_IN cliques_NNS containing_VBG the_DT document_NN node_NN and_CC two_CD or_CC more_JJR query_NN terms_NNS that_WDT appear_VBP in_IN sequential_JJ order_NN within_IN the_DT query_NN ._.
+UD_SYM -_: set_NN of_IN cliques_NNS containing_VBG the_DT document_NN node_NN and_CC two_CD or_CC more_JJR query_NN terms_NNS that_WDT appear_VBP in_IN any_DT order_NN within_IN the_DT query_NN ._.
+Note_VB that_DT UD_NN is_VBZ a_DT superset_NN of_IN OD_NN ._.
+By_IN tying_VBG the_DT parameters_NNS among_IN the_DT cliques_NNS within_IN each_DT set_NN we_PRP can_MD control_VB how_WRB much_JJ influence_NN each_DT type_NN gets_VBZ ._.
+This_DT also_RB avoids_VBZ the_DT problem_NN of_IN trying_VBG to_TO determine_VB how_WRB to_TO estimate_VB weights_NNS for_IN each_DT clique_NN within_IN the_DT sets_NNS ._.
+Instead_RB ,_, we_PRP now_RB must_MD only_RB estimate_VB a_DT single_JJ parameter_NN per_IN set_NN ._.
+Next_RB ,_, we_PRP consider_VBP cliques_NNS that_WDT only_RB contain_VBP query_NN term_NN nodes_NNS ._.
+These_DT cliques_NNS ,_, which_WDT were_VBD not_RB considered_VBN in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ,_, are_VBP defined_VBN in_IN an_DT analogous_JJ way_NN to_TO those_DT just_RB defined_VBN ,_, except_IN the_DT the_DT cliques_NNS are_VBP only_RB made_VBN up_IN of_IN query_NN term_NN nodes_NNS and_CC do_VBP not_RB contain_VB the_DT document_NN node_NN ._.
+Feature_NN functions_NNS over_IN these_DT cliques_NNS should_MD capture_VB how_WRB compatible_JJ query_NN terms_NNS are_VBP to_TO one_CD another_DT ._.
+These_DT clique_JJ features_NNS may_MD take_VB on_RP the_DT form_NN of_IN language_NN models_NNS that_WDT impose_VBP well-formedness_NN of_IN the_DT terms_NNS ._.
+Therefore_RB ,_, we_PRP define_VBP following_VBG query-dependent_JJ clique_NN sets_NNS :_: TQ_SYM -_: set_NN of_IN cliques_NNS containing_VBG exactly_RB one_CD query_NN term_NN ._.
+OQ_SYM -_: set_NN of_IN cliques_NNS containing_VBG two_CD or_CC more_JJR query_NN terms_NNS that_WDT appear_VBP in_IN sequential_JJ order_NN within_IN the_DT query_NN ._.
+UQ_SYM -_: set_NN of_IN cliques_NNS containing_VBG two_CD or_CC more_JJR query_NN terms_NNS that_WDT appear_VBP in_IN any_DT order_NN within_IN the_DT query_NN ._.
+Finally_RB ,_, there_EX is_VBZ the_DT clique_NN that_WDT only_RB contains_VBZ the_DT document_NN node_NN ._.
+Features_NNS over_IN this_DT node_NN can_MD be_VB used_VBN as_IN a_DT type_NN of_IN document_NN prior_RB ,_, encoding_VBG document-centric_JJ properties_NNS ._.
+This_DT trivial_JJ clique_JJ set_NN is_VBZ then_RB :_: D_NN -_: clique_JJ set_NN containing_VBG only_RB the_DT singleton_NN node_NN D_NN We_PRP note_VBP that_IN our_PRP$ clique_JJ sets_NNS form_VBP a_DT set_VBN cover_NN over_IN the_DT cliques_NNS of_IN G_NN ,_, but_CC are_VBP not_RB a_DT partition_NN ,_, since_IN some_DT cliques_NNS appear_VBP in_IN multiple_JJ clique_NN sets_NNS ._.
+After_IN tying_VBG the_DT parameters_NNS in_IN our_PRP$ clique_JJ sets_NNS together_RB and_CC using_VBG the_DT exponential_JJ potential_JJ function_NN form_NN ,_, we_PRP end_VBP up_RP with_IN the_DT following_VBG simplified_VBN form_NN of_IN the_DT joint_JJ distribution_NN :_: log_NN PG_NN ,_, -LRB-_-LRB- Q_NNP ,_, D_NNP -RRB-_-RRB- =_JJ TD_NN cTD_NN fTD_NN -LRB-_-LRB- c_NN -RRB-_-RRB- +_CC OD_NN cOD_NN fOD_NN -LRB-_-LRB- c_NN -RRB-_-RRB- +_CC UD_NNP cUD_NN fUD_NN -LRB-_-LRB- c_NN -RRB-_-RRB- FDQ_NN -LRB-_-LRB- D_NN ,_, Q_NNP -RRB-_-RRB- -_: document_NN and_CC query_NN dependent_JJ +_CC TQ_NN cTQ_NN fTQ_NN -LRB-_-LRB- c_NN -RRB-_-RRB- +_CC OQ_NN cOQ_NN fOQ_NN -LRB-_-LRB- c_NN -RRB-_-RRB- +_CC UQ_NN cUQ_NN fUQ_NN -LRB-_-LRB- c_NN -RRB-_-RRB- FQ_NN -LRB-_-LRB- Q_NNP -RRB-_-RRB- -_: query_NN dependent_JJ +_CC DfD_NN -LRB-_-LRB- D_NN -RRB-_-RRB- FD_NN -LRB-_-LRB- D_NN -RRB-_-RRB- -_: document_NN dependent_JJ log_NN Z_NN document_NN +_CC query_NN independent_JJ where_WRB FDQ_NNP ,_, FQ_NNP ,_, and_CC FD_NN are_VBP convenience_NN functions_NNS defined_VBN by_IN the_DT document_NN and_CC query_NN dependent_JJ ,_, query_NN dependent_JJ ,_, and_CC document_NN dependent_JJ components_NNS of_IN the_DT joint_JJ distribution_NN ,_, respectively_RB ._.
+These_DT will_MD be_VB used_VBN to_TO simplify_VB and_CC clarify_VB expressions_NNS derived_VBN throughout_IN the_DT remainder_NN of_IN the_DT paper_NN ._.
+3_LS ._.
+#_# ._.
+#_# Features_VBZ Any_DT arbitrary_JJ feature_NN function_NN over_IN clique_JJ configurations_NNS can_MD be_VB used_VBN in_IN the_DT model_NN ._.
+The_DT correct_JJ choice_NN of_IN features_NNS depends_VBZ largely_RB on_IN the_DT retrieval_NN task_NN and_CC the_DT evaluation_NN metric_NN ._.
+Therefore_RB ,_, there_EX is_VBZ likely_JJ not_RB to_TO be_VB a_DT single_JJ ,_, universally_RB applicable_JJ set_NN of_IN features_NNS ._.
+To_TO provide_VB an_DT idea_NN of_IN the_DT range_NN of_IN features_NNS that_WDT can_MD be_VB used_VBN ,_, we_PRP now_RB briefly_RB describe_VBP possible_JJ types_NNS of_IN features_NNS that_WDT could_MD be_VB used_VBN ._.
+Possible_JJ query_NN term_NN dependent_JJ features_NNS include_VBP tf_NN ,_, idf_NN ,_, named_VBN entities_NNS ,_, term_NN proximity_NN ,_, and_CC text_NN style_NN to_TO name_VB a_DT few_JJ ._.
+Many_JJ types_NNS of_IN document_NN dependent_JJ features_NNS can_MD be_VB used_VBN ,_, as_RB well_RB ,_, including_VBG document_NN length_NN ,_, PageRank_NN ,_, readability_NN ,_, and_CC genre_NN ,_, among_IN others_NNS ._.
+Since_IN it_PRP is_VBZ not_RB our_PRP$ goal_NN here_RB to_TO find_VB optimal_JJ features_NNS ,_, we_PRP use_VBP a_DT simple_JJ ,_, fixed_JJ set_NN of_IN features_NNS that_WDT have_VBP been_VBN shown_VBN to_TO be_VB effective_JJ in_IN previous_JJ work_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+See_VB Table_NNP #_# for_IN a_DT list_NN of_IN features_NNS used_VBN ._.
+These_DT features_NNS attempt_VBP to_TO capture_VB term_NN occurrence_NN and_CC term_NN proximity_NN ._.
+Better_NNP feature_NN selection_NN in_IN the_DT future_NN will_MD likely_RB lead_VB to_TO improved_VBN effectiveness_NN ._.
+3_LS ._.
+#_# ._.
+#_# Ranking_VBG Given_VBN a_DT query_NN Q_NNP ,_, we_PRP wish_VBP to_TO rank_VB documents_NNS in_IN descending_VBG order_NN according_VBG to_TO PG_NNP ,_, -LRB-_-LRB- D_NNP |_CD Q_NNP -RRB-_-RRB- ._.
+After_IN dropping_VBG document_NN independent_JJ expressions_NNS from_IN log_NN PG_NN ,_, -LRB-_-LRB- Q_NNP ,_, D_NNP -RRB-_-RRB- ,_, we_PRP derive_VBP the_DT following_VBG ranking_JJ function_NN :_: PG_NN ,_, -LRB-_-LRB- D_NNP |_CD Q_NNP -RRB-_-RRB- rank_NN =_JJ FDQ_NN -LRB-_-LRB- D_NN ,_, Q_NNP -RRB-_-RRB- +_CC FD_NN -LRB-_-LRB- D_NN -RRB-_-RRB- -LRB-_-LRB- #_# -RRB-_-RRB- which_WDT is_VBZ a_DT simple_JJ weighted_JJ linear_JJ combination_NN of_IN feature_NN functions_NNS that_WDT can_MD be_VB computed_VBN efficiently_RB for_IN reasonable_JJ graphs_NNS ._.
+3_LS ._.
+#_# ._.
+#_# Parameter_NNP Estimation_NNP Now_RB that_IN the_DT model_NN has_VBZ been_VBN fully_RB specified_VBN ,_, the_DT final_JJ step_NN is_VBZ to_TO estimate_VB the_DT model_NN parameters_NNS ._.
+Although_IN MRFs_NNS are_VBP generative_JJ models_NNS ,_, it_PRP is_VBZ inappropriate_JJ to_TO train_VB them_PRP using_VBG Feature_NNP Value_NNP fTD_NNP -LRB-_-LRB- qi_NNP ,_, D_NNP -RRB-_-RRB- log_NN -LRB-_-LRB- #_# -RRB-_-RRB- tfqi_NNS ,_, D_NN |_NN D_NN |_NN +_CC cfqi_NN |_NN C_NN |_CD fOD_NN -LRB-_-LRB- qi_NN ,_, qi_NN +_CC #_# ..._: ,_, qi_NN +_CC k_NN ,_, D_NN -RRB-_-RRB- log_NN -LRB-_-LRB- #_# -RRB-_-RRB- tf_NN #_# #_# -LRB-_-LRB- qi_NN ..._: qi_NN +_CC k_NN -RRB-_-RRB- ,_, D_NN |_NN D_NN |_NN +_CC cf_NN #_# #_# -LRB-_-LRB- qi_NN ..._: qi_NN +_CC k_NN -RRB-_-RRB- |_NN C_NN |_CD fUD_NN -LRB-_-LRB- qi_NN ,_, ..._: ,_, qj_NN ,_, D_NN -RRB-_-RRB- log_NN -LRB-_-LRB- #_# -RRB-_-RRB- tf_NN #_# uw_NN -LRB-_-LRB- qi_NN ..._: qj_NN -RRB-_-RRB- ,_, D_NN |_NN D_NN |_NN +_CC cf_NN #_# uw_NN -LRB-_-LRB- qi_NN ..._: qj_NN -RRB-_-RRB- |_NN C_NN |_CD fTQ_NN -LRB-_-LRB- qi_NN -RRB-_-RRB- log_NN cfqi_NN |_NN C_NN |_CD fOQ_NN -LRB-_-LRB- qi_NN ,_, qi_NN +_CC #_# ..._: ,_, qi_NN +_CC k_NN -RRB-_-RRB- log_NN cf_NN #_# #_# -LRB-_-LRB- qi_NN ..._: qi_NN +_CC k_NN -RRB-_-RRB- |_NN C_NN |_CD fUQ_NN -LRB-_-LRB- qi_NN ,_, ..._: ,_, qj_NN -RRB-_-RRB- log_NN cf_NN #_# uw_NN -LRB-_-LRB- qi_NN ..._: qj_NN -RRB-_-RRB- |_NN C_NN |_CD fD_NN #_# Table_NNP #_# :_: Feature_NN functions_NNS used_VBN in_IN Markov_NNP random_JJ field_NN model_NN ._.
+Here_RB ,_, tfw_NN ,_, D_NN is_VBZ the_DT number_NN of_IN times_NNS term_NN w_NN occurs_VBZ in_IN document_NN D_NN ,_, tf_NN #_# #_# -LRB-_-LRB- qi_NN ..._: qi_NN +_CC k_NN -RRB-_-RRB- ,_, D_NN denotes_VBZ the_DT number_NN of_IN times_NNS the_DT exact_JJ phrase_NN qi_NN ..._: qi_NN +_CC k_NN occurs_VBZ in_IN document_NN D_NN ,_, tf_NN #_# uw_NN -LRB-_-LRB- qi_NN ..._: qj_NN -RRB-_-RRB- ,_, D_NN is_VBZ the_DT number_NN of_IN times_NNS the_DT terms_NNS qi_VBP ,_, ..._: qj_NN appear_VBP ordered_VBN or_CC unordered_JJ within_IN a_DT window_NN of_IN N_NN terms_NNS ,_, and_CC |_NN D_NN |_CD is_VBZ the_DT length_NN of_IN document_NN D_NN ._.
+The_DT cf_NN and_CC |_NN C_NN |_NN values_NNS are_VBP analogously_RB defined_VBN on_IN the_DT collection_NN level_NN ._.
+Finally_RB ,_, and_CC are_VBP model_JJ hyperparameters_NNS that_WDT control_VBP smoothing_VBG for_IN single_JJ term_NN and_CC phrase_NN features_NNS ,_, respectively_RB ._.
+conventional_JJ likelihood-based_JJ approaches_NNS because_IN of_IN metric_JJ divergence_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+That_DT is_VBZ ,_, the_DT maximum_NN likelihood_NN estimate_NN is_VBZ unlikely_JJ to_TO be_VB the_DT estimate_NN that_WDT maximizes_VBZ our_PRP$ evaluation_NN metric_NN ._.
+For_IN this_DT reason_NN ,_, we_PRP discriminatively_RB train_VB our_PRP$ model_NN to_TO directly_RB maximize_VB the_DT evaluation_NN metric_JJ under_IN consideration_NN -LSB-_-LRB- ##_CD ,_, ##_CD ,_, ##_CD -RSB-_-RRB- ._.
+Since_IN our_PRP$ parameter_NN space_NN is_VBZ small_JJ ,_, we_PRP make_VBP use_NN of_IN a_DT simple_JJ hill_NN climbing_VBG strategy_NN ,_, although_IN other_JJ more_RBR sophisticated_JJ approaches_NNS are_VBP possible_JJ -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+3_LS ._.
+#_# Latent_JJ Concept_NNP Expansion_NN In_IN this_DT section_NN we_PRP describe_VBP how_WRB this_DT extended_VBN MRF_NNP model_NN can_MD be_VB used_VBN in_IN a_DT novel_JJ way_NN to_TO generate_VB single_JJ and_CC multiterm_JJ concepts_NNS that_WDT are_VBP topically_RB related_VBN to_TO some_DT original_JJ query_NN ._.
+As_IN we_PRP will_MD show_VB ,_, the_DT concepts_NNS generated_VBN using_VBG our_PRP$ technique_NN can_MD be_VB used_VBN for_IN query_NN expansion_NN or_CC other_JJ tasks_NNS ,_, such_JJ as_IN suggesting_VBG alternative_JJ query_NN formulations_NNS ._.
+We_PRP assume_VBP that_IN when_WRB a_DT user_NN formulates_VBZ their_PRP$ original_JJ query_NN ,_, they_PRP have_VBP some_DT set_NN of_IN concepts_NNS in_IN mind_NN ,_, but_CC are_VBP only_RB able_JJ to_TO express_VB a_DT small_JJ number_NN of_IN them_PRP in_IN the_DT form_NN of_IN a_DT query_NN ._.
+We_PRP treat_VBP the_DT concepts_NNS that_IN the_DT user_NN has_VBZ in_IN mind_NN ,_, but_CC did_VBD not_RB explicitly_RB express_VB in_IN the_DT query_NN ,_, as_IN latent_JJ concepts_NNS ._.
+These_DT latent_JJ concepts_NNS can_MD consist_VB of_IN a_DT single_JJ term_NN ,_, multiple_JJ terms_NNS ,_, or_CC some_DT combination_NN of_IN the_DT two_CD ._.
+It_PRP is_VBZ ,_, therefore_RB ,_, our_PRP$ goal_NN to_TO recover_VB these_DT latent_JJ concepts_NNS given_VBN some_DT original_JJ query_NN ._.
+This_DT can_MD be_VB accomplished_VBN within_IN our_PRP$ framework_NN by_IN first_JJ expanding_VBG the_DT original_JJ graph_NN G_NN to_TO include_VB the_DT type_NN of_IN concept_NN we_PRP are_VBP interested_JJ in_IN generating_VBG ._.
+We_PRP call_VBP this_DT expanded_VBN graph_NN H_NN ._.
+In_IN Figure_NNP #_# ,_, the_DT middle_JJ graph_NN provides_VBZ an_DT example_NN of_IN how_WRB to_TO construct_VB an_DT expanded_VBN graph_NN that_WDT can_MD generate_VB single_JJ term_NN concepts_NNS ._.
+Similarly_RB ,_, the_DT graph_NN on_IN the_DT right_JJ illustrates_VBZ an_DT expanded_VBN graph_NN that_WDT generates_VBZ two_CD term_NN concepts_NNS ._.
+Although_IN these_DT two_CD examples_NNS make_VBP use_NN of_IN the_DT sequential_JJ dependence_NN assumption_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+dependencies_NNS between_IN adjacent_JJ query_NN terms_NNS -RRB-_-RRB- ,_, it_PRP is_VBZ important_JJ to_TO note_VB that_IN both_CC the_DT original_JJ query_NN and_CC the_DT expansion_NN concepts_NNS can_MD use_VB any_DT independence_NN structure_NN ._.
+After_IN H_NN is_VBZ constructed_VBN ,_, we_PRP compute_VBP PH_NNP ,_, -LRB-_-LRB- E_NN |_CD Q_NNP -RRB-_-RRB- ,_, a_DT probability_NN distribution_NN over_IN latent_JJ concepts_NNS ,_, according_VBG to_TO :_: PH_NN ,_, -LRB-_-LRB- E_NN |_CD Q_NNP -RRB-_-RRB- =_JJ DR_NN PH_NN ,_, -LRB-_-LRB- Q_NNP ,_, E_NNP ,_, D_NNP -RRB-_-RRB- DR_NN E_NN PH_NN ,_, -LRB-_-LRB- Q_NNP ,_, E_NNP ,_, D_NNP -RRB-_-RRB- where_WRB R_NN is_VBZ the_DT universe_NN of_IN all_DT possible_JJ documents_NNS and_CC E_NN is_VBZ some_DT latent_JJ concept_NN that_WDT may_MD consist_VB of_IN one_CD or_CC more_JJR terms_NNS ._.
+Since_IN it_PRP is_VBZ not_RB practical_JJ to_TO compute_VB this_DT summation_NN ,_, we_PRP must_MD approximate_JJ it_PRP ._.
+We_PRP notice_VBP that_IN PH_NN ,_, -LRB-_-LRB- Q_NNP ,_, E_NNP ,_, D_NNP -RRB-_-RRB- is_VBZ likely_JJ to_TO be_VB peaked_JJ around_IN those_DT documents_NNS D_NN that_WDT are_VBP highly_RB ranked_VBN according_VBG to_TO query_VB Q_NNP ._.
+Therefore_RB ,_, we_PRP approximate_JJ PH_NN ,_, -LRB-_-LRB- E_NN |_CD Q_NNP -RRB-_-RRB- by_IN only_RB summing_VBG over_IN a_DT small_JJ subset_NN of_IN relevant_JJ or_CC pseudo-relevant_JJ documents_NNS for_IN query_NN Q_NNP ._.
+This_DT is_VBZ computed_VBN as_IN follows_VBZ :_: PH_NN ,_, -LRB-_-LRB- E_NN |_CD Q_NNP -RRB-_-RRB- DRQ_NNP PH_NNP ,_, -LRB-_-LRB- Q_NNP ,_, E_NNP ,_, D_NNP -RRB-_-RRB- DRQ_NN E_NN PH_NN ,_, -LRB-_-LRB- Q_NNP ,_, E_NNP ,_, D_NNP -RRB-_-RRB- -LRB-_-LRB- #_# -RRB-_-RRB- DRQ_NN exp_NN FQD_NN -LRB-_-LRB- Q_NNP ,_, D_NNP -RRB-_-RRB- +_CC FD_NN -LRB-_-LRB- D_NN -RRB-_-RRB- +_CC FQD_NN -LRB-_-LRB- E_NN ,_, D_NN -RRB-_-RRB- +_CC FQ_NN -LRB-_-LRB- E_NN -RRB-_-RRB- where_WRB RQ_NN is_VBZ a_DT set_NN of_IN relevant_JJ or_CC pseudo-relevant_JJ documents_NNS for_IN query_NN Q_NNP and_CC all_DT clique_JJ sets_NNS are_VBP constructed_VBN using_VBG H_NN ._.
+As_IN we_PRP see_VBP ,_, the_DT likelihood_NN contribution_NN for_IN each_DT document_NN in_IN RQ_NN is_VBZ a_DT combination_NN of_IN the_DT original_JJ query_NN ''_'' s_NNS score_VBP for_IN the_DT document_NN ,_, concept_NN E_NN ''_'' s_NNS score_VBP for_IN the_DT document_NN ,_, and_CC E_NN ''_'' s_NNS document-independent_JJ score_NN ._.
+Therefore_RB ,_, this_DT equation_NN can_MD be_VB interpreted_VBN as_IN measuring_VBG how_WRB well_RB Q_NNP and_CC E_NNP account_VBP for_IN the_DT top_JJ ranked_VBD documents_NNS and_CC the_DT goodness_NN of_IN E_NN ,_, independent_JJ of_IN the_DT documents_NNS ._.
+For_IN maximum_NN robustness_NN ,_, we_PRP use_VBP a_DT different_JJ set_NN of_IN parameters_NNS for_IN FQD_NN -LRB-_-LRB- Q_NNP ,_, D_NNP -RRB-_-RRB- and_CC FQD_NN -LRB-_-LRB- E_NN ,_, D_NN -RRB-_-RRB- ,_, which_WDT allows_VBZ us_PRP to_TO weight_VB the_DT term_NN ,_, ordered_VBN ,_, and_CC unordered_JJ window_NN features_NNS differently_RB for_IN the_DT original_JJ query_NN and_CC the_DT candidate_NN expansion_NN concept_NN ._.
+3_LS ._.
+#_# ._.
+#_# Query_NNP Expansion_NN To_TO use_VB this_DT framework_NN for_IN query_NN expansion_NN ,_, we_PRP first_RB choose_VB an_DT expansion_NN graph_NN H_NN that_WDT encodes_VBZ the_DT latent_JJ concept_NN structure_NN we_PRP are_VBP interested_JJ in_IN expanding_VBG the_DT query_NN using_VBG ._.
+We_PRP then_RB select_VBP the_DT k_NN latent_JJ concepts_NNS with_IN the_DT highest_JJS likelihood_NN given_VBN by_IN Equation_NN #_# ._.
+A_DT new_JJ graph_NN G_NN is_VBZ constructed_VBN by_IN augmenting_VBG the_DT original_JJ graph_NN G_NN with_IN the_DT k_NN expansion_NN concepts_NNS E1_NN ,_, ..._: ,_, Ek_NNP ._.
+Finally_RB ,_, documents_NNS are_VBP ranked_VBN according_VBG to_TO PG_NNP ,_, -LRB-_-LRB- D_NNP |_CD Q_NNP ,_, E1_NN ,_, ..._: ,_, Ek_NN -RRB-_-RRB- using_VBG Equation_NN #_# ._.
+3_LS ._.
+#_# ._.
+#_# Comparison_NN to_TO Relevance_NNP Models_NNS Inspecting_VBG Equations_NNS #_# and_CC #_# reveals_VBZ the_DT close_JJ connection_NN that_WDT exists_VBZ between_IN LCE_NNP and_CC relevance_NN models_NNS ._.
+Both_DT Figure_NNP #_# :_: Graphical_JJ model_NN representations_NNS of_IN relevance_NN modeling_NN -LRB-_-LRB- left_NN -RRB-_-RRB- ,_, latent_JJ concept_NN expansion_NN using_VBG single_JJ term_NN concepts_NNS -LRB-_-LRB- middle_NN -RRB-_-RRB- ,_, and_CC latent_JJ concept_NN expansion_NN using_VBG two_CD term_NN concepts_NNS -LRB-_-LRB- right_NN -RRB-_-RRB- for_IN a_DT three_CD term_NN query_NN ._.
+models_NNS essentially_RB compute_VBP the_DT likelihood_NN of_IN a_DT term_NN -LRB-_-LRB- or_CC concept_NN -RRB-_-RRB- in_IN the_DT same_JJ manner_NN ._.
+It_PRP is_VBZ easy_JJ to_TO see_VB that_DT just_RB as_IN the_DT MRF_NNP model_NN can_MD be_VB viewed_VBN as_IN a_DT generalization_NN of_IN language_NN modeling_NN ,_, so_RB too_RB can_MD LCE_VB be_VB viewed_VBN as_IN a_DT generalization_NN of_IN relevance_NN models_NNS ._.
+There_EX are_VBP important_JJ differences_NNS between_IN MRFs_NNS /_: LCE_NN and_CC unigram_JJ language_NN models_NNS /_: relevance_NN models_NNS ._.
+See_VB Figure_NNP #_# for_IN graphical_JJ model_NN representations_NNS of_IN both_DT models_NNS ._.
+Unigram_JJ language_NN models_NNS and_CC relevance_NN models_NNS are_VBP based_VBN on_IN the_DT multinomial_JJ distribution_NN ._.
+This_DT distributional_JJ assumption_NN locks_VBZ the_DT model_NN into_IN the_DT bag_NN of_IN words_NNS representation_NN and_CC the_DT implicit_JJ use_NN of_IN term_NN occurrence_NN features_NNS ._.
+However_RB ,_, the_DT distribution_NN underlying_VBG the_DT MRF_NNP model_NN allows_VBZ us_PRP to_TO move_VB beyond_IN both_DT of_IN these_DT assumptions_NNS ,_, by_IN modeling_NN both_CC dependencies_NNS between_IN query_NN terms_NNS and_CC allowing_VBG arbitrary_JJ features_NNS to_TO be_VB explicitly_RB used_VBN ._.
+Moving_VBG beyond_IN the_DT simplistic_JJ bag_NN of_IN words_NNS assumption_NN in_IN this_DT way_NN results_VBZ in_IN a_DT general_JJ ,_, robust_JJ model_NN and_CC ,_, as_IN we_PRP show_VBP in_IN the_DT next_JJ section_NN ,_, translates_VBZ into_IN significant_JJ improvements_NNS in_IN retrieval_NN effectiveness_NN ._.
+4_LS ._.
+EXPERIMENTAL_JJ RESULTS_NNS In_IN order_NN to_TO better_RBR understand_VB the_DT strengths_NNS and_CC weaknesses_NNS of_IN our_PRP$ technique_NN ,_, we_PRP evaluate_VBP it_PRP on_IN a_DT wide_JJ range_NN of_IN data_NNS sets_NNS ._.
+Table_NNP #_# provides_VBZ a_DT summary_NN of_IN the_DT TREC_NN data_NNS sets_VBZ considered_VBN ._.
+The_DT WSJ_NNP ,_, AP_NNP ,_, and_CC ROBUST_JJ collections_NNS are_VBP smaller_JJR and_CC consist_VBP entirely_RB of_IN newswire_NN articles_NNS ,_, whereas_IN WT10g_NN and_CC GOV2_NN are_VBP large_JJ web_NN collections_NNS ._.
+For_IN each_DT data_NNS set_NN ,_, we_PRP split_VBD the_DT available_JJ topics_NNS into_IN a_DT training_NN and_CC test_NN set_NN ,_, where_WRB the_DT training_NN set_NN is_VBZ used_VBN solely_RB for_IN parameter_NN estimation_NN and_CC the_DT test_NN set_NN is_VBZ used_VBN for_IN evaluation_NN purposes_NNS ._.
+All_DT experiments_NNS were_VBD carried_VBN out_RP using_VBG a_DT modified_VBN version_NN of_IN Indri_NNP ,_, which_WDT is_VBZ part_NN of_IN the_DT Lemur_NNP Toolkit_NNP -LSB-_-LRB- ##_CD ,_, ##_CD -RSB-_-RRB- ._.
+All_DT collections_NNS were_VBD stopped_VBN using_VBG a_DT standard_JJ list_NN of_IN ###_CD common_JJ terms_NNS and_CC stemmed_VBD using_VBG a_DT Porter_NNP stemmer_NN ._.
+In_IN all_DT cases_NNS ,_, only_RB the_DT title_NN portion_NN of_IN the_DT TREC_NN topics_NNS are_VBP used_VBN to_TO construct_VB queries_NNS ._.
+We_PRP construct_VBP G_NN using_VBG the_DT sequential_JJ dependence_NN assumption_NN for_IN all_DT data_NNS sets_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+4_LS ._.
+#_# ad-hoc_JJ Retrieval_NNP Results_NNS We_PRP now_RB investigate_VBP how_WRB well_RB our_PRP$ model_NN performs_VBZ in_IN practice_NN in_IN a_DT pseudo-relevance_JJ feedback_NN setting_NN ._.
+We_PRP compare_VBP unigram_JJ language_NN modeling_NN -LRB-_-LRB- with_IN Dirichlet_JJ smoothing_NN -RRB-_-RRB- ,_, the_DT MRF_NNP model_NN -LRB-_-LRB- without_IN expansion_NN -RRB-_-RRB- ,_, relevance_NN models_NNS ,_, and_CC LCE_NN to_TO better_RBR understand_VB how_WRB each_DT model_NN performs_VBZ across_IN the_DT various_JJ data_NNS sets_NNS ._.
+For_IN the_DT unigram_JJ language_NN model_NN ,_, the_DT smoothing_NN parameter_NN was_VBD trained_VBN ._.
+For_IN the_DT MRF_NNP model_NN ,_, we_PRP train_VBP the_DT model_NN parameters_NNS -LRB-_-LRB- i_FW ._.
+e_LS ._. -RRB-_-RRB-
+and_CC model_NN hyperparameters_NNS -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, -RRB-_-RRB- ._.
+For_IN RM3_NN and_CC LCE_NN ,_, we_PRP also_RB train_VBP the_DT number_NN of_IN pseudoName_NNP Description_NN #_# Docs_NNPS Train_NNP Topics_NNPS Test_NNP Topics_NNPS WSJ_NNP Wall_NNP St_NNP ._.
+Journal_NNP 87-92_CD 173_CD ,_, ###_CD 51-150 151-200_CD AP_NNP Assoc_NNP ._.
+Press_NNP 88-90_CD 242_CD ,_, ###_CD 51-150 151-200_CD ROBUST_NN Robust_JJ ####_CD data_NNS 528_CD ,_, ###_CD 301-450 601-700_CD WT10g_NN TREC_NN Web_NN collection_NN 1_CD ,_, ###_CD ,_, ###_CD 451-500 501-550_CD GOV2_NN ####_CD crawl_NN of_IN ._.
+gov_NN domain_NN 25_CD ,_, ###_CD ,_, ###_CD 701-750 751-800_CD Table_NNP #_# :_: Overview_NN of_IN TREC_NN collections_NNS and_CC topics_NNS ._.
+relevant_JJ feedback_NN documents_NNS used_VBN and_CC the_DT number_NN of_IN expansion_NN terms_NNS ._.
+4_LS ._.
+#_# ._.
+#_# Expansion_NN with_IN Single_JJ Term_NN Concepts_NNS We_PRP begin_VBP by_IN evaluating_VBG how_WRB well_RB our_PRP$ model_NN performs_VBZ when_WRB expanding_VBG using_VBG only_RB single_JJ terms_NNS ._.
+Before_IN we_PRP describe_VBP and_CC analyze_VBP the_DT results_NNS ,_, we_PRP explicitly_RB state_VBP how_WRB expansion_NN term_NN likelihoods_NNS are_VBP computed_VBN under_IN this_DT setup_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+using_VBG the_DT sequential_JJ dependence_NN assumption_NN ,_, expanding_VBG with_IN single_JJ term_NN concepts_NNS ,_, and_CC using_VBG our_PRP$ feature_NN set_NN -RRB-_-RRB- ._.
+The_DT expansion_NN term_NN likelihoods_NNS are_VBP computed_VBN as_IN follows_VBZ :_: PH_NN ,_, -LRB-_-LRB- e_LS |_CD Q_NNP -RRB-_-RRB- DRQ_NNP exp_NN TD_NN wQ_NN log_NN -LRB-_-LRB- #_# -RRB-_-RRB- tfw_NN ,_, D_NN |_NN D_NN |_NN +_CC cfw_NN |_NN C_NN |_NN +_CC OD_NN bQ_NN log_NN -LRB-_-LRB- #_# -RRB-_-RRB- tf_NN #_# #_# -LRB-_-LRB- b_NN -RRB-_-RRB- ,_, D_NN |_NN D_NN |_NN +_CC cf_NN #_# #_# -LRB-_-LRB- b_NN -RRB-_-RRB- |_CD C_NN |_NN +_CC UD_NN bQ_NN log_NN -LRB-_-LRB- #_# -RRB-_-RRB- tf_NN #_# uw_NN -LRB-_-LRB- b_NN -RRB-_-RRB- ,_, D_NN |_NN D_NN |_NN +_CC cf_NN #_# uw_NN -LRB-_-LRB- b_NN -RRB-_-RRB- |_CD C_NN |_NN +_CC log_NN -LRB-_-LRB- #_# -RRB-_-RRB- tfe_NN ,_, D_NN |_NN D_NN |_NN +_CC cfe_NN |_NN C_NN |_CD TD_NN cfe_NN |_NN C_NN |_CD TQ_NN -LRB-_-LRB- #_# -RRB-_-RRB- where_WRB b_NN Q_NNP denotes_VBZ the_DT set_NN of_IN bigrams_NNS in_IN Q_NNP ._.
+This_DT equation_NN clearly_RB shows_VBZ how_WRB LCE_NNP differs_VBZ from_IN relevance_NN models_NNS ._.
+When_WRB we_PRP set_VBD TD_NN =_JJ T_NN ,_, D_NN =_JJ #_# and_CC all_DT other_JJ parameters_NNS to_TO #_# ,_, we_PRP obtain_VBP the_DT exact_JJ formula_NN that_WDT is_VBZ used_VBN to_TO compute_VB term_NN likelihoods_NNS in_IN the_DT relevance_NN modeling_NN framework_NN ._.
+Therefore_RB ,_, LCE_NN adds_VBZ two_CD very_RB important_JJ factors_NNS to_TO the_DT equation_NN ._.
+First_RB ,_, it_PRP adds_VBZ the_DT ordered_VBN and_CC unordered_JJ window_NN features_NNS that_WDT are_VBP applied_VBN to_TO the_DT original_JJ query_NN ._.
+Second_RB ,_, it_PRP applies_VBZ an_DT intuitive_JJ tf_NN ._.
+idf-like_JJ form_NN to_TO the_DT candidate_NN expansion_NN term_NN w_NN ._.
+The_DT idf_NN factor_NN ,_, which_WDT is_VBZ not_RB present_JJ in_IN relevance_NN models_NNS ,_, plays_VBZ an_DT important_JJ role_NN in_IN expansion_NN term_NN selection_NN ._.
+<_JJR =_JJ ###_CD %_NN -LRB-_-LRB- ###_CD %_NN ,_, 75_CD %_NN -RSB-_-RRB- -LRB-_-LRB- ##_CD %_NN ,_, 50_CD %_NN -RSB-_-RRB- -LRB-_-LRB- ##_CD %_NN ,_, 25_CD %_NN -RSB-_-RRB- -LRB-_-LRB- ##_CD %_NN ,_, 0_CD %_NN -RSB-_-RRB- -LRB-_-LRB- #_# %_NN ,_, 25_CD %_NN -RSB-_-RRB- -LRB-_-LRB- ##_CD %_NN ,_, 50_CD %_NN -RSB-_-RRB- -LRB-_-LRB- ##_CD %_NN ,_, 75_CD %_NN -RSB-_-RRB- -LRB-_-LRB- ##_CD %_NN ,_, 100_CD %_NN -RSB-_-RRB- >_JJR ###_CD %_NN RM3_NN LCE_NN 05101520_CD AP_NN <_JJR =_JJ ###_CD %_NN -LRB-_-LRB- ###_CD %_NN ,_, 75_CD %_NN -RSB-_-RRB- -LRB-_-LRB- ##_CD %_NN ,_, 50_CD %_NN -RSB-_-RRB- -LRB-_-LRB- ##_CD %_NN ,_, 25_CD %_NN -RSB-_-RRB- -LRB-_-LRB- ##_CD %_NN ,_, 0_CD %_NN -RSB-_-RRB- -LRB-_-LRB- #_# %_NN ,_, 25_CD %_NN -RSB-_-RRB- -LRB-_-LRB- ##_CD %_NN ,_, 50_CD %_NN -RSB-_-RRB- -LRB-_-LRB- ##_CD %_NN ,_, 75_CD %_NN -RSB-_-RRB- -LRB-_-LRB- ##_CD %_NN ,_, 100_CD %_NN -RSB-_-RRB- >_JJR ###_CD %_NN RM3_NN LCE_NN 05101520253035_CD ROBUST_NN <_JJR =_JJ ###_CD %_NN -LRB-_-LRB- ###_CD %_NN ,_, 75_CD %_NN -RSB-_-RRB- -LRB-_-LRB- ##_CD %_NN ,_, 50_CD %_NN -RSB-_-RRB- -LRB-_-LRB- ##_CD %_NN ,_, 25_CD %_NN -RSB-_-RRB- -LRB-_-LRB- ##_CD %_NN ,_, 0_CD %_NN -RSB-_-RRB- -LRB-_-LRB- #_# %_NN ,_, 25_CD %_NN -RSB-_-RRB- -LRB-_-LRB- ##_CD %_NN ,_, 50_CD %_NN -RSB-_-RRB- -LRB-_-LRB- ##_CD %_NN ,_, 75_CD %_NN -RSB-_-RRB- -LRB-_-LRB- ##_CD %_NN ,_, 100_CD %_NN -RSB-_-RRB- >_JJR ###_CD %_NN RM3_NN LCE_NN 0510152025_CD WT10G_NN Figure_NN #_# :_: Histograms_NNS that_WDT demonstrate_VBP and_CC compare_VBP the_DT robustness_NN of_IN relevance_NN models_NNS -LRB-_-LRB- RM3_NN -RRB-_-RRB- and_CC latent_JJ concept_NN expansion_NN -LRB-_-LRB- LCE_NN -RRB-_-RRB- with_IN respect_NN to_TO the_DT query_NN likelihood_NN model_NN -LRB-_-LRB- QL_NN -RRB-_-RRB- for_IN the_DT AP_NN ,_, ROBUST_NN ,_, and_CC WT10G_NN data_NNS sets_NNS ._.
+The_DT results_NNS ,_, evaluated_VBN using_VBG mean_JJ average_JJ precision_NN ,_, are_VBP given_VBN in_IN Table_NNP #_# ._.
+As_IN we_PRP see_VBP ,_, the_DT MRF_NNP model_NN ,_, relevance_NN models_NNS ,_, and_CC LCE_NN always_RB significantly_RB outperform_VB the_DT unigram_JJ language_NN model_NN ._.
+In_IN addition_NN ,_, LCE_NN shows_VBZ significant_JJ improvements_NNS over_IN relevance_NN models_NNS across_IN all_DT data_NNS sets_NNS ._.
+The_DT relative_JJ improvements_NNS over_IN relevance_NN models_NNS is_VBZ #_# ._.
+#_# %_NN for_IN AP_NN ,_, 12_CD ._.
+#_# %_NN for_IN WSJ_NNP ,_, #_# ._.
+#_# %_NN for_IN ROBUST_NN ,_, ##_NN ._.
+#_# %_NN for_IN WT10G_NN ,_, and_CC 7_CD ._.
+#_# %_NN for_IN GOV2_NN ._.
+Furthermore_RB ,_, LCE_NN shows_VBZ small_JJ ,_, but_CC not_RB significant_JJ ,_, improvements_NNS over_IN relevance_NN modeling_NN for_IN metrics_NNS such_JJ as_IN precision_NN at_IN #_# ,_, ##_NN ,_, and_CC ##_NN ._.
+However_RB ,_, both_DT relevance_NN modeling_NN and_CC LCE_NN show_VBP statistically_RB significant_JJ improvements_NNS in_IN such_JJ metrics_NNS over_IN the_DT unigram_JJ language_NN model_NN ._.
+Another_DT interesting_JJ result_NN is_VBZ that_IN the_DT MRF_NNP model_NN is_VBZ statistically_RB equivalent_JJ to_TO relevance_NN models_NNS on_IN the_DT two_CD web_NN data_NNS sets_NNS ._.
+In_IN fact_NN ,_, the_DT MRF_NNP model_NN outperforms_VBZ relevance_NN models_NNS on_IN the_DT WT10g_NN data_NN set_NN ._.
+This_DT reiterates_VBZ the_DT importance_NN of_IN non-unigram_JJ ,_, proximity-based_JJ features_NNS for_IN content-based_JJ web_NN search_NN observed_VBN previously_RB -LSB-_-LRB- ##_CD ,_, ##_CD -RSB-_-RRB- ._.
+Although_IN our_PRP$ model_NN has_VBZ more_JJR free_JJ parameters_NNS than_IN relevance_NN models_NNS ,_, there_EX is_VBZ surprisingly_RB little_JJ overfitting_NN ._.
+Instead_RB ,_, the_DT model_NN exhibits_VBZ good_JJ generalization_NN properties_NNS ._.
+4_LS ._.
+#_# ._.
+#_# Expansion_NN with_IN Multi-Term_JJ Concepts_NNS We_PRP also_RB investigated_VBD expanding_VBG using_VBG both_CC single_JJ and_CC two_CD word_NN concepts_NNS ._.
+For_IN each_DT query_NN ,_, we_PRP expanded_VBD using_VBG a_DT set_NN of_IN single_JJ term_NN concepts_NNS and_CC a_DT set_NN of_IN two_CD term_NN concepts_NNS ._.
+The_DT sets_NNS were_VBD chosen_VBN independently_RB ._.
+Unfortunately_RB ,_, only_RB negligible_JJ increases_NNS in_IN mean_JJ average_JJ precision_NN were_VBD observed_VBN ._.
+This_DT result_NN may_MD be_VB due_JJ to_TO the_DT fact_NN that_IN strong_JJ correlations_NNS exist_VBP between_IN the_DT single_JJ term_NN expansion_NN concepts_NNS ._.
+We_PRP found_VBD that_IN the_DT two_CD word_NN concepts_NNS chosen_VBN often_RB consisted_VBN of_IN two_CD highly_RB correlated_VBD terms_NNS that_WDT are_VBP also_RB chosen_VBN as_IN single_JJ term_NN concepts_NNS ._.
+For_IN example_NN ,_, the_DT two_CD term_NN concept_NN stock_NN market_NN was_VBD chosen_VBN while_IN the_DT single_JJ term_NN concepts_NNS stock_NN and_CC market_NN were_VBD also_RB chosen_VBN ._.
+Therefore_RB ,_, many_JJ two_CD word_NN concepts_NNS are_VBP unlikely_JJ to_TO increase_VB the_DT discriminative_JJ power_NN of_IN the_DT expanded_VBN query_NN ._.
+This_DT result_NN suggests_VBZ that_IN concepts_NNS should_MD be_VB chosen_VBN according_VBG to_TO some_DT criteria_NNS that_WDT also_RB takes_VBZ novelty_NN ,_, diversity_NN ,_, or_CC term_NN correlations_NNS into_IN account_NN ._.
+Another_DT potential_JJ issue_NN is_VBZ the_DT feature_NN set_NN used_VBN ._.
+Other_JJ feature_NN sets_NNS may_MD ultimately_RB yield_VB different_JJ results_NNS ,_, especially_RB if_IN they_PRP reduce_VBP the_DT correlation_NN among_IN the_DT expansion_NN concepts_NNS ._.
+Therefore_RB ,_, our_PRP$ experiments_NNS yield_VBP no_DT conclusive_JJ results_NNS with_IN regard_NN to_TO expansion_NN using_VBG multi-term_JJ concepts_NNS ._.
+Instead_RB ,_, the_DT results_NNS introduce_VBP interesting_JJ open_JJ questions_NNS and_CC directions_NNS for_IN future_JJ exploration_NN ._.
+LM_NNP MRF_NNP RM3_NN LCE_NN WSJ_NNP ._.
+####_NN ._.
+####_NN ._.
+####_NN ._.
+####_CD AP_NN ._.
+####_NN ._.
+####_NN ._.
+####_NN ._.
+####_CD ROBUST_NN ._.
+####_NN ._.
+####_NN ._.
+####_NN ._.
+####_CD WT10g_NN ._.
+####_NN ._.
+####_NN ._.
+####_NN ._.
+####_CD GOV2_NN ._.
+####_NN ._.
+####_NN ._.
+####_NN ._.
+####_NNP Table_NNP #_# :_: Test_NNP set_VBD mean_JJ average_JJ precision_NN for_IN language_NN modeling_NN -LRB-_-LRB- LM_NN -RRB-_-RRB- ,_, Markov_NNP random_JJ field_NN -LRB-_-LRB- MRF_NN -RRB-_-RRB- ,_, relevance_NN models_NNS -LRB-_-LRB- RM3_NN -RRB-_-RRB- ,_, and_CC latent_JJ concept_NN expansion_NN -LRB-_-LRB- LCE_NN -RRB-_-RRB- ._.
+The_DT superscripts_NNS ,_, ,_, and_CC indicate_VBP statistically_RB significant_JJ improvements_NNS -LRB-_-LRB- p_NN <_JJR #_# ._.
+##_NN -RRB-_-RRB- over_IN LM_NNP ,_, MRF_NNP ,_, and_CC RM3_NN ,_, respectively_RB ._.
+4_LS ._.
+#_# Robustness_NNPS As_IN we_PRP have_VBP shown_VBN ,_, relevance_NN models_NNS and_CC latent_JJ concept_NN expansion_NN can_MD significantly_RB improve_VB retrieval_NN effectiveness_NN over_IN the_DT baseline_NN query_NN likelihood_NN model_NN ._.
+In_IN this_DT section_NN we_PRP analyze_VBP the_DT robustness_NN of_IN these_DT two_CD methods_NNS ._.
+Here_RB ,_, we_PRP define_VBP robustness_NN as_IN the_DT number_NN queries_NNS whose_WP$ effectiveness_NN are_VBP improved_VBN /_: hurt_VBN -LRB-_-LRB- and_CC by_IN how_WRB much_JJ -RRB-_-RRB- as_IN the_DT result_NN of_IN applying_VBG these_DT methods_NNS ._.
+A_DT highly_RB robust_JJ expansion_NN technique_NN will_MD significantly_RB improve_VB many_JJ queries_NNS and_CC only_RB minimally_RB hurt_VB a_DT few_JJ ._.
+Figure_NNP #_# provides_VBZ an_DT analysis_NN of_IN the_DT robustness_NN of_IN relevance_NN modeling_NN and_CC latent_JJ concept_NN expansion_NN for_IN the_DT AP_NN ,_, ROBUST_NN ,_, and_CC WT10G_NN data_NNS sets_NNS ._.
+The_DT analysis_NN for_IN the_DT two_CD data_NNS sets_VBZ not_RB shown_VBN is_VBZ similar_JJ ._.
+The_DT histograms_NNS provide_VBP ,_, for_IN various_JJ ranges_NNS of_IN relative_JJ decreases_NNS /_: increases_NNS in_IN mean_JJ average_JJ precision_NN ,_, the_DT number_NN of_IN queries_NNS that_WDT were_VBD hurt_VBN /_: improved_VBN with_IN respect_NN to_TO the_DT query_NN likelihood_NN baseline_NN ._.
+As_IN the_DT results_NNS show_VBP ,_, LCE_NN exhibits_VBZ strong_JJ robustness_NN for_IN each_DT data_NNS set_NN ._.
+For_IN AP_NN ,_, relevance_NN models_NNS improve_VBP ##_NN queries_NNS and_CC hurt_VB ##_RB ,_, whereas_IN LCE_NN improves_VBZ ##_NN and_CC hurts_VBZ ##_NN ._.
+Although_IN relevance_NN models_NNS improve_VBP the_DT effectiveness_NN of_IN #_# more_RBR queries_NNS than_IN LCE_NN ,_, the_DT relative_JJ improvement_NN exhibited_VBD by_IN LCE_NN is_VBZ significantly_RB larger_JJR ._.
+For_IN the_DT ROBUST_JJ data_NN set_NN ,_, relevance_NN models_NNS improve_VBP ##_NN queries_NNS and_CC hurt_VB ##_RB ,_, and_CC LCE_NN improves_VBZ ##_NN and_CC hurts_VBZ ##_NN ._.
+Finally_RB ,_, for_IN the_DT WT10G_NN collection_NN ,_, relevance_NN models_NNS improve_VBP ##_NN queries_NNS and_CC hurt_VB ##_RB ,_, and_CC LCE_NN improves_VBZ ##_NN and_CC hurts_VBZ ##_NN ._.
+As_IN with_IN AP_NN ,_, the_DT amount_NN of_IN improvement_NN exhibited_VBD by_IN the_DT LCE_NN versus_CC relevance_NN models_NNS is_VBZ significantly_RB larger_JJR for_IN both_CC the_DT ROBUST_NN and_CC WT10G_NN data_NNS sets_NNS ._.
+In_IN addition_NN ,_, when_WRB LCE_NN does_VBZ hurt_VB performance_NN ,_, it_PRP is_VBZ less_RBR likely_JJ to_TO hurt_VB as_RB much_JJ as_IN relevance_NN modeling_NN ,_, which_WDT is_VBZ a_DT desirable_JJ property_NN ._.
+1_CD word_NN concepts_NNS #_# word_NN concepts_NNS #_# word_NN concepts_NNS telescope_NN hubble_JJ telescope_NN hubble_JJ space_NN telescope_NN hubble_JJ space_NN telescope_NN hubble_JJ telescope_NN space_NN space_NN hubble_JJ space_NN space_NN telescope_NN hubble_JJ mirror_NN telescope_NN mirror_NN space_NN telescope_NN NASA_NNP NASA_NNP telescope_NN hubble_JJ hubble_JJ telescope_NN astronomy_NN launch_NN mirror_NN telescope_NN NASA_NNP hubble_JJ space_NN astronomy_NN telescope_NN NASA_NNP space_NN telescope_NN mirror_NN shuttle_NN telescope_NN space_NN telescope_NN space_NN NASA_NNP test_NN hubble_JJ mirror_NN hubble_JJ telescope_NN mission_NN new_JJ NASA_NNP hubble_JJ mirror_NN mirror_NN mirror_NN discovery_NN telescope_NN astronomy_NN space_NN telescope_NN launch_NN time_NN telescope_NN optical_JJ space_NN telescope_NN discovery_NN universe_NN hubble_JJ optical_JJ shuttle_NN space_NN telescope_NN optical_JJ telescope_NN discovery_NN hubble_JJ telescope_NN flaw_NN light_JJ telescope_NN shuttle_NN two_CD hubble_JJ space_NN Table_NNP #_# :_: Fifteen_CD most_RBS likely_JJ one_CD ,_, two_CD ,_, and_CC three_CD word_NN concepts_NNS constructed_VBN using_VBG the_DT top_JJ ##_CD documents_NNS retrieved_VBN for_IN the_DT query_NN hubble_JJ telescope_NN achievements_NNS on_IN the_DT ROBUST_JJ collection_NN ._.
+Overall_RB ,_, LCE_NN improves_VBZ effectiveness_NN for_IN ##_CD %_NN -_: ##_CD %_NN of_IN queries_NNS ,_, depending_VBG on_IN the_DT data_NN set_NN ._.
+When_WRB used_VBN in_IN combination_NN with_IN a_DT highly_RB accurate_JJ query_NN performance_NN prediction_NN system_NN ,_, it_PRP may_MD be_VB possible_JJ to_TO selectively_RB expand_VB queries_NNS and_CC minimize_VB the_DT loss_NN associated_VBN with_IN sub-baseline_JJ performance_NN ._.
+4_LS ._.
+#_# Multi-Term_NNP Concept_NNP Generation_NNP Although_IN we_PRP found_VBD that_IN expansion_NN using_VBG multi-term_JJ concepts_NNS failed_VBD to_TO produce_VB conclusive_JJ improvements_NNS in_IN effectiveness_NN ,_, there_EX are_VBP other_JJ potential_JJ tasks_NNS that_IN these_DT concepts_NNS may_MD be_VB useful_JJ for_IN ,_, such_JJ as_IN query_NN suggestion_NN /_: reformulation_NN ,_, summarization_NN ,_, and_CC concept_NN mining_NN ._.
+For_IN example_NN ,_, for_IN a_DT query_NN suggestion_NN task_NN ,_, the_DT original_JJ query_NN could_MD be_VB used_VBN to_TO generate_VB a_DT set_NN of_IN latent_JJ concepts_NNS which_WDT correspond_VBP to_TO alternative_JJ query_NN formulations_NNS ._.
+Although_IN evaluating_VBG our_PRP$ model_NN on_IN these_DT tasks_NNS is_VBZ beyond_IN the_DT scope_NN of_IN this_DT work_NN ,_, we_PRP wish_VBP to_TO show_VB an_DT illustrative_JJ example_NN of_IN the_DT types_NNS of_IN concepts_NNS generated_VBN using_VBG our_PRP$ model_NN ._.
+In_IN Table_NNP #_# ,_, we_PRP present_VBP the_DT most_RBS likely_JJ one_CD ,_, two_CD ,_, and_CC three_CD term_NN concepts_NNS generated_VBN using_VBG LCE_NN for_IN the_DT query_NN hubble_JJ telescope_NN achievements_NNS using_VBG the_DT top_JJ ##_CD ranked_VBD documents_NNS from_IN the_DT ROBUST_JJ collection_NN ._.
+It_PRP is_VBZ well_RB known_VBN that_IN generating_VBG multi-term_JJ concepts_NNS using_VBG a_DT unigram-based_JJ model_NN produces_VBZ unsatisfactory_JJ results_NNS ,_, since_IN it_PRP fails_VBZ to_TO consider_VB term_NN dependencies_NNS ._.
+This_DT is_VBZ not_RB the_DT case_NN when_WRB generating_VBG multi-term_JJ concepts_NNS using_VBG our_PRP$ model_NN ._.
+Instead_RB ,_, a_DT majority_NN of_IN the_DT concepts_NNS generated_VBN are_VBP well-formed_JJ and_CC meaningful_JJ ._.
+There_EX are_VBP several_JJ cases_NNS where_WRB the_DT concepts_NNS are_VBP less_RBR coherent_JJ ,_, such_JJ as_IN mirror_NN mirror_NN mirror_NN ._.
+In_IN this_DT case_NN ,_, the_DT likelihood_NN of_IN the_DT term_NN mirror_NN appearing_VBG in_IN a_DT pseudo-relevant_JJ document_NN outweighs_VBZ the_DT language_NN modeling_NN features_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+fOQ_NN -RRB-_-RRB- ,_, which_WDT causes_VBZ this_DT non-coherent_JJ concept_NN to_TO have_VB a_DT high_JJ likelihood_NN ._.
+Such_JJ examples_NNS are_VBP in_IN the_DT minority_NN ,_, however_RB ._.
+Not_RB only_RB are_VBP the_DT concepts_NNS generated_VBD well-formed_JJ and_CC meaningful_JJ ,_, but_CC they_PRP are_VBP also_RB topically_RB relevant_JJ to_TO the_DT original_JJ query_NN ._.
+As_IN we_PRP see_VBP ,_, all_DT of_IN the_DT concepts_NNS generated_VBN are_VBP on_IN topic_NN and_CC in_IN some_DT way_NN related_JJ to_TO the_DT Hubble_NNP telescope_NN ._.
+It_PRP is_VBZ interesting_JJ to_TO see_VB that_IN the_DT concept_NN hubble_JJ telescope_NN flaw_NN is_VBZ one_CD of_IN the_DT most_RBS likely_JJ three_CD term_NN concepts_NNS ,_, given_VBN that_IN it_PRP is_VBZ somewhat_RB contradictory_JJ to_TO the_DT original_JJ query_NN ._.
+Despite_IN this_DT contradiction_NN ,_, documents_NNS that_IN discuss_VBP the_DT telescope_NN flaws_NNS are_VBP also_RB likely_JJ to_TO describe_VB the_DT successes_NNS ,_, as_RB well_RB ,_, and_CC therefore_RB this_DT is_VBZ likely_JJ to_TO be_VB a_DT meaningful_JJ concept_NN ._.
+One_CD important_JJ thing_NN to_TO note_NN is_VBZ that_IN the_DT concepts_NNS LCE_NN generates_VBZ are_VBP of_IN a_DT different_JJ nature_NN than_IN those_DT that_WDT would_MD be_VB generated_VBN using_VBG a_DT bigram_NN relevance_NN model_NN ._.
+For_IN example_NN ,_, a_DT bigram_NN model_NN would_MD be_VB unlikely_JJ to_TO generate_VB the_DT concept_NN telescope_NN space_NN NASA_NNP ,_, since_IN none_NN of_IN the_DT bigrams_NNS that_WDT make_VBP up_RP the_DT concept_NN have_VBP high_JJ likelihood_NN ._.
+However_RB ,_, since_IN our_PRP$ model_NN is_VBZ based_VBN on_IN a_DT number_NN of_IN different_JJ features_NNS over_IN various_JJ types_NNS of_IN cliques_NNS ,_, it_PRP is_VBZ more_RBR general_JJ and_CC robust_JJ than_IN a_DT bigram_NN model_NN ._.
+Although_IN we_PRP only_RB provided_VBD the_DT concepts_NNS generated_VBN for_IN a_DT single_JJ query_NN ,_, we_PRP note_VBP that_IN the_DT same_JJ analysis_NN and_CC conclusions_NNS generalize_VBP across_IN other_JJ data_NNS sets_NNS ,_, with_IN coherent_JJ ,_, topically_RB related_JJ concepts_NNS being_VBG consistently_RB generated_VBN using_VBG LCE_NN ._.
+4_LS ._.
+#_# Discussion_NNP Our_PRP$ latent_JJ concept_NN expansion_NN technique_NN captures_VBZ two_CD semiorthogonal_JJ types_NNS of_IN dependence_NN ._.
+In_IN information_NN retrieval_NN ,_, there_EX has_VBZ been_VBN a_DT long-term_JJ interest_NN in_IN understanding_VBG the_DT role_NN of_IN term_NN dependence_NN ._.
+Out_IN of_IN this_DT research_NN ,_, two_CD broad_JJ types_NNS of_IN dependencies_NNS have_VBP been_VBN identified_VBN ._.
+The_DT first_JJ type_NN of_IN dependence_NN is_VBZ syntactic_JJ dependence_NN ._.
+This_DT type_NN of_IN dependence_NN covers_VBZ phrases_NNS ,_, term_NN proximity_NN ,_, and_CC term_NN co-occurrence_NN -LSB-_-LRB- #_# ,_, #_# ,_, #_# ,_, #_# ,_, ##_NN -RSB-_-RRB- ._.
+These_DT methods_NNS capture_VBP the_DT fact_NN that_IN queries_NNS implicitly_RB or_CC explicitly_RB impose_VB a_DT certain_JJ set_NN of_IN positional_JJ dependencies_NNS ._.
+The_DT second_JJ type_NN is_VBZ semantic_JJ dependence_NN ._.
+Examples_NNS of_IN semantic_JJ dependence_NN are_VBP relevance_NN feedback_NN ,_, pseudo-relevance_NN feedback_NN ,_, synonyms_NNS ,_, and_CC to_TO some_DT extent_NN stemming_VBG -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+These_DT techniques_NNS have_VBP been_VBN explored_VBN on_IN both_CC the_DT query_NN and_CC document_NN side_NN ._.
+On_IN the_DT query_JJ side_NN ,_, this_DT is_VBZ typically_RB done_VBN using_VBG some_DT form_NN of_IN query_NN expansion_NN ,_, such_JJ as_IN relevance_NN models_NNS or_CC LCE_NN ._.
+On_IN the_DT document_NN side_NN ,_, this_DT is_VBZ done_VBN as_IN document_NN expansion_NN or_CC document_NN smoothing_NN -LSB-_-LRB- ##_CD ,_, ##_CD ,_, ##_CD -RSB-_-RRB- ._.
+Although_IN there_EX may_MD be_VB some_DT overlap_VBP between_IN syntactic_NN and_CC semantic_JJ dependencies_NNS ,_, they_PRP are_VBP mostly_RB orthogonal_JJ ._.
+Our_PRP$ model_NN uses_VBZ both_CC types_NNS of_IN dependencies_NNS ._.
+The_DT use_NN of_IN phrase_NN and_CC proximity_NN features_NNS within_IN the_DT model_NN captures_VBZ syntactic_JJ dependencies_NNS ,_, whereas_IN LCE_NN captures_VBZ query-side_JJ semantic_JJ dependence_NN ._.
+This_DT explains_VBZ why_WRB the_DT initial_JJ improvement_NN in_IN effectiveness_NN achieved_VBN by_IN using_VBG the_DT MRF_NNP model_NN is_VBZ not_RB lost_VBN after_IN query_NN expansion_NN ._.
+If_IN the_DT same_JJ types_NNS of_IN dependencies_NNS were_VBD capture_NN by_IN both_CC syntactic_NN and_CC semantic_JJ dependencies_NNS ,_, LCE_NN would_MD be_VB expected_VBN to_TO perform_VB about_IN equally_RB as_RB well_RB as_IN relevance_NN models_NNS ._.
+Therefore_RB ,_, by_IN modeling_NN both_CC types_NNS of_IN dependencies_NNS we_PRP see_VBP an_DT additive_JJ effect_NN ,_, rather_RB than_IN an_DT absorbing_NN effect_NN ._.
+An_DT interesting_JJ area_NN of_IN future_JJ work_NN is_VBZ to_TO determine_VB whether_IN or_CC not_RB modeling_NN document-side_JJ semantic_JJ dependencies_NNS can_MD add_VB anything_NN to_TO the_DT model_NN ._.
+Previous_JJ results_NNS that_WDT have_VBP combined_VBN query_NN -_: and_CC document-side_JJ semantic_JJ dependencies_NNS have_VBP shown_VBN mixed_JJ results_NNS -LSB-_-LRB- ##_NNS ,_, ##_NN -RSB-_-RRB- ._.
+5_CD ._.
+CONCLUSIONS_NNS In_IN this_DT paper_NN we_PRP proposed_VBD a_DT robust_JJ query_NN expansion_NN technique_NN called_VBN latent_JJ concept_NN expansion_NN ._.
+The_DT technique_NN was_VBD shown_VBN to_TO be_VB a_DT natural_JJ extension_NN of_IN the_DT Markov_NNP random_JJ field_NN model_NN for_IN information_NN retrieval_NN and_CC a_DT generalization_NN of_IN relevance_NN models_NNS ._.
+LCE_NN is_VBZ novel_JJ in_IN that_IN it_PRP performs_VBZ single_JJ or_CC multi-term_JJ expansion_NN within_IN a_DT framework_NN that_WDT allows_VBZ the_DT modeling_NN of_IN term_NN dependencies_NNS and_CC the_DT use_NN of_IN arbitrary_JJ features_NNS ,_, whereas_IN previous_JJ work_NN has_VBZ been_VBN based_VBN on_IN the_DT bag_NN of_IN words_NNS assumption_NN and_CC term_NN occurrence_NN features_NNS ._.
+We_PRP showed_VBD that_IN the_DT technique_NN can_MD be_VB used_VBN to_TO produce_VB high_JJ quality_NN ,_, well_RB formed_VBN ,_, topically_RB relevant_JJ multi-term_JJ expansion_NN concepts_NNS ._.
+The_DT concepts_NNS generated_VBD can_MD be_VB used_VBN in_IN an_DT alternative_JJ query_NN suggestion_NN module_NN ._.
+We_PRP also_RB showed_VBD that_IN the_DT model_NN is_VBZ highly_RB effective_JJ ._.
+In_IN fact_NN ,_, it_PRP achieves_VBZ significant_JJ improvements_NNS in_IN mean_JJ average_JJ precision_NN over_IN relevance_NN models_NNS across_IN a_DT selection_NN of_IN TREC_NN data_NNS sets_NNS ._.
+It_PRP was_VBD also_RB shown_VBN the_DT MRF_NNP model_NN itself_PRP ,_, without_IN any_DT query_NN expansion_NN ,_, outperforms_VBZ relevance_NN models_NNS on_IN large_JJ web_NN data_NNS sets_NNS ._.
+This_DT reconfirms_VBZ previous_JJ observations_NNS that_WDT modeling_NN dependencies_NNS via_IN the_DT use_NN of_IN proximity_NN features_NNS within_IN the_DT MRF_NNP has_VBZ more_JJR of_IN an_DT impact_NN on_IN larger_JJR ,_, noisier_JJR collections_NNS than_IN smaller_JJR ,_, well-behaved_JJ ones_NNS ._.
+Finally_RB ,_, we_PRP reiterated_VBD the_DT importance_NN of_IN choosing_VBG expansion_NN terms_NNS that_WDT model_VBP relevance_NN ,_, rather_RB than_IN the_DT relevant_JJ documents_NNS and_CC showed_VBD how_WRB LCE_NNP captures_VBZ both_DT syntactic_JJ and_CC query-side_JJ semantic_JJ dependencies_NNS ._.
+Future_JJ work_NN will_MD look_VB at_IN incorporating_VBG document-side_JJ dependencies_NNS ,_, as_RB well_RB ._.
+Acknowledgments_NNS This_DT work_NN was_VBD supported_VBN in_IN part_NN by_IN the_DT Center_NNP for_IN Intelligent_NNP Information_NNP Retrieval_NNP ,_, in_IN part_NN by_IN NSF_NNP grant_NN #_# CNS-0454018_NN ,_, in_IN part_NN by_IN ARDA_NNP and_CC NSF_NNP grant_NN #_# CCF-0205575_NN ,_, and_CC in_IN part_NN by_IN Microsoft_NNP Live_NNP Labs_NNPS ._.
+Any_DT opinions_NNS ,_, findings_NNS and_CC conclusions_NNS or_CC recommendations_NNS expressed_VBN in_IN this_DT material_NN are_VBP those_DT of_IN the_DT author_NN -LRB-_-LRB- s_NNS -RRB-_-RRB- and_CC do_VBP not_RB necessarily_RB reflect_VB those_DT of_IN the_DT sponsor_NN ._.
+6_CD ._.
+REFERENCES_NNS -LSB-_-LRB- #_# -RSB-_-RRB- N_NN ._.
+Abdul-Jaleel_NNP ,_, J_NNP ._.
+Allan_NNP ,_, W_NNP ._.
+B_NN ._.
+Croft_NNP ,_, F_NN ._.
+Diaz_NNP ,_, L_NNP ._.
+Larkey_NNP ,_, X_NN ._.
+Li_NNP ,_, M_NN ._.
+D_NN ._.
+Smucker_NNP ,_, and_CC C_NN ._.
+Wade_NNP ._.
+UMass_NNP at_IN TREC_NNP ####_CD :_: Novelty_NNP and_CC HARD_NNP ._.
+In_IN Online_NN proceedings_NNS of_IN the_DT ####_CD Text_VB Retrieval_NNP Conf_NNP ._.
+,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- C_NN ._.
+L_NN ._.
+A_DT ._.
+Clarke_NNP and_CC G_NNP ._.
+V_NN ._.
+Cormack_NNP ._.
+Shortest-substring_JJ retrieval_NN and_CC ranking_NN ._.
+ACM_NNP Trans_NNP ._.
+Inf_NNP ._.
+Syst_NNP ._.
+,_, ##_NN -LRB-_-LRB- #_# -RRB-_-RRB- :_: 44-78_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- K_NNP ._.
+Collins-Thompson_NNP and_CC J_NNP ._.
+Callan_NNP ._.
+Query_NNP expansion_NN using_VBG random_JJ walk_NN models_NNS ._.
+In_IN Proc_NNP ._.
+14th_JJ Intl_NNP ._.
+Conf_NNP ._.
+on_IN Information_NN and_CC Knowledge_NNP Management_NNP ,_, pages_NNS 704-711_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- W_NN ._.
+B_NN ._.
+Croft_NNP ._.
+Boolean_JJ queries_NNS and_CC term_NN dependencies_NNS in_IN probabilistic_JJ retrieval_NN models_NNS ._.
+Journal_NNP of_IN the_DT American_NNP Society_NNP for_IN Information_NNP Science_NNP ,_, ##_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 71-77_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- W_NN ._.
+B_NN ._.
+Croft_NNP ,_, H_NN ._.
+Turtle_NNP ,_, and_CC D_NN ._.
+Lewis_NNP ._.
+The_DT use_NN of_IN phrases_NNS and_CC structured_JJ queries_NNS in_IN information_NN retrieval_NN ._.
+In_IN Proc_NNP ._.
+14th_JJ Ann_NNP ._.
+Intl_NNP ._.
+ACM_NNP SIGIR_NNP Conf_NNP ._.
+on_IN Research_NNP and_CC Development_NNP in_IN Information_NNP Retrieval_NNP ,_, pages_NNS 32-45_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- K_NNP ._.
+Eguchi_NNP ._.
+NTCIR-5_NN query_NN expansion_NN experiments_NNS using_VBG term_NN dependence_NN models_NNS ._.
+In_IN Proc_NNP ._.
+of_IN the_DT Fifth_JJ NTCIR_NN Workshop_NNP Meeting_VBG on_IN Evaluation_NN of_IN Information_NN Access_NN Technologies_NNPS ,_, pages_NNS 494-501_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- J_NN ._.
+Fagan_NNP ._.
+Automatic_NNP phrase_NN indexing_NN for_IN document_NN retrieval_NN :_: An_DT examination_NN of_IN syntactic_NN and_CC non-syntactic_JJ methods_NNS ._.
+In_IN Proc_NNP ._.
+tenth_NN Ann_NNP ._.
+Intl_NNP ._.
+ACM_NNP SIGIR_NNP Conf_NNP ._.
+on_IN Research_NNP and_CC Development_NNP in_IN Information_NNP Retrieval_NNP ,_, pages_NNS 91-101_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- J_NN ._.
+Gao_NNP ,_, J_NNP ._.
+Nie_NN ,_, G_NN ._.
+Wu_NNP ,_, and_CC G_NN ._.
+Cao_NNP ._.
+Dependence_NN language_NN model_NN for_IN information_NN retrieval_NN ._.
+In_IN Proc_NNP ._.
+27th_JJ Ann_NNP ._.
+Intl_NNP ._.
+ACM_NNP SIGIR_NNP Conf_NNP ._.
+on_IN Research_NNP and_CC Development_NNP in_IN Information_NNP Retrieval_NNP ,_, pages_NNS 170-177_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- D_NN ._.
+Harper_NNP and_CC C_NNP ._.
+J_NN ._.
+van_NN Rijsbergen_NNP ._.
+An_DT evaluation_NN of_IN feedback_NN in_IN document_NN retrieval_NN using_VBG co-occurrence_NN data_NNS ._.
+Journal_NNP of_IN Documentation_NNP ,_, ##_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 189-216_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- T_NN ._.
+Joachims_NNP ._.
+A_DT support_NN vector_NN method_NN for_IN multivariate_JJ performance_NN measures_NNS ._.
+In_IN Proc_NNP ._.
+of_IN the_DT International_NNP Conf_NNP ._.
+on_IN Machine_NN Learning_NNP ,_, pages_NNS 377-384_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- O_NN ._.
+Kurland_NNP and_CC L_NNP ._.
+Lee_NNP ._.
+Corpus_NNP structure_NN ,_, language_NN models_NNS ,_, and_CC ad-hoc_JJ information_NN retrieval_NN ._.
+In_IN Proc_NNP ._.
+27th_JJ Ann_NNP ._.
+Intl_NNP ._.
+ACM_NNP SIGIR_NNP Conf_NNP ._.
+on_IN Research_NNP and_CC Development_NNP in_IN Information_NNP Retrieval_NNP ,_, pages_NNS 194-201_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- V_NN ._.
+Lavrenko_NNP and_CC W_NNP ._.
+B_NN ._.
+Croft_NNP ._.
+Relevance-based_JJ language_NN models_NNS ._.
+In_IN Proc_NNP ._.
+24th_JJ Ann_NNP ._.
+Intl_NNP ._.
+ACM_NNP SIGIR_NNP Conf_NNP ._.
+on_IN Research_NNP and_CC Development_NNP in_IN Information_NNP Retrieval_NNP ,_, pages_NNS 120-127_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- X_NN ._.
+Liu_NNP and_CC W_NNP ._.
+B_NN ._.
+Croft_NNP ._.
+Cluster-based_JJ retrieval_NN using_VBG language_NN models_NNS ._.
+In_IN Proc_NNP ._.
+27th_JJ Ann_NNP ._.
+Intl_NNP ._.
+ACM_NNP SIGIR_NNP Conf_NNP ._.
+on_IN Research_NNP and_CC Development_NNP in_IN Information_NNP Retrieval_NNP ,_, pages_NNS 186-193_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- D_NN ._.
+Metzler_NNP and_CC W_NNP ._.
+B_NN ._.
+Croft_NNP ._.
+A_DT Markov_NNP random_JJ field_NN model_NN for_IN term_NN dependencies_NNS ._.
+In_IN Proc_NNP ._.
+28th_JJ Ann_NNP ._.
+Intl_NNP ._.
+ACM_NNP SIGIR_NNP Conf_NNP ._.
+on_IN Research_NNP and_CC Development_NNP in_IN Information_NNP Retrieval_NNP ,_, pages_NNS 472-479_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- D_NN ._.
+Metzler_NNP and_CC W_NNP ._.
+B_NN ._.
+Croft_NNP ._.
+Linear_JJ feature_NN based_VBN models_NNS for_IN information_NN retrieval_NN ._.
+Information_NNP Retrieval_NNP ,_, to_TO appear_VB ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- D_NN ._.
+Metzler_NNP ,_, T_NN ._.
+Strohman_NNP ,_, Y_NN ._.
+Zhou_NNP ,_, and_CC W_NN ._.
+B_NN ._.
+Croft_NNP ._.
+Indri_NNP at_IN terabyte_NN track_NN ####_CD ._.
+In_IN Online_NN proceedings_NNS of_IN the_DT ####_CD Text_VB Retrieval_NNP Conf_NNP ._.
+,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- W_NN ._.
+Morgan_NNP ,_, W_NNP ._.
+Greiff_NNP ,_, and_CC J_NN ._.
+Henderson_NNP ._.
+Direct_JJ maximization_NN of_IN average_JJ precision_NN by_IN hill-climbing_VBG with_IN a_DT comparison_NN to_TO a_DT maximum_NN entropy_JJ approach_NN ._.
+Technical_NNP report_NN ,_, MITRE_NN ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- P_NN ._.
+Ogilvie_NNP and_CC J_NNP ._.
+P_NN ._.
+Callan_NNP ._.
+Experiments_NNS using_VBG the_DT lemur_NN toolkit_NN ._.
+In_IN Proc_NNP ._.
+of_IN the_DT Text_VB REtrieval_NNP Conf_NNP ._.
+,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- R_NN ._.
+Papka_NN and_CC J_NN ._.
+Allan_NNP ._.
+Why_WRB bigger_JJR windows_NNS are_VBP better_JJR than_IN smaller_JJR ones_NNS ._.
+Technical_NNP report_NN ,_, University_NNP of_IN Massachusetts_NNP ,_, Amherst_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- S_NN ._.
+Robertson_NNP ,_, S_NN ._.
+Walker_NNP ,_, S_NN ._.
+Jones_NNP ,_, M_NN ._.
+M_NN ._.
+Hancock-Beaulieu_NNP ,_, and_CC M_NN ._.
+Gatford_NNP ._.
+Okapi_NNP at_IN trec-3_NN ._.
+In_IN Online_NN proceedings_NNS of_IN the_DT Third_NNP Text_VB Retrieval_NNP Conf_NNP ._.
+,_, pages_NNS 109-126_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+J_NN ._.
+Rocchio_NNP ._.
+Relevance_NN Feedback_NN in_IN Information_NNP Retrieval_NNP ,_, pages_NNS 313-323_CD ._.
+Prentice-Hall_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- F_NN ._.
+Song_NN and_CC W_NN ._.
+B_NN ._.
+Croft_NNP ._.
+A_DT general_JJ language_NN model_NN for_IN information_NN retrieval_NN ._.
+In_IN Proc_NNP ._.
+eighth_JJ international_JJ conference_NN on_IN Information_NN and_CC knowledge_NN management_NN -LRB-_-LRB- CIKM_NN ##_NN -RRB-_-RRB- ,_, pages_NNS 316-321_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- T_NN ._.
+Strohman_NNP ,_, D_NNP ._.
+Metzler_NNP ,_, H_NN ._.
+Turtle_NNP ,_, and_CC W_NN ._.
+B_NN ._.
+Croft_NNP ._.
+Indri_NNP :_: A_NNP language_NN model-based_JJ serach_NN engine_NN for_IN complex_JJ queries_NNS ._.
+In_IN Proc_NNP ._.
+of_IN the_DT International_NNP Conf_NNP ._.
+on_IN Intelligence_NNP Analysis_NNP ,_, 2004_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- T_NN ._.
+Tao_NNP ,_, X_NN ._.
+Wang_NNP ,_, Q_NNP ._.
+Mei_NNP ,_, and_CC C_NN ._.
+Zhai_NNP ._.
+Language_NN model_NN information_NN retrieval_NN with_IN document_NN expansion_NN ._.
+In_IN Proc_NNP ._.
+of_IN HLT_NNP /_: NAACL_NNP ,_, pages_NNS 407-414_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- B_NN ._.
+Taskar_NNP ,_, C_NNP ._.
+Guestrin_NNP ,_, and_CC D_NN ._.
+Koller_NNP ._.
+Max-margin_JJ markov_NN networks_NNS ._.
+In_IN Proc_NNP ._.
+of_IN Advances_NNS in_IN Neural_NNP Information_NNP Processing_NNP Systems_NNP -LRB-_-LRB- NIPS_NNP ####_CD -RRB-_-RRB- ,_, ####_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- C_NN ._.
+J_NN ._.
+van_NN Rijsbergen_NNP ._.
+A_DT theoretical_JJ basis_NN for_IN the_DT use_NN of_IN cooccurrence_NN data_NNS in_IN information_NN retrieval_NN ._.
+Journal_NNP of_IN Documentation_NNP ,_, ##_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 106-119_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- X_NN ._.
+Wei_NNP and_CC W_NNP ._.
+B_NN ._.
+Croft_NNP ._.
+LDA-based_JJ document_NN models_NNS for_IN ad-hoc_JJ retrieval_NN ._.
+In_IN Proc_NNP ._.
+29th_JJ Ann_NNP ._.
+Intl_NNP ._.
+ACM_NNP SIGIR_NNP Conf_NNP ._.
+on_IN Research_NNP and_CC Development_NNP in_IN Information_NNP Retrieval_NNP ,_, pages_NNS 178-185_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+Xu_NN and_CC W_NN ._.
+B_NN ._.
+Croft_NNP ._.
+Improving_NN the_DT effectiveness_NN of_IN information_NN retrieval_NN with_IN local_JJ context_NN analysis_NN ._.
+ACM_NNP Trans_NNP ._.
+Inf_NNP ._.
+Syst_NNP ._.
+,_, ##_NN -LRB-_-LRB- #_# -RRB-_-RRB- :_: 79-112_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- C_NN ._.
+Zhai_NNP and_CC J_NNP ._.
+Lafferty_NNP ._.
+Model-based_JJ feedback_NN in_IN the_DT language_NN modeling_NN approach_NN to_TO information_NN retrieval_NN ._.
+In_IN Proc_NNP ._.
+10th_JJ Intl_NNP ._.
+Conf_NNP ._.
+on_IN Information_NN and_CC Knowledge_NNP Management_NNP ,_, pages_NNS 403-410_CD ,_, ####_CD ._.

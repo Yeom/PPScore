@@ -1,0 +1,852 @@
+A_DT Scalable_JJ Distributed_VBN Information_NNP Management_NNP System_NNP Praveen_NNP Yalagandula_NNP ypraveen_NN @_IN cs_NNS ._.
+utexas_NNS ._.
+edu_NN Mike_NNP Dahlin_NNP dahlin_NNP @_IN cs_NNS ._.
+utexas_NNS ._.
+edu_NNP Department_NNP of_IN Computer_NNP Sciences_NNPS The_DT University_NNP of_IN Texas_NNP at_IN Austin_NNP Austin_NNP ,_, TX_NNP #####_CD ABSTRACT_NN We_PRP present_VBP a_DT Scalable_JJ Distributed_VBN Information_NNP Management_NNP System_NNP -LRB-_-LRB- SDIMS_NNP -RRB-_-RRB- that_WDT aggregates_NNS information_NN about_IN large-scale_JJ networked_JJ systems_NNS and_CC that_WDT can_MD serve_VB as_IN a_DT basic_JJ building_NN block_NN for_IN a_DT broad_JJ range_NN of_IN large-scale_JJ distributed_VBN applications_NNS by_IN providing_VBG detailed_JJ views_NNS of_IN nearby_JJ information_NN and_CC summary_NN views_NNS of_IN global_JJ information_NN ._.
+To_TO serve_VB as_IN a_DT basic_JJ building_NN block_NN ,_, a_DT SDIMS_NN should_MD have_VB four_CD properties_NNS :_: scalability_NN to_TO many_JJ nodes_NNS and_CC attributes_NNS ,_, flexibility_NN to_TO accommodate_VB a_DT broad_JJ range_NN of_IN applications_NNS ,_, administrative_JJ isolation_NN for_IN security_NN and_CC availability_NN ,_, and_CC robustness_NN to_TO node_NN and_CC network_NN failures_NNS ._.
+We_PRP design_VBP ,_, implement_VBP and_CC evaluate_VBP a_DT SDIMS_NN that_WDT -LRB-_-LRB- #_# -RRB-_-RRB- leverages_VBZ Distributed_VBN Hash_NNP Tables_NNP -LRB-_-LRB- DHT_NNP -RRB-_-RRB- to_TO create_VB scalable_JJ aggregation_NN trees_NNS ,_, -LRB-_-LRB- #_# -RRB-_-RRB- provides_VBZ flexibility_NN through_IN a_DT simple_JJ API_NN that_WDT lets_VBZ applications_NNS control_JJ propagation_NN of_IN reads_VBZ and_CC writes_VBZ ,_, -LRB-_-LRB- #_# -RRB-_-RRB- provides_VBZ administrative_JJ isolation_NN through_IN simple_JJ extensions_NNS to_TO current_JJ DHT_NNP algorithms_NNS ,_, and_CC -LRB-_-LRB- #_# -RRB-_-RRB- achieves_VBZ robustness_NN to_TO node_NN and_CC network_NN reconfigurations_NNS through_IN lazy_JJ reaggregation_NN ,_, on-demand_JJ reaggregation_NN ,_, and_CC tunable_JJ spatial_JJ replication_NN ._.
+Through_IN extensive_JJ simulations_NNS and_CC micro-benchmark_NN experiments_NNS ,_, we_PRP observe_VBP that_IN our_PRP$ system_NN is_VBZ an_DT order_NN of_IN magnitude_NN more_RBR scalable_JJ than_IN existing_VBG approaches_NNS ,_, achieves_VBZ isolation_NN properties_NNS at_IN the_DT cost_NN of_IN modestly_RB increased_VBN read_NN latency_NN in_IN comparison_NN to_TO flat_JJ DHTs_NNS ,_, and_CC gracefully_RB handles_VBZ failures_NNS ._.
+Categories_NNS and_CC Subject_NNP Descriptors_NNPS C_NNP ._.
+#_# ._.
+#_# -LSB-_-LRB- Computer-Communication_NNP Networks_NNP -RSB-_-RRB- :_: Distributed_VBN Systems-Network_NNP Operating_NNP Systems_NNPS ,_, Distributed_VBN Databases_NNP General_NNP Terms_NNS Management_NNP ,_, Design_NNP ,_, Experimentation_NN 1_CD ._.
+INTRODUCTION_NN The_DT goal_NN of_IN this_DT research_NN is_VBZ to_TO design_VB and_CC build_VB a_DT Scalable_JJ Distributed_VBN Information_NNP Management_NNP System_NNP -LRB-_-LRB- SDIMS_NNP -RRB-_-RRB- that_WDT aggregates_NNS information_NN about_IN large-scale_JJ networked_JJ systems_NNS and_CC that_WDT can_MD serve_VB as_IN a_DT basic_JJ building_NN block_NN for_IN a_DT broad_JJ range_NN of_IN large-scale_JJ distributed_VBN applications_NNS ._.
+Monitoring_NN ,_, querying_VBG ,_, and_CC reacting_VBG to_TO changes_NNS in_IN the_DT state_NN of_IN a_DT distributed_VBN system_NN are_VBP core_JJ components_NNS of_IN applications_NNS such_JJ as_IN system_NN management_NN -LSB-_-LRB- ##_CD ,_, ##_CD ,_, ##_CD ,_, ##_CD -RSB-_-RRB- ,_, service_NN placement_NN -LSB-_-LRB- ##_CD ,_, ##_CD -RSB-_-RRB- ,_, data_NNS sharing_NN and_CC caching_NN -LSB-_-LRB- ##_CD ,_, ##_CD ,_, ##_CD ,_, ##_CD ,_, ##_CD -RSB-_-RRB- ,_, sensor_NN monitoring_NN and_CC control_NN -LSB-_-LRB- ##_CD ,_, ##_CD -RSB-_-RRB- ,_, multicast_JJ tree_NN formation_NN -LSB-_-LRB- #_# ,_, #_# ,_, ##_NN ,_, 36_CD ,_, ##_CD -RSB-_-RRB- ,_, and_CC naming_VBG and_CC request_NN routing_VBG -LSB-_-LRB- ##_CD ,_, ##_CD -RSB-_-RRB- ._.
+We_PRP therefore_RB speculate_VBP that_IN a_DT SDIMS_NNP in_IN a_DT networked_JJ system_NN would_MD provide_VB a_DT distributed_VBN operating_NN systems_NNS backbone_NN and_CC facilitate_VB the_DT development_NN and_CC deployment_NN of_IN new_JJ distributed_VBN services_NNS ._.
+For_IN a_DT large_JJ scale_NN information_NN system_NN ,_, hierarchical_JJ aggregation_NN is_VBZ a_DT fundamental_JJ abstraction_NN for_IN scalability_NN ._.
+Rather_RB than_IN expose_VB all_DT information_NN to_TO all_DT nodes_NNS ,_, hierarchical_JJ aggregation_NN allows_VBZ a_DT node_NN to_TO access_NN detailed_JJ views_NNS of_IN nearby_JJ information_NN and_CC summary_NN views_NNS of_IN global_JJ information_NN ._.
+In_IN a_DT SDIMS_NN based_VBN on_IN hierarchical_JJ aggregation_NN ,_, different_JJ nodes_NNS can_MD therefore_RB receive_VB different_JJ answers_NNS to_TO the_DT query_NN find_VB a_DT -LSB-_-LRB- nearby_JJ -RSB-_-RRB- node_NN with_IN at_IN least_JJS #_# GB_NN of_IN free_JJ memory_NN or_CC find_VB a_DT -LSB-_-LRB- nearby_JJ -RSB-_-RRB- copy_NN of_IN file_NN foo_NN ._.
+A_DT hierarchical_JJ system_NN that_WDT aggregates_NNS information_NN through_IN reduction_NN trees_NNS -LSB-_-LRB- ##_NNS ,_, ##_NN -RSB-_-RRB- allows_VBZ nodes_NNS to_TO access_NN information_NN they_PRP care_VBP about_IN while_IN maintaining_VBG system_NN scalability_NN ._.
+To_TO be_VB used_VBN as_IN a_DT basic_JJ building_NN block_NN ,_, a_DT SDIMS_NN should_MD have_VB four_CD properties_NNS ._.
+First_RB ,_, the_DT system_NN should_MD be_VB scalable_JJ :_: it_PRP should_MD accommodate_VB large_JJ numbers_NNS of_IN participating_VBG nodes_NNS ,_, and_CC it_PRP should_MD allow_VB applications_NNS to_TO install_VB and_CC monitor_VB large_JJ numbers_NNS of_IN data_NNS attributes_NNS ._.
+Enterprise_NNP and_CC global_JJ scale_NN systems_NNS today_NN might_MD have_VB tens_NNS of_IN thousands_NNS to_TO millions_NNS of_IN nodes_NNS and_CC these_DT numbers_NNS will_MD increase_VB over_IN time_NN ._.
+Similarly_RB ,_, we_PRP hope_VBP to_TO support_VB many_JJ applications_NNS ,_, and_CC each_DT application_NN may_MD track_VB several_JJ attributes_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, the_DT load_NN and_CC free_JJ memory_NN of_IN a_DT system_NN ''_'' s_NNS machines_NNS -RRB-_-RRB- or_CC millions_NNS of_IN attributes_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, which_WDT files_NNS are_VBP stored_VBN on_IN which_WDT machines_NNS -RRB-_-RRB- ._.
+Second_RB ,_, the_DT system_NN should_MD have_VB flexibility_NN to_TO accommodate_VB a_DT broad_JJ range_NN of_IN applications_NNS and_CC attributes_NNS ._.
+For_IN example_NN ,_, readdominated_VBN attributes_NNS like_IN numCPUs_NN rarely_RB change_NN in_IN value_NN ,_, while_IN write-dominated_JJ attributes_NNS like_IN numProcesses_NNS change_VBP quite_RB often_RB ._.
+An_DT approach_NN tuned_VBD for_IN read-dominated_JJ attributes_NNS will_MD consume_VB high_JJ bandwidth_NN when_WRB applied_VBN to_TO write-dominated_JJ attributes_NNS ._.
+Conversely_RB ,_, an_DT approach_NN tuned_VBD for_IN write-dominated_JJ attributes_NNS will_MD suffer_VB from_IN unnecessary_JJ query_NN latency_NN or_CC imprecision_NN for_IN read-dominated_JJ attributes_NNS ._.
+Therefore_RB ,_, a_DT SDIMS_NN should_MD provide_VB mechanisms_NNS to_TO handle_VB different_JJ types_NNS of_IN attributes_NNS and_CC leave_VB the_DT policy_NN decision_NN of_IN tuning_NN replication_NN to_TO the_DT applications_NNS ._.
+Third_NNP ,_, a_DT SDIMS_NN should_MD provide_VB administrative_JJ isolation_NN ._.
+In_IN a_DT large_JJ system_NN ,_, it_PRP is_VBZ natural_JJ to_TO arrange_VB nodes_NNS in_IN an_DT organizational_JJ or_CC an_DT administrative_JJ hierarchy_NN ._.
+A_DT SDIMS_NN should_MD support_VB administraSession_NNP ##_CD :_: Distributed_VBN Information_NNP Systems_NNP 379_CD tive_JJ isolation_NN in_IN which_WDT queries_VBZ about_IN an_DT administrative_JJ domain_NN ''_'' s_NNS information_NN can_MD be_VB satisfied_VBN within_IN the_DT domain_NN so_IN that_IN the_DT system_NN can_MD operate_VB during_IN disconnections_NNS from_IN other_JJ domains_NNS ,_, so_RB that_IN an_DT external_JJ observer_NN can_MD not_RB monitor_VB or_CC affect_VB intra-domain_JJ queries_NNS ,_, and_CC to_TO support_VB domain-scoped_JJ queries_NNS efficiently_RB ._.
+Fourth_JJ ,_, the_DT system_NN must_MD be_VB robust_JJ to_TO node_NN failures_NNS and_CC disconnections_NNS ._.
+A_DT SDIMS_NN should_MD adapt_VB to_TO reconfigurations_NNS in_IN a_DT timely_JJ fashion_NN and_CC should_MD also_RB provide_VB mechanisms_NNS so_RB that_IN applications_NNS can_MD tradeoff_NN the_DT cost_NN of_IN adaptation_NN with_IN the_DT consistency_NN level_NN in_IN the_DT aggregated_JJ results_NNS when_WRB reconfigurations_NNS occur_VBP ._.
+We_PRP draw_VBP inspiration_NN from_IN two_CD previous_JJ works_NNS :_: Astrolabe_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- and_CC Distributed_VBD Hash_NNP Tables_NNP -LRB-_-LRB- DHTs_NNS -RRB-_-RRB- ._.
+Astrolabe_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- is_VBZ a_DT robust_JJ information_NN management_NN system_NN ._.
+Astrolabe_NN provides_VBZ the_DT abstraction_NN of_IN a_DT single_JJ logical_JJ aggregation_NN tree_NN that_WDT mirrors_VBZ a_DT system_NN ''_'' s_NNS administrative_JJ hierarchy_NN ._.
+It_PRP provides_VBZ a_DT general_JJ interface_NN for_IN installing_VBG new_JJ aggregation_NN functions_NNS and_CC provides_VBZ eventual_JJ consistency_NN on_IN its_PRP$ data_NNS ._.
+Astrolabe_NN is_VBZ robust_JJ due_JJ to_TO its_PRP$ use_NN of_IN an_DT unstructured_JJ gossip_NN protocol_NN for_IN disseminating_VBG information_NN and_CC its_PRP$ strategy_NN of_IN replicating_VBG all_DT aggregated_JJ attribute_NN values_NNS for_IN a_DT subtree_NN to_TO all_DT nodes_NNS in_IN the_DT subtree_NN ._.
+This_DT combination_NN allows_VBZ any_DT communication_NN pattern_NN to_TO yield_VB eventual_JJ consistency_NN and_CC allows_VBZ any_DT node_NN to_TO answer_VB any_DT query_NN using_VBG local_JJ information_NN ._.
+This_DT high_JJ degree_NN of_IN replication_NN ,_, however_RB ,_, may_MD limit_VB the_DT system_NN ''_'' s_NNS ability_NN to_TO accommodate_VB large_JJ numbers_NNS of_IN attributes_NNS ._.
+Also_RB ,_, although_IN the_DT approach_NN works_VBZ well_RB for_IN read-dominated_JJ attributes_NNS ,_, an_DT update_VBP at_IN one_CD node_NN can_MD eventually_RB affect_VB the_DT state_NN at_IN all_DT nodes_NNS ,_, which_WDT may_MD limit_VB the_DT system_NN ''_'' s_NNS flexibility_NN to_TO support_VB write-dominated_JJ attributes_NNS ._.
+Recent_JJ research_NN in_IN peer-to-peer_NN structured_JJ networks_NNS resulted_VBD in_IN Distributed_VBN Hash_NNP Tables_NNP -LRB-_-LRB- DHTs_NNS -RRB-_-RRB- -LSB-_-LRB- ##_CD ,_, ##_CD ,_, ##_CD ,_, ##_CD ,_, ##_CD ,_, ##_CD -RSB-_-RRB- -_: a_DT data_NN structure_NN that_WDT scales_NNS with_IN the_DT number_NN of_IN nodes_NNS and_CC that_IN distributes_VBZ the_DT read-write_JJ load_NN for_IN different_JJ queries_NNS among_IN the_DT participating_VBG nodes_NNS ._.
+It_PRP is_VBZ interesting_JJ to_TO note_VB that_IN although_IN these_DT systems_NNS export_VB a_DT global_JJ hash_NN table_NN abstraction_NN ,_, many_JJ of_IN them_PRP internally_RB make_VBP use_NN of_IN what_WP can_MD be_VB viewed_VBN as_IN a_DT scalable_JJ system_NN of_IN aggregation_NN trees_NNS to_TO ,_, for_IN example_NN ,_, route_NN a_DT request_NN for_IN a_DT given_VBN key_NN to_TO the_DT right_JJ DHT_NNP node_NN ._.
+Indeed_RB ,_, rather_RB than_IN export_VB a_DT general_JJ DHT_NNP interface_NN ,_, Plaxton_NNP et_FW al_FW ._. ''_''
+s_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- original_JJ application_NN makes_VBZ use_NN of_IN hierarchical_JJ aggregation_NN to_TO allow_VB nodes_NNS to_TO locate_VB nearby_JJ copies_NNS of_IN objects_NNS ._.
+It_PRP seems_VBZ appealing_VBG to_TO develop_VB a_DT SDIMS_NN abstraction_NN that_WDT exposes_VBZ this_DT internal_JJ functionality_NN in_IN a_DT general_JJ way_NN so_IN that_IN scalable_JJ trees_NNS for_IN aggregation_NN can_MD be_VB a_DT basic_JJ system_NN building_NN block_NN alongside_IN the_DT DHTs_NNS ._.
+At_IN a_DT first_JJ glance_NN ,_, it_PRP might_MD appear_VB to_TO be_VB obvious_JJ that_IN simply_RB fusing_VBG DHTs_NNS with_IN Astrolabe_NN ''_'' s_NNS aggregation_NN abstraction_NN will_MD result_VB in_IN a_DT SDIMS_NNP ._.
+However_RB ,_, meeting_VBG the_DT SDIMS_NN requirements_NNS forces_VBZ a_DT design_NN to_TO address_VB four_CD questions_NNS :_: -LRB-_-LRB- #_# -RRB-_-RRB- How_WRB to_TO scalably_RB map_VB different_JJ attributes_NNS to_TO different_JJ aggregation_NN trees_NNS in_IN a_DT DHT_NN mesh_NN ?_.
+-LRB-_-LRB- #_# -RRB-_-RRB- How_WRB to_TO provide_VB flexibility_NN in_IN the_DT aggregation_NN to_TO accommodate_VB different_JJ application_NN requirements_NNS ?_.
+-LRB-_-LRB- #_# -RRB-_-RRB- How_WRB to_TO adapt_VB a_DT global_JJ ,_, flat_JJ DHT_NN mesh_NN to_TO attain_VB administrative_JJ isolation_NN property_NN ?_.
+and_CC -LRB-_-LRB- #_# -RRB-_-RRB- How_WRB to_TO provide_VB robustness_NN without_IN unstructured_JJ gossip_NN and_CC total_JJ replication_NN ?_.
+The_DT key_JJ contributions_NNS of_IN this_DT paper_NN that_WDT form_VBP the_DT foundation_NN of_IN our_PRP$ SDIMS_NNP design_NN are_VBP as_IN follows_VBZ ._.
+1_LS ._.
+We_PRP define_VBP a_DT new_JJ aggregation_NN abstraction_NN that_WDT specifies_VBZ both_DT attribute_NN type_NN and_CC attribute_NN name_NN and_CC that_IN associates_VBZ an_DT aggregation_NN function_NN with_IN a_DT particular_JJ attribute_NN type_NN ._.
+This_DT abstraction_NN paves_VBZ the_DT way_NN for_IN utilizing_VBG the_DT DHT_NN system_NN ''_'' s_NNS internal_JJ trees_NNS for_IN aggregation_NN and_CC for_IN achieving_VBG scalability_NN with_IN both_CC nodes_NNS and_CC attributes_NNS ._.
+2_LS ._.
+We_PRP provide_VBP a_DT flexible_JJ API_NN that_WDT lets_VBZ applications_NNS control_VBP the_DT propagation_NN of_IN reads_VBZ and_CC writes_VBZ and_CC thus_RB trade_VB off_RP update_VBP cost_NN ,_, read_VBD latency_NN ,_, replication_NN ,_, and_CC staleness_NN ._.
+3_LS ._.
+We_PRP augment_VBP an_DT existing_VBG DHT_NNP algorithm_NN to_TO ensure_VB path_NN convergence_NN and_CC path_NN locality_NN properties_NNS in_IN order_NN to_TO achieve_VB administrative_JJ isolation_NN ._.
+4_LS ._.
+We_PRP provide_VBP robustness_NN to_TO node_NN and_CC network_NN reconfigurations_NNS by_IN -LRB-_-LRB- a_DT -RRB-_-RRB- providing_VBG temporal_JJ replication_NN through_IN lazy_JJ reaggregation_NN that_WDT guarantees_VBZ eventual_JJ consistency_NN and_CC -LRB-_-LRB- b_LS -RRB-_-RRB- ensuring_VBG that_IN our_PRP$ flexible_JJ API_NN allows_VBZ demanding_VBG applications_NNS gain_VB additional_JJ robustness_NN by_IN using_VBG tunable_JJ spatial_JJ replication_NN of_IN data_NNS aggregates_NNS or_CC by_IN performing_VBG fast_JJ on-demand_JJ reaggregation_NN to_TO augment_VB the_DT underlying_VBG lazy_JJ reaggregation_NN or_CC by_IN doing_VBG both_CC ._.
+We_PRP have_VBP built_VBN a_DT prototype_NN of_IN SDIMS_NN ._.
+Through_IN simulations_NNS and_CC micro-benchmark_NN experiments_NNS on_IN a_DT number_NN of_IN department_NN machines_NNS and_CC PlanetLab_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- nodes_NNS ,_, we_PRP observe_VBP that_IN the_DT prototype_NN achieves_VBZ scalability_NN with_IN respect_NN to_TO both_DT nodes_NNS and_CC attributes_NNS through_IN use_NN of_IN its_PRP$ flexible_JJ API_NNP ,_, inflicts_VBZ an_DT order_NN of_IN magnitude_NN lower_JJR maximum_NN node_NN stress_NN than_IN unstructured_JJ gossiping_VBG schemes_NNS ,_, achieves_VBZ isolation_NN properties_NNS at_IN a_DT cost_NN of_IN modestly_RB increased_VBN read_NN latency_NN compared_VBN to_TO flat_JJ DHTs_NNS ,_, and_CC gracefully_RB handles_VBZ node_NN failures_NNS ._.
+This_DT initial_JJ study_NN discusses_VBZ key_JJ aspects_NNS of_IN an_DT ongoing_JJ system_NN building_NN effort_NN ,_, but_CC it_PRP does_VBZ not_RB address_VB all_DT issues_NNS in_IN building_VBG a_DT SDIMS_NN ._.
+For_IN example_NN ,_, we_PRP believe_VBP that_IN our_PRP$ strategies_NNS for_IN providing_VBG robustness_NN will_MD mesh_VB well_RB with_IN techniques_NNS such_JJ as_IN supernodes_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- and_CC other_JJ ongoing_JJ efforts_NNS to_TO improve_VB DHTs_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- for_IN further_JJ improving_VBG robustness_NN ._.
+Also_RB ,_, although_IN splitting_JJ aggregation_NN among_IN many_JJ trees_NNS improves_VBZ scalability_NN for_IN simple_JJ queries_NNS ,_, this_DT approach_NN may_MD make_VB complex_NN and_CC multi-attribute_JJ queries_NNS more_RBR expensive_JJ compared_VBN to_TO a_DT single_JJ tree_NN ._.
+Additional_JJ work_NN is_VBZ needed_VBN to_TO understand_VB the_DT significance_NN of_IN this_DT limitation_NN for_IN real_JJ workloads_NNS and_CC ,_, if_IN necessary_JJ ,_, to_TO adapt_VB query_NN planning_NN techniques_NNS from_IN DHT_NNP abstractions_NNS -LSB-_-LRB- ##_NNS ,_, ##_NN -RSB-_-RRB- to_TO scalable_JJ aggregation_NN tree_NN abstractions_NNS ._.
+In_IN Section_NN #_# ,_, we_PRP explain_VBP the_DT hierarchical_JJ aggregation_NN abstraction_NN that_WDT SDIMS_VBZ provides_VBZ to_TO applications_NNS ._.
+In_IN Sections_NNS #_# and_CC #_# ,_, we_PRP describe_VBP the_DT design_NN of_IN our_PRP$ system_NN for_IN achieving_VBG the_DT flexibility_NN ,_, scalability_NN ,_, and_CC administrative_JJ isolation_NN requirements_NNS of_IN a_DT SDIMS_NNP ._.
+In_IN Section_NN #_# ,_, we_PRP detail_NN the_DT implementation_NN of_IN our_PRP$ prototype_NN system_NN ._.
+Section_NN #_# addresses_NNS the_DT issue_NN of_IN adaptation_NN to_TO the_DT topological_JJ reconfigurations_NNS ._.
+In_IN Section_NN #_# ,_, we_PRP present_VBP the_DT evaluation_NN of_IN our_PRP$ system_NN through_IN large-scale_JJ simulations_NNS and_CC microbenchmarks_NNS on_IN real_JJ networks_NNS ._.
+Section_NN #_# details_NNS the_DT related_JJ work_NN ,_, and_CC Section_NN #_# summarizes_VBZ our_PRP$ contribution_NN ._.
+2_LS ._.
+AGGREGATION_NN ABSTRACTION_NN Aggregation_NN is_VBZ a_DT natural_JJ abstraction_NN for_IN a_DT large-scale_JJ distributed_VBN information_NN system_NN because_IN aggregation_NN provides_VBZ scalability_NN by_IN allowing_VBG a_DT node_NN to_TO view_VB detailed_JJ information_NN about_IN the_DT state_NN near_IN it_PRP and_CC progressively_RB coarser-grained_JJ summaries_NNS about_IN progressively_RB larger_JJR subsets_NNS of_IN a_DT system_NN ''_'' s_NNS data_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Our_PRP$ aggregation_NN abstraction_NN is_VBZ defined_VBN across_IN a_DT tree_NN spanning_VBG all_DT nodes_NNS in_IN the_DT system_NN ._.
+Each_DT physical_JJ node_NN in_IN the_DT system_NN is_VBZ a_DT leaf_NN and_CC each_DT subtree_NN represents_VBZ a_DT logical_JJ group_NN of_IN nodes_NNS ._.
+Note_VB that_DT logical_JJ groups_NNS can_MD correspond_VB to_TO administrative_JJ domains_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, department_NN or_CC university_NN -RRB-_-RRB- or_CC groups_NNS of_IN nodes_NNS within_IN a_DT domain_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, ##_CD workstations_NNS on_IN a_DT LAN_NNP in_IN CS_NNP department_NN -RRB-_-RRB- ._.
+An_DT internal_JJ non-leaf_JJ node_NN ,_, which_WDT we_PRP call_VBP virtual_JJ node_NN ,_, is_VBZ simulated_JJ by_IN one_CD or_CC more_JJR physical_JJ nodes_NNS at_IN the_DT leaves_NNS of_IN the_DT subtree_NN for_IN which_WDT the_DT virtual_JJ node_NN is_VBZ the_DT root_NN ._.
+We_PRP describe_VBP how_WRB to_TO form_VB such_JJ trees_NNS in_IN a_DT later_JJ section_NN ._.
+Each_DT physical_JJ node_NN has_VBZ local_JJ data_NNS stored_VBD as_IN a_DT set_NN of_IN -LRB-_-LRB- attributeType_NN ,_, attributeName_NN ,_, value_NN -RRB-_-RRB- tuples_NNS such_JJ as_IN -LRB-_-LRB- configuration_NN ,_, numCPUs_NN ,_, 16_CD -RRB-_-RRB- ,_, -LRB-_-LRB- mcast_JJ membership_NN ,_, session_NN foo_NN ,_, yes_UH -RRB-_-RRB- ,_, or_CC -LRB-_-LRB- file_NN stored_VBN ,_, foo_NN ,_, myIPaddress_NN -RRB-_-RRB- ._.
+The_DT system_NN associates_VBZ an_DT aggregation_NN function_NN ftype_NN with_IN each_DT attribute_NN type_NN ,_, and_CC for_IN each_DT level-i_NN subtree_NN Ti_NNP in_IN the_DT system_NN ,_, the_DT system_NN defines_VBZ an_DT aggregate_JJ value_NN Vi_NNP ,_, type_NN ,_, name_NN for_IN each_DT -LRB-_-LRB- at380_NN tributeType_NN ,_, attributeName_NN -RRB-_-RRB- pair_NN as_IN follows_VBZ ._.
+For_IN a_DT -LRB-_-LRB- physical_JJ -RRB-_-RRB- leaf_NN node_NN T0_NN at_IN level_NN #_# ,_, V0_NN ,_, type_NN ,_, name_NN is_VBZ the_DT locally_RB stored_VBN value_NN for_IN the_DT attribute_NN type_NN and_CC name_NN or_CC NULL_NN if_IN no_DT matching_NN tuple_NN exists_VBZ ._.
+Then_RB the_DT aggregate_JJ value_NN for_IN a_DT level-i_JJ subtree_NN Ti_NN is_VBZ the_DT aggregation_NN function_NN for_IN the_DT type_NN ,_, ftype_NN computed_VBD across_IN the_DT aggregate_NN values_NNS of_IN each_DT of_IN Ti_NNP ''_'' s_VBZ k_NN children_NNS :_: Vi_NNP ,_, type_NN ,_, name_NN =_JJ ftype_NN -LRB-_-LRB- V0_NN i1_NN ,_, type_NN ,_, name_NN ,_, V1_NN i1_NN ,_, type_NN ,_, name_NN ,_, ..._: ,_, Vk1_NN i1_NN ,_, type_NN ,_, name_NN -RRB-_-RRB- ._.
+Although_IN SDIMS_NN allows_VBZ arbitrary_JJ aggregation_NN functions_NNS ,_, it_PRP is_VBZ often_RB desirable_JJ that_IN these_DT functions_NNS satisfy_VBP the_DT hierarchical_JJ computation_NN property_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- :_: f_LS -LRB-_-LRB- v1_NN ,_, ..._: ,_, vn_NN -RRB-_-RRB- =_JJ f_FW -LRB-_-LRB- f_FW -LRB-_-LRB- v1_NN ,_, ..._: ,_, vs1_NN -RRB-_-RRB- ,_, f_FW -LRB-_-LRB- vs1_NN +_CC #_# ,_, ..._: ,_, vs2_NN -RRB-_-RRB- ,_, ..._: ,_, f_FW -LRB-_-LRB- vsk_NN +_CC #_# ,_, ..._: ,_, vn_NN -RRB-_-RRB- -RRB-_-RRB- ,_, where_WRB vi_LS is_VBZ the_DT value_NN of_IN an_DT attribute_NN at_IN node_NN i_FW ._.
+For_IN example_NN ,_, the_DT average_JJ operation_NN ,_, defined_VBN as_IN avg_NN -LRB-_-LRB- v1_NN ,_, ..._: ,_, vn_NN -RRB-_-RRB- =_JJ 1_CD /_: n_NN ._.
+n_NN i_FW =_JJ #_# vi_LS ,_, does_VBZ not_RB satisfy_VB the_DT property_NN ._.
+Instead_RB ,_, if_IN an_DT attribute_NN stores_NNS values_NNS as_IN tuples_NNS -LRB-_-LRB- sum_NN ,_, count_NN -RRB-_-RRB- ,_, the_DT attribute_NN satisfies_VBZ the_DT hierarchical_JJ computation_NN property_NN while_IN still_RB allowing_VBG the_DT applications_NNS to_TO compute_VB the_DT average_NN from_IN the_DT aggregate_NN sum_NN and_CC count_NN values_NNS ._.
+Finally_RB ,_, note_VBP that_IN for_IN a_DT large-scale_JJ system_NN ,_, it_PRP is_VBZ difficult_JJ or_CC impossible_JJ to_TO insist_VB that_IN the_DT aggregation_NN value_NN returned_VBN by_IN a_DT probe_NN corresponds_VBZ to_TO the_DT function_NN computed_VBD over_IN the_DT current_JJ values_NNS at_IN the_DT leaves_NNS at_IN the_DT instant_NN of_IN the_DT probe_NN ._.
+Therefore_RB our_PRP$ system_NN provides_VBZ only_RB weak_JJ consistency_NN guarantees_NNS -_: specifically_RB eventual_JJ consistency_NN as_IN defined_VBN in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ._.
+3_LS ._.
+FLEXIBILITY_NN A_DT major_JJ innovation_NN of_IN our_PRP$ work_NN is_VBZ enabling_VBG flexible_JJ aggregate_JJ computation_NN and_CC propagation_NN ._.
+The_DT definition_NN of_IN the_DT aggregation_NN abstraction_NN allows_VBZ considerable_JJ flexibility_NN in_IN how_WRB ,_, when_WRB ,_, and_CC where_WRB aggregate_JJ values_NNS are_VBP computed_VBN and_CC propagated_VBN ._.
+While_IN previous_JJ systems_NNS -LSB-_-LRB- ##_CD ,_, ##_CD ,_, ##_CD ,_, ##_CD ,_, ##_CD ,_, ##_CD -RSB-_-RRB- implement_VB a_DT single_JJ static_JJ strategy_NN ,_, we_PRP argue_VBP that_IN a_DT SDIMS_NN should_MD provide_VB flexible_JJ computation_NN and_CC propagation_NN to_TO efficiently_RB support_VB wide_JJ variety_NN of_IN applications_NNS with_IN diverse_JJ requirements_NNS ._.
+In_IN order_NN to_TO provide_VB this_DT flexibility_NN ,_, we_PRP develop_VBP a_DT simple_JJ interface_NN that_WDT decomposes_VBZ the_DT aggregation_NN abstraction_NN into_IN three_CD pieces_NNS of_IN functionality_NN :_: install_VB ,_, update_VB ,_, and_CC probe_NN ._.
+This_DT definition_NN of_IN the_DT aggregation_NN abstraction_NN allows_VBZ our_PRP$ system_NN to_TO provide_VB a_DT continuous_JJ spectrum_NN of_IN strategies_NNS ranging_VBG from_IN lazy_JJ aggregate_JJ computation_NN and_CC propagation_NN on_IN reads_VBZ to_TO aggressive_JJ immediate_JJ computation_NN and_CC propagation_NN on_IN writes_VBZ ._.
+In_IN Figure_NNP #_# ,_, we_PRP illustrate_VBP both_CC extreme_JJ strategies_NNS and_CC an_DT intermediate_JJ strategy_NN ._.
+Under_IN the_DT lazy_JJ Update-Local_JJ computation_NN and_CC propagation_NN strategy_NN ,_, an_DT update_VBP -LRB-_-LRB- or_CC write_VB -RRB-_-RRB- only_RB affects_VBZ local_JJ state_NN ._.
+Then_RB ,_, a_DT probe_NN -LRB-_-LRB- or_CC read_VB -RRB-_-RRB- that_WDT reads_VBZ a_DT level-i_JJ aggregate_NN value_NN is_VBZ sent_VBN up_RP the_DT tree_NN to_TO the_DT issuing_VBG node_NN ''_'' s_NNS level-i_JJ ancestor_NN and_CC then_RB down_IN the_DT tree_NN to_TO the_DT leaves_NNS ._.
+The_DT system_NN then_RB computes_VBZ the_DT desired_VBN aggregate_NN value_NN at_IN each_DT layer_NN up_IN the_DT tree_NN until_IN the_DT level-i_JJ ancestor_NN that_WDT holds_VBZ the_DT desired_VBN value_NN ._.
+Finally_RB ,_, the_DT level-i_JJ ancestor_NN sends_VBZ the_DT result_NN down_IN the_DT tree_NN to_TO the_DT issuing_VBG node_NN ._.
+In_IN the_DT other_JJ extreme_JJ case_NN of_IN the_DT aggressive_JJ Update-All_NNP immediate_JJ computation_NN and_CC propagation_NN on_IN writes_VBZ -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, when_WRB an_DT update_VBP occurs_VBZ ,_, changes_NNS are_VBP aggregated_VBN up_RP the_DT tree_NN ,_, and_CC each_DT new_JJ aggregate_JJ value_NN is_VBZ flooded_VBN to_TO all_DT of_IN a_DT node_NN ''_'' s_NNS descendants_NNS ._.
+In_IN this_DT case_NN ,_, each_DT level-i_NN node_NN not_RB only_RB maintains_VBZ the_DT aggregate_NN values_NNS for_IN the_DT level-i_NN subtree_NN but_CC also_RB receives_VBZ and_CC locally_RB stores_NNS copies_NNS of_IN all_DT of_IN its_PRP$ ancestors_NNS ''_'' level_NN -_: j_NN -LRB-_-LRB- j_NN >_JJR i_LS -RRB-_-RRB- aggregation_NN values_NNS ._.
+Also_RB ,_, a_DT leaf_NN satisfies_VBZ a_DT probe_NN for_IN a_DT level-i_JJ aggregate_NN using_VBG purely_RB local_JJ data_NNS ._.
+In_IN an_DT intermediate_JJ Update-Up_NN strategy_NN ,_, the_DT root_NN of_IN each_DT subtree_NN maintains_VBZ the_DT subtree_NN ''_'' s_NNS current_JJ aggregate_JJ value_NN ,_, and_CC when_WRB an_DT update_VBP occurs_VBZ ,_, the_DT leaf_NN node_NN updates_NNS its_PRP$ local_JJ state_NN and_CC passes_VBZ the_DT update_VBP to_TO its_PRP$ parent_NN ,_, and_CC then_RB each_DT successive_JJ enclosing_VBG subtree_JJ updates_NNS its_PRP$ aggregate_NN value_NN and_CC passes_VBZ the_DT new_JJ value_NN to_TO its_PRP$ parent_NN ._.
+This_DT strategy_NN satisfies_VBZ a_DT leaf_NN ''_'' s_NNS probe_NN for_IN a_DT level-i_JJ aggregate_NN value_NN by_IN sending_VBG the_DT probe_NN up_IN to_TO the_DT level-i_JJ ancestor_NN of_IN the_DT leaf_NN and_CC then_RB sending_VBG the_DT aggregate_JJ value_NN down_IN to_TO the_DT leaf_NN ._.
+Finally_RB ,_, notice_NN that_IN other_JJ strategies_NNS exist_VBP ._.
+In_IN general_JJ ,_, an_DT Update-Upk-Downj_NNP strategy_NN aggregates_NNS up_IN to_TO parameter_NN description_NN optional_JJ attrType_NN Attribute_VB Type_NN aggrfunc_NN Aggregation_NN Function_NN up_IN How_WRB far_RB upward_JJ each_DT update_VBP is_VBZ sent_VBN -LRB-_-LRB- default_NN :_: all_DT -RRB-_-RRB- X_NN down_IN How_WRB far_RB downward_JJ each_DT aggregate_NN is_VBZ sent_VBN -LRB-_-LRB- default_NN :_: none_NN -RRB-_-RRB- X_NN domain_NN Domain_NN restriction_NN -LRB-_-LRB- default_NN :_: none_NN -RRB-_-RRB- X_NN expTime_NN Expiry_NNP Time_NNP Table_NNP #_# :_: Arguments_NNS for_IN the_DT install_VBP operation_NN the_DT kth_NN level_NN and_CC propagates_VBZ the_DT aggregate_NN values_NNS of_IN a_DT node_NN at_IN level_NN l_NN -LRB-_-LRB- s_NNS ._.
+t_NN ._.
+l_NN k_NN -RRB-_-RRB- downward_RB for_IN j_NN levels_NNS ._.
+A_DT SDIMS_NN must_MD provide_VB a_DT wide_JJ range_NN of_IN flexible_JJ computation_NN and_CC propagation_NN strategies_NNS to_TO applications_NNS for_IN it_PRP to_TO be_VB a_DT general_JJ abstraction_NN ._.
+An_DT application_NN should_MD be_VB able_JJ to_TO choose_VB a_DT particular_JJ mechanism_NN based_VBN on_IN its_PRP$ read-to-write_JJ ratio_NN that_WDT reduces_VBZ the_DT bandwidth_NN consumption_NN while_IN attaining_VBG the_DT required_VBN responsiveness_NN and_CC precision_NN ._.
+Note_VB that_IN the_DT read-to-write_JJ ratio_NN of_IN the_DT attributes_NNS that_WDT applications_NNS install_VBP vary_VBP extensively_RB ._.
+For_IN example_NN ,_, a_DT read-dominated_JJ attribute_NN like_IN numCPUs_NN rarely_RB changes_VBZ in_IN value_NN ,_, while_IN a_DT writedominated_VBN attribute_NN like_IN numProcesses_NNS changes_NNS quite_RB often_RB ._.
+An_DT aggregation_NN strategy_NN like_IN Update-All_NNP works_VBZ well_RB for_IN read-dominated_JJ attributes_NNS but_CC suffers_VBZ high_JJ bandwidth_NN consumption_NN when_WRB applied_VBN for_IN write-dominated_JJ attributes_NNS ._.
+Conversely_RB ,_, an_DT approach_NN like_IN UpdateLocal_JJ works_NNS well_RB for_IN write-dominated_JJ attributes_NNS but_CC suffers_VBZ from_IN unnecessary_JJ query_NN latency_NN or_CC imprecision_NN for_IN read-dominated_JJ attributes_NNS ._.
+SDIMS_NNP also_RB allows_VBZ non-uniform_JJ computation_NN and_CC propagation_NN across_IN the_DT aggregation_NN tree_NN with_IN different_JJ up_RB and_CC down_RB parameters_NNS in_IN different_JJ subtrees_NNS so_IN that_IN applications_NNS can_MD adapt_VB with_IN the_DT spatial_JJ and_CC temporal_JJ heterogeneity_NN of_IN read_NN and_CC write_VB operations_NNS ._.
+With_IN respect_NN to_TO spatial_JJ heterogeneity_NN ,_, access_NN patterns_NNS may_MD differ_VB for_IN different_JJ parts_NNS of_IN the_DT tree_NN ,_, requiring_VBG different_JJ propagation_NN strategies_NNS for_IN different_JJ parts_NNS of_IN the_DT tree_NN ._.
+Similarly_RB with_IN respect_NN to_TO temporal_JJ heterogeneity_NN ,_, access_NN patterns_NNS may_MD change_VB over_IN time_NN requiring_VBG different_JJ strategies_NNS over_IN time_NN ._.
+3_LS ._.
+#_# Aggregation_NN API_NN We_PRP provide_VBP the_DT flexibility_NN described_VBN above_IN by_IN splitting_NN the_DT aggregation_NN API_NN into_IN three_CD functions_NNS :_: Install_VB -LRB-_-LRB- -RRB-_-RRB- installs_VBZ an_DT aggregation_NN function_NN that_WDT defines_VBZ an_DT operation_NN on_IN an_DT attribute_NN type_NN and_CC specifies_VBZ the_DT update_VBP strategy_NN that_IN the_DT function_NN will_MD use_VB ,_, Update_NNP -LRB-_-LRB- -RRB-_-RRB- inserts_NNS or_CC modifies_VBZ a_DT node_NN ''_'' s_NNS local_JJ value_NN for_IN an_DT attribute_NN ,_, and_CC Probe_NNP -LRB-_-LRB- -RRB-_-RRB- obtains_VBZ an_DT aggregate_JJ value_NN for_IN a_DT specified_VBN subtree_NN ._.
+The_DT install_VBP interface_NN allows_VBZ applications_NNS to_TO specify_VB the_DT k_NN and_CC j_NN parameters_NNS of_IN the_DT Update-Upk-Downj_NNP strategy_NN along_IN with_IN the_DT aggregation_NN function_NN ._.
+The_DT update_VBP interface_NN invokes_VBZ the_DT aggregation_NN of_IN an_DT attribute_NN on_IN the_DT tree_NN according_VBG to_TO corresponding_JJ aggregation_NN function_NN ''_'' s_NNS aggregation_NN strategy_NN ._.
+The_DT probe_NN interface_NN not_RB only_RB allows_VBZ applications_NNS to_TO obtain_VB the_DT aggregated_JJ value_NN for_IN a_DT specified_VBN tree_NN but_CC also_RB allows_VBZ a_DT probing_VBG node_NN to_TO continuously_RB fetch_VB the_DT values_NNS for_IN a_DT specified_VBN time_NN ,_, thus_RB enabling_VBG an_DT application_NN to_TO adapt_VB to_TO spatial_JJ and_CC temporal_JJ heterogeneity_NN ._.
+The_DT rest_NN of_IN the_DT section_NN describes_VBZ these_DT three_CD interfaces_NNS in_IN detail_NN ._.
+3_LS ._.
+#_# ._.
+#_# Install_VB The_DT Install_NNP operation_NN installs_VBZ an_DT aggregation_NN function_NN in_IN the_DT system_NN ._.
+The_DT arguments_NNS for_IN this_DT operation_NN are_VBP listed_VBN in_IN Table_NNP #_# ._.
+The_DT attrType_NN argument_NN denotes_VBZ the_DT type_NN of_IN attributes_NNS on_IN which_WDT this_DT aggregation_NN function_NN is_VBZ invoked_VBN ._.
+Installed_VBN functions_NNS are_VBP soft_JJ state_NN that_WDT must_MD be_VB periodically_RB renewed_VBN or_CC they_PRP will_MD be_VB garbage_NN collected_VBN at_IN expTime_NNP ._.
+The_DT arguments_NNS up_RB and_CC down_RB specify_VB the_DT aggregate_JJ computation_NN 381_CD Update_NNP Strategy_NNP On_IN Update_NNP On_IN Probe_NNP for_IN Global_NNP Aggregate_NNP Value_NNP On_IN Probe_NNP for_IN Level-1_NNP Aggregate_NNP Value_NNP Update-Local_NNP Update-Up_NNP Update-All_NNP Figure_NNP #_# :_: Flexible_JJ API_NN parameter_NN description_NN optional_JJ attrType_NN Attribute_VB Type_NN attrName_NN Attribute_VB Name_VB mode_NN Continuous_JJ or_CC One-shot_JJ -LRB-_-LRB- default_NN :_: one-shot_JJ -RRB-_-RRB- X_NN level_NN Level_NN at_IN which_WDT aggregate_NN is_VBZ sought_VBN -LRB-_-LRB- default_NN :_: at_IN all_DT levels_NNS -RRB-_-RRB- X_NN up_IN How_WRB far_RB up_RB to_TO go_VB and_CC re-fetch_VB the_DT value_NN -LRB-_-LRB- default_NN :_: none_NN -RRB-_-RRB- X_NN down_IN How_WRB far_RB down_RB to_TO go_VB and_CC reaggregate_VB -LRB-_-LRB- default_NN :_: none_NN -RRB-_-RRB- X_NN expTime_NN Expiry_NNP Time_NNP Table_NNP #_# :_: Arguments_NNS for_IN the_DT probe_NN operation_NN and_CC propagation_NN strategy_NN Update-Upk-Downj_NNP ._.
+The_DT domain_NN argument_NN ,_, if_IN present_JJ ,_, indicates_VBZ that_IN the_DT aggregation_NN function_NN should_MD be_VB installed_VBN on_IN all_DT nodes_NNS in_IN the_DT specified_JJ domain_NN ;_: otherwise_RB the_DT function_NN is_VBZ installed_VBN on_IN all_DT nodes_NNS in_IN the_DT system_NN ._.
+3_LS ._.
+#_# ._.
+#_# Update_NNP The_DT Update_NNP operation_NN takes_VBZ three_CD arguments_NNS attrType_NN ,_, attrName_NN ,_, and_CC value_NN and_CC creates_VBZ a_DT new_JJ -LRB-_-LRB- attrType_NN ,_, attrName_NN ,_, value_NN -RRB-_-RRB- tuple_NN or_CC updates_NNS the_DT value_NN of_IN an_DT old_JJ tuple_NN with_IN matching_VBG attrType_NN and_CC attrName_NN at_IN a_DT leaf_NN node_NN ._.
+The_DT update_VBP interface_NN meshes_VBZ with_IN installed_VBN aggregate_JJ computation_NN and_CC propagation_NN strategy_NN to_TO provide_VB flexibility_NN ._.
+In_IN particular_JJ ,_, as_IN outlined_VBN above_IN and_CC described_VBN in_IN detail_NN in_IN Section_NN #_# ,_, after_IN a_DT leaf_NN applies_VBZ an_DT update_VBP locally_RB ,_, the_DT update_VBP may_MD trigger_VB re-computation_NN of_IN aggregate_NN values_NNS up_IN the_DT tree_NN and_CC may_MD also_RB trigger_VB propagation_NN of_IN changed_VBN aggregate_NN values_NNS down_IN the_DT tree_NN ._.
+Notice_NNP that_IN our_PRP$ abstraction_NN associates_VBZ an_DT aggregation_NN function_NN with_IN only_RB an_DT attrType_NN but_CC lets_VBZ updates_NNS specify_VB an_DT attrName_NN along_IN with_IN the_DT attrType_NN ._.
+This_DT technique_NN helps_VBZ achieve_VB scalability_NN with_IN respect_NN to_TO nodes_NNS and_CC attributes_VBZ as_IN described_VBN in_IN Section_NN #_# ._.
+3_LS ._.
+#_# ._.
+#_# Probe_NNP The_DT Probe_NNP operation_NN returns_VBZ the_DT value_NN of_IN an_DT attribute_NN to_TO an_DT application_NN ._.
+The_DT complete_JJ argument_NN set_VBN for_IN the_DT probe_NN operation_NN is_VBZ shown_VBN in_IN Table_NNP #_# ._.
+Along_IN with_IN the_DT attrName_NN and_CC the_DT attrType_NN arguments_NNS ,_, a_DT level_NN argument_NN specifies_VBZ the_DT level_NN at_IN which_WDT the_DT answers_NNS are_VBP required_VBN for_IN an_DT attribute_NN ._.
+In_IN our_PRP$ implementation_NN we_PRP choose_VBP to_TO return_VB results_NNS at_IN all_DT levels_NNS k_NN <_JJR l_NN for_IN a_DT level-l_NN probe_NN because_IN -LRB-_-LRB- i_LS -RRB-_-RRB- it_PRP is_VBZ inexpensive_JJ as_IN the_DT nodes_NNS traversed_VBD for_IN level-l_NN probe_NN also_RB contain_VBP level_NN k_NN aggregates_NNS for_IN k_NN <_JJR l_NN and_CC as_IN we_PRP expect_VBP the_DT network_NN cost_NN of_IN transmitting_VBG the_DT additional_JJ information_NN to_TO be_VB small_JJ for_IN the_DT small_JJ aggregates_NNS which_WDT we_PRP focus_VBP and_CC -LRB-_-LRB- ii_LS -RRB-_-RRB- it_PRP is_VBZ useful_JJ as_IN applications_NNS can_MD efficiently_RB get_VB several_JJ aggregates_NNS with_IN a_DT single_JJ probe_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, for_IN domain-scoped_JJ queries_NNS as_IN explained_VBN in_IN Section_NN #_# ._.
+#_# -RRB-_-RRB- ._.
+Probes_NNS with_IN mode_NN set_VBN to_TO continuous_JJ and_CC with_IN finite_JJ expTime_NN enable_VBP applications_NNS to_TO handle_VB spatial_JJ and_CC temporal_JJ heterogeneity_NN ._.
+When_WRB node_NN A_DT issues_NNS a_DT continuous_JJ probe_NN at_IN level_NN l_NN for_IN an_DT attribute_NN ,_, then_RB regardless_RB of_IN the_DT up_RB and_CC down_RB parameters_NNS ,_, updates_NNS for_IN the_DT attribute_NN at_IN any_DT node_NN in_IN A_NN ''_'' s_NNS level-l_JJ ancestor_NN ''_'' s_NNS subtree_VBP are_VBP aggregated_VBN up_RP to_TO level_NN l_NN and_CC the_DT aggregated_JJ value_NN is_VBZ propagated_VBN down_RP along_IN the_DT path_NN from_IN the_DT ancestor_NN to_TO A_DT ._.
+Note_VB that_DT continuous_JJ mode_NN enables_VBZ SDIMS_NNS to_TO support_VB a_DT distributed_VBN sensor-actuator_NN mechanism_NN where_WRB a_DT sensor_NN monitors_VBZ a_DT level-i_JJ aggregate_NN with_IN a_DT continuous_JJ mode_NN probe_NN and_CC triggers_VBZ an_DT actuator_NN upon_IN receiving_VBG new_JJ values_NNS for_IN the_DT probe_NN ._.
+The_DT up_RP and_CC down_RP arguments_NNS enable_VBP applications_NNS to_TO perform_VB ondemand_JJ fast_JJ re-aggregation_NN during_IN reconfigurations_NNS ,_, where_WRB a_DT forced_VBN re-aggregation_NN is_VBZ done_VBN for_IN the_DT corresponding_JJ levels_NNS even_RB if_IN the_DT aggregated_JJ value_NN is_VBZ available_JJ ,_, as_IN we_PRP discuss_VBP in_IN Section_NN #_# ._.
+When_WRB present_JJ ,_, the_DT up_RB and_CC down_RB arguments_NNS are_VBP interpreted_VBN as_IN described_VBN in_IN the_DT install_VBP operation_NN ._.
+3_LS ._.
+#_# ._.
+#_# Dynamic_NNP Adaptation_NNP At_IN the_DT API_NN level_NN ,_, the_DT up_RB and_CC down_RB arguments_NNS in_IN install_VBP API_NNP can_MD be_VB regarded_VBN as_IN hints_NNS ,_, since_IN they_PRP suggest_VBP a_DT computation_NN strategy_NN but_CC do_VBP not_RB affect_VB the_DT semantics_NNS of_IN an_DT aggregation_NN function_NN ._.
+A_DT SDIMS_NN implementation_NN can_MD dynamically_RB adjust_VB its_PRP$ up_RP /_: down_IN strategies_NNS for_IN an_DT attribute_NN based_VBN on_IN its_PRP$ measured_VBN read_NN /_: write_VB frequency_NN ._.
+But_CC a_DT virtual_JJ intermediate_JJ node_NN needs_VBZ to_TO know_VB the_DT current_JJ up_RB and_CC down_RB propagation_NN values_NNS to_TO decide_VB if_IN the_DT local_JJ aggregate_NN is_VBZ fresh_JJ in_IN order_NN to_TO answer_VB a_DT probe_NN ._.
+This_DT is_VBZ the_DT key_JJ reason_NN why_WRB up_RB and_CC down_RB need_VBP to_TO be_VB statically_RB defined_VBN at_IN the_DT install_VBP time_NN and_CC can_MD not_RB be_VB specified_VBN in_IN the_DT update_VBP operation_NN ._.
+In_IN dynamic_JJ adaptation_NN ,_, we_PRP implement_VBP a_DT leasebased_JJ mechanism_NN where_WRB a_DT node_NN issues_NNS a_DT lease_NN to_TO a_DT parent_NN or_CC a_DT child_NN denoting_VBG that_IN it_PRP will_MD keep_VB propagating_VBG the_DT updates_NNS to_TO that_DT parent_NN or_CC child_NN ._.
+We_PRP are_VBP currently_RB evaluating_VBG different_JJ policies_NNS to_TO decide_VB when_WRB to_TO issue_VB a_DT lease_NN and_CC when_WRB to_TO revoke_VB a_DT lease_NN ._.
+4_LS ._.
+SCALABILITY_NNP Our_PRP$ design_NN achieves_VBZ scalability_NN with_IN respect_NN to_TO both_DT nodes_NNS and_CC attributes_NNS through_IN two_CD key_JJ ideas_NNS ._.
+First_RB ,_, it_PRP carefully_RB defines_VBZ the_DT aggregation_NN abstraction_NN to_TO mesh_VB well_RB with_IN its_PRP$ underlying_VBG scalable_JJ DHT_NN system_NN ._.
+Second_RB ,_, it_PRP refines_VBZ the_DT basic_JJ DHT_NN abstraction_NN to_TO form_VB an_DT Autonomous_JJ DHT_NN -LRB-_-LRB- ADHT_NN -RRB-_-RRB- to_TO achieve_VB the_DT administrative_JJ isolation_NN properties_NNS that_WDT are_VBP crucial_JJ to_TO scaling_VBG for_IN large_JJ real-world_JJ systems_NNS ._.
+In_IN this_DT section_NN ,_, we_PRP describe_VBP these_DT two_CD ideas_NNS in_IN detail_NN ._.
+4_LS ._.
+#_# Leveraging_VBG DHTs_NNS In_IN contrast_NN to_TO previous_JJ systems_NNS -LSB-_-LRB- #_# ,_, ##_CD ,_, ##_CD ,_, ##_CD ,_, ##_CD -RSB-_-RRB- ,_, SDIMS_NN ''_'' s_NNS aggregation_NN abstraction_NN specifies_VBZ both_CC an_DT attribute_NN type_NN and_CC attribute_NN name_NN and_CC associates_VBZ an_DT aggregation_NN function_NN with_IN a_DT type_NN rather_RB than_IN just_RB specifying_VBG and_CC associating_VBG a_DT function_NN with_IN a_DT name_NN ._.
+Installing_VBG a_DT single_JJ function_NN that_WDT can_MD operate_VB on_IN many_JJ different_JJ named_VBN attributes_NNS matching_VBG a_DT type_NN improves_VBZ scalability_NN for_IN sparse_JJ attribute_NN types_NNS with_IN large_JJ ,_, sparsely-filled_JJ name_NN spaces_NNS ._.
+For_IN example_NN ,_, to_TO construct_VB a_DT file_NN location_NN service_NN ,_, our_PRP$ interface_NN allows_VBZ us_PRP to_TO install_VB a_DT single_JJ function_NN that_WDT computes_VBZ an_DT aggregate_JJ value_NN for_IN any_DT named_VBN file_NN ._.
+A_DT subtree_NN ''_'' s_NNS aggregate_JJ value_NN for_IN -LRB-_-LRB- FILELOC_NNP ,_, name_NN -RRB-_-RRB- would_MD be_VB the_DT ID_NN of_IN a_DT node_NN in_IN the_DT subtree_NN that_WDT stores_VBZ the_DT named_VBN file_NN ._.
+Conversely_RB ,_, Astrolabe_NN copes_NNS with_IN sparse_JJ attributes_NNS by_IN having_VBG aggregation_NN functions_NNS compute_VBP sets_NNS or_CC lists_NNS and_CC suggests_VBZ that_IN scalability_NN can_MD be_VB improved_VBN by_IN representing_VBG such_JJ sets_NNS with_IN Bloom_NNP filters_NNS -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+Supporting_VBG sparse_JJ names_NNS within_IN a_DT type_NN provides_VBZ at_IN least_JJS two_CD advantages_NNS ._.
+First_RB ,_, when_WRB the_DT value_NN associated_VBN with_IN a_DT name_NN is_VBZ updated_VBN ,_, only_RB the_DT state_NN associ382_NN 001_CD ######_NN 000_CD 011_CD ###_NN 111_CD 110_CD 011_CD ###_CD ###_CD ###_CD ###_CD ###_CD ######_CD L0_NN L1_NN L2_NN L3_NN Figure_NN #_# :_: The_DT DHT_NNP tree_NN corresponding_VBG to_TO key_JJ ###_NN -LRB-_-LRB- DHTtree111_NN -RRB-_-RRB- and_CC the_DT corresponding_JJ aggregation_NN tree_NN ._.
+ated_VBN with_IN that_DT name_NN needs_VBZ to_TO be_VB updated_VBN and_CC propagated_VBN to_TO other_JJ nodes_NNS ._.
+Second_RB ,_, splitting_NN values_NNS associated_VBN with_IN different_JJ names_NNS into_IN different_JJ aggregation_NN values_NNS allows_VBZ our_PRP$ system_NN to_TO leverage_NN Distributed_VBD Hash_NNP Tables_NNP -LRB-_-LRB- DHTs_NNS -RRB-_-RRB- to_TO map_VB different_JJ names_NNS to_TO different_JJ trees_NNS and_CC thereby_RB spread_VBD the_DT function_NN ''_'' s_NNS logical_JJ root_NN node_NN ''_'' s_NNS load_NN and_CC state_NN across_IN multiple_JJ physical_JJ nodes_NNS ._.
+Given_VBN this_DT abstraction_NN ,_, scalably_RB mapping_VBG attributes_NNS to_TO DHTs_NNS is_VBZ straightforward_JJ ._.
+DHT_NNP systems_NNS assign_VBP a_DT long_RB ,_, random_JJ ID_NN to_TO each_DT node_NN and_CC define_VB an_DT algorithm_NN to_TO route_NN a_DT request_NN for_IN key_JJ k_NN to_TO a_DT node_NN rootk_NN such_JJ that_IN the_DT union_NN of_IN paths_NNS from_IN all_DT nodes_NNS forms_VBZ a_DT tree_NN DHTtreek_NN rooted_VBN at_IN the_DT node_NN rootk_NN ._.
+Now_RB ,_, as_IN illustrated_VBN in_IN Figure_NNP #_# ,_, by_IN aggregating_VBG an_DT attribute_NN along_IN the_DT aggregation_NN tree_NN corresponding_VBG to_TO DHTtreek_NN for_IN k_NN =_JJ hash_NN -LRB-_-LRB- attribute_NN type_NN ,_, attribute_NN name_NN -RRB-_-RRB- ,_, different_JJ attributes_NNS will_MD be_VB aggregated_VBN along_IN different_JJ trees_NNS ._.
+In_IN comparison_NN to_TO a_DT scheme_NN where_WRB all_DT attributes_NNS are_VBP aggregated_VBN along_IN a_DT single_JJ tree_NN ,_, aggregating_VBG along_IN multiple_JJ trees_NNS incurs_VBZ lower_JJR maximum_NN node_NN stress_NN :_: whereas_IN in_IN a_DT single_JJ aggregation_NN tree_NN approach_NN ,_, the_DT root_NN and_CC the_DT intermediate_JJ nodes_NNS pass_VBP around_RB more_RBR messages_NNS than_IN leaf_NN nodes_NNS ,_, in_IN a_DT DHT-based_JJ multi-tree_JJ ,_, each_DT node_NN acts_VBZ as_IN an_DT intermediate_JJ aggregation_NN point_NN for_IN some_DT attributes_NNS and_CC as_IN a_DT leaf_NN node_NN for_IN other_JJ attributes_NNS ._.
+Hence_RB ,_, this_DT approach_NN distributes_VBZ the_DT onus_NN of_IN aggregation_NN across_IN all_DT nodes_NNS ._.
+4_LS ._.
+#_# Administrative_JJ Isolation_NN Aggregation_NN trees_NNS should_MD provide_VB administrative_JJ isolation_NN by_IN ensuring_VBG that_IN for_IN each_DT domain_NN ,_, the_DT virtual_JJ node_NN at_IN the_DT root_NN of_IN the_DT smallest_JJS aggregation_NN subtree_NN containing_VBG all_DT nodes_NNS of_IN that_DT domain_NN is_VBZ hosted_VBN by_IN a_DT node_NN in_IN that_DT domain_NN ._.
+Administrative_JJ isolation_NN is_VBZ important_JJ for_IN three_CD reasons_NNS :_: -LRB-_-LRB- i_LS -RRB-_-RRB- for_IN security_NN -_: so_IN that_IN updates_NNS and_CC probes_NNS flowing_VBG in_IN a_DT domain_NN are_VBP not_RB accessible_JJ outside_IN the_DT domain_NN ,_, -LRB-_-LRB- ii_LS -RRB-_-RRB- for_IN availability_NN -_: so_IN that_IN queries_NNS for_IN values_NNS in_IN a_DT domain_NN are_VBP not_RB affected_VBN by_IN failures_NNS of_IN nodes_NNS in_IN other_JJ domains_NNS ,_, and_CC -LRB-_-LRB- iii_LS -RRB-_-RRB- for_IN efficiency_NN -_: so_IN that_IN domain-scoped_JJ queries_NNS can_MD be_VB simple_JJ and_CC efficient_JJ ._.
+To_TO provide_VB administrative_JJ isolation_NN to_TO aggregation_NN trees_NNS ,_, a_DT DHT_NNP should_MD satisfy_VB two_CD properties_NNS :_: 1_CD ._.
+Path_NN Locality_NN :_: Search_VB paths_NNS should_MD always_RB be_VB contained_VBN in_IN the_DT smallest_JJS possible_JJ domain_NN ._.
+2_LS ._.
+Path_NN Convergence_NN :_: Search_VB paths_NNS for_IN a_DT key_NN from_IN different_JJ nodes_NNS in_IN a_DT domain_NN should_MD converge_VB at_IN a_DT node_NN in_IN that_DT domain_NN ._.
+Existing_VBG DHTs_NNS support_VBP path_NN locality_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- or_CC can_MD easily_RB support_VB it_PRP by_IN using_VBG the_DT domain_NN nearness_NN as_IN the_DT distance_NN metric_JJ -LSB-_-LRB- #_# ,_, ##_NN -RSB-_-RRB- ,_, but_CC they_PRP do_VBP not_RB guarantee_VB path_NN convergence_NN as_IN those_DT systems_NNS try_VBP to_TO optimize_VB the_DT search_NN path_NN to_TO the_DT root_NN to_TO reduce_VB response_NN latency_NN ._.
+For_IN example_NN ,_, Pastry_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- uses_VBZ prefix_NN routing_VBG in_IN which_WDT each_DT node_NN ''_'' s_NNS routing_VBG table_NN contains_VBZ one_CD row_NN per_IN hexadecimal_JJ digit_NN in_IN the_DT nodeId_JJ space_NN where_WRB the_DT ith_NN row_NN contains_VBZ a_DT list_NN of_IN nodes_NNS whose_WP$ nodeIds_NNS differ_VBP from_IN the_DT current_JJ node_NN ''_'' s_NNS nodeId_NN in_IN the_DT ith_JJ digit_NN with_IN one_CD entry_NN for_IN each_DT possible_JJ digit_NN value_NN ._.
+Given_VBN a_DT routing_VBG topology_NN ,_, to_TO route_NN a_DT packet_NN to_TO an_DT arbitrary_JJ destination_NN key_NN ,_, a_DT node_NN in_IN Pastry_NN forwards_RB a_DT packet_NN to_TO the_DT node_NN with_IN a_DT nodeId_JJ prefix_NN matching_VBG the_DT key_NN in_IN at_IN least_JJS one_CD more_JJR digit_NN than_IN the_DT current_JJ node_NN ._.
+If_IN such_PDT a_DT node_NN is_VBZ not_RB known_VBN ,_, the_DT current_JJ node_NN uses_VBZ an_DT additional_JJ data_NNS structure_NN ,_, the_DT leaf_NN set_NN containing_VBG 110XX_NN 010XX_NN 011XX_NN 100XX_NN 101XX_NN univ_NN dep1_NN dep2_NN key_NN =_JJ 111XX_NN 011XX_NN 100XX_NN 101XX_NN 110XX_NN 010XX_NN L1_NN L0_NN L2_NN Figure_NN #_# :_: Example_NN shows_VBZ how_WRB isolation_NN property_NN is_VBZ violated_VBN with_IN original_JJ Pastry_NN ._.
+We_PRP also_RB show_VBP the_DT corresponding_JJ aggregation_NN tree_NN ._.
+110XX_NN 010XX_NN 011XX_NN 100XX_NN 101XX_NN univ_NN dep1_NN dep2_NN key_NN =_JJ 111XX_NN X_NN 011XX_NN 100XX_NN 101XX_NN 110XX_NN 010XX_NN L0_NN L1_NN L2_NN Figure_NN #_# :_: Autonomous_JJ DHT_NN satisfying_VBG the_DT isolation_NN property_NN ._.
+Also_RB the_DT corresponding_JJ aggregation_NN tree_NN is_VBZ shown_VBN ._.
+L_NN immediate_JJ higher_JJR and_CC lower_JJR neighbors_NNS in_IN the_DT nodeId_JJ space_NN ,_, and_CC forwards_RB the_DT packet_NN to_TO a_DT node_NN with_IN an_DT identical_JJ prefix_NN but_CC that_DT is_VBZ numerically_RB closer_JJR to_TO the_DT destination_NN key_NN in_IN the_DT nodeId_JJ space_NN ._.
+This_DT process_NN continues_VBZ until_IN the_DT destination_NN node_NN appears_VBZ in_IN the_DT leaf_NN set_NN ,_, after_IN which_WDT the_DT message_NN is_VBZ routed_VBN directly_RB ._.
+Pastry_NN ''_'' s_NNS expected_VBN number_NN of_IN routing_VBG steps_NNS is_VBZ logn_NN ,_, where_WRB n_NN is_VBZ the_DT number_NN of_IN nodes_NNS ,_, but_CC as_IN Figure_NNP #_# illustrates_VBZ ,_, this_DT algorithm_NN does_VBZ not_RB guarantee_VB path_NN convergence_NN :_: if_IN two_CD nodes_NNS in_IN a_DT domain_NN have_VBP nodeIds_NNS that_WDT match_VBP a_DT key_NN in_IN the_DT same_JJ number_NN of_IN bits_NNS ,_, both_DT of_IN them_PRP can_MD route_NN to_TO a_DT third_JJ node_NN outside_IN the_DT domain_NN when_WRB routing_VBG for_IN that_DT key_NN ._.
+Simple_JJ modifications_NNS to_TO Pastry_NN ''_'' s_NNS route_NN table_NN construction_NN and_CC key-routing_JJ protocols_NNS yield_VBP an_DT Autonomous_JJ DHT_NN -LRB-_-LRB- ADHT_NN -RRB-_-RRB- that_WDT satisfies_VBZ the_DT path_NN locality_NN and_CC path_NN convergence_NN properties_NNS ._.
+As_IN Figure_NNP #_# illustrates_VBZ ,_, whenever_WRB two_CD nodes_NNS in_IN a_DT domain_NN share_NN the_DT same_JJ prefix_NN with_IN respect_NN to_TO a_DT key_JJ and_CC no_DT other_JJ node_NN in_IN the_DT domain_NN has_VBZ a_DT longer_RBR prefix_NN ,_, our_PRP$ algorithm_NN introduces_VBZ a_DT virtual_JJ node_NN at_IN the_DT boundary_NN of_IN the_DT domain_NN corresponding_VBG to_TO that_DT prefix_NN plus_IN the_DT next_JJ digit_NN of_IN the_DT key_NN ;_: such_PDT a_DT virtual_JJ node_NN is_VBZ simulated_JJ by_IN the_DT existing_VBG node_NN whose_WP$ id_NN is_VBZ numerically_RB closest_JJS to_TO the_DT virtual_JJ node_NN ''_'' s_NNS id_NN ._.
+Our_PRP$ ADHT_NNP ''_'' s_VBZ routing_VBG table_NN differs_VBZ from_IN Pastry_NN ''_'' s_NNS in_IN two_CD ways_NNS ._.
+First_RB ,_, each_DT node_NN maintains_VBZ a_DT separate_JJ leaf_NN set_VBN for_IN each_DT domain_NN of_IN which_WDT it_PRP is_VBZ a_DT part_NN ._.
+Second_RB ,_, nodes_NNS use_VBP two_CD proximity_NN metrics_NNS when_WRB populating_VBG the_DT routing_VBG tables_NNS -_: hierarchical_JJ domain_NN proximity_NN is_VBZ the_DT primary_JJ metric_JJ and_CC network_NN distance_NN is_VBZ secondary_JJ ._.
+Then_RB ,_, to_TO route_NN a_DT packet_NN to_TO a_DT global_JJ root_NN for_IN a_DT key_NN ,_, ADHT_NNP routing_VBG algorithm_NN uses_VBZ the_DT routing_VBG table_NN and_CC the_DT leaf_NN set_VBN entries_NNS to_TO route_NN to_TO each_DT successive_JJ enclosing_VBG domain_NN ''_'' s_NNS root_NN -LRB-_-LRB- the_DT virtual_JJ or_CC real_JJ node_NN in_IN the_DT domain_NN matching_VBG the_DT key_NN in_IN the_DT maximum_NN number_NN of_IN digits_NNS -RRB-_-RRB- ._.
+Additional_JJ details_NNS about_IN the_DT ADHT_NNP algorithm_NN are_VBP available_JJ in_IN an_DT extended_JJ technical_JJ report_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Properties_NNP ._.
+Maintaining_VBG a_DT different_JJ leaf_NN set_VBN for_IN each_DT administrative_JJ hierarchy_NN level_NN increases_VBZ the_DT number_NN of_IN neighbors_NNS that_WDT each_DT node_NN tracks_VBZ to_TO -LRB-_-LRB- 2b_NN -RRB-_-RRB- lgb_NN n_NN +_CC c_NN ._.
+l_NN from_IN -LRB-_-LRB- 2b_NN -RRB-_-RRB- lgb_NN n_NN +_CC c_NN in_IN unmodified_JJ Pastry_NN ,_, where_WRB b_NN is_VBZ the_DT number_NN of_IN bits_NNS in_IN a_DT digit_NN ,_, n_NN is_VBZ the_DT number_NN of_IN nodes_NNS ,_, c_NN is_VBZ the_DT leaf_NN set_VBN size_NN ,_, and_CC l_NN is_VBZ the_DT number_NN of_IN domain_NN levels_NNS ._.
+Routing_VBG requires_VBZ O_NN -LRB-_-LRB- lgbn_NN +_CC l_NN -RRB-_-RRB- steps_NNS compared_VBN to_TO O_NN -LRB-_-LRB- lgbn_NN -RRB-_-RRB- steps_NNS in_IN Pastry_NN ;_: also_RB ,_, each_DT routing_VBG hop_NN may_MD be_VB longer_JJR than_IN in_IN Pastry_NN because_IN the_DT modified_VBN algorithm_NN ''_'' s_NNS routing_VBG table_NN prefers_VBZ same-domain_JJ nodes_NNS over_IN nearby_JJ nodes_NNS ._.
+We_PRP experimentally_RB quantify_VBP the_DT additional_JJ routing_VBG costs_NNS in_IN Section_NN #_# ._.
+In_IN a_DT large_JJ system_NN ,_, the_DT ADHT_NNP topology_NN allows_VBZ domains_NNS to_TO im383_VB A1_NN A2_NN B1_NN -LRB-_-LRB- -LRB-_-LRB- B1_NN ._.
+B_NN ._.
+,_, #_# -RRB-_-RRB- ,_, -LRB-_-LRB- B_NN ._.
+,_, #_# -RRB-_-RRB- ,_, -LRB-_-LRB- ._.
+,_, #_# -RRB-_-RRB- -RRB-_-RRB- -LRB-_-LRB- -LRB-_-LRB- B1_NN ._.
+B_NN ._.
+,_, #_# -RRB-_-RRB- ,_, -LRB-_-LRB- B_NN ._.
+,_, #_# -RRB-_-RRB- ,_, -LRB-_-LRB- ._.
+,_, #_# -RRB-_-RRB- -RRB-_-RRB- L2_NN L1_NN L0_NN -LRB-_-LRB- -LRB-_-LRB- B1_NN ._.
+B_NN ._.
+,_, #_# -RRB-_-RRB- ,_, -LRB-_-LRB- B_NN ._.
+,_, #_# -RRB-_-RRB- ,_, -LRB-_-LRB- ._.
+,_, #_# -RRB-_-RRB- -RRB-_-RRB- -LRB-_-LRB- -LRB-_-LRB- A1_NN ._.
+A_DT ._.
+,_, #_# -RRB-_-RRB- ,_, -LRB-_-LRB- A_NNP ._.
+,_, #_# -RRB-_-RRB- ,_, -LRB-_-LRB- ._.
+,_, #_# -RRB-_-RRB- -RRB-_-RRB- -LRB-_-LRB- -LRB-_-LRB- A1_NN ._.
+A_DT ._.
+,_, #_# -RRB-_-RRB- ,_, -LRB-_-LRB- A_NNP ._.
+,_, #_# -RRB-_-RRB- ,_, -LRB-_-LRB- ._.
+,_, #_# -RRB-_-RRB- -RRB-_-RRB- -LRB-_-LRB- -LRB-_-LRB- A2_NN ._.
+A_DT ._.
+,_, #_# -RRB-_-RRB- ,_, -LRB-_-LRB- A_NNP ._.
+,_, #_# -RRB-_-RRB- ,_, -LRB-_-LRB- ._.
+,_, #_# -RRB-_-RRB- -RRB-_-RRB- Figure_NNP #_# :_: Example_NN for_IN domain-scoped_JJ queries_NNS prove_VBP security_NN for_IN sensitive_JJ attribute_NN types_NNS by_IN installing_VBG them_PRP only_RB within_IN a_DT specified_JJ domain_NN ._.
+Then_RB ,_, aggregation_NN occurs_VBZ entirely_RB within_IN the_DT domain_NN and_CC a_DT node_NN external_JJ to_TO the_DT domain_NN can_MD neither_RB observe_VB nor_CC affect_VB the_DT updates_NNS and_CC aggregation_NN computations_NNS of_IN the_DT attribute_NN type_NN ._.
+Furthermore_RB ,_, though_IN we_PRP have_VBP not_RB implemented_VBN this_DT feature_NN in_IN the_DT prototype_NN ,_, the_DT ADHT_NNP topology_NN would_MD also_RB support_VB domainrestricted_JJ probes_NNS that_WDT could_MD ensure_VB that_IN no_DT one_NN outside_NN of_IN a_DT domain_NN can_MD observe_VB a_DT probe_NN for_IN data_NNS stored_VBN within_IN the_DT domain_NN ._.
+The_DT ADHT_NNP topology_NN also_RB enhances_VBZ availability_NN by_IN allowing_VBG the_DT common_JJ case_NN of_IN probes_NNS for_IN data_NNS within_IN a_DT domain_NN to_TO depend_VB only_RB on_IN a_DT domain_NN ''_'' s_NNS nodes_NNS ._.
+This_DT ,_, for_IN example_NN ,_, allows_VBZ a_DT domain_NN that_WDT becomes_VBZ disconnected_VBN from_IN the_DT rest_NN of_IN the_DT Internet_NN to_TO continue_VB to_TO answer_VB queries_NNS for_IN local_JJ data_NNS ._.
+Aggregation_NN trees_NNS that_WDT provide_VBP administrative_JJ isolation_NN also_RB enable_VBP the_DT definition_NN of_IN simple_JJ and_CC efficient_JJ domain-scoped_JJ aggregation_NN functions_NNS to_TO support_VB queries_NNS like_IN what_WP is_VBZ the_DT average_JJ load_NN on_IN machines_NNS in_IN domain_NN X_NN ?_.
+For_IN example_NN ,_, consider_VBP an_DT aggregation_NN function_NN to_TO count_VB the_DT number_NN of_IN machines_NNS in_IN an_DT example_NN system_NN with_IN three_CD machines_NNS illustrated_VBD in_IN Figure_NNP #_# ._.
+Each_DT leaf_NN node_NN l_NN updates_NNS attribute_VBP NumMachines_NNS with_IN a_DT value_NN vl_NN containing_VBG a_DT set_NN of_IN tuples_NNS of_IN form_NN -LRB-_-LRB- Domain_NN ,_, Count_NN -RRB-_-RRB- for_IN each_DT domain_NN of_IN which_WDT the_DT node_NN is_VBZ a_DT part_NN ._.
+In_IN the_DT example_NN ,_, the_DT node_NN A1_NN with_IN name_NN A1_NN ._.
+A_DT ._.
+performs_VBZ an_DT update_VBP with_IN the_DT value_NN -LRB-_-LRB- -LRB-_-LRB- A1_NN ._.
+A_DT ._.
+,_, #_# -RRB-_-RRB- ,_, -LRB-_-LRB- A_NNP ._.
+,_, #_# -RRB-_-RRB- ,_, -LRB-_-LRB- ._.
+,_, #_# -RRB-_-RRB- -RRB-_-RRB- ._.
+An_DT aggregation_NN function_NN at_IN an_DT internal_JJ virtual_JJ node_NN hosted_VBN on_IN node_NN N_NN with_IN child_NN set_NN C_NN computes_VBZ the_DT aggregate_NN as_IN a_DT set_NN of_IN tuples_NNS :_: for_IN each_DT domain_NN D_NN that_WDT N_NN is_VBZ part_NN of_IN ,_, form_VB a_DT tuple_NN -LRB-_-LRB- D_NN ,_, cC_NN -LRB-_-LRB- count_NN |_NN -LRB-_-LRB- D_NN ,_, count_NN -RRB-_-RRB- vc_NN -RRB-_-RRB- -RRB-_-RRB- ._.
+This_DT computation_NN is_VBZ illustrated_VBN in_IN the_DT Figure_NNP #_# ._.
+Now_RB a_DT query_NN for_IN NumMachines_NNS with_IN level_NN set_VBN to_TO MAX_NNP will_MD return_VB the_DT aggregate_NN values_NNS at_IN each_DT intermediate_JJ virtual_JJ node_NN on_IN the_DT path_NN to_TO the_DT root_NN as_IN a_DT set_NN of_IN tuples_NNS -LRB-_-LRB- tree_NN level_NN ,_, aggregated_JJ value_NN -RRB-_-RRB- from_IN which_WDT it_PRP is_VBZ easy_JJ to_TO extract_VB the_DT count_NN of_IN machines_NNS at_IN each_DT enclosing_VBG domain_NN ._.
+For_IN example_NN ,_, A1_NN would_MD receive_VB -LRB-_-LRB- -LRB-_-LRB- #_# ,_, -LRB-_-LRB- -LRB-_-LRB- B1_NN ._.
+B_NN ._.
+,_, #_# -RRB-_-RRB- ,_, -LRB-_-LRB- B_NN ._.
+,_, #_# -RRB-_-RRB- ,_, -LRB-_-LRB- ._.
+,_, #_# -RRB-_-RRB- -RRB-_-RRB- -RRB-_-RRB- ,_, -LRB-_-LRB- #_# ,_, -LRB-_-LRB- -LRB-_-LRB- A1_NN ._.
+A_DT ._.
+,_, #_# -RRB-_-RRB- ,_, -LRB-_-LRB- A_NNP ._.
+,_, #_# -RRB-_-RRB- ,_, -LRB-_-LRB- ._.
+,_, #_# -RRB-_-RRB- -RRB-_-RRB- -RRB-_-RRB- ,_, -LRB-_-LRB- #_# ,_, -LRB-_-LRB- -LRB-_-LRB- A1_NN ._.
+A_DT ._.
+,_, #_# -RRB-_-RRB- ,_, -LRB-_-LRB- A_NNP ._.
+,_, #_# -RRB-_-RRB- ,_, -LRB-_-LRB- ._.
+,_, #_# -RRB-_-RRB- -RRB-_-RRB- -RRB-_-RRB- -RRB-_-RRB- ._.
+Note_VB that_DT supporting_VBG domain-scoped_JJ queries_NNS would_MD be_VB less_RBR convenient_JJ and_CC less_RBR efficient_JJ if_IN aggregation_NN trees_NNS did_VBD not_RB conform_VB to_TO the_DT system_NN ''_'' s_NNS administrative_JJ structure_NN ._.
+It_PRP would_MD be_VB less_RBR efficient_JJ because_IN each_DT intermediate_JJ virtual_JJ node_NN will_MD have_VB to_TO maintain_VB a_DT list_NN of_IN all_DT values_NNS at_IN the_DT leaves_NNS in_IN its_PRP$ subtree_NN along_IN with_IN their_PRP$ names_NNS and_CC it_PRP would_MD be_VB less_RBR convenient_JJ as_IN applications_NNS that_WDT need_VBP an_DT aggregate_NN for_IN a_DT domain_NN will_MD have_VB to_TO pick_VB values_NNS of_IN nodes_NNS in_IN that_DT domain_NN from_IN the_DT list_NN returned_VBN by_IN a_DT probe_NN and_CC perform_VB computation_NN ._.
+5_CD ._.
+PROTOTYPE_NN IMPLEMENTATION_NN The_DT internal_JJ design_NN of_IN our_PRP$ SDIMS_NNP prototype_NN comprises_VBZ of_IN two_CD layers_NNS :_: the_DT Autonomous_JJ DHT_NN -LRB-_-LRB- ADHT_NN -RRB-_-RRB- layer_NN manages_VBZ the_DT overlay_NN topology_NN of_IN the_DT system_NN and_CC the_DT Aggregation_NN Management_NN Layer_NN -LRB-_-LRB- AML_NN -RRB-_-RRB- maintains_VBZ attribute_NN tuples_NNS ,_, performs_VBZ aggregations_NNS ,_, stores_NNS and_CC propagates_VBZ aggregate_JJ values_NNS ._.
+Given_VBN the_DT ADHT_NN construction_NN described_VBN in_IN Section_NN #_# ._.
+#_# ,_, each_DT node_NN implements_VBZ an_DT Aggregation_NN Management_NN Layer_NN -LRB-_-LRB- AML_NN -RRB-_-RRB- to_TO support_VB the_DT flexible_JJ API_NN described_VBN in_IN Section_NN #_# ._.
+In_IN this_DT section_NN ,_, we_PRP describe_VBP the_DT internal_JJ state_NN and_CC operation_NN of_IN the_DT AML_NN layer_NN of_IN a_DT node_NN in_IN the_DT system_NN ._.
+local_JJ MIB_NNP MIBs_NNPS ancestor_NN reduction_NN MIB_NN -LRB-_-LRB- level_NN #_# -RRB-_-RRB- MIBs_NNS ancestor_NN MIB_NN from_IN child_NN 0X_NN ..._: MIB_NNP from_IN child_NN 0X_NN ..._: Level_NNP #_# Level_NNP #_# Level_NNP #_# Level_NNP #_# 1XXX_CD ..._: 10XX_CD ..._: 100X_CD ..._: From_IN parents0X_NN ._. ._.
+To_TO parent_NN 0X_NN ..._: aggregation_NN functions_NNS From_IN parents_NNS To_TO parent_NN 10XX_NN ..._: 1X_NN ._. ._.
+1X_NN ._. ._.
+1X_NN ._. ._.
+To_TO parent_NN 11XX_NN ..._: Node_NNP Id_NN :_: -LRB-_-LRB- 1001XXX_NN -RRB-_-RRB- 1001X_NN ._. ._.
+100X_NN ._. ._.
+10X_NN ._. ._.
+1X_NN ._. ._.
+Virtual_JJ Node_NNP Figure_NNP #_# :_: Example_NN illustrating_VBG the_DT data_NNS structures_NNS and_CC the_DT organization_NN of_IN them_PRP at_IN a_DT node_NN ._.
+We_PRP refer_VBP to_TO a_DT store_NN of_IN -LRB-_-LRB- attribute_NN type_NN ,_, attribute_NN name_NN ,_, value_NN -RRB-_-RRB- tuples_VBZ as_IN a_DT Management_NNP Information_NNP Base_NNP or_CC MIB_NNP ,_, following_VBG the_DT terminology_NN from_IN Astrolabe_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- and_CC SNMP_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+We_PRP refer_VBP an_DT -LRB-_-LRB- attribute_NN type_NN ,_, attribute_NN name_NN -RRB-_-RRB- tuple_NN as_IN an_DT attribute_NN key_NN ._.
+As_IN Figure_NNP #_# illustrates_VBZ ,_, each_DT physical_JJ node_NN in_IN the_DT system_NN acts_VBZ as_IN several_JJ virtual_JJ nodes_NNS in_IN the_DT AML_NN :_: a_DT node_NN acts_VBZ as_IN leaf_NN for_IN all_DT attribute_NN keys_NNS ,_, as_IN a_DT level-1_NN subtree_NN root_NN for_IN keys_NNS whose_WP$ hash_JJ matches_NNS the_DT node_NN ''_'' s_NNS ID_NNP in_IN b_NN prefix_NN bits_NNS -LRB-_-LRB- where_WRB b_NN is_VBZ the_DT number_NN of_IN bits_NNS corrected_VBN in_IN each_DT step_NN of_IN the_DT ADHT_NNP ''_'' s_VBZ routing_VBG scheme_NN -RRB-_-RRB- ,_, as_IN a_DT level-i_JJ subtree_NN root_NN for_IN attribute_NN keys_NNS whose_WP$ hash_JJ matches_NNS the_DT node_NN ''_'' s_NNS ID_NNP in_IN the_DT initial_JJ i_FW b_NN bits_NNS ,_, and_CC as_IN the_DT system_NN ''_'' s_NNS global_JJ root_NN for_IN attribute_NN keys_NNS whose_WP$ hash_JJ matches_NNS the_DT node_NN ''_'' s_NNS ID_NNP in_IN more_RBR prefix_NN bits_NNS than_IN any_DT other_JJ node_NN -LRB-_-LRB- in_IN case_NN of_IN a_DT tie_NN ,_, the_DT first_JJ non-matching_JJ bit_NN is_VBZ ignored_VBN and_CC the_DT comparison_NN is_VBZ continued_VBN -LSB-_-LRB- ##_CD -RSB-_-RRB- -RRB-_-RRB- ._.
+To_TO support_VB hierarchical_JJ aggregation_NN ,_, each_DT virtual_JJ node_NN at_IN the_DT root_NN of_IN a_DT level-i_JJ subtree_NN maintains_VBZ several_JJ MIBs_NNS that_WDT store_VBP -LRB-_-LRB- #_# -RRB-_-RRB- child_NN MIBs_NNS containing_VBG raw_JJ aggregate_NN values_NNS gathered_VBN from_IN children_NNS ,_, -LRB-_-LRB- #_# -RRB-_-RRB- a_DT reduction_NN MIB_NN containing_VBG locally_RB aggregated_JJ values_NNS across_IN this_DT raw_JJ information_NN ,_, and_CC -LRB-_-LRB- #_# -RRB-_-RRB- an_DT ancestor_NN MIB_NN containing_VBG aggregate_NN values_NNS scattered_VBN down_RP from_IN ancestors_NNS ._.
+This_DT basic_JJ strategy_NN of_IN maintaining_VBG child_NN ,_, reduction_NN ,_, and_CC ancestor_NN MIBs_NNS is_VBZ based_VBN on_IN Astrolabe_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, but_CC our_PRP$ structured_JJ propagation_NN strategy_NN channels_NNS information_NN that_WDT flows_VBZ up_RP according_VBG to_TO its_PRP$ attribute_NN key_NN and_CC our_PRP$ flexible_JJ propagation_NN strategy_NN only_RB sends_VBZ child_NN updates_NNS up_RB and_CC ancestor_NN aggregate_NN results_VBZ down_RP as_RB far_RB as_IN specified_VBN by_IN the_DT attribute_NN key_NN ''_'' s_NNS aggregation_NN function_NN ._.
+Note_VB that_IN in_IN the_DT discussion_NN below_IN ,_, for_IN ease_NN of_IN explanation_NN ,_, we_PRP assume_VBP that_IN the_DT routing_VBG protocol_NN is_VBZ correcting_VBG single_JJ bit_NN at_IN a_DT time_NN -LRB-_-LRB- b_NN =_JJ #_# -RRB-_-RRB- ._.
+Our_PRP$ system_NN ,_, built_VBN upon_IN Pastry_NN ,_, handles_VBZ multi-bit_JJ correction_NN -LRB-_-LRB- b_NN =_JJ #_# -RRB-_-RRB- and_CC is_VBZ a_DT simple_JJ extension_NN to_TO the_DT scheme_NN described_VBN here_RB ._.
+For_IN a_DT given_VBN virtual_JJ node_NN ni_NNS at_IN level_NN i_FW ,_, each_DT child_NN MIB_NN contains_VBZ the_DT subset_NN of_IN a_DT child_NN ''_'' s_NNS reduction_NN MIB_NN that_WDT contains_VBZ tuples_NNS that_WDT match_VBP ni_NNS ''_'' s_VBZ node_NN ID_NN in_IN i_FW bits_NNS and_CC whose_WP$ up_RP aggregation_NN function_NN attribute_NN is_VBZ at_IN least_JJS i_LS ._.
+These_DT local_JJ copies_NNS make_VBP it_PRP easy_JJ for_IN a_DT node_NN to_TO recompute_VB a_DT level-i_JJ aggregate_NN value_NN when_WRB one_CD child_NN ''_'' s_NNS input_NN changes_NNS ._.
+Nodes_NNS maintain_VBP their_PRP$ child_NN MIBs_NNS in_IN stable_JJ storage_NN and_CC use_VB a_DT simplified_VBN version_NN of_IN the_DT Bayou_NNP log_NN exchange_NN protocol_NN -LRB-_-LRB- sans_NNS conflict_NN detection_NN and_CC resolution_NN -RRB-_-RRB- for_IN synchronization_NN after_IN disconnections_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Virtual_JJ node_NN ni_NNS at_IN level_NN i_FW maintains_VBZ a_DT reduction_NN MIB_NN of_IN tuples_NNS with_IN a_DT tuple_NN for_IN each_DT key_JJ present_JJ in_IN any_DT child_NN MIB_NN containing_VBG the_DT attribute_NN type_NN ,_, attribute_NN name_NN ,_, and_CC output_NN of_IN the_DT attribute_NN type_NN ''_'' s_NNS aggregate_JJ functions_NNS applied_VBD to_TO the_DT children_NNS ''_'' s_VBZ tuples_NNS ._.
+A_DT virtual_JJ node_NN ni_NNS at_IN level_NN i_FW also_RB maintains_VBZ an_DT ancestor_NN MIB_NN to_TO store_VB the_DT tuples_NNS containing_VBG attribute_NN key_NN and_CC a_DT list_NN of_IN aggregate_NN values_NNS at_IN different_JJ levels_NNS scattered_VBN down_RP from_IN ancestors_NNS ._.
+Note_VB that_IN the_DT 384_CD list_NN for_IN a_DT key_NN might_MD contain_VB multiple_JJ aggregate_NN values_NNS for_IN a_DT same_JJ level_NN but_CC aggregated_VBD at_IN different_JJ nodes_NNS ._.
+So_RB ,_, the_DT aggregate_NN values_NNS are_VBP tagged_VBN not_RB only_RB with_IN level_NN information_NN ,_, but_CC are_VBP also_RB tagged_VBN with_IN ID_NN of_IN the_DT node_NN that_WDT performed_VBD the_DT aggregation_NN ._.
+Level-0_NN differs_VBZ slightly_RB from_IN other_JJ levels_NNS ._.
+Each_DT level-0_NN leaf_NN node_NN maintains_VBZ a_DT local_JJ MIB_NNP rather_RB than_IN maintaining_VBG child_NN MIBs_NNS and_CC a_DT reduction_NN MIB_NN ._.
+This_DT local_JJ MIB_NNP stores_NNS information_NN about_IN the_DT local_JJ node_NN ''_'' s_NNS state_NN inserted_VBN by_IN local_JJ applications_NNS via_IN update_VBP -LRB-_-LRB- -RRB-_-RRB- calls_VBZ ._.
+We_PRP envision_VBP various_JJ sensor_NN programs_NNS and_CC applications_NNS insert_VBP data_NNS into_IN local_JJ MIB_NNP ._.
+For_IN example_NN ,_, one_CD program_NN might_MD monitor_VB local_JJ configuration_NN and_CC perform_VB updates_NNS with_IN information_NN such_JJ as_IN total_JJ memory_NN ,_, free_JJ memory_NN ,_, etc_FW ._.
+,_, A_DT distributed_VBN file_NN system_NN might_MD perform_VB update_VB for_IN each_DT file_NN stored_VBD on_IN the_DT local_JJ node_NN ._.
+Along_IN with_IN these_DT MIBs_NNS ,_, a_DT virtual_JJ node_NN maintains_VBZ two_CD other_JJ tables_NNS :_: an_DT aggregation_NN function_NN table_NN and_CC an_DT outstanding_JJ probes_NNS table_NN ._.
+An_DT aggregation_NN function_NN table_NN contains_VBZ the_DT aggregation_NN function_NN and_CC installation_NN arguments_NNS associated_VBN with_IN an_DT attribute_NN type_NN or_CC an_DT attribute_NN type_NN and_CC name_NN ._.
+Each_DT aggregate_JJ function_NN is_VBZ installed_VBN on_IN all_DT nodes_NNS in_IN a_DT domain_NN ''_'' s_NNS subtree_VBP ,_, so_IN the_DT aggregate_JJ function_NN table_NN can_MD be_VB thought_VBN of_IN as_IN a_DT special_JJ case_NN of_IN the_DT ancestor_NN MIB_NN with_IN domain_NN functions_VBZ always_RB installed_VBN up_RP to_TO a_DT root_NN within_IN a_DT specified_JJ domain_NN and_CC down_RB to_TO all_DT nodes_NNS within_IN the_DT domain_NN ._.
+The_DT outstanding_JJ probes_NNS table_NN maintains_VBZ temporary_JJ information_NN regarding_VBG in-progress_JJ probes_NNS ._.
+Given_VBN these_DT data_NNS structures_NNS ,_, it_PRP is_VBZ simple_JJ to_TO support_VB the_DT three_CD API_NNP functions_NNS described_VBN in_IN Section_NN #_# ._.
+#_# ._.
+Install_VB The_DT Install_NNP operation_NN installs_VBZ on_IN a_DT domain_NN an_DT aggregation_NN function_NN that_WDT acts_VBZ on_IN a_DT specified_VBN attribute_NN type_NN ._.
+Execution_NN of_IN an_DT install_VBP operation_NN for_IN function_NN aggrFunc_NN on_IN attribute_NN type_NN attrType_NN proceeds_NNS in_IN two_CD phases_NNS :_: first_RB the_DT install_VB request_NN is_VBZ passed_VBN up_RP the_DT ADHT_NNP tree_NN with_IN the_DT attribute_NN key_NN -LRB-_-LRB- attrType_NN ,_, null_JJ -RRB-_-RRB- until_IN it_PRP reaches_VBZ the_DT root_NN for_IN that_DT key_JJ within_IN the_DT specified_JJ domain_NN ._.
+Then_RB ,_, the_DT request_NN is_VBZ flooded_VBN down_IN the_DT tree_NN and_CC installed_VBN on_IN all_DT intermediate_JJ and_CC leaf_NN nodes_NNS ._.
+Update_NNP When_WRB a_DT level_NN i_FW virtual_JJ node_NN receives_VBZ an_DT update_VB for_IN an_DT attribute_NN from_IN a_DT child_NN below_IN :_: it_PRP first_RB recomputes_VBZ the_DT level-i_JJ aggregate_NN value_NN for_IN the_DT specified_VBN key_NN ,_, stores_NNS that_IN value_NN in_IN its_PRP$ reduction_NN MIB_NN and_CC then_RB ,_, subject_JJ to_TO the_DT function_NN ''_'' s_VBZ up_RP and_CC domain_NN parameters_NNS ,_, passes_VBZ the_DT updated_VBN value_NN to_TO the_DT appropriate_JJ parent_NN based_VBN on_IN the_DT attribute_NN key_NN ._.
+Also_RB ,_, the_DT level-i_NN -LRB-_-LRB- i_FW #_# -RRB-_-RRB- virtual_JJ node_NN sends_VBZ the_DT updated_VBN level-i_NN aggregate_NN to_TO all_DT its_PRP$ children_NNS if_IN the_DT function_NN ''_'' s_NNS down_IN parameter_NN exceeds_VBZ zero_CD ._.
+Upon_IN receipt_NN of_IN a_DT level-i_JJ aggregate_NN from_IN a_DT parent_NN ,_, a_DT level_NN k_NN virtual_JJ node_NN stores_NNS the_DT value_NN in_IN its_PRP$ ancestor_NN MIB_NN and_CC ,_, if_IN k_NN idown_NN ,_, forwards_RB this_DT aggregate_NN to_TO its_PRP$ children_NNS ._.
+Probe_NN A_NN Probe_NN collects_VBZ and_CC returns_VBZ the_DT aggregate_JJ value_NN for_IN a_DT specified_VBN attribute_NN key_NN for_IN a_DT specified_VBN level_NN of_IN the_DT tree_NN ._.
+As_IN Figure_NNP #_# illustrates_VBZ ,_, the_DT system_NN satisfies_VBZ a_DT probe_NN for_IN a_DT level-i_JJ aggregate_NN value_NN using_VBG a_DT four-phase_JJ protocol_NN that_WDT may_MD be_VB short-circuited_VBN when_WRB updates_NNS have_VBP previously_RB propagated_VBN either_CC results_VBZ or_CC partial_JJ results_NNS up_IN or_CC down_IN the_DT tree_NN ._.
+In_IN phase_NN #_# ,_, the_DT route_NN probe_NN phase_NN ,_, the_DT system_NN routes_VBZ the_DT probe_NN up_IN the_DT attribute_NN key_NN ''_'' s_NNS tree_NN to_TO either_CC the_DT root_NN of_IN the_DT level-i_NN subtree_NN or_CC to_TO a_DT node_NN that_WDT stores_VBZ the_DT requested_VBN value_NN in_IN its_PRP$ ancestor_NN MIB_NNP ._.
+In_IN the_DT former_JJ case_NN ,_, the_DT system_NN proceeds_VBZ to_TO phase_NN #_# and_CC in_IN the_DT latter_JJ it_PRP skips_VBZ to_TO phase_NN #_# ._.
+In_IN phase_NN #_# ,_, the_DT probe_NN scatter_NN phase_NN ,_, each_DT node_NN that_WDT receives_VBZ a_DT probe_NN request_NN sends_VBZ it_PRP to_TO all_DT of_IN its_PRP$ children_NNS unless_IN the_DT node_NN ''_'' s_NNS reduction_NN MIB_NNP already_RB has_VBZ a_DT value_NN that_WDT matches_VBZ the_DT probe_NN ''_'' s_NNS attribute_VBP key_JJ ,_, in_IN which_WDT case_NN the_DT node_NN initiates_VBZ phase_NN #_# on_IN behalf_NN of_IN its_PRP$ subtree_NN ._.
+In_IN phase_NN #_# ,_, the_DT probe_NN aggregation_NN phase_NN ,_, when_WRB a_DT node_NN receives_VBZ values_NNS for_IN the_DT specified_VBN key_NN from_IN each_DT of_IN its_PRP$ children_NNS ,_, it_PRP executes_VBZ the_DT aggregate_JJ function_NN on_IN these_DT values_NNS and_CC either_CC -LRB-_-LRB- a_LS -RRB-_-RRB- forwards_RB the_DT result_NN to_TO its_PRP$ parent_NN -LRB-_-LRB- if_IN its_PRP$ level_NN is_VBZ less_JJR than_IN i_LS -RRB-_-RRB- or_CC -LRB-_-LRB- b_LS -RRB-_-RRB- initiates_VBZ phase_NN #_# -LRB-_-LRB- if_IN it_PRP is_VBZ at_IN level_NN i_LS -RRB-_-RRB- ._.
+Finally_RB ,_, in_IN phase_NN #_# ,_, the_DT aggregate_NN routing_VBG phase_NN the_DT aggregate_JJ value_NN is_VBZ routed_VBN down_RP to_TO the_DT node_NN that_WDT requested_VBD it_PRP ._.
+Note_VB that_IN in_IN the_DT extreme_JJ case_NN of_IN a_DT function_NN installed_VBN with_IN up_RB =_JJ down_IN =_JJ #_# ,_, a_DT level-i_NN probe_NN can_MD touch_VB all_DT nodes_NNS in_IN a_DT level-i_JJ subtree_NN while_IN in_IN the_DT opposite_JJ extreme_JJ case_NN of_IN a_DT function_NN installed_VBN with_IN up_RB =_JJ down_IN =_JJ ALL_NN ,_, probe_NN is_VBZ a_DT completely_RB local_JJ operation_NN at_IN a_DT leaf_NN ._.
+For_IN probes_NNS that_WDT include_VBP phases_NNS #_# -LRB-_-LRB- probe_NN scatter_NN -RRB-_-RRB- and_CC #_# -LRB-_-LRB- probe_NN aggregation_NN -RRB-_-RRB- ,_, an_DT issue_NN is_VBZ how_WRB to_TO decide_VB when_WRB a_DT node_NN should_MD stop_VB waiting_VBG for_IN its_PRP$ children_NNS to_TO respond_VB and_CC send_VB up_RP its_PRP$ current_JJ aggregate_JJ value_NN ._.
+A_DT node_NN stops_VBZ waiting_VBG for_IN its_PRP$ children_NNS when_WRB one_CD of_IN three_CD conditions_NNS occurs_VBZ :_: -LRB-_-LRB- #_# -RRB-_-RRB- all_DT children_NNS have_VBP responded_VBN ,_, -LRB-_-LRB- #_# -RRB-_-RRB- the_DT ADHT_NNP layer_NN signals_NNS one_CD or_CC more_JJR reconfiguration_NN events_NNS that_WDT mark_VBP all_DT children_NNS that_WDT have_VBP not_RB yet_RB responded_VBD as_IN unreachable_JJ ,_, or_CC -LRB-_-LRB- #_# -RRB-_-RRB- a_DT watchdog_NN timer_NN for_IN the_DT request_NN fires_NNS ._.
+The_DT last_JJ case_NN accounts_NNS for_IN nodes_NNS that_WDT participate_VBP in_IN the_DT ADHT_NNP protocol_NN but_CC that_WDT fail_VBP at_IN the_DT AML_NN level_NN ._.
+At_IN a_DT virtual_JJ node_NN ,_, continuous_JJ probes_NNS are_VBP handled_VBN similarly_RB as_IN one-shot_JJ probes_NNS except_IN that_DT such_JJ probes_NNS are_VBP stored_VBN in_IN the_DT outstanding_JJ probe_NN table_NN for_IN a_DT time_NN period_NN of_IN expTime_NN specified_VBN in_IN the_DT probe_NN ._.
+Thus_RB each_DT update_VB for_IN an_DT attribute_NN triggers_VBZ re-evaluation_NN of_IN continuous_JJ probes_NNS for_IN that_DT attribute_NN ._.
+We_PRP implement_VBP a_DT lease-based_JJ mechanism_NN for_IN dynamic_JJ adaptation_NN ._.
+A_DT level-l_JJ virtual_JJ node_NN for_IN an_DT attribute_NN can_MD issue_VB the_DT lease_NN for_IN levell_NN aggregate_NN to_TO a_DT parent_NN or_CC a_DT child_NN only_RB if_IN up_RB is_VBZ greater_JJR than_IN l_NN or_CC it_PRP has_VBZ leases_NNS from_IN all_DT its_PRP$ children_NNS ._.
+A_DT virtual_JJ node_NN at_IN level_NN l_NN can_MD issue_VB the_DT lease_NN for_IN level-k_JJ aggregate_NN for_IN k_NN >_JJR l_NN to_TO a_DT child_NN only_RB if_IN down_RB k_NN l_NN or_CC if_IN it_PRP has_VBZ the_DT lease_NN for_IN that_DT aggregate_NN from_IN its_PRP$ parent_NN ._.
+Now_RB a_DT probe_NN for_IN level-k_JJ aggregate_NN can_MD be_VB answered_VBN by_IN level-l_NN virtual_JJ node_NN if_IN it_PRP has_VBZ a_DT valid_JJ lease_NN ,_, irrespective_RB of_IN the_DT up_RB and_CC down_RB values_NNS ._.
+We_PRP are_VBP currently_RB designing_VBG different_JJ policies_NNS to_TO decide_VB when_WRB to_TO issue_VB a_DT lease_NN and_CC when_WRB to_TO revoke_VB a_DT lease_NN and_CC are_VBP also_RB evaluating_VBG them_PRP with_IN the_DT above_JJ mechanism_NN ._.
+Our_PRP$ current_JJ prototype_NN does_VBZ not_RB implement_VB access_NN control_NN on_IN install_VB ,_, update_VB ,_, and_CC probe_NN operations_NNS but_CC we_PRP plan_VBP to_TO implement_VB Astrolabe_NN ''_'' s_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- certificate-based_JJ restrictions_NNS ._.
+Also_RB our_PRP$ current_JJ prototype_NN does_VBZ not_RB restrict_VB the_DT resource_NN consumption_NN in_IN executing_VBG the_DT aggregation_NN functions_NNS ;_: but_CC ,_, techniques_NNS from_IN research_NN on_IN resource_NN management_NN in_IN server_NN systems_NNS and_CC operating_VBG systems_NNS -LSB-_-LRB- #_# ,_, #_# -RSB-_-RRB- can_MD be_VB applied_VBN here_RB ._.
+6_CD ._.
+ROBUSTNESS_NNP In_IN large_JJ scale_NN systems_NNS ,_, reconfigurations_NNS are_VBP common_JJ ._.
+Our_PRP$ two_CD main_JJ principles_NNS for_IN robustness_NN are_VBP to_TO guarantee_VB -LRB-_-LRB- i_LS -RRB-_-RRB- read_VB availability_NN -_: probes_NNS complete_JJ in_IN finite_JJ time_NN ,_, and_CC -LRB-_-LRB- ii_LS -RRB-_-RRB- eventual_JJ consistency_NN -_: updates_NNS by_IN a_DT live_JJ node_NN will_MD be_VB visible_JJ to_TO probes_NNS by_IN connected_JJ nodes_NNS in_IN finite_JJ time_NN ._.
+During_IN reconfigurations_NNS ,_, a_DT probe_NN might_MD return_VB a_DT stale_JJ value_NN for_IN two_CD reasons_NNS ._.
+First_RB ,_, reconfigurations_NNS lead_VBP to_TO incorrectness_VB in_IN the_DT previous_JJ aggregate_JJ values_NNS ._.
+Second_RB ,_, the_DT nodes_NNS needed_VBN for_IN aggregation_NN to_TO answer_VB the_DT probe_NN become_VBN unreachable_JJ ._.
+Our_PRP$ system_NN also_RB provides_VBZ two_CD hooks_NNS that_WDT applications_NNS can_MD use_VB for_IN improved_VBN end-to-end_JJ robustness_NN in_IN the_DT presence_NN of_IN reconfigurations_NNS :_: -LRB-_-LRB- #_# -RRB-_-RRB- Ondemand_NN re-aggregation_NN and_CC -LRB-_-LRB- #_# -RRB-_-RRB- application_NN controlled_VBN replication_NN ._.
+Our_PRP$ system_NN handles_VBZ reconfigurations_NNS at_IN two_CD levels_NNS -_: adaptation_NN at_IN the_DT ADHT_NNP layer_NN to_TO ensure_VB connectivity_NN and_CC adaptation_NN at_IN the_DT AML_NN layer_NN to_TO ensure_VB access_NN to_TO the_DT data_NNS in_IN SDIMS_NNP ._.
+6_CD ._.
+#_# ADHT_NNP Adaptation_NNP Our_PRP$ ADHT_NNP layer_NN adaptation_NN algorithm_NN is_VBZ same_JJ as_IN Pastry_NN ''_'' s_NNS adaptation_NN algorithm_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- -_: the_DT leaf_NN sets_NNS are_VBP repaired_VBN as_RB soon_RB as_IN a_DT reconfiguration_NN is_VBZ detected_VBN and_CC the_DT routing_VBG table_NN is_VBZ repaired_VBN lazily_RB ._.
+Note_VB that_DT maintaining_VBG extra_JJ leaf_NN sets_NNS does_VBZ not_RB degrade_VB the_DT fault-tolerance_JJ property_NN of_IN the_DT original_JJ Pastry_NN ;_: indeed_RB ,_, it_PRP enhances_VBZ the_DT resilience_NN of_IN ADHTs_NNS to_TO failures_NNS by_IN providing_VBG additional_JJ routing_VBG links_NNS ._.
+Due_JJ to_TO redundancy_NN in_IN the_DT leaf_NN sets_NNS and_CC the_DT routing_VBG table_NN ,_, updates_NNS can_MD be_VB routed_VBN towards_IN their_PRP$ root_NN nodes_NNS successfully_RB even_RB during_IN failures_NNS ._.
+385_CD Reconfig_NN reconfig_NN notices_NNS DHT_NNP partial_JJ DHT_NNP complete_JJ DHT_NN ends_VBZ Lazy_JJ Time_NNP Data_NNP 3_CD #_# ##_CD #_# #_# #_# 6starts_NNS Lazy_NNP Data_NNP starts_VBZ Lazy_NNP Data_NNP starts_VBZ Lazy_NNP Data_NNP repairrepair_NN reaggr_NN reaggr_NN reaggr_NN reaggr_NN happens_VBZ Figure_NNP #_# :_: Default_NNP lazy_JJ data_NNS re-aggregation_NN time_NN line_NN Also_RB note_VBP that_IN the_DT administrative_JJ isolation_NN property_NN satisfied_VBN by_IN our_PRP$ ADHT_NNP algorithm_NN ensures_VBZ that_IN the_DT reconfigurations_NNS in_IN a_DT level_NN i_FW domain_NN do_VBP not_RB affect_VB the_DT probes_NNS for_IN level_NN i_FW in_IN a_DT sibling_NN domain_NN ._.
+6_CD ._.
+#_# AML_NN Adaptation_NN Broadly_RB ,_, we_PRP use_VBP two_CD types_NNS of_IN strategies_NNS for_IN AML_NN adaptation_NN in_IN the_DT face_NN of_IN reconfigurations_NNS :_: -LRB-_-LRB- #_# -RRB-_-RRB- Replication_NN in_IN time_NN as_IN a_DT fundamental_JJ baseline_NN strategy_NN ,_, and_CC -LRB-_-LRB- #_# -RRB-_-RRB- Replication_NN in_IN space_NN as_IN an_DT additional_JJ performance_NN optimization_NN that_WDT falls_VBZ back_RB on_IN replication_NN in_IN time_NN when_WRB the_DT system_NN runs_VBZ out_IN of_IN replicas_NNS ._.
+We_PRP provide_VBP two_CD mechanisms_NNS for_IN replication_NN in_IN time_NN ._.
+First_RB ,_, lazy_JJ re-aggregation_NN propagates_VBZ already_RB received_VBN updates_NNS to_TO new_JJ children_NNS or_CC new_JJ parents_NNS in_IN a_DT lazy_JJ fashion_NN over_IN time_NN ._.
+Second_RB ,_, applications_NNS can_MD reduce_VB the_DT probability_NN of_IN probe_NN response_NN staleness_NN during_IN such_JJ repairs_NNS through_IN our_PRP$ flexible_JJ API_NN with_IN appropriate_JJ setting_NN of_IN the_DT down_JJ parameter_NN ._.
+Lazy_JJ Re-aggregation_NN :_: The_DT DHT_NNP layer_NN informs_VBZ the_DT AML_NN layer_NN about_IN reconfigurations_NNS in_IN the_DT network_NN using_VBG the_DT following_VBG three_CD function_NN calls_VBZ -_: newParent_NN ,_, failedChild_NN ,_, and_CC newChild_NN ._.
+On_IN newParent_NN -LRB-_-LRB- parent_NN ,_, prefix_NN -RRB-_-RRB- ,_, all_DT probes_NNS in_IN the_DT outstanding-probes_JJ table_NN corresponding_VBG to_TO prefix_NN are_VBP re-evaluated_VBN ._.
+If_IN parent_NN is_VBZ not_RB null_JJ ,_, then_RB aggregation_NN functions_NNS and_CC already_RB existing_VBG data_NNS are_VBP lazily_RB transferred_VBN in_IN the_DT background_NN ._.
+Any_DT new_JJ updates_NNS ,_, installs_VBZ ,_, and_CC probes_NNS for_IN this_DT prefix_NN are_VBP sent_VBN to_TO the_DT parent_NN immediately_RB ._.
+On_IN failedChild_NN -LRB-_-LRB- child_NN ,_, prefix_NN -RRB-_-RRB- ,_, the_DT AML_NN layer_NN marks_VBZ the_DT child_NN as_IN inactive_JJ and_CC any_DT outstanding_JJ probes_NNS that_WDT are_VBP waiting_VBG for_IN data_NNS from_IN this_DT child_NN are_VBP re-evaluated_VBN ._.
+On_IN newChild_NN -LRB-_-LRB- child_NN ,_, prefix_NN -RRB-_-RRB- ,_, the_DT AML_NN layer_NN creates_VBZ space_NN in_IN its_PRP$ data_NNS structures_NNS for_IN this_DT child_NN ._.
+Figure_NNP #_# shows_VBZ the_DT time_NN line_NN for_IN the_DT default_NN lazy_JJ re-aggregation_NN upon_IN reconfiguration_NN ._.
+Probes_NNS initiated_VBD between_IN points_NNS #_# and_CC #_# and_CC that_DT are_VBP affected_VBN by_IN reconfigurations_NNS are_VBP reevaluated_VBN by_IN AML_NN upon_IN detecting_VBG the_DT reconfiguration_NN ._.
+Probes_NNS that_WDT complete_VBP or_CC start_VBP between_IN points_NNS #_# and_CC #_# may_MD return_VB stale_JJ answers_NNS ._.
+On-demand_JJ Re-aggregation_NN :_: The_DT default_NN lazy_JJ aggregation_NN scheme_NN lazily_RB propagates_VBZ the_DT old_JJ updates_NNS in_IN the_DT system_NN ._.
+Additionally_RB ,_, using_VBG up_RP and_CC down_RP knobs_NNS in_IN the_DT Probe_NNP API_NNP ,_, applications_NNS can_MD force_VB on-demand_JJ fast_JJ re-aggregation_NN of_IN updates_NNS to_TO avoid_VB staleness_NN in_IN the_DT face_NN of_IN reconfigurations_NNS ._.
+In_IN particular_JJ ,_, if_IN an_DT application_NN detects_VBZ or_CC suspects_VBZ an_DT answer_NN as_IN stale_JJ ,_, then_RB it_PRP can_MD re-issue_VB the_DT probe_NN increasing_VBG the_DT up_RB and_CC down_RB parameters_NNS to_TO force_VB the_DT refreshing_JJ of_IN the_DT cached_VBN data_NNS ._.
+Note_VB that_IN this_DT strategy_NN will_MD be_VB useful_JJ only_RB after_IN the_DT DHT_NNP adaptation_NN is_VBZ completed_VBN -LRB-_-LRB- Point_NN #_# on_IN the_DT time_NN line_NN in_IN Figure_NNP #_# -RRB-_-RRB- ._.
+Replication_NN in_IN Space_NN :_: Replication_NN in_IN space_NN is_VBZ more_RBR challenging_JJ in_IN our_PRP$ system_NN than_IN in_IN a_DT DHT_NNP file_NN location_NN application_NN because_IN replication_NN in_IN space_NN can_MD be_VB achieved_VBN easily_RB in_IN the_DT latter_JJ by_IN just_RB replicating_VBG the_DT root_NN node_NN ''_'' s_NNS contents_NNS ._.
+In_IN our_PRP$ system_NN ,_, however_RB ,_, all_DT internal_JJ nodes_NNS have_VBP to_TO be_VB replicated_VBN along_IN with_IN the_DT root_NN ._.
+In_IN our_PRP$ system_NN ,_, applications_NNS control_VBP replication_NN in_IN space_NN using_VBG up_RP and_CC down_RP knobs_NNS in_IN the_DT Install_NNP API_NNP ;_: with_IN large_JJ up_RB and_CC down_RB values_NNS ,_, aggregates_NNS at_IN the_DT intermediate_JJ virtual_JJ nodes_NNS are_VBP propagated_VBN to_TO more_JJR nodes_NNS in_IN the_DT system_NN ._.
+By_IN reducing_VBG the_DT number_NN of_IN nodes_NNS that_WDT have_VBP to_TO be_VB accessed_VBN to_TO answer_VB a_DT probe_NN ,_, applications_NNS can_MD reduce_VB the_DT probability_NN of_IN incorrect_JJ results_NNS occurring_VBG due_JJ to_TO the_DT failure_NN of_IN nodes_NNS that_WDT do_VBP not_RB contribute_VB to_TO the_DT aggregate_NN ._.
+For_IN example_NN ,_, in_IN a_DT file_NN location_NN application_NN ,_, using_VBG a_DT non-zero_JJ positive_JJ down_IN parameter_NN ensures_VBZ that_IN a_DT file_NN ''_'' s_NNS global_JJ aggregate_NN is_VBZ replicated_VBN on_IN nodes_NNS other_JJ than_IN the_DT root_NN ._.
+0_CD ._.
+#_# 1_CD 10_CD 100_CD 1000_CD 10000_CD 0_CD ._.
+####_NN #_# ._.
+##_NN #_# ###_CD #####_CD Avg_NN ._.
+numberofmessagesperoperation_NN Read_VB to_TO Write_VB ratio_NN Update-All_NNP Up_IN =_JJ ALL_NN ,_, Down_NN =_JJ #_# Up_IN =_JJ ALL_NN ,_, Down_NN =_JJ #_# Update-Up_JJ Update-Local_JJ Up_IN =_JJ #_# ,_, Down_NN =_JJ #_# Up_IN =_JJ #_# ,_, Down_NN =_JJ #_# Figure_NNP #_# :_: Flexibility_NN of_IN our_PRP$ approach_NN ._.
+With_IN different_JJ UP_NN and_CC DOWN_NN values_NNS in_IN a_DT network_NN of_IN ####_CD nodes_NNS for_IN different_JJ readwrite_JJ ratios_NNS ._.
+Probes_NNS for_IN the_DT file_NN location_NN can_MD then_RB be_VB answered_VBN without_IN accessing_VBG the_DT root_NN ;_: hence_RB they_PRP are_VBP not_RB affected_VBN by_IN the_DT failure_NN of_IN the_DT root_NN ._.
+However_RB ,_, note_NN that_IN this_DT technique_NN is_VBZ not_RB appropriate_JJ in_IN some_DT cases_NNS ._.
+An_DT aggregated_JJ value_NN in_IN file_NN location_NN system_NN is_VBZ valid_JJ as_RB long_RB as_IN the_DT node_NN hosting_VBG the_DT file_NN is_VBZ active_JJ ,_, irrespective_JJ of_IN the_DT status_NN of_IN other_JJ nodes_NNS in_IN the_DT system_NN ;_: whereas_IN an_DT application_NN that_WDT counts_VBZ the_DT number_NN of_IN machines_NNS in_IN a_DT system_NN may_MD receive_VB incorrect_JJ results_NNS irrespective_RB of_IN the_DT replication_NN ._.
+If_IN reconfigurations_NNS are_VBP only_RB transient_JJ -LRB-_-LRB- like_IN a_DT node_NN temporarily_RB not_RB responding_VBG due_JJ to_TO a_DT burst_NN of_IN load_NN -RRB-_-RRB- ,_, the_DT replicated_VBN aggregate_NN closely_RB or_CC correctly_RB resembles_VBZ the_DT current_JJ state_NN ._.
+7_CD ._.
+EVALUATION_NN We_PRP have_VBP implemented_VBN a_DT prototype_NN of_IN SDIMS_NNP in_IN Java_NNP using_VBG the_DT FreePastry_NN framework_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- and_CC performed_VBN large-scale_JJ simulation_NN experiments_NNS and_CC micro-benchmark_NN experiments_NNS on_IN two_CD real_JJ networks_NNS :_: ###_CD machines_NNS in_IN the_DT department_NN and_CC ##_NN machines_NNS on_IN the_DT PlanetLab_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- testbed_VBN ._.
+In_IN all_DT experiments_NNS ,_, we_PRP use_VBP static_JJ up_RB and_CC down_RB values_NNS and_CC turn_VB off_RP dynamic_JJ adaptation_NN ._.
+Our_PRP$ evaluation_NN supports_VBZ four_CD main_JJ conclusions_NNS ._.
+First_RB ,_, flexible_JJ API_NNP provides_VBZ different_JJ propagation_NN strategies_NNS that_WDT minimize_VBP communication_NN resources_NNS at_IN different_JJ read-to-write_JJ ratios_NNS ._.
+For_IN example_NN ,_, in_IN our_PRP$ simulation_NN we_PRP observe_VBP Update-Local_JJ to_TO be_VB efficient_JJ for_IN read-to-write_JJ ratios_NNS below_IN #_# ._.
+####_NN ,_, Update-Up_NN around_IN #_# ,_, and_CC Update-All_NNP above_IN #####_CD ._.
+Second_RB ,_, our_PRP$ system_NN is_VBZ scalable_JJ with_IN respect_NN to_TO both_DT nodes_NNS and_CC attributes_NNS ._.
+In_IN particular_JJ ,_, we_PRP find_VBP that_IN the_DT maximum_NN node_NN stress_NN in_IN our_PRP$ system_NN is_VBZ an_DT order_NN lower_JJR than_IN observed_VBN with_IN an_DT Update-All_NNP ,_, gossiping_VBG approach_NN ._.
+Third_NNP ,_, in_IN contrast_NN to_TO unmodified_JJ Pastry_NN which_WDT violates_VBZ path_NN convergence_NN property_NN in_IN upto_NN ##_CD %_NN cases_NNS ,_, our_PRP$ system_NN conforms_VBZ to_TO the_DT property_NN ._.
+Fourth_JJ ,_, the_DT system_NN is_VBZ robust_JJ to_TO reconfigurations_NNS and_CC adapts_NNS to_TO failures_NNS with_IN in_IN a_DT few_JJ seconds_NNS ._.
+7_CD ._.
+#_# Simulation_NNP Experiments_NNS Flexibility_NN and_CC Scalability_NN :_: A_DT major_JJ innovation_NN of_IN our_PRP$ system_NN is_VBZ its_PRP$ ability_NN to_TO provide_VB flexible_JJ computation_NN and_CC propagation_NN of_IN aggregates_NNS ._.
+In_IN Figure_NNP #_# ,_, we_PRP demonstrate_VBP the_DT flexibility_NN exposed_VBN by_IN the_DT aggregation_NN API_NNP explained_VBD in_IN Section_NN #_# ._.
+We_PRP simulate_VBP a_DT system_NN with_IN 4096_CD nodes_NNS arranged_VBN in_IN a_DT domain_NN hierarchy_NN with_IN branching_VBG factor_NN -LRB-_-LRB- bf_NN -RRB-_-RRB- of_IN ##_NN and_CC install_VB several_JJ attributes_NNS with_IN different_JJ up_RB and_CC down_RB parameters_NNS ._.
+We_PRP plot_VBP the_DT average_JJ number_NN of_IN messages_NNS per_IN operation_NN incurred_VBN for_IN a_DT wide_JJ range_NN of_IN read-to-write_JJ ratios_NNS of_IN the_DT operations_NNS for_IN different_JJ attributes_NNS ._.
+Simulations_NNS with_IN other_JJ sizes_NNS of_IN networks_NNS with_IN different_JJ branching_VBG factors_NNS reveal_VBP similar_JJ results_NNS ._.
+This_DT graph_NN clearly_RB demonstrates_VBZ the_DT benefit_NN of_IN supporting_VBG a_DT wide_JJ range_NN of_IN computation_NN and_CC propagation_NN strategies_NNS ._.
+Although_IN having_VBG a_DT small_JJ UP_NN 386_CD 1_CD 10_CD 100_CD 1000_CD 10000_CD 100000_CD 1e_NN +_CC ##_CD 1e_NN +_CC ##_NN 1_CD ##_CD ###_CD ####_CD #####_CD ######_CD MaximumNodeStress_NNP Number_NNP of_IN attributes_NNS installed_VBN Gossip_NNP ###_CD Gossip_NNP ####_CD Gossip_NNP #####_CD DHT_NNP ###_CD DHT_NNP ####_CD DHT_NNP #####_CD Figure_NNP #_# :_: Max_NNP node_NN stress_NN for_IN a_DT gossiping_VBG approach_NN vs_CC ._.
+ADHT_NN based_VBN approach_NN for_IN different_JJ number_NN of_IN nodes_NNS with_IN increasing_VBG number_NN of_IN sparse_JJ attributes_NNS ._.
+value_NN is_VBZ efficient_JJ for_IN attributes_NNS with_IN low_JJ read-to-write_JJ ratios_NNS -LRB-_-LRB- write_VB dominated_VBN applications_NNS -RRB-_-RRB- ,_, the_DT probe_NN latency_NN ,_, when_WRB reads_VBZ do_VBP occur_VB ,_, may_MD be_VB high_JJ since_IN the_DT probe_NN needs_VBZ to_TO aggregate_NN the_DT data_NNS from_IN all_PDT the_DT nodes_NNS that_WDT did_VBD not_RB send_VB their_PRP$ aggregate_NN up_RP ._.
+Conversely_RB ,_, applications_NNS that_WDT wish_VBP to_TO improve_VB probe_NN overheads_NNS or_CC latencies_NNS can_MD increase_VB their_PRP$ UP_NN and_CC DOWN_NN propagation_NN at_IN a_DT potential_JJ cost_NN of_IN increase_NN in_IN write_VB overheads_NNS ._.
+Compared_VBN to_TO an_DT existing_VBG Update-all_JJ single_JJ aggregation_NN tree_NN approach_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, scalability_NN in_IN SDIMS_NN comes_VBZ from_IN -LRB-_-LRB- #_# -RRB-_-RRB- leveraging_VBG DHTs_NNS to_TO form_VB multiple_JJ aggregation_NN trees_NNS that_WDT split_VBD the_DT load_NN across_IN nodes_NNS and_CC -LRB-_-LRB- #_# -RRB-_-RRB- flexible_JJ propagation_NN that_WDT avoids_VBZ propagation_NN of_IN all_DT updates_NNS to_TO all_DT nodes_NNS ._.
+Figure_NNP #_# demonstrates_VBZ the_DT SDIMS_NNP ''_'' s_VBZ scalability_NN with_IN nodes_NNS and_CC attributes_NNS ._.
+For_IN this_DT experiment_NN ,_, we_PRP build_VBP a_DT simulator_NN to_TO simulate_VB both_DT Astrolabe_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- -LRB-_-LRB- a_DT gossiping_VBG ,_, Update-All_NNP approach_NN -RRB-_-RRB- and_CC our_PRP$ system_NN for_IN an_DT increasing_VBG number_NN of_IN sparse_JJ attributes_NNS ._.
+Each_DT attribute_NN corresponds_VBZ to_TO the_DT membership_NN in_IN a_DT multicast_JJ session_NN with_IN a_DT small_JJ number_NN of_IN participants_NNS ._.
+For_IN this_DT experiment_NN ,_, the_DT session_NN size_NN is_VBZ set_VBN to_TO #_# ,_, the_DT branching_VBG factor_NN is_VBZ set_VBN to_TO ##_VB ,_, the_DT propagation_NN mode_NN for_IN SDIMS_NNP is_VBZ Update-Up_NNP ,_, and_CC the_DT participant_NN nodes_NNS perform_VBP continuous_JJ probes_NNS for_IN the_DT global_JJ aggregate_JJ value_NN ._.
+We_PRP plot_VBP the_DT maximum_NN node_NN stress_NN -LRB-_-LRB- in_IN terms_NNS of_IN messages_NNS -RRB-_-RRB- observed_VBN in_IN both_CC schemes_NNS for_IN different_JJ sized_VBN networks_NNS with_IN increasing_VBG number_NN of_IN sessions_NNS when_WRB the_DT participant_NN of_IN each_DT session_NN performs_VBZ an_DT update_VBP operation_NN ._.
+Clearly_RB ,_, the_DT DHT_NNP based_VBN scheme_NN is_VBZ more_RBR scalable_JJ with_IN respect_NN to_TO attributes_NNS than_IN an_DT Update-all_JJ gossiping_VBG scheme_NN ._.
+Observe_VB that_DT at_IN some_DT constant_JJ number_NN of_IN attributes_NNS ,_, as_IN the_DT number_NN of_IN nodes_NNS increase_VBP in_IN the_DT system_NN ,_, the_DT maximum_NN node_NN stress_NN increases_VBZ in_IN the_DT gossiping_VBG approach_NN ,_, while_IN it_PRP decreases_VBZ in_IN our_PRP$ approach_NN as_IN the_DT load_NN of_IN aggregation_NN is_VBZ spread_VBN across_IN more_JJR nodes_NNS ._.
+Simulations_NNS with_IN other_JJ session_NN sizes_NNS -LRB-_-LRB- #_# and_CC ##_NN -RRB-_-RRB- yield_NN similar_JJ results_NNS ._.
+Administrative_JJ Hierarchy_NN and_CC Robustness_NNP :_: Although_IN the_DT routing_VBG protocol_NN of_IN ADHT_NN might_MD lead_VB to_TO an_DT increased_VBN number_NN of_IN hops_VBZ to_TO reach_VB the_DT root_NN for_IN a_DT key_JJ as_IN compared_VBN to_TO original_JJ Pastry_NN ,_, the_DT algorithm_NN conforms_VBZ to_TO the_DT path_NN convergence_NN and_CC locality_NN properties_NNS and_CC thus_RB provides_VBZ administrative_JJ isolation_NN property_NN ._.
+In_IN Figure_NNP ##_NNP ,_, we_PRP quantify_VBP the_DT increased_VBN path_NN length_NN by_IN comparisons_NNS with_IN unmodified_JJ Pastry_NN for_IN different_JJ sized_VBN networks_NNS with_IN different_JJ branching_VBG factors_NNS of_IN the_DT domain_NN hierarchy_NN tree_NN ._.
+To_TO quantify_VB the_DT path_NN convergence_NN property_NN ,_, we_PRP perform_VBP simulations_NNS with_IN a_DT large_JJ number_NN of_IN probe_NN pairs_NNS -_: each_DT pair_NN probing_VBG for_IN a_DT random_JJ key_JJ starting_VBG from_IN two_CD randomly_RB chosen_VBN nodes_NNS ._.
+In_IN Figure_NNP ##_NNP ,_, we_PRP plot_VBP the_DT percentage_NN of_IN probe_NN pairs_NNS for_IN unmodified_JJ pastry_NN that_WDT do_VBP not_RB conform_VB to_TO the_DT path_NN convergence_NN property_NN ._.
+When_WRB the_DT branching_VBG factor_NN is_VBZ low_JJ ,_, the_DT domain_NN hierarchy_NN tree_NN is_VBZ deeper_JJR resulting_VBG in_IN a_DT large_JJ difference_NN between_IN 0_CD 1_CD 2_CD 3_CD 4_CD 5_CD 6_CD 7_CD 10_CD ###_CD ####_CD #####_CD ######_CD PathLength_NNP Number_NNP of_IN Nodes_NNP ADHT_NNP bf_NN =_JJ #_# ADHT_NNP bf_NN =_JJ ##_CD ADHT_NN bf_NN =_JJ ##_CD PASTRY_NN bf_NN =_JJ #_# ,_, ##_NN ,_, ##_CD Figure_NN ##_NN :_: Average_JJ path_NN length_NN to_TO root_VB in_IN Pastry_NN versus_CC ADHT_NN for_IN different_JJ branching_VBG factors_NNS ._.
+Note_VB that_IN all_DT lines_NNS corresponding_VBG to_TO Pastry_NN overlap_VBP ._.
+0_CD 2_CD 4_CD 6_CD 8_CD 10_CD 12_CD 14_CD 16_CD 10_CD ###_CD ####_CD #####_CD ######_CD Percentageofviolations_NNP Number_NNP of_IN Nodes_NNPS bf_NN =_JJ #_# bf_NN =_JJ ##_CD bf_NN =_JJ ##_CD Figure_NN ##_NN :_: Percentage_NN of_IN probe_NN pairs_NNS whose_WP$ paths_NNS to_TO the_DT root_NN did_VBD not_RB conform_VB to_TO the_DT path_NN convergence_NN property_NN with_IN Pastry_NN ._.
+U_NNP pdate-All_NNP U_NNP pdate-U_NNP p_NN U_NN pdate-Local_JJ 0_CD 200_CD 400_CD 600_CD 800_CD Latency_NN -LRB-_-LRB- inms_NNS -RRB-_-RRB- Average_JJ Latency_NN U_NNP pdate-All_NNP U_NNP pdate-U_NNP p_NN U_NN pdate-Local_JJ 0_CD 1000_CD 2000_CD 3000_CD Latency_NN -LRB-_-LRB- inms_NNS -RRB-_-RRB- Average_JJ Latency_NN -LRB-_-LRB- a_DT -RRB-_-RRB- -LRB-_-LRB- b_NN -RRB-_-RRB- Figure_NN ##_NN :_: Latency_NN of_IN probes_NNS for_IN aggregate_NN at_IN global_JJ root_NN level_NN with_IN three_CD different_JJ modes_NNS of_IN aggregate_JJ propagation_NN on_IN -LRB-_-LRB- a_DT -RRB-_-RRB- department_NN machines_NNS ,_, and_CC -LRB-_-LRB- b_LS -RRB-_-RRB- PlanetLab_NNP machines_NNS Pastry_NN and_CC ADHT_NN in_IN the_DT average_JJ path_NN length_NN ;_: but_CC it_PRP is_VBZ at_IN these_DT small_JJ domain_NN sizes_NNS ,_, that_IN the_DT path_NN convergence_NN fails_VBZ more_RBR often_RB with_IN the_DT original_JJ Pastry_NN ._.
+7_CD ._.
+#_# Testbed_VBN experiments_NNS We_PRP run_VBP our_PRP$ prototype_NN on_IN ###_NN department_NN machines_NNS -LRB-_-LRB- some_DT machines_NNS ran_VBD multiple_JJ node_NN instances_NNS ,_, so_RB this_DT configuration_NN has_VBZ a_DT total_NN of_IN ###_CD SDIMS_NNS nodes_NNS -RRB-_-RRB- and_CC also_RB on_IN ##_CD machines_NNS of_IN the_DT PlanetLab_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- testbed_VBN ._.
+We_PRP measure_VBP the_DT performance_NN of_IN our_PRP$ system_NN with_IN two_CD micro-benchmarks_NNS ._.
+In_IN the_DT first_JJ micro-benchmark_NN ,_, we_PRP install_VBP three_CD aggregation_NN functions_NNS of_IN types_NNS Update-Local_JJ ,_, Update-Up_NN ,_, and_CC Update-All_NNP ,_, perform_VB update_VB operation_NN on_IN all_DT nodes_NNS for_IN all_DT three_CD aggregation_NN functions_NNS ,_, and_CC measure_VB the_DT latencies_NNS incurred_VBN by_IN probes_NNS for_IN the_DT global_JJ aggregate_NN from_IN all_DT nodes_NNS in_IN the_DT system_NN ._.
+Figure_NNP ##_NN 387_CD 0_CD 20_CD 40_CD 60_CD 80_CD 100_CD 120_CD 140_CD 0_CD #_# ##_CD ##_CD ##_CD ##_CD 2700_CD 2720_CD 2740_CD 2760_CD 2780_CD 2800_CD 2820_CD 2840_CD Latency_NN -LRB-_-LRB- inms_NNS -RRB-_-RRB- ValuesObserved_NNP Time_NNP -LRB-_-LRB- in_IN sec_NN -RRB-_-RRB- Values_NNS latency_NN Node_NNP Killed_NNP Figure_NNP ##_NNP :_: Micro-benchmark_NN on_IN department_NN network_NN showing_VBG the_DT behavior_NN of_IN the_DT probes_NNS from_IN a_DT single_JJ node_NN when_WRB failures_NNS are_VBP happening_VBG at_IN some_DT other_JJ nodes_NNS ._.
+All_DT ###_CD nodes_NNS assign_VBP a_DT value_NN of_IN 10_CD to_TO the_DT attribute_NN ._.
+10_CD 100_CD 1000_CD 10000_CD 100000_CD 0_CD ##_CD ###_CD ###_CD ###_CD ###_CD ###_CD ###_CD ###_CD ###_CD ###_CD 500_CD 550_CD 600_CD 650_CD 700_CD Latency_NN -LRB-_-LRB- inms_NNS -RRB-_-RRB- ValuesObserved_NNP Time_NNP -LRB-_-LRB- in_IN sec_NN -RRB-_-RRB- Values_NNS latency_NN Node_NNP Killed_NNP Figure_NNP ##_NNP :_: Probe_NNP performance_NN during_IN failures_NNS on_IN ##_NN machines_NNS of_IN PlanetLab_NNP testbed_VBD shows_VBZ the_DT observed_VBN latencies_NNS for_IN both_DT testbeds_NNS ._.
+Notice_NNP that_IN the_DT latency_NN in_IN Update-Local_NNP is_VBZ high_JJ compared_VBN to_TO the_DT Update-UP_NN policy_NN ._.
+This_DT is_VBZ because_IN latency_NN in_IN Update-Local_NNP is_VBZ affected_VBN by_IN the_DT presence_NN of_IN even_RB a_DT single_JJ slow_JJ machine_NN or_CC a_DT single_JJ machine_NN with_IN a_DT high_JJ latency_NN network_NN connection_NN ._.
+In_IN the_DT second_JJ benchmark_NN ,_, we_PRP examine_VBP robustness_NN ._.
+We_PRP install_VBP one_CD aggregation_NN function_NN of_IN type_NN Update-Up_NN that_WDT performs_VBZ sum_NN operation_NN on_IN an_DT integer_NN valued_VBN attribute_NN ._.
+Each_DT node_NN updates_NNS the_DT attribute_NN with_IN the_DT value_NN ##_NN ._.
+Then_RB we_PRP monitor_VBP the_DT latencies_NNS and_CC results_NNS returned_VBD on_IN the_DT probe_NN operation_NN for_IN global_JJ aggregate_NN on_IN one_CD chosen_VBN node_NN ,_, while_IN we_PRP kill_VBP some_DT nodes_NNS after_IN every_DT few_JJ probes_NNS ._.
+Figure_NNP ##_NN shows_VBZ the_DT results_NNS on_IN the_DT departmental_JJ testbed_NN ._.
+Due_JJ to_TO the_DT nature_NN of_IN the_DT testbed_NN -LRB-_-LRB- machines_NNS in_IN a_DT department_NN -RRB-_-RRB- ,_, there_EX is_VBZ little_JJ change_NN in_IN the_DT latencies_NNS even_RB in_IN the_DT face_NN of_IN reconfigurations_NNS ._.
+In_IN Figure_NNP ##_NNP ,_, we_PRP present_VBP the_DT results_NNS of_IN the_DT experiment_NN on_IN PlanetLab_NNP testbed_VBD ._.
+The_DT root_NN node_NN of_IN the_DT aggregation_NN tree_NN is_VBZ terminated_VBN after_IN about_IN ###_CD seconds_NNS ._.
+There_EX is_VBZ a_DT 5X_NN increase_NN in_IN the_DT latencies_NNS after_IN the_DT death_NN of_IN the_DT initial_JJ root_NN node_NN as_IN a_DT more_RBR distant_JJ node_NN becomes_VBZ the_DT root_NN node_NN after_IN repairs_NNS ._.
+In_IN both_DT experiments_NNS ,_, the_DT values_NNS returned_VBD on_IN probes_NNS start_VBP reflecting_VBG the_DT correct_JJ situation_NN within_IN a_DT short_JJ time_NN after_IN the_DT failures_NNS ._.
+From_IN both_CC the_DT testbed_JJ benchmark_NN experiments_NNS and_CC the_DT simulation_NN experiments_NNS on_IN flexibility_NN and_CC scalability_NN ,_, we_PRP conclude_VBP that_IN -LRB-_-LRB- #_# -RRB-_-RRB- the_DT flexibility_NN provided_VBN by_IN SDIMS_NN allows_VBZ applications_NNS to_TO tradeoff_NN read-write_JJ overheads_NNS -LRB-_-LRB- Figure_NN #_# -RRB-_-RRB- ,_, read_VB latency_NN ,_, and_CC sensitivity_NN to_TO slow_VB machines_NNS -LRB-_-LRB- Figure_NN ##_NN -RRB-_-RRB- ,_, -LRB-_-LRB- #_# -RRB-_-RRB- a_DT good_JJ default_NN aggregation_NN strategy_NN is_VBZ Update-Up_NN which_WDT has_VBZ moderate_JJ overheads_NNS on_IN both_DT reads_VBZ and_CC writes_VBZ -LRB-_-LRB- Figure_NNP #_# -RRB-_-RRB- ,_, has_VBZ moderate_JJ read_NN latencies_NNS -LRB-_-LRB- Figure_NN ##_NN -RRB-_-RRB- ,_, and_CC is_VBZ scalable_JJ with_IN respect_NN to_TO both_DT nodes_NNS and_CC attributes_NNS -LRB-_-LRB- Figure_NN #_# -RRB-_-RRB- ,_, and_CC -LRB-_-LRB- #_# -RRB-_-RRB- small_JJ domain_NN sizes_NNS are_VBP the_DT cases_NNS where_WRB DHT_NNP algorithms_NNS fail_VBP to_TO provide_VB path_NN convergence_NN more_RBR often_RB and_CC SDIMS_NNP ensures_VBZ path_NN convergence_NN with_IN only_RB a_DT moderate_JJ increase_NN in_IN path_NN lengths_NNS -LRB-_-LRB- Figure_NN ##_NN -RRB-_-RRB- ._.
+7_CD ._.
+#_# Applications_NNS SDIMS_NNS is_VBZ designed_VBN as_IN a_DT general_JJ distributed_VBN monitoring_NN and_CC control_NN infrastructure_NN for_IN a_DT broad_JJ range_NN of_IN applications_NNS ._.
+Above_IN ,_, we_PRP discuss_VBP some_DT simple_JJ microbenchmarks_NNS including_VBG a_DT multicast_JJ membership_NN service_NN and_CC a_DT calculate-sum_JJ function_NN ._.
+Van_NNP Renesse_NNP et_FW al_FW ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- provide_VBP detailed_JJ examples_NNS of_IN how_WRB such_JJ a_DT service_NN can_MD be_VB used_VBN for_IN a_DT peer-to-peer_JJ caching_NN directory_NN ,_, a_DT data-diffusion_JJ service_NN ,_, a_DT publishsubscribe_NN system_NN ,_, barrier_NN synchronization_NN ,_, and_CC voting_NN ._.
+Additionally_RB ,_, we_PRP have_VBP initial_JJ experience_NN using_VBG SDIMS_NNS to_TO construct_VB two_CD significant_JJ applications_NNS :_: the_DT control_NN plane_NN for_IN a_DT large-scale_JJ distributed_VBN file_NN system_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- and_CC a_DT network_NN monitor_NN for_IN identifying_VBG heavy_JJ hitters_NNS that_WDT consume_VBP excess_JJ resources_NNS ._.
+Distributed_VBN file_NN system_NN control_NN :_: The_DT PRACTI_NN -LRB-_-LRB- Partial_JJ Replication_NN ,_, Arbitrary_JJ Consistency_NN ,_, Topology_NNP Independence_NNP -RRB-_-RRB- replication_NN system_NN provides_VBZ a_DT set_NN of_IN mechanisms_NNS for_IN data_NNS replication_NN over_IN which_WDT arbitrary_JJ control_NN policies_NNS can_MD be_VB layered_VBN ._.
+We_PRP use_VBP SDIMS_NNP to_TO provide_VB several_JJ key_JJ functions_NNS in_IN order_NN to_TO create_VB a_DT file_NN system_NN over_IN the_DT lowlevel_JJ PRACTI_NN mechanisms_NNS ._.
+First_RB ,_, nodes_NNS use_VBP SDIMS_NNP as_IN a_DT directory_NN to_TO handle_VB read_NN misses_VBZ ._.
+When_WRB a_DT node_NN n_NN receives_VBZ an_DT object_NN o_NN ,_, it_PRP updates_NNS the_DT -LRB-_-LRB- ReadDir_NNP ,_, o_NN -RRB-_-RRB- attribute_NN with_IN the_DT value_NN n_NN ;_: when_WRB n_NN discards_VBZ o_NN from_IN its_PRP$ local_JJ store_NN ,_, it_PRP resets_VBZ -LRB-_-LRB- ReadDir_NNP ,_, o_NN -RRB-_-RRB- to_TO NULL_NNP ._.
+At_IN each_DT virtual_JJ node_NN ,_, the_DT ReadDir_NNP aggregation_NN function_NN simply_RB selects_VBZ a_DT random_JJ non-null_JJ child_NN value_NN -LRB-_-LRB- if_IN any_DT -RRB-_-RRB- and_CC we_PRP use_VBP the_DT Update-Up_JJ policy_NN for_IN propagating_VBG updates_NNS ._.
+Finally_RB ,_, to_TO locate_VB a_DT nearby_JJ copy_NN of_IN an_DT object_NN o_NN ,_, a_DT node_NN n1_NN issues_NNS a_DT series_NN of_IN probe_NN requests_NNS for_IN the_DT -LRB-_-LRB- ReadDir_NNP ,_, o_NN -RRB-_-RRB- attribute_NN ,_, starting_VBG with_IN level_NN =_JJ #_# and_CC increasing_VBG the_DT level_NN value_NN with_IN each_DT repeated_VBN probe_NN request_NN until_IN a_DT non-null_JJ node_NN ID_NN n2_NN is_VBZ returned_VBN ._.
+n1_NN then_RB sends_VBZ a_DT demand_NN read_VBD request_NN to_TO n2_NN ,_, and_CC n2_NN sends_VBZ the_DT data_NNS if_IN it_PRP has_VBZ it_PRP ._.
+Conversely_RB ,_, if_IN n2_NN does_VBZ not_RB have_VB a_DT copy_NN of_IN o_NN ,_, it_PRP sends_VBZ a_DT nack_NN to_TO n1_NN ,_, and_CC n1_NN issues_NNS a_DT retry_VBP probe_NN with_IN the_DT down_JJ parameter_NN set_VBN to_TO a_DT value_NN larger_JJR than_IN used_VBN in_IN the_DT previous_JJ probe_NN in_IN order_NN to_TO force_VB on-demand_JJ re-aggregation_NN ,_, which_WDT will_MD yield_VB a_DT fresher_JJR value_NN for_IN the_DT retry_VB ._.
+Second_RB ,_, nodes_NNS subscribe_VBP to_TO invalidations_NNS and_CC updates_NNS to_TO interest_NN sets_NNS of_IN files_NNS ,_, and_CC nodes_NNS use_VBP SDIMS_NNP to_TO set_VB up_RP and_CC maintain_VB perinterest-set_JJ network-topology-sensitive_JJ spanning_NN trees_NNS for_IN propagating_VBG this_DT information_NN ._.
+To_TO subscribe_VB to_TO invalidations_NNS for_IN interest_NN set_NN i_FW ,_, a_DT node_NN n1_NN first_JJ updates_NNS the_DT -LRB-_-LRB- Inval_NNP ,_, i_LS -RRB-_-RRB- attribute_NN with_IN its_PRP$ identity_NN n1_NN ,_, and_CC the_DT aggregation_NN function_NN at_IN each_DT virtual_JJ node_NN selects_VBZ one_CD non-null_JJ child_NN value_NN ._.
+Finally_RB ,_, n1_NN probes_NNS increasing_VBG levels_NNS of_IN the_DT the_DT -LRB-_-LRB- Inval_NNP ,_, i_LS -RRB-_-RRB- attribute_NN until_IN it_PRP finds_VBZ the_DT first_JJ node_NN n2_NN =_JJ n1_NN ;_: n1_NN then_RB uses_VBZ n2_NN as_IN its_PRP$ parent_NN in_IN the_DT spanning_VBG tree_NN ._.
+n1_NN also_RB issues_VBZ a_DT continuous_JJ probe_NN for_IN this_DT attribute_NN at_IN this_DT level_NN so_IN that_IN it_PRP is_VBZ notified_VBN of_IN any_DT change_NN to_TO its_PRP$ spanning_VBG tree_NN parent_NN ._.
+Spanning_VBG trees_NNS for_IN streams_NNS of_IN pushed_VBN updates_NNS are_VBP maintained_VBN in_IN a_DT similar_JJ manner_NN ._.
+In_IN the_DT future_NN ,_, we_PRP plan_VBP to_TO use_VB SDIMS_NNP for_IN at_IN least_JJS two_CD additional_JJ services_NNS within_IN this_DT replication_NN system_NN ._.
+First_RB ,_, we_PRP plan_VBP to_TO use_VB SDIMS_NNP to_TO track_VB the_DT read_NN and_CC write_VB rates_NNS to_TO different_JJ objects_NNS ;_: prefetch_JJ algorithms_NNS will_MD use_VB this_DT information_NN to_TO prioritize_VB replication_NN -LSB-_-LRB- ##_CD ,_, ##_CD -RSB-_-RRB- ._.
+Second_RB ,_, we_PRP plan_VBP to_TO track_VB the_DT ranges_NNS of_IN invalidation_NN sequence_NN numbers_NNS seen_VBN by_IN each_DT node_NN for_IN each_DT interest_NN set_VBN in_IN order_NN to_TO augment_VB the_DT spanning_VBG trees_NNS described_VBN above_IN with_IN additional_JJ hole_NN filling_VBG to_TO allow_VB nodes_NNS to_TO locate_VB specific_JJ invalidations_NNS they_PRP have_VBP missed_VBN ._.
+Overall_RB ,_, our_PRP$ initial_JJ experience_NN with_IN using_VBG SDIMS_NNP for_IN the_DT PRACTII_NN replication_NN system_NN suggests_VBZ that_IN -LRB-_-LRB- #_# -RRB-_-RRB- the_DT general_JJ aggregation_NN interface_NN provided_VBN by_IN SDIMS_NNP simplifies_VBZ the_DT construction_NN of_IN distributed_VBN applications-given_NN the_DT low-level_JJ PRACTI_NN mechanisms_NNS ,_, 388_CD we_PRP were_VBD able_JJ to_TO construct_VB a_DT basic_JJ file_NN system_NN that_WDT uses_VBZ SDIMS_NNP for_IN several_JJ distinct_JJ control_NN tasks_NNS in_IN under_IN two_CD weeks_NNS and_CC -LRB-_-LRB- #_# -RRB-_-RRB- the_DT weak_JJ consistency_NN guarantees_VBZ provided_VBN by_IN SDIMS_NNS meet_VBP the_DT requirements_NNS of_IN this_DT application-each_NN node_NN ''_'' s_NNS controller_NN effectively_RB treats_VBZ information_NN from_IN SDIMS_NNP as_IN hints_NNS ,_, and_CC if_IN a_DT contacted_VBN node_NN does_VBZ not_RB have_VB the_DT needed_VBN data_NNS ,_, the_DT controller_NN retries_NNS ,_, using_VBG SDIMS_NNP on-demand_JJ reaggregation_NN to_TO obtain_VB a_DT fresher_JJR hint_NN ._.
+Distributed_VBN heavy_JJ hitter_NN problem_NN :_: The_DT goal_NN of_IN the_DT heavy_JJ hitter_NN problem_NN is_VBZ to_TO identify_VB network_NN sources_NNS ,_, destinations_NNS ,_, or_CC protocols_NNS that_WDT account_VBP for_IN significant_JJ or_CC unusual_JJ amounts_NNS of_IN traffic_NN ._.
+As_IN noted_VBN by_IN Estan_NNP et_FW al_FW ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- ,_, this_DT information_NN is_VBZ useful_JJ for_IN a_DT variety_NN of_IN applications_NNS such_JJ as_IN intrusion_NN detection_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, port_NN scanning_NN -RRB-_-RRB- ,_, denial_NN of_IN service_NN detection_NN ,_, worm_NN detection_NN and_CC tracking_NN ,_, fair_JJ network_NN allocation_NN ,_, and_CC network_NN maintenance_NN ._.
+Significant_JJ work_NN has_VBZ been_VBN done_VBN on_IN developing_VBG high-performance_JJ stream-processing_JJ algorithms_NNS for_IN identifying_VBG heavy_JJ hitters_NNS at_IN one_CD router_NN ,_, but_CC this_DT is_VBZ just_RB a_DT first_JJ step_NN ;_: ideally_RB these_DT applications_NNS would_MD like_VB not_RB just_RB one_CD router_NN ''_'' s_NNS views_NNS of_IN the_DT heavy_JJ hitters_NNS but_CC an_DT aggregate_JJ view_NN ._.
+We_PRP use_VBP SDIMS_NNP to_TO allow_VB local_JJ information_NN about_IN heavy_JJ hitters_NNS to_TO be_VB pooled_VBN into_IN a_DT view_NN of_IN global_JJ heavy_JJ hitters_NNS ._.
+For_IN each_DT destination_NN IP_NNP address_NN IPx_NN ,_, a_DT node_NN updates_NNS the_DT attribute_NN -LRB-_-LRB- DestBW_NN ,_, IPx_NN -RRB-_-RRB- with_IN the_DT number_NN of_IN bytes_NNS sent_VBN to_TO IPx_NN in_IN the_DT last_JJ time_NN window_NN ._.
+The_DT aggregation_NN function_NN for_IN attribute_NN type_NN DestBW_NN is_VBZ installed_VBN with_IN the_DT Update-UP_NN strategy_NN and_CC simply_RB adds_VBZ the_DT values_NNS from_IN child_NN nodes_NNS ._.
+Nodes_NNS perform_VBP continuous_JJ probe_NN for_IN global_JJ aggregate_NN of_IN the_DT attribute_NN and_CC raise_VB an_DT alarm_NN when_WRB the_DT global_JJ aggregate_JJ value_NN goes_VBZ above_IN a_DT specified_VBN limit_NN ._.
+Note_VB that_IN only_RB nodes_NNS sending_VBG data_NNS to_TO a_DT particular_JJ IP_NNP address_NN perform_VB probes_NNS for_IN the_DT corresponding_JJ attribute_NN ._.
+Also_RB note_NN that_WDT techniques_NNS from_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- can_MD be_VB extended_VBN to_TO hierarchical_JJ case_NN to_TO tradeoff_NN precision_NN for_IN communication_NN bandwidth_NN ._.
+8_CD ._.
+RELATED_JJ WORK_VBP The_DT aggregation_NN abstraction_NN we_PRP use_VBP in_IN our_PRP$ work_NN is_VBZ heavily_RB influenced_VBN by_IN the_DT Astrolabe_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- project_NN ._.
+Astrolabe_NN adopts_VBZ a_DT PropagateAll_NNP and_CC unstructured_JJ gossiping_VBG techniques_NNS to_TO attain_VB robustness_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+However_RB ,_, any_DT gossiping_VBG scheme_NN requires_VBZ aggressive_JJ replication_NN of_IN the_DT aggregates_NNS ._.
+While_IN such_JJ aggressive_JJ replication_NN is_VBZ efficient_JJ for_IN read-dominated_JJ attributes_NNS ,_, it_PRP incurs_VBZ high_JJ message_NN cost_NN for_IN attributes_NNS with_IN a_DT small_JJ read-to-write_JJ ratio_NN ._.
+Our_PRP$ approach_NN provides_VBZ a_DT flexible_JJ API_NNP for_IN applications_NNS to_TO set_VB propagation_NN rules_NNS according_VBG to_TO their_PRP$ read-to-write_JJ ratios_NNS ._.
+Other_JJ closely_RB related_JJ projects_NNS include_VBP Willow_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, Cone_NNP -LSB-_-LRB- #_# -RSB-_-RRB- ,_, DASIS_NN -LSB-_-LRB- #_# -RSB-_-RRB- ,_, and_CC SOMO_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Willow_NNP ,_, DASIS_NNP and_CC SOMO_NNP build_VBP a_DT single_JJ tree_NN for_IN aggregation_NN ._.
+Cone_NNP builds_VBZ a_DT tree_NN per_IN attribute_NN and_CC requires_VBZ a_DT total_JJ order_NN on_IN the_DT attribute_NN values_NNS ._.
+Several_JJ academic_JJ -LSB-_-LRB- ##_CD ,_, ##_CD ,_, ##_CD -RSB-_-RRB- and_CC commercial_JJ -LSB-_-LRB- ##_CD -RSB-_-RRB- distributed_VBN monitoring_NN systems_NNS have_VBP been_VBN designed_VBN to_TO monitor_VB the_DT status_NN of_IN large_JJ networked_JJ systems_NNS ._.
+Some_DT of_IN them_PRP are_VBP centralized_VBN where_WRB all_PDT the_DT monitoring_NN data_NNS is_VBZ collected_VBN and_CC analyzed_VBN at_IN a_DT central_JJ host_NN ._.
+Ganglia_NN -LSB-_-LRB- ##_CD ,_, ##_CD -RSB-_-RRB- uses_VBZ a_DT hierarchical_JJ system_NN where_WRB the_DT attributes_NNS are_VBP replicated_VBN within_IN clusters_NNS using_VBG multicast_JJ and_CC then_RB cluster_NN aggregates_NNS are_VBP further_JJ aggregated_VBN along_IN a_DT single_JJ tree_NN ._.
+Sophia_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- is_VBZ a_DT distributed_VBN monitoring_NN system_NN designed_VBN with_IN a_DT declarative_JJ logic_NN programming_NN model_NN where_WRB the_DT location_NN of_IN query_JJ execution_NN is_VBZ both_CC explicit_JJ in_IN the_DT language_NN and_CC can_MD be_VB calculated_VBN during_IN evaluation_NN ._.
+This_DT research_NN is_VBZ complementary_JJ to_TO our_PRP$ work_NN ._.
+TAG_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- collects_VBZ information_NN from_IN a_DT large_JJ number_NN of_IN sensors_NNS along_IN a_DT single_JJ tree_NN ._.
+The_DT observation_NN that_IN DHTs_NNS internally_RB provide_VBP a_DT scalable_JJ forest_NN of_IN reduction_NN trees_NNS is_VBZ not_RB new_JJ ._.
+Plaxton_NNP et_FW al_FW ._. ''_''
+s_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- original_JJ paper_NN describes_VBZ not_RB a_DT DHT_NNP ,_, but_CC a_DT system_NN for_IN hierarchically_RB aggregating_VBG and_CC querying_VBG object_NN location_NN data_NNS in_IN order_NN to_TO route_NN requests_NNS to_TO nearby_JJ copies_NNS of_IN objects_NNS ._.
+Many_JJ systems-building_JJ upon_IN both_CC Plaxton_NN ''_'' s_NNS bit-correcting_JJ strategy_NN -LSB-_-LRB- ##_CD ,_, ##_CD -RSB-_-RRB- and_CC upon_IN other_JJ strategies_NNS -LSB-_-LRB- ##_CD ,_, ##_CD ,_, 35_CD -RSB-_-RRB- -_: have_VB chosen_VBN to_TO hide_VB this_DT power_NN and_CC export_VB a_DT simple_JJ and_CC general_JJ distributed_VBN hash_NN table_NN abstraction_NN as_IN a_DT useful_JJ building_NN block_NN for_IN a_DT broad_JJ range_NN of_IN distributed_VBN applications_NNS ._.
+Some_DT of_IN these_DT systems_NNS internally_RB make_VBP use_NN of_IN the_DT reduction_NN forest_NN not_RB only_RB for_IN routing_VBG but_CC also_RB for_IN caching_VBG -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, but_CC for_IN simplicity_NN ,_, these_DT systems_NNS do_VBP not_RB generally_RB export_VB this_DT powerful_JJ functionality_NN in_IN their_PRP$ external_JJ interface_NN ._.
+Our_PRP$ goal_NN is_VBZ to_TO develop_VB and_CC expose_VB the_DT internal_JJ reduction_NN forest_NN of_IN DHTs_NNS as_IN a_DT similarly_RB general_JJ and_CC useful_JJ abstraction_NN ._.
+Although_IN object_NN location_NN is_VBZ a_DT predominant_JJ target_NN application_NN for_IN DHTs_NNS ,_, several_JJ other_JJ applications_NNS like_IN multicast_JJ -LSB-_-LRB- #_# ,_, #_# ,_, ##_NN ,_, ##_NN -RSB-_-RRB- and_CC DNS_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- are_VBP also_RB built_VBN using_VBG DHTs_NNS ._.
+All_PDT these_DT systems_NNS implicitly_RB perform_VBP aggregation_NN on_IN some_DT attribute_NN ,_, and_CC each_DT one_CD of_IN them_PRP must_MD be_VB designed_VBN to_TO handle_VB any_DT reconfigurations_NNS in_IN the_DT underlying_VBG DHT_NN ._.
+With_IN the_DT aggregation_NN abstraction_NN provided_VBN by_IN our_PRP$ system_NN ,_, designing_VBG and_CC building_NN of_IN such_JJ applications_NNS becomes_VBZ easier_JJR ._.
+Internal_JJ DHT_NN trees_NNS typically_RB do_VBP not_RB satisfy_VB domain_NN locality_NN properties_NNS required_VBN in_IN our_PRP$ system_NN ._.
+Castro_NNP et_FW al_FW ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- and_CC Gummadi_NNP et_FW al_FW ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- point_NN out_IN the_DT importance_NN of_IN path_NN convergence_NN from_IN the_DT perspective_NN of_IN achieving_VBG efficiency_NN and_CC investigate_VB the_DT performance_NN of_IN Pastry_NN and_CC other_JJ DHT_NNP algorithms_NNS ,_, respectively_RB ._.
+SkipNet_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- provides_VBZ domain_NN restricted_JJ routing_VBG where_WRB a_DT key_JJ search_NN is_VBZ limited_VBN to_TO the_DT specified_JJ domain_NN ._.
+This_DT interface_NN can_MD be_VB used_VBN to_TO ensure_VB path_NN convergence_NN by_IN searching_VBG in_IN the_DT lowest_JJS domain_NN and_CC moving_VBG up_RP to_TO the_DT next_JJ domain_NN when_WRB the_DT search_NN reaches_VBZ the_DT root_NN in_IN the_DT current_JJ domain_NN ._.
+Although_IN this_DT strategy_NN guarantees_NNS path_NN convergence_NN ,_, it_PRP loses_VBZ the_DT aggregation_NN tree_NN abstraction_NN property_NN of_IN DHTs_NNS as_IN the_DT domain_NN constrained_VBD routing_VBG might_MD touch_VB a_DT node_NN more_RBR than_IN once_RB -LRB-_-LRB- as_IN it_PRP searches_VBZ forward_RB and_CC then_RB backward_RB to_TO stay_VB within_IN a_DT domain_NN -RRB-_-RRB- ._.
+9_CD ._.
+CONCLUSIONS_NNS This_DT paper_NN presents_VBZ a_DT Scalable_JJ Distributed_VBN Information_NNP Management_NNP System_NNP -LRB-_-LRB- SDIMS_NNP -RRB-_-RRB- that_WDT aggregates_NNS information_NN in_IN large-scale_JJ networked_JJ systems_NNS and_CC that_WDT can_MD serve_VB as_IN a_DT basic_JJ building_NN block_NN for_IN a_DT broad_JJ range_NN of_IN applications_NNS ._.
+For_IN large_JJ scale_NN systems_NNS ,_, hierarchical_JJ aggregation_NN is_VBZ a_DT fundamental_JJ abstraction_NN for_IN scalability_NN ._.
+We_PRP build_VBP our_PRP$ system_NN by_IN extending_VBG ideas_NNS from_IN Astrolabe_NN and_CC DHTs_NNS to_TO achieve_VB -LRB-_-LRB- i_LS -RRB-_-RRB- scalability_NN with_IN respect_NN to_TO both_DT nodes_NNS and_CC attributes_NNS through_IN a_DT new_JJ aggregation_NN abstraction_NN that_WDT helps_VBZ leverage_NN DHT_NN ''_'' s_NNS internal_JJ trees_NNS for_IN aggregation_NN ,_, -LRB-_-LRB- ii_LS -RRB-_-RRB- flexibility_NN through_IN a_DT simple_JJ API_NN that_WDT lets_VBZ applications_NNS control_JJ propagation_NN of_IN reads_VBZ and_CC writes_VBZ ,_, -LRB-_-LRB- iii_LS -RRB-_-RRB- administrative_JJ isolation_NN through_IN simple_JJ augmentations_NNS of_IN current_JJ DHT_NNP algorithms_NNS ,_, and_CC -LRB-_-LRB- iv_LS -RRB-_-RRB- robustness_NN to_TO node_NN and_CC network_NN reconfigurations_NNS through_IN lazy_JJ reaggregation_NN ,_, on-demand_JJ reaggregation_NN ,_, and_CC tunable_JJ spatial_JJ replication_NN ._.
+Acknowlegements_NNP We_PRP are_VBP grateful_JJ to_TO J_NN ._.
+C_NN ._.
+Browne_NNP ,_, Robert_NNP van_NNP Renessee_NNP ,_, Amin_NNP Vahdat_NNP ,_, Jay_NNP Lepreau_NNP ,_, and_CC the_DT anonymous_JJ reviewers_NNS for_IN their_PRP$ helpful_JJ comments_NNS on_IN this_DT work_NN ._.
+10_CD ._.
+REFERENCES_NNS -LSB-_-LRB- #_# -RSB-_-RRB- K_NNP ._.
+Albrecht_NNP ,_, R_NN ._.
+Arnold_NNP ,_, M_NN ._.
+Gahwiler_NNP ,_, and_CC R_NN ._.
+Wattenhofer_NNP ._.
+Join_VB and_CC Leave_VB in_IN Peer-to-Peer_NNP Systems_NNPS :_: The_DT DASIS_NN approach_NN ._.
+Technical_NNP report_NN ,_, CS_NNP ,_, ETH_NNP Zurich_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- G_NN ._.
+Back_RB ,_, W_NN ._.
+H_NN ._.
+Hsieh_NNP ,_, and_CC J_NN ._.
+Lepreau_NNP ._.
+Processes_NNS in_IN KaffeOS_NNP :_: Isolation_NN ,_, Resource_NNP Management_NNP ,_, and_CC Sharing_VBG in_IN Java_NNP ._.
+In_IN Proc_NNP ._.
+OSDI_NNP ,_, Oct_NNP ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- G_NN ._.
+Banga_NNP ,_, P_NN ._.
+Druschel_NNP ,_, and_CC J_NN ._.
+Mogul_NNP ._.
+Resource_NNP Containers_NNPS :_: A_DT New_NNP Facility_NNP for_IN Resource_NNP Management_NNP in_IN Server_NN Systems_NNPS ._.
+In_IN OSDI99_NN ,_, Feb_NNP ._.
+####_NN ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- R_NN ._.
+Bhagwan_NNP ,_, P_NN ._.
+Mahadevan_NNP ,_, G_NNP ._.
+Varghese_NNP ,_, and_CC G_NN ._.
+M_NN ._.
+Voelker_NNP ._.
+Cone_NNP :_: A_NNP Distributed_VBN Heap-Based_JJ Approach_NN to_TO Resource_NNP Selection_NN ._.
+Technical_NNP Report_NNP CS2004-0784_NNP ,_, UCSD_NNP ,_, ####_CD ._.
+389_CD -LSB-_-LRB- #_# -RSB-_-RRB- K_NNP ._.
+P_NN ._.
+Birman_NNP ._.
+The_DT Surprising_NNP Power_NNP of_IN Epidemic_NNP Communication_NNP ._.
+In_IN Proceedings_NNP of_IN FuDiCo_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- B_NN ._.
+Bloom_NNP ._.
+Space_NN /_: time_NN tradeoffs_NNS in_IN hash_NN coding_VBG with_IN allowable_JJ errors_NNS ._.
+Comm_NNP ._.
+of_IN the_DT ACM_NNP ,_, ##_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 422-425_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- M_NN ._.
+Castro_NNP ,_, P_NN ._.
+Druschel_NNP ,_, Y_NN ._.
+C_NN ._.
+Hu_NNP ,_, and_CC A_NN ._.
+Rowstron_NNP ._.
+Exploiting_VBG Network_NNP Proximity_NNP in_IN Peer-to-Peer_NNP Overlay_NNP Networks_NNP ._.
+Technical_NNP Report_NNP MSR-TR-2002-82_NNP ,_, MSR_NN ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- M_NN ._.
+Castro_NNP ,_, P_NN ._.
+Druschel_NNP ,_, A_NNP ._.
+-_: M_NN ._.
+Kermarrec_NNP ,_, A_NNP ._.
+Nandi_NNP ,_, A_NNP ._.
+Rowstron_NNP ,_, and_CC A_NN ._.
+Singh_NNP ._.
+SplitStream_NNP :_: High-bandwidth_JJ Multicast_NNP in_IN a_DT Cooperative_NNP Environment_NNP ._.
+In_IN SOSP_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- M_NN ._.
+Castro_NNP ,_, P_NN ._.
+Druschel_NNP ,_, A_NNP ._.
+-_: M_NN ._.
+Kermarrec_NNP ,_, and_CC A_NN ._.
+Rowstron_NNP ._.
+SCRIBE_NN :_: A_DT Large-scale_JJ and_CC Decentralised_JJ Application-level_JJ Multicast_NNP Infrastructure_NNP ._.
+IEEE_NNP JSAC_NNP -LRB-_-LRB- Special_JJ issue_NN on_IN Network_NNP Support_NN for_IN Multicast_NNP Communications_NNP -RRB-_-RRB- ,_, ####_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+Challenger_NNP ,_, P_NN ._.
+Dantzig_NNP ,_, and_CC A_NN ._.
+Iyengar_NNP ._.
+A_DT scalable_JJ and_CC highly_RB available_JJ system_NN for_IN serving_VBG dynamic_JJ data_NNS at_IN frequently_RB accessed_VBN web_NN sites_NNS ._.
+In_IN In_IN Proceedings_NNP of_IN ACM_NNP /_: IEEE_NNP ,_, Supercomputing_NNP ''_'' ##_NN -LRB-_-LRB- SC98_NN -RRB-_-RRB- ,_, Nov_NNP ._.
+####_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- R_NN ._.
+Cox_NN ,_, A_DT ._.
+Muthitacharoen_NNP ,_, and_CC R_NN ._.
+T_NN ._.
+Morris_NNP ._.
+Serving_VBG DNS_NNS using_VBG a_DT Peer-to-Peer_NNP Lookup_NNP Service_NNP ._.
+In_IN IPTPS_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- M_NN ._.
+Dahlin_NNP ,_, L_NNP ._.
+Gao_NNP ,_, A_NNP ._.
+Nayate_NNP ,_, A_NNP ._.
+Venkataramani_NNP ,_, P_NN ._.
+Yalagandula_NNP ,_, and_CC J_NN ._.
+Zheng_NNP ._.
+PRACTI_NN replication_NN for_IN large-scale_JJ systems_NNS ._.
+Technical_NNP Report_NNP TR-04-28_NN ,_, The_DT University_NNP of_IN Texas_NNP at_IN Austin_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- C_NN ._.
+Estan_NNP ,_, G_NNP ._.
+Varghese_NNP ,_, and_CC M_NN ._.
+Fisk_NNP ._.
+Bitmap_NNP algorithms_NNS for_IN counting_VBG active_JJ flows_NNS on_IN high_JJ speed_NN links_NNS ._.
+In_IN Internet_NNP Measurement_NNP Conference_NNP ####_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Y_NN ._.
+Fu_NNP ,_, J_NNP ._.
+Chase_NNP ,_, B_NN ._.
+Chun_NNP ,_, S_NN ._.
+Schwab_NNP ,_, and_CC A_NN ._.
+Vahdat_NNP ._.
+SHARP_NNP :_: An_DT architecture_NN for_IN secure_JJ resource_NN peering_VBG ._.
+In_IN Proc_NNP ._.
+SOSP_NNP ,_, Oct_NNP ._.
+####_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Ganglia_NN :_: Distributed_VBN Monitoring_NN and_CC Execution_NNP System_NNP ._.
+http_NN :_: /_: /_: ganglia_NNS ._.
+sourceforge_NN ._.
+net_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- S_NN ._.
+Gribble_NNP ,_, A_NNP ._.
+Halevy_NNP ,_, Z_NN ._.
+Ives_NNP ,_, M_NN ._.
+Rodrig_NNP ,_, and_CC D_NN ._.
+Suciu_NNP ._.
+What_WDT Can_MD Peer-to-Peer_NNP Do_VB for_IN Databases_NNS ,_, and_CC Vice_NNP Versa_NNP ?_.
+In_IN Proceedings_NNP of_IN the_DT WebDB_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- K_NN ._.
+Gummadi_NNP ,_, R_NN ._.
+Gummadi_NNP ,_, S_NN ._.
+D_NN ._.
+Gribble_NNP ,_, S_NN ._.
+Ratnasamy_NNP ,_, S_NN ._.
+Shenker_NNP ,_, and_CC I_PRP ._.
+Stoica_NNP ._.
+The_DT Impact_NN of_IN DHT_NNP Routing_NNP Geometry_NN on_IN Resilience_NN and_CC Proximity_NN ._.
+In_IN SIGCOMM_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- N_NN ._.
+J_NN ._.
+A_DT ._.
+Harvey_NNP ,_, M_NN ._.
+B_NN ._.
+Jones_NNP ,_, S_NN ._.
+Saroiu_NNP ,_, M_NN ._.
+Theimer_NNP ,_, and_CC A_NN ._.
+Wolman_NNP ._.
+SkipNet_NNP :_: A_NNP Scalable_NNP Overlay_NNP Network_NNP with_IN Practical_NNP Locality_NNP Properties_NNPS ._.
+In_IN USITS_NNP ,_, March_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- R_NN ._.
+Huebsch_NNP ,_, J_NNP ._.
+M_NN ._.
+Hellerstein_NNP ,_, N_NNP ._.
+Lanham_NNP ,_, B_NN ._.
+T_NN ._.
+Loo_NNP ,_, S_NN ._.
+Shenker_NNP ,_, and_CC I_PRP ._.
+Stoica_NNP ._.
+Querying_VBG the_DT Internet_NN with_IN PIER_NN ._.
+In_IN Proceedings_NNP of_IN the_DT VLDB_NNP Conference_NNP ,_, May_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- C_NN ._.
+Intanagonwiwat_NNP ,_, R_NN ._.
+Govindan_NNP ,_, and_CC D_NN ._.
+Estrin_NNP ._.
+Directed_NNP diffusion_NN :_: a_DT scalable_JJ and_CC robust_JJ communication_NN paradigm_NN for_IN sensor_NN networks_NNS ._.
+In_IN MobiCom_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- S_NN ._.
+R_NN ._.
+Madden_NNP ,_, M_NN ._.
+J_NN ._.
+Franklin_NNP ,_, J_NNP ._.
+M_NN ._.
+Hellerstein_NNP ,_, and_CC W_NN ._.
+Hong_NNP ._.
+TAG_NN :_: a_DT Tiny_NNP AGgregation_NNP Service_NNP for_IN ad-hoc_JJ Sensor_NNP Networks_NNP ._.
+In_IN OSDI_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- D_NN ._.
+Malkhi_NNP ._.
+Dynamic_NNP Lookup_NNP Networks_NNP ._.
+In_IN FuDiCo_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- M_NN ._.
+L_NN ._.
+Massie_NNP ,_, B_NN ._.
+N_NN ._.
+Chun_NNP ,_, and_CC D_NN ._.
+E_NN ._.
+Culler_NNP ._.
+The_DT ganglia_NN distributed_VBN monitoring_NN system_NN :_: Design_NN ,_, implementation_NN ,_, and_CC experience_NN ._.
+In_IN submission_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- P_NN ._.
+Maymounkov_NNP and_CC D_NNP ._.
+Mazieres_NNP ._.
+Kademlia_NNP :_: A_NNP Peer-to-peer_NNP Information_NNP System_NNP Based_VBD on_IN the_DT XOR_NNP Metric_NNP ._.
+In_IN Proceesings_NNP of_IN the_DT IPTPS_NNP ,_, March_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- C_NN ._.
+Olston_JJ and_CC J_NN ._.
+Widom_NNP ._.
+Offering_VBG a_DT precision-performance_JJ tradeoff_NN for_IN aggregation_NN queries_NNS over_IN replicated_VBN data_NNS ._.
+In_IN VLDB_NNP ,_, pages_NNS 144-155_CD ,_, Sept_NNP ._.
+####_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- K_NN ._.
+Petersen_NNP ,_, M_NN ._.
+Spreitzer_NNP ,_, D_NNP ._.
+Terry_NNP ,_, M_NN ._.
+Theimer_NNP ,_, and_CC A_NN ._.
+Demers_NNS ._.
+Flexible_JJ Update_NNP Propagation_NN for_IN Weakly_RB Consistent_JJ Replication_NN ._.
+In_IN Proc_NNP ._.
+SOSP_NNP ,_, Oct_NNP ._.
+####_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Planetlab_NN ._.
+http_NN :_: /_: /_: www_NN ._.
+planet-lab_NN ._.
+org_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- C_NN ._.
+G_NN ._.
+Plaxton_NNP ,_, R_NN ._.
+Rajaraman_NNP ,_, and_CC A_NN ._.
+W_NN ._.
+Richa_NNP ._.
+Accessing_VBG Nearby_JJ Copies_NNS of_IN Replicated_VBN Objects_NNS in_IN a_DT Distributed_VBN Environment_NN ._.
+In_IN ACM_NNP SPAA_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- S_NN ._.
+Ratnasamy_NNP ,_, P_NN ._.
+Francis_NNP ,_, M_NN ._.
+Handley_NNP ,_, R_NN ._.
+Karp_NNP ,_, and_CC S_NN ._.
+Shenker_NNP ._.
+A_DT Scalable_JJ Content_NNP Addressable_NNP Network_NNP ._.
+In_IN Proceedings_NNP of_IN ACM_NNP SIGCOMM_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- S_NN ._.
+Ratnasamy_NNP ,_, S_NN ._.
+Shenker_NNP ,_, and_CC I_PRP ._.
+Stoica_NNP ._.
+Routing_VBG Algorithms_NNS for_IN DHTs_NNS :_: Some_DT Open_VBP Questions_NNS ._.
+In_IN IPTPS_NNS ,_, March_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- T_NN ._.
+Roscoe_NNP ,_, R_NN ._.
+Mortier_NNP ,_, P_NN ._.
+Jardetzky_NNP ,_, and_CC S_NN ._.
+Hand_VB ._.
+InfoSpect_NNP :_: Using_VBG a_DT Logic_NNP Language_NN for_IN System_NNP Health_NNP Monitoring_NN in_IN Distributed_VBN Systems_NNPS ._.
+In_IN Proceedings_NNP of_IN the_DT SIGOPS_NNP European_NNP Workshop_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- A_DT ._.
+Rowstron_NNP and_CC P_NN ._.
+Druschel_NNP ._.
+Pastry_NN :_: Scalable_NNP ,_, Distributed_VBN Object_NNP Location_NNP and_CC Routing_NNP for_IN Large-scale_JJ Peer-to-peer_NNP Systems_NNPS ._.
+In_IN Middleware_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- S_NN ._.
+Ratnasamy_NNP ,_, M_NN ._.
+Handley_NNP ,_, R_NN ._.
+Karp_NNP ,_, and_CC S_NN ._.
+Shenker_NNP ._.
+Application-level_JJ Multicast_NNP using_VBG Content-addressable_JJ Networks_NNP ._.
+In_IN Proceedings_NNP of_IN the_DT NGC_NNP ,_, November_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- W_NN ._.
+Stallings_NNP ._.
+SNMP_NNP ,_, SNMPv2_NN ,_, and_CC CMIP_NNP ._.
+Addison-Wesley_NNP ,_, 1993_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- I_PRP ._.
+Stoica_NNP ,_, R_NN ._.
+Morris_NNP ,_, D_NNP ._.
+Karger_NNP ,_, F_NN ._.
+Kaashoek_NNP ,_, and_CC H_NN ._.
+Balakrishnan_NNP ._.
+Chord_NNP :_: A_NNP scalable_JJ Peer-To-Peer_NNP lookup_NN service_NN for_IN internet_NN applications_NNS ._.
+In_IN ACM_NNP SIGCOMM_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- S_NN ._.
+Zhuang_NNP ,_, B_NN ._.
+Zhao_NNP ,_, A_NNP ._.
+Joseph_NNP ,_, R_NN ._.
+Katz_NNP ,_, and_CC J_NN ._.
+Kubiatowicz_NNP ._.
+Bayeux_NNP :_: An_DT Architecture_NNP for_IN Scalable_NNP and_CC Fault-tolerant_JJ Wide-Area_NNP Data_NNP Dissemination_NNP ._.
+In_IN NOSSDAV_NN ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- IBM_NNP Tivoli_NNP Monitoring_NN ._.
+www_NN ._.
+ibm_NN ._.
+com_NN /_: software_NN /_: tivoli_NNS /_: products_NNS /_: monitor_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- R_NN ._.
+VanRenesse_NNP ,_, K_NNP ._.
+P_NN ._.
+Birman_NNP ,_, and_CC W_NN ._.
+Vogels_NNP ._.
+Astrolabe_NN :_: A_DT Robust_JJ and_CC Scalable_NNP Technology_NNP for_IN Distributed_VBN System_NNP Monitoring_NN ,_, Management_NNP ,_, and_CC Data_NNP Mining_NNP ._.
+TOCS_NN ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- R_NN ._.
+VanRenesse_NNP and_CC A_NNP ._.
+Bozdog_NNP ._.
+Willow_NNP :_: DHT_NNP ,_, Aggregation_NN ,_, and_CC Publish_VB /_: Subscribe_NNP in_IN One_CD Protocol_NNP ._.
+In_IN IPTPS_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- A_DT ._.
+Venkataramani_NNP ,_, P_NN ._.
+Weidmann_NNP ,_, and_CC M_NN ._.
+Dahlin_NNP ._.
+Bandwidth_NN constrained_VBD placement_NN in_IN a_DT wan_NN ._.
+In_IN PODC_NN ,_, Aug_NN ._.
+####_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- A_DT ._.
+Venkataramani_NNP ,_, P_NN ._.
+Yalagandula_NNP ,_, R_NN ._.
+Kokku_NNP ,_, S_NN ._.
+Sharif_NNP ,_, and_CC M_NN ._.
+Dahlin_NNP ._.
+Potential_JJ costs_NNS and_CC benefits_NNS of_IN long-term_JJ prefetching_NN for_IN content-distribution_NN ._.
+Elsevier_NNP Computer_NNP Communications_NNPS ,_, ##_NN -LRB-_-LRB- #_# -RRB-_-RRB- :_: 367-375_CD ,_, Mar_NNP ._.
+####_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- M_NN ._.
+Wawrzoniak_NNP ,_, L_NNP ._.
+Peterson_NNP ,_, and_CC T_NN ._.
+Roscoe_NNP ._.
+Sophia_NNP :_: An_DT Information_NN Plane_NN for_IN Networked_NNP Systems_NNPS ._.
+In_IN HotNets-II_NNP ,_, 2003_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- R_NN ._.
+Wolski_NNP ,_, N_NNP ._.
+Spring_NN ,_, and_CC J_NN ._.
+Hayes_NNP ._.
+The_DT network_NN weather_NN service_NN :_: A_DT distributed_VBN resource_NN performance_NN forecasting_NN service_NN for_IN metacomputing_NN ._.
+Journal_NNP of_IN Future_NNP Generation_NNP Computing_NNP Systems_NNPS ,_, ##_NN -LRB-_-LRB- 5-6_CD -RRB-_-RRB- :_: 757-768_CD ,_, Oct_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- P_NN ._.
+Yalagandula_NN and_CC M_NN ._.
+Dahlin_NNP ._.
+SDIMS_NNP :_: A_NNP scalable_JJ distributed_VBN information_NN management_NN system_NN ._.
+Technical_NNP Report_NNP TR-03-47_NN ,_, Dept_NNP ._.
+of_IN Computer_NNP Sciences_NNPS ,_, UT_NNP Austin_NNP ,_, Sep_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Z_NN ._.
+Zhang_NNP ,_, S_NN ._.
+-_: M_NN ._.
+Shi_NNP ,_, and_CC J_NN ._.
+Zhu_NNP ._.
+SOMO_NNP :_: Self-Organized_NNP Metadata_NNP Overlay_NNP for_IN Resource_NNP Management_NNP in_IN P2P_NNP DHT_NNP ._.
+In_IN IPTPS_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- B_NN ._.
+Y_NN ._.
+Zhao_NNP ,_, J_NNP ._.
+D_NN ._.
+Kubiatowicz_NNP ,_, and_CC A_NN ._.
+D_NN ._.
+Joseph_NNP ._.
+Tapestry_NN :_: An_DT Infrastructure_NN for_IN Fault-tolerant_JJ Wide-area_NNP Location_NNP and_CC Routing_NNP ._.
+Technical_NNP Report_NNP UCB_NNP /_: CSD-01-1141_NN ,_, UC_NN Berkeley_NNP ,_, Apr_NNP ._.
+####_NN ._.
+390_CD

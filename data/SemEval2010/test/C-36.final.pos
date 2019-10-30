@@ -1,0 +1,648 @@
+Encryption-Enforced_JJ Access_NN Control_NN in_IN Dynamic_NNP Multi-Domain_NNP Publish_VB /_: Subscribe_NNP Networks_NNP Lauri_NNP I_PRP ._.
+W_NN ._.
+Pesonen_NNP University_NNP of_IN Cambridge_NNP ,_, Computer_NNP Laboratory_NNP JJ_NN Thomson_NNP Avenue_NNP ,_, Cambridge_NNP ,_, CB3_NN 0FD_NN ,_, UK_NNP -LCB-_-LRB- first_RB ._.
+last_JJ -RCB-_-RRB- @_SYM cl_NN ._.
+cam_NN ._.
+ac_NN ._.
+uk_NN David_NNP M_NNP ._.
+Eyers_NNP University_NNP of_IN Cambridge_NNP ,_, Computer_NNP Laboratory_NNP JJ_NN Thomson_NNP Avenue_NNP ,_, Cambridge_NNP ,_, CB3_NN 0FD_NN ,_, UK_NNP -LCB-_-LRB- first_RB ._.
+last_JJ -RCB-_-RRB- @_SYM cl_NN ._.
+cam_NN ._.
+ac_NN ._.
+uk_NN Jean_NNP Bacon_NNP University_NNP of_IN Cambridge_NNP ,_, Computer_NNP Laboratory_NNP JJ_NN Thomson_NNP Avenue_NNP ,_, Cambridge_NNP ,_, CB3_NN 0FD_NN ,_, UK_NNP -LCB-_-LRB- first_RB ._.
+last_JJ -RCB-_-RRB- @_SYM cl_NN ._.
+cam_NN ._.
+ac_NN ._.
+uk_NN ABSTRACT_NN Publish_VB /_: subscribe_VB systems_NNS provide_VBP an_DT efficient_JJ ,_, event-based_JJ ,_, wide-area_JJ distributed_VBN communications_NNS infrastructure_NN ._.
+Large_JJ scale_NN publish_VB /_: subscribe_VB systems_NNS are_VBP likely_JJ to_TO employ_VB components_NNS of_IN the_DT event_NN transport_NN network_NN owned_VBN by_IN cooperating_VBG ,_, but_CC independent_JJ organisations_NNS ._.
+As_IN the_DT number_NN of_IN participants_NNS in_IN the_DT network_NN increases_VBZ ,_, security_NN becomes_VBZ an_DT increasing_VBG concern_NN ._.
+This_DT paper_NN extends_VBZ previous_JJ work_NN to_TO present_JJ and_CC evaluate_VB a_DT secure_JJ multi-domain_JJ publish_VB /_: subscribe_VB infrastructure_NN that_WDT supports_VBZ and_CC enforces_VBZ fine-grained_JJ access_NN control_NN over_IN the_DT individual_JJ attributes_NNS of_IN event_NN types_NNS ._.
+Key_NN refresh_NN allows_VBZ us_PRP to_TO ensure_VB forward_RB and_CC backward_RB security_NN when_WRB event_NN brokers_NNS join_VB and_CC leave_VB the_DT network_NN ._.
+We_PRP demonstrate_VBP that_IN the_DT time_NN and_CC space_NN overheads_NNS can_MD be_VB minimised_VBN by_IN careful_JJ consideration_NN of_IN encryption_NN techniques_NNS ,_, and_CC by_IN the_DT use_NN of_IN caching_NN to_TO decrease_VB unnecessary_JJ decryptions_NNS ._.
+We_PRP show_VBP that_IN our_PRP$ approach_NN has_VBZ a_DT smaller_JJR overall_JJ communication_NN overhead_NN than_IN existing_VBG approaches_NNS for_IN achieving_VBG the_DT same_JJ degree_NN of_IN control_NN over_IN security_NN in_IN publish_VB /_: subscribe_VB networks_NNS ._.
+Categories_NNS and_CC Subject_NNP Descriptors_NNPS C_NNP ._.
+#_# ._.
+#_# -LSB-_-LRB- Computer-Communication_NNP Networks_NNP -RSB-_-RRB- :_: Distributed_VBN Systems-Distributed_JJ applications_NNS General_JJ Terms_NNS Security_NN ,_, Performance_NNP 1_CD ._.
+INTRODUCTION_NNP Publish_VB /_: subscribe_VB is_VBZ well_RB suited_VBN as_IN a_DT communication_NN mechanism_NN for_IN building_VBG Internet-scale_JJ distributed_VBN event-driven_JJ applications_NNS ._.
+Much_JJ of_IN its_PRP$ capacity_NN for_IN scale_NN in_IN the_DT number_NN of_IN participants_NNS comes_VBZ from_IN its_PRP$ decoupling_NN of_IN publishers_NNS and_CC subscribers_NNS by_IN placing_VBG an_DT asynchronous_JJ event_NN delivery_NN service_NN between_IN them_PRP ._.
+In_IN truly_RB Internet-scale_JJ publish_VB /_: subscribe_VB systems_NNS ,_, the_DT event_NN delivery_NN service_NN will_MD include_VB a_DT large_JJ set_NN of_IN interconnected_JJ broker_NN nodes_NNS spanning_VBG a_DT wide_JJ geographic_JJ -LRB-_-LRB- and_CC thus_RB network_NN -RRB-_-RRB- area_NN ._.
+However_RB ,_, publish_VB /_: subscribe_VB systems_NNS that_WDT do_VBP span_VB a_DT wide_JJ geographic_JJ area_NN are_VBP likely_JJ to_TO also_RB span_VB multiple_JJ administrative_JJ domains_NNS ,_, be_VB they_PRP independent_JJ administrative_JJ domains_NNS inside_IN a_DT single_JJ organisation_NN ,_, multiple_JJ independent_JJ organisations_NNS ,_, or_CC a_DT combination_NN of_IN the_DT two_CD ._.
+While_IN the_DT communication_NN capabilities_NNS of_IN publish_VB /_: subscribe_VB systems_NNS are_VBP well_RB proved_VBN ,_, spanning_VBG multiple_JJ administrative_JJ domains_NNS is_VBZ likely_JJ to_TO require_VB addressing_VBG security_NN considerations_NNS ._.
+As_IN security_NN and_CC access_NN control_NN are_VBP almost_RB the_DT antithesis_NN of_IN decoupling_NN ,_, relatively_RB little_JJ publish_VB /_: subscribe_VB research_NN has_VBZ focused_VBN on_IN security_NN so_RB far_RB ._.
+Our_PRP$ overall_JJ research_NN aim_NN is_VBZ to_TO develop_VB Internet-scale_JJ publish_VB /_: subscribe_VB networks_NNS that_WDT provide_VBP secure_JJ ,_, efficient_JJ delivery_NN of_IN events_NNS ,_, fault-tolerance_NN and_CC self-healing_NN in_IN the_DT delivery_NN infrastructure_NN ,_, and_CC a_DT convenient_JJ event_NN interface_NN ._.
+In_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- Pesonen_NNP et_FW al_FW ._.
+propose_VBP a_DT multi-domain_JJ ,_, capabilitybased_JJ access_NN control_NN architecture_NN for_IN publish_VB /_: subscribe_VB systems_NNS ._.
+The_DT architecture_NN provides_VBZ a_DT mechanism_NN for_IN authorising_VBG event_NN clients_NNS to_TO publish_VB and_CC subscribe_VB to_TO event_NN types_NNS ._.
+The_DT privileges_NNS of_IN the_DT client_NN are_VBP checked_VBN by_IN the_DT local_JJ broker_NN that_IN the_DT client_NN connects_VBZ to_TO in_IN order_NN to_TO access_VB the_DT publish_VB /_: subscribe_VB system_NN ._.
+The_DT approach_NN implements_VBZ access_NN control_NN at_IN the_DT edge_NN of_IN the_DT broker_NN network_NN and_CC assumes_VBZ that_IN all_DT brokers_NNS can_MD be_VB trusted_VBN to_TO enforce_VB the_DT access_NN control_NN policies_NNS correctly_RB ._.
+Any_DT malicious_JJ ,_, compromised_VBN or_CC unauthorised_JJ broker_NN is_VBZ free_JJ to_TO read_VB and_CC write_VB any_DT events_NNS that_WDT pass_VBP through_IN it_PRP on_IN their_PRP$ way_NN from_IN the_DT publishers_NNS to_TO the_DT subscribers_NNS ._.
+This_DT might_MD be_VB acceptable_JJ in_IN a_DT relatively_RB small_JJ system_NN deployed_VBN inside_IN a_DT single_JJ organisation_NN ,_, but_CC it_PRP is_VBZ not_RB appropriate_JJ in_IN a_DT multi-domain_JJ environment_NN in_IN which_WDT organisations_NNS share_VBP a_DT common_JJ infrastructure_NN ._.
+We_PRP propose_VBP enforcing_VBG access_NN control_NN within_IN the_DT broker_NN network_NN by_IN encrypting_VBG event_NN content_NN ,_, and_CC that_DT policy_NN dictate_VBP controls_NNS over_IN the_DT necessary_JJ encryption_NN keys_NNS ._.
+With_IN encrypted_JJ event_NN content_NN only_RB those_DT brokers_NNS that_WDT are_VBP authorised_VBN to_TO ac104_VB cess_NN the_DT encryption_NN keys_NNS are_VBP able_JJ to_TO access_VB the_DT event_NN content_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+publish_VB ,_, subscribe_VB to_TO ,_, or_CC filter_NN -RRB-_-RRB- ._.
+We_PRP effectively_RB move_VBP the_DT enforcement_NN of_IN access_NN control_NN from_IN the_DT brokers_NNS to_TO the_DT encryption_NN key_NN managers_NNS ._.
+We_PRP expect_VBP that_IN access_NN control_NN would_MD need_VB to_TO be_VB enforced_VBN in_IN a_DT multi-domain_JJ publish_VB /_: subscribe_VB system_NN when_WRB multiple_JJ organisations_NNS form_VBP a_DT shared_JJ publish_VB /_: subscribe_VB system_NN yet_RB run_VBP multiple_JJ independent_JJ applications_NNS ._.
+Access_NN control_NN might_MD also_RB be_VB needed_VBN when_WRB a_DT single_JJ organisation_NN consists_VBZ of_IN multiple_JJ sub-domains_NNS that_WDT deliver_VBP confidential_JJ data_NNS over_IN the_DT organisation-wide_JJ publish_VB /_: subscribe_VB system_NN ._.
+Both_DT cases_NNS require_VBP access_NN control_NN because_IN event_NN delivery_NN in_IN a_DT dynamic_JJ publish_VB /_: subscribe_VB infrastructure_NN based_VBN on_IN a_DT shared_JJ broker_NN network_NN may_MD well_RB lead_VB to_TO events_NNS being_VBG routed_VBN through_IN unauthorised_JJ domains_NNS along_IN their_PRP$ paths_NNS from_IN publishers_NNS to_TO subscribers_NNS ._.
+There_EX are_VBP two_CD particular_JJ benefits_NNS to_TO sharing_VBG the_DT publish_VB /_: subscribe_VB infrastructure_NN ,_, both_DT of_IN which_WDT relate_VBP to_TO the_DT broker_NN network_NN ._.
+First_RB ,_, sharing_VBG brokers_NNS will_MD create_VB a_DT physically_RB larger_JJR network_NN that_WDT will_MD provide_VB greater_JJR geographic_JJ reach_NN ._.
+Second_RB ,_, increasing_VBG the_DT inter-connectivity_NN of_IN brokers_NNS will_MD allow_VB the_DT publish_VB /_: subscribe_VB system_NN to_TO provide_VB higher_JJR faulttolerance_NN ._.
+Figure_NNP #_# shows_VBZ the_DT multi-domain_JJ publish_VB /_: subscribe_VB network_NN we_PRP use_VBP as_IN an_DT example_NN throughout_IN this_DT paper_NN ._.
+It_PRP is_VBZ based_VBN on_IN the_DT United_NNP Kingdom_NNP Police_NNP Forces_NNP ,_, and_CC we_PRP show_VBP three_CD particular_JJ sub-domains_NNS :_: Metropolitan_NNP Police_NNP Domain_NN ._.
+This_DT domain_NN contains_VBZ a_DT set_NN of_IN CCTV_NNP cameras_NNS that_WDT publish_VBP information_NN about_IN the_DT movements_NNS of_IN vehicles_NNS around_IN the_DT London_NNP area_NN ._.
+We_PRP have_VBP included_VBN Detective_NNP Smith_NNP as_IN a_DT subscriber_NN in_IN this_DT domain_NN ._.
+Congestion_NN Charge_NNP Service_NNP Domain_NN ._.
+The_DT charges_NNS that_WDT are_VBP levied_VBN on_IN the_DT vehicles_NNS that_WDT have_VBP passed_VBN through_IN the_DT London_NNP Congestion_NNP Charge_NNP zone_NN each_DT day_NN are_VBP issued_VBN by_IN systems_NNS within_IN this_DT domain_NN ._.
+The_DT source_NN numberplate_NN recognition_NN data_NN comes_VBZ from_IN the_DT cameras_NNS in_IN the_DT Metropolitan_NNP Police_NNP Domain_NN ._.
+The_DT fact_NN that_IN the_DT CCS_NN are_VBP only_RB authorised_VBN to_TO read_VB a_DT subset_NN of_IN the_DT vehicle_NN event_NN data_NNS will_MD exercise_VB some_DT of_IN the_DT key_JJ features_NNS of_IN the_DT enforceable_JJ publish_VB /_: subscribe_VB system_NN access_NN control_NN presented_VBN in_IN this_DT paper_NN ._.
+PITO_NNP Domain_NN ._.
+The_DT Police_NNP Information_NNP Technology_NNP Organisation_NNP -LRB-_-LRB- PITO_NNP -RRB-_-RRB- is_VBZ the_DT centre_NN from_IN which_WDT Police_NNP data_NNS standards_NNS are_VBP managed_VBN ._.
+It_PRP is_VBZ the_DT event_NN type_NN owner_NN in_IN this_DT particular_JJ scenario_NN ._.
+Encryption_NNP protects_VBZ the_DT confidentiality_NN of_IN events_NNS should_MD they_PRP be_VB transported_VBN through_IN unauthorised_JJ domains_NNS ._.
+However_RB encrypting_VBG whole_JJ events_NNS means_VBZ unauthorised_JJ brokers_NNS can_MD not_RB make_VB efficient_JJ routing_VBG decisions_NNS ._.
+Our_PRP$ approach_NN is_VBZ to_TO apply_VB encryption_NN to_TO the_DT individual_JJ attributes_NNS of_IN events_NNS ._.
+This_DT way_NN our_PRP$ multi-domain_JJ access_NN control_NN policy_NN works_VBZ at_IN a_DT finer_NN granularity_NN -_: publishers_NNS and_CC subscribers_NNS may_MD be_VB authorised_JJ access_NN to_TO a_DT subset_NN of_IN the_DT available_JJ attributes_NNS ._.
+In_IN cases_NNS where_WRB non-encrypted_JJ events_NNS are_VBP used_VBN for_IN routing_VBG ,_, we_PRP can_MD reduce_VB the_DT total_JJ number_NN of_IN events_NNS sent_VBN through_IN the_DT system_NN without_IN revealing_VBG the_DT values_NNS of_IN sensitive_JJ attributes_NNS ._.
+In_IN our_PRP$ example_NN scenario_NN ,_, the_DT Congestion_NNP Charge_NNP Service_NNP would_MD only_RB be_VB authorised_VBN to_TO read_VB the_DT numberplate_JJ field_NN of_IN vehicle_NN sightings_NNS -_: the_DT location_NN attribute_NN would_MD not_RB be_VB decrypted_VBN ._.
+We_PRP thus_RB preserve_VBP the_DT privacy_NN of_IN motorists_NNS while_IN still_RB allowing_VBG the_DT CCS_NN to_TO do_VB its_PRP$ job_NN using_VBG the_DT shared_JJ publish_VB /_: subscribe_VB infrastructure_NN ._.
+Let_VB us_PRP assume_VB that_IN a_DT Metropolitan_NNP Police_NNP Service_NNP detective_NN is_VBZ investigating_VBG a_DT crime_NN and_CC she_PRP is_VBZ interested_JJ in_IN sightings_NNS of_IN a_DT specific_JJ vehicle_NN ._.
+The_DT detective_NN gets_VBZ a_DT court_NN order_NN that_WDT authorises_VBZ her_PRP to_TO subscribe_VB to_TO numberplate_JJ events_NNS of_IN the_DT specific_JJ numberplate_NN related_VBN to_TO her_PRP$ case_NN ._.
+Current_JJ publish_VB /_: subscribe_VB access_NN control_NN systems_NNS enforce_VBP security_NN at_IN the_DT edge_NN of_IN the_DT broker_NN network_NN where_WRB clients_NNS connect_VBP to_TO it_PRP ._.
+However_RB this_DT approach_NN will_MD often_RB not_RB be_VB acceptable_JJ in_IN Internet-scale_JJ systems_NNS ._.
+We_PRP propose_VBP enforcing_VBG security_NN within_IN the_DT broker_NN network_NN as_RB well_RB as_IN at_IN the_DT edges_NNS that_WDT event_NN clients_NNS connect_VBP to_TO ,_, by_IN encrypting_VBG event_NN content_NN ._.
+Publications_NNP will_MD be_VB encrypted_VBN with_IN their_PRP$ event_NN type_NN specific_JJ encryption_NN keys_NNS ._.
+By_IN controlling_VBG access_NN to_TO the_DT encryption_NN keys_NNS ,_, we_PRP can_MD control_VB access_NN to_TO the_DT event_NN types_NNS ._.
+The_DT proposed_VBN approach_NN allows_VBZ event_NN brokers_NNS to_TO route_NN events_NNS even_RB when_WRB they_PRP have_VBP access_NN only_RB to_TO a_DT subset_NN of_IN the_DT potential_JJ encryption_NN keys_NNS ._.
+We_PRP introduce_VBP decentralised_JJ publish_VB /_: subscribe_VB systems_NNS and_CC relevant_JJ cryptography_NN in_IN Section_NN #_# ._.
+In_IN Section_NN #_# we_PRP present_VBP our_PRP$ model_NN for_IN encrypting_VBG event_NN content_NN on_IN both_CC the_DT event_NN and_CC the_DT attribute_NN level_NN ._.
+Section_NN #_# discusses_VBZ managing_VBG encryption_NN keys_NNS in_IN multi-domain_JJ publish_VB /_: subscribe_VB systems_NNS ._.
+We_PRP analytically_RB evaluate_VBP the_DT performance_NN of_IN our_PRP$ proposal_NN in_IN Section_NN #_# ._.
+Finally_RB Section_NN #_# discusses_VBZ related_JJ work_NN in_IN securing_VBG publish_VB /_: subscribe_VB systems_NNS and_CC Section_NN #_# provides_VBZ concluding_VBG remarks_NNS ._.
+2_LS ._.
+BACKGROUND_NN In_IN this_DT section_NN we_PRP provide_VBP a_DT brief_JJ introduction_NN to_TO decentralised_JJ publish_VB /_: subscribe_VB systems_NNS ._.
+We_PRP indicate_VBP our_PRP$ assumptions_NNS about_IN multi-domain_JJ publish_VB /_: subscribe_VB systems_NNS ,_, and_CC describe_VBP how_WRB these_DT assumptions_NNS influence_VBP the_DT developments_NNS we_PRP have_VBP made_VBN from_IN our_PRP$ previously_RB published_VBN work_NN ._.
+2_LS ._.
+#_# Decentralised_JJ Publish_NN /_: Subscribe_NNP Systems_NNPS A_DT publish_VB /_: subscribe_VB system_NN includes_VBZ publishers_NNS ,_, subscribers_NNS ,_, and_CC an_DT event_NN service_NN ._.
+Publishers_NNPS publish_VB events_NNS ,_, subscribers_NNS subscribe_VBP to_TO events_NNS of_IN interest_NN to_TO them_PRP ,_, and_CC the_DT event_NN service_NN is_VBZ responsible_JJ for_IN delivering_VBG published_VBN events_NNS to_TO all_DT subscribers_NNS whose_WP$ interests_NNS match_VBP the_DT given_VBN event_NN ._.
+The_DT event_NN service_NN in_IN a_DT decentralised_JJ publish_VB /_: subscribe_VB system_NN is_VBZ distributed_VBN over_IN a_DT number_NN of_IN broker_NN nodes_NNS ._.
+Together_RB these_DT brokers_NNS form_VBP a_DT network_NN that_WDT is_VBZ responsible_JJ for_IN maintaining_VBG the_DT necessary_JJ routing_VBG paths_NNS from_IN publishers_NNS to_TO subscribers_NNS ._.
+Clients_NNS -LRB-_-LRB- publishers_NNS and_CC subscribers_NNS -RRB-_-RRB- connect_VBP to_TO a_DT local_JJ broker_NN ,_, which_WDT is_VBZ fully_RB trusted_VBN by_IN the_DT client_NN ._.
+In_IN our_PRP$ discussion_NN we_PRP refer_VBP to_TO the_DT client_NN hosting_VBG brokers_NNS as_IN publisher_NN hosting_VBG brokers_NNS -LRB-_-LRB- PHB_NN -RRB-_-RRB- or_CC subscriber_NN hosting_VBG brokers_NNS -LRB-_-LRB- SHB_NN -RRB-_-RRB- depending_VBG on_IN whether_IN the_DT connected_JJ client_NN is_VBZ a_DT publisher_NN or_CC 105_CD IB_NNP SHB_NNP Sub_NN Pub_NNP Pub_NNP Sub_NN Sub_NN IB_NNP PHB_NNP IB_NNP IB_NNP PHB_NNP IB_NNP IB_NNP IB_NNP IB_NNP SHB_NNP SHB_NNP IBIB_NNP IB_NNP IB_NNP IB_NNP IB_NNP IB_NNP IBIB_NNP IB_NNP TO_TO IB_NNP IB_NNP IB_NNP Metropolitan_NNP Police_NNP Domain_NN Congestion_NN Charge_NNP Service_NNP Domain_NN PITO_NNP Domain_NN Detective_NNP Smith_NNP Camera_NNP #_# Camera_NNP #_# Billing_NNP Office_NNP Statistics_NNPS Office_NNP Sub_NN Subscriber_NNP SHB_NNP Subscriber_NNP Hosting_NNP Broker_NNP Pub_NNP Publisher_NNP PHB_NNP Publisher_NNP Hosting_NNP Broker_NNP TO_TO Type_NN Owner_NNP IB_NNP Intermediate_NNP Broker_NNP KEY_NNP Figure_NNP #_# :_: An_DT overall_JJ view_NN of_IN our_PRP$ multi-domain_JJ publish_VB /_: subscribe_VB deployment_NN a_DT subscriber_NN ,_, respectively_RB ._.
+A_DT local_JJ broker_NN is_VBZ usually_RB either_CC part_NN of_IN the_DT same_JJ domain_NN as_IN the_DT client_NN ,_, or_CC it_PRP is_VBZ owned_VBN by_IN a_DT service_NN provider_NN trusted_VBN by_IN the_DT client_NN ._.
+A_DT broker_NN network_NN can_MD have_VB a_DT static_JJ topology_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+Siena_NNP -LSB-_-LRB- #_# -RSB-_-RRB- and_CC Gryphon_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- -RRB-_-RRB- or_CC a_DT dynamic_JJ topology_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+Scribe_NN -LSB-_-LRB- #_# -RSB-_-RRB- and_CC Hermes_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- -RRB-_-RRB- ._.
+Our_PRP$ proposed_VBN approach_NN will_MD work_VB in_IN both_DT cases_NNS ._.
+A_DT static_JJ topology_NN enables_VBZ the_DT system_NN administrator_NN to_TO build_VB trusted_VBN domains_NNS and_CC in_IN that_DT way_NN improve_VB the_DT efficiency_NN of_IN routing_VBG by_IN avoiding_VBG unnecessary_JJ encryptions_NNS -LRB-_-LRB- see_VB Sect_NNP ._.
+#_# ._.
+#_# -RRB-_-RRB- ,_, which_WDT is_VBZ very_RB difficult_JJ with_IN a_DT dynamic_JJ topology_NN ._.
+On_IN the_DT other_JJ hand_NN ,_, a_DT dynamic_JJ topology_NN allows_VBZ the_DT broker_NN network_NN to_TO dynamically_RB re-balance_VB itself_PRP when_WRB brokers_NNS join_VBP or_CC leave_VBP the_DT network_NN either_CC in_IN a_DT controlled_JJ fashion_NN or_CC as_IN a_DT result_NN of_IN a_DT network_NN or_CC node_NN failure_NN ._.
+Our_PRP$ work_NN is_VBZ based_VBN on_IN the_DT Hermes_NNP system_NN ._.
+Hermes_NNP is_VBZ a_DT content-based_JJ publish_VB /_: subscribe_VB middleware_NN that_WDT includes_VBZ strong_JJ event_NN type_NN support_NN ._.
+In_IN other_JJ words_NNS ,_, each_DT publication_NN is_VBZ an_DT instance_NN of_IN a_DT particular_JJ predefined_JJ event_NN type_NN ._.
+Publications_NNP are_VBP type_NN checked_VBD at_IN the_DT local_JJ broker_NN of_IN each_DT publisher_NN ._.
+Our_PRP$ attribute_NN level_NN encryption_NN scheme_NN assumes_VBZ that_IN events_NNS are_VBP typed_VBN ._.
+Hermes_NNP uses_VBZ a_DT structured_JJ overlay_NN network_NN as_IN a_DT transport_NN and_CC therefore_RB has_VBZ a_DT dynamic_JJ topology_NN ._.
+A_DT Hermes_NNP publication_NN consists_VBZ of_IN an_DT event_NN type_NN identifier_NN and_CC a_DT set_NN of_IN attribute_NN value_NN pairs_NNS ._.
+The_DT type_NN identifier_NN is_VBZ the_DT SHA-1_NN hash_NN of_IN the_DT name_NN of_IN the_DT event_NN type_NN ._.
+It_PRP is_VBZ used_VBN to_TO route_NN the_DT publication_NN through_IN the_DT event_NN broker_NN network_NN ._.
+It_PRP conveniently_RB hides_VBZ the_DT type_NN of_IN the_DT publication_NN ,_, i_FW ._.
+e_LS ._.
+brokers_NNS are_VBP prevented_VBN from_IN seeing_VBG which_WDT events_NNS are_VBP flowing_VBG through_IN them_PRP unless_IN they_PRP are_VBP aware_JJ of_IN the_DT specific_JJ event_NN type_NN name_NN and_CC identifier_NN ._.
+2_LS ._.
+#_# Secure_NNP Event_NNP Types_NNP Pesonen_NNP et_FW al_FW ._.
+introduced_VBN secure_JJ event_NN types_NNS in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ,_, which_WDT can_MD have_VB their_PRP$ integrity_NN and_CC authenticity_NN confirmed_VBN by_IN checking_VBG their_PRP$ digital_JJ signatures_NNS ._.
+A_DT useful_JJ side_NN effect_NN of_IN secure_JJ event_NN types_NNS are_VBP their_PRP$ globally_RB unique_JJ event_NN type_NN and_CC attribute_NN names_NNS ._.
+These_DT names_NNS can_MD be_VB referred_VBN to_TO by_IN access_NN control_NN policies_NNS ._.
+In_IN this_DT paper_NN we_PRP use_VBP the_DT secure_JJ name_NN of_IN the_DT event_NN type_NN or_CC attribute_NN to_TO refer_VB to_TO the_DT encryption_NN key_NN used_VBN to_TO encrypt_VB the_DT event_NN or_CC attribute_NN ._.
+2_LS ._.
+#_# Capability-Based_JJ Access_NN Control_NN Pesonen_NNP et_FW al_FW ._.
+proposed_VBN a_DT capability-based_JJ access_NN control_NN architecture_NN for_IN multi-domain_JJ publish_VB /_: subscribe_VB systems_NNS in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ._.
+The_DT model_NN treats_VBZ event_NN types_NNS as_IN resources_NNS that_WDT publishers_NNS ,_, subscribers_NNS ,_, and_CC event_NN brokers_NNS want_VBP to_TO access_NN ._.
+The_DT event_NN type_NN owner_NN is_VBZ responsible_JJ for_IN managing_VBG access_NN control_NN for_IN an_DT event_NN type_NN by_IN issuing_VBG Simple_JJ Public_NN Key_NN Infrastructure_NN -LRB-_-LRB- SPKI_NN -RRB-_-RRB- authorisation_NN certificates_NNS that_WDT grant_VBP the_DT holder_NN access_NN to_TO the_DT specified_VBN event_NN type_NN ._.
+For_IN example_NN ,_, authorised_VBN publishers_NNS will_MD have_VB been_VBN issued_VBN an_DT authorisation_NN certificate_NN that_WDT specifies_VBZ that_IN the_DT publisher_NN ,_, identified_VBN by_IN public_JJ key_NN ,_, is_VBZ authorised_VBN to_TO publish_VB instances_NNS of_IN the_DT event_NN type_NN specified_VBN in_IN the_DT certificate_NN ._.
+We_PRP leverage_NN the_DT above_JJ mentioned_VBN access_NN control_NN mechanism_NN in_IN this_DT paper_NN by_IN controlling_VBG access_NN to_TO encryption_NN keys_NNS using_VBG the_DT same_JJ authorisation_NN certificates_NNS ._.
+That_DT is_VBZ ,_, a_DT publisher_NN who_WP is_VBZ authorised_VBN to_TO publish_VB a_DT given_VBN event_NN type_NN ,_, is_VBZ also_RB authorised_VBN 106_CD to_TO access_VB the_DT encryption_NN keys_NNS used_VBN to_TO protect_VB events_NNS of_IN that_DT type_NN ._.
+We_PRP discuss_VBP this_DT in_IN more_JJR detail_NN in_IN Sect_NNP ._.
+#_# ._.
+2_LS ._.
+#_# Threat_NN model_NN The_DT goal_NN of_IN the_DT proposed_VBN mechanism_NN is_VBZ to_TO enforce_VB access_NN control_NN for_IN authorised_JJ participants_NNS in_IN the_DT system_NN ._.
+In_IN our_PRP$ case_NN the_DT first_JJ level_NN of_IN access_NN control_NN is_VBZ applied_VBN when_WRB the_DT participant_NN tries_VBZ to_TO join_VB the_DT publish_VB /_: subscribe_VB network_NN ._.
+Unauthorised_JJ event_NN brokers_NNS are_VBP not_RB allowed_VBN to_TO join_VB the_DT broker_NN network_NN ._.
+Similarly_RB unauthorised_JJ event_NN clients_NNS are_VBP not_RB allowed_VBN to_TO connect_VB to_TO an_DT event_NN broker_NN ._.
+All_PDT the_DT connections_NNS in_IN the_DT broker_NN network_NN between_IN event_NN brokers_NNS and_CC event_NN clients_NNS utilise_VBP Transport_NN Layer_NNP Security_NNP -LRB-_-LRB- TLS_NNP -RRB-_-RRB- -LSB-_-LRB- #_# -RSB-_-RRB- in_IN order_NN to_TO prevent_VB unauthorised_JJ access_NN on_IN the_DT transport_NN layer_NN ._.
+The_DT architecture_NN of_IN the_DT publish_VB /_: subscribe_VB system_NN means_VBZ that_IN event_NN clients_NNS must_MD connect_VB to_TO event_NN brokers_NNS in_IN order_NN to_TO be_VB able_JJ to_TO access_VB the_DT publish_VB /_: subscribe_VB system_NN ._.
+Thus_RB we_PRP assume_VBP that_IN these_DT clients_NNS are_VBP not_RB a_DT threat_NN ._.
+The_DT event_NN client_NN relies_VBZ completely_RB on_IN the_DT local_JJ event_NN broker_NN for_IN access_NN to_TO the_DT broker_NN network_NN ._.
+Therefore_RB the_DT event_NN client_NN is_VBZ unable_JJ to_TO access_VB any_DT events_NNS without_IN the_DT assistance_NN of_IN the_DT local_JJ broker_NN ._.
+The_DT brokers_NNS on_IN the_DT other_JJ hand_NN are_VBP able_JJ to_TO analyse_VB all_DT events_NNS in_IN the_DT system_NN that_WDT pass_VBP through_IN them_PRP ._.
+A_DT broker_NN can_MD analyse_VB both_CC the_DT event_NN traffic_NN as_RB well_RB as_IN the_DT number_NN and_CC names_NNS of_IN attributes_NNS that_WDT are_VBP populated_VBN in_IN an_DT event_NN -LRB-_-LRB- in_IN the_DT case_NN of_IN attribute_NN level_NN encryption_NN -RRB-_-RRB- ._.
+There_EX are_VBP viable_JJ approaches_NNS to_TO preventing_VBG traffic_NN analysis_NN by_IN inserting_VBG random_JJ events_NNS into_IN the_DT event_NN stream_NN in_IN order_NN to_TO produce_VB a_DT uniform_JJ traffic_NN pattern_NN ._.
+Similarly_RB attribute_NN content_NN can_MD be_VB padded_VBN to_TO a_DT standard_JJ length_NN in_IN order_NN to_TO avoid_VB leaking_VBG information_NN to_TO the_DT adversary_NN ._.
+While_IN traffic_NN analysis_NN is_VBZ an_DT important_JJ concern_NN we_PRP have_VBP not_RB addressed_VBN it_PRP further_RBR in_IN this_DT paper_NN ._.
+3_LS ._.
+ENCRYPTING_VBG EVENT_JJ CONTENT_NN We_PRP propose_VBP enforcing_VBG access_NN control_NN in_IN a_DT decentralised_JJ broker_NN network_NN by_IN encrypting_VBG the_DT contents_NNS of_IN published_VBN events_NNS and_CC controlling_VBG access_NN to_TO the_DT encryption_NN keys_NNS ._.
+Effectively_RB we_PRP move_VBP the_DT responsibility_NN for_IN access_NN control_NN from_IN the_DT broker_NN network_NN to_TO the_DT key_JJ managers_NNS ._.
+It_PRP is_VBZ assumed_VBN that_IN all_DT clients_NNS have_VBP access_NN to_TO a_DT broker_NN that_IN they_PRP can_MD trust_VB and_CC that_DT is_VBZ authorised_VBN to_TO access_VB the_DT event_NN content_NN required_VBN by_IN the_DT client_NN ._.
+This_DT allows_VBZ us_PRP to_TO implement_VB the_DT event_NN content_NN encryption_NN within_IN the_DT broker_NN network_NN without_IN involving_VBG the_DT clients_NNS ._.
+By_IN delegating_VBG the_DT encryption_NN tasks_NNS to_TO the_DT brokers_NNS ,_, we_PRP lower_JJR the_DT number_NN of_IN nodes_NNS required_VBN to_TO have_VB access_NN to_TO a_DT given_VBN encryption_NN key1_NN ._.
+The_DT benefits_NNS are_VBP three-fold_JJ :_: i_LS -RRB-_-RRB- fewer_JJR nodes_NNS handle_VBP the_DT confidential_JJ encryption_NN key_NN so_RB there_EX is_VBZ a_DT smaller_JJR chance_NN of_IN the_DT key_NN being_VBG disclosed_VBN ;_: ii_LS -RRB-_-RRB- key_JJ refreshes_NNS involve_VBP fewer_JJR nodes_NNS which_WDT means_VBZ that_IN the_DT key_JJ management_NN algorithm_NN will_MD incur_VB smaller_JJR communication_NN and_CC processing_NN overheads_NNS to_TO the_DT publish_VB /_: subscribe_VB system_NN ;_: and_CC iii_LS -RRB-_-RRB- the_DT local_JJ broker_NN will_MD decrypt_VB an_DT event_NN once_RB and_CC deliver_VB it_PRP to_TO all_DT subscribers_NNS ,_, instead_RB of_IN each_DT subscriber_NN 1_CD The_DT encryption_NN keys_NNS are_VBP changed_VBN over_IN time_NN in_IN response_NN to_TO brokers_NNS joining_VBG or_CC leaving_VBG the_DT network_NN ,_, and_CC periodically_RB to_TO reduce_VB the_DT amount_NN of_IN time_NN any_DT single_JJ key_NN is_VBZ used_VBN ._.
+This_DT is_VBZ discussed_VBN in_IN Sect_NNP ._.
+#_# ._.
+#_# having_VBG to_TO decrypt_VB the_DT same_JJ event_NN ._.
+Delegating_VBG encryption_NN tasks_NNS to_TO the_DT local_JJ broker_NN is_VBZ appropriate_JJ ,_, because_IN encryption_NN is_VBZ a_DT middleware_JJ feature_NN used_VBN to_TO enforce_VB access_NN control_NN within_IN the_DT middleware_JJ system_NN ._.
+If_IN applications_NNS need_VBP to_TO handle_VB encrypted_JJ data_NNS in_IN the_DT application_NN layer_NN ,_, they_PRP are_VBP free_JJ to_TO publish_VB encrypted_JJ data_NNS over_IN the_DT publish_VB /_: subscribe_VB system_NN ._.
+We_PRP can_MD implement_VB encryption_NN either_CC at_IN the_DT event_NN level_NN or_CC the_DT attribute_NN level_NN ._.
+Event_NN encryption_NN is_VBZ simpler_JJR ,_, requires_VBZ fewer_JJR keys_NNS ,_, fewer_JJR independent_JJ cryptographic_JJ operations_NNS ,_, and_CC thus_RB is_VBZ usually_RB faster_RBR ._.
+Attribute_VB encryption_NN enables_VBZ access_NN control_NN at_IN the_DT attribute_NN level_NN ,_, which_WDT means_VBZ that_IN we_PRP have_VBP a_DT more_JJR expressive_JJ and_CC powerful_JJ access_NN control_NN mechanism_NN ,_, while_IN usually_RB incurring_VBG a_DT larger_JJR performance_NN penalty_NN ._.
+In_IN this_DT section_NN we_PRP discuss_VBP encrypting_VBG event_NN content_NN both_CC at_IN the_DT event_NN level_NN and_CC the_DT attribute_NN level_NN ;_: avoiding_VBG leaking_VBG information_NN to_TO unauthorised_JJ brokers_NNS by_IN encrypting_VBG subscription_NN filters_NNS ;_: avoiding_VBG unnecessary_JJ encryptions_NNS between_IN authorised_JJ brokers_NNS ;_: and_CC finally_RB ,_, how_WRB event_NN content_NN encryption_NN was_VBD implemented_VBN in_IN our_PRP$ prototype_NN ._.
+Note_VB that_DT since_IN no_DT publish_VB /_: subscribe_VB client_NN is_VBZ ever_RB given_VBN access_NN to_TO encryption_NN keys_NNS ,_, any_DT encryption_NN performed_VBN by_IN the_DT brokers_NNS is_VBZ necessarily_RB completely_RB transparent_JJ to_TO all_DT clients_NNS ._.
+3_LS ._.
+#_# Event_NNP Encryption_NNP In_IN event_NN encryption_NN all_PDT the_DT event_NN attributes_NNS are_VBP encrypted_VBN as_IN a_DT single_JJ block_NN of_IN plaintext_NN ._.
+The_DT event_NN type_NN identifier_NN is_VBZ left_VBN intact_JJ -LRB-_-LRB- i_FW ._.
+e_LS ._.
+in_IN plaintext_NN -RRB-_-RRB- in_IN order_NN to_TO facilitate_VB event_NN routing_VBG in_IN the_DT broker_NN network_NN ._.
+The_DT globally_RB unique_JJ event_NN type_NN identifier_NN specifies_VBZ the_DT encryption_NN key_NN used_VBN to_TO encrypt_VB the_DT event_NN content_NN ._.
+Each_DT event_NN type_NN in_IN the_DT system_NN will_MD have_VB its_PRP$ own_JJ individual_JJ encryption_NN key_NN ._.
+Keys_NNP are_VBP refreshed_VBN ,_, as_IN discussed_VBN in_IN Sect_NNP ._.
+#_# ._.
+#_# ._.
+While_IN in_IN transit_NN the_DT event_NN will_MD consist_VB of_IN a_DT tuple_NN containing_VBG the_DT type_NN identifier_NN ,_, a_DT publication_NN timestamp_NN ,_, ciphertext_NN ,_, and_CC a_DT message_NN authentication_NN tag_NN :_: <_JJR type_NN id_NN ,_, timestamp_NN ,_, cipher_NN text_NN ,_, authentication_NN tag_NN >_JJR ._.
+Event_NN brokers_NNS that_WDT are_VBP authorised_VBN to_TO access_VB the_DT event_NN ,_, and_CC thus_RB have_VBP access_NN to_TO the_DT encryption_NN key_NN ,_, can_MD decrypt_VB the_DT event_NN and_CC implement_VB content-based_JJ routing_VBG ._.
+Event_NN brokers_NNS that_WDT do_VBP not_RB have_VB access_NN to_TO the_DT encryption_NN key_NN will_MD be_VB forced_VBN to_TO route_NN the_DT event_NN based_VBN only_RB on_IN its_PRP$ type_NN ._.
+That_DT is_VBZ ,_, they_PRP will_MD not_RB be_VB able_JJ to_TO make_VB intelligent_JJ decisions_NNS about_IN whether_IN events_NNS need_VBP not_RB be_VB transmitted_VBN down_RP their_PRP$ outgoing_JJ links_NNS ._.
+Event_NN encryption_NN results_VBZ in_IN one_CD encryption_NN at_IN the_DT publisher_NN hosting_VBG broker_NN ,_, and_CC one_CD decryption_NN at_IN each_DT filtering_VBG intermediate_JJ broker_NN and_CC subscriber_NN hosting_VBG broker_NN that_IN the_DT event_NN passes_VBZ through_IN ,_, regardless_RB of_IN the_DT number_NN of_IN attributes_NNS ._.
+This_DT results_VBZ in_IN a_DT significant_JJ performance_NN advantage_NN compared_VBN to_TO attribute_VB encryption_NN ._.
+3_LS ._.
+#_# Attribute_VB Encryption_NNP In_IN attribute_NN encryption_NN each_DT attribute_NN value_NN in_IN an_DT event_NN is_VBZ encrypted_JJ separately_RB with_IN its_PRP$ own_JJ encryption_NN key_NN ._.
+The_DT encryption_NN key_NN is_VBZ identified_VBN by_IN the_DT attribute_NN ''_'' s_NNS globally_RB unique_JJ identifier_NN -LRB-_-LRB- the_DT globally_RB unique_JJ event_NN identifier_NN defines_VBZ a_DT namespace_NN inside_IN which_WDT the_DT attribute_NN identifier_NN is_VBZ a_DT fully_RB qualified_VBN name_NN -RRB-_-RRB- ._.
+107_CD The_DT event_NN type_NN identifier_NN is_VBZ left_VBN intact_JJ to_TO facilitate_VB event_NN routing_VBG for_IN unauthorised_JJ brokers_NNS ._.
+The_DT attribute_NN identifiers_NNS are_VBP also_RB left_VBN intact_JJ to_TO allow_VB authorised_JJ brokers_NNS to_TO decrypt_VB the_DT attribute_NN values_NNS with_IN the_DT correct_JJ keys_NNS ._.
+Brokers_NNS that_WDT are_VBP authorised_VBN to_TO access_VB some_DT of_IN the_DT attributes_NNS in_IN an_DT event_NN ,_, can_MD implement_VB content-based_JJ routing_VBG over_IN the_DT attributes_NNS that_WDT are_VBP accessible_JJ to_TO them_PRP ._.
+An_DT attribute_NN encrypted_JJ event_NN in_IN transit_NN consists_VBZ of_IN the_DT event_NN type_NN identifier_NN ,_, a_DT publication_NN timestamp_NN ,_, and_CC a_DT set_NN of_IN attribute_NN tuples_NNS :_: ._.
+Attribute_VB tuples_NNS consist_VBP of_IN an_DT attribute_NN identifier_NN ,_, ciphertext_NN ,_, and_CC a_DT message_NN authentication_NN tag_NN :_: <_JJR attr_NN id_NN ,_, ciphertext_NN ,_, authentication_NN tag_NN >_JJR ._.
+The_DT attribute_NN identifier_NN is_VBZ the_DT SHA-1_NN hash_NN of_IN the_DT attribute_NN name_NN used_VBN in_IN the_DT event_NN type_NN definition_NN ._.
+Using_VBG the_DT attribute_NN identifier_NN in_IN the_DT published_VBN event_NN instead_RB of_IN the_DT attribute_NN name_NN prevents_VBZ unauthorised_JJ parties_NNS from_IN learning_VBG which_WDT attributes_NNS are_VBP included_VBN in_IN the_DT publication_NN ._.
+Compared_VBN with_IN event_NN encryption_NN ,_, attribute_NN encryption_NN usually_RB results_VBZ in_IN larger_JJR processing_NN overheads_NNS ,_, because_IN each_DT attribute_NN is_VBZ encrypted_JJ separately_RB ._.
+In_IN the_DT encryption_NN process_NN the_DT initialisation_NN of_IN the_DT encryption_NN algorithm_NN takes_VBZ a_DT significant_JJ portion_NN of_IN the_DT total_JJ running_VBG time_NN of_IN the_DT algorithm_NN ._.
+Once_RB the_DT algorithm_NN is_VBZ initialised_VBN ,_, increasing_VBG the_DT amount_NN of_IN data_NNS to_TO be_VB encrypted_VBN does_VBZ not_RB affect_VB the_DT running_VBG time_NN very_RB much_RB ._.
+This_DT disparity_NN is_VBZ emphasised_VBN in_IN attribute_NN encryption_NN ,_, where_WRB an_DT encryption_NN algorithm_NN must_MD be_VB initialised_VBN for_IN each_DT attribute_NN separately_RB ,_, and_CC the_DT amount_NN of_IN data_NNS encrypted_VBN is_VBZ relatively_RB small_JJ ._.
+As_IN a_DT result_NN attribute_NN encryption_NN incurs_VBZ larger_JJR processing_NN overheads_NNS when_WRB compared_VBN with_IN event_NN encryption_NN which_WDT can_MD be_VB clearly_RB seen_VBN from_IN the_DT performance_NN results_VBZ in_IN Sect_NNP ._.
+#_# ._.
+The_DT advantage_NN of_IN attribute_NN encryption_NN is_VBZ that_IN the_DT type_NN owner_NN is_VBZ able_JJ to_TO control_VB access_NN to_TO the_DT event_NN type_NN at_IN the_DT attribute_NN level_NN ._.
+The_DT event_NN type_NN owner_NN can_MD therefore_RB allow_VB clients_NNS to_TO have_VB different_JJ levels_NNS of_IN access_NN to_TO the_DT same_JJ event_NN type_NN ._.
+Also_RB ,_, attribute_NN level_NN encryption_NN enables_VBZ content-based_JJ routing_VBG in_IN cases_NNS where_WRB an_DT intermediate_JJ broker_NN has_VBZ access_NN only_RB to_TO some_DT of_IN the_DT attributes_NNS of_IN the_DT event_NN ,_, thus_RB reducing_VBG the_DT overall_JJ impact_NN of_IN event_NN delivery_NN on_IN the_DT broker_NN network_NN ._.
+Therefore_RB the_DT choice_NN between_IN event_NN and_CC attribute_NN encryption_NN is_VBZ a_DT trade-off_NN between_IN expressiveness_NN and_CC performance_NN ,_, and_CC depends_VBZ on_IN the_DT requirements_NNS of_IN the_DT distributed_VBN application_NN ._.
+The_DT expressiveness_NN provided_VBN by_IN attribute_NN encryption_NN can_MD be_VB emulated_VBN by_IN introducing_VBG a_DT new_JJ event_NN type_NN for_IN each_DT group_NN of_IN subscribers_NNS with_IN the_DT same_JJ authorisation_NN ._.
+The_DT publisher_NN would_MD then_RB publish_VB an_DT instance_NN of_IN each_DT of_IN these_DT types_NNS instead_RB of_IN publishing_VBG just_RB a_DT combined_JJ event_NN ._.
+For_IN example_NN ,_, in_IN our_PRP$ London_NNP police_NN network_NN ,_, the_DT congestion_NN control_NN cameras_NNS would_MD have_VB to_TO publish_VB one_CD event_NN for_IN the_DT CCS_NN and_CC another_DT for_IN the_DT detective_NN ._.
+This_DT approach_NN could_MD become_VB difficult_JJ to_TO manage_VB if_IN the_DT attributes_NNS have_VBP a_DT variety_NN of_IN security_NN properties_NNS ,_, since_IN a_DT large_JJ number_NN of_IN event_NN types_NNS would_MD be_VB required_VBN and_CC policies_NNS and_CC subscriptions_NNS may_MD change_VB dynamically_RB ._.
+This_DT approach_NN creates_VBZ a_DT large_JJ number_NN of_IN extra_JJ events_NNS that_WDT must_MD be_VB routed_VBN through_IN the_DT network_NN ,_, as_RB is_VBZ shown_VBN in_IN Sect_NNP ._.
+#_# ._.
+#_# ._.
+3_LS ._.
+#_# Encrypting_VBG Subscriptions_NNS In_IN order_NN to_TO fully_RB protect_VB the_DT confidentiality_NN of_IN event_NN content_NN we_PRP must_MD also_RB encrypt_VB subscriptions_NNS ._.
+Encrypted_JJ subscriptions_NNS guarantee_NN :_: i_LS -RRB-_-RRB- that_WDT only_RB authorised_VBD brokers_NNS are_VBP able_JJ to_TO submit_VB subscriptions_NNS to_TO the_DT broker_NN network_NN ,_, and_CC ii_LS -RRB-_-RRB- that_IN unauthorised_JJ brokers_NNS do_VBP not_RB gain_VB information_NN about_IN event_NN content_NN by_IN monitoring_VBG which_WDT subscriptions_NNS a_DT given_VBN event_NN matches_NNS ._.
+For_IN example_NN ,_, in_IN the_DT first_JJ case_NN an_DT unauthorised_JJ broker_NN can_MD create_VB subscriptions_NNS with_IN appropriately_RB chosen_VBN filters_NNS ,_, route_NN them_PRP towards_IN the_DT root_NN of_IN the_DT event_NN dissemination_NN tree_NN ,_, and_CC monitor_NN which_WDT events_NNS were_VBD delivered_VBN to_TO it_PRP as_IN matching_VBG the_DT subscription_NN ._.
+The_DT fact_NN that_IN the_DT event_NN matched_VBD the_DT subscription_NN would_MD leak_NN information_NN to_TO the_DT broker_NN about_IN the_DT event_NN content_NN even_RB if_IN the_DT event_NN was_VBD still_RB encrypted_JJ ._.
+In_IN the_DT second_JJ case_NN ,_, even_RB if_IN an_DT unauthorised_JJ broker_NN was_VBD unable_JJ to_TO create_VB subscriptions_NNS itself_PRP ,_, it_PRP could_MD still_RB look_VB at_IN subscriptions_NNS that_WDT were_VBD routed_VBN through_IN it_PRP ,_, take_VB note_NN of_IN the_DT filters_NNS on_IN those_DT subscriptions_NNS ,_, and_CC monitor_NN which_WDT events_NNS are_VBP delivered_VBN to_TO it_PRP by_IN upstream_JJ brokers_NNS as_IN matching_VBG the_DT subscription_NN filters_NNS ._.
+This_DT would_MD again_RB reveal_VB information_NN about_IN the_DT event_NN content_NN to_TO the_DT unauthorised_JJ broker_NN ._.
+In_IN the_DT case_NN of_IN encrypting_VBG complete_JJ events_NNS ,_, we_PRP also_RB encrypt_VBP the_DT complete_JJ subscription_NN filter_NN ._.
+The_DT event_NN type_NN identifier_NN in_IN the_DT subscription_NN must_MD be_VB left_VBN intact_JJ to_TO allow_VB brokers_NNS to_TO route_NN events_NNS based_VBN on_IN their_PRP$ topic_NN when_WRB they_PRP are_VBP not_RB authorised_VBN to_TO access_VB the_DT filter_NN ._.
+In_IN such_JJ cases_NNS the_DT unauthorised_JJ broker_NN is_VBZ required_VBN to_TO assume_VB that_IN events_NNS of_IN such_PDT a_DT type_NN match_NN all_DT filter_NN expressions_NNS ._.
+Each_DT attribute_NN filter_NN is_VBZ encrypted_JJ individually_RB ,_, much_RB as_IN when_WRB encrypting_VBG a_DT publication_NN ._.
+In_IN addition_NN to_TO the_DT event_NN type_NN identifier_NN the_DT attribute_NN identifiers_NNS are_VBP also_RB left_VBN intact_JJ to_TO allow_VB authorised_JJ brokers_NNS to_TO decrypt_VB those_DT filters_NNS that_IN they_PRP have_VBP access_NN to_TO ,_, and_CC route_NN the_DT event_NN based_VBN on_IN its_PRP$ matching_VBG the_DT decrypted_JJ filters_NNS ._.
+3_LS ._.
+#_# Avoiding_VBG Unnecessary_JJ Cryptographic_NNP Operations_NNP Encrypting_VBG the_DT event_NN content_NN is_VBZ not_RB necessary_JJ if_IN the_DT current_JJ broker_NN and_CC the_DT next_JJ broker_NN down_IN the_DT event_NN dissemination_NN tree_NN have_VBP the_DT same_JJ credentials_NNS with_IN respect_NN to_TO the_DT event_NN type_NN at_IN hand_NN ._.
+For_IN example_NN ,_, one_PRP can_MD assume_VB that_IN all_DT brokers_NNS inside_IN an_DT organisation_NN would_MD share_VB the_DT same_JJ credentials_NNS and_CC therefore_RB ,_, as_RB long_RB as_IN the_DT next_JJ broker_NN is_VBZ a_DT member_NN of_IN the_DT same_JJ domain_NN ,_, the_DT event_NN can_MD be_VB routed_VBN to_TO it_PRP in_IN plaintext_NN ._.
+With_IN attribute_NN encryption_NN it_PRP is_VBZ possible_JJ that_IN the_DT neighbouring_JJ broker_NN is_VBZ authorised_VBN to_TO access_VB a_DT subset_NN of_IN the_DT decrypted_VBN attributes_NNS ,_, in_IN which_WDT case_NN those_DT attributes_NNS that_IN the_DT broker_NN is_VBZ not_RB authorised_VBN to_TO access_NN would_MD be_VB passed_VBN to_TO it_PRP encrypted_VBD ._.
+In_IN order_NN to_TO know_VB when_WRB it_PRP is_VBZ safe_JJ to_TO pass_VB the_DT event_NN in_IN plaintext_JJ form_NN ,_, the_DT brokers_NNS exchange_NN credentials_NNS as_IN part_NN of_IN a_DT handshake_NN when_WRB they_PRP connect_VBP to_TO each_DT other_JJ ._.
+In_IN cases_NNS when_WRB the_DT brokers_NNS are_VBP able_JJ to_TO verify_VB each_DT others_NNS ''_'' credentials_NNS ,_, they_PRP will_MD add_VB them_PRP to_TO the_DT routing_VBG table_NN for_IN future_JJ reference_NN ._.
+If_IN a_DT broker_NN acquires_VBZ new_JJ credentials_NNS after_IN the_DT initial_JJ handshake_NN ,_, it_PRP will_MD present_VB these_DT new_JJ credentials_NNS to_TO its_PRP$ neighbours_NNS while_IN in_IN session_NN ._.
+Regardless_RB of_IN its_PRP$ neighbouring_JJ brokers_NNS ,_, the_DT PHB_NNP will_MD always_RB encrypt_VB the_DT event_NN content_NN ,_, because_IN it_PRP is_VBZ cheaper_JJR to_TO encrypt_VB the_DT event_NN once_RB at_IN the_DT root_NN of_IN the_DT event_NN dissemination_NN tree_NN ._.
+In_IN Hermes_NNP the_DT rendezvous_NN node_NN for_IN each_DT event_NN type_NN is_VBZ selected_VBN uniformly_RB randomly_RB -LRB-_-LRB- the_DT event_NN type_NN name_NN is_VBZ hashed_VBN with_IN the_DT SHA-1_NN hash_NN algorithm_NN to_TO produce_VB the_DT event_NN type_NN 108_CD PHB_NNP IBIB_NNP IB_NNP SHB_NNP RN_NNP IB_NNP SHB_NNP Figure_NNP #_# :_: Node_NNP addressing_VBG is_VBZ evenly_RB distributed_VBN across_IN the_DT network_NN ,_, thus_RB rendezvous_NN nodes_NNS may_MD lie_VB outside_IN the_DT domain_NN that_WDT owns_VBZ an_DT event_NN type_NN IB_NNP IB_NNP SHBPHBP_NNP S_NN Encrypts_VBZ Filters_NNS from_IN cache_NN Decrypts_VBZ ,_, delivers_VBZ Decrypts_NNP ,_, filters_VBZ Plaintext_NNP Cached_NNP Plaintext_NNP -LRB-_-LRB- most_RBS data_NNS -RRB-_-RRB- Cached_VBN Plaintext_NN -LRB-_-LRB- some_DT data_NNS -RRB-_-RRB- Different_JJ domains_NNS Cyphertext_NNP KEY_NNP Figure_NNP #_# :_: Caching_NN decrypted_VBN data_NNS to_TO increase_VB efficiency_NN when_WRB delivering_VBG to_TO peers_NNS with_IN equivalent_JJ security_NN privileges_NNS identifier_NN ,_, then_RB the_DT identifier_NN is_VBZ used_VBN to_TO select_VB the_DT rendezvous_NN node_NN in_IN the_DT structured_JJ overlay_NN network_NN -RRB-_-RRB- ._.
+Therefore_RB it_PRP is_VBZ probable_JJ that_IN the_DT rendezvous_NN node_NN will_MD reside_VB outside_IN the_DT current_JJ domain_NN ._.
+This_DT situation_NN is_VBZ illustrated_VBN in_IN the_DT event_NN dissemination_NN tree_NN in_IN Fig_NN ._.
+#_# ._.
+So_RB even_RB with_IN domain_NN internal_JJ applications_NNS ,_, where_WRB the_DT event_NN can_MD be_VB routed_VBN from_IN the_DT publisher_NN to_TO all_DT subscribers_NNS in_IN plaintext_JJ form_NN ,_, the_DT event_NN content_NN will_MD in_IN most_JJS cases_NNS have_VBP to_TO be_VB encrypted_VBN for_IN it_PRP to_TO be_VB routed_VBN to_TO the_DT rendezvous_NN node_NN ._.
+To_TO avoid_VB unnecessary_JJ decryptions_NNS ,_, we_PRP attach_VBP a_DT plaintext_JJ content_NN cache_NN to_TO encrypted_JJ events_NNS ._.
+A_DT broker_NN fills_VBZ the_DT cache_NN with_IN content_NN that_IN it_PRP has_VBZ decrypted_VBN ,_, for_IN example_NN ,_, in_IN order_NN to_TO filter_NN on_IN the_DT content_NN ._.
+The_DT cache_NN is_VBZ accessed_VBN by_IN the_DT broker_NN when_WRB it_PRP delivers_VBZ an_DT event_NN to_TO a_DT local_JJ subscriber_NN after_IN first_JJ seeing_VBG if_IN the_DT event_NN matches_VBZ the_DT subscription_NN filter_NN ,_, but_CC the_DT broker_NN also_RB sends_VBZ the_DT cache_NN to_TO the_DT next_JJ broker_NN with_IN the_DT encrypted_JJ event_NN ._.
+The_DT next_JJ broker_NN can_MD look_VB the_DT attribute_NN up_RP from_IN the_DT cache_NN instead_RB of_IN having_VBG to_TO decrypt_VB it_PRP ._.
+If_IN the_DT event_NN is_VBZ being_VBG sent_VBN to_TO an_DT unauthorised_JJ broker_NN ,_, the_DT cache_NN will_MD be_VB discarded_VBN before_IN the_DT event_NN is_VBZ sent_VBN ._.
+Obviously_RB sending_VBG the_DT cache_NN with_IN the_DT encrypted_JJ event_NN will_MD add_VB to_TO the_DT communication_NN cost_NN ,_, but_CC this_DT is_VBZ outweighed_VBN by_IN the_DT saving_NN in_IN encryption_NN /_: decryption_NN processing_NN ._.
+In_IN Fig_NN ._.
+#_# we_PRP see_VBP two_CD separate_JJ cached_JJ plaintext_NN streams_NNS accompanying_VBG an_DT event_NN depending_VBG on_IN the_DT inter-broker_JJ relationships_NNS in_IN two_CD different_JJ domains_NNS ._.
+We_PRP show_VBP in_IN Sect_NNP ._.
+#_# ._.
+#_# that_IN the_DT overhead_NN of_IN sending_VBG encrypted_JJ messages_NNS with_IN a_DT full_JJ plaintext_NN cache_NN incurs_VBZ almost_RB no_DT overhead_NN compared_VBN to_TO sending_VBG plaintext_JJ messages_NNS ._.
+3_LS ._.
+#_# Implementation_NNP In_IN our_PRP$ implementation_NN we_PRP have_VBP used_VBN the_DT EAX_NNP mode_NN -LSB-_-LRB- #_# -RSB-_-RRB- of_IN operation_NN when_WRB encrypting_VBG events_NNS ,_, attributes_NNS ,_, and_CC subscription_NN filters_NNS ._.
+EAX_NNP is_VBZ a_DT mode_NN of_IN operation_NN for_IN block_NN ciphers_NNS ,_, also_RB called_VBD an_DT Authenticated_VBN Encryption_NN with_IN Associated_NNP Data_NNP -LRB-_-LRB- AEAD_NNP -RRB-_-RRB- algorithm_NN that_WDT provides_VBZ simultaneously_RB both_DT data_NNS confidentiality_NN and_CC integrity_NN protection_NN ._.
+The_DT algorithm_NN implements_VBZ a_DT two-pass_JJ scheme_NN where_WRB during_IN the_DT first_JJ pass_NN the_DT plain_JJ text_NN is_VBZ encrypted_JJ ,_, and_CC on_IN the_DT second_JJ pass_NN a_DT message_NN authentication_NN code_NN -LRB-_-LRB- MAC_NNP -RRB-_-RRB- is_VBZ generated_VBN for_IN the_DT encrypted_JJ data_NNS ._.
+The_DT EAX_NNP mode_NN is_VBZ compatible_JJ with_IN any_DT block_NN cipher_NN ._.
+We_PRP decided_VBD to_TO use_VB the_DT Advanced_NNP Encryption_NNP Standard_NNP -LRB-_-LRB- AES_NN -RRB-_-RRB- -LSB-_-LRB- #_# -RSB-_-RRB- algorithm_NN in_IN our_PRP$ implementation_NN ,_, because_IN of_IN its_PRP$ standard_JJ status_NN and_CC the_DT fact_NN that_IN the_DT algorithm_NN has_VBZ gone_VBN through_IN thorough_JJ cryptanalysis_NN during_IN its_PRP$ existence_NN and_CC no_DT serious_JJ vulnerabilities_NNS have_VBP been_VBN found_VBN thus_RB far_RB ._.
+In_IN addition_NN to_TO providing_VBG both_CC confidentiality_NN and_CC integrity_NN protection_NN ,_, the_DT EAX_NNP mode_NN uses_VBZ the_DT underlying_VBG block_NN cipher_NN in_IN counter_JJ mode_NN -LRB-_-LRB- CTR_NN mode_NN -RRB-_-RRB- -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+A_DT block_NN cipher_NN in_IN counter_JJ mode_NN is_VBZ used_VBN to_TO produce_VB a_DT stream_NN of_IN key_JJ bits_NNS that_WDT are_VBP then_RB XORed_VBN with_IN the_DT plaintext_NN ._.
+Effectively_RB CTR_NN mode_NN transforms_VBZ a_DT block_NN cipher_NN into_IN a_DT stream_NN cipher_NN ._.
+The_DT advantage_NN of_IN stream_NN ciphers_NNS is_VBZ that_IN the_DT ciphertext_NN is_VBZ the_DT same_JJ length_NN as_IN the_DT plaintext_NN ,_, whereas_IN with_IN block_NN ciphers_VBZ the_DT plaintext_NN must_MD be_VB padded_VBN to_TO a_DT multiple_JJ of_IN the_DT block_NN cipher_NN ''_'' s_NNS block_VBP length_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+the_DT AES_NN block_NN size_NN is_VBZ ###_CD bits_NNS -RRB-_-RRB- ._.
+Avoiding_VBG padding_NN is_VBZ very_RB important_JJ in_IN attribute_NN encryption_NN ,_, because_IN the_DT padding_NN might_MD increase_VB the_DT size_NN of_IN the_DT attribute_NN disproportionally_RB ._.
+For_IN example_NN ,_, a_DT single_JJ integer_NN might_MD be_VB ##_JJ bits_NNS in_IN length_NN ,_, which_WDT would_MD be_VB padded_VBN to_TO ###_VB bits_NNS if_IN we_PRP used_VBD a_DT block_NN cipher_NN ._.
+With_IN event_NN encryption_NN the_DT message_NN expansion_NN is_VBZ not_RB that_IN relevant_JJ ,_, since_IN the_DT length_NN of_IN padding_NN required_VBN to_TO reach_VB the_DT next_JJ ##_NN byte_NN multiple_NN will_MD probably_RB be_VB a_DT small_JJ proportion_NN of_IN the_DT overall_JJ plaintext_NN length_NN ._.
+In_IN encryption_NN mode_NN the_DT EAX_NNP algorithm_NN takes_VBZ as_IN input_NN a_DT nonce_JJ -LRB-_-LRB- a_DT number_NN used_VBN once_RB -RRB-_-RRB- ,_, an_DT encryption_NN key_NN and_CC the_DT plaintext_NN ,_, and_CC it_PRP returns_VBZ the_DT ciphertext_NN and_CC an_DT authentication_NN tag_NN ._.
+In_IN decryption_NN mode_NN the_DT algorithm_NN takes_VBZ as_IN input_NN the_DT encryption_NN key_NN ,_, the_DT ciphertext_NN and_CC the_DT authentication_NN tag_NN ,_, and_CC it_PRP returns_VBZ either_CC the_DT plaintext_NN ,_, or_CC an_DT error_NN if_IN the_DT authentication_NN check_NN failed_VBD ._.
+The_DT nonce_JJ is_VBZ expanded_VBN to_TO the_DT block_NN length_NN of_IN the_DT underlying_VBG block_NN cipher_NN by_IN passing_VBG it_PRP through_IN an_DT OMAC_NN construct_NN ._.
+It_PRP is_VBZ important_JJ that_IN particular_JJ nonce_JJ values_NNS are_VBP not_RB reused_VBN ,_, otherwise_RB the_DT block_NN cipher_NN in_IN CTR_NN mode_NN would_MD produce_VB an_DT identical_JJ key_JJ stream_NN ._.
+In_IN our_PRP$ implementation_NN we_PRP used_VBD the_DT PHB_NN defined_VBN event_NN timestamp_NN -LRB-_-LRB- 64-bit_JJ value_NN counting_VBG the_DT milliseconds_NNS since_IN January_NNP #_# ,_, ####_CD UTC_NNP -RRB-_-RRB- appended_VBN by_IN the_DT PHB_NN ''_'' s_NNS identity_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+public_JJ key_NN -RRB-_-RRB- as_IN the_DT nonce_JJ ._.
+The_DT broker_NN is_VBZ responsible_JJ for_IN ensuring_VBG that_IN the_DT timestamps_JJ increase_NN monotonically_RB ._.
+The_DT authentication_NN tag_NN is_VBZ appended_VBN to_TO the_DT produced_VBN cipher_NN text_NN to_TO create_VB a_DT two-tuple_NN ._.
+With_IN event_NN encryption_NN a_DT single_JJ tag_NN is_VBZ created_VBN for_IN the_DT encrypted_JJ event_NN ._.
+With_IN attribute_NN 109_CD encryption_NN each_DT attribute_NN is_VBZ encrypted_VBN and_CC authenticated_VBN separately_RB ,_, and_CC they_PRP all_DT have_VBP their_PRP$ individual_JJ tags_NNS ._.
+The_DT tag_NN length_NN is_VBZ configurable_JJ in_IN EAX_NN without_IN restrictions_NNS ,_, which_WDT allows_VBZ the_DT user_NN to_TO make_VB a_DT trade-off_NN between_IN the_DT authenticity_NN guarantees_VBZ provided_VBN by_IN EAX_NN and_CC the_DT added_VBN communication_NN overhead_NN ._.
+We_PRP used_VBD a_DT tag_NN length_NN of_IN ##_CD bytes_NNS in_IN our_PRP$ implementation_NN ,_, but_CC one_CD could_MD make_VB the_DT tag_NN length_NN a_DT publisher_NN /_: subscriber_NN defined_VBN parameter_NN for_IN each_DT publication_NN /_: subscription_NN or_CC include_VBP it_PRP in_IN the_DT event_NN type_NN definition_NN to_TO make_VB it_PRP a_DT type_NN specific_JJ parameter_NN ._.
+EAX_NNP also_RB supports_VBZ including_VBG unencrypted_JJ associated_VBN data_NNS in_IN the_DT tag_NN calculation_NN ._.
+The_DT integrity_NN of_IN this_DT data_NN is_VBZ protected_VBN ,_, but_CC it_PRP is_VBZ still_RB readable_JJ by_IN everyone_NN ._.
+This_DT feature_NN could_MD be_VB used_VBN with_IN event_NN encryption_NN in_IN cases_NNS where_WRB some_DT of_IN the_DT event_NN content_NN is_VBZ public_JJ and_CC thus_RB would_MD be_VB useful_JJ for_IN content-based_JJ routing_VBG ._.
+The_DT integrity_NN of_IN the_DT data_NNS would_MD still_RB be_VB protected_VBN against_IN changes_NNS ,_, but_CC unauthorised_JJ brokers_NNS would_MD be_VB able_JJ to_TO apply_VB filters_NNS ._.
+We_PRP have_VBP included_VBN the_DT event_NN type_NN identifier_NN as_IN associated_VBN data_NNS in_IN order_NN to_TO protect_VB its_PRP$ integrity_NN ._.
+Other_JJ AEAD_NN algorithms_NNS include_VBP the_DT offset_VBN codebook_NN mode_NN -LRB-_-LRB- OCB_NN -RRB-_-RRB- -LSB-_-LRB- ##_CD -RSB-_-RRB- and_CC the_DT counter_NN with_IN CBC-MAC_NN mode_NN -LRB-_-LRB- CCM_NN -RRB-_-RRB- -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Contrarily_RB to_TO the_DT EAX_NNP mode_NN the_DT OCB_NNP mode_NN requires_VBZ only_RB one_CD pass_NN over_IN the_DT plaintext_NN ,_, which_WDT makes_VBZ it_PRP roughly_RB twice_RB as_IN fast_RB as_IN EAX_NN ._.
+Unfortunately_RB the_DT OCB_NNP mode_NN has_VBZ a_DT patent_NN application_NN in_IN place_NN in_IN the_DT USA_NNP ,_, which_WDT restricts_VBZ its_PRP$ use_NN ._.
+The_DT CCM_NNP mode_NN is_VBZ the_DT predecessor_NN of_IN the_DT EAX_NNP mode_NN ._.
+It_PRP was_VBD developed_VBN in_IN order_NN to_TO provide_VB a_DT free_JJ alternative_NN to_TO OCB_NNP ._.
+The_DT EAX_NNP was_VBD developed_VBN later_RB to_TO address_VB some_DT issues_NNS with_IN CCM_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Similarly_RB to_TO EAX_NNP ,_, CCM_NNP is_VBZ also_RB a_DT two-pass_JJ mode_NN ._.
+4_LS ._.
+KEY_NNP MANAGEMENT_NNP In_IN both_DT encryption_NN approaches_VBZ the_DT encrypted_JJ event_NN content_NN has_VBZ a_DT globally_RB unique_JJ identifier_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+the_DT event_NN type_NN or_CC the_DT attribute_NN identifier_NN -RRB-_-RRB- ._.
+That_DT identifier_NN is_VBZ used_VBN to_TO determine_VB the_DT encryption_NN key_NN to_TO use_VB when_WRB encrypting_VBG or_CC decrypting_VBG the_DT content_NN ._.
+Each_DT event_NN type_NN ,_, in_IN event_NN encryption_NN ,_, and_CC attribute_NN ,_, in_IN attribute_NN encryption_NN ,_, has_VBZ its_PRP$ own_JJ individual_JJ encryption_NN key_NN ._.
+By_IN controlling_VBG access_NN to_TO the_DT encryption_NN key_NN we_PRP effectively_RB control_VBP access_NN to_TO the_DT encrypted_JJ event_NN content_NN ._.
+In_IN order_NN to_TO control_VB access_NN to_TO the_DT encryption_NN keys_NNS we_PRP form_VBP a_DT key_JJ group_NN of_IN brokers_NNS for_IN each_DT individual_JJ encryption_NN key_NN ._.
+The_DT key_JJ group_NN is_VBZ used_VBN to_TO refresh_VB the_DT key_NN when_WRB necessary_JJ and_CC to_TO deliver_VB the_DT new_JJ key_NN to_TO all_DT current_JJ members_NNS of_IN the_DT key_JJ group_NN ._.
+The_DT key_JJ group_NN manager_NN is_VBZ responsible_JJ for_IN verifying_VBG that_IN a_DT new_JJ member_NN requesting_VBG to_TO join_VB the_DT key_JJ group_NN is_VBZ authorised_VBN to_TO do_VB so_RB ._.
+Therefore_RB the_DT key_JJ group_NN manager_NN must_MD be_VB trusted_VBN by_IN the_DT type_NN owner_NN to_TO enforce_VB the_DT access_NN control_NN policy_NN ._.
+We_PRP assume_VBP that_IN the_DT key_JJ group_NN manager_NN is_VBZ either_CC a_DT trusted_VBN third_JJ party_NN or_CC alternatively_RB a_DT member_NN of_IN the_DT type_NN owner_NN ''_'' s_NNS domain_NN ._.
+In_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- Pesonen_NNP et_FW al_FW ._.
+proposed_VBN a_DT capability-based_JJ access_NN control_NN architecture_NN for_IN multi-domain_JJ publish_VB /_: subscribe_VB systems_NNS ._.
+The_DT approach_NN uses_VBZ capabilities_NNS to_TO decentralise_VB the_DT access_NN control_NN policy_NN amongst_IN the_DT publish_VB /_: subscribe_VB nodes_NNS -LRB-_-LRB- i_FW ._.
+e_LS ._.
+clients_NNS and_CC brokers_NNS -RRB-_-RRB- :_: each_DT node_NN holds_VBZ a_DT set_NN of_IN capabilities_NNS that_WDT define_VBP the_DT authority_NN granted_VBN to_TO that_DT node_NN ._.
+Authority_NNP to_TO access_VB a_DT given_VBN event_NN type_NN is_VBZ granted_VBN by_IN the_DT owner_NN of_IN that_DT type_NN issuing_VBG a_DT capability_NN to_TO a_DT node_NN ._.
+The_DT capability_NN defines_VBZ the_DT event_NN type_NN ,_, the_DT action_NN ,_, and_CC the_DT attributes_NNS that_WDT Type_NN Owner_NNP ACS_NNP Broker_NNP Key_NNP Manager_NNP 1_CD ._.
+Grant_NNP authorisation_NN for_IN Number_NNP Platekey_NNP 2_CD ._.
+Broker_NNP requests_NNS to_TO join_VB Number_NNP Plate_NNP key_JJ group_NN 5_CD ._.
+If_IN the_DT broker_NN satisfies_VBZ all_DT checks_NNS ,_, they_PRP will_MD begin_VB receiving_VBG appropriate_JJ keys_NNS ._.
+3_LS ._.
+Key_NN manager_NN may_MD check_VB broker_NN ''_'' s_NNS credentials_NNS at_IN the_DT Access_NN Control_NNP Service_NNP 4_CD ._.
+Key_NN manager_NN may_MD check_VB that_IN the_DT Type_NN Owner_NNP permits_VBZ access_NN Figure_NN #_# :_: The_DT steps_NNS involved_VBN for_IN a_DT broker_NN to_TO be_VB successful_JJ in_IN joining_VBG a_DT key_JJ group_NN the_DT node_NN is_VBZ authorised_VBN to_TO access_NN ._.
+For_IN example_NN ,_, a_DT tuple_NN <_JJR NP_CD ,_, subscribe_VBP ,_, *_SYM >_JJR would_MD authorise_VB the_DT owner_NN to_TO subscribe_VB to_TO Numberplate_JJ events_NNS with_IN access_NN to_TO all_DT attributes_NNS in_IN the_DT published_VBN events_NNS ._.
+The_DT sequence_NN of_IN events_NNS required_VBN for_IN a_DT broker_NN to_TO successfully_RB join_VB a_DT key_JJ group_NN is_VBZ shown_VBN in_IN Fig_NN ._.
+#_# ._.
+Both_CC the_DT client_NN hosting_VBG broker_NN and_CC the_DT client_NN must_MD be_VB authorised_VBN to_TO make_VB the_DT client_NN ''_'' s_NNS request_NN ._.
+That_DT is_VBZ ,_, if_IN the_DT client_NN makes_VBZ a_DT subscription_NN request_NN for_IN Numberplate_JJ events_NNS ,_, both_CC the_DT client_NN and_CC the_DT local_JJ broker_NN must_MD be_VB authorised_VBN to_TO subscribe_VB to_TO Numberplate_JJ events_NNS ._.
+This_DT is_VBZ because_IN from_IN the_DT perspective_NN of_IN the_DT broker_NN network_NN ,_, the_DT local_JJ broker_NN acts_VBZ as_IN a_DT proxy_NN for_IN the_DT client_NN ._.
+We_PRP use_VBP the_DT same_JJ capabilities_NNS to_TO authorise_VB membership_NN in_IN a_DT key_JJ group_NN that_WDT are_VBP used_VBN to_TO authorise_VB publish_VB /_: subscribe_VB requests_NNS ._.
+Not_RB doing_VBG so_RB could_MD lead_VB to_TO the_DT inconsistent_JJ situation_NN where_WRB a_DT SHB_NNP is_VBZ authorised_VBN to_TO make_VB a_DT subscription_NN on_IN behalf_NN of_IN its_PRP$ clients_NNS ,_, but_CC is_VBZ not_RB able_JJ to_TO decrypt_VB incoming_JJ event_NN content_NN for_IN them_PRP ._.
+In_IN the_DT Numberplate_NNP example_NN above_IN ,_, the_DT local_JJ broker_NN holding_VBG the_DT above_JJ capability_NN is_VBZ authorised_VBN to_TO join_VB the_DT Numberplate_NNP key_JJ group_NN as_RB well_RB as_IN the_DT key_JJ groups_NNS for_IN all_PDT the_DT attributes_NNS in_IN the_DT Numberplate_NNP event_NN type_NN ._.
+4_LS ._.
+#_# Secure_NNP Group_NNP Communication_NNP Event_NNP content_NN encryption_NN in_IN a_DT decentralised_JJ multi-domain_JJ publish_VB /_: subscribe_VB system_NN can_MD be_VB seen_VBN as_IN a_DT sub-category_NN of_IN secure_JJ group_NN communication_NN ._.
+In_IN both_DT cases_NNS the_DT key_JJ management_NN system_NN must_MD scale_VB well_RB with_IN the_DT number_NN of_IN clients_NNS ,_, clients_NNS might_MD be_VB spread_VBN over_IN large_JJ geographic_JJ areas_NNS ,_, there_EX might_MD be_VB high_JJ rates_NNS of_IN churn_VBP in_IN group_NN membership_NN ,_, and_CC all_DT members_NNS must_MD be_VB synchronised_VBN with_IN each_DT other_JJ in_IN time_NN in_IN order_NN to_TO use_VB the_DT same_JJ encryption_NN key_NN at_IN the_DT same_JJ time_NN ._.
+There_EX are_VBP a_DT number_NN of_IN scalable_JJ key_JJ management_NN protocols_NNS for_IN secure_JJ group_NN communication_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+We_PRP have_VBP implemented_VBN the_DT One-Way_NNP Function_NN Tree_NN -LRB-_-LRB- OFT_NN -RRB-_-RRB- -LSB-_-LRB- #_# -RSB-_-RRB- protocol_NN as_IN a_DT proof_NN of_IN concept_NN ._.
+We_PRP chose_VBD to_TO implement_VB OFT_NNP ,_, because_IN of_IN its_PRP$ relatively_RB simplicity_NN and_CC good_JJ performance_NN ._.
+Our_PRP$ implementation_NN uses_VBZ the_DT same_JJ structured_JJ overlay_NN network_NN used_VBN by_IN the_DT broker_NN network_NN as_IN a_DT transport_NN ._.
+The_DT OFT_NNP protocol_NN is_VBZ based_VBN on_IN a_DT binary_JJ tree_NN where_WRB the_DT participants_NNS are_VBP at_IN the_DT leaves_NNS of_IN the_DT tree_NN ._.
+It_PRP scales_NNS in_IN log2n_NN in_IN processing_NN and_CC communication_NN costs_NNS ,_, as_RB well_RB as_IN in_IN the_DT size_NN of_IN the_DT state_NN stored_VBD at_IN each_DT participant_NN ,_, which_WDT we_PRP have_VBP verified_VBN in_IN our_PRP$ simulations_NNS ._.
+4_LS ._.
+#_# Key_NNP Refreshing_NNP Traditionally_RB in_IN group_NN key_JJ management_NN schemes_NNS the_DT encryption_NN key_NN is_VBZ refreshed_VBN when_WRB a_DT new_JJ member_NN joins_VBZ the_DT group_NN ,_, an_DT 110_CD existing_VBG member_NN leaves_VBZ the_DT group_NN ,_, or_CC a_DT timer_NN expires_VBZ ._.
+Refreshing_JJ the_DT key_NN when_WRB a_DT new_JJ member_NN joins_VBZ provides_VBZ backward_RB secrecy_NN ,_, i_FW ._.
+e_LS ._.
+the_DT new_JJ member_NN is_VBZ prevented_VBN from_IN accessing_VBG old_JJ messages_NNS ._.
+Similarly_RB refreshing_VBG the_DT key_NN when_WRB an_DT existing_VBG member_NN leaves_VBZ provides_VBZ forward_RB secrecy_NN ,_, i_FW ._.
+e_LS ._.
+the_DT old_JJ member_NN is_VBZ prevented_VBN from_IN accessing_VBG future_JJ messages_NNS ._.
+Timer_NN triggered_VBD refreshes_NNS are_VBP issued_VBN periodically_RB in_IN order_NN to_TO limit_VB the_DT damage_NN caused_VBN by_IN the_DT current_JJ key_NN being_VBG compromised_VBN ._.
+Even_RB though_IN the_DT state-of-the-art_JJ key_JJ management_NN protocols_NNS are_VBP efficient_JJ ,_, refreshing_VBG the_DT key_JJ unnecessarily_RB introduces_VBZ extra_JJ traffic_NN and_CC processing_NN amongst_IN the_DT key_JJ group_NN members_NNS ._.
+In_IN our_PRP$ case_NN key_JJ group_NN membership_NN is_VBZ based_VBN on_IN the_DT broker_NN holding_VBG a_DT capability_NN that_WDT authorises_VBZ it_PRP to_TO join_VB the_DT key_JJ group_NN ._.
+The_DT capability_NN has_VBZ a_DT set_NN of_IN validity_NN conditions_NNS that_WDT in_IN their_PRP$ simplest_JJS form_NN define_VB a_DT time_NN period_NN when_WRB the_DT certificate_NN is_VBZ valid_JJ ,_, and_CC in_IN more_RBR complex_JJ cases_NNS involve_VBP on-line_JJ checks_NNS back_RB towards_IN the_DT issuer_NN ._.
+In_IN order_NN to_TO avoid_VB unnecessary_JJ key_JJ refreshes_VBZ the_DT key_JJ manager_NN looks_VBZ at_IN the_DT certificate_NN validity_NN conditions_NNS of_IN the_DT joining_VBG or_CC leaving_VBG member_NN ._.
+In_IN case_NN of_IN a_DT joining_VBG member_NN ,_, if_IN the_DT manager_NN can_MD ascertain_VB that_IN the_DT certificate_NN was_VBD valid_JJ at_IN the_DT time_NN of_IN the_DT previous_JJ key_JJ refresh_NN ,_, a_DT new_JJ key_JJ refresh_NN can_MD be_VB avoided_VBN ._.
+Similarly_RB ,_, instead_RB of_IN refreshing_VBG the_DT key_JJ immediately_RB when_WRB a_DT member_NN leaves_VBZ the_DT key_JJ group_NN ,_, the_DT key_JJ manager_NN can_MD cache_NN their_PRP$ credentials_NNS and_CC refresh_VB the_DT key_NN only_RB when_WRB the_DT credentials_NNS expire_VBP ._.
+These_DT situations_NNS are_VBP both_DT illustrated_VBN in_IN Fig_NN ._.
+#_# ._.
+It_PRP can_MD be_VB assumed_VBN that_IN the_DT credentials_NNS granted_VBN to_TO brokers_NNS are_VBP relatively_RB static_JJ ,_, i_FW ._.
+e_LS ._.
+once_RB a_DT domain_NN is_VBZ authorised_VBN to_TO access_VB an_DT event_NN type_NN ,_, the_DT authority_NN will_MD be_VB delegated_VBN to_TO all_DT brokers_NNS of_IN that_DT domain_NN ,_, and_CC they_PRP will_MD have_VB the_DT authority_NN for_IN the_DT foreseeable_JJ future_NN ._.
+More_RBR fine_JJ grained_VBN and_CC dynamic_JJ access_NN control_NN would_MD be_VB implemented_VBN at_IN the_DT edge_NN of_IN the_DT broker_NN network_NN between_IN the_DT clients_NNS and_CC the_DT client_NN hosting_VBG brokers_NNS ._.
+When_WRB an_DT encryption_NN key_NN is_VBZ refreshed_VBN the_DT new_JJ key_NN is_VBZ tagged_VBN with_IN a_DT timestamp_NN ._.
+The_DT encryption_NN key_NN to_TO use_VB for_IN a_DT given_VBN event_NN is_VBZ selected_VBN based_VBN on_IN the_DT event_NN ''_'' s_NNS publication_NN timestamp_NN ._.
+The_DT old_JJ keys_NNS will_MD be_VB kept_VBN for_IN a_DT reasonable_JJ amount_NN of_IN time_NN in_IN order_NN to_TO allow_VB for_IN some_DT clock_NN drift_NN ._.
+Setting_VBG this_DT value_NN is_VBZ part_NN of_IN the_DT key_JJ management_NN protocol_NN ,_, although_IN exactly_RB how_WRB long_RB this_DT time_NN should_MD be_VB will_MD depend_VB on_IN the_DT nature_NN of_IN the_DT application_NN and_CC possibly_RB the_DT size_NN of_IN the_DT network_NN ._.
+It_PRP can_MD be_VB configured_VBN independently_RB per_IN key_JJ group_NN if_IN necessary_JJ ._.
+5_CD ._.
+EVALUATION_NN In_IN order_NN to_TO evaluate_VB the_DT performance_NN of_IN event_NN content_NN encryption_NN we_PRP have_VBP implemented_VBN both_CC encryption_NN approaches_NNS running_VBG over_IN our_PRP$ implementation_NN of_IN the_DT Hermes_NNP publish_VB /_: subscribe_VB middleware_NN ._.
+The_DT implementation_NN supports_VBZ three_CD modes_NNS :_: plaintext_JJ content_NN ,_, event_NN encryption_NN ,_, and_CC attribute_NN encryption_NN ,_, in_IN a_DT single_JJ publish_VB /_: subscribe_VB system_NN ._.
+We_PRP ran_VBD three_CD performance_NN tests_NNS in_IN a_DT discrete_JJ event_NN simulator_NN ._.
+The_DT simulator_NN was_VBD run_VBN on_IN an_DT Intel_NNP P4_NN #_# ._.
+2GHz_NN workstation_NN with_IN 1GB_NN of_IN main_JJ memory_NN ._.
+We_PRP decided_VBD to_TO run_VB the_DT tests_NNS on_IN an_DT event_NN simulator_NN instead_RB of_IN an_DT actual_JJ deployed_VBN system_NN in_IN order_NN to_TO be_VB able_JJ to_TO measure_VB to_TO aggregate_JJ time_NN it_PRP takes_VBZ to_TO handle_VB all_DT messages_NNS in_IN the_DT system_NN ._.
+The_DT following_VBG sections_NNS describe_VBP the_DT specific_JJ test_NN setups_NNS and_CC the_DT results_NNS in_IN more_JJR detail_NN ._.
+5_CD ._.
+#_# End-to-End_NNP Overhead_NN The_DT end-to-end_JJ overhead_JJ test_NN shows_VBZ how_WRB much_RB the_DT overall_JJ message_NN throughput_NN of_IN the_DT simulator_NN was_VBD affected_VBN by_IN event_NN content_NN encryption_NN ._.
+We_PRP formed_VBD a_DT broker_NN network_NN with_IN two_CD brokers_NNS ,_, attached_VBD a_DT publisher_NN to_TO one_CD of_IN them_PRP and_CC a_DT subscriber_NN to_TO the_DT other_JJ one_CD ._.
+The_DT subscriber_NN subscribed_VBD to_TO the_DT advertised_JJ event_NN type_NN without_IN any_DT filters_NNS ,_, i_FW ._.
+e_LS ._.
+each_DT publication_NN matched_VBD the_DT subscriber_NN ''_'' s_NNS publication_NN and_CC thus_RB was_VBD delivered_VBN to_TO the_DT subscriber_NN ._.
+The_DT test_NN measures_VBZ the_DT combined_JJ time_NN it_PRP takes_VBZ to_TO publish_VB and_CC deliver_VB ###_CD ,_, ###_CD events_NNS ._.
+If_IN the_DT content_NN is_VBZ encrypted_VBN this_DT includes_VBZ both_CC encrypting_VBG the_DT content_NN at_IN the_DT PHB_NN and_CC decrypting_VBG it_PRP at_IN the_DT SHB_NNP ._.
+In_IN the_DT test_NN the_DT number_NN of_IN attributes_NNS in_IN the_DT event_NN type_NN is_VBZ increased_VBN from_IN #_# to_TO ##_CD -LRB-_-LRB- the_DT x-axis_NN -RRB-_-RRB- ._.
+Each_DT attribute_NN is_VBZ set_VBN to_TO a_DT ##_JJ character_NN string_NN ._.
+For_IN each_DT number_NN of_IN attributes_NNS in_IN the_DT event_NN type_NN the_DT publisher_NN publishes_VBZ ###_NNP ,_, ###_CD events_NNS ,_, and_CC the_DT elapsed_JJ time_NN is_VBZ measured_VBN to_TO derive_VB the_DT message_NN throughput_NN ._.
+The_DT test_NN was_VBD repeated_VBN five_CD times_NNS for_IN each_DT number_NN of_IN attributes_NNS and_CC we_PRP use_VBP the_DT average_NN of_IN all_DT iterations_NNS in_IN the_DT graph_NN ,_, but_CC the_DT results_NNS were_VBD highly_RB consistent_JJ so_IN the_DT standard_JJ deviation_NN is_VBZ not_RB shown_VBN ._.
+The_DT same_JJ tests_NNS were_VBD run_VBN with_IN no_DT content_NN encryption_NN ,_, event_NN encryption_NN ,_, and_CC attribute_NN encryption_NN ._.
+As_IN can_MD be_VB seen_VBN in_IN Fig_NN ._.
+#_# ,_, event_NN content_NN encryption_NN introduces_VBZ a_DT large_JJ overhead_NN compared_VBN to_TO not_RB using_VBG encryption_NN ._.
+The_DT throughput_NN when_WRB using_VBG attribute_NN encryption_NN with_IN an_DT event_NN type_NN with_IN one_CD attribute_NN is_VBZ ##_CD %_NN of_IN the_DT throughput_NN achieved_VBN when_WRB events_NNS are_VBP sent_VBN in_IN plaintext_NN ._.
+When_WRB the_DT number_NN of_IN attributes_NNS increases_VBZ the_DT performance_NN gap_NN increases_VBZ as_RB well_RB :_: with_IN ten_CD attributes_VBZ the_DT performance_NN with_IN attribute_NN encryption_NN has_VBZ decreased_VBN to_TO ##_VB ._.
+#_# %_NN of_IN plaintext_JJ performance_NN ._.
+Event_NN encryption_NN fares_NNS better_RBR ,_, because_IN of_IN fewer_JJR encryption_NN operations_NNS ._.
+The_DT increase_NN in_IN the_DT amount_NN of_IN encrypted_JJ data_NNS does_VBZ not_RB affect_VB the_DT performance_NN as_RB much_RB as_IN the_DT number_NN of_IN individual_JJ encryption_NN operations_NNS does_VBZ ._.
+The_DT difference_NN in_IN performance_NN with_IN event_NN encryption_NN and_CC attribute_NN encryption_NN with_IN only_RB one_CD attribute_NN is_VBZ caused_VBN by_IN the_DT Java_NNP object_NN serialisation_NN mechanism_NN :_: in_IN the_DT event_NN encryption_NN case_NN the_DT whole_JJ attribute_NN structure_NN is_VBZ serialised_VBN ,_, which_WDT results_VBZ in_IN more_JJR objects_NNS than_IN serialising_VBG a_DT single_JJ attribute_NN value_NN ._.
+A_DT more_RBR efficient_JJ implementation_NN would_MD provide_VB its_PRP$ own_JJ marshalling_NN mechanism_NN ._.
+Note_VB that_IN the_DT EAX_NNP implementation_NN we_PRP use_VBP runs_VBZ the_DT nonce_JJ -LRB-_-LRB- i_FW ._.
+e_LS ._.
+initialisation_NN vector_NN -RRB-_-RRB- through_IN an_DT OMAC_NN construct_NN to_TO increase_VB its_PRP$ randomness_NN ._.
+Since_IN the_DT nonce_JJ is_VBZ not_RB required_VBN to_TO be_VB kept_VBN secret_JJ -LRB-_-LRB- just_RB unique_JJ -RRB-_-RRB- ,_, there_EX is_VBZ a_DT potential_JJ time_NN /_: space_NN trade-off_NN we_PRP have_VBP not_RB yet_RB investigated_VBN in_IN attaching_VBG extra_JJ nonce_JJ attributes_NNS that_WDT have_VBP already_RB had_VBN this_DT OMAC_NN construct_NN applied_VBD to_TO them_PRP ._.
+5_CD ._.
+#_# Domain_NN Internal_JJ Events_NNS We_PRP explained_VBD in_IN Sect_NNP ._.
+#_# ._.
+#_# that_WDT event_NN content_NN decryption_NN and_CC encryption_NN can_MD be_VB avoided_VBN if_IN both_DT brokers_NNS are_VBP authorised_VBN to_TO access_VB the_DT event_NN content_NN ._.
+This_DT test_NN was_VBD designed_VBN to_TO show_VB that_IN the_DT use_NN of_IN the_DT encrypted_JJ event_NN content_NN mechanism_NN between_IN two_CD authorised_JJ brokers_NNS incurs_VBZ only_RB a_DT small_JJ performance_NN overhead_NN ._.
+In_IN this_DT test_NN we_PRP again_RB form_VBP a_DT broker_NN network_NN with_IN two_CD brokers_NNS ._.
+111_CD Key_NN refresh_NN schedule_NN Broker_NNP #_# joining_VBG and_CC leaving_VBG the_DT key_JJ group_NN Broker_NNP #_# joining_VBG and_CC leaving_VBG the_DT key_JJ group_NN Actual_NNP key_JJ refresh_JJ times_NNS Time_NNP One_CD day_NN Broker_NNP ''_'' s_VBZ key_JJ group_NN credentials_NNS are_VBP valid_JJ Actual_NNP join_VB time_NN Actual_JJ leave_NN time_NN One_CD day_NN One_CD day_NN Figure_NN #_# :_: How_WRB the_DT key_JJ refresh_NN schedule_NN is_VBZ affected_VBN by_IN brokers_NNS joining_VBG and_CC leaving_VBG key_JJ groups_NNS 0_CD 5000_CD 10000_CD 15000_CD 20000_CD 25000_CD 30000_CD 35000_CD 0_CD #_# ##_CD ##_CD ##_CD ##_CD MessagesperSecond_NNP Number_NNP of_IN Attributes_NNPS No_DT Encryption_NN Attribute_NNP Encryption_NNP Whole-content_NNP Encryption_NNP Figure_NNP #_# :_: Throughput_NN of_IN Events_NNS in_IN a_DT Simulator_NNP Both_CC brokers_NNS are_VBP configured_VBN with_IN the_DT same_JJ credentials_NNS ._.
+The_DT publisher_NN is_VBZ attached_VBN to_TO one_CD of_IN the_DT brokers_NNS and_CC the_DT subscriber_NN to_TO the_DT other_JJ ,_, and_CC again_RB the_DT subscriber_NN does_VBZ not_RB specify_VB any_DT filters_NNS in_IN its_PRP$ subscription_NN ._.
+The_DT publisher_NN publishes_VBZ ###_NNP ,_, ###_CD events_NNS and_CC the_DT test_NN measures_VBZ the_DT elapsed_JJ time_NN in_IN order_NN to_TO derive_VB the_DT system_NN ''_'' s_NNS message_NN throughput_NN ._.
+The_DT event_NN content_NN is_VBZ encrypted_VBN outside_IN the_DT timing_NN measurement_NN ,_, i_FW ._.
+e_LS ._.
+the_DT encryption_NN cost_NN is_VBZ not_RB included_VBN in_IN the_DT measurements_NNS ._.
+The_DT goal_NN is_VBZ to_TO model_VB an_DT environment_NN where_WRB a_DT broker_NN has_VBZ received_VBN a_DT message_NN from_IN another_DT authorised_VBN broker_NN ,_, and_CC it_PRP routes_VBZ the_DT event_NN to_TO a_DT third_JJ authorised_JJ broker_NN ._.
+In_IN this_DT scenario_NN the_DT middle_JJ broker_NN does_VBZ not_RB need_VB to_TO decrypt_VB nor_CC encrypt_VB the_DT event_NN content_NN ._.
+As_IN shown_VBN in_IN Fig_NN ._.
+#_# ,_, the_DT elapsed_JJ time_NN was_VBD measured_VBN as_IN the_DT number_NN of_IN attributes_NNS in_IN the_DT published_VBN event_NN was_VBD increased_VBN from_IN #_# to_TO ##_CD ._.
+The_DT attribute_NN values_NNS in_IN each_DT case_NN are_VBP ##_CD character_NN strings_NNS ._.
+Each_DT test_NN is_VBZ repeated_VBN five_CD times_NNS ,_, and_CC we_PRP use_VBP the_DT average_NN of_IN all_DT iterations_NNS in_IN the_DT graph_NN ._.
+The_DT same_JJ test_NN was_VBD then_RB repeated_VBN with_IN no_DT encryption_NN ,_, event_NN encryption_NN and_CC attribute_NN encryption_NN turned_VBD on_RP ._.
+The_DT encrypted_JJ modes_NNS follow_VBP each_DT other_JJ very_RB closely_RB ._.
+Predictably_RB ,_, the_DT plaintext_NN mode_NN performs_VBZ a_DT little_JJ better_JJR for_IN all_DT attribute_VBP counts_NNS ._.
+The_DT difference_NN can_MD be_VB explained_VBN partially_RB by_IN the_DT encrypted_JJ events_NNS being_VBG larger_JJR in_IN size_NN ,_, because_IN they_PRP include_VBP both_CC the_DT plaintext_NN and_CC the_DT encrypted_JJ content_NN in_IN this_DT test_NN ._.
+The_DT difference_NN in_IN performance_NN is_VBZ #_# ._.
+#_# %_NN with_IN one_CD attribute_NN and_CC #_# ._.
+#_# %_NN with_IN ##_NN attributes_NNS ._.
+We_PRP believe_VBP that_IN the_DT roughness_NN of_IN the_DT graphs_NNS can_MD be_VB explained_VBN by_IN the_DT Java_NNP garbage_NN collector_NN interfering_VBG with_IN the_DT simulation_NN ._.
+The_DT fact_NN that_IN all_DT three_CD graphs_NNS show_VBP the_DT same_JJ irregularities_NNS supports_VBZ this_DT theory_NN ._.
+112_CD 50000_CD 55000_CD 60000_CD 65000_CD 70000_CD 75000_CD 80000_CD 85000_CD 90000_CD 95000_CD 100000_CD 0_CD #_# ##_CD ##_CD ##_CD ##_CD MessagesperSecond_NNP Number_NNP of_IN Attributes_NNPS No_DT Encryption_NN Attribute_NNP Encryption_NNP Whole-content_NNP Encryption_NNP Figure_NNP #_# :_: Throughput_NN of_IN Domain_NN Internal_JJ Events_NNS 5_CD ._.
+#_# Communication_NNP Overhead_NN Through_IN the_DT definition_NN of_IN multiple_JJ event_NN types_NNS ,_, it_PRP is_VBZ possible_JJ to_TO emulate_VB the_DT expressiveness_NN of_IN attribute_NN encryption_NN using_VBG only_RB event_NN content_NN encryption_NN ._.
+The_DT last_JJ test_NN we_PRP ran_VBD was_VBD to_TO show_VB the_DT communication_NN overhead_NN caused_VBN by_IN this_DT emulation_NN technique_NN ,_, compared_VBN to_TO using_VBG real_JJ attribute_NN encryption_NN ._.
+In_IN the_DT test_NN we_PRP form_VBP a_DT broker_NN network_NN of_IN ####_CD brokers_NNS ._.
+We_PRP attach_VBP one_CD publisher_NN to_TO one_CD of_IN the_DT brokers_NNS ,_, and_CC an_DT increasing_VBG number_NN of_IN subscribers_NNS to_TO the_DT remaining_VBG brokers_NNS ._.
+Each_DT subscriber_NN simulates_VBZ a_DT group_NN of_IN subscribers_NNS that_IN all_DT have_VBP the_DT same_JJ access_NN rights_NNS to_TO the_DT published_VBN event_NN ._.
+Each_DT subscriber_NN group_NN has_VBZ its_PRP$ own_JJ event_NN type_NN in_IN the_DT test_NN ._.
+The_DT outcome_NN of_IN this_DT test_NN is_VBZ shown_VBN in_IN Fig_NN ._.
+#_# ._.
+The_DT number_NN of_IN subscriber_NN groups_NNS is_VBZ increased_VBN from_IN #_# to_TO ##_CD -LRB-_-LRB- the_DT x-axis_NN -RRB-_-RRB- ._.
+For_IN each_DT n_NN subscriber_NN groups_NNS the_DT publisher_NN publishes_VBZ one_CD event_NN to_TO represent_VB the_DT use_NN of_IN attribute_NN encryption_NN and_CC n_NN events_NNS representing_VBG the_DT events_NNS for_IN each_DT subscriber_NN group_NN ._.
+We_PRP count_VBP the_DT number_NN of_IN hops_VBZ each_DT publication_NN makes_VBZ through_IN the_DT broker_NN network_NN -LRB-_-LRB- y-axis_NN -RRB-_-RRB- ._.
+Note_VB that_DT Fig_NN ._.
+#_# shows_VBZ workloads_NNS beyond_IN what_WP we_PRP would_MD expect_VB in_IN common_JJ usage_NN ,_, in_IN which_WDT many_JJ event_NN types_NNS are_VBP likely_JJ to_TO contain_VB fewer_JJR than_IN ten_CD attributes_NNS ._.
+The_DT subscriber_NN groups_NNS used_VBN in_IN this_DT test_NN represent_VBP disjoint_NN permission_NN sets_VBZ over_IN such_JJ event_NN attributes_NNS ._.
+The_DT number_NN of_IN these_DT sets_NNS can_MD be_VB determined_VBN from_IN the_DT particular_JJ access_NN control_NN policy_NN in_IN use_NN ,_, but_CC will_MD be_VB a_DT value_NN less_RBR than_IN or_CC equal_JJ to_TO the_DT factorial_NN of_IN the_DT number_NN of_IN attributes_NNS in_IN a_DT given_VBN event_NN type_NN ._.
+The_DT graphs_NNS indicate_VBP that_IN attribute_NN encryption_NN performs_VBZ better_JJR than_IN event_NN encryption_NN even_RB for_IN small_JJ numbers_NNS of_IN subscriber_NN groups_NNS ._.
+Indeed_RB ,_, with_IN only_RB two_CD subscriber_NN groups_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+the_DT case_NN with_IN Numberplate_JJ events_NNS -RRB-_-RRB- the_DT hop_NN count_NN increases_VBZ from_IN #_# ._.
+#_# hops_VBZ for_IN attribute_NN encryption_NN to_TO ##_CD ._.
+#_# hops_VBZ for_IN event_NN encryption_NN ._.
+With_IN ##_CD subscriber_NN groups_NNS the_DT corresponding_JJ numbers_NNS are_VBP ##_CD ._.
+#_# and_CC ###_CD ._.
+#_# ,_, i_FW ._.
+e_LS ._.
+an_DT order_NN of_IN magnitude_NN difference_NN ._.
+6_CD ._.
+RELATED_JJ WORK_VBP Wang_NNP et_FW al_FW ._.
+have_VB categorised_VBN the_DT various_JJ security_NN issues_NNS that_WDT need_VBP to_TO be_VB addressed_VBN in_IN publish_VB /_: subscribe_VB systems_NNS in_IN the_DT future_NN in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ._.
+The_DT paper_NN is_VBZ a_DT comprehensive_JJ overview_NN of_IN security_NN issues_NNS in_IN publish_VB /_: subscribe_VB systems_NNS and_CC as_IN such_JJ tries_NNS to_TO draw_VB attention_NN to_TO the_DT issues_NNS rather_RB than_IN providing_VBG solutions_NNS ._.
+Bacon_NNP et_FW al_FW ._.
+in_IN -LSB-_-LRB- #_# -RSB-_-RRB- examine_VB the_DT use_NN of_IN role-based_JJ access_NN control_NN in_IN multi-domain_JJ ,_, distributed_VBN publish_VB /_: subscribe_VB systems_NNS ._.
+Their_PRP$ work_NN is_VBZ complementary_JJ to_TO this_DT paper_NN :_: distributed_VBN RBAC_NN is_VBZ one_CD potential_JJ policy_NN formalism_NN that_WDT might_MD use_VB the_DT enforcement_NN mechanisms_NNS we_PRP have_VBP presented_VBN ._.
+Opyrchal_JJ and_CC Prakash_JJ address_NN the_DT problem_NN of_IN event_NN confidentiality_NN at_IN the_DT last_JJ link_NN between_IN the_DT subscriber_NN and_CC the_DT SHB_NNP in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ._.
+They_PRP correctly_RB state_VBP that_IN a_DT secure_JJ group_NN communication_NN approach_NN is_VBZ infeasible_JJ in_IN an_DT environment_NN like_IN publish_VB /_: subscribe_VB that_DT has_VBZ highly_RB dynamic_JJ group_NN memberships_NNS ._.
+As_IN a_DT solution_NN they_PRP propose_VBP a_DT scheme_NN utilising_VBG key_JJ caching_NN and_CC subscriber_NN grouping_NN in_IN order_NN to_TO minimise_VB the_DT number_NN of_IN required_VBN encryptions_NNS when_WRB delivering_VBG a_DT publication_NN from_IN a_DT SHB_NNP to_TO a_DT set_NN of_IN matching_VBG subscribers_NNS ._.
+We_PRP assume_VBP in_IN our_PRP$ work_NN that_IN the_DT SHB_NNP is_VBZ powerful_JJ enough_RB to_TO man113_NN 1_CD 10_CD 100_CD 1000_CD 10000_CD 0_CD #_# ##_FW ##_FW ##_FW ##_FW ##_FW ##_FW ##_FW ##_FW ##_FW NumberofHopsinTotal_NNP Number_NNP of_IN Subscription_NNP Groups_NNS Attribute_VB Encryption_NN Whole-content_JJ Encryption_NNP Figure_NNP #_# :_: Hop_VB Counts_NNP When_WRB Emulating_VBG Attribute_NNP Encryption_NNP age_NN a_DT TLS_NN secured_VBN connection_NN for_IN each_DT local_JJ subscriber_NN ._.
+Both_DT Srivatsa_NNP et_FW al_FW ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- and_CC Raiciu_NNP et_FW al_FW ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- present_JJ mechanisms_NNS for_IN protecting_VBG the_DT confidentiality_NN of_IN messages_NNS in_IN decentralised_JJ publish_VB /_: subscribe_VB infrastructures_NNS ._.
+Compared_VBN to_TO our_PRP$ work_NN both_CC papers_NNS aim_VBP to_TO provide_VB the_DT means_NNS for_IN protecting_VBG the_DT integrity_NN and_CC confidentiality_NN of_IN messages_NNS whereas_IN the_DT goal_NN for_IN our_PRP$ work_NN is_VBZ to_TO enforce_VB access_NN control_NN inside_IN the_DT broker_NN network_NN ._.
+Raiciu_NNP et_FW al_FW ._.
+assume_VB in_IN their_PRP$ work_NN that_IN none_NN of_IN the_DT brokers_NNS in_IN the_DT network_NN are_VBP trusted_VBN and_CC therefore_RB all_DT events_NNS are_VBP encrypted_VBN from_IN publisher_NN to_TO subscriber_NN and_CC that_IN all_DT matching_NN is_VBZ based_VBN on_IN encrypted_JJ events_NNS ._.
+In_IN contrast_NN ,_, we_PRP assume_VBP that_IN some_DT of_IN the_DT brokers_NNS on_IN the_DT path_NN of_IN a_DT publication_NN are_VBP trusted_VBN to_TO access_NN that_WDT publication_NN and_CC are_VBP therefore_RB able_JJ to_TO implement_VB event_NN matching_NN ._.
+We_PRP also_RB assume_VBP that_IN the_DT publisher_NN and_CC subscriber_NN hosting_VBG brokers_NNS are_VBP always_RB trusted_VBN to_TO access_VB the_DT publication_NN ._.
+The_DT contributions_NNS of_IN Srivatsa_NNP et_FW al_FW ._.
+and_CC Raiciu_NNP et_FW al_FW ._.
+are_VBP complementary_JJ to_TO the_DT contributions_NNS in_IN this_DT paper_NN ._.
+Finally_RB ,_, Fiege_NNP et_FW al_FW ._.
+address_NN the_DT related_JJ topic_NN of_IN event_NN visibility_NN in_IN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+While_IN the_DT work_NN concentrated_VBD on_IN using_VBG scopes_NNS as_IN mechanism_NN for_IN structuring_VBG large-scale_JJ event-based_JJ systems_NNS ,_, the_DT notion_NN of_IN event_NN visibility_NN does_VBZ resonate_VB with_IN access_NN control_NN to_TO some_DT extent_NN ._.
+7_CD ._.
+CONCLUSIONS_NNS Event_NN content_NN encryption_NN can_MD be_VB used_VBN to_TO enforce_VB an_DT access_NN control_NN policy_NN while_IN events_NNS are_VBP in_IN transit_NN in_IN the_DT broker_NN network_NN of_IN a_DT multi-domain_JJ publish_VB /_: subscribe_VB system_NN ._.
+Encryption_NN causes_VBZ an_DT overhead_NN ,_, but_CC i_LS -RRB-_-RRB- there_EX may_MD be_VB no_DT alternative_NN when_WRB access_NN control_NN is_VBZ required_VBN ,_, and_CC ii_LS -RRB-_-RRB- the_DT performance_NN penalty_NN can_MD be_VB lessened_VBN with_IN implementation_NN optimisations_NNS ,_, such_JJ as_IN passing_VBG cached_JJ plaintext_NN content_NN alongside_IN encrypted_JJ content_NN between_IN brokers_NNS with_IN identical_JJ security_NN credentials_NNS ._.
+This_DT is_VBZ particularly_RB appropriate_JJ if_IN broker-to-broker_NN connections_NNS are_VBP secured_VBN by_IN default_NN so_IN that_IN wire-sniffing_NN is_VBZ not_RB an_DT issue_NN ._.
+Attribute_VB level_NN encryption_NN can_MD be_VB implemented_VBN in_IN order_NN to_TO enforce_VB fine-grained_JJ access_NN control_NN policies_NNS ._.
+In_IN addition_NN to_TO providing_VBG attribute-level_JJ access_NN control_NN ,_, attribute_NN encryption_NN enables_VBZ partially_RB authorised_VBN brokers_NNS to_TO implement_VB contentbased_JJ routing_VBG based_VBN on_IN the_DT attributes_NNS that_WDT are_VBP accessible_JJ to_TO them_PRP ._.
+Our_PRP$ experiments_NNS show_VBP that_IN i_LS -RRB-_-RRB- by_IN caching_VBG plaintext_NN and_CC ciphertext_NN content_NN when_WRB possible_JJ ,_, we_PRP are_VBP able_JJ to_TO deliver_VB comparable_JJ performance_NN to_TO plaintext_NN events_NNS ,_, and_CC ii_LS -RRB-_-RRB- that_WDT attribute_VBP encryption_NN within_IN an_DT event_NN incurs_VBZ far_RB less_RBR overhead_JJ than_IN defining_VBG separate_JJ event_NN types_NNS for_IN the_DT attributes_NNS that_WDT need_VBP different_JJ levels_NNS of_IN protection_NN ._.
+In_IN environments_NNS comprising_VBG multiple_JJ domains_NNS ,_, where_WRB eventbrokers_NNS have_VBP different_JJ security_NN credentials_NNS ,_, we_PRP have_VBP quantified_VBN how_WRB a_DT trade-off_NN can_MD be_VB made_VBN between_IN performance_NN and_CC expressiveness_NN ._.
+Acknowledgements_NNS We_PRP would_MD like_VB to_TO thank_VB the_DT anonymous_JJ reviewers_NNS for_IN their_PRP$ very_JJ helpful_JJ comments_NNS ._.
+Lauri_NNP Pesonen_NNP is_VBZ supported_VBN by_IN EPSRC_NN -LRB-_-LRB- GR_NN /_: T28164_NN -RRB-_-RRB- and_CC the_DT Nokia_NNP Foundation_NNP ._.
+David_NNP Eyers_NNP is_VBZ supported_VBN by_IN EPSRC_NN -LRB-_-LRB- GR_NN /_: S94919_NN -RRB-_-RRB- ._.
+114_CD 8_CD ._.
+REFERENCES_NNS -LSB-_-LRB- #_# -RSB-_-RRB- J_NN ._.
+Bacon_NNP ,_, D_NNP ._.
+M_NN ._.
+Eyers_NNP ,_, K_NNP ._.
+Moody_NNP ,_, and_CC L_NN ._.
+I_PRP ._.
+W_NN ._.
+Pesonen_NNP ._.
+Securing_VBG publish_VB /_: subscribe_VB for_IN multi-domain_JJ systems_NNS ._.
+In_IN G_NN ._.
+Alonso_NNP ,_, editor_NN ,_, Middleware_NNP ,_, volume_NN 3790_CD of_IN Lecture_NNP Notes_NNP in_IN Computer_NNP Science_NNP ,_, pages_NNS 1-20_CD ._.
+Springer_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- M_NN ._.
+Bellare_NNP ,_, P_NN ._.
+Rogaway_NNP ,_, and_CC D_NN ._.
+Wagner_NNP ._.
+Eax_NNP :_: A_NNP conventional_JJ authenticated-encryption_NN mode_NN ._.
+Cryptology_NNP ePrint_NNP Archive_NNP ,_, Report_NNP ####_CD /_: ###_CD ,_, ####_CD ._.
+http_NN :_: /_: /_: eprint_NN ._.
+iacr_NN ._.
+org_NN /_: ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- A_DT ._.
+Carzaniga_NNP ,_, D_NNP ._.
+S_NN ._.
+Rosenblum_NNP ,_, and_CC A_NN ._.
+L_NN ._.
+Wolf_NNP ._.
+Design_NN and_CC evaluation_NN of_IN a_DT wide-area_JJ event_NN notification_NN service_NN ._.
+ACM_NNP Transactions_NNS on_IN Computer_NNP Systems_NNPS ,_, ##_NN -LRB-_-LRB- #_# -RRB-_-RRB- :_: 332-383_CD ,_, Aug_NNP ._.
+####_NN ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- M_NN ._.
+Castro_NNP ,_, P_NN ._.
+Druschel_NNP ,_, A_NNP ._.
+Kermarrec_NNP ,_, and_CC A_NN ._.
+Rowstron_NNP ._.
+SCRIBE_NN :_: A_DT large-scale_JJ and_CC decentralized_JJ application-level_JJ multicast_JJ infrastructure_NN ._.
+IEEE_NNP Journal_NNP on_IN Selected_NNP Areas_NNS in_IN communications_NNS -LRB-_-LRB- JSAC_NN -RRB-_-RRB- ,_, ##_NN -LRB-_-LRB- #_# -RRB-_-RRB- :_: 1489-1499_CD ,_, Oct_NN ._.
+####_NN ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- T_NN ._.
+Dierks_NNP and_CC C_NNP ._.
+Allen_NNP ._.
+The_DT TLS_NN protocol_NN ,_, version_NN 1_CD ._.
+#_# ._.
+RFC_NNP ####_CD ,_, Internet_NNP Engineering_NNP Task_NNP Force_NNP ,_, Jan_NNP ._.
+1999_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- L_NN ._.
+Fiege_NNP ,_, M_NN ._.
+Mezini_NNP ,_, G_NNP ._.
+M_NN uhl_NN ,_, and_CC A_NN ._.
+P_NN ._.
+Buchmann_NNP ._.
+Engineering_NNP event-based_JJ systems_NNS with_IN scopes_NNS ._.
+In_IN ECOOP_NN ''_'' ##_NN :_: Proceedings_NNP of_IN the_DT 16th_JJ European_JJ Conference_NN on_IN Object-Oriented_NNP Programming_NNP ,_, pages_NNS 309-333_CD ,_, London_NNP ,_, UK_NNP ,_, ####_CD ._.
+Springer-Verlag_NNP ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- T_NN ._.
+Iwata_NNP and_CC I_PRP ._.
+A_DT ._.
+Iurosawa_NNP ._.
+OMAC_NNP :_: One-key_NN CBC_NNP MAC_NNP ,_, Jan_NNP ._.
+##_NN ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- D_NN ._.
+A_DT ._.
+McGrew_NNP and_CC A_NNP ._.
+T_NN ._.
+Sherman_NNP ._.
+Key_NN establishment_NN in_IN large_JJ dynamic_JJ groups_NNS using_VBG one-way_JJ function_NN trees_NNS ._.
+Technical_NNP Report_NNP ####_NNP ,_, TIS_NNP Labs_NNPS at_IN Network_NNP Associates_NNPS ,_, Inc_NNP ._.
+,_, Glenwood_NNP ,_, MD_NNP ,_, May_NNP ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- National_NNP Institute_NNP of_IN Standards_NNPS and_CC Technology_NNP -LRB-_-LRB- NIST_NNP -RRB-_-RRB- ._.
+Advanced_NNP Encryption_NNP Standard_NNP -LRB-_-LRB- AES_NN -RRB-_-RRB- ._.
+Federal_NNP Information_NNP Processing_NNP Standards_NNPS Publication_NN -LRB-_-LRB- FIPS_NN PUB_NN -RRB-_-RRB- ###_CD ,_, Nov_NNP ._.
+####_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- L_NN ._.
+Opyrchal_NNP and_CC A_NNP ._.
+Prakash_NNP ._.
+Secure_JJ distribution_NN of_IN events_NNS in_IN content-based_JJ publish_VB subscribe_VB systems_NNS ._.
+In_IN Proc_NNP ._.
+of_IN the_DT 10th_JJ USENIX_NNP Security_NNP Symposium_NNP ._.
+USENIX_NNP ,_, Aug_NNP ._.
+####_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- L_NN ._.
+I_PRP ._.
+W_NN ._.
+Pesonen_NNP and_CC J_NNP ._.
+Bacon_NNP ._.
+Secure_JJ event_NN types_NNS in_IN content-based_JJ ,_, multi-domain_JJ publish_VB /_: subscribe_VB systems_NNS ._.
+In_IN SEM_NN ''_'' ##_NN :_: Proceedings_NNP of_IN the_DT 5th_JJ international_JJ workshop_NN on_IN Software_NNP engineering_NN and_CC middleware_NN ,_, pages_NNS 98-105_CD ,_, New_NNP York_NNP ,_, NY_NNP ,_, USA_NNP ,_, Sept_NNP ._.
+2005_CD ._.
+ACM_NNP Press_NNP ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- L_NN ._.
+I_PRP ._.
+W_NN ._.
+Pesonen_NNP ,_, D_NNP ._.
+M_NN ._.
+Eyers_NNP ,_, and_CC J_NN ._.
+Bacon_NNP ._.
+A_DT capabilities-based_JJ access_NN control_NN architecture_NN for_IN multi-domain_JJ publish_VB /_: subscribe_VB systems_NNS ._.
+In_IN Proceedings_NNP of_IN the_DT Symposium_NNP on_IN Applications_NNS and_CC the_DT Internet_NN -LRB-_-LRB- SAINT_JJ ####_NN -RRB-_-RRB- ,_, pages_NNS 222-228_CD ,_, Phoenix_NNP ,_, AZ_NNP ,_, Jan_NNP ._.
+####_NN ._.
+IEEE_NNP ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- P_NN ._.
+R_NN ._.
+Pietzuch_NNP and_CC J_NNP ._.
+M_NN ._.
+Bacon_NNP ._.
+Hermes_NNS :_: A_DT distributed_VBN event-based_JJ middleware_JJ architecture_NN ._.
+In_IN Proc_NNP ._.
+of_IN the_DT 1st_CD International_NNP Workshop_NNP on_IN Distributed_VBN Event-Based_NNP Systems_NNP -LRB-_-LRB- DEBS_NNP ''_'' ##_NN -RRB-_-RRB- ,_, pages_NNS 611-618_CD ,_, Vienna_NNP ,_, Austria_NNP ,_, July_NNP ####_CD ._.
+IEEE_NNP ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- P_NN ._.
+R_NN ._.
+Pietzuch_NNP and_CC S_NN ._.
+Bhola_NNP ._.
+Congestion_NN control_NN in_IN a_DT reliable_JJ scalable_JJ message-oriented_JJ middleware_NN ._.
+In_IN M_NN ._.
+Endler_NNP and_CC D_NNP ._.
+Schmidt_NNP ,_, editors_NNS ,_, Proc_NNP ._.
+of_IN the_DT 4th_JJ Int_NN ._.
+Conf_NNP ._.
+on_IN Middleware_NNP -LRB-_-LRB- Middleware_NNP ''_'' ##_NN -RRB-_-RRB- ,_, pages_NNS 202-221_CD ,_, Rio_NNP de_IN Janeiro_NNP ,_, Brazil_NNP ,_, June_NNP ####_CD ._.
+Springer_NNP ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- S_NN ._.
+Rafaeli_NNP and_CC D_NNP ._.
+Hutchison_NNP ._.
+A_DT survey_NN of_IN key_JJ management_NN for_IN secure_JJ group_NN communication_NN ._.
+ACM_NNP Computing_NNP Surveys_NNS ,_, ##_NN -LRB-_-LRB- #_# -RRB-_-RRB- :_: 309-329_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- C_NN ._.
+Raiciu_NN and_CC D_NN ._.
+S_NN ._.
+Rosenblum_NNP ._.
+Enabling_VBG confidentiality_NN in_IN content-based_JJ publish_VB /_: subscribe_VB infrastructures_NNS ._.
+In_IN Securecomm_NNP ''_'' ##_CD :_: Proceedings_NNP of_IN the_DT Second_JJ IEEE_NN /_: CreatNet_NNP International_NNP Conference_NNP on_IN Security_NNP and_CC Privacy_NNP in_IN Communication_NNP Networks_NNP ,_, 2006_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- P_NN ._.
+Rogaway_NNP ,_, M_NN ._.
+Bellare_NNP ,_, J_NNP ._.
+Black_NNP ,_, and_CC T_NN ._.
+Krovetz_NNP ._.
+OCB_NNP :_: a_DT block-cipher_NN mode_NN of_IN operation_NN for_IN efficient_JJ authenticated_VBN encryption_NN ._.
+In_IN ACM_NNP Conference_NNP on_IN Computer_NNP and_CC Communications_NNP Security_NNP ,_, pages_NNS 196-205_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- P_NN ._.
+Rogaway_NNP and_CC D_NNP ._.
+Wagner_NNP ._.
+A_DT critique_NN of_IN CCM_NNP ,_, Feb_NNP ._.
+2003_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- M_NN ._.
+Srivatsa_NNP and_CC L_NNP ._.
+Liu_NNP ._.
+Securing_VBG publish-subscribe_JJ overlay_NN services_NNS with_IN eventguard_NN ._.
+In_IN CCS_NN ''_'' ##_NN :_: Proceedings_NNP of_IN the_DT 12th_JJ ACM_NN conference_NN on_IN Computer_NN and_CC communications_NNS security_NN ,_, pages_NNS 289-298_CD ,_, New_NNP York_NNP ,_, NY_NNP ,_, USA_NNP ,_, ####_CD ._.
+ACM_NNP Press_NNP ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- C_NN ._.
+Wang_NNP ,_, A_NNP ._.
+Carzaniga_NNP ,_, D_NNP ._.
+Evans_NNP ,_, and_CC A_NN ._.
+L_NN ._.
+Wolf_NNP ._.
+Security_NN issues_NNS and_CC requirements_NNS in_IN internet-scale_JJ publish-subscribe_NN systems_NNS ._.
+In_IN Proc_NNP ._.
+of_IN the_DT 35th_JJ Annual_JJ Hawaii_NNP International_NNP Conference_NNP on_IN System_NNP Sciences_NNP -LRB-_-LRB- HICSS_NNP ''_'' ##_NN -RRB-_-RRB- ,_, Big_NNP Island_NNP ,_, HI_NNP ,_, USA_NNP ,_, ####_CD ._.
+IEEE_NNP ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- D_NN ._.
+Whitfield_NNP and_CC M_NN ._.
+Hellman_NNP ._.
+Privacy_NN and_CC authentication_NN :_: An_DT introduction_NN to_TO cryptography_NN ._.
+In_IN Proceedings_NNP of_IN the_DT IEEE_NNP ,_, volume_NN ##_NN ,_, pages_NNS 397-427_CD ,_, 1979_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- D_NN ._.
+Whiting_NNP ,_, R_NN ._.
+Housley_NNP ,_, and_CC N_NN ._.
+Ferguson_NNP ._.
+Counter_NNP with_IN CBC-MAC_NN -LRB-_-LRB- CCM_NN -RRB-_-RRB- ._.
+RFC_NNP ####_CD ,_, Internet_NNP Engineering_NNP Task_NNP Force_NNP ,_, Sept_NNP ._.
+####_NN ._.
+115_CD

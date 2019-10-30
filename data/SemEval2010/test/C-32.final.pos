@@ -1,0 +1,805 @@
+BuddyCache_NNP :_: High-Performance_NNP Object_NNP Storage_NNP for_IN Collaborative_NNP Strong-Consistency_NNP Applications_NNS in_IN a_DT WAN_NNP Magnus_NNP E_NNP ._.
+Bjornsson_NNP and_CC Liuba_NNP Shrira_NNP Department_NNP of_IN Computer_NNP Science_NNP Brandeis_NNP University_NNP Waltham_NNP ,_, MA_NNP 02454-9110_CD -LCB-_-LRB- magnus_NN ,_, liuba_NN -RCB-_-RRB- @_SYM cs_NNS ._.
+brandeis_NN ._.
+edu_NN ABSTRACT_NN Collaborative_JJ applications_NNS provide_VBP a_DT shared_JJ work_NN environment_NN for_IN groups_NNS of_IN networked_JJ clients_NNS collaborating_VBG on_IN a_DT common_JJ task_NN ._.
+They_PRP require_VBP strong_JJ consistency_NN for_IN shared_JJ persistent_JJ data_NNS and_CC efficient_JJ access_NN to_TO fine-grained_JJ objects_NNS ._.
+These_DT properties_NNS are_VBP difficult_JJ to_TO provide_VB in_IN wide-area_JJ networks_NNS because_IN of_IN high_JJ network_NN latency_NN ._.
+BuddyCache_NNP is_VBZ a_DT new_JJ transactional_JJ caching_NN approach_NN that_WDT improves_VBZ the_DT latency_NN of_IN access_NN to_TO shared_VBN persistent_JJ objects_NNS for_IN collaborative_JJ strong-consistency_NN applications_NNS in_IN high-latency_NN network_NN environments_NNS ._.
+The_DT challenge_NN is_VBZ to_TO improve_VB performance_NN while_IN providing_VBG the_DT correctness_NN and_CC availability_NN properties_NNS of_IN a_DT transactional_JJ caching_NN protocol_NN in_IN the_DT presence_NN of_IN node_NN failures_NNS and_CC slow_JJ peers_NNS ._.
+We_PRP have_VBP implemented_VBN a_DT BuddyCache_NNP prototype_NN and_CC evaluated_VBD its_PRP$ performance_NN ._.
+Analytical_NNP results_VBZ ,_, confirmed_VBN by_IN measurements_NNS of_IN the_DT BuddyCache_NNP prototype_NN using_VBG the_DT multiuser_NN ###_CD benchmark_NN indicate_VBP that_IN for_IN typical_JJ Internet_NN latencies_NNS ,_, e_LS ._.
+g_NN ._.
+ranging_VBG from_IN ##_CD to_TO ##_CD milliseconds_NNS round_JJ trip_NN time_NN to_TO the_DT storage_NN server_NN ,_, peers_NNS using_VBG BuddyCache_NNP can_MD reduce_VB by_IN up_RB to_TO ##_CD %_NN the_DT latency_NN of_IN access_NN to_TO shared_VBN objects_NNS compared_VBN to_TO accessing_VBG the_DT remote_JJ servers_NNS directly_RB ._.
+Categories_NNS and_CC Subject_NNP Descriptors_NNPS C_NNP ._.
+#_# ._.
+#_# -LSB-_-LRB- Computer_NNP Systems_NNP Organization_NNP -RSB-_-RRB- :_: Distributed_VBN Systems_NNP General_NNP Terms_NNS Design_NN ,_, Performance_NNP 1_CD ._.
+INTRODUCTION_NNP Improvements_NNP in_IN network_NN connectivity_NN erode_VB the_DT distinction_NN between_IN local_JJ and_CC wide-area_JJ computing_NN and_CC ,_, increasingly_RB ,_, users_NNS expect_VBP their_PRP$ work_NN environment_NN to_TO follow_VB them_PRP wherever_WRB they_PRP go_VBP ._.
+Nevertheless_RB ,_, distributed_VBN applications_NNS may_MD perform_VB poorly_RB in_IN wide-area_JJ network_NN environments_NNS ._.
+Network_NNP bandwidth_NN problems_NNS will_MD improve_VB in_IN the_DT foreseeable_JJ future_NN ,_, but_CC improvement_NN in_IN network_NN latency_NN is_VBZ fundamentally_RB limited_VBN ._.
+BuddyCache_NNP is_VBZ a_DT new_JJ object_NN caching_NN technique_NN that_WDT addresses_VBZ the_DT network_NN latency_NN problem_NN for_IN collaborative_JJ applications_NNS in_IN wide-area_JJ network_NN environment_NN ._.
+Collaborative_JJ applications_NNS provide_VBP a_DT shared_JJ work_NN environment_NN for_IN groups_NNS of_IN networked_JJ users_NNS collaborating_VBG on_IN a_DT common_JJ task_NN ,_, for_IN example_NN a_DT team_NN of_IN engineers_NNS jointly_RB overseeing_VBG a_DT construction_NN project_NN ._.
+Strong-consistency_NN collaborative_JJ applications_NNS ,_, for_IN example_NN CAD_NN systems_NNS ,_, use_VBP client_NN /_: server_NN transactional_JJ object_NN storage_NN systems_NNS to_TO ensure_VB consistent_JJ access_NN to_TO shared_VBN persistent_JJ data_NNS ._.
+Up_IN to_TO now_RB however_RB ,_, users_NNS have_VBP rarely_RB considered_VBN running_VBG consistent_JJ network_NN storage_NN systems_NNS over_IN wide-area_JJ networks_NNS as_IN performance_NN would_MD be_VB unacceptable_JJ -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+For_IN transactional_JJ storage_NN systems_NNS ,_, the_DT high_JJ cost_NN of_IN wide-area_JJ network_NN interactions_NNS to_TO maintain_VB data_NNS consistency_NN is_VBZ the_DT main_JJ cost_NN limiting_VBG the_DT performance_NN and_CC therefore_RB ,_, in_IN wide-area_JJ network_NN environments_NNS ,_, collaborative_JJ applications_NNS have_VBP been_VBN adapted_VBN to_TO use_VB weaker_JJR consistency_NN storage_NN systems_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Adapting_VBG an_DT application_NN to_TO use_VB weak_JJ consistency_NN storage_NN system_NN requires_VBZ significant_JJ effort_NN since_IN the_DT application_NN needs_VBZ to_TO be_VB rewritten_VBN to_TO deal_VB with_IN a_DT different_JJ storage_NN system_NN semantics_NNS ._.
+If_IN shared_VBN persistent_JJ objects_NNS could_MD be_VB accessed_VBN with_IN low-latency_NN ,_, a_DT new_JJ field_NN of_IN distributed_VBN strong-consistency_NN applications_NNS could_MD be_VB opened_VBN ._.
+Cooperative_NNP web_NN caching_NN -LSB-_-LRB- ##_CD ,_, ##_CD ,_, ##_CD -RSB-_-RRB- is_VBZ a_DT well-known_JJ approach_NN to_TO reducing_VBG client_NN interaction_NN with_IN a_DT server_NN by_IN allowing_VBG one_CD client_NN to_TO obtain_VB missing_VBG objects_NNS from_IN a_DT another_DT client_NN instead_RB of_IN the_DT server_NN ._.
+Collaborative_JJ applications_NNS seem_VBP a_DT particularly_RB good_JJ match_NN to_TO benefit_VB from_IN this_DT approach_NN since_IN one_CD of_IN the_DT hard_JJ problems_NNS ,_, namely_RB determining_VBG what_WP objects_NNS are_VBP cached_VBN where_WRB ,_, becomes_VBZ easy_JJ in_IN small_JJ groups_NNS typical_JJ of_IN collaborative_JJ settings_NNS ._.
+However_RB ,_, cooperative_JJ web_NN caching_NN techniques_NNS do_VBP not_RB provide_VB two_CD important_JJ properties_NNS needed_VBN by_IN collaborative_JJ applications_NNS ,_, strong_JJ consistency_NN and_CC efficient_JJ 26_CD access_NN to_TO fine-grained_JJ objects_NNS ._.
+Cooperative_NNP object_NN caching_NN systems_NNS -LSB-_-LRB- #_# -RSB-_-RRB- provide_VBP these_DT properties_NNS ._.
+However_RB ,_, they_PRP rely_VBP on_IN interaction_NN with_IN the_DT server_NN to_TO provide_VB fine-grain_JJ cache_NN coherence_NN that_WDT avoids_VBZ the_DT problem_NN of_IN false_JJ sharing_NN when_WRB accesses_NNS to_TO unrelated_JJ objects_NNS appear_VBP to_TO conflict_VB because_IN they_PRP occur_VBP on_IN the_DT same_JJ physical_JJ page_NN ._.
+Interaction_NN with_IN the_DT server_NN increases_VBZ latency_NN ._.
+The_DT contribution_NN of_IN this_DT work_NN is_VBZ extending_VBG cooperative_JJ caching_NN techniques_NNS to_TO provide_VB strong_JJ consistency_NN and_CC efficient_JJ access_NN to_TO fine-grain_JJ objects_NNS in_IN wide-area_JJ environments_NNS ._.
+Consider_VB a_DT team_NN of_IN engineers_NNS employed_VBN by_IN a_DT construction_NN company_NN overseeing_VBG a_DT remote_JJ project_NN and_CC working_VBG in_IN a_DT shed_NN at_IN the_DT construction_NN site_NN ._.
+The_DT engineers_NNS use_VBP a_DT collaborative_JJ CAD_NN application_NN to_TO revise_VB and_CC update_VB complex_JJ project_NN design_NN documents_NNS ._.
+The_DT shared_VBN documents_NNS are_VBP stored_VBN in_IN transactional_JJ repository_JJ servers_NNS at_IN the_DT company_NN home_NN site_NN ._.
+The_DT engineers_NNS use_VBP workstations_NNS running_VBG repository_JJ clients_NNS ._.
+The_DT workstations_NNS are_VBP interconnected_VBN by_IN a_DT fast_JJ local_JJ Ethernet_NN but_CC the_DT network_NN connection_NN to_TO the_DT home_NN repository_JJ servers_NNS is_VBZ slow_JJ ._.
+To_TO improve_VB access_NN latency_NN ,_, clients_NNS fetch_VBP objects_NNS from_IN repository_JJ servers_NNS and_CC cache_NN and_CC access_NN them_PRP locally_RB ._.
+A_DT coherence_NN protocol_NN ensures_VBZ that_IN client_NN caches_NNS remain_VBP consistent_JJ when_WRB objects_NNS are_VBP modified_VBN ._.
+The_DT performance_NN problem_NN facing_VBG the_DT collaborative_JJ application_NN is_VBZ coordinating_VBG with_IN the_DT servers_NNS consistent_JJ access_NN to_TO shared_VBN objects_NNS ._.
+With_IN BuddyCache_NNP ,_, a_DT group_NN of_IN close-by_JJ collaborating_VBG clients_NNS ,_, connected_VBN to_TO storage_NN repository_NN via_IN a_DT high-latency_NN link_NN ,_, can_MD avoid_VB interactions_NNS with_IN the_DT server_NN if_IN needed_VBN objects_NNS ,_, updates_NNS or_CC coherency_NN information_NN are_VBP available_JJ in_IN some_DT client_NN in_IN the_DT group_NN ._.
+BuddyCache_NNP presents_VBZ two_CD main_JJ technical_JJ challenges_NNS ._.
+One_CD challenge_NN is_VBZ how_WRB to_TO provide_VB efficient_JJ access_NN to_TO shared_VBN finegrained_JJ objects_NNS in_IN the_DT collaborative_JJ group_NN without_IN imposing_VBG performance_NN overhead_NN on_IN the_DT entire_JJ caching_NN system_NN ._.
+The_DT other_JJ challenge_NN is_VBZ to_TO support_VB fine-grain_JJ cache_NN coherence_NN in_IN the_DT presence_NN of_IN slow_JJ and_CC failed_VBD nodes_NNS ._.
+BuddyCache_NNP uses_VBZ a_DT redirection_NN approach_NN similar_JJ to_TO one_CD used_VBN in_IN cooperative_JJ web_NN caching_NN systems_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+A_DT redirector_NN server_NN ,_, interposed_VBN between_IN the_DT clients_NNS and_CC the_DT remote_JJ servers_NNS ,_, runs_VBZ on_IN the_DT same_JJ network_NN as_IN the_DT collaborating_VBG group_NN and_CC ,_, when_WRB possible_JJ ,_, replaces_VBZ the_DT function_NN of_IN the_DT remote_JJ servers_NNS ._.
+If_IN the_DT client_NN request_NN can_MD not_RB be_VB served_VBN locally_RB ,_, the_DT redirector_NN forwards_RB it_PRP to_TO a_DT remote_JJ server_NN ._.
+When_WRB one_CD of_IN the_DT clients_NNS in_IN the_DT group_NN fetches_VBZ a_DT shared_JJ object_NN from_IN the_DT repository_NN ,_, the_DT object_NN is_VBZ likely_JJ to_TO be_VB needed_VBN by_IN other_JJ clients_NNS ._.
+BuddyCache_NNP redirects_VBZ subsequent_JJ requests_NNS for_IN this_DT object_NN to_TO the_DT caching_NN client_NN ._.
+Similarly_RB ,_, when_WRB a_DT client_NN creates_VBZ or_CC modifies_VBZ a_DT shared_JJ object_NN ,_, the_DT new_JJ data_NNS is_VBZ likely_JJ to_TO be_VB of_IN potential_JJ interest_NN to_TO all_DT group_NN members_NNS ._.
+BuddyCache_NNP uses_VBZ redirection_NN to_TO support_VB peer_VB update_VB ,_, a_DT lightweight_JJ application-level_NN multicast_NN technique_NN that_WDT provides_VBZ group_NN members_NNS with_IN consistent_JJ access_NN to_TO the_DT new_JJ data_NNS committed_VBN within_IN the_DT collaborating_VBG group_NN without_IN imposing_VBG extra_JJ overhead_NN outside_IN the_DT group_NN ._.
+Nevertheless_RB ,_, in_IN a_DT transactional_JJ system_NN ,_, redirection_NN interferes_VBZ with_IN shared_VBN object_NN availability_NN ._.
+Solo_JJ commit_VB ,_, is_VBZ a_DT validation_NN technique_NN used_VBN by_IN BuddyCache_NNP to_TO avoid_VB the_DT undesirable_JJ client_NN dependencies_NNS that_WDT reduce_VBP object_NN availability_NN when_WRB some_DT client_NN nodes_NNS in_IN the_DT group_NN are_VBP slow_JJ ,_, or_CC clients_NNS fail_VBP independently_RB ._.
+A_DT salient_JJ feature_NN of_IN solo_NN commit_VB is_VBZ supporting_VBG fine-grained_JJ validation_NN using_VBG inexpensive_JJ coarse-grained_JJ coherence_NN information_NN ._.
+Since_IN redirection_NN supports_VBZ the_DT performance_NN benefits_NNS of_IN reducing_VBG interaction_NN with_IN the_DT server_NN but_CC introduces_VBZ extra_JJ processing_NN cost_NN due_JJ to_TO availability_NN mechanisms_NNS and_CC request_NN forwarding_NN ,_, this_DT raises_VBZ the_DT question_NN is_VBZ the_DT cure_NN worse_JJR than_IN the_DT disease_NN ?_.
+We_PRP designed_VBD and_CC implemented_VBD a_DT BuddyCache_NNP prototype_NN and_CC studied_VBD its_PRP$ performance_NN benefits_NNS and_CC costs_NNS using_VBG analytical_JJ modeling_NN and_CC system_NN measurements_NNS ._.
+We_PRP compared_VBD the_DT storage_NN system_NN performance_NN with_IN and_CC without_IN BuddyCache_NNP and_CC considered_VBN how_WRB the_DT cost-benefit_JJ balance_NN is_VBZ affected_VBN by_IN network_NN latency_NN ._.
+Analytical_NNP results_VBZ ,_, supported_VBN by_IN measurements_NNS based_VBN on_IN the_DT multi-user_JJ ###_CD benchmark_NN ,_, indicate_VBP that_IN for_IN typical_JJ Internet_NN latencies_NNS BuddyCache_NNP provides_VBZ significant_JJ performance_NN benefits_NNS ,_, e_LS ._.
+g_NN ._.
+for_IN latencies_NNS ranging_VBG from_IN ##_CD to_TO ##_CD milliseconds_NNS round_JJ trip_NN time_NN ,_, clients_NNS using_VBG the_DT BuddyCache_NNP can_MD reduce_VB by_IN up_RB to_TO ##_CD %_NN the_DT latency_NN of_IN access_NN to_TO shared_VBN objects_NNS compared_VBN to_TO the_DT clients_NNS accessing_VBG the_DT repository_JJ directly_RB ._.
+These_DT strong_JJ performance_NN gains_NNS could_MD make_VB transactional_JJ object_NN storage_NN systems_NNS more_RBR attractive_JJ for_IN collaborative_JJ applications_NNS in_IN wide-area_JJ environments_NNS ._.
+2_LS ._.
+RELATED_JJ WORK_VBP Cooperative_NNP caching_VBG techniques_NNS -LSB-_-LRB- ##_CD ,_, ##_CD ,_, ##_CD ,_, #_# ,_, ##_NN -RSB-_-RRB- provide_VBP access_NN to_TO client_NN caches_NNS to_TO avoid_VB high_JJ disk_NN access_NN latency_NN in_IN an_DT environment_NN where_WRB servers_NNS and_CC clients_NNS run_VBP on_IN a_DT fast_JJ local_JJ area_NN network_NN ._.
+These_DT techniques_NNS use_VBP the_DT server_NN to_TO provide_VB redirection_NN and_CC do_VBP not_RB consider_VB issues_NNS of_IN high_JJ network_NN latency_NN ._.
+Multiprocessor_JJ systems_NNS and_CC distributed_VBN shared_JJ memory_NN systems_NNS -LSB-_-LRB- ##_NNS ,_, #_# ,_, ##_NN ,_, ##_NN ,_, #_# -RSB-_-RRB- use_NN fine-grain_JJ coherence_NN techniques_NNS to_TO avoid_VB the_DT performance_NN penalty_NN of_IN false_JJ sharing_NN but_CC do_VBP not_RB address_VB issues_NNS of_IN availability_NN when_WRB nodes_NNS fail_VBP ._.
+Cooperative_NNP Web_NN caching_NN techniques_NNS ,_, -LRB-_-LRB- e_LS ._.
+g_NN ._.
+-LSB-_-LRB- ##_RB ,_, ##_NN -RSB-_-RRB- -RRB-_-RRB- investigate_VBP issues_NNS of_IN maintaining_VBG a_DT directory_NN of_IN objects_NNS cached_VBN in_IN nearby_JJ proxy_NN caches_NNS in_IN wide-area_JJ environment_NN ,_, using_VBG distributed_VBN directory_NN protocols_NNS for_IN tracking_VBG cache_NN changes_NNS ._.
+This_DT work_NN does_VBZ not_RB consider_VB issues_NNS of_IN consistent_JJ concurrent_JJ updates_NNS to_TO shared_JJ fine-grained_JJ objects_NNS ._.
+Cheriton_NNP and_CC Li_NNP propose_VBP MMO_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- a_DT hybrid_NN web_NN coherence_NN protocol_NN that_WDT combines_VBZ invalidations_NNS with_IN updates_NNS using_VBG multicast_JJ delivery_NN channels_NNS and_CC receiver-reliable_JJ protocol_NN ,_, exploiting_VBG locality_NN in_IN a_DT way_NN similar_JJ to_TO BuddyCache_NNP ._.
+This_DT multicast_JJ transport_NN level_NN solution_NN is_VBZ geared_VBN to_TO the_DT single_JJ writer_NN semantics_NNS of_IN web_NN objects_NNS ._.
+In_IN contrast_NN ,_, BuddyCache_NNP uses_VBZ application_NN level_NN multicast_NN and_CC a_DT sender-reliable_JJ coherence_NN protocol_NN to_TO provide_VB similar_JJ access_NN latency_NN improvements_NNS for_IN transactional_JJ objects_NNS ._.
+Application_NN level_NN multicast_JJ solution_NN in_IN a_DT middle-ware_JJ system_NN was_VBD described_VBN by_IN Pendarakis_NNP ,_, Shi_NNP and_CC Verma_NNP in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ._.
+The_DT schema_NN supports_VBZ small_JJ multi-sender_JJ groups_NNS appropriate_JJ for_IN collaborative_JJ applications_NNS and_CC considers_VBZ coherence_NN issues_NNS in_IN the_DT presence_NN of_IN failures_NNS but_CC does_VBZ not_RB support_VB strong_JJ consistency_NN or_CC fine-grained_JJ sharing_NN ._.
+Yin_NNP ,_, Alvisi_NNP ,_, Dahlin_NNP and_CC Lin_NNP -LSB-_-LRB- ##_CD ,_, ##_CD -RSB-_-RRB- present_VB a_DT hierarchical_JJ WAN_NNP cache_NN coherence_NN scheme_NN ._.
+The_DT protocol_NN uses_VBZ leases_NNS to_TO provide_VB fault-tolerant_JJ call-backs_NNS and_CC takes_VBZ advantage_NN of_IN nearby_JJ caches_NNS to_TO reduce_VB the_DT cost_NN of_IN lease_NN extensions_NNS ._.
+The_DT study_NN uses_VBZ simulation_NN to_TO investigate_VB latency_NN and_CC fault_NN tolerance_NN issues_NNS in_IN hierarchical_JJ avoidance-based_JJ coherence_NN scheme_NN ._.
+In_IN contrast_NN ,_, our_PRP$ work_NN uses_VBZ implementation_NN and_CC analysis_NN to_TO evaluate_VB the_DT costs_NNS and_CC benefits_NNS of_IN redirection_NN and_CC fine_JJ grained_VBN updates_NNS in_IN an_DT optimistic_JJ system_NN ._.
+Anderson_NNP ,_, Eastham_NNP and_CC Vahdat_NNP in_IN WebFS_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- present_VB a_DT global_JJ file_NN system_NN coherence_NN protocol_NN that_WDT allows_VBZ clients_NNS to_TO choose_VB 27_CD on_IN per_IN file_NN basis_NN between_IN receiving_VBG updates_NNS or_CC invalidations_NNS ._.
+Updates_NNS and_CC invalidations_NNS are_VBP multicast_JJ on_IN separate_JJ channels_NNS and_CC clients_NNS subscribe_VBP to_TO one_CD of_IN the_DT channels_NNS ._.
+The_DT protocol_NN exploits_VBZ application_NN specific_JJ methods_NNS e_LS ._.
+g_NN ._.
+last-writer-wins_NNS policy_NN for_IN broadcast_NN applications_NNS ,_, to_TO deal_VB with_IN concurrent_JJ updates_NNS but_CC is_VBZ limited_VBN to_TO file_VB systems_NNS ._.
+Mazieres_NNP studies_NNS a_DT bandwidth_NN saving_VBG technique_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- to_TO detect_VB and_CC avoid_VB repeated_VBN file_NN fragment_NN transfers_NNS across_IN a_DT WAN_NNP when_WRB fragments_NNS are_VBP available_JJ in_IN a_DT local_JJ cache_NN ._.
+BuddyCache_NNP provides_VBZ similar_JJ bandwidth_NN improvements_NNS when_WRB objects_NNS are_VBP available_JJ in_IN the_DT group_NN cache_NN ._.
+3_LS ._.
+BUDDYCACHE_NNP High_NNP network_NN latency_NN imposes_VBZ performance_NN penalty_NN for_IN transactional_JJ applications_NNS accessing_VBG shared_JJ persistent_JJ objects_NNS in_IN wide-area_JJ network_NN environment_NN ._.
+This_DT section_NN describes_VBZ the_DT BuddyCache_NNP approach_NN for_IN reducing_VBG the_DT network_NN latency_NN penalty_NN in_IN collaborative_JJ applications_NNS and_CC explains_VBZ the_DT main_JJ design_NN decisions_NNS ._.
+We_PRP consider_VBP a_DT system_NN in_IN which_WDT a_DT distributed_VBN transactional_JJ object_NN repository_JJ stores_NNS objects_NNS in_IN highly_RB reliable_JJ servers_NNS ,_, perhaps_RB outsourced_VBN in_IN data-centers_NNS connected_VBN via_IN high-bandwidth_JJ reliable_JJ networks_NNS ._.
+Collaborating_VBG clients_NNS interconnected_VBN via_IN a_DT fast_JJ local_JJ network_NN ,_, connect_VB via_IN high-latency_NN ,_, possibly_RB satellite_NN ,_, links_NNS to_TO the_DT servers_NNS at_IN the_DT data-centers_NNS to_TO access_NN shared_VBD persistent_JJ objects_NNS ._.
+The_DT servers_NNS provide_VBP disk_NN storage_NN for_IN the_DT persistent_JJ objects_NNS ._.
+A_DT persistent_JJ object_NN is_VBZ owned_VBN by_IN a_DT single_JJ server_NN ._.
+Objects_NNS may_MD be_VB small_JJ -LRB-_-LRB- order_NN of_IN ###_CD bytes_NNS for_IN programming_NN language_NN objects_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- -RRB-_-RRB- ._.
+To_TO amortize_VB the_DT cost_NN of_IN disk_NN and_CC network_NN transfer_NN objects_NNS are_VBP grouped_VBN into_IN physical_JJ pages_NNS ._.
+To_TO improve_VB object_NN access_NN latency_NN ,_, clients_NNS fetch_VBP the_DT objects_NNS from_IN the_DT servers_NNS and_CC cache_NN and_CC access_NN them_PRP locally_RB ._.
+A_DT transactional_JJ cache_NN coherence_NN protocol_NN runs_VBZ at_IN clients_NNS and_CC servers_NNS to_TO ensure_VB that_IN client_NN caches_NNS remain_VBP consistent_JJ when_WRB objects_NNS are_VBP modified_VBN ._.
+The_DT performance_NN problem_NN facing_VBG the_DT collaborating_VBG client_NN group_NN is_VBZ the_DT high_JJ latency_NN of_IN coordinating_VBG consistent_JJ access_NN to_TO the_DT shared_JJ objects_NNS ._.
+BuddyCache_NNP architecture_NN is_VBZ based_VBN on_IN a_DT request_NN redirection_NN server_NN ,_, interposed_VBN between_IN the_DT clients_NNS and_CC the_DT remote_JJ servers_NNS ._.
+The_DT interposed_VBN server_NN -LRB-_-LRB- the_DT redirector_NN -RRB-_-RRB- runs_VBZ on_IN the_DT same_JJ network_NN as_IN the_DT collaborative_JJ group_NN and_CC ,_, when_WRB possible_JJ ,_, replaces_VBZ the_DT function_NN of_IN the_DT remote_JJ servers_NNS ._.
+If_IN the_DT client_NN request_NN can_MD be_VB served_VBN locally_RB ,_, the_DT interaction_NN with_IN the_DT server_NN is_VBZ avoided_VBN ._.
+If_IN the_DT client_NN request_NN can_MD not_RB be_VB served_VBN locally_RB ,_, redirector_NN forwards_RB it_PRP to_TO a_DT remote_JJ server_NN ._.
+Redirection_NNP approach_NN has_VBZ been_VBN used_VBN to_TO improve_VB the_DT performance_NN of_IN web_NN caching_NN protocols_NNS ._.
+BuddyCache_NNP redirector_NN supports_VBZ the_DT correctness_NN ,_, availability_NN and_CC fault-tolerance_NN properties_NNS of_IN transactional_JJ caching_NN protocol_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+The_DT correctness_NN property_NN ensures_VBZ onecopy_JJ serializability_NN of_IN the_DT objects_NNS committed_VBN by_IN the_DT client_NN transactions_NNS ._.
+The_DT availability_NN and_CC fault-tolerance_NN properties_NNS ensure_VB that_IN a_DT crashed_VBN or_CC slow_JJ client_NN does_VBZ not_RB disrupt_VB any_DT other_JJ client_NN ''_'' s_NNS access_NN to_TO persistent_JJ objects_NNS ._.
+The_DT three_CD types_NNS of_IN client_NN server_NN interactions_NNS in_IN a_DT transactional_JJ caching_NN protocol_NN are_VBP the_DT commit_VB of_IN a_DT transaction_NN ,_, the_DT fetch_VB of_IN an_DT object_NN missing_VBG in_IN a_DT client_NN cache_NN ,_, and_CC the_DT exchange_NN of_IN cache_NN coherence_NN information_NN ._.
+BuddyCache_NNP avoids_VBZ interactions_NNS with_IN the_DT server_NN when_WRB a_DT missing_VBG object_NN ,_, or_CC cache_NN coherence_NN information_NN needed_VBN by_IN a_DT client_NN is_VBZ available_JJ within_IN the_DT collaborating_VBG group_NN ._.
+The_DT redirector_NN always_RB interacts_VBZ with_IN the_DT servers_NNS at_IN commit_VB time_NN because_IN only_RB storage_NN servers_NNS provide_VBP transaction_NN durability_NN in_IN a_DT way_NN that_IN ensures_VBZ committed_JJ Client_NNP Redirector_NNP Client_NNP Client_NNP Buddy_NNP Group_NNP Client_NNP Redirector_NNP Client_NNP Client_NNP Buddy_NNP Group_NNP Servers_NNP Figure_NNP #_# :_: BuddyCache_NNP ._.
+data_NNS remains_VBZ available_JJ in_IN the_DT presence_NN of_IN client_NN or_CC redirector_NN failures_NNS ._.
+Figure_NNP #_# shows_VBZ the_DT overall_JJ BuddyCache_NNP architecture_NN ._.
+3_LS ._.
+#_# Cache_NNP Coherence_NNP The_NNP redirector_NN maintains_VBZ a_DT directory_NN of_IN pages_NNS cached_VBN at_IN each_DT client_NN to_TO provide_VB cooperative_JJ caching_NN -LSB-_-LRB- ##_CD ,_, ##_CD ,_, ##_CD ,_, #_# ,_, 28_CD -RSB-_-RRB- ,_, redirecting_VBG a_DT client_NN fetch_VB request_NN to_TO another_DT client_NN that_WDT caches_VBZ the_DT requested_VBN object_NN ._.
+In_IN addition_NN ,_, redirector_NN manages_VBZ cache_NN coherence_NN ._.
+Several_JJ efficient_JJ transactional_JJ cache_NN coherence_NN protocols_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- exist_VBP for_IN persistent_JJ object_NN storage_NN systems_NNS ._.
+Protocols_NNS make_VBP different_JJ choices_NNS in_IN granularity_NN of_IN data_NNS transfers_NNS and_CC granularity_NN of_IN cache_NN consistency_NN ._.
+The_DT current_JJ best-performing_JJ protocols_NNS use_VBP page_NN granularity_NN transfers_NNS when_WRB clients_NNS fetch_VBP missing_VBG objects_NNS from_IN a_DT server_NN and_CC object_NN granularity_NN coherence_NN to_TO avoid_VB false_JJ -LRB-_-LRB- page-level_JJ -RRB-_-RRB- conflicts_NNS ._.
+The_DT transactional_JJ caching_NN taxonomy_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- proposed_VBN by_IN Carey_NNP ,_, Franklin_NNP and_CC Livny_NNP classifies_VBZ the_DT coherence_NN protocols_NNS into_IN two_CD main_JJ categories_NNS according_VBG to_TO whether_IN a_DT protocol_NN avoids_VBZ or_CC detects_VBZ access_NN to_TO stale_JJ objects_NNS in_IN the_DT client_NN cache_NN ._.
+The_DT BuddyCache_NNP approach_NN could_MD be_VB applied_VBN to_TO both_DT categories_NNS with_IN different_JJ performance_NN costs_NNS and_CC benefits_NNS in_IN each_DT category_NN ._.
+We_PRP chose_VBD to_TO investigate_VB BuddyCache_NNP in_IN the_DT context_NN of_IN OCC_NN -LSB-_-LRB- #_# -RSB-_-RRB- ,_, the_DT current_JJ best_JJS performing_VBG detection-based_JJ protocol_NN ._.
+We_PRP chose_VBD OCC_NN because_IN it_PRP is_VBZ simple_JJ ,_, performs_VBZ well_RB in_IN high-latency_NN networks_NNS ,_, has_VBZ been_VBN implemented_VBN and_CC we_PRP had_VBD access_NN to_TO the_DT implementation_NN ._.
+We_PRP are_VBP investigating_VBG BuddyCache_NNP with_IN PSAA_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, the_DT best_JJS performing_VBG avoidancebased_JJ protocol_NN ._.
+Below_IN we_PRP outline_VBP the_DT OCC_NN protocol_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+The_DT OCC_NN protocol_NN uses_VBZ object-level_JJ coherence_NN ._.
+When_WRB a_DT client_NN requests_NNS a_DT missing_JJ object_NN ,_, the_DT server_NN transfers_VBZ the_DT containing_VBG page_NN ._.
+Transaction_NN can_MD read_VB and_CC update_VB locally_RB cached_VBN objects_NNS without_IN server_NN intervention_NN ._.
+However_RB ,_, before_IN a_DT transaction_NN commits_VBZ it_PRP must_MD be_VB validated_VBN ;_: the_DT server_NN must_MD make_VB sure_JJ the_DT validating_VBG transaction_NN has_VBZ not_RB read_VB a_DT stale_JJ version_NN of_IN some_DT object_NN that_WDT was_VBD updated_VBN by_IN a_DT successfully_RB committed_VBN or_CC validated_VBN transaction_NN ._.
+If_IN validation_NN fails_VBZ ,_, the_DT transaction_NN is_VBZ aborted_VBN ._.
+To_TO reduce_VB the_DT number_NN and_CC cost_NN of_IN aborts_NNS ,_, 28_CD Helper_NNP Requester_NNP A_NNP :_: p_NN Fetch_VB pPeer_NN fetch_VB p_NN Page_NNP p_NN Redirector_NNP Figure_NNP #_# :_: Peer_VB fetch_VB a_DT server_NN sends_VBZ background_NN object_NN invalidation_NN messages_NNS to_TO clients_NNS caching_VBG the_DT containing_VBG pages_NNS ._.
+When_WRB clients_NNS receive_VBP invalidations_NNS they_PRP remove_VBP stale_JJ objects_NNS from_IN the_DT cache_NN and_CC send_VB background_NN acknowledgments_NNS to_TO let_VB server_NN know_VBP about_IN this_DT ._.
+Since_IN invalidations_NNS remove_VB stale_JJ objects_NNS from_IN the_DT client_NN cache_NN ,_, invalidation_NN acknowledgment_NN indicates_VBZ to_TO the_DT server_NN that_IN a_DT client_NN with_IN no_DT outstanding_JJ invalidations_NNS has_VBZ read_VBN upto-date_JJ objects_NNS ._.
+An_DT unacknowledged_JJ invalidation_NN indicates_VBZ a_DT stale_JJ object_NN may_MD have_VB been_VBN accessed_VBN in_IN the_DT client_NN cache_NN ._.
+The_DT validation_NN procedure_NN at_IN the_DT server_NN aborts_VBZ a_DT client_NN transaction_NN if_IN a_DT client_NN reads_VBZ an_DT object_NN while_IN an_DT invalidation_NN is_VBZ outstanding_JJ ._.
+The_DT acknowledged_JJ invalidation_NN mechanism_NN supports_VBZ object-level_JJ cache_NN coherence_NN without_IN object-based_JJ directories_NNS or_CC per-object_JJ version_NN numbers_NNS ._.
+Avoiding_VBG per-object_JJ overheads_NNS is_VBZ very_RB important_JJ to_TO reduce_VB performance_NN penalties_NNS -LSB-_-LRB- #_# -RSB-_-RRB- of_IN managing_VBG many_JJ small_JJ objects_NNS ,_, since_IN typical_JJ objects_NNS are_VBP small_JJ ._.
+An_DT important_JJ BuddyCache_NNP design_NN goal_NN is_VBZ to_TO maintain_VB this_DT benefit_NN ._.
+Since_IN in_IN BuddyCache_NNP a_DT page_NN can_MD be_VB fetched_VBN into_IN a_DT client_NN cache_NN without_IN server_NN intervention_NN -LRB-_-LRB- as_IN illustrated_VBN in_IN figure_NN #_# -RRB-_-RRB- ,_, cache_NN directories_NNS at_IN the_DT servers_NNS keep_VBP track_NN of_IN pages_NNS cached_VBN in_IN each_DT collaborating_VBG group_NN rather_RB than_IN each_DT client_NN ._.
+Redirector_NN keeps_VBZ track_NN of_IN pages_NNS cached_VBN in_IN each_DT client_NN in_IN a_DT group_NN ._.
+Servers_NNS send_VBP to_TO the_DT redirector_NN invalidations_NNS for_IN pages_NNS cached_VBN in_IN the_DT entire_JJ group_NN ._.
+The_DT redirector_NN propagates_VBZ invalidations_NNS from_IN servers_NNS to_TO affected_VBN clients_NNS ._.
+When_WRB all_DT affected_VBN clients_NNS acknowledge_VBP invalidations_NNS ,_, redirector_NN can_MD propagate_VB the_DT group_NN acknowledgment_NN to_TO the_DT server_NN ._.
+3_LS ._.
+#_# Light-weight_JJ Peer_NNP Update_NNP When_WRB one_CD of_IN the_DT clients_NNS in_IN the_DT collaborative_JJ group_NN creates_VBZ or_CC modifies_VBZ shared_JJ objects_NNS ,_, the_DT copies_NNS cached_VBN by_IN any_DT other_JJ client_NN become_VBN stale_JJ but_CC the_DT new_JJ data_NNS is_VBZ likely_JJ to_TO be_VB of_IN potential_JJ interest_NN to_TO the_DT group_NN members_NNS ._.
+The_DT goal_NN in_IN BuddyCache_NNP is_VBZ to_TO provide_VB group_NN members_NNS with_IN efficient_JJ and_CC consistent_JJ access_NN to_TO updates_NNS committed_VBN within_IN the_DT group_NN without_IN imposing_VBG extra_JJ overhead_NN on_IN other_JJ parts_NNS of_IN the_DT storage_NN system_NN ._.
+The_DT two_CD possible_JJ approaches_NNS to_TO deal_VB with_IN stale_JJ data_NNS are_VBP cache_NN invalidations_NNS and_CC cache_NN updates_NNS ._.
+Cache_NN coherence_NN studies_NNS in_IN web_NN systems_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- -RRB-_-RRB- DSM_NNP systems_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- -RRB-_-RRB- ,_, and_CC transactional_JJ object_NN systems_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- -RRB-_-RRB- compare_VBP the_DT benefits_NNS of_IN update_VBP and_CC invalidation_NN ._.
+The_DT studies_NNS show_VBP the_DT Committing_VBG Client_NNP Server_NN Redirector_NN x2_NN ._.
+Store_NNP x_CC 6_CD ._.
+Update_NNP x_CC 3_CD ._.
+Commit_VB x_CC 4_CD ._.
+Commit_VB OK_UH 5_CD ._.
+Commit_VB OK1_NN ._.
+Commit_VB x_CC Figure_NNP #_# :_: Peer_VB update_VB ._.
+benefits_NNS are_VBP strongly_RB workload-dependent_JJ ._.
+In_IN general_JJ ,_, invalidation-based_JJ coherence_NN protocols_NNS are_VBP efficient_JJ since_IN invalidations_NNS are_VBP small_JJ ,_, batched_JJ and_CC piggybacked_VBN on_IN other_JJ messages_NNS ._.
+Moreover_RB ,_, invalidation_NN protocols_NNS match_VBP the_DT current_JJ hardware_NN trend_NN for_IN increasing_VBG client_NN cache_NN sizes_NNS ._.
+Larger_JJR caches_NNS are_VBP likely_JJ to_TO contain_VB much_RB more_RBR data_NNS than_IN is_VBZ actively_RB used_VBN ._.
+Update-based_JJ protocols_NNS that_WDT propagate_VBP updates_NNS to_TO low-interest_JJ objects_NNS in_IN a_DT wide-area_JJ network_NN would_MD be_VB wasteful_JJ ._.
+Nevertheless_RB ,_, invalidation-based_JJ coherence_NN protocols_NNS can_MD perform_VB poorly_RB in_IN high-latency_NN networks_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- if_IN the_DT object_NN ''_'' s_NNS new_JJ value_NN is_VBZ likely_JJ to_TO be_VB of_IN interest_NN to_TO another_DT group_NN member_NN ._.
+With_IN an_DT invalidation-based_JJ protocol_NN ,_, one_CD member_NN ''_'' s_NNS update_VBP will_MD invalidate_VB another_DT member_NN ''_'' s_NNS cached_VBN copy_NN ,_, causing_VBG the_DT latter_JJ to_TO perform_VB a_DT high-latency_NN fetch_VB of_IN the_DT new_JJ value_NN from_IN the_DT server_NN ._.
+BuddyCache_NNP circumvents_VBZ this_DT well-known_JJ bandwidth_NN vs_CC ._.
+latency_NN trade-off_NN imposed_VBN by_IN update_VB and_CC invalidation_NN protocols_NNS in_IN wide-area_JJ network_NN environments_NNS ._.
+It_PRP avoids_VBZ the_DT latency_NN penalty_NN of_IN invalidations_NNS by_IN using_VBG the_DT redirector_NN to_TO retain_VB and_CC propagate_VB updates_NNS committed_VBN by_IN one_CD client_NN to_TO other_JJ clients_NNS within_IN the_DT group_NN ._.
+This_DT avoids_VBZ the_DT bandwidth_NN penalty_NN of_IN updates_NNS because_IN servers_NNS propagate_VBP invalidations_NNS to_TO the_DT redirectors_NNS ._.
+As_IN far_RB as_IN we_PRP know_VBP ,_, this_DT use_NN of_IN localized_JJ multicast_NN in_IN BuddyCache_NNP redirector_NN is_VBZ new_JJ and_CC has_VBZ not_RB been_VBN used_VBN in_IN earlier_JJR caching_NN systems_NNS ._.
+The_DT peer_VBP update_VB works_NNS as_IN follows_VBZ ._.
+An_DT update_VBP commit_VB request_NN from_IN a_DT client_NN arriving_VBG at_IN the_DT redirector_NN contains_VBZ the_DT object_NN updates_NNS ._.
+Redirector_NNP retains_VBZ the_DT updates_NNS and_CC propagates_VBZ the_DT request_NN to_TO the_DT coordinating_VBG server_NN ._.
+After_IN the_DT transaction_NN commits_VBZ ,_, the_DT coordinator_NN server_NN sends_VBZ a_DT commit_VB reply_NN to_TO the_DT redirector_NN of_IN the_DT committing_VBG client_NN group_NN ._.
+The_DT redirector_NN forwards_RB the_DT reply_NN to_TO the_DT committing_VBG client_NN ,_, and_CC also_RB propagates_VBZ the_DT retained_VBN committed_JJ updates_NNS to_TO the_DT clients_NNS caching_VBG the_DT modified_VBN pages_NNS ._.
+Since_IN the_DT groups_NNS outside_IN the_DT BuddyCache_NNP propagate_VB invalidations_NNS ,_, there_EX is_VBZ no_DT extra_JJ overhead_NN outside_IN the_DT committing_VBG group_NN ._.
+3_LS ._.
+#_# Solo_NNP commit_VB In_IN the_DT OCC_NN protocol_NN ,_, clients_NNS acknowledge_VBP server_NN invalidations_NNS -LRB-_-LRB- or_CC updates_NNS -RRB-_-RRB- to_TO indicate_VB removal_NN of_IN stale_JJ data_NNS ._.
+The_DT straightforward_JJ group_NN acknowledgement_NN protocol_NN where_WRB redirector_NN collects_VBZ and_CC propagates_VBZ a_DT collective_JJ acknowledge29_NN Redirector_NN commit_VB ok_JJ ABORT_NNP Client_NNP #_# Client_NNP #_# Server_NN commit_VB -LRB-_-LRB- P_NN -LRB-_-LRB- x_NN -RRB-_-RRB- -RRB-_-RRB- commit_VB -LRB-_-LRB- P_NN -LRB-_-LRB- x_NN -RRB-_-RRB- -RRB-_-RRB- ok_NN +_CC inv_NN -LRB-_-LRB- P_NN -LRB-_-LRB- x_NN -RRB-_-RRB- -RRB-_-RRB- inv_NN -LRB-_-LRB- P_NN -LRB-_-LRB- x_NN -RRB-_-RRB- -RRB-_-RRB- commit_VB -LRB-_-LRB- P_NN -LRB-_-LRB- x_NN -RRB-_-RRB- -RRB-_-RRB- commit_VB -LRB-_-LRB- P_NN -LRB-_-LRB- x_NN -RRB-_-RRB- -RRB-_-RRB- ack_NN -LRB-_-LRB- P_NN -LRB-_-LRB- x_NN -RRB-_-RRB- -RRB-_-RRB- ack_NN -LRB-_-LRB- P_NN -LRB-_-LRB- x_NN -RRB-_-RRB- -RRB-_-RRB- Figure_NNP #_# :_: Validation_NN with_IN Slow_NNP Peers_NNP ment_NN to_TO the_DT server_NN ,_, interferes_VBZ with_IN the_DT availability_NN property_NN of_IN the_DT transactional_JJ caching_NN protocol_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- since_IN a_DT client_NN that_WDT is_VBZ slow_JJ to_TO acknowledge_VB an_DT invalidation_NN or_CC has_VBZ failed_VBN can_MD delay_VB a_DT group_NN acknowledgement_NN and_CC prevent_VB another_DT client_NN in_IN the_DT group_NN from_IN committing_VBG a_DT transaction_NN ._.
+E_NN ._.
+g_NN ._.
+an_DT engineer_NN that_WDT commits_VBZ a_DT repeated_VBN revision_NN to_TO the_DT same_JJ shared_JJ design_NN object_NN -LRB-_-LRB- and_CC therefore_RB holds_VBZ the_DT latest_JJS version_NN of_IN the_DT object_NN -RRB-_-RRB- may_MD need_VB to_TO abort_VB if_IN the_DT group_NN acknowledgement_NN has_VBZ not_RB propagated_VBN to_TO the_DT server_NN ._.
+Consider_VB a_DT situation_NN depicted_VBN in_IN figure_NN #_# where_WRB Client1_NN commits_VBZ a_DT transaction_NN T_NN that_WDT reads_VBZ the_DT latest_JJS version_NN of_IN an_DT object_NN x_NN on_IN page_NN P_NN recently_RB modified_VBN by_IN Client1_NN ._.
+If_IN the_DT commit_VB request_NN for_IN T_NN reaches_VBZ the_DT server_NN before_IN the_DT collective_JJ acknowledgement_NN from_IN Client2_NN for_IN the_DT last_JJ modification_NN of_IN x_CC arrives_VBZ at_IN the_DT server_NN ,_, the_DT OCC_NN validation_NN procedure_NN considers_VBZ x_NN to_TO be_VB stale_JJ and_CC aborts_VBZ T_NN -LRB-_-LRB- because_RB ,_, as_IN explained_VBN above_IN ,_, an_DT invalidation_NN unacknowledged_JJ by_IN a_DT client_NN ,_, acts_VBZ as_IN indication_NN to_TO the_DT server_NN that_IN the_DT cached_VBN object_NN value_NN is_VBZ stale_JJ at_IN the_DT client_NN -RRB-_-RRB- ._.
+Note_VB that_IN while_IN invalidations_NNS are_VBP not_RB required_VBN for_IN the_DT correctness_NN of_IN the_DT OCC_NN protocol_NN ,_, they_PRP are_VBP very_RB important_JJ for_IN the_DT performance_NN since_IN they_PRP reduce_VBP the_DT performance_NN penalties_NNS of_IN aborts_NNS and_CC false_JJ sharing_NN ._.
+The_DT asynchronous_JJ invalidations_NNS are_VBP an_DT important_JJ part_NN of_IN the_DT reason_NN OCC_NN has_VBZ competitive_JJ performance_NN with_IN PSAA_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, the_DT best_JJS performing_VBG avoidance-based_JJ protocol_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+Nevertheless_RB ,_, since_IN invalidations_NNS are_VBP sent_VBN and_CC processed_VBN asynchronously_RB ,_, invalidation_NN processing_NN may_MD be_VB arbitrarily_RB delayed_VBN at_IN a_DT client_NN ._.
+Lease-based_JJ schemes_NNS -LRB-_-LRB- time-out_NN based_VBN -RRB-_-RRB- have_VBP been_VBN proposed_VBN to_TO improve_VB the_DT availability_NN of_IN hierarchical_JJ callback-based_JJ coherence_NN protocols_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- but_CC the_DT asynchronous_JJ nature_NN of_IN invalidations_NNS makes_VBZ the_DT lease-based_JJ approaches_NNS inappropriate_JJ for_IN asynchronous_JJ invalidations_NNS ._.
+The_DT Solo_JJ commit_VB validation_NN protocol_NN allows_VBZ a_DT client_NN with_IN up-to-date_JJ objects_NNS to_TO commit_VB a_DT transaction_NN even_RB if_IN the_DT group_NN acknowledgement_NN is_VBZ delayed_VBN due_JJ to_TO slow_VB or_CC crashed_VBD peers_NNS ._.
+The_DT protocol_NN requires_VBZ clients_NNS to_TO include_VB extra_JJ information_NN with_IN the_DT transaction_NN read_VBD sets_NNS in_IN the_DT commit_VB message_NN ,_, to_TO indicate_VB to_TO the_DT server_NN the_DT objects_NNS read_VBN by_IN the_DT transaction_NN are_VBP up-to-date_JJ ._.
+Object_JJ version_NN numbers_NNS could_MD provide_VB a_DT simple_JJ way_NN to_TO track_VB up-to-date_JJ objects_NNS but_CC ,_, as_IN mentioned_VBN above_IN ,_, maintaining_VBG per_IN object_NN version_NN numbers_NNS imposes_VBZ unacceptably_RB high_JJ overheads_NNS -LRB-_-LRB- in_IN disk_NN storage_NN ,_, I_PRP /_: O_NN costs_NNS and_CC directory_NN size_NN -RRB-_-RRB- on_IN the_DT entire_JJ object_NN system_NN when_WRB objects_NNS are_VBP small_JJ -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Instead_RB ,_, solo_NN commit_VB uses_NNS coarse-grain_JJ page_NN version_NN numbers_NNS to_TO identify_VB fine-grain_JJ object_NN versions_NNS ._.
+A_DT page_NN version_NN number_NN is_VBZ incremented_VBN at_IN a_DT server_NN when_WRB at_IN transaction_NN that_WDT modifies_VBZ objects_NNS on_IN the_DT page_NN commits_VBZ ._.
+Updates_NNS committed_VBN by_IN a_DT single_JJ transaction_NN and_CC corresponding_JJ invalidations_NNS are_VBP therefore_RB uniquely_RB identified_VBN by_IN the_DT modified_VBN page_NN version_NN number_NN ._.
+Page_NNP version_NN numbers_NNS are_VBP propagated_VBN to_TO clients_NNS in_IN fetch_VB replies_NNS ,_, commit_VB replies_NNS and_CC with_IN invalidations_NNS ,_, and_CC clients_NNS include_VBP page_NN version_NN numbers_NNS in_IN commit_VB requests_NNS sent_VBN to_TO the_DT servers_NNS ._.
+If_IN a_DT transaction_NN fails_VBZ validation_NN due_JJ to_TO missing_VBG group_NN acknowledgement_NN ,_, the_DT server_NN checks_NNS page_NN version_NN numbers_NNS of_IN the_DT objects_NNS in_IN the_DT transaction_NN read_VBD set_NN and_CC allows_VBZ the_DT transaction_NN to_TO commit_VB if_IN the_DT client_NN has_VBZ read_VBN from_IN the_DT latest_JJS page_NN version_NN ._.
+The_DT page_NN version_NN numbers_NNS enable_VBP independent_JJ commits_VBZ but_CC page_NN version_NN checks_NNS only_RB detect_VBP page-level_JJ conflicts_NNS ._.
+To_TO detect_VB object-level_JJ conflicts_NNS and_CC avoid_VB the_DT problem_NN of_IN false_JJ sharing_NN we_PRP need_VBP the_DT acknowledged_JJ invalidations_NNS ._.
+Section_NN #_# describes_VBZ the_DT details_NNS of_IN the_DT implementation_NN of_IN solo_NN commit_VB support_NN for_IN fine-grain_JJ sharing_NN ._.
+3_LS ._.
+#_# Group_NNP Configuration_NNP The_NNP BuddyCache_NNP architecture_NN supports_VBZ multiple_JJ concurrent_JJ peer_VBP groups_NNS ._.
+Potentially_RB ,_, it_PRP may_MD be_VB faster_RBR to_TO access_NN data_NNS cached_VBN in_IN another_DT peer_VBP group_NN than_IN to_TO access_VB a_DT remote_JJ server_NN ._.
+In_IN such_JJ case_NN extending_VBG BuddyCache_NNP protocols_NNS to_TO support_VB multi-level_JJ peer_VBP caching_NN could_MD be_VB worthwhile_JJ ._.
+We_PRP have_VBP not_RB pursued_VBN this_DT possibility_NN for_IN several_JJ reasons_NNS ._.
+In_IN web_NN caching_NN workloads_NNS ,_, simply_RB increasing_VBG the_DT population_NN of_IN clients_NNS in_IN a_DT proxy_NN cache_NN often_RB increases_VBZ the_DT overall_JJ cache_NN hit_NN rate_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+In_IN BuddyCache_NNP applications_NNS ,_, however_RB ,_, we_PRP expect_VBP sharing_VBG to_TO result_VB mainly_RB from_IN explicit_JJ client_NN interaction_NN and_CC collaboration_NN ,_, suggesting_VBG that_IN inter-group_JJ fetching_VBG is_VBZ unlikely_JJ to_TO occur_VB ._.
+Moreover_RB ,_, measurements_NNS from_IN multi-level_JJ web_NN caching_NN systems_NNS -LSB-_-LRB- #_# -RSB-_-RRB- indicate_VBP that_IN a_DT multilevel_JJ system_NN may_MD not_RB be_VB advantageous_JJ unless_IN the_DT network_NN connection_NN between_IN the_DT peer_VBP groups_NNS is_VBZ very_RB fast_RB ._.
+We_PRP are_VBP primarily_RB interested_JJ in_IN environments_NNS where_WRB closely_RB collaborating_VBG peers_NNS have_VBP fast_JJ close-range_JJ connectivity_NN ,_, but_CC the_DT connection_NN between_IN peer_VB groups_NNS may_MD be_VB slow_JJ ._.
+As_IN a_DT result_NN ,_, we_PRP decided_VBD that_IN support_NN for_IN inter-group_JJ fetching_VBG in_IN BuddyCache_NNP is_VBZ not_RB a_DT high_JJ priority_NN right_RB now_RB ._.
+To_TO support_VB heterogenous_JJ resource-rich_JJ and_CC resource-poor_JJ peers_NNS ,_, the_DT BuddyCache_NNP redirector_NN can_MD be_VB configured_VBN to_TO run_VB either_CC in_IN one_CD of_IN the_DT peer_VBP nodes_NNS or_CC ,_, when_WRB available_JJ ,_, in_IN a_DT separate_JJ node_NN within_IN the_DT site_NN infrastructure_NN ._.
+Moreover_RB ,_, in_IN a_DT resource-rich_JJ infrastructure_NN node_NN ,_, the_DT redirector_NN can_MD be_VB configured_VBN as_IN a_DT stand-by_JJ peer_VBP cache_NN to_TO receive_VB pages_NNS fetched_VBN by_IN other_JJ peers_NNS ,_, emulating_VBG a_DT central_JJ cache_NN somewhat_RB similar_JJ to_TO a_DT regional_JJ web_NN proxy_NN cache_NN ._.
+From_IN the_DT BuddyCache_NNP cache_NN coherence_NN protocol_NN point_NN of_IN view_NN ,_, however_RB ,_, such_PDT a_DT stand-by_JJ peer_VBP cache_NN is_VBZ equivalent_JJ to_TO a_DT regular_JJ peer_VBP cache_NN and_CC therefore_RB we_PRP do_VBP not_RB consider_VB this_DT case_NN separately_RB in_IN the_DT discussion_NN in_IN this_DT paper_NN ._.
+4_LS ._.
+IMPLEMENTATION_NN In_IN this_DT section_NN we_PRP provide_VBP the_DT details_NNS of_IN the_DT BuddyCache_NNP implementation_NN ._.
+We_PRP have_VBP implemented_VBN BuddyCache_NNP in_IN the_DT Thor_NNP client_NN /_: server_NN object-oriented_JJ database_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Thor_NNP supports_VBZ high_JJ performance_NN access_NN to_TO distributed_VBN objects_NNS and_CC therefore_RB provides_VBZ a_DT good_JJ test_NN platform_NN to_TO investigate_VB BuddyCache_NNP performance_NN ._.
+30_CD 4_CD ._.
+#_# Base_NNP Storage_NNP System_NNP Thor_NNP servers_NNS provide_VBP persistent_JJ storage_NN for_IN objects_NNS and_CC clients_NNS cache_NN copies_NNS of_IN these_DT objects_NNS ._.
+Applications_NNS run_VBP at_IN the_DT clients_NNS and_CC interact_VBP with_IN the_DT system_NN by_IN making_VBG calls_NNS on_IN methods_NNS of_IN cached_JJ objects_NNS ._.
+All_DT method_NN calls_VBZ occur_VB within_IN atomic_JJ transactions_NNS ._.
+Clients_NNS communicate_VBP with_IN servers_NNS to_TO fetch_VB pages_NNS or_CC to_TO commit_VB a_DT transaction_NN ._.
+The_DT servers_NNS have_VBP a_DT disk_NN for_IN storing_VBG persistent_JJ objects_NNS ,_, a_DT stable_JJ transaction_NN log_NN ,_, and_CC volatile_JJ memory_NN ._.
+The_DT disk_NN is_VBZ organized_VBN as_IN a_DT collection_NN of_IN pages_NNS which_WDT are_VBP the_DT units_NNS of_IN disk_NN access_NN ._.
+The_DT stable_JJ log_NN holds_VBZ commit_VB information_NN and_CC object_NN modifications_NNS for_IN committed_JJ transactions_NNS ._.
+The_DT server_NN memory_NN contains_VBZ cache_NN directory_NN and_CC a_DT recoverable_JJ modified_VBN object_NN cache_NN called_VBD the_DT MOB_NNP ._.
+The_DT directory_NN keeps_VBZ track_NN of_IN which_WDT pages_NNS are_VBP cached_VBN by_IN which_WDT clients_NNS ._.
+The_DT MOB_NNP holds_VBZ recently_RB modified_VBN objects_NNS that_WDT have_VBP not_RB yet_RB been_VBN written_VBN back_RB to_TO their_PRP$ pages_NNS on_IN disk_NN ._.
+As_IN MOB_NNP fills_VBZ up_RP ,_, a_DT background_NN process_NN propagates_VBZ modified_VBN objects_NNS to_TO the_DT disk_NN -LSB-_-LRB- ##_CD ,_, ##_CD -RSB-_-RRB- ._.
+4_LS ._.
+#_# Base_NNP Cache_NNP Coherence_NNP Transactions_NNS are_VBP serialized_VBN using_VBG optimistic_JJ concurrency_NN control_NN OCC_NN -LSB-_-LRB- #_# -RSB-_-RRB- described_VBN in_IN Section_NN #_# ._.
+#_# ._.
+We_PRP provide_VBP some_DT of_IN the_DT relevant_JJ OCC_NN protocol_NN implementation_NN details_NNS ._.
+The_DT client_NN keeps_VBZ track_NN of_IN objects_NNS that_WDT are_VBP read_VBN and_CC modified_VBN by_IN its_PRP$ transaction_NN ;_: it_PRP sends_VBZ this_DT information_NN ,_, along_IN with_IN new_JJ copies_NNS of_IN modified_VBN objects_NNS ,_, to_TO the_DT servers_NNS when_WRB it_PRP tries_VBZ to_TO commit_VB the_DT transaction_NN ._.
+The_DT servers_NNS determine_VBP whether_IN the_DT commit_VB is_VBZ possible_JJ ,_, using_VBG a_DT two-phase_JJ commit_VB protocol_NN if_IN the_DT transaction_NN used_VBD objects_NNS at_IN multiple_JJ servers_NNS ._.
+If_IN the_DT transaction_NN commits_VBZ ,_, the_DT new_JJ copies_NNS of_IN modified_VBN objects_NNS are_VBP appended_VBN to_TO the_DT log_NN and_CC also_RB inserted_VBN in_IN the_DT MOB_NNP ._.
+The_DT MOB_NNP is_VBZ recoverable_JJ ,_, i_FW ._.
+e_LS ._.
+if_IN the_DT server_NN crashes_NNS ,_, the_DT MOB_NNP is_VBZ reconstructed_VBN at_IN recovery_NN by_IN scanning_VBG the_DT log_NN ._.
+Since_IN objects_NNS are_VBP not_RB locked_VBN before_IN being_VBG used_VBN ,_, a_DT transaction_NN commit_VB can_MD cause_VB caches_NNS to_TO contain_VB obsolete_JJ objects_NNS ._.
+Servers_NNS will_MD abort_VB a_DT transaction_NN that_WDT used_VBD obsolete_JJ objects_NNS ._.
+However_RB ,_, to_TO reduce_VB the_DT probability_NN of_IN aborts_NNS ,_, servers_NNS notify_VBP clients_NNS when_WRB their_PRP$ objects_NNS become_VBP obsolete_JJ by_IN sending_VBG them_PRP invalidation_NN messages_NNS ;_: a_DT server_NN uses_VBZ its_PRP$ directory_NN and_CC the_DT information_NN about_IN the_DT committing_VBG transaction_NN to_TO determine_VB what_WP invalidation_NN messages_NNS to_TO send_VB ._.
+Invalidation_NNP messages_NNS are_VBP small_JJ because_IN they_PRP simply_RB identify_VB obsolete_JJ objects_NNS ._.
+Furthermore_RB ,_, they_PRP are_VBP sent_VBN in_IN the_DT background_NN ,_, batched_VBN and_CC piggybacked_VBN on_IN other_JJ messages_NNS ._.
+When_WRB a_DT client_NN receives_VBZ an_DT invalidation_NN message_NN ,_, it_PRP removes_VBZ obsolete_JJ objects_NNS from_IN its_PRP$ cache_NN and_CC aborts_VBZ the_DT current_JJ transaction_NN if_IN it_PRP used_VBD them_PRP ._.
+The_DT client_NN continues_VBZ to_TO retain_VB pages_NNS containing_VBG invalidated_VBN objects_NNS ;_: these_DT pages_NNS are_VBP now_RB incomplete_JJ with_IN holes_NNS in_IN place_NN of_IN the_DT invalidated_VBN objects_NNS ._.
+Performing_VBG invalidation_NN on_IN an_DT object_NN basis_NN means_VBZ that_IN false_JJ sharing_NN does_VBZ not_RB cause_VB unnecessary_JJ aborts_NNS ;_: keeping_VBG incomplete_JJ pages_NNS in_IN the_DT client_NN cache_NN means_VBZ that_IN false_JJ sharing_NN does_VBZ not_RB lead_VB to_TO unnecessary_JJ cache_NN misses_VBZ ._.
+Clients_NNS acknowledge_VBP invalidations_NNS to_TO indicate_VB removal_NN of_IN stale_JJ data_NNS as_IN explained_VBN in_IN Section_NN #_# ._.
+#_# ._.
+Invalidation_NNP messages_NNS prevent_VBP some_DT aborts_NNS ,_, and_CC accelerate_VB those_DT that_WDT must_MD happen_VB -_: thus_RB wasting_VBG less_JJR work_NN and_CC ooading_VBG detection_NN of_IN aborts_NNS from_IN servers_NNS to_TO clients_NNS ._.
+When_WRB a_DT transaction_NN aborts_VBZ ,_, its_PRP$ client_NN restores_VBZ the_DT cached_JJ copies_NNS of_IN modified_VBN objects_NNS to_TO the_DT state_NN they_PRP had_VBD before_IN the_DT transaction_NN started_VBD ;_: this_DT is_VBZ possible_JJ because_IN a_DT client_NN makes_VBZ a_DT copy_NN of_IN an_DT object_NN the_DT first_JJ time_NN it_PRP is_VBZ modified_VBN by_IN a_DT transaction_NN ._.
+4_LS ._.
+#_# Redirection_NNP The_DT redirector_NN runs_VBZ on_IN the_DT same_JJ local_JJ network_NN as_IN the_DT peer_VBP group_NN ,_, in_IN one_CD of_IN the_DT peer_VBP nodes_NNS ,_, or_CC in_IN a_DT special_JJ node_NN within_IN the_DT infrastructure_NN ._.
+It_PRP maintains_VBZ a_DT directory_NN of_IN pages_NNS available_JJ in_IN the_DT peer_VBP group_NN and_CC provides_VBZ fast_JJ centralized_JJ fetch_VB redirection_NN between_IN the_DT peer_VBP caches_NNS ._.
+To_TO improve_VB performance_NN ,_, clients_NNS inform_VBP the_DT redirector_NN when_WRB they_PRP evict_VBP pages_NNS or_CC objects_NNS by_IN piggybacking_VBG that_DT information_NN on_IN messages_NNS sent_VBN to_TO the_DT redirector_NN ._.
+To_TO ensure_VB up-to-date_JJ objects_NNS are_VBP fetched_VBN from_IN the_DT group_NN cache_NN the_DT redirector_NN tracks_VBZ the_DT status_NN of_IN the_DT pages_NNS ._.
+A_DT cached_JJ page_NN is_VBZ either_CC complete_JJ in_IN which_WDT case_NN it_PRP contains_VBZ consistent_JJ values_NNS for_IN all_PDT the_DT objects_NNS ,_, or_CC incomplete_JJ ,_, in_IN which_WDT case_NN some_DT of_IN the_DT objects_NNS on_IN a_DT page_NN are_VBP marked_JJ invalid_JJ ._.
+Only_RB complete_JJ pages_NNS are_VBP used_VBN by_IN the_DT peer_VBP fetch_VB ._.
+The_DT protocol_NN for_IN maintaining_VBG page_NN status_NN when_WRB pages_NNS are_VBP updated_VBN and_CC invalidated_VBN is_VBZ described_VBN in_IN Section_NN #_# ._.
+#_# ._.
+When_WRB a_DT client_NN request_NN has_VBZ to_TO be_VB processed_VBN at_IN the_DT servers_NNS ,_, e_LS ._.
+g_NN ._.
+,_, a_DT complete_JJ requested_VBN page_NN is_VBZ unavailable_JJ in_IN the_DT peer_VBP group_NN or_CC a_DT peer_VBP needs_NNS to_TO commit_VB a_DT transaction_NN ,_, the_DT redirector_NN acts_VBZ as_IN a_DT server_NN proxy_NN :_: it_PRP forwards_RB the_DT request_NN to_TO the_DT server_NN ,_, and_CC then_RB forwards_RB the_DT reply_NN back_RB to_TO the_DT client_NN ._.
+In_IN addition_NN ,_, in_IN response_NN to_TO invalidations_NNS sent_VBN by_IN a_DT server_NN ,_, the_DT redirector_NN distributes_VBZ the_DT update_VBP or_CC invalidation_NN information_NN to_TO clients_NNS caching_VBG the_DT modified_VBN page_NN and_CC ,_, after_IN all_DT clients_NNS acknowledge_VBP ,_, propagates_VBZ the_DT group_NN acknowledgment_NN back_RB to_TO the_DT server_NN ._.
+The_DT redirector-server_NN protocol_NN is_VBZ ,_, in_IN effect_NN ,_, the_DT client-server_JJ protocol_NN used_VBN in_IN the_DT base_NN Thor_NNP storage_NN system_NN ,_, where_WRB the_DT combined_VBN peer_VBP group_NN cache_NN is_VBZ playing_VBG the_DT role_NN of_IN a_DT single_JJ client_NN cache_NN in_IN the_DT base_NN system_NN ._.
+4_LS ._.
+#_# Peer_NNP Update_NNP The_NNP peer_VB update_VB is_VBZ implemented_VBN as_IN follows_VBZ ._.
+An_DT update_VBP commit_VB request_NN from_IN a_DT client_NN arriving_VBG at_IN the_DT redirector_NN contains_VBZ the_DT object_NN updates_NNS ._.
+Redirector_NNP retains_VBZ the_DT updates_NNS and_CC propagates_VBZ the_DT request_NN to_TO the_DT coordinator_NN server_NN ._.
+After_IN a_DT transaction_NN commits_VBZ ,_, using_VBG a_DT two_CD phase_NN commit_VB if_IN needed_VBN ,_, the_DT coordinator_NN server_NN sends_VBZ a_DT commit_VB reply_NN to_TO the_DT redirector_NN of_IN the_DT committing_VBG client_NN group_NN ._.
+The_DT redirector_NN forwards_RB the_DT reply_NN to_TO the_DT committing_VBG client_NN ._.
+It_PRP waits_VBZ for_IN the_DT invalidations_NNS to_TO arrive_VB to_TO propagate_VB corresponding_JJ retained_VBN -LRB-_-LRB- committed_VBN -RRB-_-RRB- updates_NNS to_TO the_DT clients_NNS caching_VBG the_DT modified_VBN pages_NNS -LRB-_-LRB- see_VB figure_NN #_# ._. -RRB-_-RRB-
+Participating_VBG servers_NNS that_WDT are_VBP home_NN to_TO objects_NNS modified_VBN by_IN the_DT transaction_NN generate_VBP object_NN invalidations_NNS for_IN each_DT cache_NN group_NN that_WDT caches_VBZ pages_NNS containing_VBG the_DT modified_VBN objects_NNS -LRB-_-LRB- including_VBG the_DT committing_VBG group_NN -RRB-_-RRB- ._.
+The_DT invalidations_NNS are_VBP sent_VBN lazily_RB to_TO the_DT redirectors_NNS to_TO ensure_VB that_IN all_PDT the_DT clients_NNS in_IN the_DT groups_NNS caching_VBG the_DT modified_VBN objects_NNS get_VBP rid_JJ of_IN the_DT stale_JJ data_NNS ._.
+In_IN cache_NN groups_NNS other_JJ than_IN the_DT committing_VBG group_NN ,_, redirectors_NNS propagates_VBZ the_DT invalidations_NNS to_TO all_PDT the_DT clients_NNS caching_VBG the_DT modified_VBN pages_NNS ,_, collect_VB the_DT client_NN acknowledgments_NNS and_CC after_IN completing_VBG the_DT collection_NN ,_, propagate_VB collective_JJ acknowledgments_NNS back_RB to_TO the_DT server_NN ._.
+Within_IN the_DT committing_VBG client_NN group_NN ,_, the_DT arriving_VBG invalidations_NNS are_VBP not_RB propagated_VBN ._.
+Instead_RB ,_, updates_NNS are_VBP sent_VBN to_TO clients_NNS caching_VBG those_DT objects_NNS ''_'' pages_NNS ,_, the_DT updates_NNS are_VBP acknowledged_VBN by_IN the_DT client_NN ,_, and_CC the_DT collective_JJ acknowledgment_NN is_VBZ propagated_VBN to_TO the_DT server_NN ._.
+An_DT invalidation_NN renders_VBZ a_DT cached_JJ page_NN unavailable_JJ for_IN peer_VB fetch_VB changing_VBG the_DT status_NN of_IN a_DT complete_JJ page_NN p_NN into_IN an_DT incomplete_JJ ._.
+In_IN contrast_NN ,_, an_DT update_VBP of_IN a_DT complete_JJ page_NN preserves_VBZ the_DT complete_JJ page_NN status_NN ._.
+As_IN shown_VBN by_IN studies_NNS of_IN the_DT 31_CD fragment_NN reconstruction_NN -LSB-_-LRB- #_# -RSB-_-RRB- ,_, such_JJ update_VBP propagation_NN allows_VBZ to_TO avoid_VB the_DT performance_NN penalties_NNS of_IN false_JJ sharing_NN ._.
+That_DT is_VBZ ,_, when_WRB clients_NNS within_IN a_DT group_NN modify_VB different_JJ objects_NNS on_IN the_DT same_JJ page_NN ,_, the_DT page_NN retains_VBZ its_PRP$ complete_JJ status_NN and_CC remains_VBZ available_JJ for_IN peer_VB fetch_VB ._.
+Therefore_RB ,_, the_DT effect_NN of_IN peer_VB update_VB is_VBZ similar_JJ to_TO eager_JJ fragment_NN reconstruction_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+We_PRP have_VBP also_RB considered_VBN the_DT possibility_NN of_IN allowing_VBG a_DT peer_VBP to_TO fetch_VB an_DT incomplete_JJ page_NN -LRB-_-LRB- with_IN invalid_JJ objects_NNS marked_JJ accordingly_RB -RRB-_-RRB- but_CC decided_VBD against_IN this_DT possibility_NN because_IN of_IN the_DT extra_JJ complexity_NN involved_VBN in_IN tracking_VBG invalid_JJ objects_NNS ._.
+4_LS ._.
+#_# Vcache_NNP The_DT solo_NN commit_VB validation_NN protocol_NN allows_VBZ clients_NNS with_IN up-to-date_JJ objects_NNS to_TO commit_VB independently_RB of_IN slower_JJR -LRB-_-LRB- or_CC failed_VBN -RRB-_-RRB- group_NN members_NNS ._.
+As_IN explained_VBN in_IN Section_NN #_# ._.
+#_# ,_, the_DT solo_NN commit_VB protocol_NN allows_VBZ a_DT transaction_NN T_NN to_TO pass_VB validation_NN if_IN extra_JJ coherence_NN information_NN supplied_VBN by_IN the_DT client_NN indicates_VBZ that_IN transaction_NN T_NN has_VBZ read_VBN up-to-date_JJ objects_NNS ._.
+Clients_NNS use_VBP page_NN version_NN numbers_NNS to_TO provide_VB this_DT extra_JJ coherence_NN information_NN ._.
+That_DT is_VBZ ,_, a_DT client_NN includes_VBZ the_DT page_NN version_NN number_NN corresponding_VBG to_TO each_DT object_NN in_IN the_DT read_NN object_NN set_NN sent_VBN in_IN the_DT commit_VB request_NN to_TO the_DT server_NN ._.
+Since_IN a_DT unique_JJ page_NN version_NN number_NN corresponds_VBZ to_TO each_DT committed_VBN object_NN update_VBP ,_, the_DT page_NN version_NN number_NN associated_VBN with_IN an_DT object_NN allows_VBZ the_DT validation_NN procedure_NN at_IN the_DT server_NN to_TO check_VB if_IN the_DT client_NN transaction_NN has_VBZ read_VBN up-to-date_JJ objects_NNS ._.
+The_DT use_NN of_IN coarse-grain_JJ page_NN versions_NNS to_TO identify_VB object_NN versions_NNS avoids_VBZ the_DT high_JJ penalty_NN of_IN maintaining_VBG persistent_JJ object_NN versions_NNS for_IN small_JJ objects_NNS ,_, but_CC requires_VBZ an_DT extra_JJ protocol_NN at_IN the_DT client_NN to_TO maintain_VB the_DT mapping_NN from_IN a_DT cached_VBN object_NN to_TO the_DT identifying_VBG page_NN version_NN -LRB-_-LRB- ObjectToVersion_NN -RRB-_-RRB- ._.
+The_DT main_JJ implementation_NN issue_NN is_VBZ concerned_VBN with_IN maintaining_VBG this_DT mapping_NN efficiently_RB ._.
+At_IN the_DT server_NN side_NN ,_, when_WRB modifications_NNS commit_VBP ,_, servers_NNS associate_VBP page_NN version_NN numbers_NNS with_IN the_DT invalidations_NNS ._.
+At_IN validation_NN time_NN ,_, if_IN an_DT unacknowledged_JJ invalidation_NN is_VBZ pending_VBG for_IN an_DT object_NN x_NN read_VBN by_IN a_DT transaction_NN T_NN ,_, the_DT validation_NN procedure_NN checks_NNS if_IN the_DT version_NN number_NN for_IN x_NN in_IN T_NN ''_'' s_NNS read_VBP set_VBN matches_VBZ the_DT version_NN number_NN for_IN highest_JJS pending_VBG invalidation_NN for_IN x_NN ,_, in_IN which_WDT case_NN the_DT object_NN value_NN is_VBZ current_JJ ,_, otherwise_RB T_NN fails_VBZ validation_NN ._.
+We_PRP note_VBP again_RB that_IN the_DT page_NN version_NN number-based_JJ checks_NNS ,_, and_CC the_DT invalidation_NN acknowledgment-based_JJ checks_NNS are_VBP complimentary_JJ in_IN the_DT solo_NN commit_VB validation_NN and_CC both_DT are_VBP needed_VBN ._.
+The_DT page_NN version_NN number_NN check_NN allows_VBZ the_DT validation_NN to_TO proceed_VB before_IN invalidation_NN acknowledgments_NNS arrive_VBP but_CC by_IN itself_PRP a_DT page_NN version_NN number_NN check_NN detects_VBZ page-level_JJ conflicts_NNS and_CC is_VBZ not_RB sufficient_JJ to_TO support_VB fine-grain_JJ coherence_NN without_IN the_DT object-level_JJ invalidations_NNS ._.
+We_PRP now_RB describe_VBP how_WRB the_DT client_NN manages_VBZ the_DT mapping_NN ObjectToVersion_NN ._.
+The_DT client_NN maintains_VBZ a_DT page_NN version_NN number_NN for_IN each_DT cached_JJ page_NN ._.
+The_DT version_NN number_NN satisfies_VBZ the_DT following_VBG invariant_JJ V_NN P_NN about_IN the_DT state_NN of_IN objects_NNS on_IN a_DT page_NN :_: if_IN a_DT cached_JJ page_NN P_NN has_VBZ a_DT version_NN number_NN v_LS ,_, then_RB the_DT value_NN of_IN an_DT object_NN o_NN on_IN a_DT cached_JJ page_NN P_NN is_VBZ either_CC invalid_JJ or_CC it_PRP reflects_VBZ at_IN least_JJS the_DT modifications_NNS committed_VBN by_IN transactions_NNS preceding_VBG the_DT transaction_NN that_WDT set_VBD P_NN ''_'' s_NNS version_NN number_NN to_TO v_LS ._.
+New_NNP object_NN values_NNS and_CC new_JJ page_NN version_NN numbers_NNS arrive_VBP when_WRB a_DT client_NN fetches_VBZ a_DT page_NN or_CC when_WRB a_DT commit_VB reply_NN or_CC invalidations_NNS arrive_VBP for_IN this_DT page_NN ._.
+The_DT new_JJ object_NN values_NNS modify_VB the_DT page_NN and_CC ,_, therefore_RB ,_, the_DT page_NN version_NN number_NN needs_VBZ to_TO be_VB updated_VBN to_TO maintain_VB the_DT invariant_JJ V_NN P_NN ._.
+A_DT page_NN version_NN number_NN that_WDT arrives_VBZ when_WRB a_DT client_NN fetches_VBZ a_DT page_NN ,_, replaces_VBZ Object_NNP Version_NNP x_CC #_# Redirector_NNP Server_NN 1Client_NN #_# com_NN -LRB-_-LRB- P_NN -LRB-_-LRB- x_NN ,_, #_# -RRB-_-RRB- ,_, Q_NNP -LRB-_-LRB- y_NNP ,_, #_# -RRB-_-RRB- -RRB-_-RRB- com_NN -LRB-_-LRB- P_NN -LRB-_-LRB- x_NN ,_, #_# -RRB-_-RRB- ,_, Q_NNP -LRB-_-LRB- y_NNP ,_, #_# -RRB-_-RRB- -RRB-_-RRB- ok_NN -LRB-_-LRB- P_NN -LRB-_-LRB- x_NN ,_, #_# -RRB-_-RRB- ,_, Q_NNP -LRB-_-LRB- y_NNP ,_, ##_CD -RRB-_-RRB- -RRB-_-RRB- ok_NN -LRB-_-LRB- P_NN -LRB-_-LRB- x_NN ,_, #_# -RRB-_-RRB- ,_, Q_NNP -LRB-_-LRB- y_NNP ,_, ##_CD -RRB-_-RRB- -RRB-_-RRB- inv_NN -LRB-_-LRB- Q_NNP -LRB-_-LRB- s_NNS ,_, ##_NN -RRB-_-RRB- -RRB-_-RRB- inv_NN -LRB-_-LRB- Q_NNP -LRB-_-LRB- s_NNS ,_, ##_NN -RRB-_-RRB- -RRB-_-RRB- inv_NN -LRB-_-LRB- P_NN -LRB-_-LRB- r_NN ,_, #_# -RRB-_-RRB- inv_NN -LRB-_-LRB- P_NN -LRB-_-LRB- r_NN ,_, #_# -RRB-_-RRB- Server_NN #_# Figure_NNP #_# :_: Reordered_NNP Invalidations_NNPS the_DT page_NN version_NN number_NN for_IN this_DT page_NN ._.
+Such_PDT an_DT update_VBP preserves_VBZ the_DT invariant_JJ V_NN P_NN ._.
+Similarly_RB ,_, an_DT in-sequence_JJ page_NN version_NN number_NN arriving_VBG at_IN the_DT client_NN in_IN a_DT commit_VB or_CC invalidation_NN message_NN advances_NNS the_DT version_NN number_NN for_IN the_DT entire_JJ cached_JJ page_NN ,_, without_IN violating_VBG V_NN P_NN ._.
+However_RB ,_, invalidations_NNS or_CC updates_NNS and_CC their_PRP$ corresponding_JJ page_NN version_NN numbers_NNS can_MD also_RB arrive_VB at_IN the_DT client_NN out_IN of_IN sequence_NN ,_, in_IN which_WDT case_NN updating_VBG the_DT page_NN version_NN number_NN could_MD violate_VB V_NN P_NN ._.
+For_IN example_NN ,_, a_DT commit_VB reply_NN for_IN a_DT transaction_NN that_WDT updates_NNS object_VBP x_NN on_IN page_NN P_NN in_IN server_NN S1_NN ,_, and_CC object_NN y_NN on_IN page_NN Q_NNP in_IN server_NN S2_NN ,_, may_MD deliver_VB a_DT new_JJ version_NN number_NN for_IN P_NN from_IN the_DT transaction_NN coordinator_NN S1_NN before_IN an_DT invalidation_NN generated_VBN for_IN an_DT earlier_JJR transaction_NN that_WDT has_VBZ modified_VBN object_NN r_NN on_IN page_NN P_NN arrives_VBZ from_IN S1_NN -LRB-_-LRB- as_IN shown_VBN in_IN figure_NN #_# -RRB-_-RRB- ._.
+The_DT cache_NN update_VBP protocol_NN ensures_VBZ that_IN the_DT value_NN of_IN any_DT object_NN o_NN in_IN a_DT cached_JJ page_NN P_NN reflects_VBZ the_DT update_VBP or_CC invalidation_NN with_IN the_DT highest_JJS observed_VBN version_NN number_NN ._.
+That_DT is_VBZ ,_, obsolete_JJ updates_NNS or_CC invalidations_NNS received_VBD out_IN of_IN sequence_NN do_VBP not_RB affect_VB the_DT value_NN of_IN an_DT object_NN ._.
+To_TO maintain_VB the_DT ObjectToVersion_NNP mapping_NN and_CC the_DT invariant_JJ V_NN P_NN in_IN the_DT presence_NN of_IN out-of-sequence_JJ arrival_NN of_IN page_NN version_NN numbers_NNS ,_, the_DT client_NN manages_VBZ a_DT small_JJ version_NN number_NN cache_NN vcache_NN that_WDT maintains_VBZ the_DT mapping_NN from_IN an_DT object_NN into_IN its_PRP$ corresponding_JJ page_NN version_NN number_NN for_IN all_DT reordered_VBN version_NN number_NN updates_NNS until_IN a_DT complete_JJ page_NN version_NN number_NN sequence_NN is_VBZ assembled_VBN ._.
+When_WRB the_DT missing_VBG version_NN numbers_NNS for_IN the_DT page_NN arrive_VB and_CC complete_VB a_DT sequence_NN ,_, the_DT version_NN number_NN for_IN the_DT entire_JJ page_NN is_VBZ advanced_VBN ._.
+The_DT ObjectToVersion_NNP mapping_NN ,_, including_VBG the_DT vcache_NN and_CC page_NN version_NN numbers_NNS ,_, is_VBZ used_VBN at_IN transaction_NN commit_VB time_NN to_TO provide_VB version_NN numbers_NNS for_IN the_DT read_NN object_NN set_VBN as_IN follows_VBZ ._.
+If_IN the_DT read_NN object_NN has_VBZ an_DT entry_NN in_IN the_DT vcache_NN ,_, its_PRP$ version_NN number_NN is_VBZ equal_JJ to_TO the_DT highest_JJS version_NN number_NN in_IN the_DT vcache_NN for_IN this_DT object_NN ._.
+If_IN the_DT object_NN is_VBZ not_RB present_JJ in_IN the_DT vcache_NN ,_, its_PRP$ version_NN number_NN is_VBZ equal_JJ the_DT version_NN number_NN of_IN its_PRP$ containing_VBG cached_JJ page_NN ._.
+Figure_NNP #_# shows_VBZ the_DT ObjectToVersion_NNP mapping_NN in_IN the_DT client_NN cache_NN ,_, including_VBG the_DT page_NN version_NN numbers_NNS for_IN pages_NNS and_CC the_DT vcache_NN ._.
+Client_NN can_MD limit_VB vcache_NN size_NN as_IN needed_VBN since_IN re-fetching_NN a_DT page_NN removes_VBZ all_DT reordered_JJ page_NN version_NN numbers_NNS from_IN the_DT vcache_NN ._.
+However_RB ,_, we_PRP expect_VBP version_NN number_NN reordering_NN to_TO be_VB uncommon_JJ and_CC therefore_RB expect_VBP the_DT vcache_NN to_TO be_VB very_RB small_JJ ._.
+5_CD ._.
+BUDDYCACHE_NNP FAILOVER_NNP A_NNP client_NN group_NN contains_VBZ multiple_JJ client_NN nodes_NNS and_CC a_DT redi32_NN VersionPageObject_NNP Version_NNP VCache_NNP Client_NNP Cache_NNP Client_NNP Page_NNP Cache_NNP Figure_NNP #_# :_: ObjectToVersion_NNP map_NN with_IN vcache_NN rector_NN that_WDT can_MD fail_VB independently_RB ._.
+The_DT goal_NN of_IN the_DT failover_NN protocol_NN is_VBZ to_TO reconfigure_NN the_DT BuddyCache_NNP in_IN the_DT case_NN of_IN a_DT node_NN failure_NN ,_, so_RB that_IN the_DT failure_NN of_IN one_CD node_NN does_VBZ not_RB disrupt_VB other_JJ clients_NNS from_IN accessing_VBG shared_JJ objects_NNS ._.
+Moreover_RB ,_, the_DT failure_NN of_IN the_DT redirector_NN should_MD allow_VB unaffected_JJ clients_NNS to_TO keep_VB their_PRP$ caches_NNS intact_JJ ._.
+We_PRP have_VBP designed_VBN a_DT failover_NN protocols_NNS for_IN BuddyCache_NNP but_CC have_VBP not_RB implemented_VBN it_PRP yet_RB ._.
+The_DT appendix_NN outlines_VBZ the_DT protocol_NN ._.
+6_CD ._.
+PERFORMANCE_NN EVALUATION_NN BuddyCache_NNP redirection_NN supports_VBZ the_DT performance_NN benefits_NNS of_IN avoiding_VBG communication_NN with_IN the_DT servers_NNS but_CC introduces_VBZ extra_JJ processing_NN cost_NN due_JJ to_TO availability_NN mechanisms_NNS and_CC request_NN forwarding_NN ._.
+Is_VBZ the_DT cure_NN worse_JJR then_RB the_DT disease_NN ?_.
+To_TO answer_VB the_DT question_NN ,_, we_PRP have_VBP implemented_VBN a_DT BuddyCache_NNP prototype_NN for_IN the_DT OCC_NN protocol_NN and_CC conducted_VBN experiments_NNS to_TO analyze_VB the_DT performance_NN benefits_NNS and_CC costs_NNS over_IN a_DT range_NN of_IN network_NN latencies_NNS ._.
+6_CD ._.
+#_# Analysis_NN The_DT performance_NN benefits_NNS of_IN peer_VBP fetch_VB and_CC peer_VB update_VB are_VBP due_JJ to_TO avoided_VBN server_NN interactions_NNS ._.
+This_DT section_NN presents_VBZ a_DT simple_JJ analytical_JJ performance_NN model_NN for_IN this_DT benefit_NN ._.
+The_DT avoided_VBN server_NN interactions_NNS correspond_VBP to_TO different_JJ types_NNS of_IN client_NN cache_NN misses_VBZ ._.
+These_DT can_MD be_VB cold_JJ misses_VBZ ,_, invalidation_NN misses_VBZ and_CC capacity_NN misses_VBZ ._.
+Our_PRP$ analysis_NN focuses_VBZ on_IN cold_JJ misses_VBZ and_CC invalidation_NN misses_VBZ ,_, since_IN the_DT benefit_NN of_IN avoiding_VBG capacity_NN misses_VBZ can_MD be_VB derived_VBN from_IN the_DT cold_JJ misses_VBZ ._.
+Moreover_RB ,_, technology_NN trends_NNS indicate_VBP that_IN memory_NN and_CC storage_NN capacity_NN will_MD continue_VB to_TO grow_VB and_CC therefore_RB a_DT typical_JJ BuddyCache_NNP configuration_NN is_VBZ likely_JJ not_RB to_TO be_VB cache_NN limited_VBN ._.
+The_DT client_NN cache_NN misses_VBZ are_VBP determined_VBN by_IN several_JJ variables_NNS ,_, including_VBG the_DT workload_NN and_CC the_DT cache_NN configuration_NN ._.
+Our_PRP$ analysis_NN tries_VBZ ,_, as_RB much_RB as_IN possible_JJ ,_, to_TO separate_VB these_DT variables_NNS so_IN they_PRP can_MD be_VB controlled_VBN in_IN the_DT validation_NN experiments_NNS ._.
+To_TO study_VB the_DT benefit_NN of_IN avoiding_VBG cold_JJ misses_VBZ ,_, we_PRP consider_VBP cold_JJ cache_NN performance_NN in_IN a_DT read-only_JJ workload_NN -LRB-_-LRB- no_DT invalidation_NN misses_VBZ -RRB-_-RRB- ._.
+We_PRP expect_VBP peer_VB fetch_VB to_TO improve_VB the_DT latency_NN cost_NN for_IN client_NN cold_JJ cache_NN misses_VBZ by_IN fetching_VBG objects_NNS from_IN nearby_JJ cache_NN ._.
+We_PRP evaluate_VBP how_WRB the_DT redirection_NN cost_NN affects_VBZ this_DT benefit_NN by_IN comparing_VBG and_CC analyzing_VBG the_DT performance_NN of_IN an_DT application_NN running_VBG in_IN a_DT storage_NN system_NN with_IN BuddyCache_NNP and_CC without_IN -LRB-_-LRB- called_VBN Base_NN -RRB-_-RRB- ._.
+To_TO study_VB the_DT benefit_NN of_IN avoiding_VBG invalidation_NN misses_VBZ ,_, we_PRP consider_VBP hot_JJ cache_NN performance_NN in_IN a_DT workload_NN with_IN modifications_NNS -LRB-_-LRB- with_IN no_DT cold_JJ misses_VBZ -RRB-_-RRB- ._.
+In_IN hot_JJ caches_NNS we_PRP expect_VBP BuddyCache_NNP to_TO provide_VB two_CD complementary_JJ benefits_NNS ,_, both_DT of_IN which_WDT reduce_VB the_DT latency_NN of_IN access_NN to_TO shared_VBN modified_VBN objects_NNS ._.
+Peer_JJR update_VBP lets_VBZ a_DT client_NN access_NN an_DT object_NN modified_VBN by_IN a_DT nearby_JJ collaborating_VBG peer_VB without_IN the_DT delay_NN imposed_VBN by_IN invalidation-only_JJ protocols_NNS ._.
+In_IN groups_NNS where_WRB peers_NNS share_VBP a_DT read-only_JJ interest_NN in_IN the_DT modified_VBN objects_NNS ,_, peer_VB fetch_VB allows_VBZ a_DT client_NN to_TO access_NN a_DT modified_VBN object_NN as_RB soon_RB as_IN a_DT collaborating_VBG peer_VB has_VBZ it_PRP ,_, which_WDT avoids_VBZ the_DT delay_NN of_IN server_NN fetch_VB without_IN the_DT high_JJ cost_NN imposed_VBN by_IN the_DT update-only_JJ protocols_NNS ._.
+Technology_NNP trends_NNS indicate_VBP that_IN both_CC benefits_NNS will_MD remain_VB important_JJ in_IN the_DT foreseeable_JJ future_NN ._.
+The_DT trend_NN toward_IN increase_NN in_IN available_JJ network_NN bandwidth_NN decreases_VBZ the_DT cost_NN of_IN the_DT update-only_JJ protocols_NNS ._.
+However_RB ,_, the_DT trend_NN toward_IN increasingly_RB large_JJ caches_NNS ,_, that_WDT are_VBP updated_VBN when_WRB cached_VBN objects_NNS are_VBP modified_VBN ,_, makes_VBZ invalidation-base_JJ protocols_NNS more_RBR attractive_JJ ._.
+To_TO evaluate_VB these_DT two_CD benefits_NNS we_PRP consider_VBP the_DT performance_NN of_IN an_DT application_NN running_VBG without_IN BuddyCache_NNP with_IN an_DT application_NN running_VBG BuddyCache_NNP in_IN two_CD configurations_NNS ._.
+One_CD ,_, where_WRB a_DT peer_VB in_IN the_DT group_NN modifies_VBZ the_DT objects_NNS ,_, and_CC another_DT where_WRB the_DT objects_NNS are_VBP modified_VBN by_IN a_DT peer_VB outside_IN the_DT group_NN ._.
+Peer_JJR update_VBP can_MD also_RB avoid_VB invalidation_NN misses_VBZ due_JJ to_TO false-sharing_JJ ,_, introduced_VBN when_WRB multiple_JJ peers_NNS update_VBP different_JJ objects_NNS on_IN the_DT same_JJ page_NN concurrently_RB ._.
+We_PRP do_VBP not_RB analyze_VB this_DT benefit_NN -LRB-_-LRB- demonstrated_VBN by_IN earlier_JJR work_NN -LSB-_-LRB- #_# -RSB-_-RRB- -RRB-_-RRB- because_IN our_PRP$ benchmarks_NNS do_VBP not_RB allow_VB us_PRP to_TO control_VB object_NN layout_NN ,_, and_CC also_RB because_IN this_DT benefit_NN can_MD be_VB derived_VBN given_VBN the_DT cache_NN hit_NN rate_NN and_CC workload_NN contention_NN ._.
+6_CD ._.
+#_# ._.
+#_# The_DT Model_NNP The_DT model_NN considers_VBZ how_WRB the_DT time_NN to_TO complete_VB an_DT execution_NN with_IN and_CC without_IN BuddyCache_NNP is_VBZ affected_VBN by_IN invalidation_NN misses_VBZ and_CC cold_JJ misses_VBZ ._.
+Consider_VB k_NN clients_NNS running_VBG concurrently_RB accessing_VBG uniformly_RB a_DT shared_VBN set_NN of_IN N_NN pages_NNS in_IN BuddyCache_NNP -LRB-_-LRB- BC_NNP -RRB-_-RRB- and_CC Base_NN ._.
+Let_VB tfetch_NN -LRB-_-LRB- S_NN -RRB-_-RRB- ,_, tredirect_NN -LRB-_-LRB- S_NN -RRB-_-RRB- ,_, tcommit_NN -LRB-_-LRB- S_NN -RRB-_-RRB- ,_, and_CC tcompute_NN -LRB-_-LRB- S_NN -RRB-_-RRB- be_VB the_DT time_NN it_PRP takes_VBZ a_DT client_NN to_TO ,_, respectively_RB ,_, fetch_VB from_IN server_NN ,_, peer_VB fetch_VB ,_, commit_VB a_DT transaction_NN and_CC compute_VB in_IN a_DT transaction_NN ,_, in_IN a_DT system_NN S_NN ,_, where_WRB S_NN is_VBZ either_CC a_DT system_NN with_IN BuddyCache_NNP -LRB-_-LRB- BC_NNP -RRB-_-RRB- or_CC without_IN -LRB-_-LRB- Base_NN -RRB-_-RRB- ._.
+For_IN simplicity_NN ,_, our_PRP$ model_NN assumes_VBZ the_DT fetch_VB and_CC commit_VB times_NNS are_VBP constant_JJ ._.
+In_IN general_JJ they_PRP may_MD vary_VB with_IN the_DT server_NN load_NN ,_, e_LS ._.
+g_NN ._.
+they_PRP depend_VBP on_IN the_DT total_JJ number_NN of_IN clients_NNS in_IN the_DT system_NN ._.
+The_DT number_NN of_IN misses_VBZ avoided_VBN by_IN peer_VB fetch_VB depends_VBZ on_IN k_NN ,_, the_DT number_NN of_IN clients_NNS in_IN the_DT BuddyCache_NNP ,_, and_CC on_IN the_DT client_NN co-interest_NN in_IN the_DT shared_JJ data_NNS ._.
+In_IN a_DT specific_JJ BuddyCache_NNP execution_NN it_PRP is_VBZ modeled_VBN by_IN the_DT variable_JJ r_NN ,_, defined_VBN as_IN a_DT number_NN of_IN fetches_VBZ arriving_VBG at_IN the_DT redirector_NN for_IN a_DT given_VBN version_NN of_IN page_NN P_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+until_IN an_DT object_NN on_IN the_DT page_NN is_VBZ invalidated_VBN -RRB-_-RRB- ._.
+Consider_VB an_DT execution_NN with_IN cold_JJ misses_VBZ ._.
+A_DT client_NN starts_VBZ with_IN a_DT cold_JJ cache_NN and_CC runs_VBZ read-only_JJ workload_NN until_IN it_PRP accesses_VBZ all_DT N_NN pages_NNS while_IN committing_VBG l_NN transactions_NNS ._.
+We_PRP assume_VBP there_EX are_VBP no_DT capacity_NN misses_VBZ ,_, i_FW ._.
+e_LS ._.
+the_DT client_NN cache_NN is_VBZ large_JJ enough_RB to_TO hold_VB N_NN pages_NNS ._.
+In_IN BC_NNP ,_, r_NN cold_JJ misses_VBZ for_IN page_NN P_NN reach_VBP the_DT redirector_NN ._.
+The_DT first_JJ of_IN the_DT misses_VBZ fetches_VBZ P_NN from_IN the_DT server_NN ,_, and_CC the_DT subsequent_JJ r_NN #_# misses_VBZ are_VBP redirected_VBN ._.
+Since_IN each_DT client_NN accesses_VBZ the_DT entire_JJ shared_JJ set_NN r_NN =_JJ k_NN ._.
+Let_VB Tcold_NNP -LRB-_-LRB- Base_NNP -RRB-_-RRB- and_CC Tcold_NN -LRB-_-LRB- BC_NN -RRB-_-RRB- be_VB the_DT time_NN it_PRP takes_VBZ to_TO complete_VB the_DT l_NN transactions_NNS in_IN Base_NN and_CC BC_NN ._.
+33_CD Tcold_NN -LRB-_-LRB- Base_NN -RRB-_-RRB- =_JJ N_NN tfetch_NN -LRB-_-LRB- Base_NN -RRB-_-RRB- +_CC -LRB-_-LRB- tcompute_NN +_CC tcommit_NN -LRB-_-LRB- Base_NN -RRB-_-RRB- -RRB-_-RRB- l_NN -LRB-_-LRB- #_# -RRB-_-RRB- Tcold_NN -LRB-_-LRB- BC_NN -RRB-_-RRB- =_JJ N_NN 1_CD k_NN tfetch_NN -LRB-_-LRB- BC_NN -RRB-_-RRB- +_CC -LRB-_-LRB- #_# 1_CD k_NN -RRB-_-RRB- tredirect_NN +_CC -LRB-_-LRB- tcompute_NN +_CC tcommit_NN -LRB-_-LRB- BC_NN -RRB-_-RRB- -RRB-_-RRB- l_NN -LRB-_-LRB- #_# -RRB-_-RRB- Consider_VB next_IN an_DT execution_NN with_IN invalidation_NN misses_VBZ ._.
+A_DT client_NN starts_VBZ with_IN a_DT hot_JJ cache_NN containing_VBG the_DT working_VBG set_NN of_IN N_NN pages_NNS ._.
+We_PRP focus_VBP on_IN a_DT simple_JJ case_NN where_WRB one_CD client_NN -LRB-_-LRB- writer_NN -RRB-_-RRB- runs_VBZ a_DT workload_NN with_IN modifications_NNS ,_, and_CC the_DT other_JJ clients_NNS -LRB-_-LRB- readers_NNS -RRB-_-RRB- run_VBP a_DT read-only_JJ workload_NN ._.
+In_IN a_DT group_NN containing_VBG the_DT writer_NN -LRB-_-LRB- BCW_NN -RRB-_-RRB- ,_, peer_VBP update_VBP eliminates_VBZ all_DT invalidation_NN misses_VBZ ._.
+In_IN a_DT group_NN containing_VBG only_RB readers_NNS -LRB-_-LRB- BCR_NN -RRB-_-RRB- ,_, during_IN a_DT steady_JJ state_NN execution_NN with_IN uniform_JJ updates_NNS ,_, a_DT client_NN transaction_NN has_VBZ missinv_NN invalidation_NN misses_VBZ ._.
+Consider_VB the_DT sequence_NN of_IN r_NN client_NN misses_VBZ on_IN page_NN P_NN that_WDT arrive_VBP at_IN the_DT redirector_NN in_IN BCR_NN between_IN two_CD consequent_JJ invalidations_NNS of_IN page_NN P_NN ._.
+The_DT first_JJ miss_VB goes_VBZ to_TO the_DT server_NN ,_, and_CC the_DT r_NN #_# subsequent_JJ misses_VBZ are_VBP redirected_VBN ._.
+Unlike_IN with_IN cold_JJ misses_VBZ ,_, r_NN k_NN because_IN the_DT second_JJ invalidation_NN disables_VBZ redirection_NN for_IN P_NN until_IN the_DT next_JJ miss_VBP on_IN P_NN causes_VBZ a_DT server_NN fetch_VB ._.
+Assuming_VBG uniform_JJ access_NN ,_, a_DT client_NN invalidation_NN miss_VBP has_VBZ a_DT chance_NN of_IN #_# /_: r_NN to_TO be_VB the_DT first_JJ miss_VB -LRB-_-LRB- resulting_VBG in_IN server_NN fetch_VB -RRB-_-RRB- ,_, and_CC a_DT chance_NN of_IN -LRB-_-LRB- #_# #_# /_: r_NN -RRB-_-RRB- to_TO be_VB redirected_VBN ._.
+Let_VB Tinval_NNP -LRB-_-LRB- Base_NNP -RRB-_-RRB- ,_, Tinval_JJ -LRB-_-LRB- BCR_NN -RRB-_-RRB- and_CC Tinval_NN -LRB-_-LRB- BCW_NN -RRB-_-RRB- be_VB the_DT time_NN it_PRP takes_VBZ to_TO complete_VB a_DT single_JJ transaction_NN in_IN the_DT Base_NN ,_, BCR_NN and_CC BCW_NN systems_NNS ._.
+Tinval_JJ -LRB-_-LRB- Base_NN -RRB-_-RRB- =_JJ missinv_NN tfetch_NN -LRB-_-LRB- Base_NN -RRB-_-RRB- +_CC tcompute_NN +_CC tcommit_NN -LRB-_-LRB- Base_NN -RRB-_-RRB- -LRB-_-LRB- #_# -RRB-_-RRB- Tinval_JJ -LRB-_-LRB- BCR_NN -RRB-_-RRB- =_JJ missinv_NN -LRB-_-LRB- 1_CD r_NN tfetch_NN -LRB-_-LRB- BCR_NN -RRB-_-RRB- +_CC -LRB-_-LRB- #_# 1_CD r_NN -RRB-_-RRB- tredirect_NN -LRB-_-LRB- BCR_NN -RRB-_-RRB- -RRB-_-RRB- +_CC tcompute_NN +_CC tcommit_NN -LRB-_-LRB- BCR_NN -RRB-_-RRB- -LRB-_-LRB- #_# -RRB-_-RRB- Tinval_JJ -LRB-_-LRB- BCW_NN -RRB-_-RRB- =_JJ tcompute_NN +_CC tcommit_NN -LRB-_-LRB- BCW_NN -RRB-_-RRB- -LRB-_-LRB- #_# -RRB-_-RRB- In_IN the_DT experiments_NNS described_VBN below_IN ,_, we_PRP measure_VBP the_DT parameters_NNS N_NN ,_, r_NN ,_, missinv_NN ,_, tfetch_NN -LRB-_-LRB- S_NN -RRB-_-RRB- ,_, tredirect_NN -LRB-_-LRB- S_NN -RRB-_-RRB- ,_, tcommit_NN -LRB-_-LRB- S_NN -RRB-_-RRB- ,_, and_CC tcompute_NN -LRB-_-LRB- S_NN -RRB-_-RRB- ._.
+We_PRP compute_VBP the_DT completion_NN times_NNS derived_VBN using_VBG the_DT above_JJ model_NN and_CC derive_VB the_DT benefits_NNS ._.
+We_PRP then_RB validate_VBP the_DT model_NN by_IN comparing_VBG the_DT derived_VBN values_NNS to_TO the_DT completion_NN times_NNS and_CC benefits_NNS measured_VBN directly_RB in_IN the_DT experiments_NNS ._.
+6_CD ._.
+#_# Experimental_JJ Setup_NNP Before_IN presenting_VBG our_PRP$ results_NNS we_PRP describe_VBP our_PRP$ experimental_JJ setup_NN ._.
+We_PRP use_VBP two_CD systems_NNS in_IN our_PRP$ experiments_NNS ._.
+The_DT Base_NN system_NN runs_VBZ Thor_NNP distributed_VBN object_NN storage_NN system_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- with_IN clients_NNS connecting_VBG directly_RB to_TO the_DT servers_NNS ._.
+The_DT Buddy_NNP system_NN runs_VBZ our_PRP$ implementation_NN of_IN BuddyCache_NNP prototype_NN in_IN Thor_NNP ,_, supporting_VBG peer_VB fetch_VB ,_, peer_VB update_VB ,_, and_CC solo_NN commit_VBP ,_, but_CC not_RB the_DT failover_NN ._.
+Our_PRP$ workloads_NNS are_VBP based_VBN on_IN the_DT multi-user_JJ OO7_NN benchmark_NN -LSB-_-LRB- #_# -RSB-_-RRB- ;_: this_DT benchmark_NN is_VBZ intended_VBN to_TO capture_VB the_DT characteristics_NNS of_IN many_JJ different_JJ multi-user_JJ CAD_NN /_: CAM_NNP /_: CASE_NN applications_NNS ,_, but_CC does_VBZ not_RB model_VB any_DT specific_JJ application_NN ._.
+We_PRP use_VBP OO7_NN because_IN it_PRP is_VBZ a_DT standard_JJ benchmark_NN for_IN measuring_VBG object_NN storage_NN system_NN performance_NN ._.
+The_DT OO7_NN database_NN contains_VBZ a_DT tree_NN of_IN assembly_NN objects_NNS with_IN leaves_NNS pointing_VBG to_TO three_CD composite_JJ parts_NNS chosen_VBN randomly_RB from_IN among_IN ###_CD such_JJ objects_NNS ._.
+Each_DT composite_JJ part_NN contains_VBZ a_DT graph_NN of_IN atomic_JJ parts_NNS linked_VBN by_IN connection_NN objects_NNS ;_: each_DT atomic_JJ part_NN has_VBZ #_# outgoing_JJ connections_NNS ._.
+We_PRP use_VBP a_DT medium_NN database_NN that_WDT has_VBZ ###_CD atomic_JJ parts_NNS per_IN composite_JJ part_NN ._.
+The_DT multi-user_NN database_NN allocates_VBZ for_IN each_DT client_NN a_DT private_JJ module_NN consisting_VBG of_IN one_CD tree_NN of_IN assembly_NN objects_NNS ,_, and_CC adds_VBZ an_DT extra_JJ shared_JJ module_NN that_WDT scales_NNS proportionally_RB to_TO the_DT number_NN of_IN clients_NNS ._.
+We_PRP expect_VBP a_DT typical_JJ BuddyCache_NNP configuration_NN not_RB to_TO be_VB cache_NN limited_JJ and_CC therefore_RB focus_VB on_IN workloads_NNS where_WRB the_DT objects_NNS in_IN the_DT client_NN working_VBG set_NN fit_NN in_IN the_DT cache_NN ._.
+Since_IN the_DT goal_NN of_IN our_PRP$ study_NN is_VBZ to_TO evaluate_VB how_WRB effectively_RB our_PRP$ techniques_NNS deal_VBP with_IN access_NN to_TO shared_VBN objects_NNS ,_, in_IN our_PRP$ study_NN we_PRP limit_VBP client_NN access_NN to_TO shared_VBN data_NNS only_RB ._.
+This_DT allows_VBZ us_PRP to_TO study_VB the_DT effect_NN our_PRP$ techniques_NNS have_VBP on_IN cold_JJ cache_NN and_CC cache_NN consistency_NN misses_VBZ and_CC isolate_VB as_RB much_JJ as_IN possible_JJ the_DT effect_NN of_IN cache_NN capacity_NN misses_VBZ ._.
+To_TO keep_VB the_DT length_NN of_IN our_PRP$ experiments_NNS reasonable_JJ ,_, we_PRP use_VBP small_JJ caches_NNS ._.
+The_DT OO7_NN benchmark_NN generates_VBZ database_NN modules_NNS of_IN predefined_JJ size_NN ._.
+In_IN our_PRP$ implementation_NN of_IN OO7_NN ,_, the_DT private_JJ module_NN size_NN is_VBZ about_IN 38MB_NN ._.
+To_TO make_VB sure_JJ that_IN the_DT entire_JJ working_NN set_NN fits_VBZ into_IN the_DT cache_NN we_PRP use_VBP a_DT single_JJ private_JJ module_NN and_CC choose_VB a_DT cache_NN size_NN of_IN 40MB_NN for_IN each_DT client_NN ._.
+The_DT OO7_NN database_NN is_VBZ generated_VBN with_IN modules_NNS for_IN #_# clients_NNS ,_, only_RB one_CD of_IN which_WDT is_VBZ used_VBN in_IN our_PRP$ experiments_NNS as_IN we_PRP explain_VBP above_RB ._.
+The_DT objects_NNS in_IN the_DT database_NN are_VBP clustered_VBN in_IN 8K_CD pages_NNS ,_, which_WDT are_VBP also_RB the_DT unit_NN of_IN transfer_NN in_IN the_DT fetch_VB requests_NNS ._.
+We_PRP consider_VBP two_CD types_NNS of_IN transaction_NN workloads_NNS in_IN our_PRP$ analysis_NN ,_, read-only_JJ and_CC read-write_JJ ._.
+In_IN OO7_NN benchmark_NN ,_, read-only_JJ transactions_NNS use_VBP the_DT T1_NN traversal_NN that_WDT performs_VBZ a_DT depth-first_JJ traversal_NN of_IN entire_JJ composite_JJ part_NN graph_NN ._.
+Write_VB transactions_NNS use_VB the_DT T2b_NN traversal_NN that_WDT is_VBZ identical_JJ to_TO T1_NN except_IN that_IN it_PRP modifies_VBZ all_PDT the_DT atomic_JJ parts_NNS in_IN a_DT single_JJ composite_NN ._.
+A_DT single_JJ transaction_NN includes_VBZ one_CD traversal_NN and_CC there_EX is_VBZ no_DT sleep_NN time_NN between_IN transactions_NNS ._.
+Both_DT read-only_JJ and_CC read-write_JJ transactions_NNS always_RB work_VBP with_IN data_NNS from_IN the_DT same_JJ module_NN ._.
+Clients_NNS running_VBG read-write_JJ transactions_NNS don_VBP ''_'' t_NN modify_VB in_IN every_DT transaction_NN ,_, instead_RB they_PRP have_VBP a_DT ##_CD %_NN probability_NN of_IN running_VBG read-only_JJ transactions_NNS ._.
+The_DT database_NN was_VBD stored_VBN by_IN a_DT server_NN on_IN a_DT 40GB_NN IBM_NNP 7200RPM_NNP hard_JJ drive_NN ,_, with_IN a_DT #_# ._.
+#_# average_JJ seek_VBP time_NN and_CC ##_NN MB_NN /_: sec_NN data_NNS transfer_NN rates_NNS ._.
+In_IN Base_NN system_NN clients_NNS connect_VBP directly_RB to_TO the_DT database_NN ._.
+In_IN Buddy_NNP system_NN clients_NNS connect_VBP to_TO the_DT redirector_NN that_WDT connects_VBZ to_TO the_DT database_NN ._.
+We_PRP run_VBP the_DT experiments_NNS with_IN 1-10_CD clients_NNS in_IN Base_NNP ,_, and_CC one_CD or_CC two_CD 1-10_CD client_NN groups_NNS in_IN Buddy_NNP ._.
+The_DT server_NN ,_, the_DT clients_NNS and_CC the_DT redirectors_NNS ran_VBD on_IN a_DT 850MHz_NN Intel_NNP Pentium_NNP III_NNP processor_NN based_VBN PC_NN ,_, 512MB_NN of_IN memory_NN ,_, and_CC Linux_NNP Red_NNP Hat_NNP 6_CD ._.
+#_# ._.
+They_PRP were_VBD connected_VBN by_IN a_DT 100Mb_NN /_: s_NNS Ethernet_NNP ._.
+The_DT server_NN was_VBD configured_VBN with_IN a_DT 50MB_NN cache_NN -LRB-_-LRB- of_IN which_WDT 6MB_NN were_VBD used_VBN for_IN the_DT modified_VBN object_NN buffer_NN -RRB-_-RRB- ,_, the_DT client_NN had_VBD a_DT 40MB_NN cache_NN ._.
+The_DT experiments_NNS ran_VBD in_IN Utah_NNP experimental_JJ testbed_JJ emulab_NN ._.
+net_JJ -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+34_CD Latency_NN -LSB-_-LRB- ms_NN -RSB-_-RRB- Base_NN Buddy_NNP 3_CD group_NN #_# group_NN #_# group_NN #_# group_NN Fetch_NNP #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# Commit_VB #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# Table_NNP #_# :_: Commit_VB and_CC Server_NN fetch_VBP Operation_NNP Latency_NN -LSB-_-LRB- ms_NN -RSB-_-RRB- PeerFetch_NNP #_# ._.
+#_# -_: #_# ._.
+#_# AlertHelper_NNP #_# ._.
+#_# -_: #_# ._.
+#_# CopyUnswizzle_NNP #_# ._.
+##_NN CrossRedirector_NN #_# ._.
+##_RB Table_NNP #_# :_: Peer_VB fetch_VB 6_CD ._.
+#_# Basic_JJ Costs_NNS This_DT section_NN analyzes_VBZ the_DT basic_JJ cost_NN of_IN the_DT requests_NNS in_IN the_DT Buddy_NNP system_NN during_IN the_DT OO7_NN runs_VBZ ._.
+6_CD ._.
+#_# ._.
+#_# Redirection_NNP Fetch_NNP and_CC commit_VB requests_NNS in_IN the_DT BuddyCache_NNP cross_VB the_DT redirector_NN ,_, a_DT cost_NN not_RB incurred_VBN in_IN the_DT Base_NN system_NN ._.
+For_IN a_DT request_NN redirected_VBD to_TO the_DT server_NN -LRB-_-LRB- server_NN fetch_VB -RRB-_-RRB- the_DT extra_JJ cost_NN of_IN redirection_NN includes_VBZ a_DT local_JJ request_NN from_IN the_DT client_NN to_TO redirector_NN on_IN the_DT way_NN to_TO and_CC from_IN the_DT server_NN ._.
+We_PRP evaluate_VBP this_DT latency_NN overhead_NN indirectly_RB by_IN comparing_VBG the_DT measured_VBN latency_NN of_IN the_DT Buddy_NNP system_NN server_NN fetch_VB or_CC commit_VB request_NN with_IN the_DT measured_VBN latency_NN of_IN the_DT corresponding_JJ request_NN in_IN the_DT Base_NN system_NN ._.
+Table_NNP #_# shows_VBZ the_DT latency_NN for_IN the_DT commit_VB and_CC server_NN fetch_VBP requests_NNS in_IN the_DT Base_NN and_CC Buddy_NNP system_NN for_IN #_# client_NN and_CC #_# client_NN groups_NNS in_IN a_DT fast_JJ local_JJ area_NN network_NN ._.
+All_PDT the_DT numbers_NNS were_VBD computed_VBN by_IN averaging_VBG measured_VBN request_NN latency_NN over_IN 1000_CD requests_NNS ._.
+The_DT measurements_NNS show_VBP that_IN the_DT redirection_NN cost_NN of_IN crossing_VBG the_DT redirector_NN in_IN not_RB very_RB high_JJ even_RB in_IN a_DT local_JJ area_NN network_NN ._.
+The_DT commit_VB cost_NN increases_NNS with_IN the_DT number_NN of_IN clients_NNS since_IN commits_VBZ are_VBP processed_VBN sequentially_RB ._.
+The_DT fetch_VB cost_NN does_VBZ not_RB increase_VB as_RB much_RB because_IN the_DT server_NN cache_NN reduces_VBZ this_DT cost_NN ._.
+In_IN a_DT large_JJ system_NN with_IN many_JJ groups_NNS ,_, however_RB ,_, the_DT server_NN cache_NN becomes_VBZ less_RBR efficient_JJ ._.
+To_TO evaluate_VB the_DT overheads_NNS of_IN the_DT peer_VBP fetch_VB ,_, we_PRP measure_VBP the_DT peer_VB fetch_VB latency_NN -LRB-_-LRB- PeerFetch_NN -RRB-_-RRB- at_IN the_DT requesting_VBG client_NN and_CC break_VB down_RP its_PRP$ component_NN costs_NNS ._.
+In_IN peer_VB fetch_VB ,_, the_DT cost_NN of_IN the_DT redirection_NN includes_VBZ ,_, in_IN addition_NN to_TO the_DT local_JJ network_NN request_NN cost_NN ,_, the_DT CPU_NNP processing_NN latency_NN of_IN crossing_VBG the_DT redirector_NN and_CC crossing_VBG the_DT helper_NN ,_, the_DT latter_JJ including_VBG the_DT time_NN to_TO process_VB the_DT help_NN request_NN and_CC the_DT time_NN to_TO copy_NN ,_, and_CC unswizzle_JJ the_DT requested_VBN page_NN ._.
+We_PRP directly_RB measured_VBD the_DT time_NN to_TO copy_VB and_CC unswizzle_VB the_DT requested_VBN page_NN at_IN the_DT helper_NN ,_, -LRB-_-LRB- CopyUnswizzle_NNP -RRB-_-RRB- ,_, and_CC timed_VBD the_DT crossing_VBG times_NNS using_VBG a_DT null_JJ crossing_VBG request_NN ._.
+Table_NNP #_# summarizes_VBZ the_DT latencies_NNS that_WDT allows_VBZ us_PRP to_TO break_VB down_RP the_DT peer_VB fetch_VB costs_NNS ._.
+CrossRedirector_NNP ,_, includes_VBZ the_DT CPU_NNP latency_NN of_IN crossing_VBG the_DT redirector_NN plus_CC a_DT local_JJ network_NN round-trip_NN and_CC is_VBZ measured_VBN by_IN timing_VBG a_DT round-trip_JJ null_JJ request_NN issued_VBN by_IN a_DT client_NN to_TO the_DT redirector_NN ._.
+AlertHelper_NNP ,_, includes_VBZ the_DT time_NN for_IN the_DT helper_NN to_TO notice_VB the_DT request_NN plus_CC a_DT network_NN roundtrip_NN ,_, and_CC is_VBZ measured_VBN by_IN timing_VBG a_DT round-trip_JJ null_JJ request_NN issued_VBN from_IN an_DT auxiliary_JJ client_NN to_TO the_DT helper_NN client_NN ._.
+The_DT local_JJ network_NN latency_NN is_VBZ fixed_VBN and_CC less_JJR than_IN #_# ._.
+#_# ms_NNS ._.
+The_DT AlertHelper_NNP latency_NN which_WDT includes_VBZ the_DT elapsed_JJ time_NN from_IN the_DT help_NN request_NN arrival_NN until_IN the_DT start_NN of_IN help_NN request_NN processing_NN is_VBZ highly_RB variable_JJ and_CC therefore_RB contributes_VBZ to_TO the_DT high_JJ variability_NN of_IN the_DT PeerFetch_NNP time_NN ._.
+This_DT is_VBZ because_IN the_DT client_NN in_IN Buddy_NNP system_NN is_VBZ currently_RB single_JJ threaded_VBN and_CC therefore_RB only_RB starts_VBZ processing_VBG a_DT help_NN request_NN when_WRB blocked_VBN waiting_VBG for_IN a_DT fetch_VB -_: or_CC commit_VB reply_NN ._.
+This_DT overhead_NN is_VBZ not_RB inherent_JJ to_TO the_DT BuddyCache_NNP architecture_NN and_CC could_MD be_VB mitigated_VBN by_IN a_DT multi-threaded_JJ implementation_NN in_IN a_DT system_NN with_IN pre-emptive_JJ scheduling_NN ._.
+6_CD ._.
+#_# ._.
+#_# Version_NNP Cache_NNP The_NNP solo_NN commit_VB allows_VBZ a_DT fast_JJ client_NN modifying_VBG an_DT object_NN to_TO commit_VB independently_RB of_IN a_DT slow_JJ peer_VBP ._.
+The_DT solo_NN commit_VB mechanism_NN introduces_VBZ extra_JJ processing_NN at_IN the_DT server_NN at_IN transaction_NN validation_NN time_NN ,_, and_CC extra_JJ processing_NN at_IN the_DT client_NN at_IN transaction_NN commit_VB time_NN and_CC at_IN update_VBP or_CC invalidation_NN processing_NN time_NN ._.
+The_DT server_NN side_NN overheads_NNS are_VBP minimal_JJ and_CC consist_VBP of_IN a_DT page_NN version_NN number_NN update_VBP at_IN commit_VB time_NN ,_, and_CC a_DT version_NN number_NN comparison_NN at_IN transaction_NN validation_NN time_NN ._.
+The_DT version_NN cache_NN has_VBZ an_DT entry_NN only_RB when_WRB invalidations_NNS or_CC updates_NNS arrive_VBP out_IN of_IN order_NN ._.
+This_DT may_MD happen_VB when_WRB a_DT transaction_NN accesses_VBZ objects_NNS in_IN multiple_JJ servers_NNS ._.
+Our_PRP$ experiments_NNS run_VBP in_IN a_DT single_JJ server_NN system_NN and_CC therefore_RB ,_, the_DT commit_VB time_NN overhead_NN of_IN version_NN cache_NN management_NN at_IN the_DT client_NN does_VBZ not_RB contribute_VB in_IN the_DT results_NNS presented_VBN in_IN the_DT section_NN below_IN ._.
+To_TO gauge_VB these_DT client_NN side_NN overheads_NNS in_IN a_DT multiple_JJ server_NN system_NN ,_, we_PRP instrumented_VBD the_DT version_NN cache_NN implementation_NN to_TO run_VB with_IN a_DT workload_NN trace_NN that_WDT included_VBD reordered_JJ invalidations_NNS and_CC timed_VBD the_DT basic_JJ operations_NNS ._.
+The_DT extra_JJ client_NN commit_VB time_NN processing_NN includes_VBZ a_DT version_NN cache_NN lookup_NN operation_NN for_IN each_DT object_NN read_VBN by_IN the_DT transaction_NN at_IN commit_VB request_NN preparation_NN time_NN ,_, and_CC a_DT version_NN cache_NN insert_NN operation_NN for_IN each_DT object_NN updated_VBN by_IN a_DT transaction_NN at_IN commit_VB reply_NN processing_NN time_NN ,_, but_CC only_RB if_IN the_DT updated_VBN page_NN is_VBZ missing_VBG some_DT earlier_JJR invalidations_NNS or_CC updates_NNS ._.
+It_PRP is_VBZ important_JJ that_IN the_DT extra_JJ commit_VB time_NN costs_NNS are_VBP kept_VBN to_TO a_DT minimum_NN since_IN client_NN is_VBZ synchronously_RB waiting_VBG for_IN the_DT commit_VB completion_NN ._.
+The_DT measurements_NNS show_VBP that_IN in_IN the_DT worst_JJS case_NN ,_, when_WRB a_DT large_JJ number_NN of_IN invalidations_NNS arrive_VBP out_IN of_IN order_NN ,_, and_CC about_IN half_NN of_IN the_DT objects_NNS modified_VBN by_IN T2a_NN -LRB-_-LRB- ###_CD objects_NNS -RRB-_-RRB- reside_VBP on_IN reordered_VBN pages_NNS ,_, the_DT cost_NN of_IN updating_VBG the_DT version_NN cache_NN is_VBZ #_# ._.
+#_# ms_NNS ._.
+The_DT invalidation_NN time_NN cost_NN are_VBP comparable_JJ ,_, but_CC since_IN invalidations_NNS and_CC updates_NNS are_VBP processed_VBN in_IN the_DT background_NN this_DT cost_NN is_VBZ less_RBR important_JJ for_IN the_DT overall_JJ performance_NN ._.
+We_PRP are_VBP currently_RB working_VBG on_IN optimizing_VBG the_DT version_NN cache_NN implementation_NN to_TO further_RBR reduce_VB these_DT costs_NNS ._.
+6_CD ._.
+#_# Overall_JJ Performance_NNP This_DT section_NN examines_VBZ the_DT performance_NN gains_NNS seen_VBN by_IN an_DT application_NN running_VBG OO7_NN benchmark_NN with_IN a_DT BuddyCache_NNP in_IN a_DT wide_JJ area_NN network_NN ._.
+6_CD ._.
+#_# ._.
+#_# Cold_NNP Misses_VBZ To_TO evaluate_VB the_DT performance_NN gains_NNS from_IN avoiding_VBG cold_JJ misses_VBZ we_PRP compare_VBP the_DT cold_JJ cache_NN performance_NN of_IN OO7_NN benchmark_NN running_VBG read-only_JJ workload_NN in_IN the_DT Buddy_NNP and_CC Base_NNP systems_NNS ._.
+We_PRP derive_VBP the_DT times_NNS by_IN timing_VBG the_DT execution_NN of_IN the_DT systems_NNS in_IN the_DT local_JJ area_NN network_NN environment_NN and_CC substituting_VBG ##_CD ms_NNS and_CC ##_NN ms_NN delays_NNS for_IN the_DT requests_NNS crossing_VBG the_DT redirector_NN and_CC the_DT server_NN to_TO estimate_VB the_DT performance_NN in_IN the_DT wide-area-network_NN ._.
+Figures_NNS #_# and_CC #_# show_VBP the_DT overall_JJ time_NN to_TO complete_VB ####_CD cold_JJ cache_NN transactions_NNS ._.
+The_DT numbers_NNS were_VBD 35_CD 0_CD 5_CD #_# 100_CD 150_CD 200_CD 250_CD Base_NNP Buddy_NNP Base_NNP Buddy_NNP Base_NNP Buddy_NNP 3_CD Clients_NNS #_# Clients_NNS ##_VBP Clients_NNS -LSB-_-LRB- ms_NNS -RSB-_-RRB- CPU_NNP Commit_VB Server_NN Fetch_VB Peer_NNP Fetch_NNP Figure_NNP #_# :_: Breakdown_NNP for_IN cold_JJ read-only_JJ 40ms_NNS RTT_NN 0_CD 5_CD #_# 100_CD 150_CD 200_CD 250_CD 300_CD 350_CD 400_CD Base_NNP Buddy_NNP Base_NNP Buddy_NNP Base_NNP Buddy_NNP 3_CD Clients_NNS #_# Clients_NNS ##_VBP Clients_NNS -LSB-_-LRB- ms_NNS -RSB-_-RRB- CPU_NNP Commit_VB Server_NN Fetch_VB Peer_NNP Fetch_NNP Figure_NNP #_# :_: Breakdown_NNP for_IN cold_JJ read-only_JJ 80ms_NNS RTT_NN obtained_VBN by_IN averaging_VBG the_DT overall_JJ time_NN of_IN each_DT client_NN in_IN the_DT group_NN ._.
+The_DT results_NNS show_VBP that_IN in_IN a_DT ##_NN ms_VBZ network_NN Buddy_NNP system_NN reduces_VBZ significantly_RB the_DT overall_JJ time_NN compared_VBN to_TO the_DT Base_NN system_NN ,_, providing_VBG a_DT ##_CD %_NN improvement_NN in_IN a_DT three_CD client_NN group_NN ,_, ##_CD %_NN improvement_NN in_IN the_DT five_CD client_NN group_NN and_CC ##_CD %_NN improvement_NN in_IN the_DT ten_CD client_NN case_NN ._.
+The_DT overall_JJ time_NN includes_VBZ time_NN spent_VBD performing_VBG client_NN computation_NN ,_, direct_JJ fetch_VB requests_NNS ,_, peer_VBP fetches_VBZ ,_, and_CC commit_VB requests_NNS ._.
+In_IN the_DT three_CD client_NN group_NN ,_, Buddy_NNP and_CC Base_NNP incur_VBP almost_RB the_DT same_JJ commit_VB cost_NN and_CC therefore_RB the_DT entire_JJ performance_NN benefit_NN of_IN Buddy_NNP is_VBZ due_JJ to_TO peer_VB fetch_VB avoiding_VBG direct_JJ fetches_VBZ ._.
+In_IN the_DT five_CD and_CC ten_CD client_NN group_NN the_DT server_NN fetch_VB cost_NN for_IN individual_JJ client_NN decreases_VBZ because_IN with_IN more_JJR clients_NNS faulting_VBG in_IN a_DT fixed_VBN size_NN shared_VBD module_NN into_IN BuddyCache_NNP ,_, each_DT client_NN needs_VBZ to_TO perform_VB less_JJR server_NN fetches_VBZ ._.
+Figure_NNP #_# shows_VBZ the_DT overall_JJ time_NN and_CC cost_NN break_VBP down_RP in_IN the_DT ##_CD ms_NNS network_NN ._.
+The_DT BuddyCache_NNP provides_VBZ similar_JJ performance_NN improvements_NNS as_IN with_IN the_DT 40ms_JJ network_NN ._.
+Higher_JJR network_NN latency_NN increases_VBZ the_DT relative_JJ performance_NN advantage_NN provided_VBN by_IN peer_VB fetch_VB relative_JJ to_TO direct_VB fetch_VB but_CC this_DT benefit_NN is_VBZ offset_VBN by_IN the_DT increased_VBN commit_VB times_NNS ._.
+Figure_NNP #_# shows_VBZ the_DT relative_JJ latency_NN improvement_NN provided_VBN by_IN BuddyCache_NNP -LRB-_-LRB- computed_VBN as_IN the_DT overall_JJ measured_VBN time_NN difference_NN between_IN Buddy_NNP and_CC Base_NNP relative_JJ to_TO Base_NN -RRB-_-RRB- as_IN a_DT -10_CD %_NN 0_CD %_NN 10_CD %_NN 20_CD %_NN 30_CD %_NN 40_CD %_NN 50_CD %_NN 60_CD %_NN 70_CD %_NN 1_CD #_# #_# #_# #_# #_# #_# #_# #_# #_# #_# #_# #_# #_# #_# #_# #_# #_# #_# #_# ###_CD Latency_NN -LSB-_-LRB- ms_NN -RSB-_-RRB- 3_CD Clients_NNS #_# Clients_NNS -LRB-_-LRB- Perf_NN model_NN -RRB-_-RRB- #_# Clients_NNS 5_CD Clients_NNS -LRB-_-LRB- Perf_NN model_NN -RRB-_-RRB- ##_CD Clients_NNS ##_VBP FEs_NNS -LRB-_-LRB- perf_NN model_NN -RRB-_-RRB- Figure_NN #_# :_: Cold_NNP miss_VBP benefit_NN 0_CD 2_CD #_# 4_CD #_# 6_CD #_# 8_CD #_# 100_CD 120_CD 140_CD Base_NNP Buddy_NNP Reader_NNP Buddy_NNP Writer_NNP -LSB-_-LRB- ms_NNS -RSB-_-RRB- CPU_NNP Commit_VB Server_NN Fetch_VB Peer_NNP Fetch_NNP Figure_NNP ##_NNP :_: Breakdown_NNP for_IN hot_JJ read-write_JJ 40ms_NNS RTT_NN function_NN of_IN network_NN latency_NN ,_, with_IN a_DT fixed_VBN server_NN load_NN ._.
+The_DT cost_NN of_IN the_DT extra_JJ mechanism_NN dominates_VBZ BuddyCache_NNP benefit_NN when_WRB network_NN latency_NN is_VBZ low_JJ ._.
+At_IN typical_JJ Internet_NN latencies_NNS 20ms-60ms_VBZ the_DT benefit_NN increases_VBZ with_IN latency_NN and_CC levels_NNS off_IN around_IN 60ms_NNS with_IN significant_JJ -LRB-_-LRB- up_RB to_TO ##_CD %_NN for_IN ten_CD clients_NNS -RRB-_-RRB- improvement_NN ._.
+Figure_NNP #_# includes_VBZ both_CC the_DT measured_VBN improvement_NN and_CC the_DT improvement_NN derived_VBN using_VBG the_DT analytical_JJ model_NN ._.
+Remarkably_RB ,_, the_DT analytical_JJ results_NNS predict_VBP the_DT measured_VBN improvement_NN very_RB closely_RB ,_, albeit_IN being_VBG somewhat_RB higher_JJR than_IN the_DT empirical_JJ values_NNS ._.
+The_DT main_JJ reason_NN why_WRB the_DT simplified_VBN model_NN works_VBZ well_RB is_VBZ it_PRP captures_VBZ the_DT dominant_JJ performance_NN component_NN ,_, network_NN latency_NN cost_NN ._.
+6_CD ._.
+#_# ._.
+#_# Invalidation_NNP Misses_VBZ To_TO evaluate_VB the_DT performance_NN benefits_NNS provided_VBN by_IN BuddyCache_NNP due_JJ to_TO avoided_VBN invalidation_NN misses_VBZ ,_, we_PRP compared_VBD the_DT hot_JJ cache_NN performance_NN of_IN the_DT Base_NN system_NN with_IN two_CD different_JJ Buddy_NNP system_NN configurations_NNS ._.
+One_CD of_IN the_DT Buddy_NNP system_NN configurations_NNS represents_VBZ a_DT collaborating_VBG peer_VB group_NN modifying_VBG shared_JJ objects_NNS -LRB-_-LRB- Writer_NN group_NN -RRB-_-RRB- ,_, the_DT other_JJ represents_VBZ a_DT group_NN where_WRB the_DT peers_NNS share_VBP a_DT read-only_JJ interest_NN in_IN the_DT modified_VBN objects_NNS -LRB-_-LRB- Reader_NNP group_NN -RRB-_-RRB- and_CC the_DT writer_NN resides_VBZ outside_IN the_DT BuddyCache_NNP group_NN ._.
+In_IN each_DT of_IN the_DT three_CD systems_NNS ,_, a_DT single_JJ client_NN runs_VBZ a_DT readwrite_NN workload_NN -LRB-_-LRB- writer_NN -RRB-_-RRB- and_CC three_CD other_JJ clients_NNS run_VBP read-only_JJ workload_NN -LRB-_-LRB- readers_NNS -RRB-_-RRB- ._.
+Buddy_NNP system_NN with_IN one_CD group_NN contain36_NN 0_CD 5_CD #_# 100_CD 150_CD 200_CD 250_CD 300_CD Base_NNP Buddy_NNP Reader_NNP Buddy_NNP Writer_NNP -LSB-_-LRB- ms_NNS -RSB-_-RRB- CPU_NNP Commit_VB Server_NN Fetch_VB Peer_NNP Fetch_NNP Figure_NNP ##_NNP :_: Breakdown_NNP for_IN hot_JJ read-write_JJ 80ms_NNS RTT_NNP ing_VBD a_DT single_JJ reader_NN and_CC another_DT group_NN containing_VBG two_CD readers_NNS and_CC one_CD writer_NN models_NNS the_DT Writer_NN group_NN ._.
+Buddy_NNP system_NN with_IN one_CD group_NN containing_VBG a_DT single_JJ writer_NN and_CC another_DT group_NN running_VBG three_CD readers_NNS models_NNS the_DT Reader_NNP group_NN ._.
+In_IN Base_NNP ,_, one_CD writer_NN and_CC three_CD readers_NNS access_NN the_DT server_NN directly_RB ._.
+This_DT simple_JJ configuration_NN is_VBZ sufficient_JJ to_TO show_VB the_DT impact_NN of_IN BuddyCache_NNP techniques_NNS ._.
+Figures_NNS ##_CD and_CC ##_CD show_VBP the_DT overall_JJ time_NN to_TO complete_VB ####_CD hot_JJ cache_NN OO7_NN read-only_JJ transactions_NNS ._.
+We_PRP obtain_VBP the_DT numbers_NNS by_IN running_VBG ####_CD transactions_NNS to_TO filter_NN out_IN cold_JJ misses_VBZ and_CC then_RB time_NN the_DT next_JJ ####_CD transactions_NNS ._.
+Here_RB again_RB ,_, the_DT reported_VBN numbers_NNS are_VBP derived_VBN from_IN the_DT local_JJ area_NN network_NN experiment_NN results_NNS ._.
+The_DT results_NNS show_VBP that_IN the_DT BuddyCache_NNP reduces_VBZ significantly_RB the_DT completion_NN time_NN compared_VBN to_TO the_DT Base_NN system_NN ._.
+In_IN a_DT ##_NN ms_VBZ network_NN ,_, the_DT overall_JJ time_NN in_IN the_DT Writer_NN group_NN improves_VBZ by_IN ##_CD %_NN compared_VBN to_TO Base_NNP ._.
+This_DT benefit_NN is_VBZ due_JJ to_TO peer_VB update_VB that_DT avoids_VBZ all_DT misses_VBZ due_JJ to_TO updates_NNS ._.
+The_DT overall_JJ time_NN in_IN the_DT Reader_NNP group_NN improves_VBZ by_IN ##_CD %_NN and_CC is_VBZ due_JJ to_TO peer_VB fetch_VB that_DT allows_VBZ a_DT client_NN to_TO access_VB an_DT invalidated_VBN object_NN at_IN the_DT cost_NN of_IN a_DT local_JJ fetch_VB avoiding_VBG the_DT delay_NN of_IN fetching_VBG from_IN the_DT server_NN ._.
+The_DT latter_JJ is_VBZ an_DT important_JJ benefit_NN because_IN it_PRP shows_VBZ that_IN on_IN workloads_NNS with_IN updates_NNS ,_, peer_VB fetch_VB allows_VBZ an_DT invalidation-based_JJ protocol_NN to_TO provide_VB some_DT of_IN the_DT benefits_NNS of_IN update-based_JJ protocol_NN ._.
+Note_VB that_IN the_DT performance_NN benefit_NN delivered_VBN by_IN the_DT peer_VBP fetch_VB in_IN the_DT Reader_NNP group_NN is_VBZ approximately_RB ##_CD %_NN less_JJR than_IN the_DT performance_NN benefit_NN delivered_VBN by_IN peer_VB update_VB in_IN the_DT Writer_NN group_NN ._.
+This_DT difference_NN is_VBZ similar_JJ in_IN 80ms_CD network_NN ._.
+Figure_NNP ##_NN shows_VBZ the_DT relative_JJ latency_NN improvement_NN provided_VBN by_IN BuddyCache_NNP in_IN Buddy_NNP Reader_NNP and_CC Buddy_NNP Writer_NNP configurations_NNS -LRB-_-LRB- computed_VBN as_IN the_DT overall_JJ time_NN difference_NN between_IN BuddyReader_NNP and_CC Base_NNP relative_JJ to_TO Base_NNP ,_, and_CC Buddy_NNP Writer_NNP and_CC Base_NNP relative_JJ to_TO Base_NN -RRB-_-RRB- in_IN a_DT hot_JJ cache_NN experiment_NN as_IN a_DT function_NN of_IN increasing_VBG network_NN latency_NN ,_, for_IN fixed_VBN server_NN load_NN ._.
+The_DT peer_VBP update_VBP benefit_NN dominates_VBZ overhead_NN in_IN Writer_NN configuration_NN even_RB in_IN low-latency_NN network_NN -LRB-_-LRB- peer_VB update_VB incurs_VBZ minimal_JJ overhead_NN -RRB-_-RRB- and_CC offers_VBZ significant_JJ 44-64_CD %_NN improvement_NN for_IN entire_JJ latency_NN range_NN ._.
+The_DT figure_NN includes_VBZ both_CC the_DT measured_VBN improvement_NN and_CC the_DT improvement_NN derived_VBN using_VBG the_DT analytical_JJ model_NN ._.
+As_IN in_IN cold_JJ cache_NN experiments_NNS ,_, here_RB the_DT analytical_JJ results_NNS predict_VBP the_DT measured_VBN improvement_NN closely_RB ._.
+The_DT difference_NN is_VBZ -10_CD %_NN 0_CD %_NN 10_CD %_NN 20_CD %_NN 30_CD %_NN 40_CD %_NN 50_CD %_NN 60_CD %_NN 70_CD %_NN 1_CD #_# #_# #_# #_# #_# #_# #_# #_# #_# #_# #_# #_# #_# #_# #_# #_# #_# #_# #_# ###_CD Latency_NN -LSB-_-LRB- ms_NN -RSB-_-RRB- Benefits_NNS -LSB-_-LRB- %_NN -RSB-_-RRB- Buddy_NNP Reader_NNP Buddy_NNP Reader_NNP -LRB-_-LRB- perf_FW model_NN -RRB-_-RRB- Buddy_NNP Writer_NNP Buddy_NNP Writer_NNP -LRB-_-LRB- perf_FW model_NN -RRB-_-RRB- Figure_NN ##_NN :_: Invalidation_NNP miss_VBP benefit_NN minimal_JJ in_IN the_DT ''_'' writer_NN group_NN ''_'' ,_, and_CC somewhat_RB higher_JJR in_IN the_DT ''_'' reader_NN group_NN ''_'' -LRB-_-LRB- consistent_JJ with_IN the_DT results_NNS in_IN the_DT cold_JJ cache_NN experiments_NNS -RRB-_-RRB- ._.
+As_IN in_IN cold_JJ cache_NN case_NN ,_, the_DT reason_NN why_WRB the_DT simplified_VBN analytical_JJ model_NN works_VBZ well_RB is_VBZ because_IN it_PRP captures_VBZ the_DT costs_NNS of_IN network_NN latency_NN ,_, the_DT dominant_JJ performance_NN cost_NN ._.
+7_CD ._.
+CONCLUSION_NN Collaborative_JJ applications_NNS provide_VBP a_DT shared_JJ work_NN environment_NN for_IN groups_NNS of_IN networked_JJ clients_NNS collaborating_VBG on_IN a_DT common_JJ task_NN ._.
+They_PRP require_VBP strong_JJ consistency_NN for_IN shared_JJ persistent_JJ data_NNS and_CC efficient_JJ access_NN to_TO fine-grained_JJ objects_NNS ._.
+These_DT properties_NNS are_VBP difficult_JJ to_TO provide_VB in_IN wide-area_JJ network_NN because_IN of_IN high_JJ network_NN latency_NN ._.
+This_DT paper_NN described_VBN BuddyCache_NNP ,_, a_DT new_JJ transactional_JJ cooperative_JJ caching_NN -LSB-_-LRB- ##_CD ,_, ##_CD ,_, ##_CD ,_, #_# ,_, ##_NN -RSB-_-RRB- technique_NN that_IN improves_VBZ the_DT latency_NN of_IN access_NN to_TO shared_VBN persistent_JJ objects_NNS for_IN collaborative_JJ strong-consistency_NN applications_NNS in_IN high-latency_NN network_NN environments_NNS ._.
+The_DT technique_NN improves_VBZ performance_NN yet_RB provides_VBZ strong_JJ correctness_NN and_CC availability_NN properties_NNS in_IN the_DT presence_NN of_IN node_NN failures_NNS and_CC slow_JJ clients_NNS ._.
+BuddyCache_NNP uses_VBZ redirection_NN to_TO fetch_VB missing_VBG objects_NNS directly_RB from_IN group_NN members_NNS caches_NNS ,_, and_CC to_TO support_VB peer_VB update_VB ,_, a_DT new_JJ lightweight_JJ application-level_NN multicast_NN technique_NN that_WDT gives_VBZ group_NN members_NNS consistent_JJ access_NN to_TO the_DT new_JJ data_NNS committed_VBN within_IN the_DT collaborating_VBG group_NN without_IN imposing_VBG extra_JJ overhead_NN outside_IN the_DT group_NN ._.
+Redirection_NNP ,_, however_RB ,_, can_MD interfere_VB with_IN object_NN availability_NN ._.
+Solo_JJ commit_VB ,_, is_VBZ a_DT new_JJ validation_NN technique_NN that_WDT allows_VBZ a_DT client_NN in_IN a_DT group_NN to_TO commit_VB independently_RB of_IN slow_JJ or_CC failed_VBD peers_NNS ._.
+It_PRP provides_VBZ fine-grained_JJ validation_NN using_VBG inexpensive_JJ coarse-grain_NN version_NN information_NN ._.
+We_PRP have_VBP designed_VBN and_CC implemented_VBN BuddyCache_NNP prototype_NN in_IN Thor_NNP distributed_VBN transactional_JJ object_NN storage_NN system_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- and_CC evaluated_VBD the_DT benefits_NNS and_CC costs_NNS of_IN the_DT system_NN over_IN a_DT range_NN of_IN network_NN latencies_NNS ._.
+Analytical_NNP results_VBZ ,_, supported_VBN by_IN the_DT system_NN measurements_NNS using_VBG the_DT multi-user_JJ ###_CD benchmark_JJ indicate_VBP ,_, that_IN for_IN typical_JJ Internet_NN latencies_NNS BuddyCache_NNP provides_VBZ significant_JJ performance_NN benefits_NNS ,_, e_LS ._.
+g_NN ._.
+for_IN latencies_NNS ranging_VBG from_IN ##_CD to_TO ##_CD milliseconds_NNS round_JJ trip_NN time_NN ,_, clients_NNS using_VBG the_DT BuddyCache_NNP can_MD reduce_VB by_IN up_RB to_TO ##_CD %_NN the_DT latency_NN of_IN access_NN to_TO shared_VBN objects_NNS compared_VBN to_TO the_DT clients_NNS accessing_VBG the_DT repository_JJ directly_RB ._.
+The_DT main_JJ contributions_NNS of_IN the_DT paper_NN are_VBP :_: 1_CD ._.
+extending_VBG cooperative_JJ caching_NN techniques_NNS to_TO support_VB 37_CD fine-grain_JJ strong-consistency_NN access_NN in_IN high-latency_NN environments_NNS ,_, 2_CD ._.
+an_DT implementation_NN of_IN the_DT system_NN prototype_NN that_WDT yields_VBZ strong_JJ performance_NN gains_NNS over_IN the_DT base_NN system_NN ,_, 3_CD ._.
+analytical_JJ and_CC measurement_NN based_VBN performance_NN evaluation_NN of_IN the_DT costs_NNS and_CC benefits_NNS of_IN the_DT new_JJ techniques_NNS capturing_VBG the_DT dominant_JJ performance_NN cost_NN ,_, high_JJ network_NN latency_NN ._.
+8_CD ._.
+ACKNOWLEDGMENTS_NNS We_PRP are_VBP grateful_JJ to_TO Jay_NNP Lepreau_NNP and_CC the_DT staff_NN of_IN Utah_NNP experimental_JJ testbed_JJ emulab_NN ._.
+net_JJ -LSB-_-LRB- #_# -RSB-_-RRB- ,_, especially_RB Leigh_NNP Stoller_NNP ,_, for_IN hosting_VBG the_DT experiments_NNS and_CC the_DT help_NN with_IN the_DT testbed_VBN ._.
+We_PRP also_RB thank_VBP Jeff_NNP Chase_NNP ,_, Maurice_NNP Herlihy_NNP ,_, Butler_NNP Lampson_NNP and_CC the_DT OOPSLA_NNP reviewers_NNS for_IN the_DT useful_JJ comments_NNS that_WDT improved_VBD this_DT paper_NN ._.
+9_CD ._.
+REFERENCES_NNS -LSB-_-LRB- #_# -RSB-_-RRB- ''_'' emulab_NN ._.
+net_JJ ''_'' ,_, the_DT Utah_NNP Network_NNP Emulation_NNP Facility_NNP ._.
+http_NN :_: /_: /_: www_NN ._.
+emulab_NN ._.
+net_NN ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- A_DT ._.
+Adya_NNP ,_, M_NN ._.
+Castro_NNP ,_, B_NN ._.
+Liskov_NNP ,_, U_NNP ._.
+Maheshwari_NNP ,_, and_CC L_NN ._.
+Shrira_NNP ._.
+Fragment_NN Reconstruction_NN :_: Providing_VBG Global_JJ Cache_NN Coherence_NN in_IN a_DT Transactional_NNP Storage_NNP System_NNP ._.
+Proceedings_NNP of_IN the_DT International_NNP Conference_NN on_IN Distributed_VBN Computing_NNP Systems_NNPS ,_, May_NNP ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- A_DT ._.
+Adya_NNP ,_, R_NN ._.
+Gruber_NNP ,_, B_NN ._.
+Liskov_NNP ,_, and_CC U_NNP ._.
+Maheshwari_NNP ._.
+Efficient_JJ optimistic_JJ concurrencty_NN control_NN using_VBG loosely_RB synchronized_VBN clocks_NNS ._.
+In_IN Proceedings_NNP of_IN the_DT ACM_NNP SIGMOD_NNP International_NNP Conference_NNP on_IN Management_NNP of_IN Data_NNP ,_, May_NNP ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- C_NN ._.
+Amza_NNP ,_, A_NNP ._.
+L_NN ._.
+Cox_NN ,_, S_NN ._.
+Dwarkadas_NNP ,_, P_NN ._.
+Keleher_NNP ,_, H_NN ._.
+Lu_NNP ,_, R_NN ._.
+Rajamony_NNP ,_, W_NNP ._.
+Yu_NNP ,_, and_CC W_NN ._.
+Zwaenepoel_NNP ._.
+Treadmarks_NNPS :_: Shared_VBN memory_NN computing_NN on_IN networks_NNS of_IN workstations_NNS ._.
+IEEE_NNP Computer_NNP ,_, ##_CD -LRB-_-LRB- #_# -RRB-_-RRB- ,_, February_NNP 1996_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- C_NN ._.
+Anderson_NNP and_CC A_NNP ._.
+Karlin_NNP ._.
+Two_CD Adaptive_JJ Hybrid_NN Cache_NNP Coherency_NNP Protocols_NNPS ._.
+In_IN Proceedings_NNP of_IN the_DT 2nd_JJ IEEE_NNP Symposium_NNP on_IN High-Performance_NNP Computer_NNP Architecture_NNP -LRB-_-LRB- HPCA_NNP ''_'' ##_NN -RRB-_-RRB- ,_, February_NNP ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- M_NN ._.
+Baker_NNP ._.
+Fast_JJ Crash_NNP Recovery_NNP in_IN Distributed_VBN File_NNP Systems_NNPS ._.
+PhD_NN thesis_NN ,_, University_NNP of_IN California_NNP at_IN Berkeley_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- P_NN ._.
+Cao_NNP and_CC C_NNP ._.
+Liu_NNP ._.
+Maintaining_VBG Strong_JJ Cache_NN Consistency_NN in_IN the_DT World_NNP Wide_NN Web_NN ._.
+In_IN 17th_JJ International_JJ Conference_NN on_IN Distributed_VBN Computing_NNP Systems_NNPS ._.
+,_, April_NNP ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- M_NN ._.
+Carey_NNP ,_, D_NNP ._.
+J_NN ._.
+Dewitt_NNP ,_, C_NNP ._.
+Kant_NNP ,_, and_CC J_NN ._.
+F_NN ._.
+Naughton_NNP ._.
+A_DT Status_NNP Report_NNP on_IN the_DT OO7_NN OODBMS_VBZ Benchmarking_NNP Effort_NNP ._.
+In_IN Proceedings_NNP of_IN OOPSLA_NNP ,_, October_NNP ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- A_DT ._.
+Chankhunthod_NNP ,_, M_NN ._.
+Schwartz_NNP ,_, P_NN ._.
+Danzig_NNP ,_, K_NNP ._.
+Worrell_NNP ,_, and_CC C_NN ._.
+Neerdaels_NNS ._.
+A_DT Hierarchical_JJ Internet_NN Object_NNP Cache_NNP ._.
+In_IN USENIX_NNP Annual_JJ Technical_NNP Conference_NNP ,_, January_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+Chase_NNP ,_, S_NN ._.
+Gadde_NNP ,_, and_CC M_NN ._.
+Rabinovich_NNP ._.
+Directory_NNP Structures_NNS for_IN Scalable_NNP Internet_NNP Caches_NNP ._.
+Technical_NNP Report_NNP CS-1997-18_NNP ,_, Dept_NNP ._.
+of_IN Computer_NNP Science_NNP ,_, Duke_NNP University_NNP ,_, November_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+Chase_NNP ,_, S_NN ._.
+Gadde_NNP ,_, and_CC M_NN ._.
+Rabinovich_NNP ._.
+Not_RB All_DT Hits_VBZ Are_VBP Created_VBN Equal_NNP :_: Cooperative_NNP Proxy_NNP Caching_NNP Over_IN a_DT Wide-Area_NNP Network_NNP ._.
+In_IN Third_NNP International_NNP WWW_NNP Caching_NNP Workshop_NNP ,_, June_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- D_NN ._.
+R_NN ._.
+Cheriton_NNP and_CC D_NNP ._.
+Li_NNP ._.
+Scalable_JJ Web_NN Caching_NN of_IN Frequently_RB Updated_VBN Objects_NNS using_VBG Reliable_JJ Multicast_NN ._.
+2nd_JJ USENIX_NNP Symposium_NNP on_IN Internet_NNP Technologies_NNPS and_CC Systems_NNPS ,_, October_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- M_NN ._.
+D_NN ._.
+Dahlin_NNP ,_, R_NN ._.
+Y_NN ._.
+Wang_NNP ,_, T_NN ._.
+E_NN ._.
+Anderson_NNP ,_, and_CC D_NN ._.
+A_DT ._.
+Patterson_NNP ._.
+Cooperative_NNP caching_NN :_: Using_VBG remote_JJ client_NN memory_NN to_TO improve_VB file_NN system_NN performance_NN ._.
+Proceedings_NNP of_IN the_DT USENIX_NNP Conference_NN on_IN Operating_NNP Systems_NNPS Design_NN and_CC Implementation_NN ,_, November_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- S_NN ._.
+Dwarkadas_NNP ,_, H_NN ._.
+Lu_NNP ,_, A_NNP ._.
+L_NN ._.
+Cox_NN ,_, R_NN ._.
+Rajamony_NNP ,_, and_CC W_NN ._.
+Zwaenepoel_NNP ._.
+Combining_VBG Compile-Time_NNP and_CC Run-Time_NNP Support_NN for_IN Efficient_JJ Software_NNP Distributed_VBD Shared_VBN Memory_NN ._.
+In_IN Proceedings_NNP of_IN IEEE_NNP ,_, Special_JJ Issue_NN on_IN Distributed_VBN Shared_VBN Memory_NN ,_, March_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Li_NNP Fan_NNP ,_, Pei_NNP Cao_NNP ,_, Jussara_NNP Almeida_NNP ,_, and_CC Andrei_NNP Broder_NNP ._.
+Summary_NNP Cache_NNP :_: A_NNP Scalable_NNP Wide-Area_NNP Web_NN Cache_NNP Sharing_VBG Protocol_NNP ._.
+In_IN Proceedings_NNP of_IN ACM_NNP SIGCOMM_NNP ,_, September_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- M_NN ._.
+Feeley_NNP ,_, W_NNP ._.
+Morgan_NNP ,_, F_NN ._.
+Pighin_NNP ,_, A_NNP ._.
+Karlin_NNP ,_, and_CC H_NN ._.
+Levy_NNP ._.
+Implementing_VBG Global_JJ Memory_NN Management_NN in_IN a_DT Workstation_NNP Cluster_NNP ._.
+Proceedings_NNP of_IN the_DT 15th_JJ ACM_NNP Symposium_NNP on_IN Operating_NNP Systems_NNPS Principles_NNS ,_, December_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- M_NN ._.
+J_NN ._.
+Feeley_NNP ,_, J_NNP ._.
+S_NN ._.
+Chase_NNP ,_, V_NNP ._.
+R_NN ._.
+Narasayya_NNP ,_, and_CC H_NN ._.
+M_NN ._.
+Levy_NNP ._.
+Integrating_VBG Coherency_NN and_CC Recoverablity_NN in_IN Distributed_VBN Systems_NNPS ._.
+In_IN Proceedings_NNP of_IN the_DT First_NNP Usenix_NNP Symposium_NNP on_IN Operating_VBG sustems_NNS Design_NN and_CC Implementation_NN ,_, May_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- P_NN ._.
+Ferreira_NNP and_CC M_NN ._.
+Shapiro_NNP et_FW al_FW ._.
+PerDiS_NNP :_: Design_NN ,_, Implementation_NN ,_, and_CC Use_NN of_IN a_DT PERsistent_JJ DIstributed_NNP Store_NNP ._.
+In_IN Recent_JJ Advances_NNS in_IN Distributed_VBN Systems_NNP ,_, LNCS_NNP ####_CD ,_, Springer-Verlag_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- M_NN ._.
+J_NN ._.
+Franklin_NNP ,_, M_NN ._.
+Carey_NNP ,_, and_CC M_NN ._.
+Livny_NNP ._.
+Transactional_JJ Client-Server_NNP Cache_NNP Consistency_NNP :_: Alternatives_NNP and_CC Performance_NNP ._.
+In_IN ACM_NNP Transactions_NNS on_IN Database_NNP Systems_NNPS ,_, volume_NN ##_NN ,_, pages_NNS 315-363_CD ,_, September_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Michael_NNP Franklin_NNP ,_, Michael_NNP Carey_NNP ,_, and_CC Miron_NNP Livny_NNP ._.
+Global_JJ Memory_NN Management_NN for_IN Client-Server_NNP DBMS_NNP Architectures_NNPS ._.
+In_IN Proceedings_NNP of_IN the_DT 19th_JJ Intl_NNP ._.
+Conference_NN on_IN Very_RB Large_JJ Data_NNS Bases_NNS -LRB-_-LRB- VLDB_NN -RRB-_-RRB- ,_, August_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- S_NN ._.
+Ghemawat_NNP ._.
+The_DT Modified_VBN Object_NNP Buffer_NNP :_: A_NNP Storage_NNP Management_NNP Technique_NNP for_IN Object-Oriented_NNP Databases_NNP ._.
+PhD_NN thesis_NN ,_, Massachusetts_NNP Institute_NNP of_IN Technology_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- L_NN ._.
+Kawell_NNP ,_, S_NN ._.
+Beckhardt_NNP ,_, T_NN ._.
+Halvorsen_NNP ,_, R_NN ._.
+Ozzie_NNP ,_, and_CC I_PRP ._.
+Greif_NNP ._.
+Replicated_VBN document_NN management_NN in_IN a_DT group_NN communication_NN system_NN ._.
+In_IN Proceedings_NNP of_IN the_DT ACM_NNP CSCW_NNP Conference_NNP ,_, September_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- B_NN ._.
+Liskov_NNP ,_, M_NN ._.
+Castro_NNP ,_, L_NNP ._.
+Shrira_NNP ,_, and_CC A_NN ._.
+Adya_NNP ._.
+Providing_VBG Persistent_JJ Objects_NNS in_IN Distributed_VBN Systems_NNPS ._.
+In_IN Proceedings_NNP of_IN the_DT 13th_JJ European_JJ Conference_NN on_IN Object-Oriented_NNP Programming_NNP -LRB-_-LRB- ECOOP_NNP ''_'' ##_NN -RRB-_-RRB- ,_, June_NNP 1999_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- A_DT ._.
+Muthitacharoen_NNP ,_, B_NN ._.
+Chen_NNP ,_, and_CC D_NN ._.
+Mazieres_NNP ._.
+A_DT Low-bandwidth_JJ Network_NNP File_NNP System_NNP ._.
+In_IN 18th_JJ ACM_NNP Symposium_NNP on_IN Operating_NNP Systems_NNPS Principles_NNS ,_, October_NNP 2001_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- B_NN ._.
+Oki_NNP and_CC B_NNP ._.
+Liskov_NNP ._.
+Viewstamped_NNP Replication_NN :_: A_DT New_JJ Primary_JJ Copy_VB Method_NN to_TO Support_NN Highly-Available_JJ Distributed_VBN Systems_NNPS ._.
+In_IN Proc_NNP ._.
+of_IN ACM_NNP Symposium_NNP on_IN Principles_NNS of_IN Distributed_VBN 38_CD Computing_NNP ,_, August_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+O_NN ''_'' Toole_NNP and_CC L_NNP ._.
+Shrira_NNP ._.
+Opportunistic_JJ Log_NN :_: Efficient_JJ Installation_NN Reads_VBZ in_IN a_DT Reliable_JJ Object_NNP Server_NN ._.
+In_IN Usenix_NNP Symposium_NNP on_IN Operation_NNP Systems_NNPS Design_NN and_CC Implementation_NN ,_, November_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- D_NN ._.
+Pendarakis_NNP ,_, S_NN ._.
+Shi_NNP ,_, and_CC D_NN ._.
+Verma_NNP ._.
+ALMI_NNP :_: An_DT Application_NN Level_NNP Multicast_NNP Infrastructure_NNP ._.
+In_IN 3rd_JJ USENIX_NNP Symposium_NNP on_IN Internet_NNP Technologies_NNPS and_CC Systems_NNPS ,_, March_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- P_NN ._.
+Sarkar_NNP and_CC J_NNP ._.
+Hartman_NNP ._.
+Efficient_JJ Cooperative_NNP Caching_NNP Using_VBG Hints_NNS ._.
+In_IN Usenix_NNP Symposium_NNP on_IN Operation_NNP Systems_NNPS Design_NN and_CC Implementation_NN ,_, October_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- A_DT ._.
+M_NN ._.
+Vahdat_NNP ,_, P_NN ._.
+C_NN ._.
+Eastham_NNP ,_, and_CC T_NN ._.
+E_NN Anderson_NNP ._.
+WebFS_NNP :_: A_NN Global_JJ Cache_NNP Coherent_NNP File_NNP System_NNP ._.
+Technical_NNP report_NN ,_, University_NNP of_IN California_NNP ,_, Berkeley_NNP ,_, 1996_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- A_DT ._.
+Wolman_NNP ,_, G_NNP ._.
+Voelker_NNP ,_, N_NNP ._.
+Sharma_FW ,_, N_NN ._.
+Cardwell_NNP ,_, A_NNP ._.
+Karlin_NNP ,_, and_CC H_NN ._.
+Levy_NNP ._.
+On_IN the_DT Scale_NNP and_CC Performance_NNP of_IN Cooperative_NNP Web_NN Proxy_NNP Caching_NNP ._.
+In_IN 17th_JJ ACM_NNP Symposium_NNP on_IN Operating_NNP Systems_NNPS Principles_NNS ,_, December_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+Yin_NNP ,_, L_NNP ._.
+Alvisi_NNP ,_, M_NN ._.
+Dahlin_NNP ,_, and_CC C_NN ._.
+Lin_NNP ._.
+Hierarchical_JJ Cache_NNP Consistency_NN in_IN a_DT WAN_NNP ._.
+In_IN USENIX_NNP Symposium_NNP on_IN Internet_NNP Technologies_NNPS and_CC Systems_NNPS ,_, October_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+Yin_NNP ,_, L_NNP ._.
+Alvisi_NNP ,_, M_NN ._.
+Dahlin_NNP ,_, and_CC C_NN ._.
+Lin_NNP ._.
+Volume_NN Leases_NNS for_IN Consistency_NN in_IN Large-Scale_NNP Systems_NNPS ._.
+IEEE_NNP Transactions_NNS on_IN Knowledge_NN and_CC Data_NNP Engineering_NNP ,_, 11_CD -LRB-_-LRB- #_# -RRB-_-RRB- ,_, July_NNP /_: August_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- M_NN ._.
+Zaharioudakis_NNP ,_, M_NN ._.
+J_NN ._.
+Carey_NNP ,_, and_CC M_NN ._.
+J_NN ._.
+Franklin_NNP ._.
+Adaptive_JJ ,_, Fine-Grained_JJ Sharing_VBG in_IN a_DT Client-Server_NNP OODBMS_NNP :_: A_DT Callback-Based_JJ Approach_NN ._.
+ACM_NNP Transactions_NNS on_IN Database_NNP Systems_NNP ,_, ##_CD :_: 570-627_CD ,_, December_NNP ####_CD ._.
+10_CD ._.
+APPENDIX_NN This_DT appendix_NN outlines_VBZ the_DT BuddyCache_NNP failover_NN protocol_NN ._.
+To_TO accommodate_VB heterogeneous_JJ clients_NNS including_VBG resourcepoor_JJ hand-helds_NNS we_PRP do_VBP not_RB require_VB the_DT availability_NN of_IN persistent_JJ storage_NN in_IN the_DT BuddyCache_NNP peer_VB group_NN ._.
+The_DT BuddyCache_NNP design_NN assumes_VBZ that_IN the_DT client_NN caches_NNS and_CC the_DT redirector_NN data_NNS structures_NNS do_VBP not_RB survive_VB node_NN failures_NNS ._.
+A_DT failure_NN of_IN a_DT client_NN or_CC a_DT redirector_NN is_VBZ detected_VBN by_IN a_DT membership_NN protocol_NN that_WDT exchanges_NNS periodic_JJ I_PRP am_VBP alive_JJ messages_NNS between_IN group_NN members_NNS and_CC initiates_VBZ a_DT failover_NN protocol_NN ._.
+The_DT failover_NN determines_VBZ the_DT active_JJ group_NN participants_NNS ,_, re-elects_VBZ a_DT redirector_NN if_IN needed_VBN ,_, reinitializes_VBZ the_DT BuddyCache_NNP data_NNS structures_NNS in_IN the_DT new_JJ configuration_NN and_CC restarts_VBZ the_DT protocol_NN ._.
+The_DT group_NN reconfiguration_NN protocol_NN is_VBZ similar_JJ to_TO the_DT one_CD presented_VBN in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ._.
+Here_RB we_PRP describe_VBP how_WRB the_DT failover_NN manages_VBZ the_DT BuddyCache_NNP state_NN ._.
+To_TO restart_VB the_DT BuddyCache_NNP protocol_NN ,_, the_DT failover_NN needs_VBZ to_TO resynchronize_VB the_DT redirector_JJ page_NN directory_NN and_CC clientserver_NN request_NN forwarding_NN so_IN that_IN active_JJ clients_NNS can_MD continue_VB running_VBG transactions_NNS using_VBG their_PRP$ caches_NNS ._.
+In_IN the_DT case_NN of_IN a_DT client_NN failure_NN ,_, the_DT failover_NN removes_VBZ the_DT crashed_VBN client_NN pages_NNS from_IN the_DT directory_NN ._.
+Any_DT response_NN to_TO an_DT earlier_JJR request_NN initiated_VBN by_IN the_DT failed_VBN client_NN is_VBZ ignored_VBN except_IN a_DT commit_VB reply_NN ,_, in_IN which_WDT case_NN the_DT redirector_NN distributes_VBZ the_DT retained_VBN committed_JJ updates_NNS to_TO active_JJ clients_NNS caching_VBG the_DT modified_VBN pages_NNS ._.
+In_IN the_DT case_NN of_IN a_DT redirector_JJ failure_NN ,_, the_DT failover_NN protocol_NN reinitializes_VBZ sessions_NNS with_IN the_DT servers_NNS and_CC clients_NNS ,_, and_CC rebuilds_VBZ the_DT page_NN directory_NN using_VBG a_DT protocol_NN similar_JJ to_TO one_CD in_IN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+The_DT newly_RB restarted_VBN redirector_JJ asks_VBZ the_DT active_JJ group_NN members_NNS for_IN the_DT list_NN of_IN pages_NNS they_PRP are_VBP caching_VBG and_CC the_DT status_NN of_IN these_DT pages_NNS ,_, i_FW ._.
+e_LS ._.
+whether_IN the_DT pages_NNS are_VBP complete_JJ or_CC incomplete_JJ ._.
+Requests_NNS outstanding_JJ at_IN the_DT redirector_NN at_IN the_DT time_NN of_IN the_DT crash_NN may_MD be_VB lost_VBN ._.
+A_DT lost_VBD fetch_VB request_NN will_MD time_VB out_RP at_IN the_DT client_NN and_CC will_MD be_VB retransmitted_VBN ._.
+A_DT transaction_NN running_VBG at_IN the_DT client_NN during_IN a_DT failover_NN and_CC committing_VBG after_IN the_DT failover_NN is_VBZ treated_VBN as_IN a_DT regular_JJ transaction_NN ,_, a_DT transaction_NN trying_VBG to_TO commit_VB during_IN a_DT failover_NN is_VBZ aborted_VBN by_IN the_DT failover_NN protocol_NN ._.
+A_DT client_NN will_MD restart_VB the_DT transaction_NN and_CC the_DT commit_VB request_NN will_MD be_VB retransmitted_VBN after_IN the_DT failover_NN ._.
+Invalidations_NNS ,_, updates_NNS or_CC collected_VBN update_VBP acknowledgements_NNS lost_VBN at_IN the_DT crashed_VBN redirector_NN could_MD prevent_VB the_DT garbage_NN collection_NN of_IN pending_VBG invalidations_NNS at_IN the_DT servers_NNS or_CC the_DT vcache_NN in_IN the_DT clients_NNS ._.
+Therefore_RB ,_, servers_NNS detecting_VBG a_DT redirector_NN crash_NN retransmit_NN unacknowledged_JJ invalidations_NNS and_CC commit_VB replies_NNS ._.
+Unique_JJ version_NN numbers_NNS in_IN invalidations_NNS and_CC updates_NNS ensure_VB that_IN duplicate_VB retransmitted_JJ requests_NNS are_VBP detected_VBN and_CC discarded_VBN ._.
+Since_IN the_DT transaction_NN validation_NN procedure_NN depends_VBZ on_IN the_DT cache_NN coherence_NN protocol_NN to_TO ensure_VB that_IN transactions_NNS do_VBP not_RB read_VB stale_JJ data_NNS ,_, we_PRP now_RB need_VBP to_TO argue_VB that_IN BuddyCache_NNP failover_NN protocol_NN does_VBZ not_RB compromise_VB the_DT correctness_NN of_IN the_DT validation_NN procedure_NN ._.
+Recall_VB that_DT BuddyCache_NNP transaction_NN validation_NN uses_VBZ two_CD complementary_JJ mechanisms_NNS ,_, page_NN version_NN numbers_NNS and_CC invalidation_NN acknowledgements_NNS from_IN the_DT clients_NNS ,_, to_TO check_VB that_IN a_DT transaction_NN has_VBZ read_VBN up-to-date_JJ data_NNS ._.
+The_DT redirector-based_JJ invalidation_NN -LRB-_-LRB- and_CC update_VBP -RRB-_-RRB- acknowledgement_NN propagation_NN ensures_VBZ the_DT following_VBG invariant_JJ ._.
+When_WRB a_DT server_NN receives_VBZ an_DT acknowledgement_NN for_IN an_DT object_NN o_NN modification_NN -LRB-_-LRB- invalidation_NN or_CC update_VB -RRB-_-RRB- from_IN a_DT client_NN group_NN ,_, any_DT client_NN in_IN the_DT group_NN caching_VBG the_DT object_NN o_NN has_VBZ either_CC installed_VBN the_DT latest_JJS value_NN of_IN object_NN o_NN ,_, or_CC has_VBZ invalidated_VBN o_NN ._.
+Therefore_RB ,_, if_IN a_DT server_NN receives_VBZ a_DT commit_VB request_NN from_IN a_DT client_NN for_IN a_DT transaction_NN T_NN reading_VBG an_DT object_NN o_NN after_IN a_DT failover_NN in_IN the_DT client_NN group_NN ,_, and_CC the_DT server_NN has_VBZ no_DT unacknowledged_JJ invalidation_NN for_IN o_NN pending_VBG for_IN this_DT group_NN ,_, the_DT version_NN of_IN the_DT object_NN read_VBN by_IN the_DT transaction_NN T_NN is_VBZ up-to-date_JJ independently_RB of_IN client_NN or_CC redirector_NN failures_NNS ._.
+Now_RB consider_VB the_DT validation_NN using_VBG version_NN numbers_NNS ._.
+The_DT transaction_NN commit_VB record_NN contains_VBZ a_DT version_NN number_NN for_IN each_DT object_NN read_VBN by_IN the_DT transaction_NN ._.
+The_DT version_NN number_NN protocol_NN maintains_VBZ the_DT invariant_JJ V_NN P_NN that_WDT ensures_VBZ that_IN the_DT value_NN of_IN object_NN o_NN read_VBN by_IN the_DT transaction_NN corresponds_VBZ to_TO the_DT highest_JJS version_NN number_NN for_IN o_NN received_VBN by_IN the_DT client_NN ._.
+The_DT invariant_JJ holds_VBZ since_IN the_DT client_NN never_RB applies_VBZ an_DT earlier_JJR modification_NN after_IN a_DT later_JJ modification_NN has_VBZ been_VBN received_VBN ._.
+Retransmition_NN of_IN invalidations_NNS and_CC updates_NNS maintains_VBZ this_DT invariant_JJ ._.
+The_DT validation_NN procedure_NN checks_NNS that_IN the_DT version_NN number_NN in_IN the_DT commit_VB record_NN matches_VBZ the_DT version_NN number_NN in_IN the_DT unacknowledged_JJ outstanding_JJ invalidation_NN ._.
+It_PRP is_VBZ straightforward_JJ to_TO see_VB that_DT since_IN this_DT check_NN is_VBZ an_DT end-to-end_JJ client-server_JJ check_NN it_PRP is_VBZ unaffected_JJ by_IN client_NN or_CC redirector_JJ failure_NN ._.
+The_DT failover_NN protocol_NN has_VBZ not_RB been_VBN implemented_VBN yet_RB ._.
+39_CD

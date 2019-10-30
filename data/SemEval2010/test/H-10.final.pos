@@ -1,0 +1,655 @@
+Regularized_VBN Clustering_NN for_IN Documents_NNS Fei_NNP Wang_NNP ,_, Changshui_NNP Zhang_NNP State_NNP Key_NNP Lab_NNP of_IN Intelligent_JJ Tech_NNP ._.
+and_CC Systems_NNP Department_NNP of_IN Automation_NN ,_, Tsinghua_NNP University_NNP Beijing_NNP ,_, China_NNP ,_, ######_CD feiwang03_NN @_IN gmail_NN ._.
+com_NN Tao_NNP Li_NNP School_NNP of_IN Computer_NNP Science_NNP Florida_NNP International_NNP University_NNP Miami_NNP ,_, FL_NN #####_CD ,_, U_NNP ._.
+S_NN ._.
+A_DT ._.
+taoli_NNS @_IN cs_NNS ._.
+fiu_NN ._.
+edu_NN ABSTRACT_NN In_IN recent_JJ years_NNS ,_, document_NN clustering_NN has_VBZ been_VBN receiving_VBG more_RBR and_CC more_RBR attentions_NNS as_IN an_DT important_JJ and_CC fundamental_JJ technique_NN for_IN unsupervised_JJ document_NN organization_NN ,_, automatic_JJ topic_NN extraction_NN ,_, and_CC fast_JJ information_NN retrieval_NN or_CC filtering_VBG ._.
+In_IN this_DT paper_NN ,_, we_PRP propose_VBP a_DT novel_JJ method_NN for_IN clustering_NN documents_NNS using_VBG regularization_NN ._.
+Unlike_IN traditional_JJ globally_RB regularized_VBN clustering_NN methods_NNS ,_, our_PRP$ method_NN first_RB construct_VB a_DT local_JJ regularized_JJ linear_JJ label_NN predictor_NN for_IN each_DT document_NN vector_NN ,_, and_CC then_RB combine_VBP all_PDT those_DT local_JJ regularizers_NNS with_IN a_DT global_JJ smoothness_NN regularizer_NN ._.
+So_IN we_PRP call_VBP our_PRP$ algorithm_NN Clustering_VBG with_IN Local_JJ and_CC Global_JJ Regularization_NN -LRB-_-LRB- CLGR_NN -RRB-_-RRB- ._.
+We_PRP will_MD show_VB that_IN the_DT cluster_NN memberships_NNS of_IN the_DT documents_NNS can_MD be_VB achieved_VBN by_IN eigenvalue_NN decomposition_NN of_IN a_DT sparse_JJ symmetric_JJ matrix_NN ,_, which_WDT can_MD be_VB efficiently_RB solved_VBN by_IN iterative_JJ methods_NNS ._.
+Finally_RB our_PRP$ experimental_JJ evaluations_NNS on_IN several_JJ datasets_NNS are_VBP presented_VBN to_TO show_VB the_DT superiorities_NNS of_IN CLGR_NN over_IN traditional_JJ document_NN clustering_NN methods_NNS ._.
+Categories_NNS and_CC Subject_NNP Descriptors_NNPS H_NN ._.
+#_# ._.
+#_# -LSB-_-LRB- Information_NNP Storage_NNP and_CC Retrieval_NNP -RSB-_-RRB- :_: Information_NNP Search_VB and_CC Retrieval-Clustering_NN ;_: I_PRP ._.
+#_# ._.
+#_# -LSB-_-LRB- Artificial_NNP Intelligence_NNP -RSB-_-RRB- :_: Learning-Concept_NNP Learning_NNP General_NNP Terms_NNS Algorithms_NNS 1_CD ._.
+INTRODUCTION_NNP Document_NNP clustering_NN has_VBZ been_VBN receiving_VBG more_RBR and_CC more_RBR attentions_NNS as_IN an_DT important_JJ and_CC fundamental_JJ technique_NN for_IN unsupervised_JJ document_NN organization_NN ,_, automatic_JJ topic_NN extraction_NN ,_, and_CC fast_JJ information_NN retrieval_NN or_CC filtering_VBG ._.
+A_DT good_JJ document_NN clustering_NN approach_NN can_MD assist_VB the_DT computers_NNS to_TO automatically_RB organize_VB the_DT document_NN corpus_NN into_IN a_DT meaningful_JJ cluster_NN hierarchy_NN for_IN efficient_JJ browsing_VBG and_CC navigation_NN ,_, which_WDT is_VBZ very_RB valuable_JJ for_IN complementing_VBG the_DT deficiencies_NNS of_IN traditional_JJ information_NN retrieval_NN technologies_NNS ._.
+As_IN pointed_VBN out_RP by_IN -LSB-_-LRB- #_# -RSB-_-RRB- ,_, the_DT information_NN retrieval_NN needs_NNS can_MD be_VB expressed_VBN by_IN a_DT spectrum_NN ranged_VBD from_IN narrow_JJ keyword-matching_JJ based_VBN search_NN to_TO broad_JJ information_NN browsing_VBG such_JJ as_IN what_WP are_VBP the_DT major_JJ international_JJ events_NNS in_IN recent_JJ months_NNS ._.
+Traditional_JJ document_NN retrieval_NN engines_NNS tend_VBP to_TO fit_VB well_RB with_IN the_DT search_NN end_NN of_IN the_DT spectrum_NN ,_, i_FW ._.
+e_LS ._.
+they_PRP usually_RB provide_VBP specified_JJ search_NN for_IN documents_NNS matching_VBG the_DT user_NN ''_'' s_NNS query_VBP ,_, however_RB ,_, it_PRP is_VBZ hard_JJ for_IN them_PRP to_TO meet_VB the_DT needs_NNS from_IN the_DT rest_NN of_IN the_DT spectrum_NN in_IN which_WDT a_DT rather_RB broad_JJ or_CC vague_JJ information_NN is_VBZ needed_VBN ._.
+In_IN such_JJ cases_NNS ,_, efficient_JJ browsing_VBG through_IN a_DT good_JJ cluster_NN hierarchy_NN will_MD be_VB definitely_RB helpful_JJ ._.
+Generally_RB ,_, document_NN clustering_NN methods_NNS can_MD be_VB mainly_RB categorized_VBN into_IN two_CD classes_NNS :_: hierarchical_JJ methods_NNS and_CC partitioning_VBG methods_NNS ._.
+The_DT hierarchical_JJ methods_NNS group_NN the_DT data_NNS points_NNS into_IN a_DT hierarchical_JJ tree_NN structure_NN using_VBG bottom-up_JJ or_CC top-down_JJ approaches_NNS ._.
+For_IN example_NN ,_, hierarchical_JJ agglomerative_JJ clustering_NN -LRB-_-LRB- HAC_NN -RRB-_-RRB- -LSB-_-LRB- ##_CD -RSB-_-RRB- is_VBZ a_DT typical_JJ bottom-up_JJ hierarchical_JJ clustering_NN method_NN ._.
+It_PRP takes_VBZ each_DT data_NNS point_NN as_IN a_DT single_JJ cluster_NN to_TO start_VB off_RP with_IN and_CC then_RB builds_VBZ bigger_JJR and_CC bigger_JJR clusters_NNS by_IN grouping_VBG similar_JJ data_NNS points_NNS together_RB until_IN the_DT entire_JJ dataset_NN is_VBZ encapsulated_VBN into_IN one_CD final_JJ cluster_NN ._.
+On_IN the_DT other_JJ hand_NN ,_, partitioning_VBG methods_NNS decompose_VBP the_DT dataset_NN into_IN a_DT number_NN of_IN disjoint_NN clusters_NNS which_WDT are_VBP usually_RB optimal_JJ in_IN terms_NNS of_IN some_DT predefined_VBN criterion_NN functions_NNS ._.
+For_IN instance_NN ,_, K-means_JJ -LSB-_-LRB- ##_CD -RSB-_-RRB- is_VBZ a_DT typical_JJ partitioning_NN method_NN which_WDT aims_VBZ to_TO minimize_VB the_DT sum_NN of_IN the_DT squared_VBN distance_NN between_IN the_DT data_NNS points_NNS and_CC their_PRP$ corresponding_JJ cluster_NN centers_NNS ._.
+In_IN this_DT paper_NN ,_, we_PRP will_MD focus_VB on_IN the_DT partitioning_NN methods_NNS ._.
+As_IN we_PRP know_VBP that_IN there_EX are_VBP two_CD main_JJ problems_NNS existing_VBG in_IN partitioning_VBG methods_NNS -LRB-_-LRB- like_IN Kmeans_NNPS and_CC Gaussian_NNP Mixture_NNP Model_NNP -LRB-_-LRB- GMM_NNP -RRB-_-RRB- -LSB-_-LRB- ##_CD -RSB-_-RRB- -RRB-_-RRB- :_: -LRB-_-LRB- #_# -RRB-_-RRB- the_DT predefined_JJ criterion_NN is_VBZ usually_RB non-convex_JJ which_WDT causes_VBZ many_JJ local_JJ optimal_JJ solutions_NNS ;_: -LRB-_-LRB- #_# -RRB-_-RRB- the_DT iterative_JJ procedure_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+the_DT Expectation_NNP Maximization_NN -LRB-_-LRB- EM_NN -RRB-_-RRB- algorithm_NN -RRB-_-RRB- for_IN optimizing_VBG the_DT criterions_NNS usually_RB makes_VBZ the_DT final_JJ solutions_NNS heavily_RB depend_VBP on_IN the_DT initializations_NNS ._.
+In_IN the_DT last_JJ decades_NNS ,_, many_JJ methods_NNS have_VBP been_VBN proposed_VBN to_TO overcome_VB the_DT above_JJ problems_NNS of_IN the_DT partitioning_NN methods_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Recently_RB ,_, another_DT type_NN of_IN partitioning_VBG methods_NNS based_VBN on_IN clustering_NN on_IN data_NNS graphs_NNS have_VBP aroused_VBN considerable_JJ interests_NNS in_IN the_DT machine_NN learning_NN and_CC data_NNS mining_NN community_NN ._.
+The_DT basic_JJ idea_NN behind_IN these_DT methods_NNS is_VBZ to_TO first_JJ model_NN the_DT whole_JJ dataset_NN as_IN a_DT weighted_JJ graph_NN ,_, in_IN which_WDT the_DT graph_NN nodes_NNS represent_VBP the_DT data_NNS points_NNS ,_, and_CC the_DT weights_NNS on_IN the_DT edges_NNS correspond_VBP to_TO the_DT similarities_NNS between_IN pairwise_JJ points_NNS ._.
+Then_RB the_DT cluster_NN assignments_NNS of_IN the_DT dataset_NN can_MD be_VB achieved_VBN by_IN optimizing_VBG some_DT criterions_NNS defined_VBN on_IN the_DT graph_NN ._.
+For_IN example_NN Spectral_JJ Clustering_NN is_VBZ one_CD kind_NN of_IN the_DT most_RBS representative_JJ graph-based_JJ clustering_NN approaches_NNS ,_, it_PRP generally_RB aims_VBZ to_TO optimize_VB some_DT cut_NN value_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+Normalized_JJ Cut_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, Ratio_NNP Cut_NNP -LSB-_-LRB- #_# -RSB-_-RRB- ,_, Min-Max_NNP Cut_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- -RRB-_-RRB- defined_VBN on_IN an_DT undirected_JJ graph_NN ._.
+After_IN some_DT relaxations_NNS ,_, these_DT criterions_NNS can_MD usually_RB be_VB optimized_VBN via_IN eigen-decompositions_NNS ,_, which_WDT is_VBZ guaranteed_VBN to_TO be_VB global_JJ optimal_JJ ._.
+In_IN this_DT way_NN ,_, spectral_JJ clustering_NN efficiently_RB avoids_VBZ the_DT problems_NNS of_IN the_DT traditional_JJ partitioning_NN methods_NNS as_IN we_PRP introduced_VBD in_IN last_JJ paragraph_NN ._.
+In_IN this_DT paper_NN ,_, we_PRP propose_VBP a_DT novel_JJ document_NN clustering_NN algorithm_NN that_WDT inherits_VBZ the_DT superiority_NN of_IN spectral_JJ clustering_NN ,_, i_FW ._.
+e_LS ._.
+the_DT final_JJ cluster_NN results_NNS can_MD also_RB be_VB obtained_VBN by_IN exploit_VB the_DT eigen-structure_NN of_IN a_DT symmetric_JJ matrix_NN ._.
+However_RB ,_, unlike_IN spectral_JJ clustering_NN ,_, which_WDT just_RB enforces_VBZ a_DT smoothness_NN constraint_NN on_IN the_DT data_NNS labels_NNS over_IN the_DT whole_JJ data_NNS manifold_NN -LSB-_-LRB- #_# -RSB-_-RRB- ,_, our_PRP$ method_NN first_JJ construct_NN a_DT regularized_VBN linear_JJ label_NN predictor_NN for_IN each_DT data_NNS point_NN from_IN its_PRP$ neighborhood_NN as_IN in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ,_, and_CC then_RB combine_VBP the_DT results_NNS of_IN all_PDT these_DT local_JJ label_NN predictors_NNS with_IN a_DT global_JJ label_NN smoothness_NN regularizer_NN ._.
+So_IN we_PRP call_VBP our_PRP$ method_NN Clustering_NN with_IN Local_JJ and_CC Global_JJ Regularization_NN -LRB-_-LRB- CLGR_NN -RRB-_-RRB- ._.
+The_DT idea_NN of_IN incorporating_VBG both_CC local_JJ and_CC global_JJ information_NN into_IN label_NN prediction_NN is_VBZ inspired_VBN by_IN the_DT recent_JJ works_NNS on_IN semi-supervised_JJ learning_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, and_CC our_PRP$ experimental_JJ evaluations_NNS on_IN several_JJ real_JJ document_NN datasets_NNS show_VBP that_IN CLGR_NN performs_VBZ better_JJR than_IN many_JJ state-of-the-art_JJ clustering_NN methods_NNS ._.
+The_DT rest_NN of_IN this_DT paper_NN is_VBZ organized_VBN as_IN follows_VBZ :_: in_IN section_NN #_# we_PRP will_MD introduce_VB our_PRP$ CLGR_NN algorithm_NN in_IN detail_NN ._.
+The_DT experimental_JJ results_NNS on_IN several_JJ datasets_NNS are_VBP presented_VBN in_IN section_NN 3_CD ,_, followed_VBN by_IN the_DT conclusions_NNS and_CC discussions_NNS in_IN section_NN #_# ._.
+2_LS ._.
+THE_DT PROPOSED_NNP ALGORITHM_NNP In_IN this_DT section_NN ,_, we_PRP will_MD introduce_VB our_PRP$ Clustering_VBG with_IN Local_JJ and_CC Global_JJ Regularization_NN -LRB-_-LRB- CLGR_NN -RRB-_-RRB- algorithm_NN in_IN detail_NN ._.
+First_RB let_VB ''_'' s_NNS see_VBP the_DT how_WRB the_DT documents_NNS are_VBP represented_VBN throughout_IN this_DT paper_NN ._.
+2_LS ._.
+#_# Document_NNP Representation_NNP In_IN our_PRP$ work_NN ,_, all_PDT the_DT documents_NNS are_VBP represented_VBN by_IN the_DT weighted_JJ term-frequency_NN vectors_NNS ._.
+Let_VB W_NN =_JJ -LCB-_-LRB- w1_NN ,_, w2_NN ,_, ,_, wm_NN -RCB-_-RRB- be_VB the_DT complete_JJ vocabulary_NN set_NN of_IN the_DT document_NN corpus_NN -LRB-_-LRB- which_WDT is_VBZ preprocessed_VBN by_IN the_DT stopwords_NNS removal_NN and_CC words_NNS stemming_VBG operations_NNS -RRB-_-RRB- ._.
+The_DT term-frequency_NN vector_NN xi_NN of_IN document_NN di_FW is_VBZ defined_VBN as_IN xi_NN =_JJ -LSB-_-LRB- xi1_NN ,_, xi2_NN ,_, ,_, xim_NN -RSB-_-RRB- T_NN ,_, xik_NN =_JJ tik_NN log_NN n_NN idfk_NN ,_, where_WRB tik_NN is_VBZ the_DT term_NN frequency_NN of_IN wk_NN W_NN ,_, n_NN is_VBZ the_DT size_NN of_IN the_DT document_NN corpus_NN ,_, idfk_NN is_VBZ the_DT number_NN of_IN documents_NNS that_IN contain_VBP word_NN wk_NN ._.
+In_IN this_DT way_NN ,_, xi_NN is_VBZ also_RB called_VBN the_DT TFIDF_NN representation_NN of_IN document_NN di_FW ._.
+Furthermore_RB ,_, we_PRP also_RB normalize_VBP each_DT xi_NN -LRB-_-LRB- #_# i_FW n_NN -RRB-_-RRB- to_TO have_VB a_DT unit_NN length_NN ,_, so_RB that_IN each_DT document_NN is_VBZ represented_VBN by_IN a_DT normalized_VBN TF-IDF_NN vector_NN ._.
+2_LS ._.
+#_# Local_JJ Regularization_NN As_IN its_PRP$ name_NN suggests_VBZ ,_, CLGR_NN is_VBZ composed_VBN of_IN two_CD parts_NNS :_: local_JJ regularization_NN and_CC global_JJ regularization_NN ._.
+In_IN this_DT subsection_NN we_PRP will_MD introduce_VB the_DT local_JJ regularization_NN part_NN in_IN detail_NN ._.
+2_LS ._.
+#_# ._.
+#_# Motivation_NN As_IN we_PRP know_VBP that_IN clustering_NN is_VBZ one_CD type_NN of_IN learning_VBG techniques_NNS ,_, it_PRP aims_VBZ to_TO organize_VB the_DT dataset_NN in_IN a_DT reasonable_JJ way_NN ._.
+Generally_RB speaking_VBG ,_, learning_VBG can_MD be_VB posed_VBN as_IN a_DT problem_NN of_IN function_NN estimation_NN ,_, from_IN which_WDT we_PRP can_MD get_VB a_DT good_JJ classification_NN function_NN that_WDT will_MD assign_VB labels_NNS to_TO the_DT training_NN dataset_NN and_CC even_RB the_DT unseen_JJ testing_NN dataset_NN with_IN some_DT cost_NN minimized_VBN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+For_IN example_NN ,_, in_IN the_DT two-class_JJ classification_NN scenario1_NN -LRB-_-LRB- in_IN which_WDT we_PRP exactly_RB know_VBP the_DT label_NN of_IN each_DT document_NN -RRB-_-RRB- ,_, a_DT linear_JJ classifier_NN with_IN least_JJS square_JJ fit_NN aims_VBZ to_TO learn_VB a_DT column_NN vector_NN w_NN such_JJ that_IN the_DT squared_VBN cost_NN J_NN =_JJ 1_CD n_NN -LRB-_-LRB- wT_NN xi_NN yi_NN -RRB-_-RRB- #_# -LRB-_-LRB- #_# -RRB-_-RRB- is_VBZ minimized_VBN ,_, where_WRB yi_NN -LCB-_-LRB- +_CC #_# ,_, #_# -RCB-_-RRB- is_VBZ the_DT label_NN of_IN xi_NN ._.
+By_IN taking_VBG J_NN /_: w_NN =_JJ #_# ,_, we_PRP get_VBP the_DT solution_NN w_NN =_JJ n_NN i_FW =_JJ #_# xixT_NNPS i_FW 1_CD n_NN i_FW =_JJ #_# xiyi_FW ,_, -LRB-_-LRB- #_# -RRB-_-RRB- which_WDT can_MD further_RB be_VB written_VBN in_IN its_PRP$ matrix_NN form_NN as_IN w_NN =_JJ XXT_NN 1_CD Xy_NN ,_, -LRB-_-LRB- #_# -RRB-_-RRB- where_WRB X_NN =_JJ -LSB-_-LRB- x1_NN ,_, x2_NN ,_, ,_, xn_NN -RSB-_-RRB- is_VBZ an_DT m_NN n_NN document_NN matrix_NN ,_, y_NN =_JJ -LSB-_-LRB- y1_NN ,_, y2_NN ,_, ,_, yn_NN -RSB-_-RRB- T_NN is_VBZ the_DT label_NN vector_NN ._.
+Then_RB for_IN a_DT test_NN document_NN t_NN ,_, we_PRP can_MD determine_VB its_PRP$ label_NN by_IN l_NN =_JJ sign_NN -LRB-_-LRB- wT_NN u_NN -RRB-_-RRB- ,_, -LRB-_-LRB- #_# -RRB-_-RRB- where_WRB sign_NN -LRB-_-LRB- -RRB-_-RRB- is_VBZ the_DT sign_NN function_NN ._.
+A_DT natural_JJ problem_NN in_IN Eq_NN ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- is_VBZ that_IN the_DT matrix_NN XXT_NN may_MD be_VB singular_JJ and_CC thus_RB not_RB invertable_JJ -LRB-_-LRB- e_LS ._.
+g_NN ._.
+when_WRB m_NN n_NN -RRB-_-RRB- ._.
+To_TO avoid_VB such_PDT a_DT problem_NN ,_, we_PRP can_MD add_VB a_DT regularization_NN term_NN and_CC minimize_VB the_DT following_VBG criterion_NN J_NN =_JJ 1_CD n_NN n_NN i_FW =_JJ #_# -LRB-_-LRB- wT_NN xi_NN yi_NN -RRB-_-RRB- #_# +_CC w_NN #_# ,_, -LRB-_-LRB- #_# -RRB-_-RRB- where_WRB is_VBZ a_DT regularization_NN parameter_NN ._.
+Then_RB the_DT optimal_JJ solution_NN that_WDT minimize_VBP J_NN is_VBZ given_VBN by_IN w_NN =_JJ XXT_NN +_CC nI_NN 1_CD Xy_NN ,_, -LRB-_-LRB- #_# -RRB-_-RRB- where_WRB I_PRP is_VBZ an_DT m_NN m_NN identity_NN matrix_NN ._.
+It_PRP has_VBZ been_VBN reported_VBN that_IN the_DT regularized_VBN linear_JJ classifier_NN can_MD achieve_VB very_RB good_JJ results_NNS on_IN text_NN classification_NN problems_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+However_RB ,_, despite_IN its_PRP$ empirical_JJ success_NN ,_, the_DT regularized_VBN linear_JJ classifier_NN is_VBZ on_IN earth_NN a_DT global_JJ classifier_NN ,_, i_FW ._.
+e_LS ._.
+w_NN is_VBZ estimated_VBN using_VBG the_DT whole_JJ training_NN set_NN ._.
+According_VBG to_TO -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, this_DT may_MD not_RB be_VB a_DT smart_JJ idea_NN ,_, since_IN a_DT unique_JJ w_NN may_MD not_RB be_VB good_JJ enough_RB for_IN predicting_VBG the_DT labels_NNS of_IN the_DT whole_JJ input_NN space_NN ._.
+In_IN order_NN to_TO get_VB better_JJR predictions_NNS ,_, -LSB-_-LRB- #_# -RSB-_-RRB- proposed_VBN to_TO train_VB classifiers_NNS locally_RB and_CC use_VB them_PRP to_TO classify_VB the_DT testing_NN points_NNS ._.
+For_IN example_NN ,_, a_DT testing_NN point_NN will_MD be_VB classified_VBN by_IN the_DT local_JJ classifier_NN trained_VBN using_VBG the_DT training_NN points_NNS located_JJ in_IN the_DT vicinity_NN 1_CD In_IN the_DT following_VBG discussions_NNS we_PRP all_DT assume_VBP that_IN the_DT documents_NNS coming_VBG from_IN only_RB two_CD classes_NNS ._.
+The_DT generalizations_NNS of_IN our_PRP$ method_NN to_TO multi-class_JJ cases_NNS will_MD be_VB discussed_VBN in_IN section_NN 2_CD ._.
+#_# ._.
+of_IN it_PRP ._.
+Although_IN this_DT method_NN seems_VBZ slow_JJ and_CC stupid_JJ ,_, it_PRP is_VBZ reported_VBN that_IN it_PRP can_MD get_VB better_JJR performances_NNS than_IN using_VBG a_DT unique_JJ global_JJ classifier_NN on_IN certain_JJ tasks_NNS -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+2_LS ._.
+#_# ._.
+#_# Constructing_VBG the_DT Local_JJ Regularized_JJ Predictors_NNS Inspired_VBN by_IN their_PRP$ success_NN ,_, we_PRP proposed_VBD to_TO apply_VB the_DT local_JJ learning_NN algorithms_NNS for_IN clustering_NN ._.
+The_DT basic_JJ idea_NN is_VBZ that_IN ,_, for_IN each_DT document_NN vector_NN xi_NN -LRB-_-LRB- #_# i_FW n_NN -RRB-_-RRB- ,_, we_PRP train_VBP a_DT local_JJ label_NN predictor_NN based_VBN on_IN its_PRP$ k-nearest_JJ neighborhood_NN Ni_NN ,_, and_CC then_RB use_VB it_PRP to_TO predict_VB the_DT label_NN of_IN xi_NN ._.
+Finally_RB we_PRP will_MD combine_VB all_PDT those_DT local_JJ predictors_NNS by_IN minimizing_VBG the_DT sum_NN of_IN their_PRP$ prediction_NN errors_NNS ._.
+In_IN this_DT subsection_NN we_PRP will_MD introduce_VB how_WRB to_TO construct_VB those_DT local_JJ predictors_NNS ._.
+Due_JJ to_TO the_DT simplicity_NN and_CC effectiveness_NN of_IN the_DT regularized_VBN linear_JJ classifier_NN that_IN we_PRP have_VBP introduced_VBN in_IN section_NN #_# ._.
+#_# ._.
+#_# ,_, we_PRP choose_VBP it_PRP to_TO be_VB our_PRP$ local_JJ label_NN predictor_NN ,_, such_JJ that_IN for_IN each_DT document_NN xi_NN ,_, the_DT following_VBG criterion_NN is_VBZ minimized_VBN Ji_NN =_JJ 1_CD ni_NN xj_NN Ni_NN wT_NN i_FW xj_FW qj_NN 2_CD +_CC i_FW wi_FW 2_CD ,_, -LRB-_-LRB- #_# -RRB-_-RRB- where_WRB ni_NN =_JJ |_CD Ni_NN |_NN is_VBZ the_DT cardinality_NN of_IN Ni_NNP ,_, and_CC qj_NN is_VBZ the_DT cluster_NN membership_NN of_IN xj_NN ._.
+Then_RB using_VBG Eq_NN ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- ,_, we_PRP can_MD get_VB the_DT optimal_JJ solution_NN is_VBZ w_NN i_FW =_JJ XiXT_NN i_FW +_CC iniI_FW 1_CD Xiqi_NNP ,_, -LRB-_-LRB- #_# -RRB-_-RRB- where_WRB Xi_NN =_JJ -LSB-_-LRB- xi1_NN ,_, xi2_NN ,_, ,_, xini_NN -RSB-_-RRB- ,_, and_CC we_PRP use_VBP xik_NN to_TO denote_VB the_DT k-th_JJ nearest_JJS neighbor_NN of_IN xi_NN ._.
+qi_NN =_JJ -LSB-_-LRB- qi1_NN ,_, qi2_NN ,_, ,_, qini_NNS -RSB-_-RRB- T_NN with_IN qik_NN representing_VBG the_DT cluster_NN assignment_NN of_IN xik_NN ._.
+The_DT problem_NN here_RB is_VBZ that_IN XiXT_NN i_FW is_VBZ an_DT m_NN m_NN matrix_NN with_IN m_NN ni_NNS ,_, i_FW ._.
+e_LS ._.
+we_PRP should_MD compute_VB the_DT inverse_NN of_IN an_DT m_NN m_NN matrix_NN for_IN every_DT document_NN vector_NN ,_, which_WDT is_VBZ computationally_RB prohibited_VBN ._.
+Fortunately_RB ,_, we_PRP have_VBP the_DT following_VBG theorem_NN :_: Theorem_NNP #_# ._.
+w_NN i_FW in_IN Eq_NN ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- can_MD be_VB rewritten_VBN as_IN w_NN i_FW =_JJ Xi_NN XT_NN i_FW Xi_NN +_CC iniIi_NN 1_CD qi_NN ,_, -LRB-_-LRB- #_# -RRB-_-RRB- where_WRB Ii_NN is_VBZ an_DT ni_JJ ni_NNS identity_NN matrix_NN ._.
+Proof_NN ._.
+Since_IN w_NN i_FW =_JJ XiXT_NN i_FW +_CC iniI_FW 1_CD Xiqi_NNP ,_, then_RB XiXT_NN i_FW +_CC iniI_FW w_FW i_FW =_JJ Xiqi_NN =_JJ XiXT_NN i_FW w_FW i_FW +_CC iniw_FW i_FW =_JJ Xiqi_NN =_JJ w_NN i_FW =_JJ -LRB-_-LRB- ini_NNS -RRB-_-RRB- #_# Xi_NN qi_NN XT_NNP i_FW w_FW i_FW ._.
+Let_VB =_JJ -LRB-_-LRB- ini_NNS -RRB-_-RRB- #_# qi_FW XT_FW i_FW w_FW i_FW ,_, then_RB w_VB i_FW =_JJ Xi_NN =_JJ ini_NN =_JJ qi_FW XT_FW i_FW w_FW i_FW =_JJ qi_FW XT_FW i_FW Xi_NN =_JJ qi_NN =_JJ XT_NN i_FW Xi_NN +_CC iniIi_NN =_JJ =_JJ XT_NN i_FW Xi_NN +_CC iniIi_NN 1_CD qi_NN ._.
+Therefore_RB w_FW i_FW =_JJ Xi_NN =_JJ Xi_NN XT_NN i_FW Xi_NN +_CC iniIi_NN 1_CD qi_NN #_# Using_VBG theorem_NN #_# ,_, we_PRP only_RB need_VBP to_TO compute_VB the_DT inverse_NN of_IN an_DT ni_JJ ni_NNS matrix_NN for_IN every_DT document_NN to_TO train_VB a_DT local_JJ label_NN predictor_NN ._.
+Moreover_RB ,_, for_IN a_DT new_JJ testing_NN point_NN u_NN that_WDT falls_VBZ into_IN Ni_NNP ,_, we_PRP can_MD classify_VB it_PRP by_IN the_DT sign_NN of_IN qu_NN =_JJ wT_NN i_FW u_FW =_JJ uT_NN wi_NN =_JJ uT_NN Xi_NN XT_NN i_FW Xi_NN +_CC iniIi_NN 1_CD qi_NN ._.
+This_DT is_VBZ an_DT attractive_JJ expression_NN since_IN we_PRP can_MD determine_VB the_DT cluster_NN assignment_NN of_IN u_NN by_IN using_VBG the_DT inner-products_NNS between_IN the_DT points_NNS in_IN -LCB-_-LRB- u_FW Ni_FW -RCB-_-RRB- ,_, which_WDT suggests_VBZ that_IN such_PDT a_DT local_JJ regularizer_NN can_MD easily_RB be_VB kernelized_VBN -LSB-_-LRB- ##_CD -RSB-_-RRB- as_RB long_RB as_IN we_PRP define_VBP a_DT proper_JJ kernel_NN function_NN ._.
+2_LS ._.
+#_# ._.
+#_# Combining_VBG the_DT Local_JJ Regularized_JJ Predictors_NNS After_IN all_PDT the_DT local_JJ predictors_NNS having_VBG been_VBN constructed_VBN ,_, we_PRP will_MD combine_VB them_PRP together_RB by_IN minimizing_VBG Jl_NN =_JJ n_NN i_FW =_JJ #_# wT_NNP i_FW xi_FW qi_FW 2_CD ,_, -LRB-_-LRB- ##_CD -RRB-_-RRB- which_WDT stands_VBZ for_IN the_DT sum_NN of_IN the_DT prediction_NN errors_NNS for_IN all_PDT the_DT local_JJ predictors_NNS ._.
+Combining_VBG Eq_NN ._.
+-LRB-_-LRB- ##_NN -RRB-_-RRB- with_IN Eq_NN ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- ,_, we_PRP can_MD get_VB Jl_NN =_JJ n_NN i_FW =_JJ #_# wT_NNP i_FW xi_FW qi_FW 2_CD =_JJ n_NN i_FW =_JJ #_# xT_NNP i_FW Xi_NN XT_NN i_FW Xi_NN +_CC iniIi_NN 1_CD qi_NN qi_NN 2_CD =_JJ Pq_NN q_NN #_# ,_, -LRB-_-LRB- ##_CD -RRB-_-RRB- where_WRB q_NN =_JJ -LSB-_-LRB- q1_NN ,_, q2_NN ,_, ,_, qn_NN -RSB-_-RRB- T_NN ,_, and_CC the_DT P_NN is_VBZ an_DT n_NN n_NN matrix_NN constructing_VBG in_IN the_DT following_JJ way_NN ._.
+Let_VB i_FW =_JJ xT_NN i_FW Xi_NN XT_NN i_FW Xi_NN +_CC iniIi_NN 1_CD ,_, then_RB Pij_NN =_JJ i_FW j_FW ,_, if_IN xj_NN Ni_NN 0_CD ,_, otherwise_RB ,_, -LRB-_-LRB- ##_CD -RRB-_-RRB- where_WRB Pij_NNP is_VBZ the_DT -LRB-_-LRB- i_FW ,_, j_NN -RRB-_-RRB- -_: th_DT entry_NN of_IN P_NN ,_, and_CC i_FW j_FW represents_VBZ the_DT j-th_JJ entry_NN of_IN i_FW ._.
+Till_IN now_RB we_PRP can_MD write_VB the_DT criterion_NN of_IN clustering_NN by_IN combining_VBG locally_RB regularized_VBN linear_JJ label_NN predictors_NNS Jl_NN in_IN an_DT explicit_JJ mathematical_JJ form_NN ,_, and_CC we_PRP can_MD minimize_VB it_PRP directly_RB using_VBG some_DT standard_JJ optimization_NN techniques_NNS ._.
+However_RB ,_, the_DT results_NNS may_MD not_RB be_VB good_JJ enough_RB since_IN we_PRP only_RB exploit_VBP the_DT local_JJ informations_NNS of_IN the_DT dataset_NN ._.
+In_IN the_DT next_JJ subsection_NN ,_, we_PRP will_MD introduce_VB a_DT global_JJ regularization_NN criterion_NN and_CC combine_VBP it_PRP with_IN Jl_NN ,_, which_WDT aims_VBZ to_TO find_VB a_DT good_JJ clustering_NN result_NN in_IN a_DT local-global_JJ way_NN ._.
+2_LS ._.
+#_# Global_JJ Regularization_NN In_IN data_NNS clustering_NN ,_, we_PRP usually_RB require_VBP that_IN the_DT cluster_NN assignments_NNS of_IN the_DT data_NNS points_NNS should_MD be_VB sufficiently_RB smooth_JJ with_IN respect_NN to_TO the_DT underlying_VBG data_NNS manifold_NN ,_, which_WDT implies_VBZ -LRB-_-LRB- #_# -RRB-_-RRB- the_DT nearby_JJ points_NNS tend_VBP to_TO have_VB the_DT same_JJ cluster_NN assignments_NNS ;_: -LRB-_-LRB- #_# -RRB-_-RRB- the_DT points_NNS on_IN the_DT same_JJ structure_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+submanifold_JJ or_CC cluster_NN -RRB-_-RRB- tend_VBP to_TO have_VB the_DT same_JJ cluster_NN assignments_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Without_IN the_DT loss_NN of_IN generality_NN ,_, we_PRP assume_VBP that_IN the_DT data_NNS points_NNS reside_VBP -LRB-_-LRB- roughly_RB -RRB-_-RRB- on_IN a_DT low-dimensional_JJ manifold_NN M2_NN ,_, and_CC q_NN is_VBZ the_DT cluster_NN assignment_NN function_NN defined_VBN on_IN M_NN ,_, i_FW ._.
+e_LS ._.
+2_CD We_PRP believe_VBP that_IN the_DT text_NN data_NNS are_VBP also_RB sampled_VBN from_IN some_DT low_JJ dimensional_JJ manifold_NN ,_, since_IN it_PRP is_VBZ impossible_JJ for_IN them_PRP to_TO for_IN x_NN M_NN ,_, q_NN -LRB-_-LRB- x_NN -RRB-_-RRB- returns_VBZ the_DT cluster_NN membership_NN of_IN x_NN ._.
+The_DT smoothness_NN of_IN q_NN over_IN M_NN can_MD be_VB calculated_VBN by_IN the_DT following_VBG Dirichlet_NNP integral_JJ -LSB-_-LRB- #_# -RSB-_-RRB- D_NN -LSB-_-LRB- q_NN -RSB-_-RRB- =_JJ 1_CD 2_CD M_NN q_NN -LRB-_-LRB- x_NN -RRB-_-RRB- #_# dM_NNP ,_, -LRB-_-LRB- ##_CD -RRB-_-RRB- where_WRB the_DT gradient_NN q_NN is_VBZ a_DT vector_NN in_IN the_DT tangent_NN space_NN T_NN Mx_NN ,_, and_CC the_DT integral_JJ is_VBZ taken_VBN with_IN respect_NN to_TO the_DT standard_JJ measure_NN on_IN M_NN ._.
+If_IN we_PRP restrict_VBP the_DT scale_NN of_IN q_NN by_IN q_NN ,_, q_VB M_NN =_JJ #_# -LRB-_-LRB- where_WRB ,_, M_NN is_VBZ the_DT inner_JJ product_NN induced_VBN on_IN M_NN -RRB-_-RRB- ,_, then_RB it_PRP turns_VBZ out_RP that_IN finding_VBG the_DT smoothest_JJS function_NN minimizing_VBG D_NN -LSB-_-LRB- q_NN -RSB-_-RRB- reduces_VBZ to_TO finding_VBG the_DT eigenfunctions_NNS of_IN the_DT Laplace_NNP Beltrami_NNP operator_NN L_NN ,_, which_WDT is_VBZ defined_VBN as_IN Lq_NN div_NN q_NN ,_, -LRB-_-LRB- ##_CD -RRB-_-RRB- where_WRB div_NN is_VBZ the_DT divergence_NN of_IN a_DT vector_NN field_NN ._.
+Generally_RB ,_, the_DT graph_NN can_MD be_VB viewed_VBN as_IN the_DT discretized_JJ form_NN of_IN manifold_NN ._.
+We_PRP can_MD model_VB the_DT dataset_NN as_IN an_DT weighted_JJ undirected_JJ graph_NN as_IN in_IN spectral_JJ clustering_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, where_WRB the_DT graph_NN nodes_NNS are_VBP just_RB the_DT data_NNS points_NNS ,_, and_CC the_DT weights_NNS on_IN the_DT edges_NNS represent_VBP the_DT similarities_NNS between_IN pairwise_JJ points_NNS ._.
+Then_RB it_PRP can_MD be_VB shown_VBN that_IN minimizing_VBG Eq_NN ._.
+-LRB-_-LRB- ##_NN -RRB-_-RRB- corresponds_VBZ to_TO minimizing_VBG Jg_NN =_JJ qT_NN Lq_NN =_JJ n_NN i_FW =_JJ #_# -LRB-_-LRB- qi_FW qj_FW -RRB-_-RRB- #_# wij_NN ,_, -LRB-_-LRB- ##_CD -RRB-_-RRB- where_WRB q_NN =_JJ -LSB-_-LRB- q1_NN ,_, q2_NN ,_, ,_, qn_NN -RSB-_-RRB- T_NN with_IN qi_NN =_JJ q_NN -LRB-_-LRB- xi_NN -RRB-_-RRB- ,_, L_NN is_VBZ the_DT graph_NN Laplacian_NN with_IN its_PRP$ -LRB-_-LRB- i_FW ,_, j_NN -RRB-_-RRB- -_: th_DT entry_NN Lij_NN =_JJ di_FW wii_FW ,_, if_IN i_FW =_JJ j_NN wij_NN ,_, if_IN xi_NN and_CC xj_NN are_VBP adjacent_JJ 0_CD ,_, otherwise_RB ,_, -LRB-_-LRB- ##_CD -RRB-_-RRB- where_WRB di_FW =_JJ j_NN wij_NN is_VBZ the_DT degree_NN of_IN xi_NN ,_, wij_NN is_VBZ the_DT similarity_NN between_IN xi_NN and_CC xj_NN ._.
+If_IN xi_NN and_CC xj_NN are_VBP adjacent3_NN ,_, wij_NN is_VBZ usually_RB computed_VBN in_IN the_DT following_JJ way_NN wij_NN =_JJ e_SYM xixj_FW 2_CD 22_CD ,_, -LRB-_-LRB- ##_CD -RRB-_-RRB- where_WRB is_VBZ a_DT dataset_NN dependent_JJ parameter_NN ._.
+It_PRP is_VBZ proved_VBN that_IN under_IN certain_JJ conditions_NNS ,_, such_PDT a_DT form_NN of_IN wij_NN to_TO determine_VB the_DT weights_NNS on_IN graph_NN edges_VBZ leads_VBZ to_TO the_DT convergence_NN of_IN graph_NN Laplacian_NN to_TO the_DT Laplace_NNP Beltrami_NNP operator_NN -LSB-_-LRB- #_# -RSB-_-RRB- -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+In_IN summary_NN ,_, using_VBG Eq_NN ._.
+-LRB-_-LRB- ##_NN -RRB-_-RRB- with_IN exponential_JJ weights_NNS can_MD effectively_RB measure_VB the_DT smoothness_NN of_IN the_DT data_NNS assignments_NNS with_IN respect_NN to_TO the_DT intrinsic_JJ data_NNS manifold_NN ._.
+Thus_RB we_PRP adopt_VB it_PRP as_IN a_DT global_JJ regularizer_NN to_TO punish_VB the_DT smoothness_NN of_IN the_DT predicted_VBN data_NNS assignments_NNS ._.
+2_LS ._.
+#_# Clustering_VBG with_IN Local_JJ and_CC Global_JJ Regularization_NN Combining_VBG the_DT contents_NNS we_PRP have_VBP introduced_VBN in_IN section_NN #_# ._.
+#_# and_CC section_NN #_# ._.
+#_# we_PRP can_MD derive_VB the_DT clustering_NN criterion_NN is_VBZ minq_JJ J_NN =_JJ Jl_NN +_CC Jg_NN =_JJ Pq_NN q_NN #_# +_CC qT_NN Lq_NN s_NNS ._.
+t_NN ._.
+qi_NN -LCB-_-LRB- #_# ,_, +_CC #_# -RCB-_-RRB- ,_, -LRB-_-LRB- ##_CD -RRB-_-RRB- where_WRB P_NN is_VBZ defined_VBN as_IN in_IN Eq_NN ._.
+-LRB-_-LRB- ##_NN -RRB-_-RRB- ,_, and_CC is_VBZ a_DT regularization_NN parameter_NN to_TO trade_VB off_RP Jl_NN and_CC Jg_NN ._.
+However_RB ,_, the_DT discrete_JJ fill_NN in_IN the_DT whole_JJ high-dimensional_JJ sample_NN space_NN ._.
+And_CC it_PRP has_VBZ been_VBN shown_VBN that_IN the_DT manifold_NN based_VBN methods_NNS can_MD achieve_VB good_JJ results_NNS on_IN text_NN classification_NN tasks_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+3_CD In_IN this_DT paper_NN ,_, we_PRP define_VBP xi_NN and_CC xj_NN to_TO be_VB adjacent_JJ if_IN xi_NN N_NN -LRB-_-LRB- xj_NN -RRB-_-RRB- or_CC xj_NN N_NN -LRB-_-LRB- xi_NN -RRB-_-RRB- ._.
+constraint_NN of_IN pi_NN makes_VBZ the_DT problem_NN an_DT NP_NN hard_JJ integer_NN programming_NN problem_NN ._.
+A_DT natural_JJ way_NN for_IN making_VBG the_DT problem_NN solvable_JJ is_VBZ to_TO remove_VB the_DT constraint_NN and_CC relax_VB qi_NN to_TO be_VB continuous_JJ ,_, then_RB the_DT objective_NN that_IN we_PRP aims_VBZ to_TO minimize_VB becomes_VBZ J_NN =_JJ Pq_NN q_NN #_# +_CC qT_NN Lq_NN =_JJ qT_NN -LRB-_-LRB- P_NN I_NN -RRB-_-RRB- T_NN -LRB-_-LRB- P_NN I_NN -RRB-_-RRB- q_NN +_CC qT_NN Lq_NN =_JJ qT_NN -LRB-_-LRB- P_NN I_NN -RRB-_-RRB- T_NN -LRB-_-LRB- P_NN I_NN -RRB-_-RRB- +_CC L_NN q_NN ,_, -LRB-_-LRB- ##_CD -RRB-_-RRB- and_CC we_PRP further_RB add_VBP a_DT constraint_NN qT_NN q_NN =_JJ #_# to_TO restrict_VB the_DT scale_NN of_IN q_NN ._.
+Then_RB our_PRP$ objective_JJ becomes_VBZ minq_NN J_NN =_JJ qT_NN -LRB-_-LRB- P_NN I_NN -RRB-_-RRB- T_NN -LRB-_-LRB- P_NN I_NN -RRB-_-RRB- +_CC L_NN q_VBP s_NNS ._.
+t_NN ._.
+qT_NN q_NN =_JJ #_# -LRB-_-LRB- ##_CD -RRB-_-RRB- Using_VBG the_DT Lagrangian_NN method_NN ,_, we_PRP can_MD derive_VB that_IN the_DT optimal_JJ solution_NN q_NN corresponds_VBZ to_TO the_DT smallest_JJS eigenvector_NN of_IN the_DT matrix_NN M_NN =_JJ -LRB-_-LRB- P_NN I_NN -RRB-_-RRB- T_NN -LRB-_-LRB- P_NN I_NN -RRB-_-RRB- +_CC L_NN ,_, and_CC the_DT cluster_NN assignment_NN of_IN xi_NN can_MD be_VB determined_VBN by_IN the_DT sign_NN of_IN qi_NN ,_, i_FW ._.
+e_LS ._.
+xi_NN will_MD be_VB classified_VBN as_IN class_NN one_CD if_IN qi_NN >_JJR #_# ,_, otherwise_RB it_PRP will_MD be_VB classified_VBN as_IN class_NN #_# ._.
+2_LS ._.
+#_# Multi-Class_NNPS CLGR_NNP In_IN the_DT above_IN we_PRP have_VBP introduced_VBN the_DT basic_JJ framework_NN of_IN Clustering_VBG with_IN Local_JJ and_CC Global_JJ Regularization_NN -LRB-_-LRB- CLGR_NN -RRB-_-RRB- for_IN the_DT two-class_JJ clustering_NN problem_NN ,_, and_CC we_PRP will_MD extending_VBG it_PRP to_TO multi-class_JJ clustering_NN in_IN this_DT subsection_NN ._.
+First_RB we_PRP assume_VBP that_IN all_PDT the_DT documents_NNS belong_VBP to_TO C_NN classes_NNS indexed_VBN by_IN L_NN =_JJ -LCB-_-LRB- #_# ,_, #_# ,_, ,_, C_NN -RCB-_-RRB- ._.
+qc_NN is_VBZ the_DT classification_NN function_NN for_IN class_NN c_NN -LRB-_-LRB- #_# c_NN C_NN -RRB-_-RRB- ,_, such_JJ that_IN qc_NN -LRB-_-LRB- xi_NN -RRB-_-RRB- returns_VBZ the_DT confidence_NN that_IN xi_NN belongs_VBZ to_TO class_NN c_NN ._.
+Our_PRP$ goal_NN is_VBZ to_TO obtain_VB the_DT value_NN of_IN qc_NN -LRB-_-LRB- xi_NN -RRB-_-RRB- -LRB-_-LRB- #_# c_NN C_NN ,_, #_# i_FW n_NN -RRB-_-RRB- ,_, and_CC the_DT cluster_NN assignment_NN of_IN xi_NN can_MD be_VB determined_VBN by_IN -LCB-_-LRB- qc_NN -LRB-_-LRB- xi_NN -RRB-_-RRB- -RCB-_-RRB- C_NN c_NN =_JJ #_# using_VBG some_DT proper_JJ discretization_NN methods_NNS that_IN we_PRP will_MD introduce_VB later_RB ._.
+Therefore_RB ,_, in_IN this_DT multi-class_JJ case_NN ,_, for_IN each_DT document_NN xi_NN -LRB-_-LRB- #_# i_FW n_NN -RRB-_-RRB- ,_, we_PRP will_MD construct_VB C_NN locally_RB linear_JJ regularized_VBN label_NN predictors_NNS whose_WP$ normal_JJ vectors_NNS are_VBP wc_NN i_FW =_JJ Xi_NN XT_NN i_FW Xi_NN +_CC iniIi_NN 1_CD qc_NN i_FW -LRB-_-LRB- #_# c_NN C_NN -RRB-_-RRB- ,_, -LRB-_-LRB- ##_CD -RRB-_-RRB- where_WRB Xi_NN =_JJ -LSB-_-LRB- xi1_NN ,_, xi2_NN ,_, ,_, xini_NN -RSB-_-RRB- with_IN xik_NN being_VBG the_DT k-th_JJ neighbor_NN of_IN xi_NN ,_, and_CC qc_NN i_FW =_JJ -LSB-_-LRB- qc_NN i1_NN ,_, qc_NN i2_NN ,_, ,_, qc_NN ini_NN -RSB-_-RRB- T_NN with_IN qc_NN ik_NN =_JJ qc_NN -LRB-_-LRB- xik_NN -RRB-_-RRB- ._.
+Then_RB -LRB-_-LRB- wc_NN i_LS -RRB-_-RRB- T_NN xi_NN returns_VBZ the_DT predicted_VBN confidence_NN of_IN xi_NN belonging_VBG to_TO class_NN c_NN ._.
+Hence_RB the_DT local_JJ prediction_NN error_NN for_IN class_NN c_NN can_MD be_VB defined_VBN as_IN J_NN c_NN l_NN =_JJ n_NN i_FW =_JJ #_# -LRB-_-LRB- wc_NN i_LS -RRB-_-RRB- T_NN xi_NN qc_NN i_FW 2_CD ,_, -LRB-_-LRB- ##_CD -RRB-_-RRB- And_CC the_DT total_JJ local_JJ prediction_NN error_NN becomes_VBZ Jl_NN =_JJ C_NN c_NN =_JJ #_# J_NNP c_NN l_NN =_JJ C_NN c_NN =_JJ #_# n_NN i_FW =_JJ #_# -LRB-_-LRB- wc_NN i_LS -RRB-_-RRB- T_NN xi_NN qc_NN i_FW 2_LS ._.
+-LRB-_-LRB- ##_NN -RRB-_-RRB- As_IN in_IN Eq_NN ._.
+-LRB-_-LRB- ##_NN -RRB-_-RRB- ,_, we_PRP can_MD define_VB an_DT nn_NN matrix_NN P_NN -RRB-_-RRB- and_CC rewrite_VB Jl_NNP as_IN Jl_NN =_JJ C_NN c_NN =_JJ #_# J_NNP c_NN l_NN =_JJ C_NN c_NN =_JJ #_# Pqc_NN qc_NN #_# ._.
+-LRB-_-LRB- ##_NN -RRB-_-RRB- Similarly_RB we_PRP can_MD define_VB the_DT global_JJ smoothness_NN regularizer_NN in_IN multi-class_JJ case_NN as_IN Jg_NN =_JJ C_NN c_NN =_JJ #_# n_NN i_FW =_JJ #_# -LRB-_-LRB- qc_NN i_FW qc_FW j_NN -RRB-_-RRB- #_# wij_NN =_JJ C_NN c_NN =_JJ #_# -LRB-_-LRB- qc_NN -RRB-_-RRB- T_NN Lqc_NN ._.
+-LRB-_-LRB- ##_NN -RRB-_-RRB- Then_RB the_DT criterion_NN to_TO be_VB minimized_VBN for_IN CLGR_NN in_IN multi-class_JJ case_NN becomes_VBZ J_NN =_JJ Jl_NN +_CC Jg_NN =_JJ C_NN c_NN =_JJ #_# Pqc_NN qc_NN #_# +_CC -LRB-_-LRB- qc_NN -RRB-_-RRB- T_NN Lqc_NN =_JJ C_NN c_NN =_JJ #_# -LRB-_-LRB- qc_NN -RRB-_-RRB- T_NN -LRB-_-LRB- P_NN I_NN -RRB-_-RRB- T_NN -LRB-_-LRB- P_NN I_NN -RRB-_-RRB- +_CC L_NN qc_NN =_JJ trace_NN QT_NN -LRB-_-LRB- P_NN I_NN -RRB-_-RRB- T_NN -LRB-_-LRB- P_NN I_NN -RRB-_-RRB- +_CC L_NN Q_NNP ,_, -LRB-_-LRB- ##_CD -RRB-_-RRB- where_WRB Q_NNP =_JJ -LSB-_-LRB- q1_NN ,_, q2_NN ,_, ,_, qc_NN -RSB-_-RRB- is_VBZ an_DT n_NN c_NN matrix_NN ,_, and_CC trace_NN -LRB-_-LRB- -RRB-_-RRB- returns_VBZ the_DT trace_NN of_IN a_DT matrix_NN ._.
+The_DT same_JJ as_IN in_IN Eq_NN ._.
+-LRB-_-LRB- ##_NN -RRB-_-RRB- ,_, we_PRP also_RB add_VBP the_DT constraint_NN that_WDT QT_NNP Q_NNP =_JJ I_CD to_TO restrict_VB the_DT scale_NN of_IN Q_NNP ._.
+Then_RB our_PRP$ optimization_NN problem_NN becomes_VBZ minQ_NN J_NN =_JJ trace_NN QT_NN -LRB-_-LRB- P_NN I_NN -RRB-_-RRB- T_NN -LRB-_-LRB- P_NN I_NN -RRB-_-RRB- +_CC L_NN Q_NNP s_NNS ._.
+t_NN ._.
+QT_NNP Q_NNP =_JJ I_CD ,_, -LRB-_-LRB- ##_CD -RRB-_-RRB- From_IN the_DT Ky_NNP Fan_NN theorem_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, we_PRP know_VBP the_DT optimal_JJ solution_NN of_IN the_DT above_JJ problem_NN is_VBZ Q_NNP =_JJ -LSB-_-LRB- q_VB 1_CD ,_, q_NN 2_CD ,_, ,_, q_VB C_NN -RSB-_-RRB- R_NN ,_, -LRB-_-LRB- ##_CD -RRB-_-RRB- where_WRB q_JJ k_NN -LRB-_-LRB- #_# k_NN C_NN -RRB-_-RRB- is_VBZ the_DT eigenvector_NN corresponds_VBZ to_TO the_DT k-th_JJ smallest_JJS eigenvalue_NN of_IN matrix_NN -LRB-_-LRB- P_NN I_NN -RRB-_-RRB- T_NN -LRB-_-LRB- P_NN I_NN -RRB-_-RRB- +_CC L_NN ,_, and_CC R_NN is_VBZ an_DT arbitrary_JJ C_NN C_NN matrix_NN ._.
+Since_IN the_DT values_NNS of_IN the_DT entries_NNS in_IN Q_NNP is_VBZ continuous_JJ ,_, we_PRP need_VBP to_TO further_JJ discretize_NN Q_NNP to_TO get_VB the_DT cluster_NN assignments_NNS of_IN all_PDT the_DT data_NNS points_NNS ._.
+There_EX are_VBP mainly_RB two_CD approaches_NNS to_TO achieve_VB this_DT goal_NN :_: 1_CD ._.
+As_IN in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ,_, we_PRP can_MD treat_VB the_DT i-th_JJ row_NN of_IN Q_NNP as_IN the_DT embedding_NN of_IN xi_NN in_IN a_DT C-dimensional_JJ space_NN ,_, and_CC apply_VB some_DT traditional_JJ clustering_NN methods_NNS like_IN kmeans_NNS to_TO clustering_NN these_DT embeddings_NNS into_IN C_NN clusters_NNS ._.
+2_LS ._.
+Since_IN the_DT optimal_JJ Q_NNP is_VBZ not_RB unique_JJ -LRB-_-LRB- because_IN of_IN the_DT existence_NN of_IN an_DT arbitrary_JJ matrix_NN R_NN -RRB-_-RRB- ,_, we_PRP can_MD pursue_VB an_DT optimal_JJ R_NN that_WDT will_MD rotate_VB Q_NNP to_TO an_DT indication_NN matrix4_NN ._.
+The_DT detailed_JJ algorithm_NN can_MD be_VB referred_VBN to_TO -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+The_DT detailed_JJ algorithm_NN procedure_NN for_IN CLGR_NN is_VBZ summarized_VBN in_IN table_NN #_# ._.
+3_LS ._.
+EXPERIMENTS_NNS In_IN this_DT section_NN ,_, experiments_NNS are_VBP conducted_VBN to_TO empirically_RB compare_VB the_DT clustering_NN results_NNS of_IN CLGR_NN with_IN other_JJ #_# representitive_JJ document_NN clustering_NN algorithms_NNS on_IN #_# datasets_NNS ._.
+First_RB we_PRP will_MD introduce_VB the_DT basic_JJ informations_NNS of_IN those_DT datasets_NNS ._.
+3_LS ._.
+#_# Datasets_NNPS We_PRP use_VBP a_DT variety_NN of_IN datasets_NNS ,_, most_JJS of_IN which_WDT are_VBP frequently_RB used_VBN in_IN the_DT information_NN retrieval_NN research_NN ._.
+Table_NNP #_# summarizes_VBZ the_DT characteristics_NNS of_IN the_DT datasets_NNS ._.
+4_CD Here_RB an_DT indication_NN matrix_NN T_NN is_VBZ a_DT nc_NN matrix_NN with_IN its_PRP$ -LRB-_-LRB- i_FW ,_, j_NN -RRB-_-RRB- th_DT entry_NN Tij_NN -LCB-_-LRB- #_# ,_, #_# -RCB-_-RRB- such_JJ that_IN for_IN each_DT row_NN of_IN Q_NNP there_EX is_VBZ only_RB one_CD #_# ._.
+Then_RB the_DT xi_NN can_MD be_VB assigned_VBN to_TO the_DT j-th_JJ cluster_NN such_JJ that_IN j_NN =_JJ argjQ_NN ij_NN =_JJ #_# ._.
+Table_NNP #_# :_: Clustering_VBG with_IN Local_JJ and_CC Global_JJ Regularization_NN -LRB-_-LRB- CLGR_NN -RRB-_-RRB- Input_NN :_: 1_CD ._.
+Dataset_NNP X_NN =_JJ -LCB-_-LRB- xi_NN -RCB-_-RRB- n_NN i_FW =_JJ #_# ;_: 2_LS ._.
+Number_NN of_IN clusters_NNS C_NN ;_: 3_LS ._.
+Size_NN of_IN the_DT neighborhood_NN K_NN ;_: 4_LS ._.
+Local_JJ regularization_NN parameters_NNS -LCB-_-LRB- i_FW -RCB-_-RRB- n_NN i_FW =_JJ #_# ;_: 5_CD ._.
+Global_JJ regularization_NN parameter_NN ;_: Output_NN :_: The_DT cluster_NN membership_NN of_IN each_DT data_NNS point_NN ._.
+Procedure_NN :_: 1_CD ._.
+Construct_VB the_DT K_NNP nearest_JJS neighborhoods_NNS for_IN each_DT data_NNS point_NN ;_: 2_LS ._.
+Construct_VB the_DT matrix_NN P_NN using_VBG Eq_NN ._.
+-LRB-_-LRB- ##_NN -RRB-_-RRB- ;_: 3_LS ._.
+Construct_VB the_DT Laplacian_JJ matrix_NN L_NN using_VBG Eq_NN ._.
+-LRB-_-LRB- ##_NN -RRB-_-RRB- ;_: 4_LS ._.
+Construct_VB the_DT matrix_NN M_NN =_JJ -LRB-_-LRB- P_NN I_NN -RRB-_-RRB- T_NN -LRB-_-LRB- P_NN I_NN -RRB-_-RRB- +_CC L_NN ;_: 5_CD ._.
+Do_VB eigenvalue_JJ decomposition_NN on_IN M_NN ,_, and_CC construct_VB the_DT matrix_NN Q_NNP according_VBG to_TO Eq_NN ._.
+-LRB-_-LRB- ##_NN -RRB-_-RRB- ;_: 6_CD ._.
+Output_NN the_DT cluster_NN assignments_NNS of_IN each_DT data_NNS point_NN by_IN properly_RB discretize_JJ Q_NNP ._.
+Table_NNP #_# :_: Descriptions_NNS of_IN the_DT document_NN datasets_VBZ Datasets_NNPS Number_NNP of_IN documents_NNS Number_NNP of_IN classes_NNS CSTR_NNP ###_CD #_# WebKB4_NN ####_CD #_# Reuters_NNP ####_CD ##_CD WebACE_NNP ####_CD ##_CD Newsgroup4_NN ####_CD #_# CSTR_NNP ._.
+This_DT is_VBZ the_DT dataset_NN of_IN the_DT abstracts_NNS of_IN technical_JJ reports_NNS published_VBN in_IN the_DT Department_NNP of_IN Computer_NNP Science_NNP at_IN a_DT university_NN ._.
+The_DT dataset_NN contained_VBD ###_CD abstracts_NNS ,_, which_WDT were_VBD divided_VBN into_IN four_CD research_NN areas_NNS :_: Natural_JJ Language_NN Processing_NN -LRB-_-LRB- NLP_NN -RRB-_-RRB- ,_, Robotics_NNPS /_: Vision_NNP ,_, Systems_NNP ,_, and_CC Theory_NNP ._.
+WebKB_NN ._.
+The_DT WebKB_NN dataset_NN contains_VBZ webpages_NNS gathered_VBN from_IN university_NN computer_NN science_NN departments_NNS ._.
+There_EX are_VBP about_IN ####_CD documents_NNS and_CC they_PRP are_VBP divided_VBN into_IN #_# categories_NNS :_: student_NN ,_, faculty_NN ,_, staff_NN ,_, course_NN ,_, project_NN ,_, department_NN and_CC other_JJ ._.
+The_DT raw_JJ text_NN is_VBZ about_IN 27MB_NN ._.
+Among_IN these_DT 7_CD categories_NNS ,_, student_NN ,_, faculty_NN ,_, course_NN and_CC project_NN are_VBP four_CD most_RBS populous_JJ entity-representing_JJ categories_NNS ._.
+The_DT associated_VBN subset_NN is_VBZ typically_RB called_VBN WebKB4_NN ._.
+Reuters_NNP ._.
+The_DT Reuters-21578_NN Text_VB Categorization_NN Test_NN collection_NN contains_VBZ documents_NNS collected_VBN from_IN the_DT Reuters_NNP newswire_NN in_IN ####_CD ._.
+It_PRP is_VBZ a_DT standard_JJ text_NN categorization_NN benchmark_NN and_CC contains_VBZ ###_CD categories_NNS ._.
+In_IN our_PRP$ experiments_NNS ,_, we_PRP use_VBP a_DT subset_NN of_IN the_DT data_NNS collection_NN which_WDT includes_VBZ the_DT ##_CD most_RBS frequent_JJ categories_NNS among_IN the_DT ###_CD topics_NNS and_CC we_PRP call_VBP it_PRP Reuters-top_JJ ##_NNS ._.
+WebACE_NN ._.
+The_DT WebACE_NN dataset_NN was_VBD from_IN WebACE_NN project_NN and_CC has_VBZ been_VBN used_VBN for_IN document_NN clustering_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+The_DT WebACE_NN dataset_NN contains_VBZ ####_CD documents_NNS consisting_VBG news_NN articles_NNS from_IN Reuters_NNP new_JJ service_NN via_IN the_DT Web_NN in_IN October_NNP ####_CD ._.
+These_DT documents_NNS are_VBP divided_VBN into_IN ##_CD classes_NNS ._.
+News4_NN ._.
+The_DT News4_NN dataset_NN used_VBN in_IN our_PRP$ experiments_NNS are_VBP selected_VBN from_IN the_DT famous_JJ 20-newsgroups_JJ dataset5_NN ._.
+The_DT topic_NN rec_NN containing_VBG autos_NNS ,_, motorcycles_NNS ,_, baseball_NN and_CC hockey_NN was_VBD selected_VBN from_IN the_DT version_NN 20news-18828_NN ._.
+The_DT News4_NN dataset_NN contains_VBZ ####_CD document_NN vectors_NNS ._.
+5_CD http_NN :_: /_: /_: people_NNS ._.
+csail_NN ._.
+mit_NN ._.
+edu_NN /_: jrennie_NN /_: 20Newsgroups_NNS /_: To_TO pre-process_VB the_DT datasets_NNS ,_, we_PRP remove_VBP the_DT stop_NN words_NNS using_VBG a_DT standard_JJ stop_NN list_NN ,_, all_DT HTML_NNP tags_NNS are_VBP skipped_VBN and_CC all_DT header_NN fields_NNS except_IN subject_JJ and_CC organization_NN of_IN the_DT posted_VBN articles_NNS are_VBP ignored_VBN ._.
+In_IN all_DT our_PRP$ experiments_NNS ,_, we_PRP first_RB select_VB the_DT top_JJ ####_CD words_NNS by_IN mutual_JJ information_NN with_IN class_NN labels_NNS ._.
+3_LS ._.
+#_# Evaluation_NN Metrics_NNS In_IN the_DT experiments_NNS ,_, we_PRP set_VBD the_DT number_NN of_IN clusters_NNS equal_JJ to_TO the_DT true_JJ number_NN of_IN classes_NNS C_NN for_IN all_PDT the_DT clustering_NN algorithms_NNS ._.
+To_TO evaluate_VB their_PRP$ performance_NN ,_, we_PRP compare_VBP the_DT clusters_NNS generated_VBN by_IN these_DT algorithms_NNS with_IN the_DT true_JJ classes_NNS by_IN computing_VBG the_DT following_VBG two_CD performance_NN measures_NNS ._.
+Clustering_NN Accuracy_NN -LRB-_-LRB- Acc_NN -RRB-_-RRB- ._.
+The_DT first_JJ performance_NN measure_NN is_VBZ the_DT Clustering_NNP Accuracy_NNP ,_, which_WDT discovers_VBZ the_DT one-toone_JJ relationship_NN between_IN clusters_NNS and_CC classes_NNS and_CC measures_VBZ the_DT extent_NN to_TO which_WDT each_DT cluster_NN contained_VBD data_NNS points_NNS from_IN the_DT corresponding_JJ class_NN ._.
+It_PRP sums_VBZ up_RP the_DT whole_JJ matching_NN degree_NN between_IN all_DT pair_NN class-clusters_NNS ._.
+Clustering_NN accuracy_NN can_MD be_VB computed_VBN as_IN :_: Acc_NN =_JJ 1_CD N_NN max_NN Ck_NNP ,_, Lm_NNP T_NN -LRB-_-LRB- Ck_NN ,_, Lm_NN -RRB-_-RRB- ,_, -LRB-_-LRB- ##_CD -RRB-_-RRB- where_WRB Ck_NNP denotes_VBZ the_DT k-th_JJ cluster_NN in_IN the_DT final_JJ results_NNS ,_, and_CC Lm_NN is_VBZ the_DT true_JJ m-th_JJ class_NN ._.
+T_NN -LRB-_-LRB- Ck_NN ,_, Lm_NN -RRB-_-RRB- is_VBZ the_DT number_NN of_IN entities_NNS which_WDT belong_VBP to_TO class_NN m_NN are_VBP assigned_VBN to_TO cluster_VB k_NN ._.
+Accuracy_NN computes_VBZ the_DT maximum_NN sum_NN of_IN T_NN -LRB-_-LRB- Ck_NN ,_, Lm_NN -RRB-_-RRB- for_IN all_DT pairs_NNS of_IN clusters_NNS and_CC classes_NNS ,_, and_CC these_DT pairs_NNS have_VBP no_DT overlaps_VBZ ._.
+The_DT greater_JJR clustering_NN accuracy_NN means_VBZ the_DT better_JJR clustering_NN performance_NN ._.
+Normalized_VBN Mutual_JJ Information_NN -LRB-_-LRB- NMI_NN -RRB-_-RRB- ._.
+Another_DT evaluation_NN metric_NN we_PRP adopt_VBP here_RB is_VBZ the_DT Normalized_NNP Mutual_NNP Information_NNP NMI_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, which_WDT is_VBZ widely_RB used_VBN for_IN determining_VBG the_DT quality_NN of_IN clusters_NNS ._.
+For_IN two_CD random_JJ variable_JJ X_NN and_CC Y_NN ,_, the_DT NMI_NNP is_VBZ defined_VBN as_IN :_: NMI_NN -LRB-_-LRB- X_NN ,_, Y_NN -RRB-_-RRB- =_JJ I_CD -LRB-_-LRB- X_NN ,_, Y_NN -RRB-_-RRB- H_NN -LRB-_-LRB- X_NN -RRB-_-RRB- H_NN -LRB-_-LRB- Y_NN -RRB-_-RRB- ,_, -LRB-_-LRB- ##_CD -RRB-_-RRB- where_WRB I_PRP -LRB-_-LRB- X_NN ,_, Y_NN -RRB-_-RRB- is_VBZ the_DT mutual_JJ information_NN between_IN X_NN and_CC Y_NN ,_, while_IN H_NN -LRB-_-LRB- X_NN -RRB-_-RRB- and_CC H_NN -LRB-_-LRB- Y_NN -RRB-_-RRB- are_VBP the_DT entropies_NNS of_IN X_NN and_CC Y_NN respectively_RB ._.
+One_PRP can_MD see_VB that_DT NMI_NN -LRB-_-LRB- X_NN ,_, X_NN -RRB-_-RRB- =_JJ #_# ,_, which_WDT is_VBZ the_DT maximal_JJ possible_JJ value_NN of_IN NMI_NNP ._.
+Given_VBN a_DT clustering_NN result_NN ,_, the_DT NMI_NNP in_IN Eq_NNP ._.
+-LRB-_-LRB- ##_NN -RRB-_-RRB- is_VBZ estimated_VBN as_IN NMI_NN =_JJ C_NN k_NN =_JJ #_# C_$ m_NN =_JJ #_# nk_NN ,_, mlog_NN nnk_NN ,_, m_NN nk_NN nm_NN C_NN k_NN =_JJ #_# nklog_FW nk_FW n_NN C_NN m_NN =_JJ #_# nmlog_FW nm_FW n_NN ,_, -LRB-_-LRB- ##_CD -RRB-_-RRB- where_WRB nk_NN denotes_VBZ the_DT number_NN of_IN data_NNS contained_VBN in_IN the_DT cluster_NN Ck_NN -LRB-_-LRB- #_# k_NN C_NN -RRB-_-RRB- ,_, nm_NN is_VBZ the_DT number_NN of_IN data_NNS belonging_VBG to_TO the_DT m-th_JJ class_NN -LRB-_-LRB- #_# m_NN C_NN -RRB-_-RRB- ,_, and_CC nk_NN ,_, m_NN denotes_VBZ the_DT number_NN of_IN data_NNS that_WDT are_VBP in_IN the_DT intersection_NN between_IN the_DT cluster_NN Ck_NN and_CC the_DT m-th_JJ class_NN ._.
+The_DT value_NN calculated_VBN in_IN Eq_NN ._.
+-LRB-_-LRB- ##_NN -RRB-_-RRB- is_VBZ used_VBN as_IN a_DT performance_NN measure_NN for_IN the_DT given_VBN clustering_NN result_NN ._.
+The_DT larger_JJR this_DT value_NN ,_, the_DT better_JJR the_DT clustering_NN performance_NN ._.
+3_LS ._.
+#_# Comparisons_NNPS We_PRP have_VBP conducted_VBN comprehensive_JJ performance_NN evaluations_NNS by_IN testing_VBG our_PRP$ method_NN and_CC comparing_VBG it_PRP with_IN #_# other_JJ representative_JJ data_NNS clustering_NN methods_NNS using_VBG the_DT same_JJ data_NNS corpora_NN ._.
+The_DT algorithms_NNS that_IN we_PRP evaluated_VBD are_VBP listed_VBN below_RB ._.
+1_LS ._.
+Traditional_JJ k-means_NNS -LRB-_-LRB- KM_NN -RRB-_-RRB- ._.
+2_LS ._.
+Spherical_JJ k-means_NNS -LRB-_-LRB- SKM_NNS -RRB-_-RRB- ._.
+The_DT implementation_NN is_VBZ based_VBN on_IN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+3_LS ._.
+Gaussian_NNP Mixture_NNP Model_NNP -LRB-_-LRB- GMM_NNP -RRB-_-RRB- ._.
+The_DT implementation_NN is_VBZ based_VBN on_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ._.
+4_LS ._.
+Spectral_JJ Clustering_NN with_IN Normalized_JJ Cuts_NNS -LRB-_-LRB- Ncut_NN -RRB-_-RRB- ._.
+The_DT implementation_NN is_VBZ based_VBN on_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ,_, and_CC the_DT variance_NN of_IN the_DT Gaussian_JJ similarity_NN is_VBZ determined_VBN by_IN Local_JJ Scaling_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Note_VB that_IN the_DT criterion_NN that_WDT Ncut_NNP aims_VBZ to_TO minimize_VB is_VBZ just_RB the_DT global_JJ regularizer_NN in_IN our_PRP$ CLGR_NN algorithm_NN except_IN that_DT Ncut_NNP used_VBD the_DT normalized_VBN Laplacian_NN ._.
+5_CD ._.
+Clustering_NN using_VBG Pure_NNP Local_NNP Regularization_NN -LRB-_-LRB- CPLR_NN -RRB-_-RRB- ._.
+In_IN this_DT method_NN we_PRP just_RB minimize_VBP Jl_NN -LRB-_-LRB- defined_VBN in_IN Eq_NN ._.
+-LRB-_-LRB- ##_NN -RRB-_-RRB- -RRB-_-RRB- ,_, and_CC the_DT clustering_NN results_VBZ can_MD be_VB obtained_VBN by_IN doing_VBG eigenvalue_JJ decomposition_NN on_IN matrix_NN -LRB-_-LRB- I_PRP P_NN -RRB-_-RRB- T_NN -LRB-_-LRB- I_PRP P_NN -RRB-_-RRB- with_IN some_DT proper_JJ discretization_NN methods_NNS ._.
+6_CD ._.
+Adaptive_JJ Subspace_NNP Iteration_NNP -LRB-_-LRB- ASI_NNP -RRB-_-RRB- ._.
+The_DT implementation_NN is_VBZ based_VBN on_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ._.
+7_CD ._.
+Nonnegative_JJ Matrix_NNP Factorization_NN -LRB-_-LRB- NMF_NN -RRB-_-RRB- ._.
+The_DT implementation_NN is_VBZ based_VBN on_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ._.
+8_CD ._.
+Tri-Factorization_NN Nonnegative_JJ Matrix_NNP Factorization_NN -LRB-_-LRB- TNMF_NN -RRB-_-RRB- -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+The_DT implementation_NN is_VBZ based_VBN on_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ._.
+For_IN computational_JJ efficiency_NN ,_, in_IN the_DT implementation_NN of_IN CPLR_NN and_CC our_PRP$ CLGR_NN algorithm_NN ,_, we_PRP have_VBP set_VBN all_PDT the_DT local_JJ regularization_NN parameters_NNS -LCB-_-LRB- i_FW -RCB-_-RRB- n_NN i_FW =_JJ #_# to_TO be_VB identical_JJ ,_, which_WDT is_VBZ set_VBN by_IN grid_NN search_NN from_IN -LCB-_-LRB- #_# ._.
+#_# ,_, #_# ,_, ##_CD -RCB-_-RRB- ._.
+The_DT size_NN of_IN the_DT k-nearest_JJS neighborhoods_NNS is_VBZ set_VBN by_IN grid_NN search_NN from_IN -LCB-_-LRB- ##_NN ,_, ##_CD ,_, ##_CD -RCB-_-RRB- ._.
+For_IN the_DT CLGR_NN method_NN ,_, its_PRP$ global_JJ regularization_NN parameter_NN is_VBZ set_VBN by_IN grid_NN search_NN from_IN -LCB-_-LRB- #_# ._.
+#_# ,_, #_# ,_, ##_CD -RCB-_-RRB- ._.
+When_WRB constructing_VBG the_DT global_JJ regularizer_NN ,_, we_PRP have_VBP adopted_VBN the_DT local_JJ scaling_NN method_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- to_TO construct_VB the_DT Laplacian_JJ matrix_NN ._.
+The_DT final_JJ discretization_NN method_NN adopted_VBN in_IN these_DT two_CD methods_NNS is_VBZ the_DT same_JJ as_IN in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ,_, since_IN our_PRP$ experiments_NNS show_VBP that_IN using_VBG such_JJ method_NN can_MD achieve_VB better_JJR results_NNS than_IN using_VBG kmeans_NNS based_VBN methods_NNS as_IN in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ._.
+3_LS ._.
+#_# Experimental_JJ Results_NNS The_DT clustering_NN accuracies_NNS comparison_NN results_NNS are_VBP shown_VBN in_IN table_NN #_# ,_, and_CC the_DT normalized_VBN mutual_JJ information_NN comparison_NN results_NNS are_VBP summarized_VBN in_IN table_NN #_# ._.
+From_IN the_DT two_CD tables_NNS we_PRP mainly_RB observe_VBP that_IN :_: 1_LS ._.
+Our_PRP$ CLGR_NN method_NN outperforms_VBZ all_DT other_JJ document_NN clustering_NN methods_NNS in_IN most_JJS of_IN the_DT datasets_NNS ;_: 2_LS ._.
+For_IN document_NN clustering_NN ,_, the_DT Spherical_JJ k-means_NN method_NN usually_RB outperforms_VBZ the_DT traditional_JJ k-means_JJ clustering_NN method_NN ,_, and_CC the_DT GMM_NN method_NN can_MD achieve_VB competitive_JJ results_NNS compared_VBN to_TO the_DT Spherical_JJ k-means_NN method_NN ;_: 3_LS ._.
+The_DT results_NNS achieved_VBN from_IN the_DT k-means_NNS and_CC GMM_NN type_NN algorithms_NNS are_VBP usually_RB worse_JJR than_IN the_DT results_NNS achieved_VBN from_IN Spectral_JJ Clustering_NN ._.
+Since_IN Spectral_JJ Clustering_NN can_MD be_VB viewed_VBN as_IN a_DT weighted_JJ version_NN of_IN kernel_NN k-means_NNS ,_, it_PRP can_MD obtain_VB good_JJ results_NNS the_DT data_NNS clusters_NNS are_VBP arbitrarily_RB shaped_VBN ._.
+This_DT corroborates_VBZ that_IN the_DT documents_NNS vectors_NNS are_VBP not_RB regularly_RB distributed_VBN -LRB-_-LRB- spherical_JJ or_CC elliptical_JJ -RRB-_-RRB- ._.
+4_LS ._.
+The_DT experimental_JJ comparisons_NNS empirically_RB verify_VBP the_DT equivalence_JJ between_IN NMF_NN and_CC Spectral_JJ Clustering_NN ,_, which_WDT Table_NNP #_# :_: Clustering_NN accuracies_NNS of_IN the_DT various_JJ methods_NNS CSTR_NNP WebKB4_NNP Reuters_NNP WebACE_NNP News4_NNP KM_NNP #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN SKM_NNS #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_CD GMM_NNP #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN NMF_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN Ncut_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_CD ASI_NNP #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_CD TNMF_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_CD CPLR_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_CD CLGR_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NNP Table_NNP #_# :_: Normalized_VBN mutual_JJ information_NN results_NNS of_IN the_DT various_JJ methods_NNS CSTR_NNP WebKB4_NNP Reuters_NNP WebACE_NNP News4_NNP KM_NNP #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN SKM_NNS #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_CD GMM_NNP #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN NMF_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN Ncut_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_CD ASI_NNP #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_CD TNMF_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_CD CPLR_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_CD CLGR_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN #_# ._.
+####_NN has_VBZ been_VBN proved_VBN theoretically_RB in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ._.
+It_PRP can_MD be_VB observed_VBN from_IN the_DT tables_NNS that_WDT NMF_NN and_CC Spectral_JJ Clustering_NN usually_RB lead_VBP to_TO similar_JJ clustering_NN results_NNS ._.
+5_CD ._.
+The_DT co-clustering_NN based_VBN methods_NNS -LRB-_-LRB- TNMF_NN and_CC ASI_NN -RRB-_-RRB- can_MD usually_RB achieve_VB better_JJR results_NNS than_IN traditional_JJ purely_RB document_NN vector_NN based_VBN methods_NNS ._.
+Since_IN these_DT methods_NNS perform_VBP an_DT implicit_JJ feature_NN selection_NN at_IN each_DT iteration_NN ,_, provide_VBP an_DT adaptive_JJ metric_JJ for_IN measuring_VBG the_DT neighborhood_NN ,_, and_CC thus_RB tend_VB to_TO yield_VB better_JJR clustering_NN results_NNS ._.
+6_CD ._.
+The_DT results_NNS achieved_VBN from_IN CPLR_NNP are_VBP usually_RB better_JJR than_IN the_DT results_NNS achieved_VBN from_IN Spectral_JJ Clustering_NN ,_, which_WDT supports_VBZ Vapnik_NNP ''_'' s_VBZ theory_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- that_WDT sometimes_RB local_JJ learning_NN algorithms_NNS can_MD obtain_VB better_JJR results_NNS than_IN global_JJ learning_NN algorithms_NNS ._.
+Besides_IN the_DT above_JJ comparison_NN experiments_NNS ,_, we_PRP also_RB test_VBP the_DT parameter_NN sensibility_NN of_IN our_PRP$ method_NN ._.
+There_EX are_VBP mainly_RB two_CD sets_NNS of_IN parameters_NNS in_IN our_PRP$ CLGR_NN algorithm_NN ,_, the_DT local_JJ and_CC global_JJ regularization_NN parameters_NNS -LRB-_-LRB- -LCB-_-LRB- i_FW -RCB-_-RRB- n_NN i_FW =_JJ #_# and_CC ,_, as_IN we_PRP have_VBP said_VBN in_IN section_NN #_# ._.
+#_# ,_, we_PRP have_VBP set_VBN all_DT i_FW ''_'' s_VBZ to_TO be_VB identical_JJ to_TO in_IN our_PRP$ experiments_NNS -RRB-_-RRB- ,_, and_CC the_DT size_NN of_IN the_DT neighborhoods_NNS ._.
+Therefore_RB we_PRP have_VBP also_RB done_VBN two_CD sets_NNS of_IN experiments_NNS :_: 1_CD ._.
+Fixing_VBG the_DT size_NN of_IN the_DT neighborhoods_NNS ,_, and_CC testing_VBG the_DT clustering_NN performance_NN with_IN varying_VBG and_CC ._.
+In_IN this_DT set_NN of_IN experiments_NNS ,_, we_PRP find_VBP that_IN our_PRP$ CLGR_NN algorithm_NN can_MD achieve_VB good_JJ results_NNS when_WRB the_DT two_CD regularization_NN parameters_NNS are_VBP neither_RB too_RB large_JJ nor_CC too_RB small_JJ ._.
+Typically_RB our_PRP$ method_NN can_MD achieve_VB good_JJ results_NNS when_WRB and_CC are_VBP around_IN #_# ._.
+#_# ._.
+Figure_NNP #_# shows_VBZ us_PRP such_PDT a_DT testing_NN example_NN on_IN the_DT WebACE_NN dataset_NN ._.
+2_LS ._.
+Fixing_VBG the_DT local_JJ and_CC global_JJ regularization_NN parameters_NNS ,_, and_CC testing_VBG the_DT clustering_NN performance_NN with_IN different_JJ 5_CD 4_CD ._.
+#_# 4_CD 3_CD ._.
+#_# 3_CD 5_CD 4_CD ._.
+#_# 4_CD 3_CD ._.
+#_# 3_CD 0_CD ._.
+##_NN 0_CD ._.
+#_# 0_CD ._.
+##_NN 0_CD ._.
+#_# 0_CD ._.
+##_NN local_JJ regularization_NN para_NN -LRB-_-LRB- log_NN 2_CD value_NN -RRB-_-RRB- global_JJ regularization_NN para_NN -LRB-_-LRB- log_NN 2_CD value_NN -RRB-_-RRB- clusteringaccuracy_NN Figure_NN #_# :_: Parameter_NN sensibility_NN testing_NN results_VBZ on_IN the_DT WebACE_NNP dataset_NN with_IN the_DT neighborhood_NN size_NN fixed_VBN to_TO ##_VB ,_, and_CC the_DT x-axis_NN and_CC y-axis_NN represents_VBZ the_DT log2_NN value_NN of_IN and_CC ._.
+sizes_NNS of_IN neighborhoods_NNS ._.
+In_IN this_DT set_NN of_IN experiments_NNS ,_, we_PRP find_VBP that_IN the_DT neighborhood_NN with_IN a_DT too_RB large_JJ or_CC too_RB small_JJ size_NN will_MD all_DT deteriorate_VB the_DT final_JJ clustering_NN results_NNS ._.
+This_DT can_MD be_VB easily_RB understood_VBN since_IN when_WRB the_DT neighborhood_NN size_NN is_VBZ very_RB small_JJ ,_, then_RB the_DT data_NNS points_NNS used_VBN for_IN training_VBG the_DT local_JJ classifiers_NNS may_MD not_RB be_VB sufficient_JJ ;_: when_WRB the_DT neighborhood_NN size_NN is_VBZ very_RB large_JJ ,_, the_DT trained_JJ classifiers_NNS will_MD tend_VB to_TO be_VB global_JJ and_CC can_MD not_RB capture_VB the_DT typical_JJ local_JJ characteristics_NNS ._.
+Figure_NNP #_# shows_VBZ us_PRP a_DT testing_NN example_NN on_IN the_DT WebACE_NN dataset_NN ._.
+Therefore_RB ,_, we_PRP can_MD see_VB that_IN our_PRP$ CLGR_NN algorithm_NN -LRB-_-LRB- #_# -RRB-_-RRB- can_MD achieve_VB satisfactory_JJ results_NNS and_CC -LRB-_-LRB- #_# -RRB-_-RRB- is_VBZ not_RB very_RB sensitive_JJ to_TO the_DT choice_NN of_IN parameters_NNS ,_, which_WDT makes_VBZ it_PRP practical_JJ in_IN real_JJ world_NN applications_NNS ._.
+4_LS ._.
+CONCLUSIONS_NNS AND_CC FUTURE_NN WORKS_VBZ In_IN this_DT paper_NN ,_, we_PRP derived_VBD a_DT new_JJ clustering_NN algorithm_NN called_VBN clustering_NN with_IN local_JJ and_CC global_JJ regularization_NN ._.
+Our_PRP$ method_NN preserves_VBZ the_DT merit_NN of_IN local_JJ learning_NN algorithms_NNS and_CC spectral_JJ clustering_NN ._.
+Our_PRP$ experiments_NNS show_VBP that_IN the_DT proposed_VBN algorithm_NN outperforms_VBZ most_JJS of_IN the_DT state_NN of_IN the_DT art_NN algorithms_NNS on_IN many_JJ benchmark_JJ datasets_NNS ._.
+In_IN the_DT future_NN ,_, we_PRP will_MD focus_VB on_IN the_DT parameter_NN selection_NN and_CC acceleration_NN issues_NNS of_IN the_DT CLGR_NN algorithm_NN ._.
+5_CD ._.
+REFERENCES_NNS -LSB-_-LRB- #_# -RSB-_-RRB- L_NN ._.
+Baker_NNP and_CC A_NNP ._.
+McCallum_NNP ._.
+Distributional_JJ Clustering_NN of_IN Words_NNS for_IN Text_VBP Classification_NN ._.
+In_IN Proceedings_NNP of_IN the_DT International_NNP ACM_NNP SIGIR_NNP Conference_NNP on_IN Research_NNP and_CC Development_NNP in_IN Information_NNP Retrieval_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- M_NN ._.
+Belkin_NNP and_CC P_NN ._.
+Niyogi_NNP ._.
+Laplacian_JJ Eigenmaps_NNS for_IN Dimensionality_NNP Reduction_NNP and_CC Data_NNP Representation_NNP ._.
+Neural_JJ Computation_NN ,_, ##_NN -LRB-_-LRB- #_# -RRB-_-RRB- :_: 1373-1396_CD ._.
+June_NNP ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- M_NN ._.
+Belkin_NNP and_CC P_NN ._.
+Niyogi_NNP ._.
+Towards_IN a_DT Theoretical_JJ Foundation_NNP for_IN Laplacian-Based_NNP Manifold_NNP Methods_NNS ._.
+In_IN Proceedings_NNP of_IN the_DT 18th_JJ Conference_NN on_IN Learning_NNP Theory_NNP -LRB-_-LRB- COLT_NNP -RRB-_-RRB- ._.
+####_NN ._.
+10_CD ##_CD ##_CD ##_CD ##_CD ##_CD ##_CD ##_CD ##_CD ###_CD 0_CD ._.
+##_NN 0_CD ._.
+#_# 0_CD ._.
+##_NN 0_CD ._.
+#_# 0_CD ._.
+##_NN size_NN of_IN the_DT neighborhood_NN clusteringaccuracy_NN Figure_NN #_# :_: Parameter_NN sensibility_NN testing_NN results_VBZ on_IN the_DT WebACE_NNP dataset_NN with_IN the_DT regularization_NN parameters_NNS being_VBG fixed_VBN to_TO #_# ._.
+#_# ,_, and_CC the_DT neighborhood_NN size_NN varing_NN from_IN ##_CD to_TO ###_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- M_NN ._.
+Belkin_NNP ,_, P_NN ._.
+Niyogi_NN and_CC V_NN ._.
+Sindhwani_NNP ._.
+Manifold_NNP Regularization_NNP :_: a_DT Geometric_JJ Framework_NN for_IN Learning_NNP from_IN Examples_NNS ._.
+Journal_NNP of_IN Machine_NNP Learning_NNP Research_NNP #_# ,_, 1-48_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- D_NN ._.
+Boley_NNP ._.
+Principal_NN Direction_NN Divisive_NNP Partitioning_NN ._.
+Data_NNS mining_NN and_CC knowledge_NN discovery_NN ,_, #_# :_: 325-344_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- L_NN ._.
+Bottou_NNP and_CC V_NNP ._.
+Vapnik_NNP ._.
+Local_JJ learning_NN algorithms_NNS ._.
+Neural_JJ Computation_NN ,_, #_# :_: 888-900_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- P_NN ._.
+K_NN ._.
+Chan_NNP ,_, D_NNP ._.
+F_NN ._.
+Schlag_NNP and_CC J_NNP ._.
+Y_NN ._.
+Zien_NNP ._.
+Spectral_JJ K-way_NN Ratio-Cut_NNP Partitioning_NN and_CC Clustering_NN ._.
+IEEE_NNP Trans_NNP ._.
+Computer-Aided_JJ Design_NN ,_, ##_CD :_: 1088-1096_CD ,_, Sep_NNP ._.
+1994_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- D_NN ._.
+R_NN ._.
+Cutting_VBG ,_, D_NN ._.
+R_NN ._.
+Karger_NNP ,_, J_NNP ._.
+O_NN ._.
+Pederson_NNP and_CC J_NNP ._.
+W_NN ._.
+Tukey_NNP ._.
+Scatter_NNP /_: Gather_NNP :_: A_NNP Cluster-Based_NNP Approach_NNP to_TO Browsing_NNP Large_JJ Document_NNP Collections_NNPS ._.
+In_IN Proceedings_NNP of_IN the_DT International_NNP ACM_NNP SIGIR_NNP Conference_NNP on_IN Research_NNP and_CC Development_NNP in_IN Information_NNP Retrieval_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- I_PRP ._.
+S_NN ._.
+Dhillon_NNP and_CC D_NNP ._.
+S_NN ._.
+Modha_NNP ._.
+Concept_NN Decompositions_NNS for_IN Large_JJ Sparse_JJ Text_VBP Data_NNS using_VBG Clustering_NN ._.
+Machine_NN Learning_NNP ,_, vol_NN ._.
+##_NN -LRB-_-LRB- #_# -RRB-_-RRB- ,_, pages_NNS 143-175_CD ,_, January_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- C_NN ._.
+Ding_NNP ,_, X_NN ._.
+He_PRP ,_, and_CC H_NN ._.
+Simon_NNP ._.
+On_IN the_DT equivalence_JJ of_IN nonnegative_JJ matrix_NN factorization_NN and_CC spectral_JJ clustering_NN ._.
+In_IN Proceedings_NNP of_IN the_DT SIAM_NNP Data_NNP Mining_NNP Conference_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- C_NN ._.
+Ding_NNP ,_, X_NN ._.
+He_PRP ,_, H_NN ._.
+Zha_NNP ,_, M_NN ._.
+Gu_NNP ,_, and_CC H_NN ._.
+D_NN ._.
+Simon_NNP ._.
+A_DT min-max_JJ cut_NN algorithm_NN for_IN graph_NN partitioning_NN and_CC data_NNS clustering_NN ._.
+In_IN Proc_NNP ._.
+of_IN the_DT 1st_CD International_NNP Conference_NNP on_IN Data_NNP Mining_NNP -LRB-_-LRB- ICDM_NNP -RRB-_-RRB- ,_, pages_NNS 107-114_CD ,_, 2001_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- C_NN ._.
+Ding_NNP ,_, T_NN ._.
+Li_NNP ,_, W_NNP ._.
+Peng_NNP ,_, and_CC H_NN ._.
+Park_NNP ._.
+Orthogonal_JJ Nonnegative_JJ Matrix_NNP Tri-Factorizations_NNPS for_IN Clustering_NNP ._.
+In_IN Proceedings_NNP of_IN the_DT Twelfth_JJ ACM_NN SIGKDD_NNP International_NNP Conference_NNP on_IN Knowledge_NNP Discovery_NNP and_CC Data_NNP Mining_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- R_NN ._.
+O_NN ._.
+Duda_NNP ,_, P_NN ._.
+E_NN ._.
+Hart_NNP ,_, and_CC D_NN ._.
+G_NN ._.
+Stork_NNP ._.
+Pattern_NN Classification_NN ._.
+John_NNP Wiley_NNP &_CC Sons_NNP ,_, Inc_NNP ._.
+,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- T_NN ._.
+Li_NNP ,_, S_NN ._.
+Ma_NNP ,_, and_CC M_NN ._.
+Ogihara_NNP ._.
+Document_NNP Clustering_NNP via_IN Adaptive_NNP Subspace_NNP Iteration_NNP ._.
+In_IN Proceedings_NNP of_IN the_DT International_NNP ACM_NNP SIGIR_NNP Conference_NNP on_IN Research_NNP and_CC Development_NNP in_IN Information_NNP Retrieval_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- T_NN ._.
+Li_NNP and_CC C_NNP ._.
+Ding_NNP ._.
+The_DT Relationships_NNPS Among_IN Various_JJ Nonnegative_JJ Matrix_NNP Factorization_NNP Methods_NNS for_IN Clustering_NN ._.
+In_IN Proceedings_NNP of_IN the_DT 6th_JJ International_NNP Conference_NN on_IN Data_NNS Mining_NN -LRB-_-LRB- ICDM_NN -RRB-_-RRB- ._.
+####_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- X_NN ._.
+Liu_NNP and_CC Y_NN ._.
+Gong_NNP ._.
+Document_NNP Clustering_VBG with_IN Cluster_NN Refinement_NN and_CC Model_NNP Selection_NN Capabilities_NNS ._.
+In_IN Proc_NNP ._.
+of_IN the_DT International_NNP ACM_NNP SIGIR_NNP Conference_NNP on_IN Research_NNP and_CC Development_NNP in_IN Information_NNP Retrieval_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- E_NN ._.
+Han_NNP ,_, D_NNP ._.
+Boley_NNP ,_, M_NN ._.
+Gini_NNP ,_, R_NN ._.
+Gross_NNP ,_, K_NNP ._.
+Hastings_NNP ,_, G_NNP ._.
+Karypis_NNP ,_, V_NNP ._.
+Kumar_NNP ,_, B_NN ._.
+Mobasher_NNP ,_, and_CC J_NN ._.
+Moore_NNP ._.
+WebACE_NNP :_: A_NNP Web_NN Agent_NNP for_IN Document_NNP Categorization_NNP and_CC Exploration_NNP ._.
+In_IN Proceedings_NNP of_IN the_DT 2nd_JJ International_NNP Conference_NNP on_IN Autonomous_NNP Agents_NNPS -LRB-_-LRB- Agents98_NN -RRB-_-RRB- ._.
+ACM_NNP Press_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- M_NN ._.
+Hein_NNP ,_, J_NNP ._.
+Y_NN ._.
+Audibert_NNP ,_, and_CC U_NNP ._.
+von_NNP Luxburg_NNP ._.
+From_IN Graphs_NNS to_TO Manifolds_NNPS -_: Weak_JJ and_CC Strong_JJ Pointwise_JJ Consistency_NN of_IN Graph_NNP Laplacians_NNP ._.
+In_IN Proceedings_NNP of_IN the_DT 18th_JJ Conference_NN on_IN Learning_NNP Theory_NNP -LRB-_-LRB- COLT_NNP -RRB-_-RRB- ,_, 470-485_CD ._.
+####_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+He_PRP ,_, M_NN ._.
+Lan_NNP ,_, C_NNP ._.
+-_: L_NN ._.
+Tan_NNP ,_, S_NN ._.
+-_: Y_NN ._.
+Sung_NNP ,_, and_CC H_NN ._.
+-_: B_NN ._.
+Low_JJ ._.
+Initialization_NN of_IN Cluster_NNP Refinement_NNP Algorithms_NNPS :_: A_DT Review_NN and_CC Comparative_JJ Study_NN ._.
+In_IN Proc_NNP ._.
+of_IN Inter_NNP ._.
+Joint_NNP Conference_NNP on_IN Neural_NNP Networks_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- A_DT ._.
+Y_NN ._.
+Ng_NN ,_, M_NN ._.
+I_PRP ._.
+Jordan_NNP ,_, Y_NN ._.
+Weiss_NNP ._.
+On_IN Spectral_JJ Clustering_NN :_: Analysis_NN and_CC an_DT algorithm_NN ._.
+In_IN Advances_NNS in_IN Neural_NNP Information_NNP Processing_NNP Systems_NNPS ##_NN ._.
+####_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- B_NN ._.
+Scholkopf_NN and_CC A_NN ._.
+Smola_NNP ._.
+Learning_NNP with_IN Kernels_NNPS ._.
+The_DT MIT_NNP Press_NNP ._.
+Cambridge_NNP ,_, Massachusetts_NNP ._.
+####_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+Shi_NNP and_CC J_NNP ._.
+Malik_NNP ._.
+Normalized_JJ Cuts_NNS and_CC Image_NN Segmentation_NN ._.
+IEEE_NNP Trans_NNP ._.
+on_IN Pattern_NNP Analysis_NN and_CC Machine_NN Intelligence_NNP ,_, ##_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 888-905_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- A_DT ._.
+Strehl_NNP and_CC J_NNP ._.
+Ghosh_NNP ._.
+Cluster_NN Ensembles_NNS -_: A_NN Knowledge_NN Reuse_NNP Framework_NNP for_IN Combining_NNP Multiple_JJ Partitions_NNPS ._.
+Journal_NNP of_IN Machine_NNP Learning_NNP Research_NNP ,_, 3_CD :_: 583-617_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- V_NN ._.
+N_NN ._.
+Vapnik_NNP ._.
+The_DT Nature_NNP of_IN Statistical_NNP Learning_NNP Theory_NNP ._.
+Berlin_NNP :_: Springer-Verlag_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Wu_NNP ,_, M_NN ._.
+and_CC Scholkopf_NNP ,_, B_NN ._.
+A_DT Local_JJ Learning_NNP Approach_NNP for_IN Clustering_NNP ._.
+In_IN Advances_NNS in_IN Neural_NNP Information_NNP Processing_NNP Systems_NNPS ##_NN ._.
+####_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- S_NN ._.
+X_NN ._.
+Yu_NNP ,_, J_NNP ._.
+Shi_NNP ._.
+Multiclass_JJ Spectral_JJ Clustering_NN ._.
+In_IN Proceedings_NNP of_IN the_DT International_NNP Conference_NNP on_IN Computer_NNP Vision_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- W_NN ._.
+Xu_NNP ,_, X_NN ._.
+Liu_NNP and_CC Y_NN ._.
+Gong_NNP ._.
+Document_NNP Clustering_NNP Based_VBD On_IN Non-Negative_JJ Matrix_NNP Factorization_NN ._.
+In_IN Proceedings_NNP of_IN the_DT International_NNP ACM_NNP SIGIR_NNP Conference_NNP on_IN Research_NNP and_CC Development_NNP in_IN Information_NNP Retrieval_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- H_NN ._.
+Zha_NNP ,_, X_NN ._.
+He_PRP ,_, C_NN ._.
+Ding_NNP ,_, M_NN ._.
+Gu_NN and_CC H_NN ._.
+Simon_NNP ._.
+Spectral_JJ Relaxation_NN for_IN K-means_NNS Clustering_NN ._.
+In_IN NIPS_NNP ##_RB ._.
+####_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- T_NN ._.
+Zhang_NNP and_CC F_NN ._.
+J_NN ._.
+Oles_NNP ._.
+Text_VB Categorization_NNP Based_VBN on_IN Regularized_NNP Linear_NNP Classification_NN Methods_NNS ._.
+Journal_NNP of_IN Information_NNP Retrieval_NNP ,_, #_# :_: 5-31_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- L_NN ._.
+Zelnik-Manor_NNP and_CC P_NN ._.
+Perona_NNP ._.
+Self-Tuning_NNP Spectral_NNP Clustering_NNP ._.
+In_IN NIPS_NNP ##_RB ._.
+####_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- D_NN ._.
+Zhou_NNP ,_, O_NNP ._.
+Bousquet_NNP ,_, T_NN ._.
+N_NN ._.
+Lal_NNP ,_, J_NNP ._.
+Weston_NNP and_CC B_NNP ._.
+Scholkopf_NNP ._.
+Learning_VBG with_IN Local_JJ and_CC Global_JJ Consistency_NN ._.
+NIPS_NNP ##_RB ,_, ####_CD ._.

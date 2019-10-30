@@ -1,0 +1,442 @@
+Authority_NNP Assignment_NNP in_IN Distributed_VBN Multi-Player_NNP Proxy-based_NNP Games_NNPS Sudhir_NNP Aggarwal_NNP Justin_NNP Christofoli_NNP Department_NNP of_IN Computer_NNP Science_NNP Florida_NNP State_NNP University_NNP ,_, Tallahassee_NNP ,_, FL_NN -LCB-_-LRB- sudhir_NN ,_, christof_NN -RCB-_-RRB- @_SYM cs_NNS ._.
+fsu_NN ._.
+edu_NN Sarit_NNP Mukherjee_NNP Sampath_NNP Rangarajan_NNP Center_NNP for_IN Networking_NNP Research_NNP Bell_NNP Laboratories_NNPS ,_, Holmdel_NNP ,_, NJ_NNP -LCB-_-LRB- sarit_NN ,_, sampath_NN -RCB-_-RRB- @_SYM bell-labs_NNS ._.
+com_NN ABSTRACT_NN We_PRP present_VBP a_DT proxy-based_JJ gaming_NN architecture_NN and_CC authority_NN assignment_NN within_IN this_DT architecture_NN that_WDT can_MD lead_VB to_TO better_JJR game_NN playing_VBG experience_NN in_IN Massively_RB Multi-player_JJ Online_NNP games_NNS ._.
+The_DT proposed_VBN game_NN architecture_NN consists_VBZ of_IN distributed_VBN game_NN clients_NNS that_WDT connect_VBP to_TO game_NN proxies_NNS -LRB-_-LRB- referred_VBN to_TO as_IN communication_NN proxies_NNS -RRB-_-RRB- which_WDT forward_RB game_NN related_JJ messages_NNS from_IN the_DT clients_NNS to_TO one_CD or_CC more_JJR game_NN servers_NNS ._.
+Unlike_IN proxy-based_JJ architectures_NNS that_WDT have_VBP been_VBN proposed_VBN in_IN the_DT literature_NN where_WRB the_DT proxies_NNS replicate_VBP all_DT of_IN the_DT game_NN state_NN ,_, the_DT communication_NN proxies_NNS in_IN the_DT proposed_VBN architecture_NN support_NN clients_NNS that_WDT are_VBP in_IN proximity_NN to_TO it_PRP in_IN the_DT physical_JJ network_NN and_CC maintain_VB information_NN about_IN selected_VBN portions_NNS of_IN the_DT game_NN space_NN that_WDT are_VBP relevant_JJ only_RB to_TO the_DT clients_NNS that_IN they_PRP support_VBP ._.
+Using_VBG this_DT architecture_NN ,_, we_PRP propose_VBP an_DT authority_NN assignment_NN mechanism_NN that_WDT divides_VBZ the_DT authority_NN for_IN deciding_VBG the_DT outcome_NN of_IN different_JJ actions_NNS /_: events_NNS that_WDT occur_VBP within_IN the_DT game_NN between_IN client_NN and_CC servers_NNS on_IN a_DT per_FW action_NN /_: event_NN basis_NN ._.
+We_PRP show_VBP that_IN such_JJ division_NN of_IN authority_NN leads_VBZ to_TO a_DT smoother_JJR game_NN playing_VBG experience_NN by_IN implementing_VBG this_DT mechanism_NN in_IN a_DT massively_RB multi-player_JJ online_NN game_NN called_VBN RPGQuest_NNP ._.
+In_IN addition_NN ,_, we_PRP argue_VBP that_IN cheat_VB detection_NN techniques_NNS can_MD be_VB easily_RB implemented_VBN at_IN the_DT communication_NN proxies_NNS if_IN they_PRP are_VBP made_VBN aware_JJ of_IN the_DT game-play_NN mechanics_NNS ._.
+Categories_NNS and_CC Subject_NNP Descriptors_NNPS C_NNP ._.
+#_# ._.
+#_# -LSB-_-LRB- Computer-Communication_NN networks_NNS -RSB-_-RRB- :_: Distributed_VBN Systems-Distributed_NNP Applications_NNS General_NNP Terms_NNS Games_NNPS ,_, Performance_NNP 1_CD ._.
+INTRODUCTION_NN In_IN Massively_RB Multi-player_JJ On-line_NNP Games_NNPS -LRB-_-LRB- MMOG_NN -RRB-_-RRB- ,_, game_NN clients_NNS who_WP are_VBP positioned_VBN across_IN the_DT Internet_NN connect_VB to_TO a_DT game_NN server_NN to_TO interact_VB with_IN other_JJ clients_NNS in_IN order_NN to_TO be_VB part_NN of_IN the_DT game_NN ._.
+In_IN current_JJ architectures_NNS ,_, these_DT interactions_NNS are_VBP direct_JJ in_IN that_IN the_DT game_NN clients_NNS and_CC the_DT servers_NNS exchange_NN game_NN messages_NNS with_IN each_DT other_JJ ._.
+In_IN addition_NN ,_, current_JJ MMOGs_NNS delegate_VBP all_DT authority_NN to_TO the_DT game_NN server_NN to_TO make_VB decisions_NNS about_IN the_DT results_NNS pertaining_VBG to_TO the_DT actions_NNS that_WDT game_NN clients_NNS take_VBP and_CC also_RB to_TO decide_VB upon_IN the_DT result_NN of_IN other_JJ game_NN related_JJ events_NNS ._.
+Such_JJ centralized_JJ authority_NN has_VBZ been_VBN implemented_VBN with_IN the_DT claim_NN that_IN this_DT improves_VBZ the_DT security_NN and_CC consistency_NN required_VBN in_IN a_DT gaming_NN environment_NN ._.
+A_DT number_NN of_IN works_NNS have_VBP shown_VBN the_DT effect_NN of_IN network_NN latency_NN on_IN distributed_VBN multi-player_JJ games_NNS -LSB-_-LRB- #_# ,_, #_# ,_, #_# ,_, #_# -RSB-_-RRB- ._.
+It_PRP has_VBZ been_VBN shown_VBN that_IN network_NN latency_NN has_VBZ real_JJ impact_NN on_IN practical_JJ game_NN playing_VBG experience_NN -LSB-_-LRB- #_# ,_, #_# -RSB-_-RRB- ._.
+Some_DT types_NNS of_IN games_NNS can_MD function_VB quite_RB well_RB even_RB in_IN the_DT presence_NN of_IN large_JJ delays_NNS ._.
+For_IN example_NN ,_, -LSB-_-LRB- #_# -RSB-_-RRB- shows_VBZ that_IN in_IN a_DT modern_JJ RPG_NN called_VBN Everquest_NNP 2_CD ,_, the_DT breakpoint_NN of_IN the_DT game_NN when_WRB adding_VBG artificial_JJ latency_NN was_VBD 1250ms_NNS ._.
+This_DT is_VBZ accounted_VBN to_TO the_DT fact_NN that_IN the_DT combat_NN system_NN used_VBN in_IN Everquest_NNP #_# is_VBZ queueing_VBG based_VBN and_CC has_VBZ very_RB low_JJ interaction_NN ._.
+For_IN example_NN ,_, a_DT player_NN queues_NNS up_RB 4_CD or_CC #_# spells_NNS they_PRP wish_VBP to_TO cast_VB ,_, each_DT of_IN these_DT spells_NNS take_VBP 1-2_CD seconds_NNS to_TO actually_RB perform_VB ,_, giving_VBG the_DT server_NN plenty_NN of_IN time_NN to_TO validate_VB these_DT actions_NNS ._.
+But_CC there_EX are_VBP other_JJ games_NNS such_JJ as_IN FPS_NNP games_NNS that_WDT break_VBP even_RB in_IN the_DT presence_NN of_IN moderate_JJ network_NN latencies_NNS -LSB-_-LRB- #_# ,_, #_# -RSB-_-RRB- ._.
+Latency_NN compensation_NN techniques_NNS have_VBP been_VBN proposed_VBN to_TO alleviate_VB the_DT effect_NN of_IN latency_NN -LSB-_-LRB- #_# ,_, #_# ,_, #_# -RSB-_-RRB- but_CC it_PRP is_VBZ obvious_JJ that_IN if_IN MMOGs_NNS are_VBP to_TO increase_VB in_IN interactivity_NN and_CC speed_NN ,_, more_JJR architectures_NNS will_MD have_VB to_TO be_VB developed_VBN that_IN address_NN responsiveness_NN ,_, accuracy_NN and_CC consistency_NN of_IN the_DT gamestate_NN ._.
+In_IN this_DT paper_NN ,_, we_PRP propose_VBP two_CD important_JJ features_NNS that_WDT would_MD make_VB game_NN playing_NN within_IN MMOGs_NNS more_RBR responsive_JJ for_IN movement_NN and_CC scalable_JJ ._.
+First_RB ,_, we_PRP propose_VBP that_IN centralized_JJ server-based_JJ architectures_NNS be_VB made_VBN hierarchical_JJ through_IN the_DT introduction_NN of_IN communication_NN proxies_NNS so_IN that_IN game_NN updates_NNS made_VBN by_IN clients_NNS that_WDT are_VBP time_NN sensitive_JJ ,_, such_JJ as_IN movement_NN ,_, can_MD be_VB more_RBR efficiently_RB distributed_VBN to_TO other_JJ players_NNS within_IN their_PRP$ game-space_NN ._.
+Second_RB ,_, we_PRP propose_VBP that_IN assignment_NN of_IN authority_NN in_IN terms_NNS of_IN who_WP makes_VBZ the_DT decision_NN on_IN client_NN actions_NNS such_JJ as_IN object_NN pickups_NNS and_CC hits_NNS ,_, and_CC collisions_NNS between_IN players_NNS ,_, be_VB distributed_VBN between_IN the_DT clients_NNS and_CC the_DT servers_NNS in_IN order_NN to_TO distribute_VB the_DT computing_NN load_NN away_RB from_IN the_DT central_JJ server_NN ._.
+In_IN order_NN to_TO move_VB towards_IN more_JJR complex_NN real-time_JJ networked_JJ games_NNS ,_, we_PRP believe_VBP that_IN definitions_NNS of_IN authority_NN must_MD be_VB refined_VBN ._.
+Most_JJS currently_RB implemented_VBN MMOGs_NNS have_VBP game_NN servers_NNS that_WDT have_VBP almost_RB absolute_JJ authority_NN ._.
+We_PRP argue_VBP that_IN there_EX is_VBZ no_DT single_JJ consistent_JJ view_NN of_IN the_DT virtual_JJ game_NN space_NN that_WDT can_MD be_VB maintained_VBN on_IN any_DT one_CD component_NN within_IN a_DT network_NN that_WDT has_VBZ significant_JJ latency_NN ,_, such_JJ as_IN the_DT one_CD that_WDT many_JJ MMOG_NN players_NNS would_MD experience_VB ._.
+We_PRP believe_VBP that_IN in_IN most_JJS cases_NNS ,_, the_DT client_NN with_IN the_DT most_RBS accurate_JJ view_NN of_IN an_DT entity_NN is_VBZ the_DT best_JJS suited_VBN to_TO make_VB decisions_NNS for_IN that_DT entity_NN when_WRB the_DT causality_NN of_IN that_DT action_NN will_MD not_RB immediately_RB affect_VB any_DT other_JJ players_NNS ._.
+In_IN this_DT paper_NN we_PRP define_VBP what_WP it_PRP means_VBZ to_TO have_VB authority_NN within_IN the_DT context_NN of_IN events_NNS and_CC objects_NNS in_IN a_DT virtual_JJ game_NN space_NN ._.
+We_PRP then_RB show_VBP the_DT benefits_NNS of_IN delegating_VBG authority_NN for_IN different_JJ actions_NNS and_CC game_NN events_NNS between_IN the_DT clients_NNS and_CC server_NN ._.
+In_IN our_PRP$ model_NN ,_, the_DT game_NN space_NN consists_VBZ of_IN game_NN clients_NNS -LRB-_-LRB- representing_VBG the_DT players_NNS -RRB-_-RRB- and_CC objects_NNS that_IN they_PRP control_VBP ._.
+We_PRP divide_VBP the_DT client_NN actions_NNS and_CC game_NN events_NNS -LRB-_-LRB- we_PRP will_MD collectively_RB refer_VB to_TO these_DT as_IN events_NNS -RRB-_-RRB- such_JJ as_IN collisions_NNS ,_, hits_VBZ etc_NN ._.
+into_IN three_CD different_JJ categories_NNS ,_, a_DT -RRB-_-RRB- events_NNS for_IN which_WDT the_DT game_NN client_NN has_VBZ absolute_JJ authority_NN ,_, b_NN -RRB-_-RRB- events_NNS for_IN which_WDT the_DT game_NN server_NN has_VBZ absolute_JJ authority_NN ,_, and_CC c_NN -RRB-_-RRB- events_NNS for_IN which_WDT the_DT authority_NN changes_NNS dynamically_RB from_IN client_NN to_TO the_DT server_NN and_CC vice-versa_NN ._.
+Depending_VBG on_IN who_WP has_VBZ the_DT authority_NN ,_, that_WDT entity_NN will_MD make_VB decisions_NNS on_IN the_DT events_NNS that_WDT happen_VBP within_IN a_DT game_NN space_NN ._.
+We_PRP propose_VBP that_IN authority_NN for_IN all_DT decisions_NNS that_WDT pertain_VBP to_TO a_DT single_JJ player_NN or_CC object_NN in_IN the_DT game_NN that_WDT neither_CC affects_VBZ the_DT other_JJ players_NNS or_CC objects_NNS ,_, nor_CC are_VBP affected_VBN by_IN the_DT actions_NNS of_IN other_JJ players_NNS be_VB delegated_VBN to_TO that_DT player_NN ''_'' s_NNS game_NN client_NN ._.
+These_DT type_NN of_IN decisions_NNS would_MD include_VB collision_NN detection_NN with_IN static_JJ objects_NNS within_IN the_DT virtual_JJ game_NN space_NN and_CC hit_VBD detection_NN with_IN linear_JJ path_NN bullets_NNS -LRB-_-LRB- whose_WP$ trajectory_NN is_VBZ fixed_VBN and_CC does_VBZ not_RB change_VB with_IN time_NN -RRB-_-RRB- fired_VBN by_IN other_JJ players_NNS ._.
+Authority_NNP for_IN decisions_NNS that_WDT could_MD be_VB affected_VBN by_IN two_CD or_CC more_JJR players_NNS should_MD be_VB delegated_VBN to_TO the_DT impartial_JJ central_JJ server_NN ,_, in_IN some_DT cases_NNS ,_, to_TO ensure_VB that_IN no_DT conflicts_NNS occur_VBP and_CC in_IN other_JJ cases_NNS can_MD be_VB delegated_VBN to_TO the_DT clients_NNS responsible_JJ for_IN those_DT players_NNS ._.
+For_IN example_NN ,_, collision_NN detection_NN of_IN two_CD players_NNS that_WDT collide_VBP with_IN each_DT other_JJ and_CC hit_VBD detection_NN of_IN non-linear_JJ bullets_NNS -LRB-_-LRB- that_WDT changes_VBZ trajectory_NN with_IN time_NN -RRB-_-RRB- should_MD be_VB delegated_VBN to_TO the_DT server_NN ._.
+Decision_NN on_IN events_NNS such_JJ as_IN item_NN pickup_NN -LRB-_-LRB- for_IN example_NN ,_, picking_VBG up_RP items_NNS in_IN a_DT game_NN to_TO accumulate_VB points_NNS -RRB-_-RRB- should_MD be_VB delegated_VBN to_TO a_DT server_NN if_IN there_EX are_VBP multiple_JJ players_NNS within_IN close_JJ proximity_NN of_IN an_DT item_NN and_CC any_DT one_CD of_IN the_DT players_NNS could_MD succeed_VB in_IN picking_VBG the_DT item_NN ;_: for_IN item_NN pick-up_JJ contention_NN where_WRB the_DT client_NN realizes_VBZ that_IN no_DT other_JJ player_NN ,_, except_IN its_PRP$ own_JJ player_NN ,_, is_VBZ within_IN a_DT certain_JJ range_NN of_IN the_DT item_NN ,_, the_DT client_NN could_MD be_VB delegated_VBN the_DT responsibility_NN to_TO claim_VB the_DT item_NN ._.
+The_DT client_NN ''_'' s_NNS decision_NN can_MD always_RB be_VB accurately_RB verified_VBN by_IN the_DT server_NN ._.
+In_IN summary_NN ,_, we_PRP argue_VBP that_IN while_IN current_JJ authority_NN models_NNS that_WDT only_RB delegate_VBP responsibility_NN to_TO the_DT server_NN to_TO make_VB authoritative_JJ decisions_NNS on_IN events_NNS is_VBZ more_RBR secure_JJ than_IN allowing_VBG the_DT clients_NNS to_TO make_VB the_DT decisions_NNS ,_, these_DT types_NNS of_IN models_NNS add_VBP undesirable_JJ delays_NNS to_TO events_NNS that_WDT could_MD very_RB well_RB be_VB decided_VBN by_IN the_DT clients_NNS without_IN any_DT inconsistency_NN being_VBG introduced_VBN into_IN the_DT game_NN ._.
+As_IN networked_JJ games_NNS become_VBP more_RBR complex_JJ ,_, our_PRP$ architecture_NN will_MD become_VB more_RBR applicable_JJ ._.
+This_DT architecture_NN is_VBZ applicable_JJ for_IN massively_RB multiplayer_JJ games_NNS where_WRB the_DT speed_NN and_CC accuracy_NN of_IN game-play_NN are_VBP a_DT major_JJ concern_NN while_IN consistency_NN between_IN player_NN game-states_NNS is_VBZ still_RB desired_VBN ._.
+We_PRP propose_VBP that_IN a_DT mixed_JJ authority_NN assignment_NN mechanism_NN such_JJ as_IN the_DT one_CD outlined_VBN above_IN be_VB implemented_VBN in_IN high_JJ interaction_NN MMOGs_NNS ._.
+Our_PRP$ paper_NN has_VBZ the_DT following_VBG contributions_NNS ._.
+First_RB we_PRP propose_VBP an_DT architecture_NN that_WDT uses_VBZ communication_NN proxies_NNS to_TO enable_VB clients_NNS to_TO connect_VB to_TO the_DT game_NN server_NN ._.
+A_DT communication_NN proxy_NN in_IN the_DT proposed_VBN architecture_NN maintains_VBZ information_NN only_RB about_IN portions_NNS of_IN the_DT game_NN space_NN that_WDT are_VBP relevant_JJ to_TO clients_NNS connected_VBN to_TO it_PRP and_CC is_VBZ able_JJ to_TO process_VB the_DT movement_NN information_NN of_IN objects_NNS and_CC players_NNS within_IN these_DT portions_NNS ._.
+In_IN addition_NN ,_, it_PRP is_VBZ capable_JJ of_IN multicasting_VBG this_DT information_NN only_RB to_TO a_DT relevant_JJ subset_NN of_IN other_JJ communication_NN proxies_NNS ._.
+These_DT functionalities_NNS of_IN a_DT communication_NN proxy_NN leads_VBZ to_TO a_DT decrease_NN in_IN latency_NN of_IN event_NN update_VBP and_CC subsequently_RB ,_, better_JJR game_NN playing_VBG experience_NN ._.
+Second_RB ,_, we_PRP propose_VBP a_DT mixed_JJ authority_NN assignment_NN mechanism_NN as_IN described_VBN above_IN that_DT improves_VBZ game_NN playing_NN experience_NN ._.
+Third_NNP ,_, we_PRP implement_VBP the_DT proposed_VBN mixed_JJ authority_NN assignment_NN mechanism_NN within_IN a_DT MMOG_NN called_VBN RPGQuest_NN -LSB-_-LRB- #_# -RSB-_-RRB- to_TO validate_VB its_PRP$ viability_NN within_IN MMOGs_NNS ._.
+In_IN Section_NN #_# ,_, we_PRP describe_VBP the_DT proxy-based_JJ game_NN architecture_NN in_IN more_RBR detail_NN and_CC illustrate_VB its_PRP$ advantages_NNS ._.
+In_IN Section_NN #_# ,_, we_PRP provide_VBP a_DT generic_JJ description_NN of_IN the_DT mixed_JJ authority_NN assignment_NN mechanism_NN and_CC discuss_VB how_WRB it_PRP improves_VBZ game_NN playing_NN experience_NN ._.
+In_IN Section_NN #_# ,_, we_PRP show_VBP the_DT feasibility_NN of_IN implementing_VBG the_DT proposed_VBN mixed_JJ authority_NN assignment_NN mechanism_NN within_IN existing_VBG MMOGs_NNS by_IN describing_VBG a_DT proof-of-concept_JJ implementation_NN within_IN an_DT existing_VBG MMOG_NN called_VBD RPGQuest_NNP ._.
+Section_NN #_# discusses_VBZ related_JJ work_NN ._.
+In_IN Section_NN #_# ,_, we_PRP present_VBP our_PRP$ conclusions_NNS and_CC discuss_VBP future_JJ work_NN ._.
+2_LS ._.
+PROXY-BASED_JJ GAME_NN ARCHITECTURE_NN Massively_RB Multi-player_JJ Online_NNP Games_NNPS -LRB-_-LRB- MMOGs_NNS -RRB-_-RRB- usually_RB consist_VBP of_IN a_DT large_JJ game_NN space_NN in_IN which_WDT the_DT players_NNS and_CC different_JJ game_NN objects_NNS reside_VBP and_CC move_VBP around_RB and_CC interact_VBP with_IN each-other_NN ._.
+State_NNP information_NN about_IN the_DT whole_JJ game_NN space_NN could_MD be_VB kept_VBN in_IN a_DT single_JJ central_JJ server_NN which_WDT we_PRP would_MD refer_VB to_TO as_IN a_DT Central-Server_NNP Architecture_NNP ._.
+But_CC to_TO alleviate_VB the_DT heavy_JJ demand_NN on_IN the_DT processing_NN for_IN handling_VBG the_DT large_JJ player_NN population_NN and_CC the_DT objects_NNS in_IN the_DT game_NN in_IN real-time_JJ ,_, a_DT MMOG_NN is_VBZ normally_RB implemented_VBN using_VBG a_DT distributed_VBN server_NN architecture_NN where_WRB the_DT game_NN space_NN is_VBZ further_JJ sub-divided_VBN into_IN regions_NNS so_IN that_IN each_DT region_NN has_VBZ relatively_RB smaller_JJR number_NN of_IN players_NNS and_CC objects_NNS that_WDT can_MD be_VB handled_VBN by_IN a_DT single_JJ server_NN ._.
+In_IN other_JJ words_NNS ,_, the_DT different_JJ game_NN regions_NNS are_VBP hosted_VBN by_IN different_JJ servers_NNS in_IN a_DT distributed_VBN fashion_NN ._.
+When_WRB a_DT player_NN moves_VBZ out_IN of_IN one_CD game_NN region_NN to_TO another_DT adjacent_JJ one_CD ,_, the_DT player_NN must_MD communicate_VB with_IN a_DT different_JJ server_NN -LRB-_-LRB- than_IN it_PRP was_VBD currently_RB communicating_VBG with_IN -RRB-_-RRB- hosting_VBG the_DT new_JJ region_NN ._.
+The_DT servers_NNS communicate_VBP with_IN one_CD another_DT to_TO hand_VB off_RP a_DT player_NN or_CC an_DT object_NN from_IN one_CD region_NN to_TO another_DT ._.
+In_IN this_DT model_NN ,_, the_DT player_NN on_IN the_DT client_NN machine_NN has_VBZ to_TO establish_VB multiple_JJ gaming_NN sessions_NNS with_IN different_JJ servers_NNS so_IN that_IN it_PRP can_MD roam_VB in_IN the_DT entire_JJ game_NN space_NN ._.
+We_PRP propose_VBP a_DT communication_NN proxy_NN based_VBN architecture_NN where_WRB a_DT player_NN connects_VBZ to_TO a_DT -LRB-_-LRB- geographically_RB -RRB-_-RRB- nearby_JJ proxy_NN instead_RB of_IN connecting_VBG to_TO a_DT central_JJ server_NN in_IN the_DT case_NN of_IN a_DT centralserver_NN architecture_NN or_CC to_TO one_CD of_IN the_DT servers_NNS in_IN case_NN of_IN dis2_NN The_DT 5th_JJ Workshop_NNP on_IN Network_NNP &_CC System_NNP Support_NN for_IN Games_NNPS ####_SYM -_: NETGAMES_NN ####_CD tributed_JJ server_NN architecture_NN ._.
+In_IN the_DT proposed_VBN architecture_NN ,_, players_NNS who_WP are_VBP close_JJ by_IN geographically_RB join_VB a_DT particular_JJ proxy_NN ._.
+The_DT proxy_NN then_RB connects_VBZ to_TO one_CD or_CC more_JJR game_NN servers_NNS ,_, as_IN needed_VBN by_IN the_DT set_NN of_IN players_NNS that_WDT connect_VBP to_TO it_PRP and_CC maintains_VBZ persistent_JJ transport_NN sessions_NNS with_IN these_DT server_NN ._.
+This_DT alleviates_VBZ the_DT problem_NN of_IN each_DT player_NN having_VBG to_TO connect_VB directly_RB to_TO multiple_JJ game_NN servers_NNS ,_, which_WDT can_MD add_VB extra_JJ connection_NN setup_NN delay_NN ._.
+Introduction_NN of_IN communication_NN proxies_NNS also_RB mitigates_VBZ the_DT overhead_NN of_IN a_DT large_JJ number_NN of_IN transport_NN sessions_NNS that_WDT must_MD be_VB managed_VBN and_CC reduces_VBZ required_JJ network_NN bandwidth_NN -LSB-_-LRB- #_# -RSB-_-RRB- and_CC processing_NN at_IN the_DT game_NN servers_NNS both_CC with_IN central_JJ server_NN and_CC distributed_VBN server_NN architectures_NNS ._.
+With_IN central_JJ server_NN architectures_NNS ,_, communication_NN proxies_NNS reduce_VB the_DT overhead_NN at_IN the_DT server_NN by_IN not_RB requiring_VBG the_DT server_NN to_TO terminate_VB persistent_JJ transport_NN sessions_NNS from_IN every_DT one_CD of_IN the_DT clients_NNS ._.
+With_IN distributed-server_NN architectures_NNS ,_, additionally_RB ,_, communication_NN proxies_NNS eliminate_VBP the_DT need_NN for_IN the_DT clients_NNS to_TO maintain_VB persistent_JJ transport_NN sessions_NNS to_TO every_DT one_CD of_IN the_DT servers_NNS ._.
+Figure_NNP #_# shows_VBZ the_DT proposed_VBN architecture_NN ._.
+Figure_NNP #_# :_: Architecture_NNP of_IN the_DT gaming_NN environment_NN ._.
+Note_VB that_IN the_DT communication_NN proxies_NNS need_VBP not_RB be_VB cognizant_JJ of_IN the_DT game_NN ._.
+They_PRP host_VBP a_DT number_NN of_IN players_NNS and_CC inform_VB the_DT servers_NNS which_WDT players_NNS are_VBP hosted_VBN by_IN the_DT proxy_NN in_IN question_NN ._.
+Also_RB note_NN that_IN the_DT players_NNS hosted_VBN by_IN a_DT proxy_NN may_MD not_RB be_VB in_IN the_DT same_JJ game_NN space_NN ._.
+That_DT is_VBZ ,_, a_DT proxy_NN hosts_NNS players_NNS that_WDT are_VBP geographically_RB close_JJ to_TO it_PRP ,_, but_CC the_DT players_NNS themselves_PRP can_MD reside_VB in_IN different_JJ parts_NNS of_IN the_DT game_NN space_NN ._.
+The_DT proxy_NN communicates_VBZ with_IN the_DT servers_NNS responsible_JJ for_IN maintaining_VBG the_DT game_NN spaces_NNS subscribed_VBN by_IN the_DT different_JJ players_NNS ._.
+The_DT proxies_NNS communicate_VBP with_IN one_CD another_DT in_IN a_DT peer-to-peer_NN to_TO fashion_NN ._.
+The_DT responsiveness_NN of_IN the_DT game_NN can_MD be_VB improved_VBN for_IN updates_NNS that_WDT do_VBP not_RB need_VB to_TO wait_VB on_IN processing_NN at_IN a_DT central_JJ authority_NN ._.
+In_IN this_DT way_NN ,_, information_NN about_IN players_NNS can_MD be_VB disseminated_VBN faster_RBR before_IN even_RB the_DT game_NN server_NN gets_VBZ to_TO know_VB about_IN it_PRP ._.
+This_DT definitely_RB improves_VBZ the_DT responsiveness_NN of_IN the_DT game_NN ._.
+However_RB ,_, it_PRP ignores_VBZ consistency_NN that_WDT is_VBZ critical_JJ in_IN MMORPGs_NNS ._.
+The_DT notion_NN that_IN an_DT architecture_NN such_JJ as_IN this_DT one_NN can_MD still_RB maintain_VB temporal_JJ consistency_NN will_MD be_VB discussed_VBN in_IN detail_NN in_IN Section_NN #_# ._.
+Figure_NNP #_# shows_NNS and_CC example_NN of_IN the_DT working_VBG principle_NN of_IN the_DT proposed_VBN architecture_NN ._.
+Assume_VB that_IN the_DT game_NN space_NN is_VBZ divided_VBN into_IN #_# regions_NNS and_CC there_EX are_VBP three_CD servers_NNS responsible_JJ for_IN managing_VBG the_DT regions_NNS ._.
+Server_NN S1_NN owns_VBZ regions_NNS #_# and_CC #_# ,_, S2_NN manages_VBZ #_# ,_, #_# ,_, #_# ,_, and_CC #_# ,_, and_CC S3_NN is_VBZ responsible_JJ for_IN #_# ,_, #_# and_CC 9_CD ._.
+Figure_NNP #_# :_: An_DT example_NN ._.
+There_EX are_VBP four_CD communication_NN proxies_NNS placed_VBN in_IN geographically_RB distant_JJ locations_NNS ._.
+Players_NNS a_DT ,_, b_NN ,_, c_NN join_VB proxy_NN P1_NN ,_, proxy_NN P2_NN hosts_NNS players_NNS d_NN ,_, e_LS ,_, f_FW ,_, players_NNS g_NN ,_, h_NN are_VBP with_IN proxy_NN P3_NN ,_, whereas_IN players_NNS i_LS ,_, j_NN ,_, k_NN ,_, l_NN are_VBP with_IN proxy_NN P4_NN ._.
+Underneath_IN each_DT player_NN ,_, the_DT figure_NN shows_VBZ which_WDT game_NN region_NN the_DT player_NN is_VBZ located_JJ currently_RB ._.
+For_IN example_NN ,_, players_NNS a_DT ,_, b_NN ,_, c_NN are_VBP in_IN regions_NNS #_# ,_, #_# ,_, #_# ,_, respectively_RB ._.
+Therefore_RB ,_, proxy_NN P1_NN must_MD communicate_VB with_IN servers_NNS S1_NN and_CC S3_NN ._.
+The_DT reader_NN can_MD verify_VB the_DT rest_NN of_IN the_DT links_NNS between_IN the_DT proxies_NNS and_CC the_DT servers_NNS ._.
+Players_NNS can_MD move_VB within_IN the_DT region_NN and_CC between_IN regions_NNS ._.
+Player_NNP movement_NN within_IN a_DT region_NN will_MD be_VB tracked_VBN by_IN the_DT proxy_NN hosting_VBG the_DT player_NN and_CC this_DT movement_NN information_NN -LRB-_-LRB- for_IN example_NN ,_, the_DT player_NN ''_'' s_NNS new_JJ coordinates_VBZ -RRB-_-RRB- will_MD be_VB multicast_JJ to_TO a_DT subset_NN of_IN other_JJ relevant_JJ communication_NN proxies_NNS directly_RB ._.
+At_IN the_DT same_JJ time_NN ,_, this_DT information_NN will_MD be_VB sent_VBN to_TO the_DT server_NN responsible_JJ for_IN that_DT region_NN with_IN the_DT indication_NN that_IN this_DT movement_NN has_VBZ already_RB been_VBN communicated_VBN to_TO all_PDT the_DT other_JJ relevant_JJ communication_NN proxies_NNS -LRB-_-LRB- so_RB that_IN the_DT server_NN does_VBZ not_RB have_VB to_TO relay_VB this_DT information_NN to_TO all_PDT the_DT proxies_NNS -RRB-_-RRB- ._.
+For_IN example_NN ,_, if_IN player_NN a_DT moves_NNS within_IN region_NN #_# ,_, this_DT information_NN will_MD be_VB communicated_VBN by_IN proxy_NN P1_NN to_TO server_NN S1_NN and_CC multicast_NN to_TO proxies_NNS P3_NN and_CC P4_NN ._.
+Note_VB that_DT proxies_NNS that_WDT do_VBP not_RB keep_VB state_NN information_NN about_IN this_DT region_NN at_IN this_DT point_NN in_IN time_NN -LRB-_-LRB- because_IN they_PRP do_VBP not_RB have_VB any_DT clients_NNS within_IN that_DT region_NN -RRB-_-RRB- such_JJ as_IN P2_NN do_VBP not_RB have_VB to_TO receive_VB this_DT movement_NN information_NN ._.
+If_IN a_DT player_NN is_VBZ at_IN the_DT boundary_NN of_IN a_DT region_NN and_CC moves_VBZ into_IN a_DT new_JJ region_NN ,_, there_EX are_VBP two_CD possibilities_NNS ._.
+The_DT first_JJ possibility_NN is_VBZ that_IN the_DT proxy_NN hosting_VBG the_DT player_NN can_MD identify_VB the_DT region_NN into_IN which_WDT the_DT player_NN is_VBZ moving_VBG -LRB-_-LRB- based_VBN on_IN the_DT trajectory_NN information_NN -RRB-_-RRB- because_IN it_PRP is_VBZ also_RB maintaining_VBG state_NN information_NN about_IN the_DT new_JJ region_NN at_IN that_DT point_NN in_IN time_NN ._.
+In_IN this_DT case_NN ,_, the_DT proxy_NN can_MD update_VB movement_NN information_NN directly_RB at_IN the_DT other_JJ relevant_JJ communication_NN proxies_NNS and_CC also_RB send_VBP information_NN to_TO the_DT appropriate_JJ server_NN informing_VBG of_IN the_DT movement_NN -LRB-_-LRB- this_DT may_MD require_VB handoff_NN between_IN servers_NNS as_IN we_PRP will_MD describe_VB -RRB-_-RRB- ._.
+Consider_VB the_DT scenario_NN where_WRB player_NN a_DT is_VBZ at_IN the_DT boundary_NN of_IN region_NN #_# and_CC proxy_NN P1_NN can_MD identify_VB that_IN the_DT player_NN is_VBZ moving_VBG into_IN region_NN #_# ._.
+Because_IN proxy_NN P1_NN is_VBZ currently_RB keeping_VBG state_NN information_NN about_IN region_NN #_# ,_, it_PRP can_MD inform_VB all_DT The_DT 5th_JJ Workshop_NNP on_IN Network_NNP &_CC System_NNP Support_NN for_IN Games_NNPS ####_SYM -_: NETGAMES_NN ####_CD #_# the_DT other_JJ relevant_JJ communication_NN proxies_NNS -LRB-_-LRB- in_IN this_DT example_NN ,_, no_DT other_JJ proxy_NN maintains_VBZ information_NN about_IN region_NN #_# at_IN this_DT point_NN and_CC so_IN no_DT update_VBP needs_NNS to_TO be_VB sent_VBN to_TO any_DT of_IN the_DT other_JJ proxies_NNS -RRB-_-RRB- about_IN this_DT movement_NN and_CC then_RB inform_VB the_DT server_NN independently_RB ._.
+In_IN this_DT particular_JJ case_NN ,_, server_NN S1_NN is_VBZ responsible_JJ for_IN region_NN #_# as_RB well_RB and_CC so_RB no_DT handoff_NN between_IN servers_NNS would_MD be_VB needed_VBN ._.
+Now_RB consider_VB another_DT scenario_NN where_WRB player_NN j_NN moves_NNS from_IN region_NN #_# to_TO region_NN #_# and_CC that_IN proxy_NN P4_NN is_VBZ able_JJ to_TO identify_VB this_DT movement_NN ._.
+Again_RB ,_, because_IN proxy_NN P4_NN maintains_VBZ state_NN information_NN about_IN region_NN #_# ,_, it_PRP can_MD inform_VB any_DT other_JJ relevant_JJ communication_NN proxies_NNS -LRB-_-LRB- again_RB ,_, none_NN in_IN this_DT example_NN -RRB-_-RRB- about_IN this_DT movement_NN ._.
+But_CC now_RB ,_, regions_NNS #_# and_CC #_# are_VBP managed_VBN by_IN different_JJ servers_NNS -LRB-_-LRB- servers_NNS S3_NN and_CC S2_NN respectively_RB -RRB-_-RRB- and_CC thus_RB a_DT hand-off_NN between_IN these_DT servers_NNS is_VBZ needed_VBN ._.
+We_PRP propose_VBP that_IN in_IN this_DT particular_JJ scenario_NN ,_, the_DT handoff_NN be_VB managed_VBN by_IN the_DT proxy_NN P4_NN itself_PRP ._.
+When_WRB the_DT proxy_NN sends_VBZ movement_NN update_VB to_TO server_NN S3_NN -LRB-_-LRB- informing_VBG the_DT server_NN that_IN the_DT player_NN is_VBZ moving_VBG out_RB of_IN its_PRP$ region_NN -RRB-_-RRB- ,_, it_PRP would_MD also_RB send_VB a_DT message_NN to_TO server_NN S2_NN informing_VBG the_DT server_NN of_IN the_DT presence_NN and_CC location_NN of_IN the_DT player_NN in_IN one_CD of_IN its_PRP$ region_NN ._.
+In_IN the_DT intra-region_JJ and_CC inter-region_JJ scenarios_NNS described_VBN above_IN ,_, the_DT proxy_NN is_VBZ able_JJ to_TO manage_VB movement_NN related_JJ information_NN ,_, update_VBP only_RB the_DT relevant_JJ communication_NN proxies_NNS about_IN the_DT movement_NN ,_, update_VBP the_DT servers_NNS with_IN the_DT movement_NN and_CC enable_VB handoff_NN of_IN a_DT player_NN between_IN the_DT servers_NNS if_IN needed_VBN ._.
+In_IN this_DT way_NN ,_, the_DT proxy_NN performs_VBZ movement_NN updates_NNS without_IN involving_VBG the_DT servers_NNS in_IN any_DT way_NN in_IN this_DT time-critical_JJ function_NN thereby_RB speeding_VBG up_RP the_DT game_NN and_CC improving_VBG game_NN playing_NN experience_NN for_IN the_DT players_NNS ._.
+We_PRP consider_VBP this_DT the_DT fast_JJ path_NN for_IN movement_NN update_VBP ._.
+We_PRP envision_VBP the_DT proxies_NNS to_TO be_VB just_RB communication_NN proxies_NNS in_IN that_IN they_PRP do_VBP not_RB know_VB about_IN the_DT workings_NNS of_IN specific_JJ games_NNS ._.
+They_PRP merely_RB process_NN movement_NN information_NN of_IN players_NNS and_CC objects_NNS and_CC communicate_VBP this_DT information_NN to_TO the_DT other_JJ proxies_NNS and_CC the_DT servers_NNS ._.
+If_IN the_DT proxies_NNS are_VBP made_VBN more_RBR intelligent_JJ in_IN that_IN they_PRP understand_VBP more_JJR of_IN the_DT game_NN logic_NN ,_, it_PRP is_VBZ possible_JJ for_IN them_PRP to_TO quickly_RB check_VB on_IN claims_NNS made_VBN by_IN the_DT clients_NNS and_CC mitigate_VB cheating_NN ._.
+The_DT servers_NNS could_MD perform_VB the_DT same_JJ functionality_NN but_CC with_IN more_JJR delay_NN ._.
+Even_RB without_IN being_VBG aware_JJ of_IN game_NN logic_NN ,_, the_DT proxies_NNS can_MD provide_VB additional_JJ functionalities_NNS such_JJ as_IN timestamping_VBG messages_NNS to_TO make_VB the_DT game_NN playing_VBG experience_NN more_RBR accurate_JJ -LSB-_-LRB- ##_CD -RSB-_-RRB- and_CC fair_JJ -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+The_DT second_JJ possibility_NN that_IN should_MD be_VB considered_VBN is_VBZ when_WRB players_NNS move_VBP between_IN regions_NNS ._.
+It_PRP is_VBZ possible_JJ that_IN a_DT player_NN moves_VBZ from_IN one_CD region_NN to_TO another_DT but_CC the_DT proxy_NN that_WDT is_VBZ hosting_VBG the_DT player_NN is_VBZ not_RB able_JJ to_TO determine_VB the_DT region_NN into_IN which_WDT the_DT player_NN is_VBZ moving_VBG ,_, a_DT -RRB-_-RRB- the_DT proxy_NN does_VBZ not_RB maintain_VB state_NN information_NN about_IN all_PDT the_DT regions_NNS into_IN which_WDT the_DT player_NN could_MD potentially_RB move_VB ,_, or_CC b_NN -RRB-_-RRB- the_DT proxy_NN is_VBZ not_RB able_JJ to_TO determine_VB which_WDT region_NN the_DT player_NN may_MD move_VB into_IN -LRB-_-LRB- even_RB if_IN maintains_VBZ state_NN information_NN about_IN all_PDT these_DT regions_NNS -RRB-_-RRB- ._.
+In_IN this_DT case_NN ,_, we_PRP propose_VBP that_IN the_DT proxy_NN be_VB not_RB responsible_JJ for_IN making_VBG the_DT movement_NN decision_NN ,_, but_CC instead_RB communicate_VBP the_DT movement_NN indication_NN to_TO the_DT server_NN responsible_JJ for_IN the_DT region_NN within_IN which_WDT the_DT player_NN is_VBZ currently_RB located_JJ ._.
+The_DT server_NN will_MD then_RB make_VB the_DT movement_NN decision_NN and_CC then_RB a_DT -RRB-_-RRB- inform_VBP all_PDT the_DT proxies_NNS including_VBG the_DT proxy_NN hosting_VBG the_DT player_NN ,_, and_CC b_NN -RRB-_-RRB- initiate_VBP handoff_NN with_IN another_DT server_NN if_IN the_DT player_NN moves_VBZ into_IN a_DT region_NN managed_VBN by_IN another_DT server_NN ._.
+We_PRP consider_VBP this_DT the_DT slow_JJ path_NN for_IN movement_NN update_VBP in_IN that_IN the_DT servers_NNS need_VBP to_TO be_VB involved_VBN in_IN determining_VBG the_DT new_JJ position_NN of_IN the_DT player_NN ._.
+In_IN the_DT example_NN ,_, assume_VB that_DT player_NN a_DT moves_NNS from_IN region_NN #_# to_TO region_NN #_# ._.
+Proxy_NN P1_NN does_VBZ not_RB maintain_VB state_NN information_NN about_IN region_NN #_# and_CC thus_RB would_MD pass_VB the_DT movement_NN information_NN to_TO server_NN S1_NN ._.
+The_DT server_NN will_MD identify_VB that_IN the_DT player_NN has_VBZ moved_VBN into_IN region_NN #_# and_CC would_MD inform_VB proxy_NN P1_NN as_RB well_RB as_IN proxy_NN P2_NN -LRB-_-LRB- which_WDT is_VBZ the_DT only_RB other_JJ proxy_NN that_WDT maintains_VBZ information_NN about_IN region_NN #_# at_IN this_DT point_NN in_IN time_NN -RRB-_-RRB- ._.
+Server_NN S1_NN will_MD also_RB initiate_VB a_DT handoff_NN of_IN player_NN a_DT with_IN server_NN S2_NN ._.
+Proxy_NN P1_NN will_MD now_RB start_VB maintaining_VBG state_NN information_NN about_IN region_NN #_# because_IN one_CD of_IN its_PRP$ hosted_VBN players_NNS ,_, player_NN a_DT has_VBZ moved_VBN into_IN this_DT region_NN ._.
+It_PRP will_MD do_VB so_RB by_IN requesting_VBG and_CC receiving_VBG the_DT current_JJ state_NN information_NN about_IN region_NN #_# from_IN server_NN S2_NN which_WDT is_VBZ responsible_JJ for_IN this_DT region_NN ._.
+Thus_RB ,_, a_DT proxy_NN architecture_NN allows_VBZ us_PRP to_TO make_VB use_NN of_IN faster_JJR movement_NN updates_NNS through_IN the_DT fast_JJ path_NN through_IN a_DT proxy_NN if_IN and_CC when_WRB possible_JJ as_IN opposed_VBN to_TO conventional_JJ server-based_JJ architectures_NNS that_WDT always_RB have_VBP to_TO use_VB the_DT slow_JJ path_NN through_IN the_DT server_NN for_IN movement_NN updates_NNS ._.
+By_IN selectively_RB maintaining_VBG relevant_JJ regional_JJ game_NN state_NN information_NN at_IN the_DT proxies_NNS ,_, we_PRP are_VBP able_JJ to_TO achieve_VB this_DT capability_NN in_IN our_PRP$ architecture_NN without_IN the_DT need_NN for_IN maintaining_VBG the_DT complete_JJ game_NN state_NN at_IN every_DT proxy_NN ._.
+3_LS ._.
+ASSIGNMENT_NN OF_IN AUTHORITY_NNP As_IN a_DT MMOG_NN is_VBZ played_VBN ,_, the_DT players_NNS and_CC the_DT game_NN objects_NNS that_WDT are_VBP part_NN of_IN the_DT game_NN ,_, continually_RB change_VB their_PRP$ state_NN ._.
+For_IN example_NN ,_, consider_VB a_DT player_NN who_WP owns_VBZ a_DT tank_NN in_IN a_DT battlefield_NN game_NN ._.
+Based_VBN on_IN action_NN of_IN the_DT player_NN ,_, the_DT tank_NN changes_VBZ its_PRP$ position_NN in_IN the_DT game_NN space_NN ,_, the_DT amount_NN of_IN ammunition_NN the_DT tank_NN contains_VBZ changes_NNS as_IN it_PRP fires_VBZ at_IN other_JJ tanks_NNS ,_, the_DT tank_NN collects_VBZ bonus_NN firing_NN power_NN based_VBN on_IN successful_JJ hits_NNS ,_, etc_FW ._.
+Similarly_RB objects_NNS in_IN the_DT battlefield_NN ,_, such_JJ as_IN flags_NNS ,_, buildings_NNS etc_FW ._.
+change_VB their_PRP$ state_NN when_WRB a_DT flag_NN is_VBZ picked_VBN up_RP by_IN a_DT player_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+tank_NN -RRB-_-RRB- or_CC a_DT building_NN is_VBZ destroyed_VBN by_IN firing_NN at_IN it_PRP ._.
+That_DT is_VBZ ,_, some_DT decision_NN has_VBZ to_TO be_VB made_VBN on_IN the_DT state_NN of_IN each_DT player_NN and_CC object_NN as_IN the_DT game_NN progresses_VBZ ._.
+Note_VB that_IN the_DT state_NN of_IN a_DT player_NN and_CC /_: or_CC object_NN can_MD contain_VB several_JJ parameters_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, position_NN ,_, amount_NN of_IN ammunition_NN ,_, fuel_NN storage_NN ,_, points_NNS collected_VBN ,_, etc_FW -RRB-_-RRB- ,_, and_CC if_IN any_DT of_IN the_DT parameters_NNS changes_NNS ,_, the_DT state_NN of_IN the_DT player_NN /_: object_NN changes_NNS ._.
+In_IN a_DT client-server_NN based_VBN game_NN ,_, the_DT server_NN controls_VBZ all_PDT the_DT players_NNS and_CC the_DT objects_NNS ._.
+When_WRB a_DT player_NN at_IN a_DT client_NN machine_NN makes_VBZ a_DT move_NN ,_, the_DT move_NN is_VBZ transmitted_VBN to_TO the_DT server_NN over_IN the_DT network_NN ._.
+The_DT server_NN then_RB analyzes_VBZ the_DT move_NN ,_, and_CC if_IN the_DT move_NN is_VBZ a_DT valid_JJ one_CD ,_, changes_VBZ the_DT state_NN of_IN the_DT player_NN at_IN the_DT server_NN and_CC informs_VBZ the_DT client_NN of_IN the_DT change_NN ._.
+The_DT client_NN subsequently_RB updates_NNS the_DT state_NN of_IN the_DT player_NN and_CC renders_VBZ the_DT player_NN at_IN the_DT new_JJ location_NN ._.
+In_IN this_DT case_NN the_DT authority_NN to_TO change_VB the_DT state_NN of_IN the_DT player_NN resides_VBZ with_IN the_DT server_NN entirely_RB and_CC the_DT client_NN simply_RB follows_VBZ what_WP the_DT server_NN instructs_VBZ it_PRP to_TO do_VB ._.
+Most_JJS of_IN the_DT current_JJ first_JJ person_NN shooter_NN -LRB-_-LRB- FPS_NN -RRB-_-RRB- games_NNS and_CC role_NN playing_NN games_NNS -LRB-_-LRB- RPG_NN -RRB-_-RRB- fall_NN under_IN this_DT category_NN ._.
+In_IN current_JJ FPS_NNP games_NNS ,_, much_RB like_IN in_IN RPG_NNP games_NNS ,_, the_DT client_NN is_VBZ not_RB trusted_VBN ._.
+All_DT moves_NNS and_CC actions_NNS that_IN it_PRP makes_VBZ are_VBP validated_VBN ._.
+If_IN a_DT client_NN detects_VBZ that_IN it_PRP has_VBZ hit_VBN another_DT player_NN with_IN a_DT bullet_NN ,_, it_PRP proceeds_VBZ assuming_VBG that_IN it_PRP is_VBZ a_DT hit_NN ._.
+Meanwhile_RB ,_, an_DT update_VBP is_VBZ sent_VBN to_TO the_DT server_NN and_CC the_DT server_NN will_MD send_VB back_RP a_DT message_NN either_CC affirming_VBG or_CC denying_VBG that_IN the_DT player_NN was_VBD hit_VBN ._.
+If_IN the_DT remote_JJ player_NN was_VBD not_RB hit_VBN ,_, then_RB the_DT client_NN will_MD know_VB that_IN it_PRP 4_CD The_DT 5th_NN Workshop_NNP on_IN Network_NNP &_CC System_NNP Support_NN for_IN Games_NNPS ####_SYM -_: NETGAMES_NN ####_CD did_VBD not_RB actually_RB make_VB the_DT shot_NN ._.
+If_IN it_PRP did_VBD make_VB the_DT hit_NN ,_, an_DT update_VBP will_MD also_RB be_VB sent_VBN from_IN the_DT server_NN to_TO the_DT other_JJ clients_NNS informing_VBG them_PRP that_IN the_DT other_JJ player_NN was_VBD hit_VBN ._.
+A_DT difference_NN that_WDT occurs_VBZ in_IN some_DT RPGs_NNS is_VBZ that_IN they_PRP use_VBP very_RB dumb_JJ client_NN programs_NNS ._.
+Some_DT RPGs_NNS do_VBP not_RB maintain_VB state_NN information_NN at_IN the_DT client_NN and_CC therefore_RB ,_, can_MD not_RB predict_VB anything_NN such_JJ as_IN hits_NNS at_IN the_DT client_NN ._.
+State_NNP information_NN is_VBZ not_RB maintained_VBN because_IN the_DT client_NN is_VBZ not_RB trusted_VBN with_IN it_PRP ._.
+In_IN RPGs_NNS ,_, a_DT cheating_NN player_NN with_IN a_DT hacked_VBN game_NN client_NN can_MD use_VB state_NN information_NN stored_VBD at_IN the_DT client_NN to_TO gain_VB an_DT advantage_NN and_CC find_VB things_NNS such_JJ as_IN hidden_JJ treasure_NN or_CC monsters_NNS lurking_VBG around_IN the_DT corner_NN ._.
+This_DT is_VBZ a_DT reason_NN why_WRB most_RBS MMORPGs_NNS do_VBP not_RB send_VB a_DT lot_NN of_IN state_NN information_NN to_TO the_DT client_NN and_CC causes_VBZ the_DT game_NN to_TO be_VB less_JJR responsive_JJ and_CC have_VBP lower_JJR interaction_NN game-play_NN than_IN FPS_NNP games_NNS ._.
+In_IN a_DT peer-to-peer_JJ game_NN ,_, each_DT peer_VB controls_NNS the_DT player_NN and_CC object_NN that_IN it_PRP owns_VBZ ._.
+When_WRB a_DT player_NN makes_VBZ a_DT move_NN ,_, the_DT peer_VBP machine_NN analyzes_VBZ the_DT move_NN and_CC if_IN it_PRP is_VBZ a_DT valid_JJ one_CD ,_, changes_VBZ the_DT state_NN of_IN the_DT player_NN and_CC places_VBZ the_DT player_NN in_IN new_JJ position_NN ._.
+Afterwards_RB ,_, the_DT owner_NN peer_VB informs_VBZ all_DT other_JJ peers_NNS about_IN the_DT new_JJ state_NN of_IN the_DT player_NN and_CC the_DT rest_NN of_IN the_DT peers_NNS update_VBP the_DT state_NN of_IN the_DT player_NN ._.
+In_IN this_DT scenario_NN ,_, the_DT authority_NN to_TO change_VB the_DT state_NN of_IN the_DT player_NN is_VBZ given_VBN to_TO the_DT owning_NN peer_VB and_CC all_DT other_JJ peers_NNS simply_RB follow_VB the_DT owner_NN ._.
+For_IN example_NN ,_, Battle_NN Zone_NNP Flag_NNP -LRB-_-LRB- BzFlag_NNP -RRB-_-RRB- -LSB-_-LRB- ##_CD -RSB-_-RRB- is_VBZ a_DT multiplayer_JJ client-server_NN game_NN where_WRB the_DT client_NN has_VBZ all_DT authority_NN for_IN making_VBG decisions_NNS ._.
+It_PRP was_VBD built_VBN primarily_RB with_IN LAN_NN play_NN in_IN mind_NN and_CC cheating_NN as_IN an_DT afterthought_NN ._.
+Clients_NNS in_IN BzFlag_NNP are_VBP completely_RB authoritative_JJ and_CC when_WRB they_PRP detect_VBP that_IN they_PRP were_VBD hit_VBN by_IN a_DT bullet_NN ,_, they_PRP send_VBP an_DT update_VBP to_TO the_DT server_NN which_WDT simply_RB forwards_RB the_DT message_NN along_IN to_TO all_DT other_JJ players_NNS ._.
+The_DT server_NN does_VBZ no_DT sort_NN of_IN validation_NN ._.
+Each_DT of_IN the_DT above_JJ two_CD traditional_JJ approaches_NNS has_VBZ its_PRP$ own_JJ set_NN of_IN advantages_NNS and_CC disadvantages_NNS ._.
+The_DT first_JJ approach_NN ,_, which_WDT we_PRP will_MD refer_VB to_TO as_IN server_NN authoritative_JJ henceforth_NN ,_, uses_VBZ a_DT centralized_JJ method_NN to_TO assign_VB authority_NN ._.
+While_IN a_DT centralized_JJ approach_NN can_MD keep_VB the_DT state_NN of_IN the_DT game_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, state_NN of_IN all_PDT the_DT players_NNS and_CC objects_NNS -RRB-_-RRB- consistent_JJ across_IN any_DT number_NN of_IN client_NN machines_NNS ,_, it_PRP suffers_VBZ from_IN delayed_VBN response_NN in_IN game-play_NN as_IN any_DT move_NN that_IN a_DT player_NN at_IN the_DT client_NN machine_NN makes_VBZ must_MD go_VB through_IN one_CD round-trip_NN delay_NN to_TO the_DT server_NN before_IN it_PRP can_MD take_VB effect_NN on_IN the_DT client_NN ''_'' s_NNS screen_NN ._.
+In_IN addition_NN to_TO the_DT round-trip_JJ delay_NN ,_, there_EX is_VBZ also_RB queuing_VBG delay_NN in_IN processing_VBG the_DT state_NN change_NN request_NN at_IN the_DT server_NN ._.
+This_DT can_MD result_VB in_IN additional_JJ processing_NN delay_NN ,_, and_CC can_MD also_RB bring_VB in_RP severe_JJ scalability_NN problems_NNS if_IN there_EX are_VBP large_JJ number_NN of_IN clients_NNS playing_VBG the_DT game_NN ._.
+One_CD definite_JJ advantage_NN of_IN the_DT server_NN authoritative_JJ approach_NN is_VBZ that_IN it_PRP can_MD easily_RB detect_VB if_IN a_DT client_NN is_VBZ cheating_VBG and_CC can_MD take_VB appropriate_JJ action_NN to_TO prevent_VB cheating_NN ._.
+The_DT peer-to-peer_JJ approach_NN ,_, henceforth_NN referred_VBD to_TO as_IN client_NN authoritative_JJ ,_, can_MD make_VB games_NNS very_RB responsive_JJ ._.
+However_RB ,_, it_PRP can_MD make_VB the_DT game_NN state_NN inconsistent_JJ for_IN a_DT few_JJ players_NNS and_CC tie_VB break_NN -LRB-_-LRB- or_CC roll_VB back_RB -RRB-_-RRB- has_VBZ to_TO be_VB performed_VBN to_TO bring_VB the_DT game_NN back_RB to_TO a_DT consistent_JJ state_NN ._.
+Neither_DT tie_NN break_NN nor_CC roll_NN back_NN is_VBZ a_DT desirable_JJ feature_NN of_IN online_JJ gaming_NN ._.
+For_IN example_NN ,_, assume_VB that_DT for_IN a_DT game_NN ,_, the_DT goal_NN of_IN each_DT player_NN is_VBZ to_TO collect_VB as_RB many_JJ flags_NNS as_IN possible_JJ from_IN the_DT game_NN space_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+BzFlag_NNP -RRB-_-RRB- ._.
+When_WRB two_CD players_NNS in_IN proximity_NN try_VBP to_TO collect_VB the_DT same_JJ flag_NN at_IN the_DT same_JJ time_NN ,_, depending_VBG on_IN the_DT algorithm_NN used_VBN at_IN the_DT client-side_JJ ,_, both_DT clients_NNS may_MD determine_VB that_IN it_PRP is_VBZ the_DT winner_NN ,_, although_IN in_IN reality_NN only_RB one_CD player_NN can_MD pick_VB the_DT flag_NN up_RP ._.
+Both_DT players_NNS will_MD see_VB on_IN their_PRP$ screen_NN that_IN it_PRP is_VBZ the_DT winner_NN ._.
+This_DT makes_VBZ the_DT state_NN of_IN the_DT game_NN inconsistent_JJ ._.
+Ways_NNP to_TO recover_VB from_IN this_DT inconsistency_NN are_VBP to_TO give_VB the_DT flag_NN to_TO only_RB one_CD player_NN -LRB-_-LRB- using_VBG some_DT tie_NN break_NN rule_NN -RRB-_-RRB- or_CC roll_VB the_DT game_NN back_RB so_RB that_IN the_DT players_NNS can_MD try_VB again_RB ._.
+Neither_DT of_IN these_DT two_CD approaches_NNS is_VBZ a_DT pleasing_VBG experience_NN for_IN online_JJ gaming_NN ._.
+Another_DT problem_NN with_IN client_NN authoritative_JJ approach_NN is_VBZ that_IN of_IN cheating_NN by_IN clients_NNS as_IN there_EX is_VBZ no_DT cross_NN checking_NN of_IN the_DT validation_NN of_IN the_DT state_NN changes_NNS authorized_VBN by_IN the_DT owner_NN client_NN ._.
+We_PRP propose_VBP to_TO use_VB a_DT hybrid_JJ approach_NN to_TO assign_VB the_DT authority_NN dynamically_RB between_IN the_DT client_NN and_CC the_DT server_NN ._.
+That_DT is_VBZ ,_, we_PRP assign_VBP the_DT authority_NN to_TO the_DT client_NN to_TO make_VB the_DT game_NN responsive_JJ ,_, and_CC use_VB the_DT server_NN ''_'' s_NNS authority_NN only_RB when_WRB the_DT client_NN ''_'' s_NNS individual_JJ authoritative_JJ decisions_NNS can_MD make_VB the_DT game_NN state_NN inconsistent_JJ ._.
+By_IN moving_VBG the_DT authority_NN of_IN time_NN critical_JJ updates_NNS to_TO the_DT client_NN ,_, we_PRP avoid_VBP the_DT added_VBN delay_NN caused_VBN by_IN requiring_VBG the_DT server_NN to_TO validate_VB these_DT updates_NNS ._.
+For_IN example_NN ,_, in_IN the_DT flag_NN pickup_NN game_NN ,_, the_DT clients_NNS will_MD be_VB given_VBN the_DT authority_NN to_TO pickup_NN flags_NNS only_RB when_WRB other_JJ players_NNS are_VBP not_RB within_IN a_DT range_NN that_IN they_PRP could_MD imminently_RB pickup_NN a_DT flag_NN ._.
+Only_RB when_WRB two_CD or_CC more_JJR players_NNS are_VBP close_RB by_IN so_RB that_IN more_JJR than_IN one_CD player_NN may_MD claim_VB to_TO have_VB picked_VBN up_RP a_DT flag_NN ,_, the_DT authority_NN for_IN movement_NN and_CC flag_NN pickup_NN would_MD go_VB to_TO the_DT central_JJ server_NN so_IN that_IN the_DT game_NN state_NN does_VBZ not_RB become_VB inconsistent_JJ ._.
+We_PRP believe_VBP that_IN in_IN a_DT large_JJ game-space_NN where_WRB a_DT player_NN is_VBZ often_RB in_IN a_DT very_RB wide_JJ open_JJ and_CC sparsely_RB populated_JJ area_NN such_JJ as_IN those_DT often_RB seen_VBN in_IN the_DT game_NN Second_NNP Life_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, this_DT hybrid_NN architecture_NN would_MD be_VB very_RB beneficial_JJ because_IN of_IN the_DT long_JJ periods_NNS that_IN the_DT client_NN would_MD have_VB authority_NN to_TO send_VB movement_NN updates_NNS for_IN itself_PRP ._.
+This_DT has_VBZ two_CD advantages_NNS over_IN the_DT centralauthority_NN approach_NN ,_, it_PRP distributes_VBZ the_DT processing_NN load_NN down_IN to_TO the_DT clients_NNS for_IN the_DT majority_NN of_IN events_NNS and_CC it_PRP allows_VBZ for_IN a_DT more_RBR responsive_JJ game_NN that_WDT does_VBZ not_RB need_VB to_TO wait_VB on_IN a_DT server_NN for_IN validation_NN ._.
+We_PRP believe_VBP that_IN our_PRP$ notion_NN of_IN authority_NN can_MD be_VB used_VBN to_TO develop_VB a_DT globally_RB consistent_JJ state_NN model_NN of_IN the_DT evolution_NN of_IN a_DT game_NN ._.
+Fundamentally_RB ,_, the_DT consistent_JJ state_NN of_IN the_DT system_NN is_VBZ the_DT one_CD that_WDT is_VBZ defined_VBN by_IN the_DT server_NN ._.
+However_RB ,_, if_IN local_JJ authority_NN is_VBZ delegated_VBN to_TO the_DT client_NN ,_, in_IN this_DT case_NN ,_, the_DT client_NN ''_'' s_NNS state_NN is_VBZ superimposed_VBN on_IN the_DT server_NN ''_'' s_NNS state_NN to_TO determine_VB the_DT correct_JJ global_JJ state_NN ._.
+For_IN example_NN ,_, if_IN the_DT client_NN is_VBZ authoritative_JJ with_IN respect_NN to_TO movement_NN of_IN a_DT player_NN ,_, then_RB the_DT trajectory_NN of_IN the_DT player_NN is_VBZ the_DT true_JJ trajectory_NN and_CC must_MD replace_VB the_DT server_NN ''_'' s_NNS view_NN of_IN the_DT player_NN ''_'' s_NNS trajectory_NN ._.
+Note_VB that_IN this_DT could_MD be_VB problematic_JJ and_CC lead_VB to_TO temporal_JJ inconsistency_NN only_RB if_IN ,_, for_IN example_NN ,_, two_CD or_CC more_JJR entities_NNS are_VBP moving_VBG in_IN the_DT same_JJ region_NN and_CC can_MD interact_VB with_IN each_DT other_JJ ._.
+In_IN this_DT situation_NN ,_, the_DT client_NN authority_NN must_MD revert_VB to_TO the_DT server_NN and_CC the_DT sever_VB would_MD then_RB make_VB decisions_NNS ._.
+Thus_RB ,_, the_DT client_NN is_VBZ only_RB authoritative_JJ in_IN situations_NNS where_WRB there_EX is_VBZ no_DT potential_JJ to_TO imminently_RB interact_VB with_IN other_JJ players_NNS ._.
+We_PRP believe_VBP that_IN in_IN complex_JJ MMOGs_NNS ,_, when_WRB allowing_VBG more_RBR rapid_JJ movement_NN ,_, it_PRP will_MD still_RB be_VB the_DT case_NN that_IN local_JJ authority_NN is_VBZ possible_JJ for_IN significant_JJ spans_NNS of_IN game_NN time_NN ._.
+Note_VB that_IN it_PRP might_MD also_RB be_VB possible_JJ to_TO minimize_VB the_DT occurrences_NNS of_IN the_DT Dead_JJ Man_NN Shooting_NN problem_NN described_VBN in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ._.
+This_DT could_MD be_VB done_VBN by_IN allowing_VBG the_DT client_NN to_TO be_VB authoritative_JJ for_IN more_JJR actions_NNS such_JJ as_IN its_PRP$ player_NN ''_'' s_NNS own_JJ death_NN and_CC disallowing_VBG other_JJ players_NNS from_IN making_VBG preemptive_JJ decisions_NNS based_VBN on_IN a_DT remote_JJ player_NN ._.
+The_DT 5th_JJ Workshop_NNP on_IN Network_NNP &_CC System_NNP Support_NN for_IN Games_NNPS ####_SYM -_: NETGAMES_NN ####_CD #_# One_CD reason_NN why_WRB the_DT client-server_NN based_VBN architecture_NN has_VBZ gained_VBN popularity_NN is_VBZ due_JJ to_TO belief_NN that_IN the_DT fastest_JJS route_NN to_TO the_DT other_JJ clients_NNS is_VBZ through_IN the_DT server_NN ._.
+While_IN this_DT may_MD be_VB true_JJ ,_, we_PRP aim_VBP to_TO create_VB a_DT new_JJ architecture_NN where_WRB decisions_NNS do_VBP not_RB always_RB have_VBP to_TO be_VB made_VBN at_IN the_DT game_NN server_NN and_CC the_DT fastest_JJS route_NN to_TO a_DT client_NN is_VBZ actually_RB through_IN a_DT communication_NN proxy_NN located_JJ close_RB to_TO the_DT client_NN ._.
+That_DT is_VBZ ,_, the_DT shortest_JJS distance_NN in_IN our_PRP$ architecture_NN is_VBZ not_RB through_IN the_DT game_NN server_NN but_CC through_IN the_DT communication_NN proxy_NN ._.
+After_IN a_DT client_NN makes_VBZ an_DT action_NN such_JJ as_IN movement_NN ,_, it_PRP will_MD simultaneously_RB distribute_VB it_PRP directly_RB to_TO the_DT clients_NNS and_CC the_DT game_NN server_NN by_IN way_NN of_IN the_DT communications_NNS proxy_NN ._.
+We_PRP note_VBP that_IN our_PRP$ architecture_NN however_RB is_VBZ not_RB practical_JJ for_IN a_DT game_NN where_WRB game_NN players_NNS setup_NN their_PRP$ own_JJ servers_NNS in_IN an_DT ad-hoc_JJ fashion_NN and_CC do_VBP not_RB have_VB access_NN to_TO proxies_NNS at_IN the_DT various_JJ ISPs_NNS ._.
+This_DT proxy_NN and_CC distributed_VBN authority_NN architecture_NN can_MD be_VB used_VBN to_TO its_PRP$ full_JJ potential_NN only_RB when_WRB the_DT proxies_NNS can_MD be_VB placed_VBN at_IN strategic_JJ places_NNS within_IN the_DT main_JJ ISPs_NNS and_CC evenly_RB distributed_VBN geographically_RB ._.
+Our_PRP$ game_NN architecture_NN does_VBZ not_RB assume_VB that_IN the_DT client_NN is_VBZ not_RB to_TO be_VB trusted_VBN ._.
+We_PRP are_VBP designing_VBG our_PRP$ architecture_NN on_IN the_DT fact_NN that_IN there_EX will_MD be_VB sufficient_JJ cheat_VB deterring_VBG and_CC detection_NN mechanisms_NNS present_JJ so_IN that_IN it_PRP will_MD be_VB both_CC undesirable_JJ and_CC very_RB difficult_JJ to_TO cheat_VB -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+In_IN our_PRP$ proposed_VBN approach_NN ,_, we_PRP can_MD make_VB the_DT games_NNS cheat_VBP resilient_JJ by_IN using_VBG the_DT proxybased_JJ architecture_NN when_WRB client_NN authoritative_JJ decisions_NNS take_VBP place_NN ._.
+In_IN order_NN to_TO achieve_VB this_DT ,_, the_DT proxies_NNS have_VBP to_TO be_VB game_NN cognizant_JJ so_IN that_IN decisions_NNS made_VBN by_IN a_DT client_NN can_MD be_VB cross_JJ checked_VBN by_IN a_DT proxy_NN that_IN the_DT client_NN connects_VBZ to_TO ._.
+For_IN example_NN ,_, assume_VB that_DT in_IN a_DT game_NN a_DT plane_NN controlled_VBN by_IN a_DT client_NN moves_VBZ in_IN the_DT game_NN space_NN ._.
+It_PRP is_VBZ not_RB possible_JJ for_IN the_DT plane_NN to_TO go_VB through_IN a_DT building_NN unharmed_JJ ._.
+In_IN a_DT client_NN authoritative_JJ mode_NN ,_, it_PRP is_VBZ possible_JJ for_IN the_DT client_NN to_TO cheat_VB by_IN maneuvering_VBG the_DT plane_NN through_IN a_DT building_NN and_CC claiming_VBG the_DT plane_NN to_TO be_VB unharmed_JJ ._.
+However_RB ,_, when_WRB such_JJ move_NN is_VBZ published_VBN by_IN the_DT client_NN ,_, the_DT proxy_NN ,_, being_VBG aware_JJ of_IN the_DT game_NN space_NN that_IN the_DT plane_NN is_VBZ in_IN ,_, can_MD quickly_RB check_VB that_IN the_DT client_NN has_VBZ misused_VBN the_DT authority_NN and_CC then_RB can_MD block_VB such_JJ move_NN ._.
+This_DT allows_VBZ us_PRP to_TO distribute_VB authority_NN to_TO make_VB decisions_NNS about_IN the_DT clients_NNS ._.
+In_IN the_DT following_VBG section_NN we_PRP use_VBP a_DT multiplayer_JJ game_NN called_VBN RPGQuest_NN to_TO implement_VB different_JJ authoritative_JJ schemes_NNS and_CC discuss_VB our_PRP$ experience_NN with_IN the_DT implementation_NN ._.
+Our_PRP$ implementation_NN shows_VBZ the_DT viability_NN of_IN our_PRP$ proposed_VBN solution_NN ._.
+4_LS ._.
+IMPLEMENTATION_NN EXPERIENCE_NN We_PRP have_VBP experimented_VBN with_IN the_DT authority_NN assignment_NN mechanism_NN described_VBN in_IN the_DT last_JJ section_NN by_IN implementing_VBG the_DT mechanisms_NNS in_IN a_DT game_NN called_VBN RPGQuest_NNP ._.
+A_DT screen_NN shot_NN from_IN this_DT game_NN is_VBZ shown_VBN in_IN Figure_NNP #_# ._.
+The_DT purpose_NN of_IN the_DT implementation_NN is_VBZ to_TO test_VB its_PRP$ feasibility_NN in_IN a_DT real_JJ game_NN ._.
+RPGQuest_NN is_VBZ a_DT basic_JJ first_JJ person_NN game_NN where_WRB the_DT player_NN can_MD move_VB around_IN a_DT three_CD dimensional_JJ environment_NN ._.
+Objects_NNS are_VBP placed_VBN within_IN the_DT game_NN world_NN and_CC players_NNS gain_NN points_NNS for_IN each_DT object_NN that_WDT is_VBZ collected_VBN ._.
+The_DT game_NN clients_NNS connect_VBP to_TO a_DT game_NN server_NN which_WDT allows_VBZ many_JJ players_NNS to_TO coexist_VB in_IN the_DT same_JJ game_NN world_NN ._.
+The_DT basic_JJ functionality_NN of_IN this_DT game_NN is_VBZ representative_NN of_IN current_JJ online_JJ first_JJ person_NN shooter_NN and_CC role_NN playing_NN games_NNS ._.
+The_DT game_NN uses_VBZ the_DT DirectX_NNP #_# graphics_NNS API_NNP and_CC DirectPlay_NNP networking_VBG API_NNP ._.
+In_IN this_DT section_NN we_PRP will_MD discuss_VB the_DT three_CD different_JJ versions_NNS of_IN the_DT game_NN that_IN we_PRP experimented_VBD with_IN ._.
+Figure_NNP #_# :_: The_DT RPGQuest_NN Game_NN ._.
+The_DT first_JJ version_NN of_IN the_DT game_NN ,_, which_WDT is_VBZ the_DT original_JJ implementation_NN of_IN RPGQuest_NN ,_, was_VBD created_VBN with_IN a_DT completely_RB authoritative_JJ server_NN and_CC a_DT non-authoritative_JJ client_NN ._.
+Authority_NNP given_VBN to_TO the_DT server_NN includes_VBZ decisions_NNS of_IN when_WRB a_DT player_NN collides_VBZ with_IN static_JJ objects_NNS and_CC other_JJ players_NNS and_CC when_WRB a_DT player_NN picks_VBZ up_RP an_DT object_NN ._.
+This_DT version_NN of_IN the_DT game_NN performs_VBZ well_RB up_IN to_TO 100ms_NNS round-trip_JJ latency_NN between_IN the_DT client_NN and_CC the_DT server_NN ._.
+There_EX is_VBZ little_JJ lag_NN between_IN the_DT time_NN player_NN hits_VBZ a_DT wall_NN and_CC the_DT time_NN the_DT server_NN corrects_VBZ the_DT player_NN ''_'' s_NNS position_NN ._.
+However_RB ,_, as_IN more_JJR latency_NN is_VBZ induced_VBN between_IN the_DT client_NN and_CC server_NN ,_, the_DT game_NN becomes_VBZ increasingly_RB difficult_JJ to_TO play_VB ._.
+With_IN the_DT increased_VBN latency_NN ,_, the_DT messages_NNS coming_VBG from_IN the_DT server_NN correcting_VBG the_DT player_NN when_WRB it_PRP runs_VBZ into_IN a_DT wall_NN are_VBP not_RB received_VBN fast_RB enough_RB ._.
+This_DT causes_VBZ the_DT player_NN to_TO pass_VB through_IN the_DT wall_NN for_IN the_DT period_NN that_IN it_PRP is_VBZ waiting_VBG for_IN the_DT server_NN to_TO resolve_VB the_DT collision_NN ._.
+When_WRB studying_VBG the_DT source_NN code_NN of_IN the_DT original_JJ version_NN of_IN the_DT RPGQuest_NN game_NN ,_, there_EX is_VBZ a_DT substantial_JJ delay_NN that_WDT is_VBZ unavoidable_JJ each_DT time_NN an_DT action_NN must_MD be_VB validated_VBN by_IN the_DT server_NN ._.
+Whenever_NNP a_DT movement_NN update_VBP is_VBZ sent_VBN to_TO the_DT server_NN ,_, the_DT client_NN must_MD then_RB wait_VB whatever_WDT the_DT round_NN trip_NN delay_NN is_VBZ ,_, plus_CC some_DT processing_NN time_NN at_IN the_DT server_NN in_IN order_NN to_TO receive_VB its_PRP$ validated_VBN or_CC corrected_VBN position_NN ._.
+This_DT is_VBZ obviously_RB unacceptable_JJ in_IN any_DT game_NN where_WRB movement_NN or_CC any_DT other_JJ rapidly_RB changing_VBG state_NN information_NN must_MD be_VB validated_VBN and_CC disseminated_VBN to_TO the_DT other_JJ clients_NNS rapidly_RB ._.
+In_IN order_NN to_TO get_VB around_IN this_DT problem_NN ,_, we_PRP developed_VBD a_DT second_JJ version_NN of_IN the_DT game_NN ,_, which_WDT gives_VBZ all_DT authority_NN to_TO the_DT client_NN ._.
+The_DT client_NN was_VBD delegated_VBN the_DT authority_NN to_TO validate_VB its_PRP$ own_JJ movement_NN and_CC the_DT authority_NN to_TO pick_VB up_RP objects_NNS without_IN validation_NN from_IN the_DT server_NN ._.
+In_IN this_DT version_NN of_IN the_DT game_NN when_WRB a_DT player_NN moves_VBZ around_IN the_DT game_NN space_NN ,_, the_DT client_NN validates_VBZ that_IN the_DT player_NN ''_'' s_NNS new_JJ position_NN does_VBZ not_RB intersect_VB with_IN any_DT walls_NNS or_CC static_JJ objects_NNS ._.
+A_DT position_NN update_VBP is_VBZ then_RB sent_VBN to_TO the_DT server_NN which_WDT then_RB immediately_RB forwards_RB the_DT update_VBP to_TO the_DT other_JJ clients_NNS within_IN the_DT region_NN ._.
+The_DT update_VBP does_VBZ not_RB have_VB to_TO go_VB through_IN any_DT extra_JJ processing_NN or_CC validation_NN ._.
+This_DT game_NN model_NN of_IN complete_JJ authority_NN given_VBN to_TO the_DT client_NN is_VBZ beneficial_JJ with_IN respect_NN to_TO movement_NN ._.
+When_WRB latencies_NNS of_IN 6_CD The_DT 5th_NN Workshop_NNP on_IN Network_NNP &_CC System_NNP Support_NN for_IN Games_NNPS ####_SYM -_: NETGAMES_NN ####_CD 100ms_NNS and_CC up_RB are_VBP induced_VBN into_IN the_DT link_NN between_IN the_DT client_NN and_CC server_NN ,_, the_DT game_NN is_VBZ still_RB playable_JJ since_IN time_NN critical_JJ aspects_NNS of_IN the_DT game_NN like_IN movement_NN do_VBP not_RB have_VB to_TO wait_VB on_IN a_DT reply_NN from_IN the_DT server_NN ._.
+When_WRB a_DT player_NN hits_VBZ a_DT wall_NN ,_, the_DT collision_NN is_VBZ processed_VBN locally_RB and_CC does_VBZ not_RB have_VB to_TO wait_VB on_IN the_DT server_NN to_TO resolve_VB the_DT collision_NN ._.
+Although_IN game_NN playing_NN experience_NN with_IN respect_NN to_TO responsiveness_NN is_VBZ improved_VBN when_WRB the_DT authority_NN for_IN movement_NN is_VBZ given_VBN to_TO the_DT client_NN ,_, there_EX are_VBP still_RB aspects_NNS of_IN games_NNS that_WDT do_VBP not_RB benefit_VB from_IN this_DT approach_NN ._.
+The_DT most_RBS important_JJ of_IN these_DT is_VBZ consistency_NN ._.
+Although_IN actions_NNS such_JJ as_IN movement_NN are_VBP time_NN critical_JJ ,_, other_JJ actions_NNS are_VBP not_RB as_IN time_NN critical_JJ ,_, but_CC instead_RB require_VBP consistency_NN among_IN the_DT player_NN states_NNS ._.
+An_DT example_NN of_IN a_DT game_NN aspect_NN that_WDT requires_VBZ consistency_NN is_VBZ picking_VBG up_RP objects_NNS that_WDT should_MD only_RB be_VB possessed_VBN by_IN a_DT single_JJ player_NN ._.
+In_IN our_PRP$ client_NN authoritative_JJ version_NN of_IN RPGQuest_NN clients_NNS send_VBP their_PRP$ own_JJ updates_NNS to_TO all_DT other_JJ players_NNS whenever_WRB they_PRP pick_VBP up_RP an_DT object_NN ._.
+From_IN our_PRP$ tests_NNS we_PRP have_VBP realized_VBN this_DT is_VBZ a_DT problem_NN because_IN when_WRB there_EX is_VBZ a_DT realistic_JJ amount_NN of_IN latency_NN between_IN the_DT client_NN and_CC server_NN ,_, it_PRP is_VBZ possible_JJ for_IN two_CD players_NNS to_TO pick_VB up_RP the_DT same_JJ object_NN at_IN the_DT same_JJ time_NN ._.
+When_WRB two_CD players_NNS attempt_NN to_TO pick_VB up_RP an_DT object_NN at_IN physical_JJ times_NNS which_WDT are_VBP close_JJ to_TO each_DT other_JJ ,_, the_DT update_VBP sent_VBN by_IN the_DT player_NN who_WP picked_VBD up_RP the_DT object_NN first_RB will_MD not_RB reach_VB the_DT second_JJ player_NN in_IN time_NN for_IN it_PRP to_TO see_VB that_IN the_DT object_NN has_VBZ already_RB been_VBN claimed_VBN ._.
+The_DT two_CD players_NNS will_MD now_RB both_DT think_VBP that_IN they_PRP own_VBP the_DT object_NN ._.
+This_DT is_VBZ why_WRB a_DT server_NN is_VBZ still_RB needed_VBN to_TO be_VB authoritative_JJ in_IN this_DT situation_NN and_CC maintain_VB consistency_NN throughout_IN the_DT players_NNS ._.
+These_DT two_CD versions_NNS of_IN the_DT RPGQuest_NN game_NN has_VBZ showed_VBN us_PRP why_WRB it_PRP is_VBZ necessary_JJ to_TO mix_VB the_DT two_CD absolute_JJ models_NNS of_IN authority_NN ._.
+It_PRP is_VBZ better_JJR to_TO place_VB authority_NN on_IN the_DT client_NN for_IN quickly_RB changing_VBG actions_NNS such_JJ as_IN movement_NN ._.
+It_PRP is_VBZ not_RB desirable_JJ to_TO have_VB to_TO wait_VB for_IN server_NN validation_NN on_IN a_DT movement_NN that_WDT could_MD change_VB before_IN the_DT reply_NN is_VBZ even_RB received_VBN ._.
+It_PRP is_VBZ also_RB sometimes_RB necessary_JJ to_TO place_VB consistency_NN over_IN efficiency_NN in_IN aspects_NNS of_IN the_DT game_NN that_WDT can_MD not_RB tolerate_VB any_DT inconsistencies_NNS such_JJ as_IN object_NN ownership_NN ._.
+We_PRP believe_VBP that_IN as_IN the_DT interactivity_NN of_IN games_NNS increases_NNS ,_, our_PRP$ architecture_NN of_IN mixed_JJ authority_NN that_WDT does_VBZ not_RB rely_VB on_IN server_NN validation_NN will_MD be_VB necessary_JJ ._.
+To_TO test_VB the_DT benefits_NNS and_CC show_VBP the_DT feasibility_NN of_IN our_PRP$ architecture_NN of_IN mixed_JJ authority_NN ,_, we_PRP developed_VBD a_DT third_JJ version_NN of_IN the_DT RPGQuest_NN game_NN that_WDT distributed_VBN authority_NN for_IN different_JJ actions_NNS between_IN the_DT client_NN and_CC server_NN ._.
+In_IN this_DT version_NN ,_, in_IN the_DT interest_NN of_IN consistency_NN ,_, the_DT server_NN remained_VBD authoritative_JJ for_IN deciding_VBG who_WP picked_VBD up_RP an_DT object_NN ._.
+The_DT client_NN was_VBD given_VBN full_JJ authority_NN to_TO send_VB positional_JJ updates_NNS to_TO other_JJ clients_NNS and_CC verify_VB its_PRP$ own_JJ position_NN without_IN the_DT need_NN to_TO verify_VB its_PRP$ updates_NNS with_IN the_DT server_NN ._.
+When_WRB the_DT player_NN tries_VBZ to_TO move_VB their_PRP$ avatar_NN ,_, the_DT client_NN verifies_VBZ that_IN the_DT move_NN will_MD not_RB cause_VB it_PRP to_TO move_VB through_IN a_DT wall_NN ._.
+A_DT positional_JJ update_VBP is_VBZ then_RB sent_VBN to_TO the_DT server_NN which_WDT then_RB simply_RB forwards_RB it_PRP to_TO the_DT other_JJ clients_NNS within_IN the_DT region_NN ._.
+This_DT eliminates_VBZ any_DT extra_JJ processing_NN delay_NN that_WDT would_MD occur_VB at_IN the_DT server_NN and_CC is_VBZ also_RB a_DT more_RBR accurate_JJ means_NNS of_IN verification_NN since_IN the_DT client_NN has_VBZ a_DT more_RBR accurate_JJ view_NN of_IN its_PRP$ own_JJ state_NN than_IN the_DT server_NN ._.
+This_DT version_NN of_IN the_DT RPGQuest_NN game_NN where_WRB authority_NN is_VBZ distributed_VBN between_IN the_DT client_NN and_CC server_NN is_VBZ an_DT improvement_NN from_IN the_DT server_NN authoritative_JJ version_NN ._.
+The_DT client_NN has_VBZ no_DT delay_NN in_IN waiting_VBG for_IN an_DT update_VBP for_IN its_PRP$ own_JJ position_NN and_CC other_JJ clients_NNS do_VBP not_RB have_VB to_TO wait_VB on_IN the_DT server_NN to_TO verify_VB the_DT update_VBP ._.
+The_DT inconsistencies_NNS where_WRB two_CD clients_NNS can_MD pick_VB up_RP the_DT same_JJ object_NN in_IN the_DT client_NN authoritative_JJ architecture_NN are_VBP not_RB present_JJ in_IN this_DT version_NN of_IN the_DT client_NN ._.
+However_RB ,_, the_DT benefits_NNS of_IN mixed_JJ authority_NN will_MD not_RB truly_RB be_VB seen_VBN until_IN an_DT implementation_NN of_IN our_PRP$ communication_NN proxy_NN is_VBZ integrated_VBN into_IN the_DT game_NN ._.
+With_IN the_DT addition_NN of_IN the_DT communication_NN proxy_NN ,_, after_IN the_DT client_NN verifies_VBZ its_PRP$ own_JJ positional_JJ updates_NNS it_PRP will_MD be_VB able_JJ to_TO send_VB the_DT update_VBP to_TO all_DT clients_NNS within_IN its_PRP$ region_NN through_IN a_DT low_JJ latency_NN link_NN instead_RB of_IN having_VBG to_TO first_RB go_VB through_IN the_DT game_NN server_NN which_WDT could_MD possibly_RB be_VB in_IN a_DT very_RB remote_JJ location_NN ._.
+The_DT coding_NN of_IN the_DT different_JJ versions_NNS of_IN the_DT game_NN was_VBD very_RB simple_JJ ._.
+The_DT complexity_NN of_IN the_DT client_NN increased_VBD very_RB slightly_RB in_IN the_DT client_NN authoritative_JJ and_CC hybrid_JJ models_NNS ._.
+The_DT original_JJ dumb_JJ clients_NNS of_IN RPGQuest_NN know_VBP the_DT position_NN of_IN other_JJ players_NNS ;_: it_PRP is_VBZ not_RB just_RB sent_VBN a_DT screen_NN snapshot_NN from_IN the_DT server_NN ._.
+The_DT server_NN updates_NNS each_DT client_NN with_IN the_DT position_NN of_IN all_DT nearby_JJ clients_NNS ._.
+The_DT dumb_JJ clients_NNS use_VBP client_NN side_NN prediction_NN to_TO fill_VB in_IN the_DT gaps_NNS between_IN the_DT updates_NNS they_PRP receive_VBP ._.
+The_DT only_JJ extra_JJ processing_NN the_DT client_NN has_VBZ to_TO do_VB in_IN the_DT hybrid_NN architecture_NN is_VBZ to_TO compare_VB its_PRP$ current_JJ position_NN to_TO the_DT positions_NNS of_IN all_DT objects_NNS -LRB-_-LRB- walls_NNS ,_, boxes_NNS ,_, etc_FW ._. -RRB-_-RRB-
+in_IN its_PRP$ area_NN ._.
+This_DT obviously_RB means_VBZ that_IN each_DT client_NN will_MD have_VB to_TO already_RB have_VB downloaded_VBN the_DT locations_NNS of_IN all_DT static_JJ objects_NNS within_IN its_PRP$ current_JJ region_NN ._.
+5_CD ._.
+RELATED_JJ WORK_VBP It_PRP has_VBZ been_VBN noted_VBN that_IN in_IN addition_NN to_TO latency_NN ,_, bandwidth_NN requirements_NNS also_RB dictate_VBP the_DT type_NN of_IN gaming_NN architecture_NN to_TO be_VB used_VBN ._.
+In_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ,_, different_JJ types_NNS of_IN architectures_NNS are_VBP studied_VBN with_IN respect_NN to_TO bandwidth_NN efficiencies_NNS and_CC latency_NN ._.
+It_PRP is_VBZ pointed_VBN out_RP that_IN Central_NNP Server_NN architectures_NNS are_VBP not_RB scalable_JJ because_IN of_IN bandwidth_NN requirements_NNS at_IN the_DT server_NN but_CC the_DT overhead_NN for_IN consistency_NN checks_NNS are_VBP limited_VBN as_IN they_PRP are_VBP performed_VBN at_IN the_DT server_NN ._.
+A_DT Peer-to-Peer_NNP architecture_NN ,_, on_IN the_DT other_JJ hand_NN ,_, is_VBZ scalable_JJ but_CC there_EX is_VBZ a_DT significant_JJ overhead_NN for_IN consistency_NN checks_NNS as_IN this_DT is_VBZ required_VBN at_IN every_DT player_NN ._.
+The_DT paper_NN proposes_VBZ a_DT hybrid_NN architecture_NN which_WDT is_VBZ Peer-toPeer_NNP in_IN terms_NNS of_IN message_NN exchange_NN -LRB-_-LRB- and_CC thereby_RB is_VBZ scalable_JJ -RRB-_-RRB- where_WRB a_DT Central_NNP Server_NN is_VBZ used_VBN for_IN off-line_JJ consistency_NN checks_NNS -LRB-_-LRB- thereby_RB mitigating_VBG consistency_NN check_NN overhead_NN -RRB-_-RRB- ._.
+The_DT paper_NN provides_VBZ an_DT implementation_NN example_NN of_IN BZFlag_NN which_WDT is_VBZ a_DT peer-to-peer_JJ game_NN which_WDT is_VBZ modified_VBN to_TO transfer_VB all_DT authority_NN to_TO a_DT central_JJ server_NN ._.
+In_IN essence_NN ,_, this_DT paper_NN advocates_VBZ an_DT authority_NN architecture_NN which_WDT is_VBZ server_NN based_VBN even_RB for_IN peerto-peer_JJ games_NNS ,_, but_CC does_VBZ not_RB consider_VB division_NN of_IN authority_NN between_IN a_DT client_NN and_CC a_DT server_NN to_TO minimize_VB latency_NN which_WDT could_MD affect_VB game_NN playing_NN experience_NN even_RB with_IN the_DT type_NN of_IN latency_NN found_VBN in_IN server_NN based_VBN games_NNS -LRB-_-LRB- where_WRB all_DT authority_NN is_VBZ with_IN the_DT server_NN -RRB-_-RRB- ._.
+There_EX is_VBZ also_RB previous_JJ work_NN that_WDT has_VBZ suggested_VBN that_IN proxy_NN based_VBN architectures_NNS be_VB used_VBN to_TO alleviate_VB the_DT latency_NN problem_NN and_CC in_IN addition_NN use_NN proxies_NNS to_TO provide_VB congestion_NN control_NN and_CC cheat-proof_JJ mechanisms_NNS in_IN distributed_VBN multi-player_JJ games_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+In_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ,_, a_DT proxy_NN server-network_NN architecture_NN is_VBZ presented_VBN that_DT is_VBZ aimed_VBN at_IN improving_VBG scalability_NN of_IN multiplayer_JJ games_NNS and_CC lowering_VBG latency_NN in_IN server-client_JJ data_NNS transmission_NN ._.
+The_DT main_JJ goal_NN of_IN this_DT work_NN is_VBZ to_TO improve_VB scalability_NN of_IN First-Person_NNP Shooter_NNP -LRB-_-LRB- FPS_NNP -RRB-_-RRB- and_CC RPG_NN games_NNS ._.
+The_DT further_JJ objective_NN is_VBZ to_TO improve_VB the_DT responsiveness_NN MMOGs_NNS by_IN providing_VBG low_JJ latency_NN communications_NNS between_IN the_DT client_NN and_CC The_DT 5th_JJ Workshop_NNP on_IN Network_NNP &_CC System_NNP Support_NN for_IN Games_NNPS ####_SYM -_: NETGAMES_NN ####_CD #_# server_NN ._.
+The_DT architecture_NN uses_VBZ interconnected_JJ proxy_NN servers_NNS that_WDT each_DT have_VBP a_DT full_JJ view_NN of_IN the_DT global_JJ game_NN state_NN ._.
+Proxy_NN servers_NNS are_VBP located_JJ at_IN various_JJ different_JJ ISPs_NNS ._.
+It_PRP is_VBZ mentioned_VBN in_IN this_DT work_NN that_WDT dividing_VBG the_DT game_NN space_NN among_IN multiple_JJ games_NNS servers_NNS such_JJ as_IN the_DT federated_JJ model_NN presented_VBN in_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- is_VBZ inefficient_JJ for_IN a_DT relatively_RB fast_JJ game_NN flow_NN and_CC that_IN the_DT proposed_VBN architecture_NN alleviates_VBZ this_DT problem_NN because_IN users_NNS do_VBP not_RB have_VB to_TO connect_VB to_TO a_DT different_JJ server_NN whenever_WRB they_PRP cross_VBP the_DT server_NN boundary_NN ._.
+This_DT architecture_NN still_RB requires_VBZ all_DT proxies_NNS to_TO be_VB aware_JJ of_IN the_DT overall_JJ game_NN state_NN over_IN the_DT whole_JJ game_NN space_NN unlike_IN our_PRP$ work_NN where_WRB we_PRP require_VBP the_DT proxies_NNS to_TO maintain_VB only_RB partial_JJ state_NN information_NN about_IN the_DT game_NN space_NN ._.
+Fidelity_NNP based_VBN agent_NN architectures_NNS have_VBP been_VBN proposed_VBN in_IN -LSB-_-LRB- ##_NN ,_, 21_CD -RSB-_-RRB- ._.
+These_DT works_NNS propose_VBP a_DT distributed_VBN client-server_NN architecture_NN for_IN distributed_VBN interactive_JJ simulations_NNS where_WRB different_JJ servers_NNS are_VBP responsible_JJ for_IN different_JJ portions_NNS of_IN the_DT game_NN space_NN ._.
+When_WRB an_DT object_NN moves_VBZ from_IN one_CD portion_NN to_TO another_DT ,_, there_EX is_VBZ a_DT handoff_NN from_IN one_CD server_NN to_TO another_DT ._.
+Although_IN these_DT works_NNS propose_VBP an_DT architecture_NN where_WRB different_JJ portions_NNS of_IN the_DT simulation_NN space_NN are_VBP managed_VBN by_IN different_JJ servers_NNS ,_, they_PRP do_VBP not_RB address_VB the_DT issue_NN of_IN decreasing_VBG the_DT bandwidth_NN required_VBN through_IN the_DT use_NN of_IN communication_NN proxies_NNS ._.
+Our_PRP$ work_NN differs_VBZ from_IN the_DT above_JJ discussed_VBN previous_JJ works_NNS by_IN proposing_VBG a_DT -RRB-_-RRB- a_DT distributed_VBN proxy-based_JJ architecture_NN to_TO decrease_VB bandwidth_NN requirements_NNS at_IN the_DT clients_NNS and_CC the_DT servers_NNS without_IN requiring_VBG the_DT proxies_NNS to_TO keep_VB state_NN information_NN about_IN the_DT whole_JJ game_NN space_NN ,_, b_NN -RRB-_-RRB- a_DT dynamic_JJ authority_NN assignment_NN technique_NN to_TO reduce_VB latency_NN -LRB-_-LRB- by_IN performing_VBG consistency_NN checks_NNS locally_RB at_IN the_DT client_NN whenever_WRB possible_JJ -RRB-_-RRB- by_IN splitting_NN the_DT authority_NN between_IN the_DT clients_NNS and_CC servers_NNS on_IN a_DT per_FW object_NN basis_NN ,_, and_CC c_NN -RRB-_-RRB- proposing_VBG that_IN cheat_VB detection_NN can_MD be_VB built_VBN into_IN the_DT proxies_NNS if_IN they_PRP are_VBP provided_VBN more_RBR information_NN about_IN the_DT specific_JJ game_NN instead_RB of_IN using_VBG them_PRP purely_RB as_IN communication_NN proxies_NNS -LRB-_-LRB- although_IN this_DT idea_NN has_VBZ not_RB been_VBN implemented_VBN yet_RB and_CC is_VBZ part_NN of_IN our_PRP$ future_JJ work_NN -RRB-_-RRB- ._.
+6_CD ._.
+CONCLUSIONS_NNS AND_CC FUTURE_NNS WORK_VBP In_IN this_DT paper_NN ,_, we_PRP first_RB proposed_VBD a_DT proxy-based_JJ architecture_NN for_IN MMOGs_NNS that_WDT enables_VBZ MMOGs_NNS to_TO scale_NN to_TO a_DT large_JJ number_NN of_IN users_NNS by_IN mitigating_VBG the_DT need_NN for_IN a_DT large_JJ number_NN of_IN transport_NN sessions_NNS to_TO be_VB maintained_VBN and_CC decreasing_VBG both_DT bandwidth_NN overhead_NN and_CC latency_NN of_IN event_NN update_VBP ._.
+Second_RB ,_, we_PRP proposed_VBD a_DT mixed_JJ authority_NN assignment_NN mechanism_NN that_WDT divides_VBZ authority_NN for_IN making_VBG decisions_NNS on_IN actions_NNS and_CC events_NNS within_IN the_DT game_NN between_IN the_DT clients_NNS and_CC server_NN and_CC argued_VBD how_WRB such_JJ an_DT authority_NN assignment_NN leads_VBZ to_TO better_JJR game_NN playing_VBG experience_NN without_IN sacrificing_VBG the_DT consistency_NN of_IN the_DT game_NN ._.
+Third_NNP ,_, to_TO validate_VB the_DT viability_NN of_IN the_DT mixed_JJ authority_NN assignment_NN mechanism_NN ,_, we_PRP implemented_VBD it_PRP within_IN a_DT MMOG_NN called_VBN RPGQuest_NNP and_CC described_VBN our_PRP$ implementation_NN experience_NN ._.
+In_IN future_JJ work_NN ,_, we_PRP propose_VBP to_TO implement_VB the_DT communications_NNS proxy_NN architecture_NN described_VBN in_IN this_DT paper_NN and_CC integrate_VB the_DT mixed_JJ authority_NN mechanism_NN within_IN this_DT architecture_NN ._.
+We_PRP propose_VBP to_TO evaluate_VB the_DT benefits_NNS of_IN the_DT proxy-based_JJ architecture_NN in_IN terms_NNS of_IN scalability_NN ,_, accuracy_NN and_CC responsiveness_NN ._.
+We_PRP also_RB plan_VBP to_TO implement_VB a_DT version_NN of_IN the_DT RPGQuest_NN game_NN with_IN dynamic_JJ assignment_NN of_IN authority_NN to_TO allow_VB players_NNS the_DT authority_NN to_TO pickup_NN objects_NNS when_WRB no_DT other_JJ players_NNS are_VBP near_RB ._.
+As_IN discussed_VBN earlier_RBR ,_, this_DT will_MD allow_VB for_IN a_DT more_RBR efficient_JJ and_CC responsive_JJ game_NN in_IN certain_JJ situations_NNS and_CC alleviate_VB some_DT of_IN the_DT processing_NN load_NN from_IN the_DT server_NN ._.
+Also_RB ,_, since_IN so_RB much_JJ trust_NN is_VBZ put_VBN into_IN the_DT clients_NNS of_IN our_PRP$ architecture_NN ,_, it_PRP will_MD be_VB necessary_JJ to_TO integrate_VB into_IN the_DT architecture_NN many_JJ of_IN the_DT cheat_VBP detection_NN schemes_NNS that_WDT have_VBP been_VBN proposed_VBN in_IN the_DT literature_NN ._.
+Software_NNP such_JJ as_IN Punkbuster_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- and_CC a_DT reputation_NN system_NN like_IN those_DT proposed_VBN by_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- and_CC -LSB-_-LRB- ##_CD -RSB-_-RRB- would_MD be_VB integral_JJ to_TO the_DT operation_NN of_IN an_DT architecture_NN such_JJ as_IN ours_JJ which_WDT has_VBZ a_DT lot_NN of_IN trust_NN placed_VBN on_IN the_DT client_NN ._.
+We_PRP further_RB propose_VBP to_TO make_VB the_DT proxies_NNS in_IN our_PRP$ architecture_NN more_RBR game_NN cognizant_JJ so_RB that_IN cheat_VB detection_NN mechanisms_NNS can_MD be_VB built_VBN into_IN the_DT proxies_NNS themselves_PRP ._.
+7_CD ._.
+REFERENCES_NNS -LSB-_-LRB- #_# -RSB-_-RRB- Y_NN ._.
+W_NN ._.
+Bernier_NNP ._.
+Latency_NN Compensation_NNP Methods_NNS in_IN Client_NNP /_: Server_NN In-game_JJ Protocol_NNP Design_NNP and_CC Optimization_NNP ._.
+In_IN Proc_NNP ._.
+of_IN Game_NNP Developers_NNP Conference_NNP ''_'' ##_NN ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- Lothar_NNP Pantel_NNP and_CC Lars_NNP C_NNP ._.
+Wolf_NNP ._.
+On_IN the_DT impact_NN of_IN delay_NN on_IN real-time_JJ multiplayer_JJ games_NNS ._.
+In_IN NOSSDAV_NN ''_'' ##_NN :_: Proceedings_NNP of_IN the_DT 12th_JJ international_JJ workshop_NN on_IN Network_NNP and_CC operating_VBG systems_NNS support_VBP for_IN digital_JJ audio_NN and_CC video_NN ,_, pages_NNS 23-29_CD ,_, New_NNP York_NNP ,_, NY_NNP ,_, USA_NNP ,_, 2002_CD ._.
+ACM_NNP Press_NNP ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- G_NN ._.
+Armitage_NNP ._.
+Sensitivity_NN of_IN Quake3_NN Players_NNS to_TO Network_NNP Latency_NN ._.
+In_IN Proc_NNP ._.
+of_IN IMW2001_NN ,_, Workshop_NNP Poster_NNP Session_NN ,_, November_NNP ####_CD ._.
+http_NN :_: /_: /_: www_NN ._.
+geocities_NNS ._.
+com_NN /_: gj_NN armitage_NN /_: q3_NN /_: quake-results_NNS ._.
+html_NN ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- Tobias_NNP Fritsch_NNP ,_, Hartmut_NNP Ritter_NNP ,_, and_CC Jochen_NNP Schiller_NNP ._.
+The_DT effect_NN of_IN latency_NN and_CC network_NN limitations_NNS on_IN mmorpgs_NNS :_: a_DT field_NN study_NN of_IN everquest2_NN ._.
+In_IN NetGames_NNS ''_'' ##_CD :_: Proceedings_NNP of_IN 4th_JJ ACM_JJ SIGCOMM_NN workshop_NN on_IN Network_NNP and_CC system_NN support_NN for_IN games_NNS ,_, pages_NNS 1-9_CD ,_, New_NNP York_NNP ,_, NY_NNP ,_, USA_NNP ,_, ####_CD ._.
+ACM_NNP Press_NNP ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- Tom_NNP Beigbeder_NNP ,_, Rory_NNP Coughlan_NNP ,_, Corey_NNP Lusher_NNP ,_, John_NNP Plunkett_NNP ,_, Emmanuel_NNP Agu_NNP ,_, and_CC Mark_NNP Claypool_NNP ._.
+The_DT effects_NNS of_IN loss_NN and_CC latency_NN on_IN user_NN performance_NN in_IN unreal_JJ tournament_NN ####_CD ._.
+In_IN NetGames_NNS ''_'' ##_CD :_: Proceedings_NNP of_IN 3rd_JJ ACM_JJ SIGCOMM_NN workshop_NN on_IN Network_NNP and_CC system_NN support_NN for_IN games_NNS ,_, pages_NNS 144-151_CD ,_, New_NNP York_NNP ,_, NY_NNP ,_, USA_NNP ,_, ####_CD ._.
+ACM_NNP Press_NNP ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- Y_NN ._.
+Lin_NNP ,_, K_NNP ._.
+Guo_NNP ,_, and_CC S_NN ._.
+Paul_NNP ._.
+Sync-MS_NN :_: Synchronized_VBN Messaging_NNP Service_NNP for_IN Real-Time_NNP Multi-Player_NNP Distributed_VBD Games_NNPS ._.
+In_IN Proc_NNP ._.
+of_IN 10th_JJ IEEE_NNP International_NNP Conference_NNP on_IN Network_NNP Protocols_NNP -LRB-_-LRB- ICNP_NN -RRB-_-RRB- ,_, Nov_NNP ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- Katherine_NNP Guo_NNP ,_, Sarit_NNP Mukherjee_NNP ,_, Sampath_NNP Rangarajan_NNP ,_, and_CC Sanjoy_NNP Paul_NNP ._.
+A_DT fair_JJ message_NN exchange_NN framework_NN for_IN distributed_VBN multi-player_JJ games_NNS ._.
+In_IN NetGames_NNS ''_'' ##_CD :_: Proceedings_NNP of_IN the_DT 2nd_JJ workshop_NN on_IN Network_NNP and_CC system_NN support_NN for_IN games_NNS ,_, pages_NNS 29-41_CD ,_, New_NNP York_NNP ,_, NY_NNP ,_, USA_NNP ,_, ####_CD ._.
+ACM_NNP Press_NNP ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- T_NN ._.
+Barron_NNP ._.
+Multiplayer_NNP Game_NNP Programming_NNP ,_, chapter_NN 16-17_CD ,_, pages_NNS 672-731_CD ._.
+Prima_NNP Tech_NNP ''_'' s_VBZ Game_NNP Development_NNP Series_NNP ._.
+Prima_NNP Publishing_NNP ,_, ####_CD ._.
+8_CD The_DT 5th_NN Workshop_NNP on_IN Network_NNP &_CC System_NNP Support_NN for_IN Games_NNPS ####_SYM -_: NETGAMES_NN ####_CD -LSB-_-LRB- #_# -RSB-_-RRB- Carsten_NNP Griwodz_NNP and_CC Pal_NNP Halvorsen_NNP ._.
+The_DT fun_NN of_IN using_VBG tcp_NN for_IN an_DT mmorpg_NN ._.
+In_IN NOSSDAV_NN ''_'' ##_NN :_: Proceedings_NNP of_IN the_DT International_NNP Workshop_NNP on_IN Network_NNP and_CC Operating_NNP Systems_NNPS Support_NN for_IN Digital_NNP Audio_NNP and_CC VIdeo_NNP ,_, New_NNP York_NNP ,_, NY_NNP ,_, USA_NNP ,_, ####_CD ._.
+ACM_NNP Press_NNP ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Sudhir_NNP Aggarwal_NNP ,_, Hemant_NNP Banavar_NNP ,_, Amit_NNP Khandelwal_NNP ,_, Sarit_NNP Mukherjee_NNP ,_, and_CC Sampath_NNP Rangarajan_NNP ._.
+Accuracy_NN in_IN dead-reckoning_NN based_VBN distributed_VBN multi-player_JJ games_NNS ._.
+In_IN NetGames_NNS ''_'' ##_CD :_: Proceedings_NNP of_IN 3rd_JJ ACM_JJ SIGCOMM_NN workshop_NN on_IN Network_NNP and_CC system_NN support_NN for_IN games_NNS ,_, pages_NNS 161-165_CD ,_, New_NNP York_NNP ,_, NY_NNP ,_, USA_NNP ,_, ####_CD ._.
+ACM_NNP Press_NNP ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Sudhir_NNP Aggarwal_NNP ,_, Hemant_NNP Banavar_NNP ,_, Sarit_NNP Mukherjee_NNP ,_, and_CC Sampath_NNP Rangarajan_NNP ._.
+Fairness_NNP in_IN dead-reckoning_JJ based_VBN distributed_VBN multi-player_JJ games_NNS ._.
+In_IN NetGames_NNS ''_'' ##_CD :_: Proceedings_NNP of_IN 4th_JJ ACM_JJ SIGCOMM_NN workshop_NN on_IN Network_NNP and_CC system_NN support_NN for_IN games_NNS ,_, pages_NNS 1-10_CD ,_, New_NNP York_NNP ,_, NY_NNP ,_, USA_NNP ,_, ####_CD ._.
+ACM_NNP Press_NNP ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Riker_NNP ,_, T_NN ._.
+et_FW al_FW ._.
+Bzflag_NNP ._.
+http_NN :_: /_: /_: www_NN ._.
+bzflag_NN ._.
+org_NN ,_, 2000-2006_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Linden_NNP Lab_NNP ._.
+Second_JJ life_NN ._.
+http_NN :_: /_: /_: secondlife_NN ._.
+com_NN ,_, 2003_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Martin_NNP Mauve_NNP ._.
+How_WRB to_TO keep_VB a_DT dead_JJ man_NN from_IN shooting_NN ._.
+In_IN IDMS_NNS ''_'' ##_CD :_: Proceedings_NNP of_IN the_DT 7th_NNP International_NNP Workshop_NNP on_IN Interactive_NNP Distributed_VBD Multimedia_NNP Systems_NNPS and_CC Telecommunication_NNP Services_NNPS ,_, pages_NNS 199-204_CD ,_, London_NNP ,_, UK_NNP ,_, ####_CD ._.
+Springer-Verlag_NNP ._.
+-LSB-_-LRB- ##_CD -RSB-_-RRB- Max_NNP Skibinsky_NNP ._.
+Massively_RB Multiplayer_NNP Game_NNP Development_NNP #_# ,_, chapter_NN The_DT Quest_NNP for_IN Holy_NNP ScalePart_NNP #_# :_: P2P_NN Continuum_NN ,_, pages_NNS 355-373_CD ._.
+Charles_NNP River_NNP Media_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Joseph_NNP D_NNP ._.
+Pellegrino_NNP and_CC Constantinos_NNP Dovrolis_NNP ._.
+Bandwidth_NN requirement_NN and_CC state_NN consistency_NN in_IN three_CD multiplayer_JJ game_NN architectures_NNS ._.
+In_IN NetGames_NNS ''_'' ##_CD :_: Proceedings_NNP of_IN the_DT 2nd_JJ workshop_NN on_IN Network_NNP and_CC system_NN support_NN for_IN games_NNS ,_, pages_NNS 52-59_CD ,_, New_NNP York_NNP ,_, NY_NNP ,_, USA_NNP ,_, ####_CD ._.
+ACM_NNP Press_NNP ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- M_NN ._.
+Mauve_JJ J_NN ._.
+Widmer_NNP and_CC S_NN ._.
+Fischer_NNP ._.
+A_DT Generic_JJ Proxy_NNP Systems_NNPS for_IN Networked_NNP Computer_NNP Games_NNPS ._.
+In_IN Proc_NNP ._.
+of_IN the_DT Workshop_NNP on_IN Network_NNP Games_NNPS ,_, Netgames_NNPS ####_CD ,_, April_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- S_NN ._.
+Gorlatch_NNP J_NNP ._.
+Muller_NNP ,_, S_NN ._.
+Fischer_NNP and_CC M_NN ._.
+Mauve_NNP ._.
+A_DT Proxy_NNP Server_NN Network_NNP Architecture_NNP for_IN Real-Time_NNP Computer_NNP Games_NNPS ._.
+In_IN Euor-Par_JJ ####_CD Parallel_JJ Processing_NN :_: 10th_JJ International_JJ EURO-PAR_NN Conference_NN ,_, August-September_NNP ####_NNP ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- H_NN ._.
+Hazeyama_NN T_NN ._.
+Limura_NNP and_CC Y_NN ._.
+Kadobayashi_NNP ._.
+Zoned_NNP Federation_NNP of_IN Game_NNP Servers_NNP :_: A_NNP Peer-to-Peer_NNP Approach_NNP to_TO Scalable_NNP Multiplayer_NNP On-line_NNP Games_NNPS ._.
+In_IN Proc_NNP ._.
+of_IN ACM_NNP Workshop_NNP on_IN Network_NNP Games_NNPS ,_, Netgames_NNPS ####_CD ,_, August-September_NNP ####_NNP ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- B_NN ._.
+Kelly_NNP and_CC S_NN ._.
+Aggarwal_NNP ._.
+A_DT Framework_NN for_IN a_DT Fidelity_NNP Based_VBD Agent_NNP Architecture_NNP for_IN Distributed_VBN Interactive_NNP Simulation_NNP ._.
+In_IN Proc_NNP ._.
+14th_JJ Workshop_NNP on_IN Standards_NNPS for_IN Distributed_VBN Interactive_NNP Simulation_NNP ,_, pages_NNS 541-546_CD ,_, March_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- S_NN ._.
+Aggarwal_NNP and_CC B_NNP ._.
+Kelly_NNP ._.
+Hierarchical_JJ Structuring_VBG for_IN Distributed_VBN Interactive_NNP Simulation_NNP ._.
+In_IN Proc_NNP ._.
+13th_JJ Workshop_NNP on_IN Standards_NNPS for_IN Distributed_VBN Interactive_NNP Simulation_NNP ,_, pages_NNS 125-132_CD ,_, Sept_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Even_RB Balance_NNP ,_, Inc_NNP ._.
+Punkbuster_NN ._.
+http_NN :_: /_: /_: www_NN ._.
+evenbalance_NN ._.
+com_NN /_: ,_, 2001-2006_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Y_NN ._.
+Wang_NNP and_CC J_NNP ._.
+Vassileva_NNP ._.
+Trust_NNP and_CC Reputation_NNP Model_NNP in_IN Peer-to-Peer_NNP Networks_NNP ._.
+In_IN Third_NNP International_NNP Conference_NNP on_IN Peer-to-Peer_NNP Computing_NNP ,_, 2003_CD ._.
+The_DT 5th_JJ Workshop_NNP on_IN Network_NNP &_CC System_NNP Support_NN for_IN Games_NNPS ####_SYM -_: NETGAMES_NN ####_CD #_#

@@ -1,0 +1,581 @@
+Relaxed_VBN Online_NN SVMs_NNS for_IN Spam_NNP Filtering_NN D_NN ._.
+Sculley_NNP Tufts_NNP University_NNP Department_NNP of_IN Computer_NNP Science_NNP 161_CD College_NNP Ave_NNP ._.
+,_, Medford_NNP ,_, MA_NNP USA_NNP dsculleycs_NNS ._.
+tufts_NNS ._.
+edu_NNP Gabriel_NNP M_NN ._.
+Wachman_NNP Tufts_NNP University_NNP Department_NNP of_IN Computer_NNP Science_NNP 161_CD College_NNP Ave_NNP ._.
+,_, Medford_NNP ,_, MA_NNP USA_NNP gwachm01cs_NNS ._.
+tufts_NNS ._.
+edu_NN ABSTRACT_NN Spam_NN is_VBZ a_DT key_JJ problem_NN in_IN electronic_JJ communication_NN ,_, including_VBG large-scale_JJ email_NN systems_NNS and_CC the_DT growing_VBG number_NN of_IN blogs_NNS ._.
+Content-based_JJ filtering_VBG is_VBZ one_CD reliable_JJ method_NN of_IN combating_VBG this_DT threat_NN in_IN its_PRP$ various_JJ forms_NNS ,_, but_CC some_DT academic_JJ researchers_NNS and_CC industrial_JJ practitioners_NNS disagree_VBP on_IN how_WRB best_JJS to_TO filter_NN spam_NN ._.
+The_DT former_JJ have_VBP advocated_VBN the_DT use_NN of_IN Support_NN Vector_NNP Machines_NNP -LRB-_-LRB- SVMs_NNS -RRB-_-RRB- for_IN content-based_JJ filtering_VBG ,_, as_IN this_DT machine_NN learning_VBG methodology_NN gives_VBZ state-of-the-art_JJ performance_NN for_IN text_NN classification_NN ._.
+However_RB ,_, similar_JJ performance_NN gains_NNS have_VBP yet_RB to_TO be_VB demonstrated_VBN for_IN online_JJ spam_NN filtering_VBG ._.
+Additionally_RB ,_, practitioners_NNS cite_VBP the_DT high_JJ cost_NN of_IN SVMs_NNS as_IN reason_NN to_TO prefer_VB faster_JJR -LRB-_-LRB- if_IN less_JJR statistically_RB robust_JJ -RRB-_-RRB- Bayesian_JJ methods_NNS ._.
+In_IN this_DT paper_NN ,_, we_PRP offer_VBP a_DT resolution_NN to_TO this_DT controversy_NN ._.
+First_RB ,_, we_PRP show_VBP that_IN online_JJ SVMs_NNS indeed_RB give_VBP state-of-the-art_JJ classification_NN performance_NN on_IN online_JJ spam_NN filtering_VBG on_IN large_JJ benchmark_JJ data_NNS sets_NNS ._.
+Second_RB ,_, we_PRP show_VBP that_IN nearly_RB equivalent_JJ performance_NN may_MD be_VB achieved_VBN by_IN a_DT Relaxed_JJ Online_NN SVM_NN -LRB-_-LRB- ROSVM_NN -RRB-_-RRB- at_IN greatly_RB reduced_VBN computational_JJ cost_NN ._.
+Our_PRP$ results_NNS are_VBP experimentally_RB verified_VBN on_IN email_NN spam_NN ,_, blog_NN spam_NN ,_, and_CC splog_NN detection_NN tasks_NNS ._.
+Categories_NNS and_CC Subject_NNP Descriptors_NNPS H_NN ._.
+#_# ._.
+#_# -LSB-_-LRB- Information_NNP Storage_NNP and_CC Retrieval_NNP -RSB-_-RRB- :_: Information_NNP Search_VB and_CC Retrieval_NNP -_: spam_NN General_NNP Terms_NNS Measurement_NNP ,_, Experimentation_NNP ,_, Algorithms_NNP 1_CD ._.
+INTRODUCTION_NNP Electronic_NNP communication_NN is_VBZ increasingly_RB plagued_VBN by_IN unwanted_JJ or_CC harmful_JJ content_NN known_VBN as_IN spam_NN ._.
+The_DT most_RBS well_RB known_JJ form_NN of_IN spam_NN is_VBZ email_NN spam_NN ,_, which_WDT remains_VBZ a_DT major_JJ problem_NN for_IN large_JJ email_NN systems_NNS ._.
+Other_JJ forms_NNS of_IN spam_NN are_VBP also_RB becoming_VBG problematic_JJ ,_, including_VBG blog_NN spam_NN ,_, in_IN which_WDT spammers_NNS post_VBP unwanted_JJ comments_NNS in_IN blogs_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, and_CC splogs_NNS ,_, which_WDT are_VBP fake_JJ blogs_NNS constructed_VBN to_TO enable_VB link_NN spam_NN with_IN the_DT hope_NN of_IN boosting_VBG the_DT measured_VBN importance_NN of_IN a_DT given_VBN webpage_NN in_IN the_DT eyes_NNS of_IN automated_JJ search_NN engines_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+There_EX are_VBP a_DT variety_NN of_IN methods_NNS for_IN identifying_VBG these_DT many_JJ forms_NNS of_IN spam_NN ,_, including_VBG compiling_VBG blacklists_NNS of_IN known_JJ spammers_NNS ,_, and_CC conducting_VBG link_NN analysis_NN ._.
+The_DT approach_NN of_IN content_NN analysis_NN has_VBZ shown_VBN particular_JJ promise_NN and_CC generality_NN for_IN combating_VBG spam_NN ._.
+In_IN content_NN analysis_NN ,_, the_DT actual_JJ message_NN text_NN -LRB-_-LRB- often_RB including_VBG hyper-text_NN and_CC meta-text_NN ,_, such_JJ as_IN HTML_NNP and_CC headers_NNS -RRB-_-RRB- is_VBZ analyzed_VBN using_VBG machine_NN learning_NN techniques_NNS for_IN text_NN classification_NN to_TO determine_VB if_IN the_DT given_VBN content_NN is_VBZ spam_NN ._.
+Content_NN analysis_NN has_VBZ been_VBN widely_RB applied_VBN in_IN detecting_VBG email_NN spam_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, and_CC has_VBZ also_RB been_VBN used_VBN for_IN identifying_VBG blog_NN spam_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- and_CC splogs_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+In_IN this_DT paper_NN ,_, we_PRP do_VBP not_RB explore_VB the_DT related_JJ problem_NN of_IN link_NN spam_NN ,_, which_WDT is_VBZ currently_RB best_RB combated_VBN by_IN link_NN analysis_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+1_LS ._.
+#_# An_DT Anti-Spam_NNP Controversy_NNP The_NNP anti-spam_JJ community_NN has_VBZ been_VBN divided_VBN on_IN the_DT choice_NN of_IN the_DT best_JJS machine_NN learning_NN method_NN for_IN content-based_JJ spam_NN detection_NN ._.
+Academic_NNP researchers_NNS have_VBP tended_VBN to_TO favor_VB the_DT use_NN of_IN Support_NN Vector_NNP Machines_NNP -LRB-_-LRB- SVMs_NNS -RRB-_-RRB- ,_, a_DT statistically_RB robust_JJ machine_NN learning_NN method_NN -LSB-_-LRB- #_# -RSB-_-RRB- which_WDT yields_VBZ state-of-theart_JJ performance_NN on_IN general_JJ text_NN classification_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+However_RB ,_, SVMs_NNS typically_RB require_VBP training_NN time_NN that_WDT is_VBZ quadratic_JJ in_IN the_DT number_NN of_IN training_NN examples_NNS ,_, and_CC are_VBP impractical_JJ for_IN largescale_JJ email_NN systems_NNS ._.
+Practitioners_NNS requiring_VBG content-based_JJ spam_NN filtering_VBG have_VBP typically_RB chosen_VBN to_TO use_VB the_DT faster_RBR -LRB-_-LRB- if_IN less_JJR statistically_RB robust_JJ -RRB-_-RRB- machine_NN learning_NN method_NN of_IN Naive_JJ Bayes_NNS text_NN classification_NN -LSB-_-LRB- ##_CD ,_, ##_CD ,_, ##_CD -RSB-_-RRB- ._.
+This_DT Bayesian_JJ method_NN requires_VBZ only_RB linear_JJ training_NN time_NN ,_, and_CC is_VBZ easily_RB implemented_VBN in_IN an_DT online_JJ setting_NN with_IN incremental_JJ updates_NNS ._.
+This_DT allows_VBZ a_DT deployed_VBN system_NN to_TO easily_RB adapt_VB to_TO a_DT changing_VBG environment_NN over_IN time_NN ._.
+Other_JJ fast_JJ methods_NNS for_IN spam_NN filtering_VBG include_VBP compression_NN models_NNS -LSB-_-LRB- #_# -RSB-_-RRB- and_CC logistic_JJ regression_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+It_PRP has_VBZ not_RB yet_RB been_VBN empirically_RB demonstrated_VBN that_IN SVMs_NNS give_VBP improved_VBN performance_NN over_IN these_DT methods_NNS in_IN an_DT online_JJ spam_NN detection_NN setting_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+1_LS ._.
+#_# Contributions_NNPS In_IN this_DT paper_NN ,_, we_PRP address_VBP the_DT anti-spam_JJ controversy_NN and_CC offer_VBP a_DT potential_JJ resolution_NN ._.
+We_PRP first_RB demonstrate_VBP that_IN online_JJ SVMs_NNS do_VBP indeed_RB provide_VB state-of-the-art_JJ spam_NN detection_NN through_IN empirical_JJ tests_NNS on_IN several_JJ large_JJ benchmark_NN data_NNS sets_NNS of_IN email_NN spam_NN ._.
+We_PRP then_RB analyze_VBP the_DT effect_NN of_IN the_DT tradeoff_NN parameter_NN in_IN the_DT SVM_NNP objective_NN function_NN ,_, which_WDT shows_VBZ that_IN the_DT expensive_JJ SVM_NN methodology_NN may_MD ,_, in_IN fact_NN ,_, be_VB overkill_NN for_IN spam_NN detection_NN ._.
+We_PRP reduce_VBP the_DT computational_JJ cost_NN of_IN SVM_NN learning_NN by_IN relaxing_VBG this_DT requirement_NN on_IN the_DT maximum_NN margin_NN in_IN online_JJ settings_NNS ,_, and_CC create_VB a_DT Relaxed_JJ Online_NN SVM_NN ,_, ROSVM_NN ,_, appropriate_JJ for_IN high_JJ performance_NN content-based_JJ spam_NN filtering_VBG in_IN large-scale_JJ settings_NNS ._.
+2_LS ._.
+SPAM_NNP AND_CC ONLINE_NNP SVMS_NNP The_NNP controversy_NN between_IN academics_NNS and_CC practitioners_NNS in_IN spam_NN filtering_VBG centers_NNS on_IN the_DT use_NN of_IN SVMs_NNS ._.
+The_DT former_JJ advocate_NN their_PRP$ use_NN ,_, but_CC have_VBP yet_RB to_TO demonstrate_VB strong_JJ performance_NN with_IN SVMs_NNS on_IN online_JJ spam_NN filtering_VBG ._.
+Indeed_RB ,_, the_DT results_NNS of_IN -LSB-_-LRB- #_# -RSB-_-RRB- show_VBP that_IN ,_, when_WRB used_VBN with_IN default_NN parameters_NNS ,_, SVMs_NNS actually_RB perform_VBP worse_JJR than_IN other_JJ methods_NNS ._.
+In_IN this_DT section_NN ,_, we_PRP review_VBP the_DT basic_JJ workings_NNS of_IN SVMs_NNS and_CC describe_VBP a_DT simple_JJ Online_NN SVM_NN algorithm_NN ._.
+We_PRP then_RB show_VBP that_IN Online_NN SVMs_NNS indeed_RB achieve_VBP state-of-the-art_JJ performance_NN on_IN filtering_VBG email_NN spam_NN ,_, blog_NN comment_NN spam_NN ,_, and_CC splogs_NNS ,_, so_RB long_RB as_IN the_DT tradeoff_NN parameter_NN C_NN is_VBZ set_VBN to_TO a_DT high_JJ value_NN ._.
+However_RB ,_, the_DT cost_NN of_IN Online_NN SVMs_NNS turns_VBZ out_RP to_TO be_VB prohibitive_JJ for_IN largescale_JJ applications_NNS ._.
+These_DT findings_NNS motivate_VBP our_PRP$ proposal_NN of_IN Relaxed_JJ Online_NN SVMs_NNS in_IN the_DT following_VBG section_NN ._.
+2_LS ._.
+#_# Background_NNP :_: SVMs_NNS SVMs_NNS are_VBP a_DT robust_JJ machine_NN learning_VBG methodology_NN which_WDT has_VBZ been_VBN shown_VBN to_TO yield_VB state-of-the-art_JJ performance_NN on_IN text_NN classification_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+by_IN finding_VBG a_DT hyperplane_NN that_WDT separates_VBZ two_CD classes_NNS of_IN data_NNS in_IN data_NNS space_NN while_IN maximizing_VBG the_DT margin_NN between_IN them_PRP ._.
+We_PRP use_VBP the_DT following_VBG notation_NN to_TO describe_VB SVMs_NNS ,_, which_WDT draws_VBZ from_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ._.
+A_DT data_NN set_NN X_NN contains_VBZ n_NN labeled_VBN example_NN vectors_NNS -LCB-_-LRB- -LRB-_-LRB- x1_NN ,_, y1_NN -RRB-_-RRB- ..._: -LRB-_-LRB- xn_NN ,_, yn_NN -RRB-_-RRB- -RCB-_-RRB- ,_, where_WRB each_DT xi_NN is_VBZ a_DT vector_NN containing_VBG features_NNS describing_VBG example_NN i_FW ,_, and_CC each_DT yi_NN is_VBZ the_DT class_NN label_NN for_IN that_DT example_NN ._.
+In_IN spam_NN detection_NN ,_, the_DT classes_NNS spam_NN and_CC ham_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, not_RB spam_NN -RRB-_-RRB- are_VBP assigned_VBN the_DT numerical_JJ class_NN labels_NNS +_CC #_# and_CC #_# ,_, respectively_RB ._.
+The_DT linear_JJ SVMs_NNS we_PRP employ_VBP in_IN this_DT paper_NN use_VB a_DT hypothesis_NN vector_NN w_NN and_CC bias_NN term_NN b_NN to_TO classify_VB a_DT new_JJ example_NN x_NN ,_, by_IN generating_VBG a_DT predicted_VBN class_NN label_NN f_FW -LRB-_-LRB- x_NN -RRB-_-RRB- :_: f_LS -LRB-_-LRB- x_NN -RRB-_-RRB- =_JJ sign_NN -LRB-_-LRB- +_CC b_NN -RRB-_-RRB- SVMs_NNS find_VBP the_DT hypothesis_NN w_NN ,_, which_WDT defines_VBZ the_DT separating_VBG hyperplane_NN ,_, by_IN minimizing_VBG the_DT following_VBG objective_NN function_NN over_IN all_DT n_NN training_VBG examples_NNS :_: -LRB-_-LRB- w_NN ,_, -RRB-_-RRB- =_JJ 1_CD 2_CD |_CD |_NN w_NN |_CD |_CD #_# +_CC C_NN nX_NN i_FW =_JJ i_FW i_FW under_IN the_DT constraints_NNS that_WDT i_FW =_JJ -LCB-_-LRB- #_# ._. ._.
+n_NN -RCB-_-RRB- :_: yi_NN -LRB-_-LRB- +_CC b_NN -RRB-_-RRB- #_# i_FW ,_, i_FW #_# In_IN this_DT objective_JJ function_NN ,_, each_DT slack_NN variable_JJ i_FW shows_VBZ the_DT amount_NN of_IN error_NN that_IN the_DT classifier_NN makes_VBZ on_IN a_DT given_VBN example_NN xi_NN ._.
+Minimizing_VBG the_DT sum_NN of_IN the_DT slack_NN variables_NNS corresponds_VBZ to_TO minimizing_VBG the_DT loss_NN function_NN on_IN the_DT training_NN data_NNS ,_, while_IN minimizing_VBG the_DT term_NN #_# 2_CD |_CD |_NN w_NN |_CD |_CD #_# corresponds_VBZ to_TO maximizing_VBG the_DT margin_NN between_IN the_DT two_CD classes_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+These_DT two_CD optimization_NN goals_NNS are_VBP often_RB in_IN conflict_NN ;_: the_DT tradeoff_NN parameter_NN C_NN determines_VBZ how_WRB much_JJ importance_NN to_TO give_VB each_DT of_IN these_DT tasks_NNS ._.
+Linear_JJ SVMs_NNS exploit_VBP data_NNS sparsity_NN to_TO classify_VB a_DT new_JJ instance_NN in_IN O_NN -LRB-_-LRB- s_NNS -RRB-_-RRB- time_NN ,_, where_WRB s_NNS is_VBZ the_DT number_NN of_IN non-zero_JJ features_NNS ._.
+This_DT is_VBZ the_DT same_JJ classification_NN time_NN as_IN other_JJ linear_JJ Given_VBN :_: data_NNS set_NN X_NN =_JJ -LRB-_-LRB- x1_NN ,_, y1_NN -RRB-_-RRB- ,_, ..._: ,_, -LRB-_-LRB- xn_NN ,_, yn_NN -RRB-_-RRB- ,_, C_NN ,_, m_NN :_: Initialize_VB w_NN :_: =_JJ #_# ,_, b_NN :_: =_JJ #_# ,_, seenData_NNP :_: =_JJ -LCB-_-LRB- -RCB-_-RRB- For_IN Each_DT xi_NN X_NN do_VBP :_: Classify_VB xi_NN using_VBG f_FW -LRB-_-LRB- xi_NN -RRB-_-RRB- =_JJ sign_NN -LRB-_-LRB- +_CC b_NN -RRB-_-RRB- IF_IN yif_NN -LRB-_-LRB- xi_NN -RRB-_-RRB- <_JJR #_# Find_VB w_NN ,_, b_NN using_VBG SMO_NN on_IN seenData_NN ,_, using_VBG w_NN ,_, b_NN as_IN seed_NN hypothesis_NN ._.
+Add_VB xi_NN to_TO seenData_NN done_VBN Figure_NNP #_# :_: Pseudo_NNP code_NN for_IN Online_NNP SVM_NNP ._.
+classifiers_NNS ,_, and_CC as_IN Naive_JJ Bayesian_JJ classification_NN ._.
+Training_VBG SVMs_NNS ,_, however_RB ,_, typically_RB takes_VBZ O_NN -LRB-_-LRB- n2_NN -RRB-_-RRB- time_NN ,_, for_IN n_NN training_VBG examples_NNS ._.
+A_DT variant_NN for_IN linear_JJ SVMs_NNS was_VBD recently_RB proposed_VBN which_WDT trains_NNS in_IN O_NN -LRB-_-LRB- ns_NN -RRB-_-RRB- time_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, but_CC because_IN this_DT method_NN has_VBZ a_DT high_JJ constant_JJ ,_, we_PRP do_VBP not_RB explore_VB it_PRP here_RB ._.
+2_LS ._.
+#_# Online_NNP SVMs_NNP In_IN many_JJ traditional_JJ machine_NN learning_VBG applications_NNS ,_, SVMs_NNS are_VBP applied_VBN in_IN batch_NN mode_NN ._.
+That_DT is_VBZ ,_, an_DT SVM_NN is_VBZ trained_VBN on_IN an_DT entire_JJ set_NN of_IN training_NN data_NNS ,_, and_CC is_VBZ then_RB tested_VBN on_IN a_DT separate_JJ set_NN of_IN testing_NN data_NNS ._.
+Spam_NNP filtering_VBG is_VBZ typically_RB tested_VBN and_CC deployed_VBN in_IN an_DT online_JJ setting_NN ,_, which_WDT proceeds_VBZ incrementally_RB ._.
+Here_RB ,_, the_DT learner_NN classifies_VBZ a_DT new_JJ example_NN ,_, is_VBZ told_VBN if_IN its_PRP$ prediction_NN is_VBZ correct_JJ ,_, updates_NNS its_PRP$ hypothesis_NN accordingly_RB ,_, and_CC then_RB awaits_VBZ a_DT new_JJ example_NN ._.
+Online_JJ learning_NN allows_VBZ a_DT deployed_VBN system_NN to_TO adapt_VB itself_PRP in_IN a_DT changing_VBG environment_NN ._.
+Re-training_VBG an_DT SVM_NN from_IN scratch_NN on_IN the_DT entire_JJ set_NN of_IN previously_RB seen_VBN data_NNS for_IN each_DT new_JJ example_NN is_VBZ cost_NN prohibitive_JJ ._.
+However_RB ,_, using_VBG an_DT old_JJ hypothesis_NN as_IN the_DT starting_VBG point_NN for_IN re-training_NN reduces_VBZ this_DT cost_NN considerably_RB ._.
+One_CD method_NN of_IN incremental_JJ and_CC decremental_JJ SVM_NN learning_NN was_VBD proposed_VBN in_IN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+Because_IN we_PRP are_VBP only_RB concerned_VBN with_IN incremental_JJ learning_NN ,_, we_PRP apply_VBP a_DT simpler_JJR algorithm_NN for_IN converting_VBG a_DT batch_NN SVM_NN learner_NN into_IN an_DT online_JJ SVM_NN -LRB-_-LRB- see_VB Figure_NNP #_# for_IN pseudocode_NN -RRB-_-RRB- ,_, which_WDT is_VBZ similar_JJ to_TO the_DT approach_NN of_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ._.
+Each_DT time_NN the_DT Online_NNP SVM_NNP encounters_VBZ an_DT example_NN that_WDT was_VBD poorly_RB classified_VBN ,_, it_PRP retrains_VBZ using_VBG the_DT old_JJ hypothesis_NN as_IN a_DT starting_VBG point_NN ._.
+Note_VB that_DT due_JJ to_TO the_DT Karush-Kuhn-Tucker_NNP -LRB-_-LRB- KKT_NNP -RRB-_-RRB- conditions_NNS ,_, it_PRP is_VBZ not_RB necessary_JJ to_TO re-train_VB on_IN wellclassified_JJ examples_NNS that_WDT are_VBP outside_IN the_DT margins_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+We_PRP used_VBD Platt_NNP ''_'' s_VBZ SMO_NNP algorithm_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- as_IN a_DT core_NN SVM_NN solver_NN ,_, because_IN it_PRP is_VBZ an_DT iterative_JJ method_NN that_WDT is_VBZ well_RB suited_VBN to_TO converge_VB quickly_RB from_IN a_DT good_JJ initial_JJ hypothesis_NN ._.
+Because_IN previous_JJ work_NN -LRB-_-LRB- and_CC our_PRP$ own_JJ initial_JJ testing_NN -RRB-_-RRB- indicates_VBZ that_IN binary_JJ feature_NN values_NNS give_VBP the_DT best_JJS results_NNS for_IN spam_NN filtering_VBG -LSB-_-LRB- ##_CD ,_, 9_CD -RSB-_-RRB- ,_, we_PRP optimized_VBD our_PRP$ implementation_NN of_IN the_DT Online_NNP SMO_NNP to_TO exploit_VB fast_JJ inner-products_NNS with_IN binary_JJ vectors_NNS ._.
+#_# 2_CD ._.
+#_# Feature_NNP Mapping_NN Spam_NNP Content_NNP Extracting_VBG machine_NN learning_NN features_NNS from_IN text_NN may_MD be_VB done_VBN in_IN a_DT variety_NN of_IN ways_NNS ,_, especially_RB when_WRB that_DT text_NN may_MD include_VB hyper-content_JJ and_CC meta-content_JJ such_JJ as_IN HTML_NNP and_CC header_JJR information_NN ._.
+However_RB ,_, previous_JJ research_NN has_VBZ shown_VBN that_IN simple_JJ methods_NNS from_IN text_NN classification_NN ,_, such_JJ as_IN bag_NN of_IN words_NNS vectors_NNS ,_, and_CC overlapping_VBG character-level_JJ n-grams_NNS ,_, can_MD achieve_VB strong_JJ results_NNS -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+Formally_RB ,_, a_DT bag_NN of_IN words_NNS vector_NN is_VBZ a_DT vector_NN x_NN with_IN a_DT unique_JJ dimension_NN for_IN each_DT possible_JJ 1_CD Our_PRP$ source_NN code_NN is_VBZ freely_RB available_JJ at_IN www_NN ._.
+cs_NNS ._.
+tufts_NNS ._.
+edu_NN /_: dsculley_NN /_: onlineSMO_NN ._.
+1_CD 0_CD ._.
+###_NN 0_CD ._.
+###_NN 0_CD ._.
+##_NN 0_CD ._.
+###_NN 0_CD ._.
+##_NN 0_CD ._.
+#_# #_# ##_CD ###_CD ####_CD ROCArea_NN C_NN 2-grams_JJ 3-grams_NNS 4-grams_JJ words_NNS Figure_NN #_# :_: Tuning_VBG the_DT Tradeoff_NN Parameter_NN C_NN ._.
+Tests_NNS were_VBD conducted_VBN with_IN Online_NN SMO_NN ,_, using_VBG binary_JJ feature_NN vectors_NNS ,_, on_IN the_DT spamassassin_NN data_NN set_NN of_IN ####_CD examples_NNS ._.
+Graph_NN plots_NNS C_NN versus_CC Area_NN under_IN the_DT ROC_NN curve_NN ._.
+word_NN ,_, defined_VBN as_IN a_DT contiguous_JJ substring_NN of_IN non-whitespace_JJ characters_NNS ._.
+An_DT n-gram_NN vector_NN is_VBZ a_DT vector_NN x_NN with_IN a_DT unique_JJ dimension_NN for_IN each_DT possible_JJ substring_NN of_IN n_NN total_JJ characters_NNS ._.
+Note_VB that_DT n-grams_NN may_MD include_VB whitespace_NN ,_, and_CC are_VBP overlapping_VBG ._.
+We_PRP use_VBP binary_JJ feature_NN scoring_VBG ,_, which_WDT has_VBZ been_VBN shown_VBN to_TO be_VB most_RBS effective_JJ for_IN a_DT variety_NN of_IN spam_NN detection_NN methods_NNS -LSB-_-LRB- ##_NNS ,_, #_# -RSB-_-RRB- ._.
+We_PRP normalize_VBP the_DT vectors_NNS with_IN the_DT Euclidean_JJ norm_NN ._.
+Furthermore_RB ,_, with_IN email_NN data_NNS ,_, we_PRP reduce_VBP the_DT impact_NN of_IN long_JJ messages_NNS -LRB-_-LRB- for_IN example_NN ,_, with_IN attachments_NNS -RRB-_-RRB- by_IN considering_VBG only_RB the_DT first_JJ #_# ,_, ###_CD characters_NNS of_IN each_DT string_NN ._.
+For_IN blog_NN comments_NNS and_CC splogs_NNS ,_, we_PRP consider_VBP the_DT whole_JJ text_NN ,_, including_VBG any_DT meta-data_NN such_JJ as_IN HTML_NNP tags_NNS ,_, as_IN given_VBN ._.
+No_DT other_JJ feature_NN selection_NN or_CC domain_NN knowledge_NN was_VBD used_VBN ._.
+2_LS ._.
+#_# Tuning_VBG the_DT Tradeoff_NN Parameter_NN ,_, C_NN The_DT SVM_NN tradeoff_NN parameter_NN C_NN must_MD be_VB tuned_VBN to_TO balance_VB the_DT -LRB-_-LRB- potentially_RB conflicting_JJ -RRB-_-RRB- goals_NNS of_IN maximizing_VBG the_DT margin_NN and_CC minimizing_VBG the_DT training_NN error_NN ._.
+Early_JJ work_NN on_IN SVM_NN based_VBN spam_NN detection_NN -LSB-_-LRB- #_# -RSB-_-RRB- showed_VBD that_IN high_JJ values_NNS of_IN C_NN give_VBP best_JJS performance_NN with_IN binary_JJ features_NNS ._.
+Later_RB work_NN has_VBZ not_RB always_RB followed_VBD this_DT lead_NN :_: a_DT -LRB-_-LRB- low_JJ -RRB-_-RRB- default_NN setting_NN of_IN C_NN was_VBD used_VBN on_IN splog_NN detection_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, and_CC also_RB on_IN email_NN spam_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+Following_VBG standard_JJ machine_NN learning_NN practice_NN ,_, we_PRP tuned_VBD C_NN on_IN separate_JJ tuning_NN data_NNS not_RB used_VBN for_IN later_JJ testing_NN ._.
+We_PRP used_VBD the_DT publicly_RB available_JJ spamassassin_NN email_NN spam_NN data_NNS set_VBN ,_, and_CC created_VBD an_DT online_JJ learning_NN task_NN by_IN randomly_RB interleaving_VBG all_DT ####_CD labeled_VBN messages_NNS to_TO create_VB a_DT single_JJ ordered_VBN set_NN ._.
+For_IN tuning_NN ,_, we_PRP performed_VBD a_DT coarse_JJ parameter_NN search_NN for_IN C_NN using_VBG powers_NNS of_IN ten_CD from_IN ._.
+####_CD to_TO #####_CD ._.
+We_PRP used_VBD the_DT Online_NNP SVM_NNP described_VBD above_IN ,_, and_CC tested_VBN both_DT binary_JJ bag_NN of_IN words_NNS vectors_NNS and_CC n-gram_NN vectors_NNS with_IN n_NN =_JJ -LCB-_-LRB- #_# ,_, #_# ,_, #_# -RCB-_-RRB- ._.
+We_PRP used_VBD the_DT first_JJ ####_CD characters_NNS of_IN each_DT message_NN ,_, which_WDT included_VBD header_JJR information_NN ,_, body_NN of_IN the_DT email_NN ,_, and_CC possibly_RB attachments_NNS ._.
+Following_VBG the_DT recommendation_NN of_IN -LSB-_-LRB- #_# -RSB-_-RRB- ,_, we_PRP use_VBP Area_NN under_IN the_DT ROC_NN curve_NN as_IN our_PRP$ evaluation_NN measure_NN ._.
+The_DT results_NNS -LRB-_-LRB- see_VB Figure_NNP #_# -RRB-_-RRB- agree_VBP with_IN -LSB-_-LRB- #_# -RSB-_-RRB- :_: there_EX is_VBZ a_DT plateau_NN of_IN high_JJ performance_NN achieved_VBN with_IN all_DT values_NNS of_IN C_NN ##_NN ,_, and_CC performance_NN degrades_VBZ sharply_RB with_IN C_NN <_JJR #_# ._.
+For_IN the_DT remainder_NN of_IN our_PRP$ experiments_NNS with_IN SVMs_NNS in_IN this_DT paper_NN ,_, we_PRP set_VBD C_NN =_JJ ###_CD ._.
+We_PRP will_MD return_VB to_TO the_DT observation_NN that_IN very_RB high_JJ values_NNS of_IN C_NN do_VBP not_RB degrade_VB performance_NN as_IN support_NN for_IN the_DT intuition_NN that_WDT relaxed_VBD SVMs_NNS should_MD perform_VB well_RB on_IN spam_NN ._.
+Table_NNP #_# :_: Results_NNS for_IN Email_VB Spam_NNP filtering_VBG with_IN Online_NN SVM_NN on_IN benchmark_JJ data_NNS sets_NNS ._.
+Score_NN reported_VBD is_VBZ -LRB-_-LRB- 1-ROCA_NN -RRB-_-RRB- %_NN ,_, where_WRB #_# is_VBZ optimal_JJ ._.
+trec05p-1_NN trec06p_NN OnSVM_NN :_: words_NNS #_# ._.
+###_NN -LRB-_-LRB- ._.
+011_SYM -_: ._.
+###_NN -RRB-_-RRB- #_# ._.
+###_NN -LRB-_-LRB- ._.
+025_CD -_: ._.
+###_NN -RRB-_-RRB- 3-grams_NNS #_# ._.
+###_NN -LRB-_-LRB- ._.
+009_SYM -_: ._.
+###_NN -RRB-_-RRB- #_# ._.
+###_NN -LRB-_-LRB- ._.
+017_SYM -_: ._.
+###_NN -RRB-_-RRB- 4-grams_NN #_# ._.
+###_NN -LRB-_-LRB- ._.
+007_SYM -_: ._.
+###_NN -RRB-_-RRB- #_# ._.
+###_NN -LRB-_-LRB- ._.
+017_SYM -_: ._.
+###_NN -RRB-_-RRB- SpamProbe_NN #_# ._.
+###_NN -LRB-_-LRB- ._.
+049_SYM -_: ._.
+###_NN -RRB-_-RRB- #_# ._.
+###_NN -LRB-_-LRB- ._.
+078_CD -_: ._.
+###_NN -RRB-_-RRB- BogoFilter_NN #_# ._.
+###_NN -LRB-_-LRB- ._.
+038_CD -_: ._.
+###_NN -RRB-_-RRB- #_# ._.
+###_NN -LRB-_-LRB- ._.
+056_SYM -_: ._.
+###_NN -RRB-_-RRB- TREC_NN Winners_NNS #_# ._.
+###_NN -LRB-_-LRB- ._.
+015_SYM -_: ._.
+###_NN -RRB-_-RRB- #_# ._.
+###_NN -LRB-_-LRB- ._.
+034_SYM -_: ._.
+###_NN -RRB-_-RRB- 53-Ensemble_JJ #_# ._.
+###_NN -LRB-_-LRB- ._.
+005_SYM -_: ._.
+###_NN -RRB-_-RRB- #_# ._.
+###_NN -LRB-_-LRB- ._.
+007_SYM -_: ._.
+###_NN -RRB-_-RRB- Table_NNP #_# :_: Results_NNS for_IN Blog_NNP Comment_NN Spam_NNP Detection_NN using_VBG SVMs_NNS and_CC Leave_VB One_CD Out_IN Cross_NNP Validation_NNP ._.
+We_PRP report_VBP the_DT same_JJ performance_NN measures_NNS as_IN in_IN the_DT prior_JJ work_NN for_IN meaningful_JJ comparison_NN ._.
+accuracy_NN precision_NN recall_NN SVM_NN C_NN =_JJ ###_CD :_: words_NNS #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN 3-grams_NNS #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN 4-grams_NNS #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NNP Prior_RB best_JJS method_NN #_# ._.
+##_NN #_# ._.
+###_NN #_# ._.
+###_NN 2_CD ._.
+#_# Email_VB Spam_NN and_CC Online_NN SVMs_NNS With_IN C_NN tuned_VBN on_IN a_DT separate_JJ tuning_NN set_NN ,_, we_PRP then_RB tested_VBD the_DT performance_NN of_IN Online_NN SVMs_NNS in_IN spam_NN detection_NN ._.
+We_PRP used_VBD two_CD large_JJ benchmark_JJ data_NNS sets_NNS of_IN email_NN spam_NN as_IN our_PRP$ test_NN corpora_NN ._.
+These_DT data_NNS sets_NNS are_VBP the_DT ####_CD TREC_NNS public_JJ data_NN set_NN trec05p-1_NN of_IN ##_NN ,_, ###_CD messages_NNS ,_, and_CC the_DT ####_CD TREC_NNS public_JJ data_NNS sets_NNS ,_, trec06p_NN ,_, containing_VBG ##_NN ,_, ###_CD messages_NNS in_IN English_NNP ._.
+-LRB-_-LRB- We_PRP do_VBP not_RB report_VB our_PRP$ strong_JJ results_NNS on_IN the_DT trec06c_NN corpus_NN of_IN Chinese_JJ messages_NNS as_IN there_EX have_VBP been_VBN questions_NNS raised_VBD over_IN the_DT validity_NN of_IN this_DT test_NN set_NN ._. -RRB-_-RRB-
+We_PRP used_VBD the_DT canonical_JJ ordering_VBG provided_VBN with_IN each_DT of_IN these_DT data_NNS sets_NNS for_IN fair_JJ comparison_NN ._.
+Results_NNS for_IN these_DT experiments_NNS ,_, with_IN bag_NN of_IN words_NNS vectors_NNS and_CC and_CC n-gram_NN vectors_NNS appear_VBP in_IN Table_NNP #_# ._.
+To_TO compare_VB our_PRP$ results_NNS with_IN previous_JJ scores_NNS on_IN these_DT data_NNS sets_NNS ,_, we_PRP use_VBP the_DT same_JJ -LRB-_-LRB- 1-ROCA_JJ -RRB-_-RRB- %_NN measure_NN described_VBN in_IN -LSB-_-LRB- #_# -RSB-_-RRB- ,_, which_WDT is_VBZ one_CD minus_CC the_DT area_NN under_IN the_DT ROC_NN curve_NN ,_, expressed_VBN as_IN a_DT percent_NN ._.
+This_DT measure_NN shows_VBZ the_DT percent_NN chance_NN of_IN error_NN made_VBN by_IN a_DT classifier_NN asserting_VBG that_IN one_CD message_NN is_VBZ more_RBR likely_JJ to_TO be_VB spam_NN than_IN another_DT ._.
+These_DT results_NNS show_VBP that_IN Online_NN SVMs_NNS do_VBP give_VB state_NN of_IN the_DT art_NN performance_NN on_IN email_NN spam_NN ._.
+The_DT only_RB known_JJ system_NN that_WDT out-performs_VBZ the_DT Online_NNP SVMs_NNS on_IN the_DT trec05p-1_NN data_NN set_NN is_VBZ a_DT recent_JJ ensemble_NN classifier_NN which_WDT combines_VBZ the_DT results_NNS of_IN ##_CD unique_JJ spam_NN filters_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+To_TO our_PRP$ knowledge_NN ,_, the_DT Online_NNP SVM_NNP has_VBZ out-performed_VBN every_DT other_JJ single_JJ filter_NN on_IN these_DT data_NNS sets_NNS ,_, including_VBG those_DT using_VBG Bayesian_JJ methods_NNS -LSB-_-LRB- #_# ,_, #_# -RSB-_-RRB- ,_, compression_NN models_NNS -LSB-_-LRB- #_# ,_, #_# -RSB-_-RRB- ,_, logistic_JJ regression_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, and_CC perceptron_NN variants_NNS -LSB-_-LRB- #_# -RSB-_-RRB- ,_, the_DT TREC_NN competition_NN winners_NNS -LSB-_-LRB- #_# ,_, #_# -RSB-_-RRB- ,_, and_CC open_JJ source_NN email_NN spam_NN filters_NNS BogoFilter_NNP v1_NN ._.
+#_# ._.
+#_# and_CC SpamProbe_NN v1_NN ._.
+4d_NN ._.
+2_LS ._.
+#_# Blog_NNP Comment_NN Spam_NN and_CC SVMs_NNS Blog_NN comment_NN spam_NN is_VBZ similar_JJ to_TO email_VB spam_NN in_IN many_JJ regards_VBZ ,_, and_CC content-based_JJ methods_NNS have_VBP been_VBN proposed_VBN for_IN detecting_VBG these_DT spam_NN comments_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+However_RB ,_, large_JJ benchmark_NN data_NNS sets_NNS of_IN labeled_VBN blog_NN comment_NN spam_NN do_VBP not_RB yet_RB exist_VBP ._.
+Thus_RB ,_, we_PRP run_VBP experiments_NNS on_IN the_DT only_RB publicly_RB available_JJ data_NNS set_VBN we_PRP know_VBP of_IN ,_, which_WDT was_VBD used_VBN in_IN content-based_JJ blog_NN Table_NNP #_# :_: Results_NNS for_IN Splog_NNP vs_CC ._.
+Blog_NNP Detection_NN using_VBG SVMs_NNS and_CC Leave_VB One_CD Out_IN Cross_NNP Validation_NNP ._.
+We_PRP report_VBP the_DT same_JJ evaluation_NN measures_NNS as_IN in_IN the_DT prior_JJ work_NN for_IN meaningful_JJ comparison_NN ._.
+features_NNS precision_NN recall_NN F1_NN SVM_NN C_NN =_JJ ###_CD :_: words_NNS #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN 3-grams_NNS #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN 4-grams_NNS #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_CD Prior_JJ SVM_NN with_IN :_: words_NNS #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN 4-grams_NNS #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN words_NNS +_CC urls_NNS #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_JJ comment_NN spam_NN detection_NN experiments_NNS by_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ._.
+Because_IN of_IN the_DT small_JJ size_NN of_IN the_DT data_NN set_NN ,_, and_CC because_IN prior_JJ researchers_NNS did_VBD not_RB conduct_VB their_PRP$ experiments_NNS in_IN an_DT on-line_JJ setting_NN ,_, we_PRP test_VBP the_DT performance_NN of_IN linear_JJ SVMs_NNS using_VBG leave-one-out_JJ cross_NN validation_NN ,_, with_IN SVM-Light_NN ,_, a_DT standard_JJ open-source_NN SVM_NNP implementation_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+We_PRP use_VBP the_DT parameter_NN setting_NN C_NN =_JJ ###_CD ,_, with_IN the_DT same_JJ feature_NN space_NN mappings_NNS as_IN above_JJ ._.
+We_PRP report_VBP accuracy_NN ,_, precision_NN ,_, and_CC recall_NN to_TO compare_VB these_DT to_TO the_DT results_NNS given_VBN on_IN the_DT same_JJ data_NNS set_VBN by_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ._.
+These_DT results_NNS show_VBP that_IN SVMs_NNS give_VBP superior_JJ performance_NN on_IN this_DT data_NN set_NN to_TO the_DT prior_JJ methodology_NN ._.
+2_LS ._.
+#_# Splogs_NNPS and_CC SVMs_NNPS As_IN with_IN blog_NN comment_NN spam_NN ,_, there_EX is_VBZ not_RB yet_RB a_DT large_JJ ,_, publicly_RB available_JJ benchmark_NN corpus_NN of_IN labeled_VBN splog_NN detection_NN test_NN data_NNS ._.
+However_RB ,_, the_DT authors_NNS of_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- kindly_RB provided_VBD us_PRP with_IN the_DT labeled_VBN data_NNS set_NN of_IN #_# ,_, ###_CD blogs_NNS and_CC splogs_NNS that_IN they_PRP used_VBD to_TO test_VB content-based_JJ splog_NN detection_NN using_VBG SVMs_NNS ._.
+The_DT only_JJ difference_NN between_IN our_PRP$ methodology_NN and_CC that_IN of_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- is_VBZ that_IN they_PRP used_VBD default_NN parameters_NNS for_IN C_NN ,_, which_WDT SVM-Light_NNP sets_VBZ to_TO #_# avg_FW |_FW |_FW x_CC |_FW |_FW #_# ._.
+-LRB-_-LRB- For_IN normalized_VBN vectors_NNS ,_, this_DT default_NN value_NN sets_VBZ C_NN =_JJ #_# ._. -RRB-_-RRB-
+They_PRP also_RB tested_VBD several_JJ domain-informed_JJ feature_NN mappings_NNS ,_, such_JJ as_IN giving_VBG special_JJ features_NNS to_TO url_NN tags_NNS ._.
+For_IN our_PRP$ experiments_NNS ,_, we_PRP used_VBD the_DT same_JJ feature_NN mappings_NNS as_IN above_RB ,_, and_CC tested_VBD the_DT effect_NN of_IN setting_VBG C_NN =_JJ ###_CD ._.
+As_IN with_IN the_DT methodology_NN of_IN -LSB-_-LRB- ##_NN -RSB-_-RRB- ,_, we_PRP performed_VBD leave_NN one_CD out_RP cross_JJ validation_NN for_IN apples-to-apples_NNS comparison_NN on_IN this_DT data_NNS ._.
+The_DT results_NNS show_VBP that_IN a_DT high_JJ value_NN of_IN C_NN produces_VBZ higher_JJR performance_NN for_IN the_DT same_JJ feature_NN space_NN mappings_NNS ,_, and_CC even_RB enables_VBZ the_DT simple_JJ 4-gram_JJ mapping_NN to_TO out-perform_VB the_DT previous_JJ best_JJS mapping_NN which_WDT incorporated_JJ domain_NN knowledge_NN by_IN using_VBG words_NNS and_CC urls_NNS ._.
+2_LS ._.
+#_# Computational_NNP Cost_NN The_DT results_NNS presented_VBN in_IN this_DT section_NN demonstrate_VBP that_IN linfeatures_NNS trec06p_NN trec05p-1_NN words_NNS 12196s_JJ 66478s_NNS 3-grams_JJ 44605s_NNS 128924s_NNS 4-grams_JJ 87519s_NNS 242160s_CD corpus_NN size_NN #####_CD #####_CD Table_NNP #_# :_: Execution_NN time_NN for_IN Online_NNP SVMs_NNS with_IN email_NN spam_NN detection_NN ,_, in_IN CPU_NNP seconds_NNS ._.
+These_DT times_NNS do_VBP not_RB include_VB the_DT time_NN spent_VBD mapping_VBG strings_NNS to_TO feature_NN vectors_NNS ._.
+The_DT number_NN of_IN examples_NNS in_IN each_DT data_NNS set_NN is_VBZ given_VBN in_IN the_DT last_JJ row_NN as_IN corpus_NN size_NN ._.
+A_DT B_NN Figure_NN #_# :_: Visualizing_VBG the_DT effect_NN of_IN C_NN ._.
+Hyperplane_NN A_NN maximizes_VBZ the_DT margin_NN while_IN accepting_VBG a_DT small_JJ amount_NN of_IN training_NN error_NN ._.
+This_DT corresponds_VBZ to_TO setting_VBG C_NN to_TO a_DT low_JJ value_NN ._.
+Hyperplane_NN B_NN accepts_VBZ a_DT smaller_JJR margin_NN in_IN order_NN to_TO reduce_VB training_NN error_NN ._.
+This_DT corresponds_VBZ to_TO setting_VBG C_NN to_TO a_DT high_JJ value_NN ._.
+Content-based_JJ spam_NN filtering_VBG appears_VBZ to_TO do_VB best_JJS with_IN high_JJ values_NNS of_IN C_NN ._.
+ear_NN SVMs_NNS give_VBP state_NN of_IN the_DT art_NN performance_NN on_IN content-based_JJ spam_NN filtering_VBG ._.
+However_RB ,_, this_DT performance_NN comes_VBZ at_IN a_DT price_NN ._.
+Although_IN the_DT blog_NN comment_NN spam_NN and_CC splog_NN data_NNS sets_NNS are_VBP too_RB small_JJ for_IN the_DT quadratic_JJ training_NN time_NN of_IN SVMs_NNS to_TO appear_VB problematic_JJ ,_, the_DT email_NN data_NNS sets_NNS are_VBP large_JJ enough_RB to_TO illustrate_VB the_DT problems_NNS of_IN quadratic_JJ training_NN cost_NN ._.
+Table_NNP #_# shows_VBZ computation_NN time_NN versus_CC data_NN set_NN size_NN for_IN each_DT of_IN the_DT online_JJ learning_NN tasks_NNS -LRB-_-LRB- on_IN same_JJ system_NN -RRB-_-RRB- ._.
+The_DT training_NN cost_NN of_IN SVMs_NNS are_VBP prohibitive_JJ for_IN large-scale_JJ content_NN based_VBN spam_NN detection_NN ,_, or_CC a_DT large_JJ blog_NN host_NN ._.
+In_IN the_DT following_VBG section_NN ,_, we_PRP reduce_VBP this_DT cost_NN by_IN relaxing_VBG the_DT expensive_JJ requirements_NNS of_IN SVMs_NNS ._.
+3_LS ._.
+RELAXED_VBN ONLINE_JJ SVMS_NNS -LRB-_-LRB- ROSVM_NN -RRB-_-RRB- One_CD of_IN the_DT main_JJ benefits_NNS of_IN SVMs_NNS is_VBZ that_IN they_PRP find_VBP a_DT decision_NN hyperplane_NN that_WDT maximizes_VBZ the_DT margin_NN between_IN classes_NNS in_IN the_DT data_NNS space_NN ._.
+Maximizing_VBG the_DT margin_NN is_VBZ expensive_JJ ,_, typically_RB requiring_VBG quadratic_JJ training_NN time_NN in_IN the_DT number_NN of_IN training_NN examples_NNS ._.
+However_RB ,_, as_IN we_PRP saw_VBD in_IN the_DT previous_JJ section_NN ,_, the_DT task_NN of_IN content-based_JJ spam_NN detection_NN is_VBZ best_RB achieved_VBN by_IN SVMs_NNS with_IN a_DT high_JJ value_NN of_IN C_NN ._.
+Setting_VBG C_NN to_TO a_DT high_JJ value_NN for_IN this_DT domain_NN implies_VBZ that_IN minimizing_VBG training_NN loss_NN is_VBZ more_RBR important_JJ than_IN maximizing_VBG the_DT margin_NN -LRB-_-LRB- see_VB Figure_NNP #_# -RRB-_-RRB- ._.
+Thus_RB ,_, while_IN SVMs_NNS do_VBP create_VB high_JJ performance_NN spam_NN filters_NNS ,_, applying_VBG them_PRP in_IN practice_NN is_VBZ overkill_NN ._.
+The_DT full_JJ margin_NN maximization_NN feature_NN that_IN they_PRP provide_VBP is_VBZ unnecessary_JJ ,_, and_CC relaxing_VBG this_DT requirement_NN can_MD reduce_VB computational_JJ cost_NN ._.
+We_PRP propose_VBP three_CD ways_NNS to_TO relax_VB Online_NNP SVMs_NNP :_: Reduce_VB the_DT size_NN of_IN the_DT optimization_NN problem_NN by_IN only_RB optimizing_VBG over_IN the_DT last_JJ p_NN examples_NNS ._.
+Reduce_VB the_DT number_NN of_IN training_NN updates_NNS by_IN only_RB training_VBG on_IN actual_JJ errors_NNS ._.
+Reduce_VB the_DT number_NN of_IN iterations_NNS in_IN the_DT iterative_JJ SVM_NNP Given_VBN :_: dataset_NN X_NN =_JJ -LRB-_-LRB- x1_NN ,_, y1_NN -RRB-_-RRB- ,_, ..._: ,_, -LRB-_-LRB- xn_NN ,_, yn_NN -RRB-_-RRB- ,_, C_NN ,_, m_NN ,_, p_NN :_: Initialize_VB w_NN :_: =_JJ #_# ,_, b_NN :_: =_JJ #_# ,_, seenData_NNP :_: =_JJ -LCB-_-LRB- -RCB-_-RRB- For_IN Each_DT xi_NN X_NN do_VBP :_: Classify_VB xi_NN using_VBG f_FW -LRB-_-LRB- xi_NN -RRB-_-RRB- =_JJ sign_NN -LRB-_-LRB- +_CC b_NN -RRB-_-RRB- If_IN yif_NN -LRB-_-LRB- xi_NN -RRB-_-RRB- <_JJR m_NN Find_VB w_NN ,_, b_NN with_IN SMO_NN on_IN seenData_NN ,_, using_VBG w_NN ,_, b_NN as_IN seed_NN hypothesis_NN ._.
+set_NN -LRB-_-LRB- w_NN ,_, b_NN -RRB-_-RRB- :_: =_JJ -LRB-_-LRB- w_NN ''_'' ,_, b_NN ''_'' -RRB-_-RRB- If_IN size_NN >_JJR p_NN remove_VB oldest_JJS example_NN from_IN seenData_NNP Add_VB xi_NN to_TO seenData_NN done_VBN Figure_NNP #_# :_: Pseudo-code_NN for_IN Relaxed_NNP Online_NNP SVM_NNP ._.
+solver_NN by_IN allowing_VBG an_DT approximate_JJ solution_NN to_TO the_DT optimization_NN problem_NN ._.
+As_IN we_PRP describe_VBP in_IN the_DT remainder_NN of_IN this_DT subsection_NN ,_, all_DT of_IN these_DT methods_NNS trade_VBP statistical_JJ robustness_NN for_IN reduced_VBN computational_JJ cost_NN ._.
+Experimental_JJ results_NNS reported_VBN in_IN the_DT following_VBG section_NN show_NN that_IN they_PRP equal_VBP or_CC approach_VBP the_DT performance_NN of_IN full_JJ Online_NN SVMs_NNS on_IN content-based_JJ spam_NN detection_NN ._.
+3_LS ._.
+#_# Reducing_VBG Problem_NNP Size_NN In_IN the_DT full_JJ Online_NN SVMs_NNS ,_, we_PRP re-optimize_VBP over_IN the_DT full_JJ set_NN of_IN seen_VBN data_NNS on_IN every_DT update_VBP ,_, which_WDT becomes_VBZ expensive_JJ as_IN the_DT number_NN of_IN seen_VBN data_NNS points_NNS grows_VBZ ._.
+We_PRP can_MD bound_VBD this_DT expense_NN by_IN only_RB considering_VBG the_DT p_NN most_RBS recent_JJ examples_NNS for_IN optimization_NN ._.
+Note_VB that_IN this_DT is_VBZ not_RB equivalent_JJ to_TO training_VBG a_DT new_JJ SVM_NNP classifier_NN from_IN scratch_NN on_IN the_DT p_NN most_RBS recent_JJ examples_NNS ,_, because_IN each_DT successive_JJ optimization_NN problem_NN is_VBZ seeded_VBN with_IN the_DT previous_JJ hypothesis_NN w_IN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+This_DT hypothesis_NN may_MD contain_VB values_NNS for_IN features_NNS that_WDT do_VBP not_RB occur_VB anywhere_RB in_IN the_DT p_NN most_RBS recent_JJ examples_NNS ,_, and_CC these_DT will_MD not_RB be_VB changed_VBN ._.
+This_DT allows_VBZ the_DT hypothesis_NN to_TO remember_VB rare_JJ -LRB-_-LRB- but_CC informative_JJ -RRB-_-RRB- features_VBZ that_DT were_VBD learned_VBN further_RB than_IN p_NN examples_NNS in_IN the_DT past_NN ._.
+Formally_RB ,_, the_DT optimization_NN problem_NN is_VBZ now_RB defined_VBN most_RBS clearly_RB in_IN the_DT dual_JJ form_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+In_IN this_DT case_NN ,_, the_DT original_JJ softmargin_NN SVM_NN is_VBZ computed_VBN by_IN maximizing_VBG at_IN example_NN n_NN :_: W_NN -LRB-_-LRB- -RRB-_-RRB- =_JJ nX_NN i_FW =_JJ #_# i_FW 1_CD 2_CD nX_NN i_FW ,_, j_NN =_JJ #_# ijyiyj_NN ,_, subject_JJ to_TO the_DT previous_JJ constraints_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- :_: i_FW -LCB-_-LRB- #_# ,_, ..._: ,_, n_NN -RCB-_-RRB- :_: #_# i_FW C_NN and_CC nX_NN i_FW =_JJ #_# iyi_NN =_JJ #_# To_TO this_DT ,_, we_PRP add_VBP the_DT additional_JJ lookback_NN buffer_NN constraint_NN j_NN -LCB-_-LRB- #_# ,_, ..._: ,_, -LRB-_-LRB- n_NN p_NN -RRB-_-RRB- -RCB-_-RRB- :_: j_NN =_JJ cj_NN where_WRB cj_NN is_VBZ a_DT constant_JJ ,_, fixed_VBN as_IN the_DT last_JJ value_NN found_VBN for_IN j_NN while_IN j_NN >_JJR -LRB-_-LRB- n_NN p_NN -RRB-_-RRB- ._.
+Thus_RB ,_, the_DT margin_NN found_VBN by_IN an_DT optimization_NN is_VBZ not_RB guaranteed_VBN to_TO be_VB one_CD that_WDT maximizes_VBZ the_DT margin_NN for_IN the_DT global_JJ data_NN set_NN of_IN examples_NNS -LCB-_-LRB- x1_NN ,_, ..._: ,_, xn_NN -RRB-_-RRB- -RCB-_-RRB- ,_, but_CC rather_RB one_CD that_WDT satisfies_VBZ a_DT relaxed_VBN requirement_NN that_IN the_DT margin_NN be_VB maximized_VBN over_IN the_DT examples_NNS -LCB-_-LRB- x_NN -LRB-_-LRB- np_NN +_CC #_# -RRB-_-RRB- ,_, ..._: ,_, xn_NN -RCB-_-RRB- ,_, subject_JJ to_TO the_DT fixed_VBN constraints_NNS on_IN the_DT hyperplane_NN that_WDT were_VBD found_VBN in_IN previous_JJ optimizations_NNS over_IN examples_NNS -LCB-_-LRB- x1_NN ,_, ..._: ,_, x_NN -LRB-_-LRB- np_NN -RRB-_-RRB- -RCB-_-RRB- ._.
+-LRB-_-LRB- For_IN completeness_NN ,_, when_WRB p_NN n_NN ,_, define_VB -LRB-_-LRB- n_NN p_NN -RRB-_-RRB- =_JJ #_# ._. -RRB-_-RRB-
+This_DT set_NN of_IN constraints_NNS reduces_VBZ the_DT number_NN of_IN free_JJ variables_NNS in_IN the_DT optimization_NN problem_NN ,_, reducing_VBG computational_JJ cost_NN ._.
+3_LS ._.
+#_# Reducing_VBG Number_NN of_IN Updates_NNP As_IN noted_VBN before_IN ,_, the_DT KKT_NN conditions_NNS show_VBP that_IN a_DT well_RB classified_VBN example_NN will_MD not_RB change_VB the_DT hypothesis_NN ;_: thus_RB it_PRP is_VBZ not_RB necessary_JJ to_TO re-train_VB when_WRB we_PRP encounter_VBP such_JJ an_DT example_NN ._.
+Under_IN the_DT KKT_NN conditions_NNS ,_, an_DT example_NN xi_NN is_VBZ considered_VBN well-classified_JJ when_WRB yif_NN -LRB-_-LRB- xi_NN -RRB-_-RRB- >_JJR #_# ._.
+If_IN we_PRP re-train_VBP on_IN every_DT example_NN that_WDT is_VBZ not_RB well-classified_JJ ,_, our_PRP$ hyperplane_NN will_MD be_VB guaranteed_VBN to_TO be_VB optimal_JJ at_IN every_DT step_NN ._.
+The_DT number_NN of_IN re-training_NN updates_NNS can_MD be_VB reduced_VBN by_IN relaxing_VBG the_DT definition_NN of_IN well_RB classified_VBN ._.
+An_DT example_NN xi_NN is_VBZ now_RB considered_VBN well_RB classified_VBN when_WRB yif_NN -LRB-_-LRB- xi_NN -RRB-_-RRB- >_JJR M_NN ,_, for_IN some_DT 0_CD M_NN #_# ._.
+Here_RB ,_, each_DT update_VBP still_RB produces_VBZ an_DT optimal_JJ hyperplane_NN ._.
+The_DT learner_NN may_MD encounter_VB an_DT example_NN that_WDT lies_VBZ within_IN the_DT margins_NNS ,_, but_CC farther_RB from_IN the_DT margins_NNS than_IN M_NN ._.
+Such_PDT an_DT example_NN means_VBZ the_DT hypothesis_NN is_VBZ no_RB longer_RB globally_RB optimal_JJ for_IN the_DT data_NN set_NN ,_, but_CC it_PRP is_VBZ considered_VBN good_JJ enough_RB for_IN continued_VBN use_NN without_IN immediate_JJ retraining_VBG ._.
+This_DT update_VBP procedure_NN is_VBZ similar_JJ to_TO that_DT used_VBN by_IN variants_NNS of_IN the_DT Perceptron_NNP algorithm_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+In_IN the_DT extreme_JJ case_NN ,_, we_PRP can_MD set_VB M_NN =_JJ #_# ,_, which_WDT creates_VBZ a_DT mistake_NN driven_VBN Online_NNP SVM_NNP ._.
+In_IN the_DT experimental_JJ section_NN ,_, we_PRP show_VBP that_IN this_DT version_NN of_IN Online_NNP SVMs_NNP ,_, which_WDT updates_NNS only_RB on_IN actual_JJ errors_NNS ,_, does_VBZ not_RB significantly_RB degrade_VB performance_NN on_IN content-based_JJ spam_NN detection_NN ,_, but_CC does_VBZ significantly_RB reduce_VB cost_NN ._.
+3_LS ._.
+#_# Reducing_VBG Iterations_NNS As_IN an_DT iterative_JJ solver_NN ,_, SMO_NN makes_VBZ repeated_VBN passes_VBZ over_IN the_DT data_NNS set_VBN to_TO optimize_VB the_DT objective_JJ function_NN ._.
+SMO_NNP has_VBZ one_CD main_JJ loop_NN ,_, which_WDT can_MD alternate_JJ between_IN passing_VBG over_IN the_DT entire_JJ data_NN set_NN ,_, or_CC the_DT smaller_JJR active_JJ set_NN of_IN current_JJ support_NN vectors_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Successive_JJ iterations_NNS of_IN this_DT loop_NN bring_VB the_DT hyperplane_NN closer_RBR to_TO an_DT optimal_JJ value_NN ._.
+However_RB ,_, it_PRP is_VBZ possible_JJ that_IN these_DT iterations_NNS provide_VBP less_JJR benefit_NN than_IN their_PRP$ expense_NN justifies_VBZ ._.
+That_DT is_VBZ ,_, a_DT close_JJ first_JJ approximation_NN may_MD be_VB good_JJ enough_RB ._.
+We_PRP introduce_VBP a_DT parameter_NN T_NN to_TO control_VB the_DT maximum_NN number_NN of_IN iterations_NNS we_PRP allow_VBP ._.
+As_IN we_PRP will_MD see_VB in_IN the_DT experimental_JJ section_NN ,_, this_DT parameter_NN can_MD be_VB set_VBN as_RB low_JJ as_IN #_# with_IN little_JJ impact_NN on_IN the_DT quality_NN of_IN results_NNS ,_, providing_VBG computational_JJ savings_NNS ._.
+4_LS ._.
+EXPERIMENTS_NNS In_IN Section_NN #_# ,_, we_PRP argued_VBD that_IN the_DT strong_JJ performance_NN on_IN content-based_JJ spam_NN detection_NN with_IN SVMs_NNS with_IN a_DT high_JJ value_NN of_IN C_NN show_VBP that_IN the_DT maximum_NN margin_NN criteria_NNS is_VBZ overkill_NN ,_, incurring_VBG unnecessary_JJ computational_JJ cost_NN ._.
+In_IN Section_NN #_# ,_, we_PRP proposed_VBD ROSVM_NNP to_TO address_VB this_DT issue_NN ,_, as_IN both_DT of_IN these_DT methods_NNS trade_VBP away_RB guarantees_NNS on_IN the_DT maximum_NN margin_NN hyperplane_NN in_IN return_NN for_IN reduced_VBN computational_JJ cost_NN ._.
+In_IN this_DT section_NN ,_, we_PRP test_VBP these_DT methods_NNS on_IN the_DT same_JJ benchmark_NN data_NNS sets_VBZ to_TO see_VB if_IN state_NN of_IN the_DT art_NN performance_NN may_MD be_VB achieved_VBN by_IN these_DT less_JJR costly_JJ methods_NNS ._.
+We_PRP find_VBP that_IN ROSVM_NN is_VBZ capable_JJ of_IN achieving_VBG these_DT high_JJ levels_NNS of_IN performance_NN with_IN greatly_RB reduced_VBN cost_NN ._.
+Our_PRP$ main_JJ tests_NNS on_IN content-based_JJ spam_NN detection_NN are_VBP performed_VBN on_IN large_JJ benchmark_JJ sets_NNS of_IN email_NN data_NNS ._.
+We_PRP then_RB apply_VB these_DT methods_NNS on_IN the_DT smaller_JJR data_NNS sets_NNS of_IN blog_NN comment_NN spam_NN and_CC blogs_NNS ,_, with_IN similar_JJ performance_NN ._.
+4_LS ._.
+#_# ROSVM_NNP Tests_NNS In_IN Section_NN #_# ,_, we_PRP proposed_VBD three_CD approaches_NNS for_IN reducing_VBG the_DT computational_JJ cost_NN of_IN Online_NNP SMO_NNP :_: reducing_VBG the_DT prob0_NN ._.
+###_NN 0_CD ._.
+##_NN 0_CD ._.
+###_NN 0_CD ._.
+##_NN 0_CD ._.
+#_# 10_CD ###_CD ####_CD #####_CD ######_NN -LRB-_-LRB- 1-ROCA_NN -RRB-_-RRB- %_NN Buffer_NN Size_NN trec05p-1_NN trec06p_NN 0_CD 50000_CD 100000_CD 150000_CD 200000_CD 250000_CD 10_CD ###_CD ####_CD #####_CD ######_CD CPUSec_NN ._.
+Buffer_NN Size_NN trec05p-1_NN trec06p_NN Figure_NN #_# :_: Reduced_VBN Size_NN Tests_NNS ._.
+lem_NN size_NN ,_, reducing_VBG the_DT number_NN of_IN optimization_NN iterations_NNS ,_, and_CC reducing_VBG the_DT number_NN of_IN training_NN updates_NNS ._.
+Each_DT of_IN these_DT approaches_NNS relax_VBP the_DT maximum_NN margin_NN criteria_NNS on_IN the_DT global_JJ set_NN of_IN previously_RB seen_VBN data_NNS ._.
+Here_RB we_PRP test_VBP the_DT effect_NN that_IN each_DT of_IN these_DT methods_NNS has_VBZ on_IN both_DT effectiveness_NN and_CC efficiency_NN ._.
+In_IN each_DT of_IN these_DT tests_NNS ,_, we_PRP use_VBP the_DT large_JJ benchmark_NN email_NN data_NNS sets_NNS ,_, trec05p-1_NN and_CC trec06p_NN ._.
+4_LS ._.
+#_# ._.
+#_# Testing_VBG Reduced_VBN Size_NN For_IN our_PRP$ first_JJ ROSVM_NNP test_NN ,_, we_PRP experiment_NN on_IN the_DT effect_NN of_IN reducing_VBG the_DT size_NN of_IN the_DT optimization_NN problem_NN by_IN only_RB considering_VBG the_DT p_NN most_RBS recent_JJ examples_NNS ,_, as_IN described_VBN in_IN the_DT previous_JJ section_NN ._.
+For_IN this_DT test_NN ,_, we_PRP use_VBP the_DT same_JJ 4-gram_NN mappings_NNS as_IN for_IN the_DT reference_NN experiments_NNS in_IN Section_NN #_# ,_, with_IN the_DT same_JJ value_NN C_NN =_JJ ###_CD ._.
+We_PRP test_VBP a_DT range_NN of_IN values_NNS p_NN in_IN a_DT coarse_JJ grid_NN search_NN ._.
+Figure_NNP #_# reports_VBZ the_DT effect_NN of_IN the_DT buffer_NN size_NN p_NN in_IN relationship_NN to_TO the_DT -LRB-_-LRB- 1-ROCA_NN -RRB-_-RRB- %_NN performance_NN measure_NN -LRB-_-LRB- top_NN -RRB-_-RRB- ,_, and_CC the_DT number_NN of_IN CPU_NNP seconds_NNS required_VBN -LRB-_-LRB- bottom_NN -RRB-_-RRB- ._.
+The_DT results_NNS show_VBP that_IN values_NNS of_IN p_NN <_JJR ###_CD do_VBP result_VB in_IN degraded_JJ performance_NN ,_, although_IN they_PRP evaluate_VBP very_RB quickly_RB ._.
+However_RB ,_, p_NN values_NNS from_IN ###_CD to_TO ##_CD ,_, ###_CD perform_VBP almost_RB as_RB well_RB as_IN the_DT original_JJ Online_NNP SMO_NNP -LRB-_-LRB- represented_VBN here_RB as_IN p_NN =_JJ 100_CD ,_, ###_CD -RRB-_-RRB- ,_, at_IN dramatically_RB reduced_VBN computational_JJ cost_NN ._.
+These_DT results_NNS are_VBP important_JJ for_IN making_VBG state_NN of_IN the_DT art_NN performance_NN on_IN large-scale_JJ content-based_JJ spam_NN detection_NN practical_JJ with_IN online_JJ SVMs_NNS ._.
+Ordinarily_RB ,_, the_DT training_NN time_NN would_MD grow_VB quadratically_RB with_IN the_DT number_NN of_IN seen_VBN examples_NNS ._.
+However_RB ,_, fixing_VBG a_DT value_NN of_IN p_NN ensures_VBZ that_IN the_DT training_NN time_NN is_VBZ independent_JJ of_IN the_DT size_NN of_IN the_DT data_NN set_NN ._.
+Furthermore_RB ,_, a_DT lookback_NN buffer_NN allows_VBZ the_DT filter_NN to_TO adjust_VB to_TO concept_NN drift_NN ._.
+0_CD ._.
+###_NN 0_CD ._.
+##_NN 0_CD ._.
+###_NN 0_CD ._.
+##_NN 0_CD ._.
+#_# 10521_CD -LRB-_-LRB- 1-ROCA_NN -RRB-_-RRB- %_NN Max_NN Iters_NNP ._.
+trec06p_NN trec05p-1_NN 50000_CD 100000_CD 150000_CD 200000_CD 250000_CD 10521_CD CPUSec_NN ._.
+Max_NNP Iters_NNP ._.
+trec06p_NN trec05p-1_NN Figure_NN #_# :_: Reduced_VBN Iterations_NNS Tests_NNS ._.
+4_LS ._.
+#_# ._.
+#_# Testing_VBG Reduced_VBN Iterations_NNS In_IN the_DT second_JJ ROSVM_NN test_NN ,_, we_PRP experiment_NN with_IN reducing_VBG the_DT number_NN of_IN iterations_NNS ._.
+Our_PRP$ initial_JJ tests_NNS showed_VBD that_IN the_DT maximum_NN number_NN of_IN iterations_NNS used_VBN by_IN Online_NNP SMO_NNP was_VBD rarely_RB much_RB larger_JJR than_IN ##_CD on_IN content-based_JJ spam_NN detection_NN ;_: thus_RB we_PRP tested_VBD values_NNS of_IN T_NN =_JJ -LCB-_-LRB- #_# ,_, #_# ,_, #_# ,_, -RCB-_-RRB- ._.
+Other_JJ parameters_NNS were_VBD identical_JJ to_TO the_DT original_JJ Online_NNP SVM_NNP tests_NNS ._.
+The_DT results_NNS on_IN this_DT test_NN were_VBD surprisingly_RB stable_JJ -LRB-_-LRB- see_VB Figure_NNP #_# -RRB-_-RRB- ._.
+Reducing_VBG the_DT maximum_NN number_NN of_IN SMO_NN iterations_NNS per_IN update_VBP had_VBD essentially_RB no_DT impact_NN on_IN classification_NN performance_NN ,_, but_CC did_VBD result_VB in_IN a_DT moderate_JJ increase_NN in_IN speed_NN ._.
+This_DT suggests_VBZ that_IN any_DT additional_JJ iterations_NNS are_VBP spent_VBN attempting_VBG to_TO find_VB improvements_NNS to_TO a_DT hyperplane_NN that_WDT is_VBZ already_RB very_RB close_JJ to_TO optimal_JJ ._.
+These_DT results_NNS show_VBP that_IN for_IN content-based_JJ spam_NN detection_NN ,_, we_PRP can_MD reduce_VB computational_JJ cost_NN by_IN allowing_VBG only_RB a_DT single_JJ SMO_NN iteration_NN -LRB-_-LRB- that_WDT is_VBZ ,_, T_NN =_JJ #_# -RRB-_-RRB- with_IN effectively_RB equivalent_JJ performance_NN ._.
+4_LS ._.
+#_# ._.
+#_# Testing_VBG Reduced_VBN Updates_NNP For_IN our_PRP$ third_JJ ROSVM_NN experiment_NN ,_, we_PRP evaluate_VBP the_DT impact_NN of_IN adjusting_VBG the_DT parameter_NN M_NN to_TO reduce_VB the_DT total_JJ number_NN of_IN updates_NNS ._.
+As_IN noted_VBN before_IN ,_, when_WRB M_NN =_JJ #_# ,_, the_DT hyperplane_NN is_VBZ globally_RB optimal_JJ at_IN every_DT step_NN ._.
+Reducing_VBG M_NN allows_VBZ a_DT slightly_RB inconsistent_JJ hyperplane_NN to_TO persist_VB until_IN it_PRP encounters_VBZ an_DT example_NN for_IN which_WDT it_PRP is_VBZ too_RB inconsistent_JJ ._.
+We_PRP tested_VBD values_NNS of_IN M_NN from_IN #_# to_TO #_# ,_, at_IN increments_NNS of_IN #_# ._.
+#_# ._.
+-LRB-_-LRB- Note_NN that_IN we_PRP used_VBD p_NN =_JJ #####_CD to_TO decrease_VB the_DT cost_NN of_IN evaluating_VBG these_DT tests_NNS ._. -RRB-_-RRB-
+The_DT results_NNS for_IN these_DT tests_NNS are_VBP appear_VB in_IN Figure_NNP #_# ,_, and_CC show_VBP that_IN there_EX is_VBZ a_DT slight_JJ degradation_NN in_IN performance_NN with_IN reduced_VBN values_NNS of_IN M_NN ,_, and_CC that_IN this_DT degradation_NN in_IN performance_NN is_VBZ accompanied_VBN by_IN an_DT increase_NN in_IN efficiency_NN ._.
+Values_NNS of_IN 0_CD ._.
+###_NN 0_CD ._.
+##_NN 0_CD ._.
+###_NN 0_CD ._.
+##_NN 0_CD ._.
+#_# 0_CD #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# -LRB-_-LRB- 1-ROCA_NN -RRB-_-RRB- %_NN M_NN trec05p-1_NN trec06p_CD 5000_CD 10000_CD 15000_CD 20000_CD 25000_CD 30000_CD 35000_CD 40000_CD 0_CD #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# CPUSec_NNP ._.
+M_NN trec05p-1_NN trec06p_NN Figure_NN #_# :_: Reduced_VBN Updates_NNP Tests_NNS ._.
+M_NN >_JJR #_# ._.
+#_# give_VB effectively_RB equivalent_JJ performance_NN as_IN M_NN =_JJ #_# ,_, and_CC still_RB reduce_VB cost_NN ._.
+4_LS ._.
+#_# Online_NNP SVMs_NNP and_CC ROSVM_NNP We_PRP now_RB compare_VBP ROSVM_NN against_IN Online_NNP SVMs_NNP on_IN the_DT email_NN spam_NN ,_, blog_NN comment_NN spam_NN ,_, and_CC splog_NN detection_NN tasks_NNS ._.
+These_DT experiments_NNS show_VBP comparable_JJ performance_NN on_IN these_DT tasks_NNS ,_, at_IN radically_RB different_JJ costs_NNS ._.
+In_IN the_DT previous_JJ section_NN ,_, the_DT effect_NN of_IN the_DT different_JJ relaxation_NN methods_NNS was_VBD tested_VBN separately_RB ._.
+Here_RB ,_, we_PRP tested_VBD these_DT methods_NNS together_RB to_TO create_VB a_DT full_JJ implementation_NN of_IN ROSVM_NN ._.
+We_PRP chose_VBD the_DT values_NNS p_NN =_JJ #####_CD ,_, T_NN =_JJ #_# ,_, M_NN =_JJ #_# ._.
+#_# for_IN the_DT email_NN spam_NN detection_NN tasks_NNS ._.
+Note_VB that_IN these_DT parameter_NN values_NNS were_VBD selected_VBN as_IN those_DT allowing_VBG ROSVM_NN to_TO achieve_VB comparable_JJ performance_NN results_VBZ with_IN Online_NN SVMs_NNS ,_, in_IN order_NN to_TO test_VB total_JJ difference_NN in_IN computational_JJ cost_NN ._.
+The_DT splog_NN and_CC blog_NN data_NNS sets_NNS were_VBD much_RB smaller_JJR ,_, so_IN we_PRP set_VBD p_NN =_JJ ###_CD for_IN these_DT tasks_NNS to_TO allow_VB meaningful_JJ comparisons_NNS between_IN the_DT reduced_VBN size_NN and_CC full_JJ size_NN optimization_NN problems_NNS ._.
+Because_IN these_DT values_NNS were_VBD not_RB hand-tuned_JJ ,_, both_DT generalization_NN performance_NN and_CC runtime_NN results_NNS are_VBP meaningful_JJ in_IN these_DT experiments_NNS ._.
+4_LS ._.
+#_# ._.
+#_# Experimental_JJ Setup_NN We_PRP compared_VBD Online_NNP SVMs_NNP and_CC ROSVM_NNP on_IN email_NN spam_NN ,_, blog_NN comment_NN spam_NN ,_, and_CC splog_NN detection_NN ._.
+For_IN the_DT email_NN spam_NN ,_, we_PRP used_VBD the_DT two_CD large_JJ benchmark_JJ corpora_NN ,_, trec05p-1_NN and_CC trec06p_NN ,_, in_IN the_DT standard_JJ online_NN ordering_VBG ._.
+We_PRP randomly_RB ordered_VBD both_CC the_DT blog_NN comment_NN spam_NN corpus_NN and_CC the_DT splog_NN corpus_NN to_TO create_VB online_JJ learning_NN tasks_NNS ._.
+Note_VB that_IN this_DT is_VBZ a_DT different_JJ setting_NN than_IN the_DT leave-one-out_JJ cross_NN validation_NN task_NN presented_VBN on_IN these_DT corpora_NN in_IN Section_NN #_# -_: the_DT results_NNS are_VBP not_RB directly_RB comparable_JJ ._.
+However_RB ,_, this_DT experimental_JJ design_NN Table_NNP #_# :_: Email_VB Spam_NNP Benchmark_NNP Data_NNP ._.
+These_DT results_NNS compare_VBP Online_NNP SVM_NNP and_CC ROSVM_NNP on_IN email_NN spam_NN detection_NN ,_, using_VBG binary_JJ 4-gram_NN feature_NN space_NN ._.
+Score_NN reported_VBD is_VBZ -LRB-_-LRB- 1-ROCA_NN -RRB-_-RRB- %_NN ,_, where_WRB #_# is_VBZ optimal_JJ ._.
+trec05p-1_NN trec05p-1_NN trec06p_NN trec06p_NN -LRB-_-LRB- 1-ROC_NN -RRB-_-RRB- %_NN CPUs_NNS -LRB-_-LRB- 1-ROC_NN -RRB-_-RRB- %_NN CPUs_NNS OnSVM_NN #_# ._.
+####_CD ###_CD ,_, ###_CD #_# ._.
+####_CD ##_CD ,_, ###_CD ROSVM_NN #_# ._.
+####_CD ##_CD ,_, ###_CD #_# ._.
+####_CD ##_CD ,_, ###_CD Table_NNP #_# :_: Blog_NNP Comment_NN Spam_NN ._.
+These_DT results_NNS comparing_VBG Online_NNP SVM_NNP and_CC ROSVM_NNP on_IN blog_NN comment_NN spam_NN detection_NN using_VBG binary_JJ 4-gram_NN feature_NN space_NN ._.
+Acc_NNP ._.
+Prec_NNP ._.
+Recall_VB F1_NN CPUs_NNS OnSVM_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_CD ###_CD ROSVM_NNP #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_CD ##_NN does_VBZ allow_VB meaningful_JJ comparison_NN between_IN our_PRP$ two_CD online_JJ methods_NNS on_IN these_DT content-based_JJ spam_NN detection_NN tasks_NNS ._.
+We_PRP ran_VBD each_DT method_NN on_IN each_DT task_NN ,_, and_CC report_VB the_DT results_NNS in_IN Tables_NNP #_# ,_, #_# ,_, and_CC #_# ._.
+Note_VB that_IN the_DT CPU_NNP time_NN reported_VBD for_IN each_DT method_NN was_VBD generated_VBN on_IN the_DT same_JJ computing_NN system_NN ._.
+This_DT time_NN reflects_VBZ only_RB the_DT time_NN needed_VBN to_TO complete_VB online_JJ learning_NN on_IN tokenized_JJ data_NNS ._.
+We_PRP do_VBP not_RB report_VB the_DT time_NN taken_VBN to_TO tokenize_VB the_DT data_NNS into_IN binary_JJ 4-grams_NNS ,_, as_IN this_DT is_VBZ the_DT same_JJ additive_JJ constant_JJ for_IN all_DT methods_NNS on_IN each_DT task_NN ._.
+In_IN all_DT cases_NNS ,_, ROSVM_NNP was_VBD significantly_RB less_RBR expensive_JJ computationally_RB ._.
+4_LS ._.
+#_# Discussion_NNP The_DT comparison_NN results_VBZ shown_VBN in_IN Tables_NNP #_# ,_, #_# ,_, and_CC #_# are_VBP striking_JJ in_IN two_CD ways_NNS ._.
+First_RB ,_, they_PRP show_VBP that_IN the_DT performance_NN of_IN Online_NNP SVMs_NNP can_MD be_VB matched_VBN and_CC even_RB exceeded_VBN by_IN relaxed_VBN margin_NN methods_NNS ._.
+Second_RB ,_, they_PRP show_VBP a_DT dramatic_JJ disparity_NN in_IN computational_JJ cost_NN ._.
+ROSVM_NNP is_VBZ an_DT order_NN of_IN magnitude_NN more_RBR efficient_JJ than_IN the_DT normal_JJ Online_NN SVM_NN ,_, and_CC gives_VBZ comparable_JJ results_NNS ._.
+Furthermore_RB ,_, the_DT fixed_VBN lookback_NN buffer_NN ensures_VBZ that_IN the_DT cost_NN of_IN each_DT update_VBP does_VBZ not_RB depend_VB on_IN the_DT size_NN of_IN the_DT data_NN set_NN already_RB seen_VBN ,_, unlike_IN Online_NN SVMs_NNS ._.
+Note_VB the_DT blog_NN and_CC splog_NN data_NNS sets_NNS are_VBP relatively_RB small_JJ ,_, and_CC results_VBZ on_IN these_DT data_NNS sets_NNS must_MD be_VB considered_VBN preliminary_JJ ._.
+Overall_RB ,_, these_DT results_NNS show_VBP that_IN there_EX is_VBZ no_DT need_NN to_TO pay_VB the_DT high_JJ cost_NN of_IN SVMs_NNS to_TO achieve_VB this_DT level_NN of_IN performance_NN on_IN contentbased_JJ detection_NN of_IN spam_NN ._.
+ROSVMs_NNS offer_VBP a_DT far_RB cheaper_JJR alternative_NN with_IN little_JJ or_CC no_DT performance_NN loss_NN ._.
+5_CD ._.
+CONCLUSIONS_NNS In_IN the_DT past_NN ,_, academic_JJ researchers_NNS and_CC industrial_JJ practitioners_NNS have_VBP disagreed_VBN on_IN the_DT best_JJS method_NN for_IN online_JJ contentbased_JJ detection_NN of_IN spam_NN on_IN the_DT web_NN ._.
+We_PRP have_VBP presented_VBN one_CD resolution_NN to_TO this_DT debate_NN ._.
+Online_JJ SVMs_NNS do_VBP ,_, indeed_RB ,_, proTable_JJ #_# :_: Splog_NNP Data_NNP Set_VB ._.
+These_DT results_NNS compare_VBP Online_NNP SVM_NNP and_CC ROSVM_NNP on_IN splog_NN detection_NN using_VBG binary_JJ 4-gram_NN feature_NN space_NN ._.
+Acc_NNP ._.
+Prec_NNP ._.
+Recall_VB F1_NN CPUs_NNS OnSVM_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #####_CD ROSVM_NNP #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_NN #_# ._.
+###_CD ####_CD duce_NN state-of-the-art_JJ performance_NN on_IN this_DT task_NN with_IN proper_JJ adjustment_NN of_IN the_DT tradeoff_NN parameter_NN C_NN ,_, but_CC with_IN cost_NN that_WDT grows_VBZ quadratically_RB with_IN the_DT size_NN of_IN the_DT data_NN set_NN ._.
+The_DT high_JJ values_NNS of_IN C_NN required_VBN for_IN best_JJS performance_NN with_IN SVMs_NNS show_VBP that_IN the_DT margin_NN maximization_NN of_IN Online_NNP SVMs_NNP is_VBZ overkill_NN for_IN this_DT task_NN ._.
+Thus_RB ,_, we_PRP have_VBP proposed_VBN a_DT less_RBR expensive_JJ alternative_NN ,_, ROSVM_NN ,_, that_WDT relaxes_VBZ this_DT maximum_JJ margin_NN requirement_NN ,_, and_CC produces_VBZ nearly_RB equivalent_JJ results_NNS ._.
+These_DT methods_NNS are_VBP efficient_JJ enough_RB for_IN large-scale_JJ filtering_VBG of_IN contentbased_JJ spam_NN in_IN its_PRP$ many_JJ forms_NNS ._.
+It_PRP is_VBZ natural_JJ to_TO ask_VB why_WRB the_DT task_NN of_IN content-based_JJ spam_NN detection_NN gets_VBZ strong_JJ performance_NN from_IN ROSVM_NNP ._.
+After_IN all_DT ,_, not_RB all_DT data_NNS allows_VBZ the_DT relaxation_NN of_IN SVM_NN requirements_NNS ._.
+We_PRP conjecture_NN that_WDT email_VBP spam_NN ,_, blog_NN comment_NN spam_NN ,_, and_CC splogs_NNS all_DT share_VBP the_DT characteristic_JJ that_IN a_DT subset_NN of_IN features_NNS are_VBP particularly_RB indicative_JJ of_IN content_NN being_VBG either_CC spam_NN or_CC not_RB spam_NN ._.
+These_DT indicative_JJ features_NNS may_MD be_VB sparsely_RB represented_VBN in_IN the_DT data_NN set_NN ,_, because_IN of_IN spam_NN methods_NNS such_JJ as_IN word_NN obfuscation_NN ,_, in_IN which_WDT common_JJ spam_NN words_NNS are_VBP intentionally_RB misspelled_VBN in_IN an_DT attempt_NN to_TO reduce_VB the_DT effectiveness_NN of_IN word-based_JJ spam_NN detection_NN ._.
+Maximizing_VBG the_DT margin_NN may_MD cause_VB these_DT sparsely_RB represented_VBN features_NNS to_TO be_VB ignored_VBN ,_, creating_VBG an_DT overall_JJ reduction_NN in_IN performance_NN ._.
+It_PRP appears_VBZ that_IN spam_NN data_NNS is_VBZ highly_RB separable_JJ ,_, allowing_VBG ROSVM_NNP to_TO be_VB successful_JJ with_IN high_JJ values_NNS of_IN C_NN and_CC little_JJ effort_NN given_VBN to_TO maximizing_VBG the_DT margin_NN ._.
+Future_JJ work_NN will_MD determine_VB how_WRB applicable_JJ relaxed_VBN SVMs_NNS are_VBP to_TO the_DT general_JJ problem_NN of_IN text_NN classification_NN ._.
+Finally_RB ,_, we_PRP note_VBP that_IN the_DT success_NN of_IN relaxed_VBN SVM_NNP methods_NNS for_IN content-based_JJ spam_NN detection_NN is_VBZ a_DT result_NN that_IN depends_VBZ on_IN the_DT nature_NN of_IN spam_NN data_NNS ,_, which_WDT is_VBZ potentially_RB subject_JJ to_TO change_VB ._.
+Although_IN it_PRP is_VBZ currently_RB true_JJ that_IN ham_NN and_CC spam_NN are_VBP linearly_RB separable_JJ given_VBN an_DT appropriate_JJ feature_NN space_NN ,_, this_DT assumption_NN may_MD be_VB subject_JJ to_TO attack_NN ._.
+While_IN our_PRP$ current_JJ methods_NNS appear_VBP robust_JJ against_IN primitive_JJ attacks_NNS along_IN these_DT lines_NNS ,_, such_JJ as_IN the_DT good_JJ word_NN attack_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, we_PRP must_MD explore_VB the_DT feasibility_NN of_IN more_RBR sophisticated_JJ attacks_NNS ._.
+6_CD ._.
+REFERENCES_NNS -LSB-_-LRB- #_# -RSB-_-RRB- A_DT ._.
+Bratko_NNP and_CC B_NNP ._.
+Filipic_NNP ._.
+Spam_NNP filtering_VBG using_VBG compression_NN models_NNS ._.
+Technical_NNP Report_NNP IJS-DP-9227_NNP ,_, Department_NNP of_IN Intelligent_NNP Systems_NNPS ,_, Jozef_NNP Stefan_NNP Institute_NNP ,_, L_NNP jubljana_NN ,_, Slovenia_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- G_NN ._.
+Cauwenberghs_NNS and_CC T_NN ._.
+Poggio_NNP ._.
+Incremental_JJ and_CC decremental_JJ support_NN vector_NN machine_NN learning_NN ._.
+In_IN NIPS_NNP ,_, pages_NNS 409-415_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- G_NN ._.
+V_NN ._.
+Cormack_NNP ._.
+TREC_NN ####_CD spam_NN track_NN overview_NN ._.
+In_IN To_TO appear_VB in_IN :_: The_DT Fifteenth_NNP Text_VB REtrieval_NNP Conference_NNP -LRB-_-LRB- TREC_NNP ####_CD -RRB-_-RRB- Proceedings_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- G_NN ._.
+V_NN ._.
+Cormack_NNP and_CC A_NNP ._.
+Bratko_NNP ._.
+Batch_NN and_CC on-line_JJ spam_NN filter_NN comparison_NN ._.
+In_IN Proceedings_NNP of_IN the_DT Third_NNP Conference_NNP on_IN Email_VB and_CC Anti-Spam_NNP -LRB-_-LRB- CEAS_NNP -RRB-_-RRB- ,_, ####_NN ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- G_NN ._.
+V_NN ._.
+Cormack_NNP and_CC T_NN ._.
+R_NN ._.
+Lynam_NNP ._.
+TREC_NN ####_CD spam_NN track_NN overview_NN ._.
+In_IN The_DT Fourteenth_JJ Text_VB REtrieval_NNP Conference_NNP -LRB-_-LRB- TREC_NNP ####_CD -RRB-_-RRB- Proceedings_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- G_NN ._.
+V_NN ._.
+Cormack_NNP and_CC T_NN ._.
+R_NN ._.
+Lynam_NNP ._.
+On-line_NN supervised_VBD spam_NN filter_NN evaluation_NN ._.
+Technical_NNP report_NN ,_, David_NNP R_NNP ._.
+Cheriton_NNP School_NNP of_IN Computer_NNP Science_NNP ,_, University_NNP of_IN Waterloo_NNP ,_, Canada_NNP ,_, February_NNP ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- N_NN ._.
+Cristianini_NNP and_CC J_NNP ._.
+Shawe-Taylor_NNP ._.
+An_DT introduction_NN to_TO support_VB vector_NN machines_NNS ._.
+Cambridge_NNP University_NNP Press_NNP ,_, 2000_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- D_NN ._.
+DeCoste_NNP and_CC K_NNP ._.
+Wagstaff_NNP ._.
+Alpha_NN seeding_NN for_IN support_NN vector_NN machines_NNS ._.
+In_IN KDD_NNP ''_'' ##_CD :_: Proceedings_NNP of_IN the_DT sixth_JJ ACM_NN SIGKDD_JJ international_JJ conference_NN on_IN Knowledge_NN discovery_NN and_CC data_NNS mining_NN ,_, pages_NNS 345-349_CD ,_, 2000_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- H_NN ._.
+Drucker_NNP ,_, V_NNP ._.
+Vapnik_NNP ,_, and_CC D_NN ._.
+Wu_NNP ._.
+Support_NN vector_NN machines_NNS for_IN spam_NN categorization_NN ._.
+IEEE_NNP Transactions_NNS on_IN Neural_JJ Networks_NNP ,_, ##_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 1048-1054_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+Goodman_NNP and_CC W_NNP ._.
+Yin_NNP ._.
+Online_JJ discriminative_JJ spam_NN filter_NN training_NN ._.
+In_IN Proceedings_NNP of_IN the_DT Third_NNP Conference_NNP on_IN Email_VB and_CC Anti-Spam_NNP -LRB-_-LRB- CEAS_NNP -RRB-_-RRB- ,_, ####_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- P_NN ._.
+Graham_NNP ._.
+A_DT plan_NN for_IN spam_NN ._.
+####_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- P_NN ._.
+Graham_NNP ._.
+Better_RBR bayesian_JJ filtering_VBG ._.
+####_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Z_NN ._.
+Gyongi_NNP and_CC H_NNP ._.
+Garcia-Molina_NNP ._.
+Spam_NNP :_: It_PRP ''_'' s_VBZ not_RB just_RB for_IN inboxes_NNS anymore_RB ._.
+Computer_NN ,_, ##_NN -LRB-_-LRB- ##_NN -RRB-_-RRB- :_: 28-34_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- T_NN ._.
+Joachims_NNP ._.
+Text_VB categorization_NN with_IN suport_NN vector_NN machines_NNS :_: Learning_NNP with_IN many_JJ relevant_JJ features_NNS ._.
+In_IN ECML_NN ''_'' ##_NN :_: Proceedings_NNP of_IN the_DT 10th_JJ European_JJ Conference_NN on_IN Machine_NN Learning_NNP ,_, pages_NNS 137-142_CD ,_, 1998_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- T_NN ._.
+Joachims_NNP ._.
+Training_VBG linear_JJ svms_NNS in_IN linear_JJ time_NN ._.
+In_IN KDD_NNP ''_'' ##_CD :_: Proceedings_NNP of_IN the_DT 12th_JJ ACM_NN SIGKDD_JJ international_JJ conference_NN on_IN Knowledge_NN discovery_NN and_CC data_NNS mining_NN ,_, pages_NNS 217-226_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+Kivinen_NNP ,_, A_NNP ._.
+Smola_NNP ,_, and_CC R_NN ._.
+Williamson_NNP ._.
+Online_JJ learning_NN with_IN kernels_NNS ._.
+In_IN Advances_NNS in_IN Neural_NNP Information_NNP Processing_NNP Systems_NNPS ##_NN ,_, pages_NNS 785-793_CD ._.
+MIT_NNP Press_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- P_NN ._.
+Kolari_NNP ,_, T_NN ._.
+Finin_NN ,_, and_CC A_NN ._.
+Joshi_NNP ._.
+SVMs_NNS for_IN the_DT blogosphere_NN :_: Blog_NN identification_NN and_CC splog_NN detection_NN ._.
+AAAI_NNP Spring_NNP Symposium_NNP on_IN Computational_NNP Approaches_NNPS to_TO Analyzing_NNP Weblogs_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- W_NN ._.
+Krauth_NNP and_CC M_NN ._.
+Mezard_NNP ._.
+Learning_NNP algorithms_NNS with_IN optimal_JJ stability_NN in_IN neural_JJ networks_NNS ._.
+Journal_NNP of_IN Physics_NN A_NN ,_, ##_NN -LRB-_-LRB- ##_NN -RRB-_-RRB- :_: 745-752_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- T_NN ._.
+Lynam_NNP ,_, G_NNP ._.
+Cormack_NNP ,_, and_CC D_NN ._.
+Cheriton_NNP ._.
+On-line_JJ spam_NN filter_NN fusion_NN ._.
+In_IN SIGIR_NN ''_'' ##_NN :_: Proceedings_NNP of_IN the_DT 29th_JJ annual_JJ international_JJ ACM_NNP SIGIR_NNP conference_NN on_IN Research_NNP and_CC development_NN in_IN information_NN retrieval_NN ,_, pages_NNS 123-130_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- V_NN ._.
+Metsis_NNP ,_, I_PRP ._.
+Androutsopoulos_NNP ,_, and_CC G_NN ._.
+Paliouras_NNP ._.
+Spam_NNP filtering_VBG with_IN naive_JJ bayes_NNS -_: which_WDT naive_JJ bayes_NNS ?_.
+Third_JJ Conference_NN on_IN Email_VB and_CC Anti-Spam_NNP -LRB-_-LRB- CEAS_NNP -RRB-_-RRB- ,_, 2006_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- G_NN ._.
+Mishne_NNP ,_, D_NNP ._.
+Carmel_NNP ,_, and_CC R_NN ._.
+Lempel_NN ._.
+Blocking_VBG blog_NN spam_NN with_IN language_NN model_NN disagreement_NN ._.
+Proceedings_NNP of_IN the_DT 1st_CD International_NNP Workshop_NNP on_IN Adversarial_NNP Information_NNP Retrieval_NNP on_IN the_DT Web_NN -LRB-_-LRB- AIRWeb_NN -RRB-_-RRB- ,_, May_NNP 2005_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+Platt_NNP ._.
+Sequenital_JJ minimal_JJ optimization_NN :_: A_DT fast_JJ algorithm_NN for_IN training_NN support_NN vector_NN machines_NNS ._.
+In_IN B_NN ._.
+Scholkopf_NNP ,_, C_NNP ._.
+Burges_NNP ,_, and_CC A_NN ._.
+Smola_NNP ,_, editors_NNS ,_, Advances_NNS in_IN Kernel_NNP Methods_NNS -_: Support_NN Vector_NNP Learning_NNP ._.
+MIT_NNP Press_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- B_NN ._.
+Scholkopf_NN and_CC A_NN ._.
+Smola_NNP ._.
+Learning_NNP with_IN Kernels_NNPS :_: Support_NN Vector_NNP Machines_NNP ,_, Regularization_NNP ,_, Optimization_NNP ,_, and_CC Beyond_NNP ._.
+MIT_NNP Press_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- G_NN ._.
+L_NN ._.
+Wittel_NNP and_CC S_NN ._.
+F_NN ._.
+Wu_NNP ._.
+On_IN attacking_VBG statistical_JJ spam_NN filters_NNS ._.
+CEAS_NNP :_: First_NNP Conference_NNP on_IN Email_VB and_CC Anti-Spam_NNP ,_, ####_CD ._.

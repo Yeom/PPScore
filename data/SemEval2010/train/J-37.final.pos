@@ -1,0 +1,809 @@
+Finding_NNP Equilibria_NNP in_IN Large_JJ Sequential_NNP Games_NNPS of_IN Imperfect_NNP Information_NNP Andrew_NNP Gilpin_NNP Computer_NNP Science_NNP Department_NNP Carnegie_NNP Mellon_NNP University_NNP Pittsburgh_NNP ,_, PA_NN ,_, USA_NNP gilpin_NN @_IN cs_NNS ._.
+cmu_NN ._.
+edu_NN Tuomas_NNP Sandholm_NNP Computer_NNP Science_NNP Department_NNP Carnegie_NNP Mellon_NNP University_NNP Pittsburgh_NNP ,_, PA_NN ,_, USA_NNP sandholm_NN @_IN cs_NNS ._.
+cmu_NN ._.
+edu_NN ABSTRACT_NN Finding_VBG an_DT equilibrium_NN of_IN an_DT extensive_JJ form_NN game_NN of_IN imperfect_JJ information_NN is_VBZ a_DT fundamental_JJ problem_NN in_IN computational_JJ game_NN theory_NN ,_, but_CC current_JJ techniques_NNS do_VBP not_RB scale_NN to_TO large_JJ games_NNS ._.
+To_TO address_VB this_DT ,_, we_PRP introduce_VBP the_DT ordered_VBN game_NN isomorphism_NN and_CC the_DT related_JJ ordered_VBN game_NN isomorphic_JJ abstraction_NN transformation_NN ._.
+For_IN a_DT multi-player_JJ sequential_JJ game_NN of_IN imperfect_JJ information_NN with_IN observable_JJ actions_NNS and_CC an_DT ordered_VBN signal_NN space_NN ,_, we_PRP prove_VBP that_IN any_DT Nash_NNP equilibrium_NN in_IN an_DT abstracted_JJ smaller_JJR game_NN ,_, obtained_VBN by_IN one_CD or_CC more_JJR applications_NNS of_IN the_DT transformation_NN ,_, can_MD be_VB easily_RB converted_VBN into_IN a_DT Nash_NNP equilibrium_NN in_IN the_DT original_JJ game_NN ._.
+We_PRP present_VBP an_DT algorithm_NN ,_, GameShrink_NNP ,_, for_IN abstracting_VBG the_DT game_NN using_VBG our_PRP$ isomorphism_NN exhaustively_RB ._.
+Its_PRP$ complexity_NN is_VBZ O_NN -LRB-_-LRB- n2_NN -RRB-_-RRB- ,_, where_WRB n_NN is_VBZ the_DT number_NN of_IN nodes_NNS in_IN a_DT structure_NN we_PRP call_VBP the_DT signal_NN tree_NN ._.
+It_PRP is_VBZ no_DT larger_JJR than_IN the_DT game_NN tree_NN ,_, and_CC on_IN nontrivial_JJ games_NNS it_PRP is_VBZ drastically_RB smaller_JJR ,_, so_RB GameShrink_NNP has_VBZ time_NN and_CC space_NN complexity_NN sublinear_NN in_IN the_DT size_NN of_IN the_DT game_NN tree_NN ._.
+Using_VBG GameShrink_NNP ,_, we_PRP find_VBP an_DT equilibrium_NN to_TO a_DT poker_NN game_NN with_IN 3_CD ._.
+#_# billion_CD nodes-over_JJ four_CD orders_NNS of_IN magnitude_NN more_RBR than_IN in_IN the_DT largest_JJS poker_NN game_NN solved_VBD previously_RB ._.
+We_PRP discuss_VBP several_JJ electronic_JJ commerce_NN applications_NNS for_IN GameShrink_NNP ._.
+To_TO address_VB even_RB larger_JJR games_NNS ,_, we_PRP introduce_VBP approximation_NN methods_NNS that_WDT do_VBP not_RB preserve_VB equilibrium_NN ,_, but_CC nevertheless_RB yield_NN -LRB-_-LRB- ex_FW post_NN -RRB-_-RRB- provably_RB close-to-optimal_JJ strategies_NNS ._.
+Categories_NNS and_CC Subject_NNP Descriptors_NNP :_: I_PRP ._.
+#_# -LSB-_-LRB- Artificial_NNP Intelligence_NNP -RSB-_-RRB- ,_, F_NN ._.
+-LSB-_-LRB- Theory_NNP of_IN Computation_NNP -RSB-_-RRB- ,_, J_NN ._.
+#_# -LSB-_-LRB- Social_NNP and_CC Behavioral_NNP Sciences_NNPS -RSB-_-RRB- :_: Economics_NNP ._.
+General_NNP Terms_NNS :_: Algorithms_NNS ,_, Economics_NNP ,_, Theory_NNP ._.
+1_LS ._.
+INTRODUCTION_NN In_IN environments_NNS with_IN more_JJR than_IN one_CD agent_NN ,_, an_DT agent_NN ''_'' s_NNS outcome_NN is_VBZ generally_RB affected_VBN by_IN the_DT actions_NNS of_IN the_DT other_JJ agent_NN -LRB-_-LRB- s_NNS -RRB-_-RRB- ._.
+Consequently_RB ,_, the_DT optimal_JJ action_NN of_IN one_CD agent_NN can_MD depend_VB on_IN the_DT others_NNS ._.
+Game_NNP theory_NN provides_VBZ a_DT normative_JJ framework_NN for_IN analyzing_VBG such_JJ strategic_JJ situations_NNS ._.
+In_IN particular_JJ ,_, it_PRP provides_VBZ solution_NN concepts_NNS that_WDT define_VBP what_WP rational_JJ behavior_NN is_VBZ in_IN such_JJ settings_NNS ._.
+The_DT most_RBS famous_JJ and_CC important_JJ solution_NN concept_NN is_VBZ that_IN of_IN Nash_NNP equilibrium_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+It_PRP is_VBZ a_DT strategy_NN profile_NN -LRB-_-LRB- one_CD strategy_NN for_IN each_DT agent_NN -RRB-_-RRB- in_IN which_WDT no_DT agent_NN has_VBZ incentive_NN to_TO deviate_VB to_TO a_DT different_JJ strategy_NN ._.
+However_RB ,_, for_IN the_DT concept_NN to_TO be_VB operational_JJ ,_, we_PRP need_VBP algorithmic_JJ techniques_NNS for_IN finding_VBG an_DT equilibrium_NN ._.
+Games_NNPS can_MD be_VB classified_VBN as_IN either_DT games_NNS of_IN perfect_JJ information_NN or_CC imperfect_JJ information_NN ._.
+Chess_NN and_CC Go_VB are_VBP examples_NNS of_IN the_DT former_JJ ,_, and_CC ,_, until_IN recently_RB ,_, most_RBS game_NN playing_NN work_NN has_VBZ been_VBN on_IN games_NNS of_IN this_DT type_NN ._.
+To_TO compute_VB an_DT optimal_JJ strategy_NN in_IN a_DT perfect_JJ information_NN game_NN ,_, an_DT agent_NN traverses_VBZ the_DT game_NN tree_NN and_CC evaluates_VBZ individual_JJ nodes_NNS ._.
+If_IN the_DT agent_NN is_VBZ able_JJ to_TO traverse_VB the_DT entire_JJ game_NN tree_NN ,_, she_PRP simply_RB computes_VBZ an_DT optimal_JJ strategy_NN from_IN the_DT bottom-up_JJ ,_, using_VBG the_DT principle_NN of_IN backward_RB induction_NN ._.
+#_# In_IN computer_NN science_NN terms_NNS ,_, this_DT is_VBZ done_VBN using_VBG minimax_NN search_NN -LRB-_-LRB- often_RB in_IN conjunction_NN with_IN -_: pruning_NN to_TO reduce_VB the_DT search_NN tree_NN size_NN and_CC thus_RB enhance_VBP speed_NN -RRB-_-RRB- ._.
+Minimax_NNP search_NN runs_VBZ in_IN linear_JJ time_NN in_IN the_DT size_NN of_IN the_DT game_NN tree_NN ._.
+#_# The_DT differentiating_VBG feature_NN of_IN games_NNS of_IN imperfect_JJ information_NN ,_, such_JJ as_IN poker_NN ,_, is_VBZ that_IN they_PRP are_VBP not_RB fully_RB observable_JJ :_: when_WRB it_PRP is_VBZ an_DT agent_NN ''_'' s_NNS turn_VBP to_TO move_VB ,_, she_PRP does_VBZ not_RB have_VB access_NN to_TO all_DT of_IN the_DT information_NN about_IN the_DT world_NN ._.
+In_IN such_JJ games_NNS ,_, the_DT decision_NN of_IN what_WP to_TO do_VB at_IN a_DT point_NN in_IN time_NN can_MD not_RB generally_RB be_VB optimally_RB made_VBN without_IN considering_VBG decisions_NNS at_IN all_DT other_JJ points_NNS in_IN time_NN -LRB-_-LRB- including_VBG ones_NNS on_IN other_JJ paths_NNS of_IN play_NN -RRB-_-RRB- because_IN those_DT other_JJ decisions_NNS affect_VBP the_DT probabilities_NNS of_IN being_VBG at_IN different_JJ states_NNS at_IN the_DT current_JJ point_NN in_IN time_NN ._.
+Thus_RB the_DT algorithms_NNS for_IN perfect_JJ information_NN games_NNS do_VBP not_RB solve_VB games_NNS of_IN imperfect_JJ information_NN ._.
+For_IN sequential_JJ games_NNS with_IN imperfect_JJ information_NN ,_, one_CD could_MD try_VB to_TO find_VB an_DT equilibrium_NN using_VBG the_DT normal_JJ -LRB-_-LRB- matrix_NN -RRB-_-RRB- form_NN ,_, where_WRB every_DT contingency_NN plan_NN of_IN the_DT agent_NN is_VBZ a_DT pure_JJ strategy_NN for_IN the_DT agent_NN ._.
+#_# Unfortunately_RB -LRB-_-LRB- even_RB if_IN equivalent_JJ strategies_NNS 1_CD This_DT actually_RB yields_VBZ a_DT solution_NN that_IN satisfies_VBZ not_RB only_RB the_DT Nash_NNP equilibrium_NN solution_NN concept_NN ,_, but_CC a_DT stronger_JJR solution_NN concept_NN called_VBN subgame_JJ perfect_JJ Nash_NNP equilibrium_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+2_CD This_DT type_NN of_IN algorithm_NN still_RB does_VBZ not_RB scale_NN to_TO huge_JJ trees_NNS -LRB-_-LRB- such_JJ as_IN in_IN chess_NN or_CC Go_VB -RRB-_-RRB- ,_, but_CC effective_JJ game-playing_JJ agents_NNS can_MD be_VB developed_VBN even_RB then_RB by_IN evaluating_VBG intermediate_JJ nodes_NNS using_VBG a_DT heuristic_NN evaluation_NN and_CC then_RB treating_VBG those_DT nodes_NNS as_IN leaves_NNS ._.
+3_CD An_DT -_: equilibrium_NN in_IN a_DT normal_JJ form_NN game_NN with_IN any_DT 160_CD are_VBP replaced_VBN by_IN a_DT single_JJ strategy_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- -RRB-_-RRB- this_DT representation_NN is_VBZ generally_RB exponential_JJ in_IN the_DT size_NN of_IN the_DT game_NN tree_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+By_IN observing_VBG that_IN one_CD needs_VBZ to_TO consider_VB only_RB sequences_NNS of_IN moves_NNS rather_RB than_IN pure_JJ strategies_NNS -LSB-_-LRB- ##_CD ,_, ##_CD ,_, ##_CD ,_, ##_CD -RSB-_-RRB- ,_, one_CD arrives_VBZ at_IN a_DT more_RBR compact_JJ representation_NN ,_, the_DT sequence_NN form_NN ,_, which_WDT is_VBZ linear_JJ in_IN the_DT size_NN of_IN the_DT game_NN tree_NN ._.
+#_# For_IN 2-player_JJ games_NNS ,_, there_EX is_VBZ a_DT polynomial-sized_JJ -LRB-_-LRB- in_IN the_DT size_NN of_IN the_DT game_NN tree_NN -RRB-_-RRB- linear_JJ programming_NN formulation_NN -LRB-_-LRB- linear_JJ complementarity_NN in_IN the_DT non-zero-sum_JJ case_NN -RRB-_-RRB- based_VBN on_IN the_DT sequence_NN form_NN such_JJ that_IN strategies_NNS for_IN players_NNS #_# and_CC #_# correspond_VBP to_TO primal_JJ and_CC dual_JJ variables_NNS ._.
+Thus_RB ,_, the_DT equilibria_NNS of_IN reasonable-sized_JJ 2-player_JJ games_NNS can_MD be_VB computed_VBN using_VBG this_DT method_NN -LSB-_-LRB- ##_CD ,_, ##_CD ,_, ##_CD -RSB-_-RRB- ._.
+#_# However_RB ,_, this_DT approach_NN still_RB yields_VBZ enormous_JJ -LRB-_-LRB- unsolvable_JJ -RRB-_-RRB- optimization_NN problems_NNS for_IN many_JJ real-world_JJ games_NNS ,_, such_JJ as_IN poker_NN ._.
+1_LS ._.
+#_# Our_PRP$ approach_NN In_IN this_DT paper_NN ,_, we_PRP take_VBP a_DT different_JJ approach_NN to_TO tackling_VBG the_DT difficult_JJ problem_NN of_IN equilibrium_NN computation_NN ._.
+Instead_RB of_IN developing_VBG an_DT equilibrium-finding_JJ method_NN per_FW se_FW ,_, we_PRP instead_RB develop_VBP a_DT methodology_NN for_IN automatically_RB abstracting_VBG games_NNS in_IN such_JJ a_DT way_NN that_IN any_DT equilibrium_NN in_IN the_DT smaller_JJR -LRB-_-LRB- abstracted_JJ -RRB-_-RRB- game_NN corresponds_VBZ directly_RB to_TO an_DT equilibrium_NN in_IN the_DT original_JJ game_NN ._.
+Thus_RB ,_, by_IN computing_VBG an_DT equilibrium_NN in_IN the_DT smaller_JJR game_NN -LRB-_-LRB- using_VBG any_DT available_JJ equilibrium-finding_JJ algorithm_NN -RRB-_-RRB- ,_, we_PRP are_VBP able_JJ to_TO construct_VB an_DT equilibrium_NN in_IN the_DT original_JJ game_NN ._.
+The_DT motivation_NN is_VBZ that_IN an_DT equilibrium_NN for_IN the_DT smaller_JJR game_NN can_MD be_VB computed_VBN drastically_RB faster_RBR than_IN for_IN the_DT original_JJ game_NN ._.
+To_TO this_DT end_NN ,_, we_PRP introduce_VBP games_NNS with_IN ordered_VBN signals_NNS -LRB-_-LRB- Section_NN #_# -RRB-_-RRB- ,_, a_DT broad_JJ class_NN of_IN games_NNS that_WDT has_VBZ enough_RB structure_NN which_WDT we_PRP can_MD exploit_VB for_IN abstraction_NN purposes_NNS ._.
+Instead_RB of_IN operating_VBG directly_RB on_IN the_DT game_NN tree_NN -LRB-_-LRB- something_NN we_PRP found_VBD to_TO be_VB technically_RB challenging_JJ -RRB-_-RRB- ,_, we_PRP instead_RB introduce_VB the_DT use_NN of_IN information_NN filters_NNS -LRB-_-LRB- Section_NN #_# ._.
+#_# -RRB-_-RRB- ,_, which_WDT coarsen_VBP the_DT information_NN each_DT player_NN receives_VBZ ._.
+They_PRP are_VBP used_VBN in_IN our_PRP$ analysis_NN and_CC abstraction_NN algorithm_NN ._.
+By_IN operating_VBG only_RB in_IN the_DT space_NN of_IN filters_NNS ,_, we_PRP are_VBP able_JJ to_TO keep_VB the_DT strategic_JJ structure_NN of_IN the_DT game_NN intact_JJ ,_, while_IN abstracting_VBG out_RP details_NNS of_IN the_DT game_NN in_IN a_DT way_NN that_WDT is_VBZ lossless_JJ from_IN the_DT perspective_NN of_IN equilibrium_NN finding_NN ._.
+We_PRP introduce_VBP the_DT ordered_VBN game_NN isomorphism_NN to_TO describe_VB strategically_RB symmetric_JJ situations_NNS and_CC the_DT ordered_VBN game_NN isomorphic_JJ abstraction_NN transformation_NN to_TO take_VB advantange_NN of_IN such_JJ symmetries_NNS -LRB-_-LRB- Section_NN #_# -RRB-_-RRB- ._.
+As_IN our_PRP$ main_JJ equilibrium_NN result_NN we_PRP have_VBP the_DT following_NN :_: constant_JJ number_NN of_IN agents_NNS can_MD be_VB constructed_VBN in_IN quasipolynomial_JJ time_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, but_CC finding_VBG an_DT exact_JJ equilibrium_NN is_VBZ PPAD-complete_JJ even_RB in_IN a_DT 2-player_JJ game_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+The_DT most_RBS prevalent_JJ algorithm_NN for_IN finding_VBG an_DT equilibrium_NN in_IN a_DT 2-agent_JJ game_NN is_VBZ Lemke-Howson_JJ -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, but_CC it_PRP takes_VBZ exponentially_RB many_JJ steps_NNS in_IN the_DT worst_JJS case_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+For_IN a_DT survey_NN of_IN equilibrium_NN computation_NN in_IN 2-player_JJ games_NNS ,_, see_VBP -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Recently_RB ,_, equilibriumfinding_VBG algorithms_NNS that_WDT enumerate_VBP supports_NNS -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, sets_NNS of_IN pure_JJ strategies_NNS that_WDT are_VBP played_VBN with_IN positive_JJ probability_NN -RRB-_-RRB- have_VBP been_VBN shown_VBN efficient_JJ on_IN many_JJ games_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, and_CC efficient_JJ mixed_JJ integer_NN programming_NN algorithms_NNS that_WDT search_VBP in_IN the_DT space_NN of_IN supports_NNS have_VBP been_VBN developed_VBN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+For_IN more_JJR than_IN two_CD players_NNS ,_, many_JJ algorithms_NNS have_VBP been_VBN proposed_VBN ,_, but_CC they_PRP currently_RB only_RB scale_NN to_TO very_RB small_JJ games_NNS -LSB-_-LRB- ##_CD ,_, ##_CD ,_, ##_CD -RSB-_-RRB- ._.
+4_CD There_EX were_VBD also_RB early_JJ techniques_NNS that_WDT capitalized_VBD in_IN different_JJ ways_NNS on_IN the_DT fact_NN that_IN in_IN many_JJ games_NNS the_DT vast_JJ majority_NN of_IN pure_JJ strategies_NNS are_VBP not_RB played_VBN in_IN equilibrium_NN -LSB-_-LRB- ##_CD ,_, ##_CD -RSB-_-RRB- ._.
+5_CD Recently_RB this_DT approach_NN was_VBD extended_VBN to_TO handle_VB computing_NN sequential_JJ equilibria_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- as_RB well_RB -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Theorem_NNP #_# Let_VB be_VB a_DT game_NN with_IN ordered_VBN signals_NNS ,_, and_CC let_VB F_NN be_VB an_DT information_NN filter_NN for_IN ._.
+Let_VB F_NN be_VB an_DT information_NN filter_NN constructed_VBN from_IN F_NN by_IN one_CD application_NN of_IN the_DT ordered_VBN game_NN isomorphic_JJ abstraction_NN transformation_NN ,_, and_CC let_VB be_VB a_DT Nash_NNP equilibrium_NN strategy_NN profile_NN of_IN the_DT induced_VBN game_NN F_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, the_DT game_NN using_VBG the_DT filter_NN F_NN -RRB-_-RRB- ._.
+If_IN is_VBZ constructed_VBN by_IN using_VBG the_DT corresponding_JJ strategies_NNS of_IN ,_, then_RB is_VBZ a_DT Nash_NNP equilibrium_NN of_IN F_NN ._.
+The_DT proof_NN of_IN the_DT theorem_NN uses_VBZ an_DT equivalent_JJ characterization_NN of_IN Nash_NNP equilibria_NNP :_: is_VBZ a_DT Nash_NNP equilibrium_NN if_IN and_CC only_RB if_IN there_EX exist_VBP beliefs_NNS -LRB-_-LRB- players_NNS ''_'' beliefs_NNS about_IN unknown_JJ information_NN -RRB-_-RRB- at_IN all_DT points_NNS of_IN the_DT game_NN reachable_JJ by_IN such_JJ that_IN is_VBZ sequentially_RB rational_JJ -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, a_DT best_JJS response_NN -RRB-_-RRB- given_VBN ,_, where_WRB is_VBZ updated_VBN using_VBG Bayes_NNP ''_'' rule_NN ._.
+We_PRP can_MD then_RB use_VB the_DT fact_NN that_WDT is_VBZ a_DT Nash_NNP equilibrium_NN to_TO show_VB that_DT is_VBZ a_DT Nash_NNP equilibrium_NN considering_VBG only_RB local_JJ properties_NNS of_IN the_DT game_NN ._.
+We_PRP also_RB give_VBP an_DT algorithm_NN ,_, GameShrink_NNP ,_, for_IN abstracting_VBG the_DT game_NN using_VBG our_PRP$ isomorphism_NN exhaustively_RB -LRB-_-LRB- Section_NN #_# -RRB-_-RRB- ._.
+Its_PRP$ complexity_NN is_VBZ O_NN -LRB-_-LRB- n2_NN -RRB-_-RRB- ,_, where_WRB n_NN is_VBZ the_DT number_NN of_IN nodes_NNS in_IN a_DT structure_NN we_PRP call_VBP the_DT signal_NN tree_NN ._.
+It_PRP is_VBZ no_DT larger_JJR than_IN the_DT game_NN tree_NN ,_, and_CC on_IN nontrivial_JJ games_NNS it_PRP is_VBZ drastically_RB smaller_JJR ,_, so_RB GameShrink_NNP has_VBZ time_NN and_CC space_NN complexity_NN sublinear_NN in_IN the_DT size_NN of_IN the_DT game_NN tree_NN ._.
+We_PRP present_VBP several_JJ algorithmic_JJ and_CC data_NNS structure_NN related_JJ speed_NN improvements_NNS -LRB-_-LRB- Section_NN #_# ._.
+#_# -RRB-_-RRB- ,_, and_CC we_PRP demonstrate_VBP how_WRB a_DT simple_JJ modification_NN to_TO our_PRP$ algorithm_NN yields_VBZ an_DT approximation_NN algorithm_NN -LRB-_-LRB- Section_NN #_# -RRB-_-RRB- ._.
+1_LS ._.
+#_# Electronic_JJ commerce_NN applications_NNS Sequential_JJ games_NNS of_IN imperfect_JJ information_NN are_VBP ubiquitous_JJ ,_, for_IN example_NN in_IN negotiation_NN and_CC in_IN auctions_NNS ._.
+Often_RB aspects_NNS of_IN a_DT player_NN ''_'' s_NNS knowledge_NN are_VBP not_RB pertinent_JJ for_IN deciding_VBG what_WP action_NN the_DT player_NN should_MD take_VB at_IN a_DT given_VBN point_NN in_IN the_DT game_NN ._.
+On_IN the_DT trivial_JJ end_NN ,_, some_DT aspects_NNS of_IN a_DT player_NN ''_'' s_NNS knowledge_NN are_VBP never_RB pertinent_JJ -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, whether_IN it_PRP is_VBZ raining_VBG or_CC not_RB has_VBZ no_DT bearing_NN on_IN the_DT bidding_NN strategy_NN in_IN an_DT art_NN auction_NN -RRB-_-RRB- ,_, and_CC such_JJ aspects_NNS can_MD be_VB completely_RB left_VBN out_IN of_IN the_DT model_NN specification_NN ._.
+However_RB ,_, some_DT aspects_NNS can_MD be_VB pertinent_JJ in_IN certain_JJ states_NNS of_IN the_DT game_NN while_IN they_PRP are_VBP not_RB pertinent_JJ in_IN other_JJ states_NNS ,_, and_CC thus_RB can_MD not_RB be_VB left_VBN out_IN of_IN the_DT model_NN completely_RB ._.
+Furthermore_RB ,_, it_PRP may_MD be_VB highly_RB non-obvious_JJ which_WDT aspects_NNS are_VBP pertinent_JJ in_IN which_WDT states_NNS of_IN the_DT game_NN ._.
+Our_PRP$ algorithm_NN automatically_RB discovers_VBZ which_WDT aspects_NNS are_VBP irrelevant_JJ in_IN different_JJ states_NNS ,_, and_CC eliminates_VBZ those_DT aspects_NNS of_IN the_DT game_NN ,_, resulting_VBG in_IN a_DT more_RBR compact_JJ ,_, equivalent_JJ game_NN representation_NN ._.
+One_CD broad_JJ application_NN area_NN that_WDT has_VBZ this_DT property_NN is_VBZ sequential_JJ negotiation_NN -LRB-_-LRB- potentially_RB over_IN multiple_JJ issues_NNS -RRB-_-RRB- ._.
+Another_DT broad_JJ application_NN area_NN is_VBZ sequential_JJ auctions_NNS -LRB-_-LRB- potentially_RB over_IN multiple_JJ goods_NNS -RRB-_-RRB- ._.
+For_IN example_NN ,_, in_IN those_DT states_NNS of_IN a_DT 1-object_JJ auction_NN where_WRB bidder_NN A_NN can_MD infer_VB that_IN his_PRP$ valuation_NN is_VBZ greater_JJR than_IN that_DT of_IN bidder_NN B_NN ,_, bidder_NN A_NN can_MD ignore_VB all_PDT his_PRP$ other_JJ information_NN about_IN B_NN ''_'' s_NNS signals_NNS ,_, although_IN that_DT information_NN would_MD be_VB relevant_JJ for_IN inferring_VBG B_NN ''_'' s_NNS exact_JJ valuation_NN ._.
+Furthermore_RB ,_, in_IN some_DT states_NNS of_IN the_DT auction_NN ,_, a_DT bidder_NN might_MD not_RB care_VB which_WDT exact_JJ other_JJ bidders_NNS have_VBP which_WDT valuations_NNS ,_, but_CC cares_VBZ about_IN which_WDT valuations_NNS are_VBP held_VBN by_IN the_DT other_JJ bidders_NNS in_IN aggregate_NN -LRB-_-LRB- ignoring_VBG their_PRP$ identities_NNS -RRB-_-RRB- ._.
+Many_JJ open-cry_JJ sequential_JJ auction_NN and_CC negotiation_NN mechanisms_NNS fall_VBP within_IN the_DT game_NN model_NN studied_VBN in_IN this_DT paper_NN -LRB-_-LRB- specified_VBN in_IN detail_NN later_RB -RRB-_-RRB- ,_, as_IN do_VBP certain_JJ other_JJ games_NNS in_IN electronic_JJ commerce_NN ,_, such_JJ as_IN sequences_NNS of_IN take-it-or-leave-it_JJ offers_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Our_PRP$ techniques_NNS are_VBP in_IN no_DT way_NN specific_JJ to_TO an_DT application_NN ._.
+The_DT main_JJ experiment_NN that_IN we_PRP present_VBP in_IN this_DT paper_NN is_VBZ on_IN 161_CD a_DT recreational_JJ game_NN ._.
+We_PRP chose_VBD a_DT particular_JJ poker_NN game_NN as_IN the_DT benchmark_NN problem_NN because_IN it_PRP yields_VBZ an_DT extremely_RB complicated_JJ and_CC enormous_JJ game_NN tree_NN ,_, it_PRP is_VBZ a_DT game_NN of_IN imperfect_JJ information_NN ,_, it_PRP is_VBZ fully_RB specified_VBN as_IN a_DT game_NN -LRB-_-LRB- and_CC the_DT data_NNS is_VBZ available_JJ -RRB-_-RRB- ,_, and_CC it_PRP has_VBZ been_VBN posted_VBN as_IN a_DT challenge_NN problem_NN by_IN others_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- -LRB-_-LRB- to_TO our_PRP$ knowledge_NN no_DT such_JJ challenge_NN problem_NN instances_NNS have_VBP been_VBN proposed_VBN for_IN electronic_JJ commerce_NN applications_NNS that_WDT require_VBP solving_VBG sequential_JJ games_NNS -RRB-_-RRB- ._.
+1_LS ._.
+#_# Rhode_NNP Island_NNP Hold_VB ''_'' em_NN poker_NN Poker_NNP is_VBZ an_DT enormously_RB popular_JJ card_NN game_NN played_VBD around_IN the_DT world_NN ._.
+The_DT ####_CD World_NNP Series_NNP of_IN Poker_NNP had_VBD over_IN $_$ ###_CD million_CD dollars_NNS in_IN total_JJ prize_NN money_NN ,_, including_VBG $_$ ##_CD million_CD for_IN the_DT main_JJ event_NN ._.
+Increasingly_RB ,_, poker_NN players_NNS compete_VBP in_IN online_JJ casinos_NNS ,_, and_CC television_NN stations_NNS regularly_RB broadcast_VBP poker_NN tournaments_NNS ._.
+Poker_NNP has_VBZ been_VBN identified_VBN as_IN an_DT important_JJ research_NN area_NN in_IN AI_NNP due_JJ to_TO the_DT uncertainty_NN stemming_VBG from_IN opponents_NNS ''_'' cards_NNS ,_, opponents_NNS ''_'' future_JJ actions_NNS ,_, and_CC chance_NN moves_NNS ,_, among_IN other_JJ reasons_NNS -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+Almost_RB since_IN the_DT field_NN ''_'' s_NNS founding_VBG ,_, game_NN theory_NN has_VBZ been_VBN used_VBN to_TO analyze_VB different_JJ aspects_NNS of_IN poker_NN -LSB-_-LRB- ##_CD ;_: ##_CD ;_: #_# ;_: ##_CD ,_, pp_NN ._.
+186-219_CD -RSB-_-RRB- ._.
+However_RB ,_, this_DT work_NN was_VBD limited_VBN to_TO tiny_JJ games_NNS that_WDT could_MD be_VB solved_VBN by_IN hand_NN ._.
+More_RBR recently_RB ,_, AI_NNP researchers_NNS have_VBP been_VBN applying_VBG the_DT computational_JJ power_NN of_IN modern_JJ hardware_NN to_TO computing_NN game_NN theory-based_JJ strategies_NNS for_IN larger_JJR games_NNS ._.
+Koller_NNP and_CC Pfeffer_NNP determined_VBD solutions_NNS to_TO poker_NN games_NNS with_IN up_RB to_TO ###_CD ,_, ###_CD nodes_NNS using_VBG the_DT sequence_NN form_NN and_CC linear_JJ programming_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Large-scale_JJ approximations_NNS have_VBP been_VBN developed_VBN -LSB-_-LRB- #_# -RSB-_-RRB- ,_, but_CC those_DT methods_NNS do_VBP not_RB provide_VB any_DT guarantees_NNS about_IN the_DT performance_NN of_IN the_DT computed_JJ strategies_NNS ._.
+Furthermore_RB ,_, the_DT approximations_NNS were_VBD designed_VBN manually_RB by_IN a_DT human_JJ expert_NN ._.
+Our_PRP$ approach_NN yields_VBZ an_DT automated_JJ abstraction_NN mechanism_NN along_IN with_IN theoretical_JJ guarantees_NNS on_IN the_DT strategies_NNS ''_'' performance_NN ._.
+Rhode_NNP Island_NNP Hold_VB ''_'' em_NN was_VBD invented_VBN as_IN a_DT testbed_VBN for_IN computational_JJ game_NN playing_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+It_PRP was_VBD designed_VBN so_RB that_IN it_PRP was_VBD similar_JJ in_IN style_NN to_TO Texas_NNP Hold_VB ''_'' em_NN ,_, yet_RB not_RB so_RB large_JJ that_IN devising_VBG reasonably_RB intelligent_JJ strategies_NNS would_MD be_VB impossible_JJ ._.
+-LRB-_-LRB- The_DT rules_NNS of_IN Rhode_NNP Island_NNP Hold_VB ''_'' em_NN ,_, as_RB well_RB as_IN a_DT discussion_NN of_IN how_WRB Rhode_NNP Island_NNP Hold_VB ''_'' em_NN can_MD be_VB modeled_VBN as_IN a_DT game_NN with_IN ordered_VBN signals_NNS ,_, that_DT is_VBZ ,_, it_PRP fits_VBZ in_IN our_PRP$ model_NN ,_, is_VBZ available_JJ in_IN an_DT extended_VBN version_NN of_IN this_DT paper_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._. -RRB-_-RRB-
+We_PRP applied_VBD the_DT techniques_NNS developed_VBN in_IN this_DT paper_NN to_TO find_VB an_DT exact_JJ -LRB-_-LRB- minimax_NN -RRB-_-RRB- solution_NN to_TO Rhode_NNP Island_NNP Hold_VB ''_'' em_NN ,_, which_WDT has_VBZ a_DT game_NN tree_NN exceeding_VBG #_# ._.
+#_# billion_CD nodes_NNS ._.
+Applying_VBG the_DT sequence_NN form_NN to_TO Rhode_NNP Island_NNP Hold_VB ''_'' em_NN directly_RB without_IN abstraction_NN yields_VBZ a_DT linear_JJ program_NN with_IN 91_CD ,_, ###_CD ,_, ###_CD rows_NNS ,_, and_CC the_DT same_JJ number_NN of_IN columns_NNS ._.
+This_DT is_VBZ much_RB too_RB large_JJ for_IN -LRB-_-LRB- current_JJ -RRB-_-RRB- linear_JJ programming_NN algorithms_NNS to_TO handle_VB ._.
+We_PRP used_VBD our_PRP$ GameShrink_NNP algorithm_NN to_TO reduce_VB this_DT with_IN lossless_JJ abstraction_NN ,_, and_CC it_PRP yielded_VBD a_DT linear_JJ program_NN with_IN #_# ,_, ###_CD ,_, ###_CD rows_NNS and_CC columns-with_JJ ##_NN ,_, ###_CD ,_, ###_CD non-zero_JJ coefficients_NNS ._.
+We_PRP then_RB applied_VBD iterated_JJ elimination_NN of_IN dominated_VBN strategies_NNS ,_, which_WDT further_RB reduced_VBD this_DT to_TO #_# ,_, ###_CD ,_, ###_CD rows_NNS and_CC #_# ,_, ###_CD ,_, ###_CD columns_NNS ._.
+-LRB-_-LRB- Applying_VBG iterated_JJ elimination_NN of_IN dominated_VBN strategies_NNS without_IN GameShrink_NNP yielded_VBD 89_CD ,_, ###_CD ,_, ###_CD rows_NNS and_CC ##_NN ,_, ###_CD ,_, ###_CD columns_NNS ,_, which_WDT still_RB would_MD have_VB been_VBN prohibitively_RB large_JJ to_TO solve_VB ._. -RRB-_-RRB-
+GameShrink_NNP required_VBD less_JJR than_IN one_CD second_JJ to_TO perform_VB the_DT shrinking_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, to_TO compute_VB all_DT of_IN the_DT ordered_VBN game_NN isomorphic_JJ abstraction_NN transformations_NNS -RRB-_-RRB- ._.
+Using_VBG a_DT #_# ._.
+65GHz_NNP IBM_NNP eServer_NNP p5_NN ###_CD with_IN 64_CD gigabytes_NNS of_IN RAM_NNP -LRB-_-LRB- the_DT linear_JJ program_NN solver_VBZ actually_RB needed_VBN ##_NN gigabytes_NNS -RRB-_-RRB- ,_, we_PRP solved_VBD it_PRP in_IN #_# days_NNS and_CC ##_CD hours_NNS using_VBG the_DT interior-point_JJ barrier_NN method_NN of_IN CPLEX_NNP version_NN 9_CD ._.
+#_# ._.
+#_# ._.
+We_PRP recently_RB demonstrated_VBD our_PRP$ optimal_JJ Rhode_NNP Island_NNP Hold_VB ''_'' em_NN poker_NN player_NN at_IN the_DT AAAI-05_NN conference_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, and_CC it_PRP is_VBZ available_JJ for_IN play_NN on-line_JJ at_IN http_NN :_: /_: /_: www_NN ._.
+cs_NNS ._.
+cmu_NN ._.
+edu_NN /_: ~_CD gilpin_NN /_: gsi_NNS ._.
+html_NN ._.
+While_IN others_NNS have_VBP worked_VBN on_IN computer_NN programs_NNS for_IN playing_VBG Rhode_NNP Island_NNP Hold_VB ''_'' em_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, no_DT optimal_JJ strategy_NN has_VBZ been_VBN found_VBN before_IN ._.
+This_DT is_VBZ the_DT largest_JJS poker_NN game_NN solved_VBD to_TO date_NN by_IN over_IN four_CD orders_NNS of_IN magnitude_NN ._.
+2_LS ._.
+GAMES_NNS WITH_IN ORDERED_VBN SIGNALS_NNS We_PRP work_VBP with_IN a_DT slightly_RB restricted_JJ class_NN of_IN games_NNS ,_, as_IN compared_VBN to_TO the_DT full_JJ generality_NN of_IN the_DT extensive_JJ form_NN ._.
+This_DT class_NN ,_, which_WDT we_PRP call_VBP games_NNS with_IN ordered_VBN signals_NNS ,_, is_VBZ highly_RB structured_VBN ,_, but_CC still_RB general_JJ enough_JJ to_TO capture_VB a_DT wide_JJ range_NN of_IN strategic_JJ situations_NNS ._.
+A_DT game_NN with_IN ordered_VBN signals_NNS consists_VBZ of_IN a_DT finite_JJ number_NN of_IN rounds_NNS ._.
+Within_IN a_DT round_NN ,_, the_DT players_NNS play_VBP a_DT game_NN on_IN a_DT directed_VBN tree_NN -LRB-_-LRB- the_DT tree_NN can_MD be_VB different_JJ in_IN different_JJ rounds_NNS -RRB-_-RRB- ._.
+The_DT only_JJ uncertainty_NN players_NNS face_VBP stems_VBZ from_IN private_JJ signals_NNS the_DT other_JJ players_NNS have_VBP received_VBN and_CC from_IN the_DT unknown_JJ future_NN signals_NNS ._.
+In_IN other_JJ words_NNS ,_, players_NNS observe_VBP each_DT others_NNS ''_'' actions_NNS ,_, but_CC potentially_RB not_RB nature_NN ''_'' s_NNS actions_NNS ._.
+In_IN each_DT round_NN ,_, there_EX can_MD be_VB public_JJ signals_NNS -LRB-_-LRB- announced_VBN to_TO all_DT players_NNS -RRB-_-RRB- and_CC private_JJ signals_NNS -LRB-_-LRB- confidentially_RB communicated_VBN to_TO individual_JJ players_NNS -RRB-_-RRB- ._.
+For_IN simplicity_NN ,_, we_PRP assume-as_VBP is_VBZ the_DT case_NN in_IN most_JJS recreational_JJ games-that_NN within_IN each_DT round_NN ,_, the_DT number_NN of_IN private_JJ signals_NNS received_VBN is_VBZ the_DT same_JJ across_IN players_NNS -LRB-_-LRB- this_DT could_MD quite_RB likely_RB be_VB relaxed_VBN -RRB-_-RRB- ._.
+We_PRP also_RB assume_VBP that_IN the_DT legal_JJ actions_NNS that_IN a_DT player_NN has_VBZ are_VBP independent_JJ of_IN the_DT signals_NNS received_VBD ._.
+For_IN example_NN ,_, in_IN poker_NN ,_, the_DT legal_JJ betting_VBG actions_NNS are_VBP independent_JJ of_IN the_DT cards_NNS received_VBD ._.
+Finally_RB ,_, the_DT strongest_JJS assumption_NN is_VBZ that_IN there_EX is_VBZ a_DT partial_JJ ordering_VBG over_IN sets_NNS of_IN signals_NNS ,_, and_CC the_DT payoffs_NNS are_VBP increasing_VBG -LRB-_-LRB- not_RB necessarily_RB strictly_RB -RRB-_-RRB- in_IN these_DT signals_NNS ._.
+For_IN example_NN ,_, in_IN poker_NN ,_, this_DT partial_JJ ordering_VBG corresponds_VBZ exactly_RB to_TO the_DT ranking_NN of_IN card_NN hands_NNS ._.
+Definition_NN #_# ._.
+A_DT game_NN with_IN ordered_VBN signals_NNS is_VBZ a_DT tuple_NN =_JJ I_CD ,_, G_NN ,_, L_NN ,_, ,_, ,_, ,_, p_NN ,_, ,_, ,_, u_FW where_WRB :_: 1_CD ._.
+I_PRP =_JJ -LCB-_-LRB- #_# ,_, ..._: ,_, n_NN -RCB-_-RRB- is_VBZ a_DT finite_JJ set_NN of_IN players_NNS ._.
+2_LS ._.
+G_NN =_JJ G1_NN ,_, ..._: ,_, Gr_NN ,_, Gj_NN =_JJ `_`` V_NN j_NN ,_, Ej_NN ,_, is_VBZ a_DT finite_JJ collection_NN of_IN finite_JJ directed_VBN trees_NNS with_IN nodes_NNS V_NN j_NN and_CC edges_VBZ Ej_NN ._.
+Let_VB Zj_NNP denote_VB the_DT leaf_NN nodes_NNS of_IN Gj_NN and_CC let_VB Nj_NN -LRB-_-LRB- v_LS -RRB-_-RRB- denote_VB the_DT outgoing_JJ neighbors_NNS of_IN v_LS V_NN j_NN ._.
+Gj_NN is_VBZ the_DT stage_NN game_NN for_IN round_JJ j_NN ._.
+3_LS ._.
+L_NN =_JJ L1_NN ,_, ..._: ,_, Lr_NNP ,_, Lj_NNP :_: V_NN j_NN \_CD Zj_NN I_PRP indicates_VBZ which_WDT player_NN acts_VBZ -LRB-_-LRB- chooses_VBZ an_DT outgoing_JJ edge_NN -RRB-_-RRB- at_IN each_DT internal_JJ node_NN in_IN round_JJ j_NN ._.
+4_LS ._.
+is_VBZ a_DT finite_JJ set_NN of_IN signals_NNS ._.
+5_CD ._.
+=_JJ #_# ,_, ..._: ,_, r_NN and_CC =_JJ #_# ,_, ..._: ,_, r_NN are_VBP vectors_NNS of_IN nonnegative_JJ integers_NNS ,_, where_WRB j_NN and_CC j_NN denote_VBP the_DT number_NN of_IN public_JJ and_CC private_JJ signals_NNS -LRB-_-LRB- per_IN player_NN -RRB-_-RRB- ,_, respectively_RB ,_, revealed_VBD in_IN round_JJ j_NN ._.
+Each_DT signal_NN may_MD only_RB be_VB revealed_VBN once_RB ,_, and_CC in_IN each_DT round_NN every_DT player_NN receives_VBZ the_DT same_JJ number_NN of_IN private_JJ signals_NNS ,_, so_IN we_PRP require_VBP Pr_NN j_NN =_JJ #_# j_FW +_CC nj_FW |_FW |_FW ._.
+The_DT public_JJ information_NN revealed_VBD in_IN round_JJ j_NN is_VBZ j_NN j_NN and_CC the_DT public_JJ information_NN revealed_VBD in_IN all_DT rounds_NNS up_IN through_IN round_NN j_NN is_VBZ j_NN =_JJ `_`` 1_CD ,_, ..._: ,_, j_NN ._.
+The_DT private_JJ information_NN revealed_VBD to_TO player_NN i_FW I_PRP in_IN round_NN j_NN is_VBZ j_NN i_FW j_FW and_CC the_DT private_JJ information_NN revaled_VBD to_TO player_NN i_FW I_PRP in_IN all_DT rounds_NNS up_IN through_IN round_NN j_NN is_VBZ j_NN i_FW =_JJ `_`` 1_CD i_LS ,_, ..._: ,_, j_NN i_FW ._.
+We_PRP 162_CD also_RB write_VB j_NN =_JJ j_NN 1_CD ,_, ..._: ,_, j_NN n_NN to_TO represent_VB all_DT private_JJ information_NN up_IN through_IN round_NN j_NN ,_, and_CC j_NN i_FW ,_, j_FW i_FW =_JJ j_NN 1_CD ,_, ..._: ,_, j_NN i1_NN ,_, j_NN i_FW ,_, j_NN i_FW +_CC #_# ,_, ..._: ,_, j_NN n_NN is_VBZ j_NN with_IN j_NN i_FW replaced_VBN with_IN j_NN i_FW ._.
+The_DT total_JJ information_NN revealed_VBD up_IN through_IN round_NN j_NN ,_, j_NN ,_, j_NN ,_, is_VBZ said_VBN to_TO be_VB legal_JJ if_IN no_DT signals_NNS are_VBP repeated_VBN ._.
+6_CD ._.
+p_NN is_VBZ a_DT probability_NN distribution_NN over_IN ,_, with_IN p_NN -LRB-_-LRB- -RRB-_-RRB- >_JJR #_# for_IN all_DT ._.
+Signals_NNS are_VBP drawn_VBN from_IN according_VBG to_TO p_NN without_IN replacement_NN ,_, so_RB if_IN X_NN is_VBZ the_DT set_NN of_IN signals_NNS already_RB revealed_VBD ,_, then_RB p_NN -LRB-_-LRB- x_NN |_CD X_NN -RRB-_-RRB- =_JJ -LRB-_-LRB- p_NN -LRB-_-LRB- x_NN -RRB-_-RRB- P_NN y_NN /_: X_NN p_NN -LRB-_-LRB- y_NN -RRB-_-RRB- if_IN x_CC /_: X_NN 0_CD if_IN x_NN X_NN ._.
+7_CD ._.
+is_VBZ a_DT partial_JJ ordering_VBG of_IN subsets_NNS of_IN and_CC is_VBZ defined_VBN for_IN at_IN least_JJS those_DT pairs_NNS required_VBN by_IN u_NN ._.
+8_CD ._.
+:_: rS_NN j_NN =_JJ #_# Zj_NNP -LCB-_-LRB- over_IN ,_, continue_VB -RCB-_-RRB- is_VBZ a_DT mapping_NN of_IN terminal_JJ nodes_NNS within_IN a_DT stage_NN game_NN to_TO one_CD of_IN two_CD values_NNS :_: over_IN ,_, in_IN which_WDT case_NN the_DT game_NN ends_VBZ ,_, or_CC continue_VB ,_, in_IN which_WDT case_NN the_DT game_NN continues_VBZ to_TO the_DT next_JJ round_NN ._.
+Clearly_RB ,_, we_PRP require_VBP -LRB-_-LRB- z_SYM -RRB-_-RRB- =_JJ over_IN for_IN all_DT z_SYM Zr_NNP ._.
+Note_VB that_DT is_VBZ independent_JJ of_IN the_DT signals_NNS ._.
+Let_VB j_NN over_IN =_JJ -LCB-_-LRB- z_SYM Zj_FW |_FW -LRB-_-LRB- z_SYM -RRB-_-RRB- =_JJ over_IN -RCB-_-RRB- and_CC j_NN cont_NN =_JJ -LCB-_-LRB- z_SYM Zj_FW |_FW -LRB-_-LRB- z_SYM -RRB-_-RRB- =_JJ continue_VBP -RCB-_-RRB- ._.
+9_CD ._.
+u_NN =_JJ -LRB-_-LRB- u1_NN ,_, ..._: ,_, ur_NN -RRB-_-RRB- ,_, uj_NN :_: j1_NN k_NN =_JJ #_# k_NN cont_NN j_NN over_IN j_NN k_NN =_JJ #_# k_NN n_NN i_FW =_JJ #_# j_FW k_NN =_JJ #_# k_NN Rn_NN is_VBZ a_DT utility_NN function_NN such_JJ that_IN for_IN every_DT j_NN ,_, #_# j_FW r_NN ,_, for_IN every_DT i_FW I_PRP ,_, and_CC for_IN every_DT z_SYM j1_NN k_NN =_JJ #_# k_NN cont_NN j_NN over_IN ,_, at_IN least_JJS one_CD of_IN the_DT following_VBG two_CD conditions_NNS holds_VBZ :_: -LRB-_-LRB- a_LS -RRB-_-RRB- Utility_NN is_VBZ signal_NN independent_JJ :_: uj_NN i_FW -LRB-_-LRB- z_SYM ,_, -RRB-_-RRB- =_JJ uj_NN i_FW -LRB-_-LRB- z_SYM ,_, -RRB-_-RRB- for_IN all_DT legal_JJ ,_, j_NN k_NN =_JJ #_# k_NN n_NN i_FW =_JJ #_# j_FW k_NN =_JJ #_# k_NN ._.
+-LRB-_-LRB- b_NN -RRB-_-RRB- is_VBZ defined_VBN for_IN all_DT legal_JJ signals_NNS -LRB-_-LRB- j_NN ,_, j_NN i_LS -RRB-_-RRB- ,_, -LRB-_-LRB- j_NN ,_, j_NN i_LS -RRB-_-RRB- through_IN round_NN j_NN and_CC a_DT player_NN ''_'' s_NNS utility_NN is_VBZ increasing_VBG in_IN her_PRP$ private_JJ signals_NNS ,_, everything_NN else_RB equal_JJ :_: j_NN ,_, j_NN i_FW j_FW ,_, j_FW i_FW =_JJ ui_NN z_SYM ,_, j_NN ,_, j_NN i_FW ,_, j_NN i_FW ui_FW z_SYM ,_, j_NN ,_, j_NN i_FW ,_, j_FW i_FW ._.
+We_PRP will_MD use_VB the_DT term_NN game_NN with_IN ordered_VBN signals_NNS and_CC the_DT term_NN ordered_VBD game_NN interchangeably_RB ._.
+2_LS ._.
+#_# Information_NNP filters_NNS In_IN this_DT subsection_NN ,_, we_PRP define_VBP an_DT information_NN filter_NN for_IN ordered_VBN games_NNS ._.
+Instead_RB of_IN completely_RB revealing_VBG a_DT signal_NN -LRB-_-LRB- either_CC public_JJ or_CC private_JJ -RRB-_-RRB- to_TO a_DT player_NN ,_, the_DT signal_NN first_RB passes_VBZ through_IN this_DT filter_NN ,_, which_WDT outputs_VBZ a_DT coarsened_JJ signal_NN to_TO the_DT player_NN ._.
+By_IN varying_VBG the_DT filter_NN applied_VBD to_TO a_DT game_NN ,_, we_PRP are_VBP able_JJ to_TO obtain_VB a_DT wide_JJ variety_NN of_IN games_NNS while_IN keeping_VBG the_DT underlying_VBG action_NN space_NN of_IN the_DT game_NN intact_JJ ._.
+We_PRP will_MD use_VB this_DT when_WRB designing_VBG our_PRP$ abstraction_NN techniques_NNS ._.
+Formally_RB ,_, an_DT information_NN filter_NN is_VBZ as_IN follows_VBZ ._.
+Definition_NN #_# ._.
+Let_VB =_JJ I_CD ,_, G_NN ,_, L_NN ,_, ,_, ,_, ,_, p_NN ,_, ,_, ,_, u_FW be_VB an_DT ordered_VBN game_NN ._.
+Let_VB Sj_NNP j_NN k_NN =_JJ #_# k_NN j_NN k_NN =_JJ #_# k_NN be_VB the_DT set_NN of_IN legal_JJ signals_NNS -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, no_DT repeated_JJ signals_NNS -RRB-_-RRB- for_IN one_CD player_NN through_IN round_NN j_NN ._.
+An_DT information_NN filter_NN for_IN is_VBZ a_DT collection_NN F_NN =_JJ F1_NN ,_, ..._: ,_, Fr_NN where_WRB each_DT Fj_NN is_VBZ a_DT function_NN Fj_NNP :_: Sj_NN 2Sj_NN such_JJ that_IN each_DT of_IN the_DT following_JJ conditions_NNS hold_VBP :_: 1_CD ._.
+-LRB-_-LRB- Truthfulness_NN -RRB-_-RRB- -LRB-_-LRB- j_NN ,_, j_NN i_LS -RRB-_-RRB- Fj_NN -LRB-_-LRB- j_NN ,_, j_NN i_LS -RRB-_-RRB- for_IN all_DT legal_JJ -LRB-_-LRB- j_NN ,_, j_NN i_LS -RRB-_-RRB- ._.
+2_LS ._.
+-LRB-_-LRB- Independence_NN -RRB-_-RRB- The_DT range_NN of_IN Fj_NNP is_VBZ a_DT partition_NN of_IN Sj_NN ._.
+3_LS ._.
+-LRB-_-LRB- Information_NN preservation_NN -RRB-_-RRB- If_IN two_CD values_NNS of_IN a_DT signal_NN are_VBP distinguishable_JJ in_IN round_JJ k_NN ,_, then_RB they_PRP are_VBP distinguishable_JJ fpr_NN each_DT round_NN j_NN >_JJR k_NN ._.
+Let_VB mj_NN =_JJ Pj_NN l_NN =_JJ #_# l_NN +_CC l_NN ._.
+We_PRP require_VBP that_IN for_IN all_DT legal_JJ -LRB-_-LRB- #_# ,_, ..._: ,_, mk_NN ,_, ..._: ,_, mj_NN -RRB-_-RRB- and_CC -LRB-_-LRB- #_# ,_, ..._: ,_, mk_NN ,_, ..._: ,_, mj_NN -RRB-_-RRB- :_: -LRB-_-LRB- #_# ,_, ..._: ,_, mk_NN -RRB-_-RRB- /_: Fk_NN -LRB-_-LRB- #_# ,_, ..._: ,_, mk_NN -RRB-_-RRB- =_JJ -LRB-_-LRB- #_# ,_, ..._: ,_, mk_NN ,_, ..._: ,_, mj_NN -RRB-_-RRB- /_: Fj_NN -LRB-_-LRB- #_# ,_, ..._: ,_, mk_NN ,_, ..._: ,_, mj_NN -RRB-_-RRB- ._.
+A_DT game_NN with_IN ordered_VBN signals_NNS and_CC an_DT information_NN filter_NN F_NN for_IN defines_VBZ a_DT new_JJ game_NN F_NN ._.
+We_PRP refer_VBP to_TO such_JJ games_NNS as_IN filtered_JJ ordered_VBN games_NNS ._.
+We_PRP are_VBP left_VBN with_IN the_DT original_JJ game_NN if_IN we_PRP use_VBP the_DT identity_NN filter_NN Fj_NN j_NN ,_, j_NN i_FW =_JJ n_NN j_NN ,_, j_NN i_FW o_NN ._.
+We_PRP have_VBP the_DT following_JJ simple_NN -LRB-_-LRB- but_CC important_JJ -RRB-_-RRB- result_NN :_: Proposition_NNP #_# ._.
+A_DT filtered_VBN ordered_VBN game_NN is_VBZ an_DT extensive_JJ form_NN game_NN satisfying_VBG perfect_JJ recall_NN ._.
+A_DT simple_JJ proof_NN proceeds_NNS by_IN constructing_VBG an_DT extensive_JJ form_NN game_NN directly_RB from_IN the_DT ordered_VBN game_NN ,_, and_CC showing_VBG that_IN it_PRP satisfies_VBZ perfect_JJ recall_NN ._.
+In_IN determining_VBG the_DT payoffs_NNS in_IN a_DT game_NN with_IN filtered_VBN signals_NNS ,_, we_PRP take_VBP the_DT average_NN over_IN all_DT real_JJ signals_NNS in_IN the_DT filtered_VBN class_NN ,_, weighted_VBN by_IN the_DT probability_NN of_IN each_DT real_JJ signal_NN occurring_VBG ._.
+2_LS ._.
+#_# Strategies_NNS and_CC Nash_NNP equilibrium_NN We_PRP are_VBP now_RB ready_JJ to_TO define_VB behavior_NN strategies_NNS in_IN the_DT context_NN of_IN filtered_VBN ordered_VBN games_NNS ._.
+Definition_NN #_# ._.
+A_DT behavior_NN strategy_NN for_IN player_NN i_FW in_IN round_JJ j_NN of_IN =_JJ I_CD ,_, G_NN ,_, L_NN ,_, ,_, ,_, ,_, p_NN ,_, ,_, ,_, u_FW with_IN information_NN filter_NN F_NN is_VBZ a_DT probability_NN distribution_NN over_IN possible_JJ actions_NNS ,_, and_CC is_VBZ defined_VBN for_IN each_DT player_NN i_FW ,_, each_DT round_NN j_NN ,_, and_CC each_DT v_LS V_NN j_NN \_CD Zj_NN for_IN Lj_NN -LRB-_-LRB- v_LS -RRB-_-RRB- =_JJ i_FW :_: j_NN i_FW ,_, v_LS :_: j1_NN k_NN =_JJ #_# k_NN contRange_NN Fj_NN n_NN w_VBG V_NN j_NN |_NN -LRB-_-LRB- v_LS ,_, w_NN -RRB-_-RRB- Ej_NN o_NN ._.
+-LRB-_-LRB- -LRB-_-LRB- X_NN -RRB-_-RRB- is_VBZ the_DT set_NN of_IN probability_NN distributions_NNS over_IN a_DT finite_JJ set_NN X_NN ._. -RRB-_-RRB-
+A_DT behavior_NN strategy_NN for_IN player_NN i_FW in_IN round_JJ j_NN is_VBZ j_NN i_FW =_JJ -LRB-_-LRB- j_NN i_FW ,_, v1_NN ,_, ..._: ,_, j_NN i_FW ,_, vm_NN -RRB-_-RRB- for_IN each_DT vk_NN V_NN j_NN \_CD Zj_NN where_WRB Lj_NNP -LRB-_-LRB- vk_NN -RRB-_-RRB- =_JJ i_LS ._.
+A_DT behavior_NN strategy_NN for_IN player_NN i_FW in_FW is_VBZ i_FW =_JJ `_`` 1_CD i_LS ,_, ..._: ,_, r_NN i_FW ._.
+A_DT strategy_NN profile_NN is_VBZ =_JJ -LRB-_-LRB- #_# ,_, ..._: ,_, n_NN -RRB-_-RRB- ._.
+A_DT strategy_NN profile_NN with_IN i_FW replaced_VBN by_IN i_FW is_VBZ -LRB-_-LRB- i_FW ,_, i_LS -RRB-_-RRB- =_JJ -LRB-_-LRB- #_# ,_, ..._: ,_, i1_NN ,_, i_FW ,_, i_FW +_CC #_# ,_, ..._: ,_, n_NN -RRB-_-RRB- ._.
+By_IN an_DT abuse_NN of_IN notation_NN ,_, we_PRP will_MD say_VB player_NN i_FW receives_VBZ an_DT expected_VBN payoff_NN of_IN ui_NN -LRB-_-LRB- -RRB-_-RRB- when_WRB all_DT players_NNS are_VBP playing_VBG the_DT strategy_NN profile_NN ._.
+Strategy_NN i_FW is_VBZ said_VBN to_TO be_VB player_NN i_FW ''_'' s_VBZ best_JJS response_NN to_TO i_FW if_IN for_IN all_DT other_JJ strategies_NNS i_FW for_IN player_NN i_FW we_PRP have_VBP ui_NN -LRB-_-LRB- i_FW ,_, i_LS -RRB-_-RRB- ui_NN -LRB-_-LRB- i_FW ,_, i_LS -RRB-_-RRB- ._.
+is_VBZ a_DT Nash_NNP equilibrium_NN if_IN ,_, for_IN every_DT player_NN i_FW ,_, i_FW is_VBZ a_DT best_JJS response_NN for_IN i_FW ._.
+A_DT Nash_NNP equilibrium_NN always_RB exists_VBZ in_IN finite_JJ extensive_JJ form_NN games_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, and_CC one_CD exists_VBZ in_IN behavior_NN strategies_NNS for_IN games_NNS with_IN perfect_JJ recall_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Using_VBG these_DT observations_NNS ,_, we_PRP have_VBP the_DT following_VBG corollary_NN to_TO Proposition_NNP #_# :_: 163_CD Corollary_NN #_# ._.
+For_IN any_DT filtered_VBN ordered_VBN game_NN ,_, a_DT Nash_NNP equilibrium_NN exists_VBZ in_IN behavior_NN strateges_NNS ._.
+3_LS ._.
+EQUILIBRIUM-PRESERVING_NN ABSTRACTIONS_NNS In_IN this_DT section_NN ,_, we_PRP present_VBP our_PRP$ main_JJ technique_NN for_IN reducing_VBG the_DT size_NN of_IN games_NNS ._.
+We_PRP begin_VBP by_IN defining_VBG a_DT filtered_JJ signal_NN tree_NN which_WDT represents_VBZ all_DT of_IN the_DT chance_NN moves_VBZ in_IN the_DT game_NN ._.
+The_DT bold_JJ edges_NNS -LRB-_-LRB- i_FW ._.
+e_LS ._.
+the_DT first_JJ two_CD levels_NNS of_IN the_DT tree_NN -RRB-_-RRB- in_IN the_DT game_NN trees_NNS in_IN Figure_NNP #_# correspond_VBP to_TO the_DT filtered_JJ signal_NN trees_NNS in_IN each_DT game_NN ._.
+Definition_NN #_# ._.
+Associated_VBN with_IN every_DT ordered_VBN game_NN =_JJ I_CD ,_, G_NN ,_, L_NN ,_, ,_, ,_, ,_, p_NN ,_, ,_, ,_, u_NN and_CC information_NN filter_NN F_NN is_VBZ a_DT filtered_JJ signal_NN tree_NN ,_, a_DT directed_VBN tree_NN in_IN which_WDT each_DT node_NN corresponds_VBZ to_TO some_DT revealed_VBD -LRB-_-LRB- filtered_VBN -RRB-_-RRB- signals_NNS and_CC edges_NNS correspond_VBP to_TO revealing_VBG specific_JJ -LRB-_-LRB- filtered_VBN -RRB-_-RRB- signals_NNS ._.
+The_DT nodes_NNS in_IN the_DT filtered_JJ signal_NN tree_NN represent_VBP the_DT set_NN of_IN all_DT possible_JJ revealed_VBD filtered_VBN signals_NNS -LRB-_-LRB- public_NN and_CC private_JJ -RRB-_-RRB- at_IN some_DT point_NN in_IN time_NN ._.
+The_DT filtered_VBN public_NN signals_NNS revealed_VBD in_IN round_JJ j_NN correspond_VBP to_TO the_DT nodes_NNS in_IN the_DT j_NN levels_NNS beginning_VBG at_IN level_NN Pj1_NN k_NN =_JJ #_# `_`` k_NN +_CC nk_NN and_CC the_DT private_JJ signals_NNS revealed_VBD in_IN round_JJ j_NN correspond_VBP to_TO the_DT nodes_NNS in_IN the_DT nj_NN levels_NNS beginning_VBG at_IN level_NN Pj_NN k_NN =_JJ #_# k_NN +_CC Pj1_NN k_NN =_JJ #_# nk_NN ._.
+We_PRP denote_VBP children_NNS of_IN a_DT node_NN x_NN as_IN N_NN -LRB-_-LRB- x_NN -RRB-_-RRB- ._.
+In_IN addition_NN ,_, we_PRP associate_VBP weights_NNS with_IN the_DT edges_NNS corresponding_VBG to_TO the_DT probability_NN of_IN the_DT particular_JJ edge_NN being_VBG chosen_VBN given_VBN that_IN its_PRP$ parent_NN was_VBD reached_VBN ._.
+In_IN many_JJ games_NNS ,_, there_EX are_VBP certain_JJ situations_NNS in_IN the_DT game_NN that_WDT can_MD be_VB thought_VBN of_IN as_IN being_VBG strategically_RB equivalent_JJ to_TO other_JJ situations_NNS in_IN the_DT game_NN ._.
+By_IN melding_VBG these_DT situations_NNS together_RB ,_, it_PRP is_VBZ possible_JJ to_TO arrive_VB at_IN a_DT strategically_RB equivalent_JJ smaller_JJR game_NN ._.
+The_DT next_JJ two_CD definitions_NNS formalize_VBP this_DT notion_NN via_IN the_DT introduction_NN of_IN the_DT ordered_VBN game_NN isomorphic_JJ relation_NN and_CC the_DT ordered_VBN game_NN isomorphic_JJ abstraction_NN transformation_NN ._.
+Definition_NN #_# ._.
+Two_CD subtrees_NNS beginning_VBG at_IN internal_JJ nodes_NNS x_CC and_CC y_NN of_IN a_DT filtered_JJ signal_NN tree_NN are_VBP ordered_VBN game_NN isomorphic_NN if_IN x_NN and_CC y_NN have_VBP the_DT same_JJ parent_NN and_CC there_EX is_VBZ a_DT bijection_NN f_FW :_: N_NN -LRB-_-LRB- x_NN -RRB-_-RRB- N_NN -LRB-_-LRB- y_NN -RRB-_-RRB- ,_, such_JJ that_IN for_IN w_NN N_NN -LRB-_-LRB- x_NN -RRB-_-RRB- and_CC v_LS N_NN -LRB-_-LRB- y_NN -RRB-_-RRB- ,_, v_LS =_JJ f_FW -LRB-_-LRB- w_NN -RRB-_-RRB- implies_VBZ the_DT weights_NNS on_IN the_DT edges_NNS -LRB-_-LRB- x_NN ,_, w_NN -RRB-_-RRB- and_CC -LRB-_-LRB- y_NN ,_, v_LS -RRB-_-RRB- are_VBP the_DT same_JJ and_CC the_DT subtrees_NNS beginning_VBG at_IN w_NN and_CC v_LS are_VBP ordered_VBN game_NN isomorphic_NN ._.
+Two_CD leaves_NNS -LRB-_-LRB- corresponding_VBG to_TO filtered_VBN signals_NNS and_CC up_IN through_IN round_NN r_NN -RRB-_-RRB- are_VBP ordered_VBN game_NN isomorphic_NN if_IN for_IN all_DT z_SYM r1_NN j_NN =_JJ #_# j_FW cont_FW r_NN over_IN ,_, ur_NN -LRB-_-LRB- z_SYM ,_, -RRB-_-RRB- =_JJ ur_NN -LRB-_-LRB- z_SYM ,_, -RRB-_-RRB- ._.
+Definition_NN #_# ._.
+Let_VB =_JJ I_CD ,_, G_NN ,_, L_NN ,_, ,_, ,_, ,_, p_NN ,_, ,_, ,_, u_FW be_VB an_DT ordered_VBN game_NN and_CC let_VB F_NN be_VB an_DT information_NN filter_NN for_IN ._.
+Let_VB and_CC be_VB two_CD nodes_NNS where_WRB the_DT subtrees_NNS in_IN the_DT induced_VBN filtered_JJ signal_NN tree_NN corresponding_VBG to_TO the_DT nodes_NNS and_CC are_VBP ordered_VBN game_NN isomorphic_NN ,_, and_CC and_CC are_VBP at_IN either_CC levelPj1_NN k_NN =_JJ #_# `_`` k_NN +_CC nk_NN or_CC Pj_NN k_NN =_JJ #_# k_NN +_CC Pj1_NN k_NN =_JJ #_# nk_NN for_IN some_DT round_JJ j_NN ._.
+The_DT ordered_VBN game_NN isomorphic_JJ abstraction_NN transformation_NN is_VBZ given_VBN by_IN creating_VBG a_DT new_JJ information_NN filter_NN F_NN :_: F_NN j_NN j_NN ,_, j_NN i_FW =_JJ 8_CD <_JJR :_: Fj_NN j_NN ,_, j_NN i_FW if_IN j_NN ,_, j_NN i_FW /_: if_IN j_NN ,_, j_NN i_FW ._.
+Figure_NNP #_# shows_VBZ the_DT ordered_VBN game_NN isomorphic_JJ abstraction_NN transformation_NN applied_VBD twice_RB to_TO a_DT tiny_JJ poker_NN game_NN ._.
+Theorem_NNP #_# ,_, our_PRP$ main_JJ equilibrium_NN result_NN ,_, shows_VBZ how_WRB the_DT ordered_VBN game_NN isomorphic_JJ abstraction_NN transformation_NN can_MD be_VB used_VBN to_TO compute_VB equilibria_NNS faster_RBR ._.
+Theorem_NNP #_# ._.
+Let_VB =_JJ I_CD ,_, G_NN ,_, L_NN ,_, ,_, ,_, ,_, p_NN ,_, ,_, ,_, u_FW be_VB an_DT ordered_VBN game_NN and_CC F_NN be_VB an_DT information_NN filter_NN for_IN ._.
+Let_VB F_NN be_VB an_DT information_NN filter_NN constructed_VBN from_IN F_NN by_IN one_CD application_NN of_IN the_DT ordered_VBN game_NN isomorphic_JJ abstraction_NN transformation_NN ._.
+Let_VB be_VB a_DT Nash_NNP equilibrium_NN of_IN the_DT induced_VBN game_NN F_NN ._.
+If_IN we_PRP take_VBP j_NN i_FW ,_, v_LS z_SYM ,_, Fj_NN j_NN ,_, j_NN i_FW =_JJ j_NN i_FW ,_, v_LS z_SYM ,_, F_NN j_NN j_NN ,_, j_NN i_FW ,_, is_VBZ a_DT Nash_NNP equilibrium_NN of_IN F_NN ._.
+Proof_NN ._.
+For_IN an_DT extensive_JJ form_NN game_NN ,_, a_DT belief_NN system_NN assigns_VBZ a_DT probability_NN to_TO every_DT decision_NN node_NN x_CC such_JJ thatP_NN xh_NN -LRB-_-LRB- x_NN -RRB-_-RRB- =_JJ #_# for_IN every_DT information_NN set_VBN h_NN ._.
+A_DT strategy_NN profile_NN is_VBZ sequentially_RB rational_JJ at_IN h_NN given_VBN belief_NN system_NN if_IN ui_NN -LRB-_-LRB- i_FW ,_, i_FW |_FW h_NN ,_, -RRB-_-RRB- ui_NN -LRB-_-LRB- i_FW ,_, i_FW |_FW h_NN ,_, -RRB-_-RRB- for_IN all_DT other_JJ strategies_NNS i_LS ,_, where_WRB i_FW is_VBZ the_DT player_NN who_WP controls_VBZ h_NN ._.
+A_DT basic_JJ result_NN -LSB-_-LRB- ##_CD ,_, Proposition_NNP #_# ._.
+C_NN ._.
+#_# -RSB-_-RRB- characterizing_VBG Nash_NNP equilibria_NNS dictates_VBZ that_DT is_VBZ a_DT Nash_NNP equilibrium_NN if_IN and_CC only_RB if_IN there_EX is_VBZ a_DT belief_NN system_NN such_JJ that_IN for_IN every_DT information_NN set_VBN h_NN with_IN Pr_NN -LRB-_-LRB- h_NN |_NN -RRB-_-RRB- >_JJR #_# ,_, the_DT following_VBG two_CD conditions_NNS hold_VBP :_: -LRB-_-LRB- C1_NN -RRB-_-RRB- is_VBZ sequentially_RB rational_JJ at_IN h_NN given_VBN ;_: and_CC -LRB-_-LRB- C2_NN -RRB-_-RRB- -LRB-_-LRB- x_NN -RRB-_-RRB- =_JJ Pr_NN -LRB-_-LRB- x_NN |_NN -RRB-_-RRB- Pr_NN -LRB-_-LRB- h_NN |_NN -RRB-_-RRB- for_IN all_DT x_NN h_NN ._.
+Since_IN is_VBZ a_DT Nash_NNP equilibrium_NN of_IN ,_, there_EX exists_VBZ such_PDT a_DT belief_NN system_NN for_IN F_NN ._.
+Using_VBG ,_, we_PRP will_MD construct_VB a_DT belief_NN system_NN for_IN and_CC show_VB that_IN conditions_NNS C1_NN and_CC C2_NN hold_VBP ,_, thus_RB supporting_VBG as_IN a_DT Nash_NNP equilibrium_NN ._.
+Fix_VB some_DT player_NN i_FW I_PRP ._.
+Each_DT of_IN i_FW ''_'' s_VBZ information_NN sets_NNS in_IN some_DT round_JJ j_NN corresponds_VBZ to_TO filtered_VBN signals_NNS Fj_NN j_NN ,_, j_NN i_FW ,_, history_NN in_IN the_DT first_JJ j_NN #_# rounds_NNS -LRB-_-LRB- z1_NN ,_, ..._: ,_, zj1_NN -RRB-_-RRB- j1_NN k_NN =_JJ #_# k_NN cont_NN ,_, and_CC history_NN so_RB far_RB in_IN round_JJ j_NN ,_, v_LS V_NN j_NN \_CD Zj_NN ._.
+Let_VB z_SYM =_JJ -LRB-_-LRB- z1_NN ,_, ..._: ,_, zj1_NN ,_, v_LS -RRB-_-RRB- represent_VB all_DT of_IN the_DT player_NN actions_NNS leading_VBG to_TO this_DT information_NN set_NN ._.
+Thus_RB ,_, we_PRP can_MD uniquely_RB specify_VB this_DT information_NN set_VBN using_VBG the_DT information_NN Fj_NN j_NN ,_, j_NN i_FW ,_, z_SYM ._.
+Each_DT node_NN in_IN an_DT information_NN set_VBN corresponds_VBZ to_TO the_DT possible_JJ private_JJ signals_NNS the_DT other_JJ players_NNS have_VBP received_VBN ._.
+Denote_VB by_IN some_DT legal_JJ -LRB-_-LRB- Fj_NN -LRB-_-LRB- j_NN ,_, j_NN 1_CD -RRB-_-RRB- ,_, ..._: ,_, Fj_NN -LRB-_-LRB- j_NN ,_, j_NN i1_NN -RRB-_-RRB- ,_, Fj_NN -LRB-_-LRB- j_NN ,_, j_NN i_FW +_CC #_# -RRB-_-RRB- ,_, ..._: ,_, Fj_NN -LRB-_-LRB- j_NN ,_, j_NN n_NN -RRB-_-RRB- -RRB-_-RRB- ._.
+In_IN other_JJ words_NNS ,_, there_EX exists_VBZ -LRB-_-LRB- j_NN ,_, j_NN 1_CD ,_, ..._: ,_, j_NN n_NN -RRB-_-RRB- such_JJ that_IN -LRB-_-LRB- j_NN ,_, j_NN i_LS -RRB-_-RRB- Fj_NN -LRB-_-LRB- j_NN ,_, j_NN i_LS -RRB-_-RRB- ,_, -LRB-_-LRB- j_NN ,_, j_NN k_NN -RRB-_-RRB- Fj_NN -LRB-_-LRB- j_NN ,_, j_NN k_NN -RRB-_-RRB- for_IN k_NN =_JJ i_FW ,_, and_CC no_DT signals_NNS are_VBP repeated_VBN ._.
+Using_VBG such_JJ a_DT set_NN of_IN signals_NNS -LRB-_-LRB- j_NN ,_, j_NN 1_CD ,_, ..._: ,_, j_NN n_NN -RRB-_-RRB- ,_, let_VB denote_VB -LRB-_-LRB- F_NN j_NN -LRB-_-LRB- j_NN ,_, j_NN 1_CD -RRB-_-RRB- ,_, ..._: ,_, F_NN j_NN -LRB-_-LRB- j_NN ,_, j_NN i1_NN -RRB-_-RRB- ,_, F_NN j_NN -LRB-_-LRB- j_NN ,_, j_NN i_FW +_CC #_# -RRB-_-RRB- ,_, ..._: ,_, F_NN j_NN -LRB-_-LRB- j_NN ,_, j_NN n_NN -RRB-_-RRB- ._.
+-LRB-_-LRB- We_PRP will_MD abuse_VB notation_NN and_CC write_VB F_NN j_NN i_FW =_JJ ._. -RRB-_-RRB-
+We_PRP can_MD now_RB compute_VB directly_RB from_IN :_: |_VB Fj_NN j_NN ,_, j_NN i_FW ,_, z_SYM =_SYM 8_CD >_JJR >_JJR >_JJR >_JJR >_JJR >_JJR <_JJR >_JJR >_JJR >_JJR >_JJR >_JJR >_JJR :_: |_NN F_NN j_NN j_NN ,_, j_NN i_FW ,_, z_SYM if_IN Fj_NN j_NN ,_, j_NN i_FW =_JJ F_NN j_NN j_NN ,_, j_NN i_FW or_CC =_JJ p_NN |_CD F_NN j_NN j_NN ,_, j_NN i_FW ,_, z_SYM if_IN Fj_NN j_NN ,_, j_NN i_FW =_JJ F_NN j_NN j_NN ,_, j_NN i_FW and_CC =_JJ 164_CD J1_NN J2_NN J2_NN K1_NN K1_NN K2_NN K2_NN c_NN b_NN C_NN B_NN F_NN B_NN f_FW b_NN c_NN b_NN C_NN B_NN F_NN B_NN f_FW b_NN c_NN b_NN C_NN f_FW b_NN B_NN BF_NN c_NN b_NN C_NN f_FW b_NN B_NN BF_NN c_NN b_NN C_NN B_NN F_NN B_NN f_FW b_NN c_NN b_NN C_NN BF_NN B_NN f_FW b_NN c_NN b_NN C_NN f_FW b_NN B_NN BF_NN c_NN b_NN C_NN f_FW b_NN B_NN BF_NN c_NN b_NN C_NN f_FW b_NN B_NN BF_NN c_NN b_NN C_NN f_FW b_NN B_NN BF_NN c_NN b_NN C_NN B_NN F_NN B_NN f_FW b_NN c_NN b_NN C_NN B_NN F_NN B_NN f_FW b_NN 0_CD #_# 0-1_CD -1_CD -1_CD -1_CD -1_CD -1_CD -1_CD -1_CD -1_CD -1_CD -_: #_# -1_CD -1_CD -1_CD -1_CD -1_CD -1_CD -1_CD -1_CD -1_CD -_: #_# -1_CD -1_CD -10_CD #_# 0_CD 0_CD #_# 0_CD 0_CD #_# 0_CD -1_CD -2_CD -2_CD -_: #_# -2_CD -2_CD -_: #_# -2_CD -2_CD -_: #_# -2_CD -2_CD #_# 2_CD 2_CD #_# 2_CD 2_CD #_# 2_CD 2_CD #_# 2_CD 2_CD J1_NN K1_NN K2_NN J1_NN J2_NN K2_NN J1_NN J2_NN K1_NN 1_CD 1_CD 1_CD 1_CD #_# 1_CD #_# 1_CD 2_CD 2_CD 2_CD 2_CD 2_CD 2_CD 2_CD 2_CD -LCB-_-LRB- -LCB-_-LRB- J1_NN -RCB-_-RRB- ,_, -LCB-_-LRB- J2_NN -RCB-_-RRB- ,_, -LCB-_-LRB- K1_NN -RCB-_-RRB- ,_, -LCB-_-LRB- K2_NN -RCB-_-RRB- -RCB-_-RRB- -LCB-_-LRB- -LCB-_-LRB- J1_NN ,_, J2_NN -RCB-_-RRB- ,_, -LCB-_-LRB- K1_NN -RCB-_-RRB- ,_, -LCB-_-LRB- K2_NN -RCB-_-RRB- -RCB-_-RRB- c_NN b_NN C_NN BF_NN B_NN f_FW b_NN c_NN b_NN C_NN f_FW b_NN B_NN BF_NN c_NN b_NN C_NN B_NN F_NN B_NN f_FW b_NN J1_NN ,_, J2_NN K1_NN K2_NN 1_CD 1_CD c_NN b_NN C_NN f_FW b_NN B_NN BF_NN c_NN b_NN C_NN BF_NN B_NN f_FW b_NN c_NN b_NN C_NN BF_NN B_NN f_FW b_NN c_NN b_NN C_NN B_NN F_NN B_NN f_FW b_NN J1_NN ,_, J2_NN K1_NN K2_NN 1_CD 1_CD 1_CD 1_CD J1_NN ,_, J2_NN K2_NN J1_NN ,_, J2_NN K1_NN 0_CD #_# 0-1_CD -1_CD -1_CD -1_CD -_: #_# -1_CD -1_CD -2_CD -2_CD -_: #_# -2_CD -2_CD 2_CD 2_CD 2_CD 2_CD 2_CD 2_CD -1_CD -1_CD -1_CD -1_CD 0_CD #_# 0_CD 1_CD 2_CD 2_CD -1_CD -1_CD -1_CD -1_CD 0_CD #_# 0_CD 1_CD 2_CD 2_CD c_NN b_NN C_NN B_NN F_NN B_NN f_FW b_NN -1_CD -10_CD #_# 0_CD c_NN b_NN B_NN F_NN B_NN f_FW b_NN -1_CD -1_CD -1_CD -2_CD -2_CD c_NN b_NN C_NN BF_NN B_NN f_FW b_NN 0_CD #_# 0-1_CD -1_CD c_NN b_NN C_NN BF_NN B_NN f_FW b_NN J1_NN ,_, J2_NN J1_NN ,_, J2_NN J1_NN ,_, J2K1_NN ,_, K2_NN K1_NN ,_, K2_NN K1_NN ,_, K2_NN -1_CD -1_CD 1_CD 2_CD 2_CD 2_CD 2_CD 2_CD 2_CD -LCB-_-LRB- -LCB-_-LRB- J1_NN ,_, J2_NN -RCB-_-RRB- ,_, -LCB-_-LRB- K1_NN ,_, K2_NN -RCB-_-RRB- -RCB-_-RRB- 1_CD 1_CD #_# 1_CD 1_CD /_: #_# #_# /_: #_# #_# /_: #_# #_# /_: #_# 1_CD /_: #_# #_# /_: #_# #_# /_: #_# #_# /_: #_# #_# /_: #_# #_# /_: #_# #_# /_: #_# #_# /_: #_# #_# /_: #_# #_# /_: #_# #_# /_: #_# #_# /_: #_# 1_CD /_: #_# 1_CD /_: ##_CD /_: #_# 1_CD /_: #_# #_# /_: #_# #_# /_: #_# 1_CD /_: ##_CD /_: #_# #_# /_: ##_CD /_: #_# 1_CD /_: #_# #_# /_: #_# 1_CD /_: #_# #_# /_: #_# #_# /_: #_# #_# /_: #_# Figure_NNP #_# :_: GameShrink_NNP applied_VBD to_TO a_DT tiny_JJ two-person_JJ four-card_JJ -LRB-_-LRB- two_CD Jacks_NNPS and_CC two_CD Kings_NNS -RRB-_-RRB- poker_NN game_NN ._.
+Next_JJ to_TO each_DT game_NN tree_NN is_VBZ the_DT range_NN of_IN the_DT information_NN filter_NN F_NN ._.
+Dotted_VBN lines_NNS denote_VBP information_NN sets_NNS ,_, which_WDT are_VBP labeled_VBN by_IN the_DT controlling_VBG player_NN ._.
+Open_VB circles_NNS are_VBP chance_NN nodes_NNS with_IN the_DT indicated_VBN transition_NN probabilities_NNS ._.
+The_DT root_NN node_NN is_VBZ the_DT chance_NN node_NN for_IN player_NN #_# ''_'' s_VBZ card_NN ,_, and_CC the_DT next_JJ level_NN is_VBZ for_IN player_NN #_# ''_'' s_VBZ card_NN ._.
+The_DT payment_NN from_IN player_NN #_# to_TO player_NN #_# is_VBZ given_VBN below_IN each_DT leaf_NN ._.
+In_IN this_DT example_NN ,_, the_DT algorithm_NN reduces_VBZ the_DT game_NN tree_NN from_IN 53_CD nodes_NNS to_TO ##_CD nodes_NNS ._.
+where_WRB p_NN =_JJ Pr_NN -LRB-_-LRB- |_CD F_NN j_NN -LRB-_-LRB- j_NN ,_, j_NN i_LS -RRB-_-RRB- -RRB-_-RRB- Pr_NN -LRB-_-LRB- |_CD F_NN j_NN -LRB-_-LRB- j_NN ,_, j_NN i_LS -RRB-_-RRB- -RRB-_-RRB- ._.
+The_DT following_VBG three_CD claims_NNS show_VBP that_IN as_IN calculated_VBN above_IN supports_NNS as_IN a_DT Nash_NNP equilibrium_NN ._.
+Claim_NN #_# ._.
+is_VBZ a_DT valid_JJ belief_NN system_NN for_IN F_NN ._.
+Claim_NN #_# ._.
+For_IN all_DT information_NN sets_VBZ h_NN with_IN Pr_NN -LRB-_-LRB- h_NN |_NN -RRB-_-RRB- >_JJR #_# ,_, -LRB-_-LRB- x_NN -RRB-_-RRB- =_JJ Pr_NN -LRB-_-LRB- x_NN |_NN -RRB-_-RRB- Pr_NN -LRB-_-LRB- h_NN |_NN -RRB-_-RRB- for_IN all_DT x_NN h_NN ._.
+Claim_NN #_# ._.
+For_IN all_DT information_NN sets_VBZ h_NN with_IN Pr_NN -LRB-_-LRB- h_NN |_NN -RRB-_-RRB- >_JJR #_# ,_, is_VBZ sequentially_RB rational_JJ at_IN h_NN given_VBN ._.
+The_DT proofs_NNS of_IN Claims_NNS 1-3_CD are_VBP in_IN an_DT extended_VBN version_NN of_IN this_DT paper_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+By_IN Claims_NNS #_# and_CC #_# ,_, we_PRP know_VBP that_IN condition_NN C2_NN holds_VBZ ._.
+By_IN Claim_NN #_# ,_, we_PRP know_VBP that_IN condition_NN C1_NN holds_VBZ ._.
+Thus_RB ,_, is_VBZ a_DT Nash_NNP equilibrium_NN ._.
+3_LS ._.
+#_# Nontriviality_NNP of_IN generalizing_VBG beyond_IN this_DT model_NN Our_PRP$ model_NN does_VBZ not_RB capture_VB general_JJ sequential_JJ games_NNS of_IN imperfect_JJ information_NN because_IN it_PRP is_VBZ restricted_JJ in_IN two_CD ways_NNS -LRB-_-LRB- as_IN discussed_VBN above_IN -RRB-_-RRB- :_: #_# -RRB-_-RRB- there_EX is_VBZ a_DT special_JJ structure_NN connecting_VBG the_DT player_NN actions_NNS and_CC the_DT chance_NN actions_NNS -LRB-_-LRB- for_IN one_CD ,_, the_DT players_NNS are_VBP assumed_VBN to_TO observe_VB each_DT others_NNS ''_'' actions_NNS ,_, but_CC nature_NN ''_'' s_NNS actions_NNS might_MD not_RB be_VB publicly_RB observable_JJ -RRB-_-RRB- ,_, and_CC #_# -RRB-_-RRB- there_EX is_VBZ a_DT common_JJ ordering_VBG of_IN signals_NNS ._.
+In_IN this_DT subsection_NN we_PRP show_VBP that_IN removing_VBG either_DT of_IN these_DT conditions_NNS can_MD make_VB our_PRP$ technique_NN invalid_JJ ._.
+First_RB ,_, we_PRP demonstrate_VBP a_DT failure_NN when_WRB removing_VBG the_DT first_JJ assumption_NN ._.
+Consider_VB the_DT game_NN in_IN Figure_NNP #_# ._.
+#_# Nodes_VBZ a_DT and_CC b_NN are_VBP in_IN the_DT same_JJ information_NN set_NN ,_, have_VBP the_DT same_JJ parent_NN -LRB-_-LRB- chance_NN -RRB-_-RRB- node_NN ,_, have_VBP isomorphic_JJ subtrees_NNS with_IN the_DT same_JJ payoffs_NNS ,_, and_CC nodes_NNS c_NN and_CC d_NN also_RB have_VBP similar_JJ structural_JJ properties_NNS ._.
+By_IN merging_VBG the_DT subtrees_NNS beginning_VBG at_IN a_DT and_CC b_NN ,_, we_PRP get_VBP the_DT game_NN on_IN the_DT right_NN in_IN Figure_NNP #_# ._.
+In_IN this_DT game_NN ,_, player_NN 1_CD ''_'' s_VBZ only_RB Nash_NNP equilibrium_NN strategy_NN is_VBZ to_TO play_VB left_NN ._.
+But_CC in_IN the_DT original_JJ game_NN ,_, player_NN #_# knows_VBZ that_IN node_NN c_NN will_MD never_RB be_VB reached_VBN ,_, and_CC so_RB should_MD play_VB right_NN in_IN that_DT information_NN set_NN ._.
+1_CD /_: #_# 1_CD /_: #_# #_# /_: #_# 1_CD /_: #_# 2_CD #_# #_# 1_CD 1_CD 1_CD #_# #_# #_# #_# #_# #_# #_# -10_CD ##_CD 1_CD /_: #_# #_# /_: #_# #_# /_: #_# 2_CD #_# #_# 1_CD 1_CD #_# #_# #_# #_# #_# a_DT b_NN 2_CD #_# #_# 10-10_CD c_NN d_NN Figure_NN #_# :_: Example_NN illustrating_VBG difficulty_NN in_IN developing_VBG a_DT theory_NN of_IN equilibrium-preserving_JJ abstractions_NNS for_IN general_JJ extensive_JJ form_NN games_NNS ._.
+Removing_VBG the_DT second_JJ assumption_NN -LRB-_-LRB- that_IN the_DT utility_NN functions_NNS are_VBP based_VBN on_IN a_DT common_JJ ordering_VBG of_IN signals_NNS -RRB-_-RRB- can_MD also_RB cause_VB failure_NN ._.
+Consider_VB a_DT simple_JJ three-card_JJ game_NN with_IN a_DT deck_NN containing_VBG two_CD Jacks_NNP -LRB-_-LRB- J1_NN and_CC J2_NN -RRB-_-RRB- and_CC a_DT King_NNP -LRB-_-LRB- K_NNP -RRB-_-RRB- ,_, where_WRB player_NN #_# ''_'' s_VBZ utility_NN function_NN is_VBZ based_VBN on_IN the_DT ordering_VBG 6_CD We_PRP thank_VBP Albert_NNP Xin_NNP Jiang_NNP for_IN providing_VBG this_DT example_NN ._.
+165_CD K_NN J1_NN J2_NN but_CC player_NN #_# ''_'' s_VBZ utility_NN function_NN is_VBZ based_VBN on_IN the_DT ordering_VBG J2_NN K_NN J1_NN ._.
+It_PRP is_VBZ easy_JJ to_TO check_VB that_IN in_IN the_DT abstracted_JJ game_NN -LRB-_-LRB- where_WRB Player_NNP #_# treats_VBZ J1_NN and_CC J2_NN as_IN being_VBG equivalent_JJ -RRB-_-RRB- the_DT Nash_NNP equilibrium_NN does_VBZ not_RB correspond_VB to_TO a_DT Nash_NNP equilibrium_NN in_IN the_DT original_JJ game_NN ._.
+#_# 4_CD ._.
+GAMESHRINK_NNP :_: AN_DT EFFICIENT_JJ ALGORITHM_NNP FOR_IN COMPUTING_NNP ORDERED_VBD GAME_CD ISOMORPHIC_JJ ABSTRACTION_NN TRANSFORMATIONS_NNS This_DT section_NN presents_VBZ an_DT algorithm_NN ,_, GameShrink_NNP ,_, for_IN conducting_VBG the_DT abstractions_NNS ._.
+It_PRP only_RB needs_VBZ to_TO analyze_VB the_DT signal_NN tree_NN discussed_VBN above_IN ,_, rather_RB than_IN the_DT entire_JJ game_NN tree_NN ._.
+We_PRP first_RB present_VB a_DT subroutine_NN that_WDT GameShrink_NNP uses_VBZ ._.
+It_PRP is_VBZ a_DT dynamic_JJ program_NN for_IN computing_VBG the_DT ordered_VBN game_NN isomorphic_JJ relation_NN ._.
+Again_RB ,_, it_PRP operates_VBZ on_IN the_DT signal_NN tree_NN ._.
+Algorithm_NN #_# ._.
+OrderedGameIsomorphic_NNP ?_.
+-LRB-_-LRB- ,_, ,_, -RRB-_-RRB- 1_CD ._.
+If_IN and_CC have_VBP different_JJ parents_NNS ,_, then_RB return_VB false_JJ ._.
+2_LS ._.
+If_IN and_CC are_VBP both_DT leaves_NNS of_IN the_DT signal_NN tree_NN :_: -LRB-_-LRB- a_LS -RRB-_-RRB- If_IN ur_NN -LRB-_-LRB- |_CD z_SYM -RRB-_-RRB- =_JJ ur_NN -LRB-_-LRB- |_CD z_SYM -RRB-_-RRB- for_IN all_DT z_SYM r1_NN j_NN =_JJ #_# j_FW cont_FW r_NN over_IN ,_, then_RB return_VB true_JJ ._.
+-LRB-_-LRB- b_NN -RRB-_-RRB- Otherwise_RB ,_, return_NN false_JJ ._.
+3_LS ._.
+Create_VB a_DT bipartite_JJ graph_NN G_NN ,_, =_JJ -LRB-_-LRB- V1_NN ,_, V2_NN ,_, E_NN -RRB-_-RRB- with_IN V1_NN =_JJ N_NN -LRB-_-LRB- -RRB-_-RRB- and_CC V2_NN =_JJ N_NN -LRB-_-LRB- -RRB-_-RRB- ._.
+4_LS ._.
+For_IN each_DT v1_NN V1_NN and_CC v2_NN V2_NN :_: If_IN OrderedGameIsomorphic_NNP ?_.
+-LRB-_-LRB- ,_, v1_NN ,_, v2_NN -RRB-_-RRB- Create_VBP edge_NN -LRB-_-LRB- v1_NN ,_, v2_NN -RRB-_-RRB- 5_CD ._.
+Return_NN true_JJ if_IN G_NN ,_, has_VBZ a_DT perfect_JJ matching_NN ;_: otherwise_RB ,_, return_NN false_JJ ._.
+By_IN evaluating_VBG this_DT dynamic_JJ program_NN from_IN bottom_NN to_TO top_JJ ,_, Algorithm_NNP #_# determines_VBZ ,_, in_IN time_NN polynomial_JJ in_IN the_DT size_NN of_IN the_DT signal_NN tree_NN ,_, whether_IN or_CC not_RB any_DT pair_NN of_IN equal_JJ depth_NN nodes_NNS x_CC and_CC y_NN are_VBP ordered_VBN game_NN isomorphic_NN ._.
+We_PRP can_MD further_RB speed_VB up_RP this_DT computation_NN by_IN only_RB examining_VBG nodes_NNS with_IN the_DT same_JJ parent_NN ,_, since_IN we_PRP know_VBP -LRB-_-LRB- from_IN step_NN #_# -RRB-_-RRB- that_IN no_DT nodes_NNS with_IN different_JJ parents_NNS are_VBP ordered_VBN game_NN isomorphic_NN ._.
+The_DT test_NN in_IN step_NN #_# -LRB-_-LRB- a_DT -RRB-_-RRB- can_MD be_VB computed_VBN in_IN O_NN -LRB-_-LRB- #_# -RRB-_-RRB- time_NN by_IN consulting_VBG the_DT relation_NN from_IN the_DT specification_NN of_IN the_DT game_NN ._.
+Each_DT call_NN to_TO OrderedGameIsomorphic_NNP ?_.
+performs_VBZ at_IN most_JJS one_CD perfect_JJ matching_VBG computation_NN on_IN a_DT bipartite_JJ graph_NN with_IN O_NN -LRB-_-LRB- |_CD |_NN -RRB-_-RRB- nodes_NNS and_CC O_NN -LRB-_-LRB- |_CD |_CD #_# -RRB-_-RRB- edges_NNS -LRB-_-LRB- recall_NN that_WDT is_VBZ the_DT set_NN of_IN signals_NNS -RRB-_-RRB- ._.
+Using_VBG the_DT Ford-Fulkerson_NNP algorithm_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- for_IN finding_VBG a_DT maximal_JJ matching_NN ,_, this_DT takes_VBZ O_NN -LRB-_-LRB- |_CD |_CD #_# -RRB-_-RRB- time_NN ._.
+Let_VB S_NN be_VB the_DT maximum_NN number_NN of_IN signals_NNS possibly_RB revealed_VBD in_IN the_DT game_NN -LRB-_-LRB- e_LS ._.
+g_NN ._.
+,_, in_IN Rhode_NNP Island_NNP Hold_VB ''_'' em_NN ,_, S_NN =_JJ #_# because_IN each_DT of_IN the_DT two_CD players_NNS has_VBZ one_CD card_NN in_IN the_DT hand_NN plus_CC there_EX are_VBP two_CD cards_NNS on_IN the_DT table_NN -RRB-_-RRB- ._.
+The_DT number_NN of_IN nodes_NNS ,_, n_NN ,_, in_IN the_DT signal_NN tree_NN is_VBZ O_NN -LRB-_-LRB- |_CD |_CD S_NN -RRB-_-RRB- ._.
+The_DT dynamic_JJ program_NN visits_NNS each_DT node_NN in_IN the_DT signal_NN tree_NN ,_, with_IN each_DT visit_NN requiring_VBG O_NN -LRB-_-LRB- |_CD |_CD #_# -RRB-_-RRB- calls_VBZ to_TO the_DT OrderedGameIsomorphic_NNP ?_.
+routine_JJ ._.
+So_RB ,_, it_PRP takes_VBZ O_NN -LRB-_-LRB- |_CD |_CD S_NN |_CD |_CD #_# |_CD |_CD #_# -RRB-_-RRB- =_JJ O_NN -LRB-_-LRB- |_CD |_CD S_NN +_CC #_# -RRB-_-RRB- time_NN to_TO compute_VB the_DT entire_JJ ordered_VBN game_NN isomorphic_JJ relation_NN ._.
+While_IN this_DT is_VBZ exponential_JJ in_IN the_DT number_NN of_IN revealed_VBN signals_NNS ,_, we_PRP now_RB show_VBP that_IN it_PRP is_VBZ polynomial_JJ in_IN the_DT size_NN of_IN the_DT signal_NN tree-and_NN thus_RB polynomial_JJ in_IN the_DT size_NN of_IN the_DT game_NN tree_NN 7_CD We_PRP thank_VBP an_DT anonymous_JJ person_NN for_IN this_DT example_NN ._.
+because_IN the_DT signal_NN tree_NN is_VBZ smaller_JJR than_IN the_DT game_NN tree_NN ._.
+The_DT number_NN of_IN nodes_NNS in_IN the_DT signal_NN tree_NN is_VBZ n_NN =_JJ #_# +_CC SX_NNP i_FW =_JJ #_# iY_NN j_NN =_JJ #_# -LRB-_-LRB- |_CD |_CD j_NN +_CC #_# -RRB-_-RRB- -LRB-_-LRB- Each_DT term_NN in_IN the_DT summation_NN corresponds_VBZ to_TO the_DT number_NN of_IN nodes_NNS at_IN a_DT specific_JJ depth_NN of_IN the_DT tree_NN ._. -RRB-_-RRB-
+The_DT number_NN of_IN leaves_NNS is_VBZ SY_NNP j_NN =_JJ #_# -LRB-_-LRB- |_CD |_CD j_NN +_CC #_# -RRB-_-RRB- =_JJ |_CD |_CD S_NN !_.
+S_NN !_.
+which_WDT is_VBZ a_DT lower_JJR bound_VBN on_IN the_DT number_NN of_IN nodes_NNS ._.
+For_IN large_JJ |_NNS |_VBP we_PRP can_MD use_VB the_DT relation_NN `_`` n_NN k_NN nk_NN k_NN !_.
+to_TO get_VB |_CD |_CD S_NN !_.
+S_NN !_.
+|_NN |_CD S_NN S_NN !_.
+S_NN !_.
+=_JJ |_CD |_CD S_NN and_CC thus_RB the_DT number_NN of_IN leaves_NNS in_IN the_DT signal_NN tree_NN is_VBZ -LRB-_-LRB- |_CD |_CD S_NN -RRB-_-RRB- ._.
+Thus_RB ,_, O_NN -LRB-_-LRB- |_CD |_CD S_NN +_CC #_# -RRB-_-RRB- =_JJ O_NN -LRB-_-LRB- n_NN |_CD |_CD #_# -RRB-_-RRB- ,_, which_WDT proves_VBZ that_IN we_PRP can_MD indeed_RB compute_VB the_DT ordered_VBN game_NN isomorphic_JJ relation_NN in_IN time_NN polynomial_JJ in_IN the_DT number_NN of_IN nodes_NNS ,_, n_NN ,_, of_IN the_DT signal_NN tree_NN ._.
+The_DT algorithm_NN often_RB runs_VBZ in_IN sublinear_JJ time_NN -LRB-_-LRB- and_CC space_NN -RRB-_-RRB- in_IN the_DT size_NN of_IN the_DT game_NN tree_NN because_IN the_DT signal_NN tree_NN is_VBZ significantly_RB smaller_JJR than_IN the_DT game_NN tree_NN in_IN most_JJS nontrivial_JJ games_NNS ._.
+-LRB-_-LRB- Note_NN that_IN the_DT input_NN to_TO the_DT algorithm_NN is_VBZ not_RB an_DT explicit_JJ game_NN tree_NN ,_, but_CC a_DT specification_NN of_IN the_DT rules_NNS ,_, so_IN the_DT algorithm_NN does_VBZ not_RB need_VB to_TO read_VB in_IN the_DT game_NN tree_NN ._. -RRB-_-RRB-
+See_VB Figure_NNP #_# ._.
+In_IN general_JJ ,_, if_IN an_DT ordered_VBN game_NN has_VBZ r_NN rounds_NNS ,_, and_CC each_DT round_NN ''_'' s_NNS stage_NN game_NN has_VBZ at_IN least_JJS b_NN nonterminal_JJ leaves_NNS ,_, then_RB the_DT size_NN of_IN the_DT signal_NN tree_NN is_VBZ at_IN most_JJS #_# br_NN of_IN the_DT size_NN of_IN the_DT game_NN tree_NN ._.
+For_IN example_NN ,_, in_IN Rhode_NNP Island_NNP Hold_VB ''_'' em_NN ,_, the_DT game_NN tree_NN has_VBZ #_# ._.
+#_# billion_CD nodes_NNS while_IN the_DT signal_NN tree_NN only_RB has_VBZ #_# ,_, ###_CD ,_, ###_CD ._.
+Given_VBN the_DT OrderedGameIsomorphic_NNP ?_.
+routine_JJ for_IN determining_VBG ordered_VBN game_NN isomorphisms_NNS in_IN an_DT ordered_VBN game_NN ,_, we_PRP are_VBP ready_JJ to_TO present_VB the_DT main_JJ algorithm_NN ,_, GameShrink_NNP ._.
+Algorithm_NN #_# ._.
+GameShrink_NNP -LRB-_-LRB- -RRB-_-RRB- 1_CD ._.
+Initialize_VB F_NN to_TO be_VB the_DT identity_NN filter_NN for_IN ._.
+2_LS ._.
+For_IN j_NN from_IN #_# to_TO r_NN :_: For_IN each_DT pair_NN of_IN sibling_NN nodes_NNS ,_, at_IN either_CC levelPj1_NN k_NN =_JJ #_# `_`` k_NN +_CC nk_NN or_CC Pj_NN k_NN =_JJ #_# k_NN +_CC Pj1_NN k_NN =_JJ #_# nk_NN in_IN the_DT filtered_VBN -LRB-_-LRB- according_VBG to_TO F_NN -RRB-_-RRB- signal_NN tree_NN :_: If_IN OrderedGameIsomorphic_NNP ?_.
+-LRB-_-LRB- ,_, ,_, -RRB-_-RRB- ,_, then_RB Fj_NN -LRB-_-LRB- -RRB-_-RRB- Fj_NN -LRB-_-LRB- -RRB-_-RRB- Fj_NN -LRB-_-LRB- -RRB-_-RRB- Fj_NN -LRB-_-LRB- -RRB-_-RRB- ._.
+3_LS ._.
+Output_NN F_NN ._.
+Given_VBN as_IN input_NN an_DT ordered_VBN game_NN ,_, GameShrink_NNP applies_VBZ the_DT shrinking_VBG ideas_NNS presented_VBN above_IN as_IN aggressively_RB as_IN possible_JJ ._.
+Once_IN it_PRP finishes_VBZ ,_, there_EX are_VBP no_DT contractible_JJ nodes_NNS -LRB-_-LRB- since_IN it_PRP compares_VBZ every_DT pair_NN of_IN nodes_NNS at_IN each_DT level_NN of_IN the_DT signal_NN tree_NN -RRB-_-RRB- ,_, and_CC it_PRP outputs_VBZ the_DT corresponding_JJ information_NN filter_NN F_NN ._.
+The_DT correctness_NN of_IN GameShrink_NNP follows_VBZ by_IN a_DT repeated_VBN application_NN of_IN Theorem_NNP #_# ._.
+Thus_RB ,_, we_PRP have_VBP the_DT following_VBG result_NN :_: Theorem_NNP #_# ._.
+GameShrink_NNP finds_VBZ all_DT ordered_VBN game_NN isomorphisms_NNS and_CC applies_VBZ the_DT associated_JJ ordered_VBN game_NN isomorphic_JJ abstraction_NN transformations_NNS ._.
+Furthermore_RB ,_, for_IN any_DT Nash_NNP equilibrium_NN ,_, ,_, of_IN the_DT abstracted_JJ game_NN ,_, the_DT strategy_NN profile_NN constructed_VBN for_IN the_DT original_JJ game_NN from_IN is_VBZ a_DT Nash_NNP equilibrium_NN ._.
+The_DT dominating_VBG factor_NN in_IN the_DT run_NN time_NN of_IN GameShrink_NNP is_VBZ in_IN the_DT rth_NN iteration_NN of_IN the_DT main_JJ for-loop_NN ._.
+There_EX are_VBP at_IN most_JJS 166_CD `_`` |_FW |_FW S_NN S_NN !_.
+nodes_NNS at_IN this_DT level_NN ,_, where_WRB we_PRP again_RB take_VBP S_NN to_TO be_VB the_DT maximum_NN number_NN of_IN signals_NNS possibly_RB revealed_VBD in_IN the_DT game_NN ._.
+Thus_RB ,_, the_DT inner_JJ for-loop_NN executes_VBZ O_NNP `_`` |_FW |_FW S_NN S_NN !_.
+2_CD times_NNS ._.
+As_IN discussed_VBN in_IN the_DT next_JJ subsection_NN ,_, we_PRP use_VBP a_DT union-find_JJ data_NNS structure_NN to_TO represent_VB the_DT information_NN filter_NN F_NN ._.
+Each_DT iteration_NN of_IN the_DT inner_JJ for-loop_NN possibly_RB performs_VBZ a_DT union_NN operation_NN on_IN the_DT data_NNS structure_NN ;_: performing_VBG M_NN operations_NNS on_IN a_DT union-find_JJ data_NNS structure_NN containing_VBG N_NN elements_NNS takes_VBZ O_NN -LRB-_-LRB- -LRB-_-LRB- M_NN ,_, N_NN -RRB-_-RRB- -RRB-_-RRB- amortized_VBN time_NN per_IN operation_NN ,_, where_WRB -LRB-_-LRB- M_NN ,_, N_NN -RRB-_-RRB- is_VBZ the_DT inverse_JJ Ackermann_NNP ''_'' s_VBZ function_NN -LSB-_-LRB- #_# ,_, ##_NN -RSB-_-RRB- -LRB-_-LRB- which_WDT grows_VBZ extremely_RB slowly_RB -RRB-_-RRB- ._.
+Thus_RB ,_, the_DT total_JJ time_NN for_IN GameShrink_NNP is_VBZ O_NNP `_`` |_FW |_FW S_NN S_NN !_.
+2_CD `_`` |_FW |_FW S_NN S_NN !_.
+2_CD ,_, |_CD |_CD S_NN ._.
+By_IN the_DT inequality_NN `_`` n_NN k_NN nk_NN k_NN !_.
+,_, this_DT is_VBZ O_NNP `_`` -LRB-_-LRB- |_CD |_CD S_NN -RRB-_-RRB- #_# `_`` -LRB-_-LRB- |_CD |_CD S_NN -RRB-_-RRB- #_# ,_, |_CD |_CD S_NN ._.
+Again_RB ,_, although_IN this_DT is_VBZ exponential_JJ in_IN S_NN ,_, it_PRP is_VBZ O_NN -LRB-_-LRB- n2_NN -RRB-_-RRB- ,_, where_WRB n_NN is_VBZ the_DT number_NN of_IN nodes_NNS in_IN the_DT signal_NN tree_NN ._.
+Furthermore_RB ,_, GameShrink_NNP tends_VBZ to_TO actually_RB run_VB in_IN sublinear_JJ time_NN and_CC space_NN in_IN the_DT size_NN of_IN the_DT game_NN tree_NN because_IN the_DT signal_NN tree_NN is_VBZ significantly_RB smaller_JJR than_IN the_DT game_NN tree_NN in_IN most_JJS nontrivial_JJ games_NNS ,_, as_IN discussed_VBN above_IN ._.
+4_LS ._.
+#_# Efficiency_NN enhancements_NNS We_PRP designed_VBD several_JJ speed_NN enhancement_NN techniques_NNS for_IN GameShrink_NNP ,_, and_CC all_DT of_IN them_PRP are_VBP incorporated_VBN into_IN our_PRP$ implementation_NN ._.
+One_CD technique_NN is_VBZ the_DT use_NN of_IN the_DT union-find_JJ data_NNS structure_NN for_IN storing_VBG the_DT information_NN filter_NN F_NN ._.
+This_DT data_NNS structure_NN uses_VBZ time_NN almost_RB linear_JJ in_IN the_DT number_NN of_IN operations_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Initially_RB each_DT node_NN in_IN the_DT signalling_NN tree_NN is_VBZ its_PRP$ own_JJ set_NN -LRB-_-LRB- this_DT corresponds_VBZ to_TO the_DT identity_NN information_NN filter_NN -RRB-_-RRB- ;_: when_WRB two_CD nodes_NNS are_VBP contracted_VBN they_PRP are_VBP joined_VBN into_IN a_DT new_JJ set_NN ._.
+Upon_IN termination_NN ,_, the_DT filtered_VBN signals_NNS for_IN the_DT abstracted_JJ game_NN correspond_VBP exactly_RB to_TO the_DT disjoint_NN sets_VBZ in_IN the_DT data_NNS structure_NN ._.
+This_DT is_VBZ an_DT efficient_JJ method_NN of_IN recording_VBG contractions_NNS within_IN the_DT game_NN tree_NN ,_, and_CC the_DT memory_NN requirements_NNS are_VBP only_RB linear_JJ in_IN the_DT size_NN of_IN the_DT signal_NN tree_NN ._.
+Determining_VBG whether_IN two_CD nodes_NNS are_VBP ordered_VBN game_NN isomorphic_NN requires_VBZ us_PRP to_TO determine_VB if_IN a_DT bipartite_JJ graph_NN has_VBZ a_DT perfect_JJ matching_NN ._.
+We_PRP can_MD eliminate_VB some_DT of_IN these_DT computations_NNS by_IN using_VBG easy-to-check_JJ necessary_JJ conditions_NNS for_IN the_DT ordered_VBN game_NN isomorphic_JJ relation_NN to_TO hold_VB ._.
+One_CD such_JJ condition_NN is_VBZ to_TO check_VB that_IN the_DT nodes_NNS have_VBP the_DT same_JJ number_NN of_IN chances_NNS as_IN being_VBG ranked_VBD -LRB-_-LRB- according_VBG to_TO -RRB-_-RRB- higher_JJR than_IN ,_, lower_JJR than_IN ,_, and_CC the_DT same_JJ as_IN the_DT opponents_NNS ._.
+We_PRP can_MD precompute_VB these_DT frequencies_NNS for_IN every_DT game_NN tree_NN node_NN ._.
+This_DT substantially_RB speeds_NNS up_IN GameShrink_NNP ,_, and_CC we_PRP can_MD leverage_NN this_DT database_NN across_IN multiple_JJ runs_NNS of_IN the_DT algorithm_NN -LRB-_-LRB- for_IN example_NN ,_, when_WRB trying_VBG different_JJ abstraction_NN levels_NNS ;_: see_VB next_JJ section_NN -RRB-_-RRB- ._.
+The_DT indices_NNS for_IN this_DT database_NN depend_VB on_IN the_DT private_JJ and_CC public_JJ signals_NNS ,_, but_CC not_RB the_DT order_NN in_IN which_WDT they_PRP were_VBD revealed_VBN ,_, and_CC thus_RB two_CD nodes_NNS may_MD have_VB the_DT same_JJ corresponding_JJ database_NN entry_NN ._.
+This_DT makes_VBZ the_DT database_NN significantly_RB more_RBR compact_JJ ._.
+-LRB-_-LRB- For_IN example_NN in_IN Texas_NNP Hold_VB ''_'' em_NN ,_, the_DT database_NN is_VBZ reduced_VBN by_IN a_DT factor_NN `_`` ##_FW 3_CD `_`` ##_CD 1_CD `_`` ##_CD 1_CD /_: `_`` ##_FW 5_CD =_JJ ##_NN ._. -RRB-_-RRB-
+We_PRP store_VBP the_DT histograms_NNS in_IN a_DT 2-dimensional_JJ database_NN ._.
+The_DT first_JJ dimension_NN is_VBZ indexed_VBN by_IN the_DT private_JJ signals_NNS ,_, the_DT second_JJ by_IN the_DT public_JJ signals_NNS ._.
+The_DT problem_NN of_IN computing_VBG the_DT index_NN in_IN -LRB-_-LRB- either_RB -RRB-_-RRB- one_CD of_IN the_DT dimensions_NNS is_VBZ exactly_RB the_DT problem_NN of_IN computing_VBG a_DT bijection_NN between_IN all_DT subsets_NNS of_IN size_NN r_NN from_IN a_DT set_NN of_IN size_NN n_NN and_CC integers_NNS in_IN 0_CD ,_, ..._: ,_, `_`` n_NN r_NN #_# ._.
+We_PRP efficiently_RB compute_VBP this_DT using_VBG the_DT subsets_NNS ''_'' colexicographical_JJ ordering_VBG -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+Let_VB -LCB-_-LRB- c1_NN ,_, ..._: ,_, cr_NN -RCB-_-RRB- ,_, ci_NN -LCB-_-LRB- #_# ,_, ..._: ,_, n_NN #_# -RCB-_-RRB- ,_, denote_VBP the_DT r_NN signals_NNS and_CC assume_VB that_DT ci_NN <_JJR ci_CD +_CC #_# ._.
+We_PRP compute_VBP a_DT unique_JJ index_NN for_IN this_DT set_NN of_IN signals_NNS as_IN follows_VBZ :_: index_NN -LRB-_-LRB- c1_NN ,_, ..._: ,_, cr_NN -RRB-_-RRB- =_JJ Pr_NN i_FW =_JJ #_# `_`` ci_FW i_FW ._.
+5_CD ._.
+APPROXIMATION_NN METHODS_NNS Some_DT games_NNS are_VBP too_RB large_JJ to_TO compute_VB an_DT exact_JJ equilibrium_NN ,_, even_RB after_IN using_VBG the_DT presented_VBN abstraction_NN technique_NN ._.
+This_DT section_NN discusses_VBZ general_JJ techniques_NNS for_IN computing_VBG approximately_RB optimal_JJ strategy_NN profiles_NNS ._.
+For_IN a_DT two-player_JJ game_NN ,_, we_PRP can_MD always_RB evaluate_VB the_DT worst-case_JJ performance_NN of_IN a_DT strategy_NN ,_, thus_RB providing_VBG some_DT objective_JJ evaluation_NN of_IN the_DT strength_NN of_IN the_DT strategy_NN ._.
+To_TO illustrate_VB this_DT ,_, suppose_VB we_PRP know_VBP player_NN #_# ''_'' s_VBZ planned_VBN strategy_NN for_IN some_DT game_NN ._.
+We_PRP can_MD then_RB fix_VB the_DT probabilities_NNS of_IN player_NN #_# ''_'' s_VBZ actions_NNS in_IN the_DT game_NN tree_NN as_IN if_IN they_PRP were_VBD chance_NN moves_NNS ._.
+Then_RB player_NN #_# is_VBZ faced_VBN with_IN a_DT single-agent_JJ decision_NN problem_NN ,_, which_WDT can_MD be_VB solved_VBN bottomup_NN ,_, maximizing_VBG expected_VBN payoff_NN at_IN every_DT node_NN ._.
+Thus_RB ,_, we_PRP can_MD objectively_RB determine_VB the_DT expected_VBN worst-case_JJ performance_NN of_IN player_NN #_# ''_'' s_VBZ strategy_NN ._.
+This_DT will_MD be_VB most_RBS useful_JJ when_WRB we_PRP want_VBP to_TO evaluate_VB how_WRB well_RB a_DT given_VBN strategy_NN performs_VBZ when_WRB we_PRP know_VBP that_IN it_PRP is_VBZ not_RB an_DT equilibrium_NN strategy_NN ._.
+-LRB-_-LRB- A_DT variation_NN of_IN this_DT technique_NN may_MD also_RB be_VB applied_VBN in_IN n-person_NN games_NNS where_WRB only_RB one_CD player_NN ''_'' s_NNS strategies_NNS are_VBP held_VBN fixed_VBN ._. -RRB-_-RRB-
+This_DT technique_NN provides_VBZ ex_FW post_NN guarantees_NNS about_IN the_DT worst-case_JJ performance_NN of_IN a_DT strategy_NN ,_, and_CC can_MD be_VB used_VBN independently_RB of_IN the_DT method_NN that_WDT is_VBZ used_VBN to_TO compute_VB the_DT strategies_NNS ._.
+5_CD ._.
+#_# State-space_FW approximations_NNS By_IN slightly_RB modifying_VBG GameShrink_NNP ,_, we_PRP can_MD obtain_VB an_DT algorithm_NN that_WDT yields_VBZ even_RB smaller_JJR game_NN trees_NNS ,_, at_IN the_DT expense_NN of_IN losing_VBG the_DT equilibrium_NN guarantees_NNS of_IN Theorem_NNP #_# ._.
+Instead_RB of_IN requiring_VBG the_DT payoffs_NNS at_IN terminal_JJ nodes_NNS to_TO match_VB exactly_RB ,_, we_PRP can_MD instead_RB compute_VB a_DT penalty_NN that_WDT increases_VBZ as_IN the_DT difference_NN in_IN utility_NN between_IN two_CD nodes_NNS increases_NNS ._.
+There_EX are_VBP many_JJ ways_NNS in_IN which_WDT the_DT penalty_NN function_NN could_MD be_VB defined_VBN and_CC implemented_VBN ._.
+One_CD possibility_NN is_VBZ to_TO create_VB edge_NN weights_NNS in_IN the_DT bipartite_JJ graphs_NNS used_VBN in_IN Algorithm_NNP #_# ,_, and_CC then_RB instead_RB of_IN requiring_VBG perfect_JJ matchings_NNS in_IN the_DT unweighted_JJ graph_NN we_PRP would_MD instead_RB require_VB perfect_JJ matchings_NNS with_IN low_JJ cost_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, only_RB consider_VB two_CD nodes_NNS to_TO be_VB ordered_VBN game_NN isomorphic_NN if_IN the_DT corresponding_JJ bipartite_JJ graph_NN has_VBZ a_DT perfect_JJ matching_NN with_IN cost_NN below_IN some_DT threshold_NN -RRB-_-RRB- ._.
+Thus_RB ,_, with_IN this_DT threshold_NN as_IN a_DT parameter_NN ,_, we_PRP have_VBP a_DT knob_NN to_TO turn_VB that_DT in_IN one_CD extreme_NN -LRB-_-LRB- threshold_NN =_JJ #_# -RRB-_-RRB- yields_VBZ an_DT optimal_JJ abstraction_NN and_CC in_IN the_DT other_JJ extreme_JJ -LRB-_-LRB- threshold_NN =_JJ -RRB-_-RRB- yields_VBZ a_DT highly_RB abstracted_JJ game_NN -LRB-_-LRB- this_DT would_MD in_IN effect_NN restrict_VBP players_NNS to_TO ignoring_VBG all_DT signals_NNS ,_, but_CC still_RB observing_VBG actions_NNS -RRB-_-RRB- ._.
+This_DT knob_NN also_RB begets_VBZ an_DT anytime_RB algorithm_NN ._.
+One_PRP can_MD solve_VB increasingly_RB less_JJR abstracted_JJ versions_NNS of_IN the_DT game_NN ,_, and_CC evaluate_VB the_DT quality_NN of_IN the_DT solution_NN at_IN every_DT iteration_NN using_VBG the_DT ex_FW post_NN method_NN discussed_VBN above_IN ._.
+5_CD ._.
+#_# Algorithmic_JJ approximations_NNS In_IN the_DT case_NN of_IN two-player_JJ zero-sum_JJ games_NNS ,_, the_DT equilibrium_NN computation_NN can_MD be_VB modeled_VBN as_IN a_DT linear_JJ program_NN -LRB-_-LRB- LP_NN -RRB-_-RRB- ,_, which_WDT can_MD in_IN turn_NN be_VB solved_VBN using_VBG the_DT simplex_NN method_NN ._.
+This_DT approach_NN has_VBZ inherent_JJ features_NNS which_WDT we_PRP can_MD leverage_NN into_IN desirable_JJ properties_NNS in_IN the_DT context_NN of_IN solving_VBG games_NNS ._.
+In_IN the_DT LP_NN ,_, primal_JJ solutions_NNS correspond_VBP to_TO strategies_NNS of_IN player_NN #_# ,_, and_CC dual_JJ solutions_NNS correspond_VBP to_TO strategies_NNS of_IN player_NN 1_CD ._.
+There_EX are_VBP two_CD versions_NNS of_IN the_DT simplex_NN method_NN :_: the_DT primal_JJ simplex_NN and_CC the_DT dual_JJ simplex_NN ._.
+The_DT primal_JJ simplex_NN maintains_VBZ primal_JJ feasibility_NN and_CC proceeds_NNS by_IN finding_VBG better_JJR and_CC better_JJR primal_JJ solutions_NNS until_IN the_DT dual_JJ solution_NN vector_NN is_VBZ feasible_JJ ,_, 167_CD at_IN which_WDT point_NN optimality_NN has_VBZ been_VBN reached_VBN ._.
+Analogously_RB ,_, the_DT dual_JJ simplex_NN maintains_VBZ dual_JJ feasibility_NN and_CC proceeds_NNS by_IN finding_VBG increasingly_RB better_JJR dual_JJ solutions_NNS until_IN the_DT primal_JJ solution_NN vector_NN is_VBZ feasible_JJ ._.
+-LRB-_-LRB- The_DT dual_JJ simplex_NN method_NN can_MD be_VB thought_VBN of_IN as_IN running_VBG the_DT primal_JJ simplex_NN method_NN on_IN the_DT dual_JJ problem_NN ._. -RRB-_-RRB-
+Thus_RB ,_, the_DT primal_JJ and_CC dual_JJ simplex_NN methods_NNS serve_VBP as_IN anytime_RB algorithms_NNS -LRB-_-LRB- for_IN a_DT given_VBN abstraction_NN -RRB-_-RRB- for_IN players_NNS #_# and_CC #_# ,_, respectively_RB ._.
+At_IN any_DT point_NN in_IN time_NN ,_, they_PRP can_MD output_NN the_DT best_JJS strategies_NNS found_VBN so_RB far_RB ._.
+Also_RB ,_, for_IN any_DT feasible_JJ solution_NN to_TO the_DT LP_NN ,_, we_PRP can_MD get_VB bounds_NNS on_IN the_DT quality_NN of_IN the_DT strategies_NNS by_IN examining_VBG the_DT primal_JJ and_CC dual_JJ solutions_NNS ._.
+-LRB-_-LRB- When_WRB using_VBG the_DT primal_JJ simplex_NN method_NN ,_, dual_JJ solutions_NNS may_MD be_VB read_VBN off_IN of_IN the_DT LP_NN tableau_NN ._. -RRB-_-RRB-
+Every_DT feasible_JJ solution_NN of_IN the_DT dual_JJ yields_NNS an_DT upper_JJ bound_VBN on_IN the_DT optimal_JJ value_NN of_IN the_DT primal_JJ ,_, and_CC vice_NN versa_RB -LSB-_-LRB- #_# ,_, p_NN ._.
+##_NN -RSB-_-RRB- ._.
+Thus_RB ,_, without_IN requiring_VBG further_JJ computation_NN ,_, we_PRP get_VBP lower_JJR bounds_NNS on_IN the_DT expected_VBN utility_NN of_IN each_DT agent_NN ''_'' s_NNS strategy_NN against_IN that_DT agent_NN ''_'' s_NNS worst-case_JJ opponent_NN ._.
+One_CD problem_NN with_IN the_DT simplex_NN method_NN is_VBZ that_IN it_PRP is_VBZ not_RB a_DT primal-dual_JJ algorithm_NN ,_, that_WDT is_VBZ ,_, it_PRP does_VBZ not_RB maintain_VB both_DT primal_JJ and_CC dual_JJ feasibility_NN throughout_IN its_PRP$ execution_NN ._.
+-LRB-_-LRB- In_IN fact_NN ,_, it_PRP only_RB obtains_VBZ primal_JJ and_CC dual_JJ feasibility_NN at_IN the_DT very_JJ end_NN of_IN execution_NN ._. -RRB-_-RRB-
+In_IN contrast_NN ,_, there_EX are_VBP interior-point_JJ methods_NNS for_IN linear_JJ programming_NN that_WDT maintain_VBP primal_JJ and_CC dual_JJ feasibility_NN throughout_IN the_DT execution_NN ._.
+For_IN example_NN ,_, many_JJ interiorpoint_JJ path-following_NN algorithms_NNS have_VBP this_DT property_NN -LSB-_-LRB- ##_CD ,_, Ch_NN ._.
+5_CD -RSB-_-RRB- ._.
+We_PRP observe_VBP that_IN running_VBG such_PDT a_DT linear_JJ programming_NN method_NN yields_VBZ a_DT method_NN for_IN finding_NN -_: equilibria_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, strategy_NN profiles_NNS in_IN which_WDT no_DT agent_NN can_MD increase_VB her_PRP$ expected_JJ utility_NN by_IN more_JJR than_IN by_IN deviating_VBG -RRB-_-RRB- ._.
+A_DT threshold_NN on_IN can_MD also_RB be_VB used_VBN as_IN a_DT termination_NN criterion_NN for_IN using_VBG the_DT method_NN as_IN an_DT anytime_RB algorithm_NN ._.
+Furthermore_RB ,_, interior-point_JJ methods_NNS in_IN this_DT class_NN have_VBP polynomial-time_JJ worst-case_JJ run_NN time_NN ,_, as_IN opposed_VBN to_TO the_DT simplex_NN algorithm_NN ,_, which_WDT takes_VBZ exponentially_RB many_JJ steps_NNS in_IN the_DT worst_JJS case_NN ._.
+6_CD ._.
+RELATED_JJ RESEARCH_NN Functions_NNS that_WDT transform_VBP extensive_JJ form_NN games_NNS have_VBP been_VBN introduced_VBN -LSB-_-LRB- ##_CD ,_, ##_CD -RSB-_-RRB- ._.
+In_IN contrast_NN to_TO our_PRP$ work_NN ,_, those_DT approaches_NNS were_VBD not_RB for_IN making_VBG the_DT game_NN smaller_JJR and_CC easier_JJR to_TO solve_VB ._.
+The_DT main_JJ result_NN is_VBZ that_IN a_DT game_NN can_MD be_VB derived_VBN from_IN another_DT by_IN a_DT sequence_NN of_IN those_DT transformations_NNS if_IN and_CC only_RB if_IN the_DT games_NNS have_VBP the_DT same_JJ pure_JJ reduced_VBN normal_JJ form_NN ._.
+The_DT pure_JJ reduced_VBN normal_JJ form_NN is_VBZ the_DT extensive_JJ form_NN game_NN represented_VBN as_IN a_DT game_NN in_IN normal_JJ form_NN where_WRB duplicates_NNS of_IN pure_JJ strategies_NNS -LRB-_-LRB- i_FW ._.
+e_LS ._.
+,_, ones_NNS with_IN identical_JJ payoffs_NNS -RRB-_-RRB- are_VBP removed_VBN and_CC players_NNS essentially_RB select_JJ equivalence_JJ classes_NNS of_IN strategies_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+An_DT extension_NN to_TO that_DT work_NN shows_VBZ a_DT similar_JJ result_NN ,_, but_CC for_IN slightly_RB different_JJ transformations_NNS and_CC mixed_JJ reduced_VBN normal_JJ form_NN games_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Modern_NNP treatments_NNS of_IN this_DT prior_JJ work_NN on_IN game_NN transformations_NNS exist_VBP -LSB-_-LRB- ##_CD ,_, Ch_NN ._.
+#_# -RSB-_-RRB- ,_, -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+The_DT recent_JJ notion_NN of_IN weak_JJ isomorphism_NN in_IN extensive_JJ form_NN games_NNS -LSB-_-LRB- #_# -RSB-_-RRB- is_VBZ related_JJ to_TO our_PRP$ notion_NN of_IN restricted_JJ game_NN isomorphism_NN ._.
+The_DT motivation_NN of_IN that_DT work_NN was_VBD to_TO justify_VB solution_NN concepts_NNS by_IN arguing_VBG that_IN they_PRP are_VBP invariant_JJ with_IN respect_NN to_TO isomorphic_JJ transformations_NNS ._.
+Indeed_RB ,_, the_DT author_NN shows_VBZ ,_, among_IN other_JJ things_NNS ,_, that_IN many_JJ solution_NN concepts_NNS ,_, including_VBG Nash_NNP ,_, perfect_JJ ,_, subgame_JJ perfect_JJ ,_, and_CC sequential_JJ equilibrium_NN ,_, are_VBP invariant_JJ with_IN respect_NN to_TO weak_JJ isomorphisms_NNS ._.
+However_RB ,_, that_IN definition_NN requires_VBZ that_IN the_DT games_NNS to_TO be_VB tested_VBN for_IN weak_JJ isomorphism_NN are_VBP of_IN the_DT same_JJ size_NN ._.
+Our_PRP$ focus_NN is_VBZ totally_RB different_JJ :_: we_PRP find_VBP strategically_RB equivalent_JJ smaller_JJR games_NNS ._.
+Also_RB ,_, their_PRP$ paper_NN does_VBZ not_RB provide_VB algorithms_NNS ._.
+Abstraction_NN techniques_NNS have_VBP been_VBN used_VBN in_IN artificial_JJ intelligence_NN research_NN before_IN ._.
+In_IN contrast_NN to_TO our_PRP$ work_NN ,_, most_JJS -LRB-_-LRB- but_CC not_RB all_DT -RRB-_-RRB- research_NN involving_VBG abstraction_NN has_VBZ been_VBN for_IN singleagent_JJ problems_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+-LSB-_-LRB- ##_RB ,_, ##_NN -RSB-_-RRB- -RRB-_-RRB- ._.
+Furthermore_RB ,_, the_DT use_NN of_IN abstraction_NN typically_RB leads_VBZ to_TO sub-optimal_JJ solutions_NNS ,_, unlike_IN the_DT techniques_NNS presented_VBN in_IN this_DT paper_NN ,_, which_WDT yield_VBP optimal_JJ solutions_NNS ._.
+A_DT notable_JJ exception_NN is_VBZ the_DT use_NN of_IN abstraction_NN to_TO compute_VB optimal_JJ strategies_NNS for_IN the_DT game_NN of_IN Sprouts_NNP -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+However_RB ,_, a_DT significant_JJ difference_NN to_TO our_PRP$ work_NN is_VBZ that_IN Sprouts_NNP is_VBZ a_DT game_NN of_IN perfect_JJ information_NN ._.
+One_CD of_IN the_DT first_JJ pieces_NNS of_IN research_NN to_TO use_VB abstraction_NN in_IN multi-agent_JJ settings_NNS was_VBD the_DT development_NN of_IN partition_NN search_NN ,_, which_WDT is_VBZ the_DT algorithm_NN behind_IN GIB_NNP ,_, the_DT world_NN ''_'' s_NNS first_RB expertlevel_JJ computer_NN bridge_NN player_NN -LSB-_-LRB- ##_CD ,_, ##_CD -RSB-_-RRB- ._.
+In_IN contrast_NN to_TO other_JJ game_NN tree_NN search_NN algorithms_NNS which_WDT store_VBP a_DT particular_JJ game_NN position_NN at_IN each_DT node_NN of_IN the_DT search_NN tree_NN ,_, partition_NN search_NN stores_NNS groups_NNS of_IN positions_NNS that_WDT are_VBP similar_JJ ._.
+-LRB-_-LRB- Typically_RB ,_, the_DT similarity_NN of_IN two_CD game_NN positions_NNS is_VBZ computed_VBN by_IN ignoring_VBG the_DT less_RBR important_JJ components_NNS of_IN each_DT game_NN position_NN and_CC then_RB checking_VBG whether_IN the_DT abstracted_JJ positions_NNS are_VBP similar-in_JJ some_DT domain-specific_JJ expert-defined_JJ sense-to_NN each_DT other_JJ ._. -RRB-_-RRB-
+Partition_NN search_NN can_MD lead_VB to_TO substantial_JJ speed_NN improvements_NNS over_IN --_: search_NN ._.
+However_RB ,_, it_PRP is_VBZ not_RB game_NN theory-based_JJ -LRB-_-LRB- it_PRP does_VBZ not_RB consider_VB information_NN sets_NNS in_IN the_DT game_NN tree_NN -RRB-_-RRB- ,_, and_CC thus_RB does_VBZ not_RB solve_VB for_IN the_DT equilibrium_NN of_IN a_DT game_NN of_IN imperfect_JJ information_NN ,_, such_JJ as_IN poker_NN ._.
+#_# Another_DT difference_NN is_VBZ that_IN the_DT abstraction_NN is_VBZ defined_VBN by_IN an_DT expert_JJ human_JJ while_IN our_PRP$ abstractions_NNS are_VBP determined_VBN automatically_RB ._.
+There_EX has_VBZ been_VBN some_DT research_NN on_IN the_DT use_NN of_IN abstraction_NN for_IN imperfect_JJ information_NN games_NNS ._.
+Most_RBS notably_RB ,_, Billings_NNS et_FW al_FW -LSB-_-LRB- #_# -RSB-_-RRB- describe_VBP a_DT manually_RB constructed_VBN abstraction_NN for_IN Texas_NNP Hold_VB ''_'' em_NN poker_NN ,_, and_CC include_VBP promising_JJ results_NNS against_IN expert_NN players_NNS ._.
+However_RB ,_, this_DT approach_NN has_VBZ significant_JJ drawbacks_NNS ._.
+First_RB ,_, it_PRP is_VBZ highly_RB specialized_VBN for_IN Texas_NNP Hold_VB ''_'' em_NN ._.
+Second_RB ,_, a_DT large_JJ amount_NN of_IN expert_NN knowledge_NN and_CC effort_NN was_VBD used_VBN in_IN constructing_VBG the_DT abstraction_NN ._.
+Third_NNP ,_, the_DT abstraction_NN does_VBZ not_RB preserve_VB equilibrium_NN :_: even_RB if_IN applied_VBN to_TO a_DT smaller_JJR game_NN ,_, it_PRP might_MD not_RB yield_VB a_DT game-theoretic_JJ equilibrium_NN ._.
+Promising_JJ ideas_NNS for_IN abstraction_NN in_IN the_DT context_NN of_IN general_JJ extensive_JJ form_NN games_NNS have_VBP been_VBN described_VBN in_IN an_DT extended_JJ abstract_JJ -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, but_CC to_TO our_PRP$ knowledge_NN ,_, have_VBP not_RB been_VBN fully_RB developed_VBN ._.
+7_CD ._.
+CONCLUSIONS_NNS AND_CC DISCUSSION_NN We_PRP introduced_VBD the_DT ordered_VBN game_NN isomorphic_JJ abstraction_NN transformation_NN and_CC gave_VBD an_DT algorithm_NN ,_, GameShrink_NNP ,_, for_IN abstracting_VBG the_DT game_NN using_VBG the_DT isomorphism_NN exhaustively_RB ._.
+We_PRP proved_VBD that_IN in_IN games_NNS with_IN ordered_VBN signals_NNS ,_, any_DT Nash_NNP equilibrium_NN in_IN the_DT smaller_JJR abstracted_JJ game_NN maps_NNS directly_RB to_TO a_DT Nash_NNP equilibrium_NN in_IN the_DT original_JJ game_NN ._.
+The_DT complexity_NN of_IN GameShrink_NNP is_VBZ O_NN -LRB-_-LRB- n2_NN -RRB-_-RRB- ,_, where_WRB n_NN is_VBZ the_DT number_NN of_IN nodes_NNS in_IN the_DT signal_NN tree_NN ._.
+It_PRP is_VBZ no_DT larger_JJR than_IN the_DT game_NN tree_NN ,_, and_CC on_IN nontrivial_JJ games_NNS it_PRP is_VBZ drastically_RB smaller_JJR ,_, so_RB GameShrink_NNP has_VBZ time_NN and_CC space_NN complexity_NN sublinear_NN in_IN 8_CD Bridge_NN is_VBZ also_RB a_DT game_NN of_IN imperfect_JJ information_NN ,_, and_CC partition_NN search_NN does_VBZ not_RB find_VB the_DT equilibrium_NN for_IN that_DT game_NN either_RB ._.
+Instead_RB ,_, partition_NN search_NN is_VBZ used_VBN in_IN conjunction_NN with_IN statistical_JJ sampling_NN to_TO simulate_VB the_DT uncertainty_NN in_IN bridge_NN ._.
+There_EX are_VBP also_RB other_JJ bridge_NN programs_NNS that_WDT use_VBP search_NN techniques_NNS for_IN perfect_JJ information_NN games_NNS in_IN conjunction_NN with_IN statistical_JJ sampling_NN and_CC expert-defined_JJ abstraction_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Such_JJ -LRB-_-LRB- non-game-theoretic_JJ -RRB-_-RRB- techniques_NNS are_VBP unlikely_JJ to_TO be_VB competitive_JJ in_IN poker_NN because_IN of_IN the_DT greater_JJR importance_NN of_IN information_NN hiding_NN and_CC bluffing_NN ._.
+168_CD the_DT size_NN of_IN the_DT game_NN tree_NN ._.
+Using_VBG GameShrink_NNP ,_, we_PRP found_VBD a_DT minimax_NN equilibrium_NN to_TO Rhode_NNP Island_NNP Hold_VB ''_'' em_NN ,_, a_DT poker_NN game_NN with_IN #_# ._.
+#_# billion_CD nodes_NNS in_IN the_DT game_NN tree-over_NN four_CD orders_NNS of_IN magnitude_NN more_RBR than_IN in_IN the_DT largest_JJS poker_NN game_NN solved_VBD previously_RB ._.
+To_TO further_RB improve_VB scalability_NN ,_, we_PRP introduced_VBD an_DT approximation_NN variant_NN of_IN GameShrink_NNP ,_, which_WDT can_MD be_VB used_VBN as_IN an_DT anytime_RB algorithm_NN by_IN varying_VBG a_DT parameter_NN that_WDT controls_VBZ the_DT coarseness_NN of_IN abstraction_NN ._.
+We_PRP also_RB discussed_VBD how_WRB -LRB-_-LRB- in_IN a_DT two-player_JJ zero-sum_JJ game_NN -RRB-_-RRB- ,_, linear_JJ programming_NN can_MD be_VB used_VBN in_IN an_DT anytime_RB manner_NN to_TO generate_VB approximately_RB optimal_JJ strategies_NNS of_IN increasing_VBG quality_NN ._.
+The_DT method_NN also_RB yields_VBZ bounds_NNS on_IN the_DT suboptimality_NN of_IN the_DT resulting_VBG strategies_NNS ._.
+We_PRP are_VBP currently_RB working_VBG on_IN using_VBG these_DT techniques_NNS for_IN full-scale_JJ 2-player_JJ limit_NN Texas_NNP Hold_VB ''_'' em_NN poker_NN ,_, a_DT highly_RB popular_JJ card_NN game_NN whose_WP$ game_NN tree_NN has_VBZ about_IN ####_CD nodes_NNS ._.
+That_DT game_NN tree_NN size_NN has_VBZ required_VBN us_PRP to_TO use_VB the_DT approximation_NN version_NN of_IN GameShrink_NNP -LRB-_-LRB- as_RB well_RB as_IN round-based_JJ abstraction_NN -RRB-_-RRB- -LSB-_-LRB- ##_CD ,_, ##_CD -RSB-_-RRB- ._.
+8_CD ._.
+REFERENCES_NNS -LSB-_-LRB- #_# -RSB-_-RRB- W_NN ._.
+Ackermann_NNP ._.
+Zum_NNP Hilbertschen_NNP Aufbau_NNP der_FW reellen_FW Zahlen_NN ._.
+Math_NNP ._.
+Annalen_NNP ,_, ##_CD :_: 118-133_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- D_NN ._.
+Applegate_NNP ,_, G_NNP ._.
+Jacobson_NNP ,_, and_CC D_NN ._.
+Sleator_NNP ._.
+Computer_NN analysis_NN of_IN sprouts_NNS ._.
+Technical_NNP Report_NNP CMU-CS-91-144_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- R_NN ._.
+Bellman_NNP and_CC D_NNP ._.
+Blackwell_NNP ._.
+Some_DT two-person_JJ games_NNS involving_VBG bluffing_NN ._.
+PNAS_NNP ,_, ##_CD :_: 600-605_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- D_NN ._.
+Billings_NNS ,_, N_NN ._.
+Burch_NNP ,_, A_NNP ._.
+Davidson_NNP ,_, R_NN ._.
+Holte_NNP ,_, J_NNP ._.
+Schaeffer_NNP ,_, T_NN ._.
+Schauenberg_NNP ,_, and_CC D_NN ._.
+Szafron_NNP ._.
+Approximating_VBG game-theoretic_JJ optimal_JJ strategies_NNS for_IN full-scale_JJ poker_NN ._.
+In_IN IJCAI_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- D_NN ._.
+Billings_NNS ,_, A_DT ._.
+Davidson_NNP ,_, J_NNP ._.
+Schaeffer_NNP ,_, and_CC D_NN ._.
+Szafron_NNP ._.
+The_DT challenge_NN of_IN poker_NN ._.
+Artificial_JJ Intelligence_NNP ,_, ###_CD :_: 201-240_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- B_NN ._.
+Bollobas_NNP ._.
+Combinatorics_NNS ._.
+Cambridge_NNP University_NNP Press_NNP ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- A_DT ._.
+Casajus_NNP ._.
+Weak_JJ isomorphism_NN of_IN extensive_JJ games_NNS ._.
+Mathematical_JJ Social_NNP Sciences_NNPS ,_, ##_CD :_: 267-290_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- X_NN ._.
+Chen_NNP and_CC X_NNP ._.
+Deng_NNP ._.
+Settling_VBG the_DT complexity_NN of_IN 2-player_JJ Nash_NNP equilibrium_NN ._.
+ECCC_NN ,_, Report_NNP No_NNP ._.
+###_NN ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- V_NN ._.
+Chvatal_NNP ._.
+Linear_JJ Programming_NN ._.
+W_NN ._.
+H_NN ._.
+Freeman_NNP &_CC Co_NNP ._.
+,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- B_NN ._.
+P_NN ._.
+de_IN Bruin_NNP ._.
+Game_NNP transformations_NNS and_CC game_NN equivalence_JJ ._.
+Technical_NNP note_NN x-1999-01_NN ,_, University_NNP of_IN Amsterdam_NNP ,_, Institute_NNP for_IN Logic_NNP ,_, Language_NNP ,_, and_CC Computation_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- S_NN ._.
+Elmes_NNS and_CC P_NN ._.
+J_NN ._.
+Reny_NNP ._.
+On_IN the_DT strategic_JJ equivalence_JJ of_IN extensive_JJ form_NN games_NNS ._.
+J_NN ._.
+of_IN Economic_NNP Theory_NNP ,_, ##_CD :_: 1-23_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- L_NN ._.
+R_NN ._.
+Ford_NNP ,_, Jr_NNP ._.
+and_CC D_NN ._.
+R_NN ._.
+Fulkerson_NNP ._.
+Flows_NNS in_IN Networks_NNP ._.
+Princeton_NNP University_NNP Press_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- A_DT ._.
+Gilpin_NNP and_CC T_NN ._.
+Sandholm_NNP ._.
+Finding_VBG equilibria_NNS in_IN large_JJ sequential_JJ games_NNS of_IN imperfect_JJ information_NN ._.
+Technical_NNP Report_NNP CMU-CS-05-158_NNP ,_, Carnegie_NNP Mellon_NNP University_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- A_DT ._.
+Gilpin_NNP and_CC T_NN ._.
+Sandholm_NNP ._.
+Optimal_JJ Rhode_NNP Island_NNP Hold_VB ''_'' em_NN poker_NN ._.
+In_IN AAAI_NNP ,_, pages_NNS 1684-1685_CD ,_, Pittsburgh_NNP ,_, PA_NN ,_, USA_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- A_DT ._.
+Gilpin_NNP and_CC T_NN ._.
+Sandholm_NNP ._.
+A_DT competitive_JJ Texas_NNP Hold_VB ''_'' em_NN poker_NN player_NN via_IN automated_VBN abstraction_NN and_CC real-time_JJ equilibrium_NN computation_NN ._.
+Mimeo_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- A_DT ._.
+Gilpin_NNP and_CC T_NN ._.
+Sandholm_NNP ._.
+A_DT Texas_NNP Hold_VB ''_'' em_NN poker_NN player_NN based_VBN on_IN automated_VBN abstraction_NN and_CC real-time_JJ equilibrium_NN computation_NN ._.
+In_IN AAMAS_NNP ,_, Hakodate_NNP ,_, Japan_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- M_NN ._.
+L_NN ._.
+Ginsberg_NNP ._.
+Partition_NN search_NN ._.
+In_IN AAAI_NNP ,_, pages_NNS 228-233_CD ,_, Portland_NNP ,_, OR_NN ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- M_NN ._.
+L_NN ._.
+Ginsberg_NNP ._.
+GIB_NNP :_: Steps_NNS toward_IN an_DT expert-level_JJ bridge-playing_JJ program_NN ._.
+In_IN IJCAI_NNP ,_, Stockholm_NNP ,_, Sweden_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- S_NN ._.
+Govindan_NNP and_CC R_NN ._.
+Wilson_NNP ._.
+A_DT global_JJ Newton_NNP method_NN to_TO compute_VB Nash_NNP equilibria_NNS ._.
+J_NN ._.
+of_IN Econ_NNP ._.
+Theory_NNP ,_, ###_CD :_: 65-86_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- C_NN ._.
+A_DT ._.
+Knoblock_NNP ._.
+Automatically_RB generating_VBG abstractions_NNS for_IN planning_NN ._.
+Artificial_JJ Intelligence_NNP ,_, ##_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 243-302_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- E_NN ._.
+Kohlberg_NNP and_CC J_NNP ._.
+-_: F_NN ._.
+Mertens_NNP ._.
+On_IN the_DT strategic_JJ stability_NN of_IN equilibria_NNS ._.
+Econometrica_NNP ,_, ##_CD :_: 1003-1037_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- D_NN ._.
+Koller_NNP and_CC N_NNP ._.
+Megiddo_NNP ._.
+The_DT complexity_NN of_IN two-person_JJ zero-sum_JJ games_NNS in_IN extensive_JJ form_NN ._.
+Games_NNPS and_CC Economic_NNP Behavior_NNP ,_, #_# -LRB-_-LRB- #_# -RRB-_-RRB- :_: 528-552_CD ,_, Oct_NN ._.
+####_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- D_NN ._.
+Koller_NNP and_CC N_NNP ._.
+Megiddo_NNP ._.
+Finding_VBG mixed_JJ strategies_NNS with_IN small_JJ supports_NNS in_IN extensive_JJ form_NN games_NNS ._.
+International_NNP Journal_NNP of_IN Game_NNP Theory_NNP ,_, ##_CD :_: 73-92_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- D_NN ._.
+Koller_NNP ,_, N_NNP ._.
+Megiddo_NNP ,_, and_CC B_NN ._.
+von_NN Stengel_NNP ._.
+Efficient_JJ computation_NN of_IN equilibria_NNS for_IN extensive_JJ two-person_JJ games_NNS ._.
+Games_NNPS and_CC Economic_NNP Behavior_NNP ,_, ##_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 247-259_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- D_NN ._.
+Koller_NNP and_CC A_NNP ._.
+Pfeffer_NNP ._.
+Representations_NNS and_CC solutions_NNS for_IN game-theoretic_JJ problems_NNS ._.
+Artificial_JJ Intelligence_NNP ,_, ##_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 167-215_CD ,_, July_NNP ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- D_NN ._.
+M_NN ._.
+Kreps_NNS and_CC R_NN ._.
+Wilson_NNP ._.
+Sequential_JJ equilibria_NNS ._.
+Econometrica_NNP ,_, ##_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 863-894_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- H_NN ._.
+W_NN ._.
+Kuhn_NNP ._.
+Extensive_JJ games_NNS ._.
+PNAS_NNP ,_, ##_CD :_: 570-576_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- H_NN ._.
+W_NN ._.
+Kuhn_NNP ._.
+A_DT simplified_VBN two-person_JJ poker_NN ._.
+In_IN Contributions_NNS to_TO the_DT Theory_NNP of_IN Games_NNPS ,_, volume_NN #_# of_IN Annals_NNS of_IN Mathematics_NNP Studies_NNPS ,_, ##_RB ,_, pages_NNS 97-103_CD ._.
+Princeton_NNP University_NNP Press_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- H_NN ._.
+W_NN ._.
+Kuhn_NNP ._.
+Extensive_JJ games_NNS and_CC the_DT problem_NN of_IN information_NN ._.
+In_IN Contributions_NNS to_TO the_DT Theory_NNP of_IN Games_NNPS ,_, volume_NN #_# of_IN Annals_NNS of_IN Mathematics_NNP Studies_NNPS ,_, ##_RB ,_, pages_NNS 193-216_CD ._.
+Princeton_NNP University_NNP Press_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- C_NN ._.
+Lemke_NNP and_CC J_NNP ._.
+Howson_NNP ._.
+Equilibrium_NN points_NNS of_IN bimatrix_NN games_NNS ._.
+Journal_NNP of_IN the_DT Society_NNP for_IN Industrial_NNP and_CC Applied_NNP Mathematics_NNP ,_, ##_CD :_: 413-423_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- R_NN ._.
+Lipton_NNP ,_, E_NNP ._.
+Markakis_NNP ,_, and_CC A_NN ._.
+Mehta_NNP ._.
+Playing_VBG large_JJ games_NNS using_VBG simple_JJ strategies_NNS ._.
+In_IN ACM-EC_NN ,_, pages_NNS 36-41_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- C_NN ._.
+-_: L_NN ._.
+Liu_NNP and_CC M_NN ._.
+Wellman_NNP ._.
+On_IN state-space_JJ abstraction_NN for_IN anytime_RB evaluation_NN of_IN Bayesian_JJ networks_NNS ._.
+SIGART_NNP Bulletin_NNP ,_, 7_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 50-57_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- A_DT ._.
+Mas-Colell_NNP ,_, M_NN ._.
+Whinston_NNP ,_, and_CC J_NN ._.
+R_NN ._.
+Green_NNP ._.
+Microeconomic_JJ Theory_NNP ._.
+Oxford_NNP University_NNP Press_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- R_NN ._.
+D_NN ._.
+McKelvey_NNP and_CC A_NNP ._.
+McLennan_NNP ._.
+Computation_NN of_IN equilibria_NNS in_IN finite_JJ games_NNS ._.
+In_IN Handbook_NN of_IN Computational_NNP Economics_NNP ,_, volume_NN #_# ,_, pages_NNS 87-142_CD ._.
+Elsevier_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- P_NN ._.
+B_NN ._.
+Miltersen_NNP and_CC T_NN ._.
+B_NN ._.
+Srensen_NNP ._.
+Computing_NNP sequential_JJ equilibria_NNS for_IN two-player_JJ games_NNS ._.
+In_IN SODA_NNP ,_, pages_NNS 107-116_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+Nash_NNP ._.
+Equilibrium_NN points_NNS in_IN n-person_NN games_NNS ._.
+Proc_NNP ._.
+of_IN the_DT National_NNP Academy_NNP of_IN Sciences_NNPS ,_, ##_CD :_: 48-49_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+F_NN ._.
+Nash_NNP and_CC L_NNP ._.
+S_NN ._.
+Shapley_NNP ._.
+A_DT simple_JJ three-person_JJ poker_NN game_NN ._.
+In_IN Contributions_NNS to_TO the_DT Theory_NNP of_IN Games_NNPS ,_, volume_NN #_# ,_, pages_NNS 105-116_CD ._.
+Princeton_NNP University_NNP Press_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- A_DT ._.
+Perea_NNP ._.
+Rationality_NN in_IN extensive_JJ form_NN games_NNS ._.
+Kluwer_NNP Academic_NNP Publishers_NNPS ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- A_DT ._.
+Pfeffer_NNP ,_, D_NNP ._.
+Koller_NNP ,_, and_CC K_NN ._.
+Takusagawa_NNP ._.
+State-space_JJ approximations_NNS for_IN extensive_JJ form_NN games_NNS ,_, July_NNP ####_CD ._.
+Talk_NN given_VBN at_IN the_DT First_NNP International_NNP Congress_NNP of_IN the_DT Game_NNP Theory_NNP Society_NNP ,_, Bilbao_NNP ,_, Spain_NNP ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- R_NN ._.
+Porter_NNP ,_, E_NNP ._.
+Nudelman_NNP ,_, and_CC Y_NN ._.
+Shoham_NNP ._.
+Simple_JJ search_NN methods_NNS for_IN finding_VBG a_DT Nash_NNP equilibrium_NN ._.
+In_IN AAAI_NNP ,_, pages_NNS 664-669_CD ,_, San_NNP Jose_NNP ,_, CA_NNP ,_, USA_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- I_PRP ._.
+Romanovskii_NNP ._.
+Reduction_NN of_IN a_DT game_NN with_IN complete_JJ memory_NN to_TO a_DT matrix_NN game_NN ._.
+Soviet_JJ Mathematics_NNS ,_, #_# :_: 678-681_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- T_NN ._.
+Sandholm_NNP and_CC A_NNP ._.
+Gilpin_NNP ._.
+Sequences_NNS of_IN take-it-or-leave-it_JJ offers_NNS :_: Near-optimal_JJ auctions_NNS without_IN full_JJ valuation_NN revelation_NN ._.
+In_IN AAMAS_NNP ,_, Hakodate_NNP ,_, Japan_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- T_NN ._.
+Sandholm_NNP ,_, A_NNP ._.
+Gilpin_NNP ,_, and_CC V_NN ._.
+Conitzer_NNP ._.
+Mixed-integer_JJR programming_NN methods_NNS for_IN finding_VBG Nash_NNP equilibria_NNS ._.
+In_IN AAAI_NNP ,_, pages_NNS 495-501_CD ,_, Pittsburgh_NNP ,_, PA_NN ,_, USA_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- R_NN ._.
+Savani_NNP and_CC B_NNP ._.
+von_NN Stengel_NNP ._.
+Exponentially_RB many_JJ steps_NNS for_IN finding_VBG a_DT Nash_NNP equilibrium_NN in_IN a_DT bimatrix_NN game_NN ._.
+In_IN FOCS_NN ,_, pages_NNS 258-267_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- R_NN ._.
+Selten_NNP ._.
+Spieltheoretische_JJ behandlung_NN eines_NNS oligopolmodells_NNS mit_VBP nachfragetragheit_NN ._.
+Zeitschrift_NNP fur_NN die_VB gesamte_NN Staatswissenschaft_NN ,_, ##_CD :_: 301-324_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- R_NN ._.
+Selten_NNP ._.
+Evolutionary_JJ stability_NN in_IN extensive_JJ two-person_JJ games_NNS -_: correction_NN and_CC further_JJ development_NN ._.
+Mathematical_JJ Social_NNP Sciences_NNPS ,_, ##_CD :_: 223-266_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+Shi_NNP and_CC M_NN ._.
+Littman_NNP ._.
+Abstraction_NN methods_NNS for_IN game_NN theoretic_JJ poker_NN ._.
+In_IN Computers_NNS and_CC Games_NNPS ,_, pages_NNS 333-345_CD ._.
+Springer-Verlag_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- S_NN ._.
+J_NN ._.
+J_NN ._.
+Smith_NNP ,_, D_NNP ._.
+S_NN ._.
+Nau_NNP ,_, and_CC T_NN ._.
+Throop_NNP ._.
+Computer_NN bridge_NN :_: A_DT big_JJ win_VB for_IN AI_NNP planning_NN ._.
+AI_NNP Magazine_NNP ,_, ##_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 93-105_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- R_NN ._.
+E_NN ._.
+Tarjan_NNP ._.
+Efficiency_NN of_IN a_DT good_JJ but_CC not_RB linear_JJ set_NN union_NN algorithm_NN ._.
+Journal_NNP of_IN the_DT ACM_NNP ,_, ##_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 215-225_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- F_NN ._.
+Thompson_NNP ._.
+Equivalence_NN of_IN games_NNS in_IN extensive_JJ form_NN ._.
+RAND_NNS Memo_VBP RM-759_NN ,_, The_DT RAND_NNP Corporation_NNP ,_, Jan_NNP ._.
+####_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+von_NN Neumann_NNP and_CC O_NNP ._.
+Morgenstern_NNP ._.
+Theory_NNP of_IN games_NNS and_CC economic_JJ behavior_NN ._.
+Princeton_NNP University_NNP Press_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- B_NN ._.
+von_NN Stengel_NNP ._.
+Efficient_JJ computation_NN of_IN behavior_NN strategies_NNS ._.
+Games_NNPS and_CC Economic_NNP Behavior_NNP ,_, ##_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 220-246_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- B_NN ._.
+von_NN Stengel_NNP ._.
+Computing_NNP equilibria_NNS for_IN two-person_JJ games_NNS ._.
+In_IN Handbook_NN of_IN Game_NNP Theory_NNP ,_, volume_NN #_# ._.
+North_NNP Holland_NNP ,_, Amsterdam_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- R_NN ._.
+Wilson_NNP ._.
+Computing_NNP equilibria_NNS of_IN two-person_JJ games_NNS from_IN the_DT extensive_JJ form_NN ._.
+Management_NNP Science_NNP ,_, ##_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 448-460_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- S_NN ._.
+J_NN ._.
+Wright_NNP ._.
+Primal-Dual_JJ Interior-Point_NNP Methods_NNS ._.
+SIAM_NNP ,_, 1997_CD ._.
+169_CD

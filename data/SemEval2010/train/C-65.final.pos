@@ -1,0 +1,865 @@
+Shooter_NNP Localization_NN and_CC Weapon_NNP Classification_NN with_IN Soldier-Wearable_JJ Networked_NNP Sensors_NNP Peter_NNP Volgyesi_NNP ,_, Gyorgy_NNP Balogh_NNP ,_, Andras_NNP Nadas_NNP ,_, Christopher_NNP B_NNP ._.
+Nash_NNP ,_, Akos_NNP Ledeczi_NNP Institute_NNP for_IN Software_NNP Integrated_NNP Systems_NNP ,_, Vanderbilt_NNP University_NNP Nashville_NNP ,_, TN_NN ,_, USA_NNP akos_NNS ._.
+ledeczi_NN @_SYM vanderbilt_NN ._.
+edu_NN ABSTRACT_NN The_DT paper_NN presents_VBZ a_DT wireless_JJ sensor_NN network-based_JJ mobile_JJ countersniper_NN system_NN ._.
+A_DT sensor_NN node_NN consists_VBZ of_IN a_DT helmetmounted_JJ microphone_NN array_NN ,_, a_DT COTS_NNP MICAz_NNP mote_NN for_IN internode_NN communication_NN and_CC a_DT custom_NN sensorboard_NN that_WDT implements_VBZ the_DT acoustic_JJ detection_NN and_CC Time_NN of_IN Arrival_NN -LRB-_-LRB- ToA_NN -RRB-_-RRB- estimation_NN algorithms_NNS on_IN an_DT FPGA_NN ._.
+A_DT 3-axis_JJ compass_NN provides_VBZ self_NN orientation_NN and_CC Bluetooth_NN is_VBZ used_VBN for_IN communication_NN with_IN the_DT soldier_NN ''_'' s_NNS PDA_NNP running_VBG the_DT data_NNS fusion_NN and_CC the_DT user_NN interface_NN ._.
+The_DT heterogeneous_JJ sensor_NN fusion_NN algorithm_NN can_MD work_VB with_IN data_NNS from_IN a_DT single_JJ sensor_NN or_CC it_PRP can_MD fuse_NN ToA_NN or_CC Angle_NN of_IN Arrival_NN -LRB-_-LRB- AoA_NN -RRB-_-RRB- observations_NNS of_IN muzzle_NN blasts_NNS and_CC ballistic_JJ shockwaves_NNS from_IN multiple_JJ sensors_NNS ._.
+The_DT system_NN estimates_VBZ the_DT trajectory_NN ,_, the_DT range_NN ,_, the_DT caliber_NN and_CC the_DT weapon_NN type_NN ._.
+The_DT paper_NN presents_VBZ the_DT system_NN design_NN and_CC the_DT results_NNS from_IN an_DT independent_JJ evaluation_NN at_IN the_DT US_NNP Army_NNP Aberdeen_NNP Test_NNP Center_NNP ._.
+The_DT system_NN performance_NN is_VBZ characterized_VBN by_IN 1degree_NN trajectory_NN precision_NN and_CC over_IN ##_CD %_NN caliber_NN estimation_NN accuracy_NN for_IN all_DT shots_NNS ,_, and_CC close_RB to_TO ###_CD %_NN weapon_NN estimation_NN accuracy_NN for_IN #_# out_IN of_IN #_# guns_NNS tested_VBN ._.
+Categories_NNS and_CC Subject_NNP Descriptors_NNPS C_NNP ._.
+#_# ._.
+#_# -LSB-_-LRB- Computer-Communications_NNPS Networks_NNP -RSB-_-RRB- :_: Distributed_VBN Systems_NNPS ;_: J_NN ._.
+#_# -LSB-_-LRB- Computers_NNS in_IN Other_JJ Systems_NNPS -RSB-_-RRB- :_: Military_NNP General_NNP Terms_NNS :_: Design_NN ,_, Measurement_NNP ,_, Performance_NNP 1_CD ._.
+INTRODUCTION_NN The_DT importance_NN of_IN countersniper_NN systems_NNS is_VBZ underscored_VBN by_IN the_DT constant_JJ stream_NN of_IN news_NN reports_NNS coming_VBG from_IN the_DT Middle_NNP East_NNP ._.
+In_IN October_NNP ####_CD CNN_NNP reported_VBD on_IN a_DT new_JJ tactic_NN employed_VBN by_IN insurgents_NNS ._.
+A_DT mobile_JJ sniper_NN team_NN moves_NNS around_IN busy_JJ city_NN streets_NNS in_IN a_DT car_NN ,_, positions_NNS itself_PRP at_IN a_DT good_JJ standoff_NN distance_NN from_IN dismounted_VBN US_NNP military_JJ personnel_NNS ,_, takes_VBZ a_DT single_JJ well-aimed_JJ shot_NN and_CC immediately_RB melts_VBZ in_IN the_DT city_NN traffic_NN ._.
+By_IN the_DT time_NN the_DT soldiers_NNS can_MD react_VB ,_, they_PRP are_VBP gone_VBN ._.
+A_DT countersniper_NN system_NN that_WDT provides_VBZ almost_RB immediate_JJ shooter_NN location_NN to_TO every_DT soldier_NN in_IN the_DT vicinity_NN would_MD provide_VB clear_JJ benefits_NNS to_TO the_DT warfigthers_NNS ._.
+Our_PRP$ team_NN introduced_VBD PinPtr_NNP ,_, the_DT first_JJ sensor_NN networkbased_JJ countersniper_NN system_NN -LSB-_-LRB- ##_CD ,_, #_# -RSB-_-RRB- in_IN ####_CD ._.
+The_DT system_NN is_VBZ based_VBN on_IN potentially_RB hundreds_NNS of_IN inexpensive_JJ sensor_NN nodes_NNS deployed_VBN in_IN the_DT area_NN of_IN interest_NN forming_VBG an_DT ad-hoc_JJ multihop_JJ network_NN ._.
+The_DT acoustic_JJ sensors_NNS measure_VB the_DT Time_NN of_IN Arrival_NN -LRB-_-LRB- ToA_NN -RRB-_-RRB- of_IN muzzle_NN blasts_NNS and_CC ballistic_JJ shockwaves_NNS ,_, pressure_NN waves_NNS induced_VBN by_IN the_DT supersonic_JJ projectile_NN ,_, send_VB the_DT data_NNS to_TO a_DT base_NN station_NN where_WRB a_DT sensor_NN fusion_NN algorithm_NN determines_VBZ the_DT origin_NN of_IN the_DT shot_NN ._.
+PinPtr_NNP is_VBZ characterized_VBN by_IN high_JJ precision_NN :_: 1m_NN average_JJ 3D_NN accuracy_NN for_IN shots_NNS originating_VBG within_IN or_CC near_IN the_DT sensor_NN network_NN and_CC #_# degree_NN bearing_NN precision_NN for_IN both_DT azimuth_NN and_CC elevation_NN and_CC ##_CD %_NN accuracy_NN in_IN range_NN estimation_NN for_IN longer_JJR range_NN shots_NNS ._.
+The_DT truly_RB unique_JJ characteristic_NN of_IN the_DT system_NN is_VBZ that_IN it_PRP works_VBZ in_IN such_JJ reverberant_JJ environments_NNS as_IN cluttered_JJ urban_JJ terrain_NN and_CC that_IN it_PRP can_MD resolve_VB multiple_JJ simultaneous_JJ shots_NNS at_IN the_DT same_JJ time_NN ._.
+This_DT capability_NN is_VBZ due_JJ to_TO the_DT widely_RB distributed_VBN sensing_VBG and_CC the_DT unique_JJ sensor_NN fusion_NN approach_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+The_DT system_NN has_VBZ been_VBN tested_VBN several_JJ times_NNS in_IN US_NNP Army_NNP MOUT_NNP -LRB-_-LRB- Military_NNP Operations_NNP in_IN Urban_NNP Terrain_NNP -RRB-_-RRB- facilities_NNS ._.
+The_DT obvious_JJ disadvantage_NN of_IN such_PDT a_DT system_NN is_VBZ its_PRP$ static_JJ nature_NN ._.
+Once_RB the_DT sensors_NNS are_VBP distributed_VBN ,_, they_PRP cover_VBP a_DT certain_JJ area_NN ._.
+Depending_VBG on_IN the_DT operation_NN ,_, the_DT deployment_NN may_MD be_VB needed_VBN for_IN an_DT hour_NN or_CC a_DT month_NN ,_, but_CC eventually_RB the_DT area_NN looses_VBZ its_PRP$ importance_NN ._.
+It_PRP is_VBZ not_RB practical_JJ to_TO gather_VB and_CC reuse_VB the_DT sensors_NNS ,_, especially_RB under_IN combat_NN conditions_NNS ._.
+Even_RB if_IN the_DT sensors_NNS are_VBP cheap_JJ ,_, it_PRP is_VBZ still_RB a_DT waste_NN and_CC a_DT logistical_JJ problem_NN to_TO provide_VB a_DT continuous_JJ stream_NN of_IN sensors_NNS as_IN the_DT operations_NNS move_VBP from_IN place_NN to_TO place_NN ._.
+As_IN it_PRP is_VBZ primarily_RB the_DT soldiers_NNS that_IN the_DT system_NN protects_VBZ ,_, a_DT natural_JJ extension_NN is_VBZ to_TO mount_VB the_DT sensors_NNS on_IN the_DT soldiers_NNS themselves_PRP ._.
+While_IN there_EX are_VBP vehiclemounted_JJ countersniper_NN systems_NNS -LSB-_-LRB- #_# -RSB-_-RRB- available_JJ commercially_RB ,_, we_PRP are_VBP not_RB aware_JJ of_IN a_DT deployed_VBN system_NN that_WDT protects_VBZ dismounted_JJ soldiers_NNS ._.
+A_DT helmet-mounted_JJ system_NN was_VBD developed_VBN in_IN the_DT mid_JJ 90s_CD by_IN BBN_NNP -LSB-_-LRB- #_# -RSB-_-RRB- ,_, but_CC it_PRP was_VBD not_RB continued_VBN beyond_IN the_DT Darpa_NNP program_NN that_WDT funded_VBD it_PRP ._.
+113_CD To_TO move_VB from_IN a_DT static_JJ sensor_NN network-based_JJ solution_NN to_TO a_DT highly_RB mobile_JJ one_CD presents_VBZ significant_JJ challenges_NNS ._.
+The_DT sensor_NN positions_NNS and_CC orientation_NN need_VBP to_TO be_VB constantly_RB monitored_VBN ._.
+As_IN soldiers_NNS may_MD work_VB in_IN groups_NNS of_IN as_RB little_JJ as_IN four_CD people_NNS ,_, the_DT number_NN of_IN sensors_NNS measuring_VBG the_DT acoustic_JJ phenomena_NNS may_MD be_VB an_DT order_NN of_IN magnitude_NN smaller_JJR than_IN before_RB ._.
+Moreover_RB ,_, the_DT system_NN should_MD be_VB useful_JJ to_TO even_RB a_DT single_JJ soldier_NN ._.
+Finally_RB ,_, additional_JJ requirements_NNS called_VBN for_IN caliber_NN estimation_NN and_CC weapon_NN classification_NN in_IN addition_NN to_TO source_NN localization_NN ._.
+The_DT paper_NN presents_VBZ the_DT design_NN and_CC evaluation_NN of_IN our_PRP$ soldierwearable_JJ mobile_JJ countersniper_NN system_NN ._.
+It_PRP describes_VBZ the_DT hardware_NN and_CC software_NN architecture_NN including_VBG the_DT custom_NN sensor_NN board_NN equipped_VBN with_IN a_DT small_JJ microphone_NN array_NN and_CC connected_VBN to_TO a_DT COTS_NNP MICAz_NNP mote_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Special_JJ emphasis_NN is_VBZ paid_VBN to_TO the_DT sensor_NN fusion_NN technique_NN that_WDT estimates_VBZ the_DT trajectory_NN ,_, range_NN ,_, caliber_NN and_CC weapon_NN type_NN simultaneously_RB ._.
+The_DT results_NNS and_CC analysis_NN of_IN an_DT independent_JJ evaluation_NN of_IN the_DT system_NN at_IN the_DT US_NNP Army_NNP Aberdeen_NNP Test_NNP Center_NNP are_VBP also_RB presented_VBN ._.
+2_LS ._.
+APPROACH_NN The_DT firing_NN of_IN a_DT typical_JJ military_JJ rifle_NN ,_, such_JJ as_IN the_DT AK47_NN or_CC M16_NNP ,_, produces_VBZ two_CD distinct_JJ acoustic_JJ phenomena_NNS ._.
+The_DT muzzle_JJ blast_NN is_VBZ generated_VBN at_IN the_DT muzzle_NN of_IN the_DT gun_NN and_CC travels_NNS at_IN the_DT speed_NN sound_NN ._.
+The_DT supersonic_JJ projectile_NN generates_VBZ an_DT acoustic_JJ shockwave_NN ,_, a_DT kind_NN of_IN sonic_JJ boom_NN ._.
+The_DT wavefront_NN has_VBZ a_DT conical_JJ shape_NN ,_, the_DT angle_NN of_IN which_WDT depends_VBZ on_IN the_DT Mach_NNP number_NN ,_, the_DT speed_NN of_IN the_DT bullet_NN relative_JJ to_TO the_DT speed_NN of_IN sound_NN ._.
+The_DT shockwave_NN has_VBZ a_DT characteristic_JJ shape_NN resembling_VBG a_DT capital_NN N_NN ._.
+The_DT rise_NN time_NN at_IN both_CC the_DT start_NN and_CC end_NN of_IN the_DT signal_NN is_VBZ very_RB fast_RB ,_, under_IN #_# sec_FW ._.
+The_DT length_NN is_VBZ determined_VBN by_IN the_DT caliber_NN and_CC the_DT miss_VBP distance_NN ,_, the_DT distance_NN between_IN the_DT trajectory_NN and_CC the_DT sensor_NN ._.
+It_PRP is_VBZ typically_RB a_DT few_JJ hundred_CD sec_NN ._.
+Once_RB a_DT trajectory_JJ estimate_NN is_VBZ available_JJ ,_, the_DT shockwave_NN length_NN can_MD be_VB used_VBN for_IN caliber_NN estimation_NN ._.
+Our_PRP$ system_NN is_VBZ based_VBN on_IN four_CD microphones_NNS connected_VBN to_TO a_DT sensorboard_NN ._.
+The_DT board_NN detects_VBZ shockwaves_NNS and_CC muzzle_NN blasts_NNS and_CC measures_NNS their_PRP$ ToA_NN ._.
+If_IN at_IN least_JJS three_CD acoustic_JJ channels_NNS detect_VBP the_DT same_JJ event_NN ,_, its_PRP$ AoA_NN is_VBZ also_RB computed_VBN ._.
+If_IN both_DT the_DT shockwave_NN and_CC muzzle_NN blast_NN AoA_NN are_VBP available_JJ ,_, a_DT simple_JJ analytical_JJ solution_NN gives_VBZ the_DT shooter_NN location_NN as_IN shown_VBN in_IN Section_NN #_# ._.
+As_IN the_DT microphones_NNS are_VBP close_JJ to_TO each_DT other_JJ ,_, typically_RB 2-4_CD ,_, we_PRP can_MD not_RB expect_VB very_RB high_JJ precision_NN ._.
+Also_RB ,_, this_DT method_NN does_VBZ not_RB estimate_VB a_DT trajectory_NN ._.
+In_IN fact_NN ,_, an_DT infinite_JJ number_NN of_IN trajectory-bullet_JJ speed_NN pairs_NNS satisfy_VBP the_DT observations_NNS ._.
+However_RB ,_, the_DT sensorboards_NNS are_VBP also_RB connected_VBN to_TO COTS_NNP MICAz_NNP motes_NNS and_CC they_PRP share_VBP their_PRP$ AoA_NN and_CC ToA_NN measurements_NNS ,_, as_RB well_RB as_IN their_PRP$ own_JJ location_NN and_CC orientation_NN ,_, with_IN each_DT other_JJ using_VBG a_DT multihop_JJ routing_VBG service_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+A_DT hybrid_NN sensor_NN fusion_NN algorithm_NN then_RB estimates_VBZ the_DT trajectory_NN ,_, the_DT range_NN ,_, the_DT caliber_NN and_CC the_DT weapon_NN type_NN based_VBN on_IN all_DT available_JJ observations_NNS ._.
+The_DT sensorboard_NN is_VBZ also_RB Bluetooth_JJ capable_JJ for_IN communication_NN with_IN the_DT soldier_NN ''_'' s_NNS PDA_NNP or_CC laptop_JJ computer_NN ._.
+A_DT wired_VBN USB_JJ connection_NN is_VBZ also_RB available_JJ ._.
+The_DT sensorfusion_NN algorithm_NN and_CC the_DT user_NN interface_NN get_VB their_PRP$ data_NNS through_IN one_CD of_IN these_DT channels_NNS ._.
+The_DT orientation_NN of_IN the_DT microphone_NN array_NN at_IN the_DT time_NN of_IN detection_NN is_VBZ provided_VBN by_IN a_DT 3-axis_JJ digital_JJ compass_NN ._.
+Currently_RB the_DT system_NN assumes_VBZ that_IN the_DT soldier_NN ''_'' s_NNS PDA_NNP is_VBZ GPS-capable_JJ and_CC it_PRP does_VBZ not_RB provide_VB self_NN localization_NN service_NN itself_PRP ._.
+However_RB ,_, the_DT accuracy_NN of_IN GPS_NN is_VBZ a_DT few_JJ meters_NNS degrading_VBG the_DT Figure_NNP #_# :_: Acoustic_JJ sensorboard_NN /_: mote_NN assembly_NN ._.
+overall_JJ accuracy_NN of_IN the_DT system_NN ._.
+Refer_VB to_TO Section_NNP #_# for_IN an_DT analysis_NN ._.
+The_DT latest_JJS generation_NN sensorboard_NN features_VBZ a_DT Texas_NNP Instruments_NNPS CC-1000_NN radio_NN enabling_VBG the_DT high-precision_JJ radio_NN interferometric_JJ self_NN localization_NN approach_NN we_PRP have_VBP developed_VBN separately_RB -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+However_RB ,_, we_PRP leave_VBP the_DT integration_NN of_IN the_DT two_CD technologies_NNS for_IN future_JJ work_NN ._.
+3_LS ._.
+HARDWARE_NN Since_IN the_DT first_JJ static_JJ version_NN of_IN our_PRP$ system_NN in_IN ####_CD ,_, the_DT sensor_NN nodes_NNS have_VBP been_VBN built_VBN upon_IN the_DT UC_NN Berkeley_NNP /_: Crossbow_NNP MICA_NNP product_NN line_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Although_IN rudimentary_JJ acoustic_JJ signal_NN processing_NN can_MD be_VB done_VBN on_IN these_DT microcontroller-based_JJ boards_NNS ,_, they_PRP do_VBP not_RB provide_VB the_DT required_VBN computational_JJ performance_NN for_IN shockwave_NN detection_NN and_CC angle_NN of_IN arrival_NN measurements_NNS ,_, where_WRB multiple_JJ signals_NNS from_IN different_JJ microphones_NNS need_VBP to_TO be_VB processed_VBN in_IN parallel_NN at_IN a_DT high_JJ sampling_NN rate_NN ._.
+Our_PRP$ 3rd_JJ generation_NN sensorboard_NN is_VBZ designed_VBN to_TO be_VB used_VBN with_IN MICAz_NN motes-in_NN fact_NN it_PRP has_VBZ almost_RB the_DT same_JJ size_NN as_IN the_DT mote_NN itself_PRP ._.
+The_DT board_NN utilizes_VBZ a_DT powerful_JJ Xilinx_NNP XC3S1000_NNP FPGA_NNP chip_NN with_IN various_JJ standard_JJ peripheral_JJ IP_NNP cores_NNS ,_, multiple_JJ soft_JJ processor_NN cores_NNS and_CC custom_NN logic_NN for_IN the_DT acoustic_JJ detectors_NNS -LRB-_-LRB- Figure_NN #_# -RRB-_-RRB- ._.
+The_DT onboard_JJ Flash_NN -LRB-_-LRB- 4MB_NN -RRB-_-RRB- and_CC PSRAM_NN -LRB-_-LRB- 8MB_NN -RRB-_-RRB- modules_NNS allow_VBP storing_VBG raw_JJ samples_NNS of_IN several_JJ acoustic_JJ events_NNS ,_, which_WDT can_MD be_VB used_VBN to_TO build_VB libraries_NNS of_IN various_JJ acoustic_JJ signatures_NNS and_CC for_IN refining_VBG the_DT detection_NN cores_NNS off-line_JJ ._.
+Also_RB ,_, the_DT external_JJ memory_NN blocks_NNS can_MD store_VB program_NN code_NN and_CC data_NNS used_VBN by_IN the_DT soft_JJ processor_NN cores_NNS on_IN the_DT FPGA_NNP ._.
+The_DT board_NN supports_VBZ four_CD independent_JJ analog_NN channels_NNS sampled_VBN at_IN up_RB to_TO #_# MS_NN /_: s_NNS -LRB-_-LRB- million_CD samples_NNS per_IN seconds_NNS -RRB-_-RRB- ._.
+These_DT channels_NNS ,_, featuring_VBG an_DT electret_JJ microphone_NN -LRB-_-LRB- Panasonic_NNP WM64PNT_NNP -RRB-_-RRB- ,_, amplifiers_NNS with_IN controllable_JJ gain_NN -LRB-_-LRB- 30-60_CD dB_NN -RRB-_-RRB- and_CC a_DT 12-bit_JJ serial_NN ADC_NN -LRB-_-LRB- Analog_NNP Devices_NNPS AD7476_NN -RRB-_-RRB- ,_, reside_VBP on_IN separate_JJ tiny_JJ boards_NNS which_WDT are_VBP connected_VBN to_TO the_DT main_JJ sensorboard_NN with_IN ribbon_NN cables_NNS ._.
+This_DT partitioning_NN enables_VBZ the_DT use_NN of_IN truly_RB different_JJ audio_NN channels_NNS -LRB-_-LRB- eg_FW ._.
+:_: slower_JJR sampling_NN frequency_NN ,_, different_JJ gain_NN or_CC dynamic_JJ range_NN -RRB-_-RRB- and_CC also_RB results_VBZ in_IN less_JJR noisy_JJ measurements_NNS by_IN avoiding_VBG long_JJ analog_NN signal_NN paths_NNS ._.
+The_DT sensor_NN platform_NN offers_VBZ a_DT rich_JJ set_NN of_IN interfaces_NNS and_CC can_MD be_VB integrated_VBN with_IN existing_VBG systems_NNS in_IN diverse_JJ ways_NNS ._.
+An_DT RS232_NN port_NN and_CC a_DT Bluetooth_NNP -LRB-_-LRB- BlueGiga_NNP WT12_NN -RRB-_-RRB- wireless_JJ link_NN with_IN virtual_JJ UART_NNP emulation_NN are_VBP directly_RB available_JJ on_IN the_DT board_NN and_CC provide_VB simple_JJ means_NNS to_TO connect_VB the_DT sensor_NN to_TO PCs_NNS and_CC PDAs_NNS ._.
+The_DT mote_NN interface_NN consists_VBZ of_IN an_DT I2_NN C_NN bus_NN along_IN with_IN an_DT interrupt_NN and_CC GPIO_NN line_NN -LRB-_-LRB- the_DT latter_JJ one_CD is_VBZ used_VBN 114_CD Figure_NNP #_# :_: Block_NNP diagram_NN of_IN the_DT sensorboard_NN ._.
+for_IN precise_JJ time_NN synchronization_NN between_IN the_DT board_NN and_CC the_DT mote_NN -RRB-_-RRB- ._.
+The_DT motes_NNS are_VBP equipped_VBN with_IN IEEE_NN ###_CD ._.
+##_NN ._.
+#_# compliant_JJ radio_NN transceivers_NNS and_CC support_NN ad-hoc_JJ wireless_JJ networking_NN among_IN the_DT nodes_NNS and_CC to_TO /_: from_IN the_DT base_NN station_NN ._.
+The_DT sensorboard_NN also_RB supports_VBZ full-speed_JJ USB_JJ transfers_NNS -LRB-_-LRB- with_IN custom_NN USB_JJ dongles_NNS -RRB-_-RRB- for_IN uploading_VBG recorded_VBN audio_JJ samples_NNS to_TO the_DT PC_NN ._.
+The_DT on-board_JJ JTAG_NN chain-directly_JJ accessible_JJ through_IN a_DT dedicated_JJ connector-contains_NNS the_DT FPGA_NNP part_NN and_CC configuration_NN memory_NN and_CC provides_VBZ in-system_JJ programming_NN and_CC debugging_NN facilities_NNS ._.
+The_DT integrated_VBN Honeywell_NNP HMR3300_NNP digital_JJ compass_NN module_NN provides_VBZ heading_VBG ,_, pitch_NN and_CC roll_NN information_NN with_IN #_# accuracy_NN ,_, which_WDT is_VBZ essential_JJ for_IN calculating_VBG and_CC combining_VBG directional_JJ estimates_NNS of_IN the_DT detected_VBN events_NNS ._.
+Due_JJ to_TO the_DT complex_NN voltage_NN requirements_NNS of_IN the_DT FPGA_NNP ,_, the_DT power_NN supply_NN circuitry_NN is_VBZ implemented_VBN on_IN the_DT sensorboard_NN and_CC provides_VBZ power_NN both_CC locally_RB and_CC to_TO the_DT mote_NN ._.
+We_PRP used_VBD a_DT quad_NN pack_NN of_IN rechargeable_JJ AA_NN batteries_NNS as_IN the_DT power_NN source_NN -LRB-_-LRB- although_IN any_DT other_JJ configuration_NN is_VBZ viable_JJ that_IN meets_VBZ the_DT voltage_NN requirements_NNS -RRB-_-RRB- ._.
+The_DT FPGA_NNP core_NN -LRB-_-LRB- #_# ._.
+#_# V_NN -RRB-_-RRB- and_CC I_PRP /_: O_NN -LRB-_-LRB- #_# ._.
+#_# V_NN -RRB-_-RRB- voltages_NNS are_VBP generated_VBN by_IN a_DT highly_RB efficient_JJ buck_NN switching_NN regulator_NN ._.
+The_DT FPGA_NNP configuration_NN -LRB-_-LRB- #_# ._.
+#_# V_NN -RRB-_-RRB- and_CC a_DT separate_JJ #_# ._.
+#_# V_NN power_NN net_NN are_VBP fed_VBN by_IN low_JJ current_JJ LDOs_NNS ,_, the_DT latter_JJ one_CD is_VBZ used_VBN to_TO provide_VB independent_JJ power_NN to_TO the_DT mote_NN and_CC to_TO the_DT Bluetooth_NNP radio_NN ._.
+The_DT regulators-except_JJ the_DT last_JJ one-can_JJ be_VB turned_VBN on_RP /_: off_RP from_IN the_DT mote_NN or_CC through_IN the_DT Bluetooth_NNP radio_NN -LRB-_-LRB- via_IN GPIO_NN lines_NNS -RRB-_-RRB- to_TO save_VB power_NN ._.
+The_DT first_JJ prototype_NN of_IN our_PRP$ system_NN employed_VBN ##_CD sensor_NN nodes_NNS ._.
+Some_DT of_IN these_DT nodes_NNS were_VBD mounted_VBN on_IN military_JJ kevlar_JJ helmets_NNS with_IN the_DT microphones_NNS directly_RB attached_VBN to_TO the_DT surface_NN at_IN about_IN ##_CD cm_NN separation_NN as_IN shown_VBN in_IN Figure_NNP #_# -LRB-_-LRB- a_DT -RRB-_-RRB- ._.
+The_DT rest_NN of_IN the_DT nodes_NNS were_VBD mounted_VBN in_IN plastic_JJ enclosures_NNS -LRB-_-LRB- Figure_NN #_# -LRB-_-LRB- b_NN -RRB-_-RRB- -RRB-_-RRB- with_IN the_DT microphones_NNS placed_VBN near_IN the_DT corners_NNS of_IN the_DT boxes_NNS to_TO form_VB approximately_RB #_# cm10_CD cm_NN rectangles_NNS ._.
+4_LS ._.
+SOFTWARE_NN ARCHITECTURE_NN The_DT sensor_NN application_NN relies_VBZ on_IN three_CD subsystems_NNS exploiting_VBG three_CD different_JJ computing_NN paradigms_NNS as_IN they_PRP are_VBP shown_VBN in_IN Figure_NNP #_# ._.
+Although_IN each_DT of_IN these_DT execution_NN models_NNS suit_VBP their_PRP$ domain_NN specific_JJ tasks_NNS extremely_RB well_RB ,_, this_DT diversity_NN -LRB-_-LRB- a_DT -RRB-_-RRB- -LRB-_-LRB- b_NN -RRB-_-RRB- Figure_NN #_# :_: Sensor_NN prototypes_NNS mounted_VBD on_IN a_DT kevlar_JJ helmet_NN -LRB-_-LRB- a_DT -RRB-_-RRB- and_CC in_IN a_DT plastic_NN box_NN on_IN a_DT tripod_NN -LRB-_-LRB- b_NN -RRB-_-RRB- ._.
+presents_VBZ a_DT challenge_NN for_IN software_NN development_NN and_CC system_NN integration_NN ._.
+The_DT sensor_NN fusion_NN and_CC user_NN interface_NN subsystem_NN is_VBZ running_VBG on_IN PDAs_NNS and_CC were_VBD implemented_VBN in_IN Java_NNP ._.
+The_DT sensing_VBG and_CC signal_NN processing_NN tasks_NNS are_VBP executed_VBN by_IN an_DT FPGA_NNP ,_, which_WDT also_RB acts_VBZ as_IN a_DT bridge_NN between_IN various_JJ wired_VBN and_CC wireless_JJ communication_NN channels_NNS ._.
+The_DT ad-hoc_JJ internode_NN communication_NN ,_, time_NN synchronization_NN and_CC data_NNS sharing_NN are_VBP the_DT responsibilities_NNS of_IN a_DT microcontroller_NN based_VBN radio_NN module_NN ._.
+Similarly_RB ,_, the_DT application_NN employs_VBZ a_DT wide_JJ variety_NN of_IN communication_NN protocols_NNS such_JJ as_IN Bluetooth_NNP and_CC IEEE_NNP ###_CD ._.
+##_NN ._.
+#_# wireless_JJ links_NNS ,_, as_RB well_RB as_IN optional_JJ UARTs_NNS ,_, I2_NN C_NN and_CC /_: or_CC USB_JJ buses_NNS ._.
+Soldier_NN Operated_VBD Device_NN -LRB-_-LRB- PDA_NN /_: Laptop_NN -RRB-_-RRB- FPGA_NNP Sensor_NNP Board_NNP Mica_NNP Radio_NNP Module_NNP 2_CD ._.
+#_# GHz_NNP Wireless_NNP Link_NNP Radio_NNP Control_NNP Message_NNP Routing_NNP Acoustic_NNP Event_NNP Encoder_NNP Sensor_NNP Time_NNP Synch_NNP ._.
+Network_NNP Time_NNP Synch_NNP ._.
+Remote_NNP Control_NNP Time_NNP stamping_VBG Interrupts_VBZ Virtual_JJ Register_NNP Interface_NNP C_NNP O_NN O_NN R_NN D_NN I_PRP N_NN A_NN T_NN O_NN R_NN A_NN n_NN a_DT l_NN o_NN g_NN c_NN h_NN a_DT n_NN n_NN e_SYM l_NN s_NNS Compass_VBP PicoBlaze_NNP Comm_NNP ._.
+Interface_NNP PicoBlaze_NNP WT12_NNP Bluetooth_NNP Radio_NNP MOTE_NNP IF_IN :_: I2C_NN ,_, Interrupts_VBZ USB_JJ PSRAM_NN U_NN A_NNP R_NNP T_NN U_NNP A_NNP R_NN T_NN MB_NN det_NN SW_NN det_VBD REC_NNP Bluetooth_NNP Link_NNP User_NN Interface_NNP Sensor_NNP Fusion_NN Location_NNP Engine_NNP GPS_NNP Message_NN -LRB-_-LRB- Dis_SYM -_: -RRB-_-RRB- AssemblerSensor_NNP Control_NNP Figure_NNP #_# :_: Software_NNP architecture_NN diagram_NN ._.
+The_DT sensor_NN fusion_NN module_NN receives_VBZ and_CC unpacks_VBZ raw_JJ measurements_NNS -LRB-_-LRB- time_NN stamps_NNS and_CC feature_NN vectors_NNS -RRB-_-RRB- from_IN the_DT sensorboard_NN through_IN the_DT Bluetooth_NNP link_NN ._.
+Also_RB ,_, it_PRP fine_JJ tunes_NNS the_DT execution_NN of_IN the_DT signal_NN processing_NN cores_NNS by_IN setting_VBG parameters_NNS through_IN the_DT same_JJ link_NN ._.
+Note_VB that_DT measurements_NNS from_IN other_JJ nodes_NNS along_IN with_IN their_PRP$ location_NN and_CC orientation_NN information_NN also_RB arrive_VBP from_IN the_DT sensorboard_NN which_WDT acts_VBZ as_IN a_DT gateway_NN between_IN the_DT PDA_NNP and_CC the_DT sensor_NN network_NN ._.
+The_DT handheld_JJ device_NN obtains_VBZ its_PRP$ own_JJ GPS_NN location_NN data_NNS and_CC di115_NN rectly_NN receives_VBZ orientation_NN information_NN through_IN the_DT sensorboard_NN ._.
+The_DT results_NNS of_IN the_DT sensor_NN fusion_NN are_VBP displayed_VBN on_IN the_DT PDA_NNP screen_NN with_IN low_JJ latency_NN ._.
+Since_IN ,_, the_DT application_NN is_VBZ implemented_VBN in_IN pure_JJ Java_NNP ,_, it_PRP is_VBZ portable_JJ across_IN different_JJ PDA_NN platforms_NNS ._.
+The_DT border_NN between_IN software_NN and_CC hardware_NN is_VBZ considerably_RB blurred_VBN on_IN the_DT sensor_NN board_NN ._.
+The_DT IP_NNP cores-implemented_JJ in_IN hardware_NN description_NN languages_NNS -LRB-_-LRB- HDL_NN -RRB-_-RRB- on_IN the_DT reconfigurable_JJ FPGA_NN fabric-closely_RB resemble_VBP hardware_NN building_NN blocks_NNS ._.
+However_RB ,_, some_DT of_IN them-most_JJ notably_RB the_DT soft_JJ processor_NN cores-execute_JJ true_JJ software_NN programs_NNS ._.
+The_DT primary_JJ tasks_NNS of_IN the_DT sensor_NN board_NN software_NN are_VBP #_# -RRB-_-RRB- acquiring_VBG data_NNS samples_NNS from_IN the_DT analog_NN channels_NNS ,_, #_# -RRB-_-RRB- processing_NN acoustic_JJ data_NNS -LRB-_-LRB- detection_NN -RRB-_-RRB- ,_, and_CC #_# -RRB-_-RRB- providing_VBG access_NN to_TO the_DT results_NNS and_CC run-time_JJ parameters_NNS through_IN different_JJ interfaces_NNS ._.
+As_IN it_PRP is_VBZ shown_VBN in_IN Figure_NNP #_# ,_, a_DT centralized_JJ virtual_JJ register_NN file_NN contains_VBZ the_DT address_NN decoding_VBG logic_NN ,_, the_DT registers_VBZ for_IN storing_VBG parameter_NN values_NNS and_CC results_NNS and_CC the_DT point_NN to_TO point_VB data_NNS buses_NNS to_TO and_CC from_IN the_DT peripherals_NNS ._.
+Thus_RB ,_, it_PRP effectively_RB integrates_VBZ the_DT building_NN blocks_VBZ within_IN the_DT sensorboard_NN and_CC decouples_VBZ the_DT various_JJ communication_NN interfaces_NNS ._.
+This_DT architecture_NN enabled_VBD us_PRP to_TO deploy_VB the_DT same_JJ set_NN of_IN sensors_NNS in_IN a_DT centralized_JJ scenario_NN ,_, where_WRB the_DT ad-hoc_JJ mote_NN network_NN -LRB-_-LRB- using_VBG the_DT I2_NN C_NN interface_NN -RRB-_-RRB- collected_VBN and_CC forwarded_VBN the_DT results_NNS to_TO a_DT base_NN station_NN or_CC to_TO build_VB a_DT decentralized_JJ system_NN where_WRB the_DT local_JJ PDAs_NNS execute_VBP the_DT sensor_NN fusion_NN on_IN the_DT data_NNS obtained_VBN through_IN the_DT Bluetooth_NNP interface_NN -LRB-_-LRB- and_CC optionally_RB from_IN other_JJ sensors_NNS through_IN the_DT mote_NN interface_NN -RRB-_-RRB- ._.
+The_DT same_JJ set_NN of_IN registers_VBZ are_VBP also_RB accessible_JJ through_IN a_DT UART_NNP link_NN with_IN a_DT terminal_JJ emulation_NN program_NN ._.
+Also_RB ,_, because_IN the_DT low-level_JJ interfaces_NNS are_VBP hidden_VBN by_IN the_DT register_NN file_NN ,_, one_PRP can_MD easily_RB add_VB /_: replace_VB these_DT with_IN new_JJ ones_NNS -LRB-_-LRB- eg_FW ._.
+:_: the_DT first_JJ generation_NN of_IN motes_NNS supported_VBD a_DT standard_JJ P_NN interface_NN bus_NN on_IN the_DT sensor_NN connector_NN ,_, which_WDT was_VBD dropped_VBN in_IN later_JJ designs_NNS -RRB-_-RRB- ._.
+The_DT most_RBS important_JJ results_NNS are_VBP the_DT time_NN stamps_NNS of_IN the_DT detected_VBN events_NNS ._.
+These_DT time_NN stamps_NNS and_CC all_DT other_JJ timing_NN information_NN -LRB-_-LRB- parameters_NNS ,_, acoustic_JJ event_NN features_NNS -RRB-_-RRB- are_VBP based_VBN on_IN a_DT #_# MHz_NNP clock_NN and_CC an_DT internal_JJ timer_NN on_IN the_DT FPGA_NNP ._.
+The_DT time_NN conversion_NN and_CC synchronization_NN between_IN the_DT sensor_NN network_NN and_CC the_DT board_NN is_VBZ done_VBN by_IN the_DT mote_NN by_IN periodically_RB requesting_VBG the_DT capture_NN of_IN the_DT current_JJ timer_NN value_NN through_IN a_DT dedicated_JJ GPIO_NN line_NN and_CC reading_VBG the_DT captured_VBN value_NN from_IN the_DT register_NN file_NN through_IN the_DT I2_NN C_NN interface_NN ._.
+Based_VBN on_IN the_DT the_DT current_JJ and_CC previous_JJ readings_NNS and_CC the_DT corresponding_JJ mote_NN local_JJ time_NN stamps_NNS ,_, the_DT mote_NN can_MD calculate_VB and_CC maintain_VB the_DT scaling_NN factor_NN and_CC offset_VBP between_IN the_DT two_CD time_NN domains_NNS ._.
+The_DT mote_NN interface_NN is_VBZ implemented_VBN by_IN the_DT I2_NN C_NN slave_NN IP_NNP core_NN and_CC a_DT thin_JJ adaptation_NN layer_NN which_WDT provides_VBZ a_DT data_NN and_CC address_NN bus_NN abstraction_NN on_IN top_NN of_IN it_PRP ._.
+The_DT maximum_NN effective_JJ bandwidth_NN is_VBZ ###_CD Kbps_NNS through_IN this_DT interface_NN ._.
+The_DT FPGA_NN contains_VBZ several_JJ UART_NNP cores_NNS as_RB well_RB :_: for_IN communicating_VBG with_IN the_DT on-board_JJ Bluetooth_NNP module_NN ,_, for_IN controlling_VBG the_DT digital_JJ compass_NN and_CC for_IN providing_VBG a_DT wired_VBN RS232_NN link_NN through_IN a_DT dedicated_JJ connector_NN ._.
+The_DT control_NN ,_, status_NN and_CC data_NNS registers_VBZ of_IN the_DT UART_NNP modules_NNS are_VBP available_JJ through_IN the_DT register_NN file_NN ._.
+The_DT higher_JJR level_NN protocols_NNS on_IN these_DT lines_NNS are_VBP implemented_VBN by_IN Xilinx_NNP PicoBlaze_NNP microcontroller_NN cores_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- and_CC corresponding_JJ software_NN programs_NNS ._.
+One_CD of_IN them_PRP provides_VBZ a_DT command_NN line_NN interface_NN for_IN test_NN and_CC debug_NN purposes_NNS ,_, while_IN the_DT other_JJ is_VBZ responsible_JJ for_IN parsing_VBG compass_NN readings_NNS ._.
+By_IN default_NN ,_, they_PRP are_VBP connected_VBN to_TO the_DT RS232_NN port_NN and_CC to_TO the_DT on-board_JJ digital_JJ compass_NN line_NN respectively_RB ,_, however_RB ,_, they_PRP can_MD be_VB rewired_VBN to_TO any_DT communication_NN interface_NN by_IN changing_VBG the_DT register_NN file_NN base_NN address_NN in_IN the_DT programs_NNS -LRB-_-LRB- e_LS ._.
+g_NN ._.
+the_DT command_NN line_NN interface_NN can_MD be_VB provided_VBN through_IN the_DT Bluetooth_NNP channel_NN -RRB-_-RRB- ._.
+Two_CD of_IN the_DT external_JJ interfaces_NNS are_VBP not_RB accessible_JJ through_IN the_DT register_NN file_NN :_: a_DT high_JJ speed_NN USB_JJ link_NN and_CC the_DT SRAM_NNP interface_NN are_VBP tied_VBN to_TO the_DT recorder_NN block_NN ._.
+The_DT USB_JJ module_NN implements_VBZ a_DT simple_JJ FIFO_NN with_IN parallel_JJ data_NNS lines_NNS connected_VBN to_TO an_DT external_JJ FT245R_NN USB_JJ device_NN controller_NN ._.
+The_DT RAM_NNP driver_NN implements_VBZ data_NNS read_VBP /_: write_VB cycles_NNS with_IN correct_JJ timing_NN and_CC is_VBZ connected_VBN to_TO the_DT on-board_JJ pseudo_NN SRAM_NN ._.
+These_DT interfaces_NNS provide_VBP #_# MB_NNP /_: s_NNS effective_JJ bandwidth_NN for_IN downloading_VBG recorded_VBN audio_JJ samples_NNS ,_, for_IN example_NN ._.
+The_DT data_NNS acquisition_NN and_CC signal_NN processing_NN paths_NNS exhibit_VBP clear_JJ symmetry_NN :_: the_DT same_JJ set_NN of_IN IP_NNP cores_NNS are_VBP instantiated_VBN four_CD times_NNS -LRB-_-LRB- i_FW ._.
+e_LS ._.
+the_DT number_NN of_IN acoustic_JJ channels_NNS -RRB-_-RRB- and_CC run_VB independently_RB ._.
+The_DT signal_NN paths_NNS meet_VBP only_RB just_RB before_IN the_DT register_NN file_NN ._.
+Each_DT of_IN the_DT analog_NN channels_NNS is_VBZ driven_VBN by_IN a_DT serial_NN A_DT /_: D_NN core_NN for_IN providing_VBG a_DT ##_NN MHz_NN serial_NN clock_NN and_CC shifting_VBG in_IN 8-bit_JJ data_NNS samples_NNS at_IN #_# MS_NN /_: s_NNS and_CC a_DT digital_JJ potentiometer_NN driver_NN for_IN setting_VBG the_DT required_VBN gain_NN ._.
+Each_DT channel_NN has_VBZ its_PRP$ own_JJ shockwave_NN and_CC muzzle_NN blast_NN detector_NN ,_, which_WDT are_VBP described_VBN in_IN Section_NN #_# ._.
+The_DT detectors_NNS fetch_VBP run-time_JJ parameter_NN values_NNS from_IN the_DT register_NN file_NN and_CC store_VBP their_PRP$ results_NNS there_RB as_RB well_RB ._.
+The_DT coordinator_NN core_NN constantly_RB monitors_VBZ the_DT detection_NN results_VBZ and_CC generates_VBZ a_DT mote_NN interrupt_VB promptly_RB upon_IN full_JJ detection_NN or_CC after_IN a_DT reasonable_JJ timeout_NN after_IN partial_JJ detection_NN ._.
+The_DT recorder_NN component_NN is_VBZ not_RB used_VBN in_IN the_DT final_JJ deployment_NN ,_, however_RB ,_, it_PRP is_VBZ essential_JJ for_IN development_NN purposes_NNS for_IN refining_NN parameter_NN values_NNS for_IN new_JJ types_NNS of_IN weapons_NNS or_CC for_IN other_JJ acoustic_JJ sources_NNS ._.
+This_DT component_NN receives_VBZ the_DT samples_NNS from_IN all_DT channels_NNS and_CC stores_NNS them_PRP in_IN circular_JJ buffers_NNS in_IN the_DT PSRAM_NNP device_NN ._.
+If_IN the_DT signal_NN amplitude_NN on_IN one_CD of_IN the_DT channels_NNS crosses_VBZ a_DT predefined_JJ threshold_NN ,_, the_DT recorder_NN component_NN suspends_VBZ the_DT sample_NN collection_NN with_IN a_DT predefined_JJ delay_NN and_CC dumps_VBZ the_DT contents_NNS of_IN the_DT buffers_NNS through_IN the_DT USB_JJ link_NN ._.
+The_DT length_NN of_IN these_DT buffers_NNS and_CC delays_NNS ,_, the_DT sampling_NN rate_NN ,_, the_DT threshold_NN level_NN and_CC the_DT set_NN of_IN recorded_VBN channels_NNS can_MD be_VB -LRB-_-LRB- re_NN -RRB-_-RRB- configured_VBD run-time_NN through_IN the_DT register_NN file_NN ._.
+Note_VB that_IN the_DT core_NN operates_VBZ independently_RB from_IN the_DT other_JJ signal_NN processing_NN modules_NNS ,_, therefore_RB ,_, it_PRP can_MD be_VB used_VBN to_TO validate_VB the_DT detection_NN results_VBZ off-line_JJ ._.
+The_DT FPGA_NNP cores_NNS are_VBP implemented_VBN in_IN VHDL_NNP ,_, the_DT PicoBlaze_NN programs_NNS are_VBP written_VBN in_IN assembly_NN ._.
+The_DT complete_JJ configuration_NN occupies_VBZ ##_CD %_NN of_IN the_DT resources_NNS -LRB-_-LRB- slices_NNS -RRB-_-RRB- of_IN the_DT FPGA_NNP and_CC the_DT maximum_NN clock_NN speed_NN is_VBZ ##_CD MHz_NNP ,_, which_WDT is_VBZ safely_RB higher_JJR than_IN the_DT speed_NN used_VBN with_IN the_DT actual_JJ device_NN -LRB-_-LRB- 20MHz_NN -RRB-_-RRB- ._.
+The_DT MICAz_NNP motes_NNS are_VBP responsible_JJ for_IN distributing_VBG measurement_NN data_NNS across_IN the_DT network_NN ,_, which_WDT drastically_RB improves_VBZ the_DT localization_NN and_CC classification_NN results_VBZ at_IN each_DT node_NN ._.
+Besides_IN a_DT robust_JJ radio_NN -LRB-_-LRB- MAC_NNP -RRB-_-RRB- layer_NN ,_, the_DT motes_NNS require_VBP two_CD essential_JJ middleware_JJ services_NNS to_TO achieve_VB this_DT goal_NN ._.
+The_DT messages_NNS need_VBP to_TO be_VB propagated_VBN in_IN the_DT ad-hoc_JJ multihop_JJ network_NN using_VBG a_DT routing_VBG service_NN ._.
+We_PRP successfully_RB integrated_VBD the_DT Directed_NNP Flood-Routing_NNP Framework_NNP -LRB-_-LRB- DFRF_NNP -RRB-_-RRB- -LSB-_-LRB- #_# -RSB-_-RRB- in_IN our_PRP$ application_NN ._.
+Apart_RB from_IN automatic_JJ message_NN aggregation_NN and_CC efficient_JJ buffer_NN management_NN ,_, the_DT most_RBS unique_JJ feature_NN of_IN DFRF_NN is_VBZ its_PRP$ plug-in_JJ architecture_NN ,_, which_WDT accepts_VBZ custom_NN routing_VBG policies_NNS ._.
+Routing_VBG policies_NNS are_VBP state_NN machines_NNS that_WDT govern_VBP how_WRB received_VBN messages_NNS are_VBP stored_VBN ,_, resent_VBP or_CC discarded_VBN ._.
+Example_NN policies_NNS include_VBP spanning_VBG tree_NN routing_VBG ,_, broadcast_NN ,_, geographic_JJ routing_VBG ,_, etc_FW ._.
+Different_JJ policies_NNS can_MD be_VB used_VBN for_IN different_JJ messages_NNS concurrently_RB ,_, and_CC the_DT application_NN is_VBZ able_JJ to_TO 116_CD change_NN the_DT underlying_VBG policies_NNS at_IN run-time_NN -LRB-_-LRB- eg_FW ._.
+:_: because_IN of_IN the_DT changing_VBG RF_NN environment_NN or_CC power_NN budget_NN -RRB-_-RRB- ._.
+In_IN fact_NN ,_, we_PRP switched_VBD several_JJ times_NNS between_IN a_DT simple_JJ but_CC lavish_JJ broadcast_NN policy_NN and_CC a_DT more_RBR efficient_JJ gradient_NN routing_VBG on_IN the_DT field_NN ._.
+Correlating_VBG ToA_NN measurements_NNS requires_VBZ a_DT common_JJ time_NN base_NN and_CC precise_JJ time_NN synchronization_NN in_IN the_DT sensor_NN network_NN ._.
+The_DT Routing_NNP Integrated_NNP Time_NNP Synchronization_NN -LRB-_-LRB- RITS_NN -RRB-_-RRB- -LSB-_-LRB- ##_CD -RSB-_-RRB- protocol_NN relies_VBZ on_IN very_RB accurate_JJ MAC-layer_NN time-stamping_NN to_TO embed_VB the_DT cumulative_JJ delay_NN that_IN a_DT data_NN message_NN accrued_VBN since_IN the_DT time_NN of_IN the_DT detection_NN in_IN the_DT message_NN itself_PRP ._.
+That_DT is_VBZ ,_, at_IN every_DT node_NN it_PRP measures_VBZ the_DT time_NN the_DT message_NN spent_VBD there_EX and_CC adds_VBZ this_DT to_TO the_DT number_NN in_IN the_DT time_NN delay_NN slot_NN of_IN the_DT message_NN ,_, right_NN before_IN it_PRP leaves_VBZ the_DT current_JJ node_NN ._.
+Every_DT receiving_VBG node_NN can_MD subtract_VB the_DT delay_NN from_IN its_PRP$ current_JJ time_NN to_TO obtain_VB the_DT detection_NN time_NN in_IN its_PRP$ local_JJ time_NN reference_NN ._.
+The_DT service_NN provides_VBZ very_RB accurate_JJ time_NN conversion_NN -LRB-_-LRB- few_JJ s_NNS per_IN hop_NN error_NN -RRB-_-RRB- ,_, which_WDT is_VBZ more_RBR than_IN adequate_JJ for_IN this_DT application_NN ._.
+Note_VB ,_, that_IN the_DT motes_NNS also_RB need_VBP to_TO convert_VB the_DT sensorboard_NN time_NN stamps_NNS to_TO mote_VB time_NN as_IN it_PRP is_VBZ described_VBN earlier_JJR ._.
+The_DT mote_JJ application_NN is_VBZ implemented_VBN in_IN nesC_NN -LSB-_-LRB- #_# -RSB-_-RRB- and_CC is_VBZ running_VBG on_IN top_NN of_IN TinyOS_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+With_IN its_PRP$ #_# KB_NN RAM_NNP and_CC 28_CD KB_NN program_NN space_NN -LRB-_-LRB- ROM_NN -RRB-_-RRB- requirement_NN ,_, it_PRP easily_RB fits_VBZ on_IN the_DT MICAz_NNP motes_NNS ._.
+5_CD ._.
+DETECTION_NNP ALGORITHM_NNP There_EX are_VBP several_JJ characteristics_NNS of_IN acoustic_JJ shockwaves_NNS and_CC muzzle_NN blasts_NNS which_WDT distinguish_VBP their_PRP$ detection_NN and_CC signal_NN processing_NN algorithms_NNS from_IN regular_JJ audio_NN applications_NNS ._.
+Both_DT events_NNS are_VBP transient_JJ by_IN their_PRP$ nature_NN and_CC present_JJ very_RB intense_JJ stimuli_NNS to_TO the_DT microphones_NNS ._.
+This_DT is_VBZ increasingly_RB problematic_JJ with_IN low_JJ cost_NN electret_NN microphones-designed_JJ for_IN picking_VBG up_RP regular_JJ speech_NN or_CC music_NN ._.
+Although_IN mechanical_JJ damping_VBG of_IN the_DT microphone_NN membranes_NNS can_MD mitigate_VB the_DT problem_NN ,_, this_DT approach_NN is_VBZ not_RB without_IN side_JJ effects_NNS ._.
+The_DT detection_NN algorithms_NNS have_VBP to_TO be_VB robust_JJ enough_JJ to_TO handle_VB severe_JJ nonlinear_JJ distortion_NN and_CC transitory_JJ oscillations_NNS ._.
+Since_IN the_DT muzzle_NN blast_NN signature_NN closely_RB follows_VBZ the_DT shockwave_NN signal_NN and_CC because_IN of_IN potential_JJ automatic_JJ weapon_NN bursts_NNS ,_, it_PRP is_VBZ extremely_RB important_JJ to_TO settle_VB the_DT audio_NN channels_NNS and_CC the_DT detection_NN logic_NN as_RB soon_RB as_IN possible_JJ after_IN an_DT event_NN ._.
+Also_RB ,_, precise_JJ angle_NN of_IN arrival_NN estimation_NN necessitates_VBZ high_JJ sampling_NN frequency_NN -LRB-_-LRB- in_IN the_DT MHz_NN range_NN -RRB-_-RRB- and_CC accurate_JJ event_NN detection_NN ._.
+Moreover_RB ,_, the_DT detection_NN logic_NN needs_VBZ to_TO process_VB multiple_JJ channels_NNS in_IN parallel_NN -LRB-_-LRB- #_# channels_NNS on_IN our_PRP$ existing_VBG hardware_NN -RRB-_-RRB- ._.
+These_DT requirements_NNS dictated_VBD simple_JJ and_CC robust_JJ algorithms_NNS both_CC for_IN muzzle_JJ blast_NN and_CC shockwave_NN detections_NNS ._.
+Instead_RB of_IN using_VBG mundane_JJ energy_NN detectors-which_NN might_MD not_RB be_VB able_JJ to_TO distinguish_VB the_DT two_CD different_JJ events-the_NN applied_VBD detectors_NNS strive_VBP to_TO find_VB the_DT most_RBS important_JJ characteristics_NNS of_IN the_DT two_CD signals_NNS in_IN the_DT time-domain_JJ using_VBG simple_JJ state_NN machine_NN logic_NN ._.
+The_DT detectors_NNS are_VBP implemented_VBN as_IN independent_JJ IP_NNP cores_NNS within_IN the_DT FPGA-one_NN pair_NN for_IN each_DT channel_NN ._.
+The_DT cores_NNS are_VBP run-time_JJ configurable_JJ and_CC provide_VBP detection_NN event_NN signals_NNS with_IN high_JJ precision_NN time_NN stamps_NNS and_CC event_NN specific_JJ feature_NN vectors_NNS ._.
+Although_IN the_DT cores_NNS are_VBP running_VBG independently_RB and_CC in_IN parallel_NN ,_, a_DT crude_JJ local_JJ fusion_NN module_NN integrates_VBZ them_PRP by_IN shutting_VBG down_RP those_DT cores_NNS which_WDT missed_VBD their_PRP$ events_NNS after_IN a_DT reasonable_JJ timeout_NN and_CC by_IN generating_VBG a_DT single_JJ detection_NN message_NN towards_IN the_DT mote_NN ._.
+At_IN this_DT point_NN ,_, the_DT mote_NN can_MD read_VB and_CC forward_RB the_DT detection_NN times_NNS and_CC features_NNS and_CC is_VBZ responsible_JJ to_TO restart_VB the_DT cores_NNS afterwards_RB ._.
+The_DT most_RBS conspicuous_JJ characteristics_NNS of_IN an_DT acoustic_JJ shockwave_NN -RRB-_-RRB- are_VBP the_DT steep_JJ rising_VBG edges_NNS at_IN the_DT be0_NN ###_CD ###_CD ###_CD ###_CD ####_CD ####_CD ####_CD ####_CD -1_CD -0_CD ._.
+#_# -0_CD ._.
+#_# -0_CD ._.
+#_# -0_CD ._.
+#_# 0_CD 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 1_CD Shockwave_NN -LRB-_-LRB- M16_NNP -RRB-_-RRB- Time_NNP -LRB-_-LRB- s_NNS -RRB-_-RRB- Amplitude_NN 1_CD 3_CD 5_CD 2_CD 4_CD len_NN -LRB-_-LRB- a_DT -RRB-_-RRB- s_VBZ -LSB-_-LRB- t_NN -RSB-_-RRB- -_: s_NNS -LSB-_-LRB- t-D_NN -RSB-_-RRB- >_JJR E_NN tstart_NN :_: =_JJ t_NN s_NNS -LSB-_-LRB- t_NN -RSB-_-RRB- -_: s_NNS -LSB-_-LRB- t-D_NN -RSB-_-RRB- <_JJR E_NN s_NNS -LSB-_-LRB- t_NN -RSB-_-RRB- -_: s_NNS -LSB-_-LRB- t-D_NN -RSB-_-RRB- >_JJR E_NNP &_CC t_NN -_: t_NN __CD start_NN >_JJR Lmin_NN s_NNS -LSB-_-LRB- t_NN -RSB-_-RRB- -_: s_NNS -LSB-_-LRB- t-D_NN -RSB-_-RRB- <_JJR E_NN len_NN :_: =_JJ t_NN -_: tstart_NN IDLE_NN 1_CD FIRST_NNP EDGE_NNP DONE_VBD 3_CD SECOND_NNP EDGE_NNP 4_CD FIRST_NNP EDGE_NN 2_CD FOUND_NN 5_CD t_NN -_: tstart_NN Lmax_NN t_NN -_: tstart_NN Lmax_NN -LRB-_-LRB- b_NN -RRB-_-RRB- Figure_NN #_# :_: Shockwave_NN signal_NN generated_VBN by_IN a_DT #_# ._.
+##_NN 45_CD mm_NN NATO_NNP projectile_NN -LRB-_-LRB- a_DT -RRB-_-RRB- and_CC the_DT state_NN machine_NN of_IN the_DT detection_NN algorithm_NN -LRB-_-LRB- b_NN -RRB-_-RRB- ._.
+ginning_NN and_CC end_NN of_IN the_DT signal_NN ._.
+Also_RB ,_, the_DT length_NN of_IN the_DT N-wave_NN is_VBZ fairly_RB predictable-as_JJ it_PRP is_VBZ described_VBN in_IN Section_NN #_# ._.
+5-and_NN is_VBZ relatively_RB short_JJ -LRB-_-LRB- 200-300_CD s_NNS -RRB-_-RRB- ._.
+The_DT shockwave_NN detection_NN core_NN is_VBZ continuously_RB looking_VBG for_IN two_CD rising_VBG edges_NNS within_IN a_DT given_VBN interval_NN ._.
+The_DT state_NN machine_NN of_IN the_DT algorithm_NN is_VBZ shown_VBN in_IN Figure_NNP #_# -LRB-_-LRB- b_NN -RRB-_-RRB- ._.
+The_DT input_NN parameters_NNS are_VBP the_DT minimum_JJ steepness_NN of_IN the_DT edges_NNS -LRB-_-LRB- D_NN ,_, E_NN -RRB-_-RRB- ,_, and_CC the_DT bounds_NNS on_IN the_DT length_NN of_IN the_DT wave_NN -LRB-_-LRB- Lmin_NN ,_, Lmax_NN -RRB-_-RRB- ._.
+The_DT only_JJ feature_NN calculated_VBN by_IN the_DT core_NN is_VBZ the_DT length_NN of_IN the_DT observed_VBN shockwave_NN signal_NN ._.
+In_IN contrast_NN to_TO shockwaves_NNS ,_, the_DT muzzle_JJ blast_NN signatures_NNS are_VBP characterized_VBN by_IN a_DT long_JJ initial_JJ period_NN -LRB-_-LRB- 1-5_CD ms_NNS -RRB-_-RRB- where_WRB the_DT first_JJ half_NN period_NN is_VBZ significantly_RB shorter_JJR than_IN the_DT second_JJ half_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+Due_JJ to_TO the_DT physical_JJ limitations_NNS of_IN the_DT analog_NN circuitry_NN described_VBN at_IN the_DT beginning_NN of_IN this_DT section_NN ,_, irregular_JJ oscillations_NNS and_CC glitches_NNS might_MD show_VB up_RP within_IN this_DT longer_JJR time_NN window_NN as_IN they_PRP can_MD be_VB clearly_RB seen_VBN in_IN Figure_NNP #_# -LRB-_-LRB- a_DT -RRB-_-RRB- ._.
+Therefore_RB ,_, the_DT real_JJ challenge_NN for_IN the_DT matching_VBG detection_NN core_NN is_VBZ to_TO identify_VB the_DT first_JJ and_CC second_JJ half_NN periods_NNS properly_RB ._.
+The_DT state_NN machine_NN -LRB-_-LRB- Figure_NN #_# -LRB-_-LRB- b_NN -RRB-_-RRB- -RRB-_-RRB- does_VBZ not_RB work_VB on_IN the_DT raw_JJ samples_NNS directly_RB but_CC is_VBZ fed_VBN by_IN a_DT zero_CD crossing_VBG -LRB-_-LRB- ZC_NN -RRB-_-RRB- encoder_NN ._.
+After_IN the_DT initial_JJ triggering_NN ,_, the_DT detector_NN attempts_VBZ to_TO collect_VB those_DT ZC_NNP segments_NNS which_WDT belong_VBP to_TO the_DT first_JJ period_NN -LRB-_-LRB- positive_JJ amplitude_NN -RRB-_-RRB- while_IN discarding_VBG too_RB short_JJ -LRB-_-LRB- in_IN our_PRP$ terminology_NN :_: garbage_NN -RRB-_-RRB- segments-effectively_RB implementing_VBG a_DT rudimentary_JJ low-pass_JJ filter_NN in_IN the_DT ZC_NN domain_NN ._.
+After_IN it_PRP encounters_VBZ a_DT sufficiently_RB long_JJ negative_JJ segment_NN ,_, it_PRP runs_VBZ the_DT same_JJ collection_NN logic_NN for_IN the_DT second_JJ half_NN period_NN ._.
+If_IN too_RB much_JJ garbage_NN is_VBZ discarded_VBN in_IN the_DT collection_NN phases_NNS ,_, the_DT core_NN resets_VBZ itself_PRP to_TO prevent_VB the_DT -LRB-_-LRB- false_JJ -RRB-_-RRB- detection_NN of_IN the_DT halves_NNS from_IN completely_RB different_JJ periods_NNS separated_VBN by_IN rapid_JJ oscillation_NN or_CC noise_NN ._.
+Finally_RB ,_, if_IN the_DT constraints_NNS on_IN the_DT total_JJ length_NN and_CC on_IN the_DT length_NN ratio_NN hold_NN ,_, the_DT core_NN generates_VBZ a_DT detection_NN event_NN along_IN with_IN the_DT actual_JJ length_NN ,_, amplitude_NN and_CC energy_NN of_IN the_DT period_NN calculated_VBN concurrently_RB ._.
+The_DT initial_JJ triggering_NN mechanism_NN is_VBZ based_VBN on_IN two_CD amplitude_NN thresholds_NNS :_: one_CD static_JJ -LRB-_-LRB- but_CC configurable_JJ -RRB-_-RRB- amplitude_NN level_NN and_CC a_DT dynamically_RB computed_VBN one_CD ._.
+The_DT latter_JJ one_CD is_VBZ essential_JJ to_TO adapt_VB the_DT sensor_NN to_TO different_JJ ambient_JJ noise_NN environments_NNS and_CC to_TO temporarily_RB suspend_VB the_DT muzzle_NN blast_NN detector_NN after_IN a_DT shock_NN wave_NN event_NN -LRB-_-LRB- oscillations_NNS in_IN the_DT analog_NN section_NN or_CC reverberations_NNS in_IN the_DT sensor_NN enclosure_NN might_MD otherwise_RB trigger_VB false_JJ muzzle_NN blast_NN detections_NNS -RRB-_-RRB- ._.
+The_DT dynamic_JJ noise_NN level_NN is_VBZ estimated_VBN by_IN a_DT single_JJ pole_NN recursive_JJ low-pass_JJ filter_NN -LRB-_-LRB- cutoff_NN @_IN #_# ._.
+#_# kHz_NN -RRB-_-RRB- on_IN the_DT FPGA_NNP ._.
+117_CD 0_CD ####_CD ####_CD ####_CD ####_CD ####_CD ####_CD ####_CD ####_CD ####_CD #####_CD -1_CD -0_CD ._.
+#_# -0_CD ._.
+#_# -0_CD ._.
+#_# -0_CD ._.
+#_# 0_CD 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 0_CD ._.
+#_# 1_CD Time_NN -LRB-_-LRB- s_NNS -RRB-_-RRB- Amplitude_NNP Muzzle_NNP blast_NN -LRB-_-LRB- M16_NNP -RRB-_-RRB- 1_CD 2_CD 3_CD 4_CD #_# len2_NN +_CC len1_NN -LRB-_-LRB- a_DT -RRB-_-RRB- IDLE_NN 1_CD SECOND_NNP ZC_NNP 3_CD PENDING_NNP ZC_NNP 4_CD FIRST_NNP ZC_NNP 2_CD FOUND_NNP 5_CD amplitude_NN threshold_NN long_RB positive_JJ ZC_NNP long_RB negative_JJ ZC_NN valid_JJ full_JJ period_NN max_NN garbage_NN wrong_JJ sign_NN garbage_NN collect_VB first_JJ period_NN garbage_NN collect_VB first_JJ period_NN garbage_NN -LRB-_-LRB- b_NN -RRB-_-RRB- Figure_NN #_# :_: Muzzle_NNP blast_NN signature_NN -LRB-_-LRB- a_DT -RRB-_-RRB- produced_VBN by_IN an_DT M16_NNP assault_NN rifle_NN and_CC the_DT corresponding_JJ detection_NN logic_NN -LRB-_-LRB- b_NN -RRB-_-RRB- ._.
+The_DT detection_NN cores_NNS were_VBD originally_RB implemented_VBN in_IN Java_NNP and_CC evaluated_VBN on_IN pre-recorded_JJ signals_NNS because_IN of_IN much_JJ faster_RBR test_NN runs_NNS and_CC more_RBR convenient_JJ debugging_VBG facilities_NNS ._.
+Later_RB on_IN ,_, they_PRP were_VBD ported_VBN to_TO VHDL_NNP and_CC synthesized_VBN using_VBG the_DT Xilinx_NNP ISE_NNP tool_NN suite_NN ._.
+The_DT functional_JJ equivalence_JJ between_IN the_DT two_CD implementations_NNS were_VBD tested_VBN by_IN VHDL_NN test_NN benches_NNS and_CC Python_NNP scripts_NNS which_WDT provided_VBD an_DT automated_JJ way_NN to_TO exercise_VB the_DT detection_NN cores_NNS on_IN the_DT same_JJ set_NN of_IN pre-recorded_JJ signals_NNS and_CC to_TO compare_VB the_DT results_NNS ._.
+6_CD ._.
+SENSOR_NN FUSION_NN The_DT sensor_NN fusion_NN algorithm_NN receives_VBZ detection_NN messages_NNS from_IN the_DT sensor_NN network_NN and_CC estimates_VBZ the_DT bullet_NN trajectory_NN ,_, the_DT shooter_NN position_NN ,_, the_DT caliber_NN of_IN the_DT projectile_NN and_CC the_DT type_NN of_IN the_DT weapon_NN ._.
+The_DT algorithm_NN consists_VBZ of_IN well_RB separated_JJ computational_JJ tasks_NNS outlined_VBN below_IN :_: 1_LS ._.
+Compute_VB muzzle_NN blast_NN and_CC shockwave_NN directions_NNS of_IN arrivals_NNS for_IN each_DT individual_JJ sensor_NN ._.
+2_LS ._.
+Compute_VB range_NN estimates_NNS ._.
+This_DT algorithm_NN can_MD analytically_RB fuse_NN a_DT pair_NN of_IN shockwave_NN and_CC muzzle_NN blast_NN AoA_NN estimates_NNS ._. ._.
+3_LS ._.
+Compute_VB a_DT single_JJ trajectory_NN from_IN all_DT shockwave_NN measurements_NNS ._.
+4_LS ._.
+If_IN trajectory_JJ available_JJ compute_VBP range_NN ._.
+else_RB compute_VB shooter_NN position_NN first_RB and_CC then_RB trajectory_NN based_VBN on_IN it_PRP ._.
+5_CD ._.
+If_IN trajectory_JJ available_JJ compute_VBP caliber_NN ._.
+6_CD ._.
+If_IN caliber_NN available_JJ compute_VBP weapon_NN type_NN ._.
+We_PRP describe_VBP each_DT step_NN in_IN the_DT following_VBG sections_NNS in_IN detail_NN ._.
+6_CD ._.
+#_# Direction_NN of_IN arrival_NN The_DT first_JJ step_NN of_IN the_DT sensor_NN fusion_NN is_VBZ to_TO calculate_VB the_DT muzzle_NN blast_NN and_CC shockwave_NN AoA-s_NNS for_IN each_DT sensorboard_NN ._.
+Each_DT sensorboard_NN has_VBZ four_CD microphones_NNS that_WDT measure_VBP the_DT ToA-s_NNS ._.
+Since_IN the_DT microphone_NN spacing_NN is_VBZ orders_NNS of_IN magnitude_NN smaller_JJR than_IN the_DT distance_NN to_TO the_DT sound_JJ source_NN ,_, we_PRP can_MD approximate_JJ the_DT approaching_VBG sound_NN wave_NN front_NN with_IN a_DT plane_NN -LRB-_-LRB- far_RB field_NN assumption_NN -RRB-_-RRB- ._.
+Let_VB us_PRP formalize_VB the_DT problem_NN for_IN #_# microphones_NNS first_RB ._.
+Let_VB P1_NN ,_, P2_NN and_CC P3_NN be_VB the_DT position_NN of_IN the_DT microphones_NNS ordered_VBN by_IN time_NN of_IN arrival_NN t1_NN <_JJR t2_CD <_JJR t3_CD ._.
+First_RB we_PRP apply_VBP a_DT simple_JJ geometry_NN validation_NN step_NN ._.
+The_DT measured_VBN time_NN difference_NN between_IN two_CD microphones_NNS can_MD not_RB be_VB larger_JJR than_IN the_DT sound_JJ propagation_NN time_NN between_IN the_DT two_CD microphones_NNS :_: |_CD ti_NN tj_NN |_NN <_JJR =_JJ |_CD Pi_NN Pj_NN |_CD /_: c_NN +_CC Where_WRB c_NN is_VBZ the_DT speed_NN of_IN sound_NN and_CC is_VBZ the_DT maximum_NN measurement_NN error_NN ._.
+If_IN this_DT condition_NN does_VBZ not_RB hold_VB ,_, the_DT corresponding_JJ detections_NNS are_VBP discarded_VBN ._.
+Let_VB v_LS -LRB-_-LRB- x_NN ,_, y_NN ,_, z_SYM -RRB-_-RRB- be_VB the_DT normal_JJ vector_NN of_IN the_DT unknown_JJ direction_NN of_IN arrival_NN ._.
+We_PRP also_RB use_VBP r1_NN -LRB-_-LRB- x1_NN ,_, y1_NN ,_, z1_NN -RRB-_-RRB- ,_, the_DT vector_NN from_IN P1_NN to_TO P2_NN and_CC r2_NN -LRB-_-LRB- x2_NN ,_, y2_NN ,_, z2_NN -RRB-_-RRB- ,_, the_DT vector_NN from_IN P1_NN to_TO P3_NN ._.
+Let_VB ''_'' s_NNS consider_VBP the_DT projection_NN of_IN the_DT direction_NN of_IN the_DT motion_NN of_IN the_DT wave_NN front_NN -LRB-_-LRB- v_LS -RRB-_-RRB- to_TO r1_VB divided_VBN by_IN the_DT speed_NN of_IN sound_NN -LRB-_-LRB- c_NN -RRB-_-RRB- ._.
+This_DT gives_VBZ us_PRP how_WRB long_JJ it_PRP takes_VBZ the_DT wave_NN front_NN to_TO propagate_VB form_NN P1_NN to_TO P2_NN :_: vr1_NN =_JJ c_NN -LRB-_-LRB- t2_NN t1_NN -RRB-_-RRB- The_DT same_JJ relationship_NN holds_VBZ for_IN r2_NN and_CC v_LS :_: vr2_NN =_JJ c_NN -LRB-_-LRB- t3_NN t1_NN -RRB-_-RRB- We_PRP also_RB know_VBP that_IN v_LS is_VBZ a_DT normal_JJ vector_NN :_: vv_NN =_JJ #_# Moving_VBG from_IN vectors_NNS to_TO coordinates_VBZ using_VBG the_DT dot_NN product_NN definition_NN leads_VBZ to_TO a_DT quadratic_JJ system_NN :_: xx1_NN +_CC yy1_NN +_CC zz1_NN =_JJ c_NN -LRB-_-LRB- t2_NN t1_NN -RRB-_-RRB- xx2_NN +_CC yy2_NN +_CC zz2_NN =_JJ c_NN -LRB-_-LRB- t3_NN t1_NN -RRB-_-RRB- x2_NN +_CC y2_NN +_CC z2_NN =_JJ #_# We_PRP omit_VBP the_DT solution_NN steps_NNS here_RB ,_, as_IN they_PRP are_VBP straightforward_JJ ,_, but_CC long_RB ._.
+There_EX are_VBP two_CD solutions_NNS -LRB-_-LRB- if_IN the_DT source_NN is_VBZ on_IN the_DT P1P2P3_NN plane_NN the_DT two_CD solutions_NNS coincide_VBP -RRB-_-RRB- ._.
+We_PRP use_VBP the_DT fourth_JJ microphone_NN ''_'' s_NNS measurement-if_JJ there_EX is_VBZ one-to_JJ eliminate_VB one_CD of_IN them_PRP ._.
+Otherwise_RB ,_, both_DT solutions_NNS are_VBP considered_VBN for_IN further_JJ processing_NN ._.
+6_CD ._.
+#_# Muzzle-shock_JJ fusion_NN u_FW v_LS 11_CD ,_, tP_NN 22_CD ,_, tP_NN tP_NN ,_, 2P_NN Bullet_NN trajectory_NN Figure_NN #_# :_: Section_NN plane_NN of_IN a_DT shot_NN -LRB-_-LRB- at_IN P_NN -RRB-_-RRB- and_CC two_CD sensors_NNS -LRB-_-LRB- at_IN P1_NN and_CC at_IN P2_NN -RRB-_-RRB- ._.
+One_CD sensor_NN detects_VBZ the_DT muzzle_JJ blast_NN ''_'' s_NNS ,_, the_DT other_JJ the_DT shockwave_NN ''_'' s_NNS time_NN and_CC direction_NN of_IN arrivals_NNS ._.
+Consider_VB the_DT situation_NN in_IN Figure_NNP #_# ._.
+A_DT shot_NN was_VBD fired_VBN from_IN P_NN at_IN time_NN t_NN ._.
+Both_DT P_NN and_CC t_NN are_VBP unknown_JJ ._.
+We_PRP have_VBP one_CD muzzle_JJ blast_NN and_CC one_CD shockwave_NN detections_NNS by_IN two_CD different_JJ sensors_NNS 118_CD with_IN AoA_NN and_CC hence_RB ,_, ToA_NN information_NN available_JJ ._.
+The_DT muzzle_JJ blast_NN detection_NN is_VBZ at_IN position_NN P1_NN with_IN time_NN t1_NN and_CC AoA_NN u_NN ._.
+The_DT shockwave_NN detection_NN is_VBZ at_IN P2_NN with_IN time_NN t2_NN and_CC AoA_NN v_LS ._.
+u_NN and_CC v_LS are_VBP normal_JJ vectors_NNS ._.
+It_PRP is_VBZ shown_VBN below_IN that_IN these_DT measurements_NNS are_VBP sufficient_JJ to_TO compute_VB the_DT position_NN of_IN the_DT shooter_NN -LRB-_-LRB- P_NN -RRB-_-RRB- ._.
+Let_VB P2_NN be_VB the_DT point_NN on_IN the_DT extended_JJ shockwave_NN cone_NN surface_NN where_WRB PP2_NN is_VBZ perpendicular_JJ to_TO the_DT surface_NN ._.
+Note_VB that_DT PP2_NN is_VBZ parallel_JJ with_IN v_LS ._.
+Since_IN P2_NN is_VBZ on_IN the_DT cone_NN surface_NN which_WDT hits_VBZ P2_NN ,_, a_DT sensor_NN at_IN P2_NN would_MD detect_VB the_DT same_JJ shockwave_NN time_NN of_IN arrival_NN -LRB-_-LRB- t2_NN -RRB-_-RRB- ._.
+The_DT cone_NN surface_NN travels_VBZ at_IN the_DT speed_NN of_IN sound_NN -LRB-_-LRB- c_NN -RRB-_-RRB- ,_, so_IN we_PRP can_MD express_VB P_NN using_VBG P2_NN :_: P_NN =_JJ P2_NN +_CC cv_NN -LRB-_-LRB- t2_NN t_NN -RRB-_-RRB- ._.
+P_NN can_MD also_RB be_VB expressed_VBN from_IN P1_NN :_: P_NN =_JJ P1_NN +_CC cu_NN -LRB-_-LRB- t1_NN t_NN -RRB-_-RRB- yielding_VBG P1_NN +_CC cu_NN -LRB-_-LRB- t1_NN t_NN -RRB-_-RRB- =_JJ P2_NN +_CC cv_NN -LRB-_-LRB- t2_NN t_NN -RRB-_-RRB- ._.
+P2P2_NN is_VBZ perpendicular_JJ to_TO v_LS :_: -LRB-_-LRB- P2_NN P2_NN -RRB-_-RRB- v_LS =_JJ #_# yielding_VBG -LRB-_-LRB- P1_NN +_CC cu_NN -LRB-_-LRB- t1_NN t_NN -RRB-_-RRB- cv_NN -LRB-_-LRB- t2_NN t_NN -RRB-_-RRB- P2_NN -RRB-_-RRB- v_LS =_JJ #_# containing_VBG only_RB one_CD unknown_JJ t_NN ._.
+One_CD obtains_VBZ :_: t_NN =_JJ -LRB-_-LRB- P1P2_NN -RRB-_-RRB- v_LS c_NN +_CC uvt1t2_NN uv1_NN ._.
+From_IN here_RB we_PRP can_MD calculate_VB the_DT shoter_NN position_NN P_NN ._.
+Let_VB ''_'' s_NNS consider_VBP the_DT special_JJ single_JJ sensor_NN case_NN where_WRB P1_NN =_JJ P2_NN -LRB-_-LRB- one_CD sensor_NN detects_VBZ both_CC shockwave_NN and_CC muzzle_NN blast_NN AoA_NN -RRB-_-RRB- ._.
+In_IN this_DT case_NN :_: t_NN =_JJ uvt1t2_NN uv1_NN ._.
+Since_IN u_NN and_CC v_LS are_VBP not_RB used_VBN separately_RB only_RB uv_NN ,_, the_DT absolute_JJ orientation_NN of_IN the_DT sensor_NN can_MD be_VB arbitrary_JJ ,_, we_PRP still_RB get_VB t_NN which_WDT gives_VBZ us_PRP the_DT range_NN ._.
+Here_RB we_PRP assumed_VBD that_IN the_DT shockwave_NN is_VBZ a_DT cone_NN which_WDT is_VBZ only_RB true_JJ for_IN constant_JJ projectile_NN speeds_NNS ._.
+In_IN reality_NN ,_, the_DT angle_NN of_IN the_DT cone_NN slowly_RB grows_VBZ ;_: the_DT surface_NN resembles_VBZ one_CD half_NN of_IN an_DT American_JJ football_NN ._.
+The_DT decelerating_VBG bullet_NN results_NNS in_IN a_DT smaller_JJR time_NN difference_NN between_IN the_DT shockwave_NN and_CC the_DT muzzle_NN blast_NN detections_NNS because_IN the_DT shockwave_NN generation_NN slows_VBZ down_RP with_IN the_DT bullet_NN ._.
+A_DT smaller_JJR time_NN difference_NN results_VBZ in_IN a_DT smaller_JJR range_NN ,_, so_IN the_DT above_JJ formula_NN underestimates_VBZ the_DT true_JJ range_NN ._.
+However_RB ,_, it_PRP can_MD still_RB be_VB used_VBN with_IN a_DT proper_JJ deceleration_NN correction_NN function_NN ._.
+We_PRP leave_VBP this_DT for_IN future_JJ work_NN ._.
+6_CD ._.
+#_# Trajectory_NNP estimation_NN Danicki_NNP showed_VBD that_IN the_DT bullet_NN trajectory_NN and_CC speed_NN can_MD be_VB computed_VBN analytically_RB from_IN two_CD independent_JJ shockwave_NN measurements_NNS where_WRB both_DT ToA_NN and_CC AoA_NN are_VBP measured_VBN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+The_DT method_NN gets_VBZ more_RBR sensitive_JJ to_TO measurement_NN errors_NNS as_IN the_DT two_CD shockwave_NN directions_NNS get_VBP closer_JJR to_TO each_DT other_JJ ._.
+In_IN the_DT special_JJ case_NN when_WRB both_DT directions_NNS are_VBP the_DT same_JJ ,_, the_DT trajectory_NN can_MD not_RB be_VB computed_VBN ._.
+In_IN a_DT real_JJ world_NN application_NN ,_, the_DT sensors_NNS are_VBP typically_RB deployed_VBN on_IN a_DT plane_NN approximately_RB ._.
+In_IN this_DT case_NN ,_, all_DT sensors_NNS located_VBN on_IN one_CD side_NN of_IN the_DT trajectory_NN measure_NN almost_RB the_DT same_JJ shockwave_NN AoA_NN ._.
+To_TO avoid_VB this_DT error_NN sensitivity_NN problem_NN ,_, we_PRP consider_VBP shockwave_NN measurement_NN pairs_NNS only_RB if_IN the_DT direction_NN of_IN arrival_NN difference_NN is_VBZ larger_JJR than_IN a_DT certain_JJ threshold_NN ._.
+We_PRP have_VBP multiple_JJ sensors_NNS and_CC one_CD sensor_NN can_MD report_VB two_CD different_JJ directions_NNS -LRB-_-LRB- when_WRB only_RB three_CD microphones_NNS detect_VB the_DT shockwave_NN -RRB-_-RRB- ._.
+Hence_RB ,_, we_PRP typically_RB have_VBP several_JJ trajectory_JJ candidates_NNS ,_, i_FW ._.
+e_LS ._.
+one_CD for_IN each_DT AoA_NN pair_NN over_IN the_DT threshold_NN ._.
+We_PRP applied_VBD an_DT outlier_NN filtering_VBG and_CC averaging_VBG method_NN to_TO fuse_NN together_RB the_DT shockwave_NN direction_NN and_CC time_NN information_NN and_CC come_VB up_RP with_IN a_DT single_JJ trajectory_NN ._.
+Assume_VB that_IN we_PRP have_VBP N_NN individual_JJ shockwave_NN AoA_NN measurements_NNS ._.
+Let_VB ''_'' s_NNS take_VBP all_DT possible_JJ unordered_JJ pairs_NNS where_WRB the_DT direction_NN difference_NN is_VBZ above_IN the_DT mentioned_VBN threshold_NN and_CC compute_VB the_DT trajectory_NN for_IN each_DT ._.
+This_DT gives_VBZ us_PRP at_IN most_JJS N_NN -LRB-_-LRB- N1_NN -RRB-_-RRB- 2_CD trajectories_NNS ._.
+A_DT trajectory_NN is_VBZ represented_VBN by_IN one_CD point_NN pi_NN and_CC the_DT normal_JJ vector_NN vi_LS -LRB-_-LRB- where_WRB i_FW is_VBZ the_DT trajectory_JJ index_NN -RRB-_-RRB- ._.
+We_PRP define_VBP the_DT distance_NN of_IN two_CD trajectories_NNS as_IN the_DT dot_NN product_NN of_IN their_PRP$ normal_JJ vectors_NNS :_: D_NN -LRB-_-LRB- i_FW ,_, j_NN -RRB-_-RRB- =_JJ vivj_NN For_IN each_DT trajectory_NN a_DT neighbor_NN set_NN is_VBZ defined_VBN :_: N_NN -LRB-_-LRB- i_LS -RRB-_-RRB- :_: =_JJ -LCB-_-LRB- j_NN |_NN D_NN -LRB-_-LRB- i_FW ,_, j_NN -RRB-_-RRB- <_JJR R_NN -RCB-_-RRB- where_WRB R_NN is_VBZ a_DT radius_NN parameter_NN ._.
+The_DT largest_JJS neighbor_NN set_NN is_VBZ considered_VBN to_TO be_VB the_DT core_NN set_NN C_NN ,_, all_DT other_JJ trajectories_NNS are_VBP outliers_NNS ._.
+The_DT core_NN set_NN can_MD be_VB found_VBN in_IN O_NN -LRB-_-LRB- N2_NN -RRB-_-RRB- time_NN ._.
+The_DT trajectories_NNS in_IN the_DT core_NN set_NN are_VBP then_RB averaged_VBN to_TO get_VB the_DT final_JJ trajectory_NN ._.
+It_PRP can_MD happen_VB that_IN we_PRP can_MD not_RB form_VB any_DT sensor_NN pairs_NNS because_IN of_IN the_DT direction_NN difference_NN threshold_NN ._.
+It_PRP means_VBZ all_DT sensors_NNS are_VBP on_IN the_DT same_JJ side_NN of_IN the_DT trajectory_NN ._.
+In_IN this_DT case_NN ,_, we_PRP first_RB compute_VB the_DT shooter_NN position_NN -LRB-_-LRB- described_VBN in_IN the_DT next_JJ section_NN -RRB-_-RRB- that_WDT fixes_NNS p_NN making_VBG v_LS the_DT only_JJ unknown_NN ._.
+To_TO find_VB v_LS in_IN this_DT case_NN ,_, we_PRP use_VBP a_DT simple_JJ high_JJ resolution_NN grid_NN search_NN and_CC minimize_VB an_DT error_NN function_NN based_VBN on_IN the_DT shockwave_NN directions_NNS ._.
+We_PRP have_VBP made_VBN experiments_NNS to_TO utilize_VB the_DT measured_VBN shockwave_NN length_NN in_IN the_DT trajectory_NN estimation_NN ._.
+There_EX are_VBP some_DT promising_JJ results_NNS ,_, but_CC it_PRP needs_VBZ further_JJ research_NN ._.
+6_CD ._.
+#_# Shooter_NNP position_NN estimation_NN The_DT shooter_NN position_NN estimation_NN algorithm_NN aggregates_NNS the_DT following_JJ heterogenous_JJ information_NN generated_VBN by_IN earlier_JJR computational_JJ steps_NNS :_: 1_CD ._.
+trajectory_NN ,_, 2_CD ._.
+muzzle_NN blast_NN ToA_NN at_IN a_DT sensor_NN ,_, 3_CD ._.
+muzzle_NN blast_NN AoA_NN at_IN a_DT sensor_NN ,_, which_WDT is_VBZ effectively_RB a_DT bearing_VBG estimate_NN to_TO the_DT shooter_NN ,_, and_CC 4_CD ._.
+range_NN estimate_NN at_IN a_DT sensor_NN -LRB-_-LRB- when_WRB both_DT shockwave_NN and_CC muzzle_NN blast_NN AoA_NN are_VBP available_JJ -RRB-_-RRB- ._.
+Some_DT sensors_NNS report_VBP only_RB ToA_NNP ,_, some_DT has_VBZ bearing_VBG estimate_NN -LRB-_-LRB- s_NNS -RRB-_-RRB- also_RB and_CC some_DT has_VBZ range_NN estimate_NN -LRB-_-LRB- s_NNS -RRB-_-RRB- as_RB well_RB ,_, depending_VBG on_IN the_DT number_NN of_IN successful_JJ muzzle_JJ blast_NN and_CC shockwave_NN detections_NNS by_IN the_DT sensor_NN ._.
+For_IN an_DT example_NN ,_, refer_VBP to_TO Figure_NNP #_# ._.
+Note_VB that_IN a_DT sensor_NN may_MD have_VB two_CD different_JJ bearing_NN and_CC range_NN estimates_NNS ._.
+#_# detections_NNS gives_VBZ two_CD possible_JJ AoA-s_NNS for_IN muzzle_JJ blast_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+bearing_NN -RRB-_-RRB- and_CC /_: or_CC shockwave_NN ._.
+Furthermore_RB ,_, the_DT combination_NN of_IN two_CD different_JJ muzzle_NN blast_NN and_CC shockwave_NN AoA-s_NNS may_MD result_VB in_IN two_CD different_JJ ranges_NNS ._.
+119_CD 11111_CD ,_, ,_, ,_, ,_, rrvvt_NN 22_CD ,_, vt_NN 333_CD ,_, ,_, vvt_NN 4t_NN 5t_NN 6t_JJ bullet_NN trajectory_NN shooter_NN position_NN Figure_NN #_# :_: Example_NN of_IN heterogenous_JJ input_NN data_NNS for_IN the_DT shooter_NN position_NN estimation_NN algorithm_NN ._.
+All_DT sensors_NNS have_VBP ToA_NN measurements_NNS -LRB-_-LRB- t1_NN ,_, t2_NN ,_, t3_NN ,_, t4_NN ,_, t5_NN -RRB-_-RRB- ,_, one_CD sensor_NN has_VBZ a_DT single_JJ bearing_NN estimate_NN -LRB-_-LRB- v2_NN -RRB-_-RRB- ,_, one_CD sensor_NN has_VBZ two_CD possible_JJ bearings_NNS -LRB-_-LRB- v3_NN ,_, v3_NN -RRB-_-RRB- and_CC one_CD sensor_NN has_VBZ two_CD bearing_NN and_CC two_CD range_NN estimates_NNS -LRB-_-LRB- v1_NN ,_, v1_NN ,_, r1_NN ,_, r1_NN -RRB-_-RRB- In_IN a_DT multipath_JJ environment_NN ,_, these_DT detections_NNS will_MD not_RB only_RB contain_VBP gaussian_JJ noise_NN ,_, but_CC also_RB possibly_RB large_JJ errors_NNS due_JJ to_TO echoes_NNS ._.
+It_PRP has_VBZ been_VBN showed_VBN in_IN our_PRP$ earlier_JJR work_NN that_IN a_DT similar_JJ problem_NN can_MD be_VB solved_VBN efficiently_RB with_IN an_DT interval_JJ arithmetic_NN based_VBN bisection_NN search_NN algorithm_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+The_DT basic_JJ idea_NN is_VBZ to_TO define_VB a_DT discrete_JJ consistency_NN function_NN over_IN the_DT area_NN of_IN interest_NN and_CC subdivide_VB the_DT space_NN into_IN 3D_NN boxes_NNS ._.
+For_IN any_DT given_VBN 3D_NN box_NN ,_, this_DT function_NN gives_VBZ the_DT number_NN of_IN measurements_NNS supporting_VBG the_DT hypothesis_NN that_IN the_DT shooter_NN was_VBD within_IN that_DT box_NN ._.
+The_DT search_NN starts_VBZ with_IN a_DT box_NN large_JJ enough_RB to_TO contain_VB the_DT whole_JJ area_NN of_IN interest_NN ,_, then_RB zooms_VBZ in_IN by_IN dividing_VBG and_CC evaluating_VBG boxes_NNS ._.
+The_DT box_NN with_IN the_DT maximum_NN consistency_NN is_VBZ divided_VBN until_IN the_DT desired_VBN precision_NN is_VBZ reached_VBN ._.
+Backtracking_VBG is_VBZ possible_JJ to_TO avoid_VB getting_VBG stuck_VBN in_IN a_DT local_JJ maximum_NN ._.
+This_DT approach_NN has_VBZ been_VBN shown_VBN to_TO be_VB fast_RB enough_RB for_IN online_NN processing_NN ._.
+Note_VB ,_, however_RB ,_, that_IN when_WRB the_DT trajectory_NN has_VBZ already_RB been_VBN calculated_VBN in_IN previous_JJ steps_NNS ,_, the_DT search_NN needs_VBZ to_TO be_VB done_VBN only_RB on_IN the_DT trajectory_NN making_VBG it_PRP orders_NNS of_IN magnitude_NN faster_RBR ._.
+Next_JJ let_VB us_PRP describe_VB how_WRB the_DT consistency_NN function_NN is_VBZ calculated_VBN in_IN detail_NN ._.
+Consider_VB B_NN ,_, a_DT three_CD dimensional_JJ box_NN ,_, we_PRP would_MD like_VB to_TO compute_VB the_DT consistency_NN value_NN of_IN ._.
+First_RB we_PRP consider_VBP only_RB the_DT ToA_NN information_NN ._.
+If_IN one_CD sensor_NN has_VBZ multiple_JJ ToA_NN detections_NNS ,_, we_PRP use_VBP the_DT average_NN of_IN those_DT times_NNS ,_, so_RB one_CD sensor_NN supplies_NNS at_IN most_JJS one_CD ToA_NN estimate_NN ._.
+For_IN each_DT ToA_NN ,_, we_PRP can_MD calculate_VB the_DT corresponding_JJ time_NN of_IN the_DT shot_NN ,_, since_IN the_DT origin_NN is_VBZ assumed_VBN to_TO be_VB in_IN box_NN B_NN ._.
+Since_IN it_PRP is_VBZ a_DT box_NN and_CC not_RB a_DT single_JJ point_NN ,_, this_DT gives_VBZ us_PRP an_DT interval_NN for_IN the_DT shot_NN time_NN ._.
+The_DT maximum_NN number_NN of_IN overlapping_VBG time_NN intervals_NNS gives_VBZ us_PRP the_DT value_NN of_IN the_DT consistency_NN function_NN for_IN B_NN ._.
+For_IN a_DT detailed_JJ description_NN of_IN the_DT consistency_NN function_NN and_CC search_NN algorithm_NN ,_, refer_VBP to_TO -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+Here_RB we_PRP extend_VBP the_DT approach_NN the_DT following_VBG way_NN ._.
+We_PRP modify_VBP the_DT consistency_NN function_NN based_VBN on_IN the_DT bearing_NN and_CC range_NN data_NNS from_IN individual_JJ sensors_NNS ._.
+A_DT bearing_VBG estimate_NN supports_VBZ B_NN if_IN the_DT line_NN segment_NN starting_VBG from_IN the_DT sensor_NN with_IN the_DT measured_VBN direction_NN intersects_VBZ the_DT B_NN box_NN ._.
+A_DT range_NN supports_VBZ B_NN ,_, if_IN the_DT sphere_NN with_IN the_DT radius_NN of_IN the_DT range_NN and_CC origin_NN of_IN the_DT sensor_NN intersects_VBZ B_NN ._.
+Instead_RB of_IN simply_RB checking_VBG whether_IN the_DT position_NN specified_VBN by_IN the_DT corresponding_JJ bearing-range_JJ pairs_NNS falls_VBZ within_IN B_NN ,_, this_DT eliminates_VBZ the_DT sensor_NN ''_'' s_NNS possible_JJ orientation_NN error_NN ._.
+The_DT value_NN of_IN the_DT consistency_NN function_NN is_VBZ incremented_VBN by_IN one_CD for_IN each_DT bearing_NN and_CC range_NN estimate_NN that_WDT is_VBZ consistent_JJ with_IN B_NN ._.
+6_CD ._.
+#_# Caliber_JJR estimation_NN The_DT shockwave_NN signal_NN characteristics_NNS has_VBZ been_VBN studied_VBN before_IN by_IN Whitham_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+He_PRP showed_VBD that_IN the_DT shockwave_NN period_NN T_NN is_VBZ related_VBN to_TO the_DT projectile_NN diameter_NN d_NN ,_, the_DT length_NN l_NN ,_, the_DT perpendicular_JJ miss_VBP distance_NN b_NN from_IN the_DT bullet_NN trajectory_NN to_TO the_DT sensor_NN ,_, the_DT Mach_NNP number_NN M_NN and_CC the_DT speed_NN of_IN sound_JJ c_NN ._.
+T_NN =_JJ #_# ._.
+82Mb1_NN /_: #_# c_NN -LRB-_-LRB- M21_NN -RRB-_-RRB- #_# /_: #_# d_FW l1_FW /_: #_# #_# ._.
+82d_NN c_NN -LRB-_-LRB- Mb_NN l_NN -RRB-_-RRB- #_# /_: #_# 0_CD 100_CD 200_CD 300_CD 400_CD 500_CD 600_CD 0_CD ##_CD ##_CD ##_NNS miss_VBP distance_NN -LRB-_-LRB- m_NN -RRB-_-RRB- shockwavelength_NN -LRB-_-LRB- microseconds_NNS -RRB-_-RRB- ._.
+##_NN cal_JJ 5_CD ._.
+##_NN mm_NN 7_CD ._.
+##_NN mm_NN Figure_NN #_# :_: Shockwave_NNP length_NN and_CC miss_VBP distance_NN relationship_NN ._.
+Each_DT data_NNS point_NN represents_VBZ one_CD sensorboard_NN after_IN an_DT aggregation_NN of_IN the_DT individual_JJ measurements_NNS of_IN the_DT four_CD acoustic_JJ channels_NNS ._.
+Three_CD different_JJ caliber_NN projectiles_NNS have_VBP been_VBN tested_VBN -LRB-_-LRB- ###_CD shots_NNS ,_, ##_CD sensors_NNS -RRB-_-RRB- ._.
+To_TO illustrate_VB the_DT relationship_NN between_IN miss_VBP distance_NN and_CC shockwave_NN length_NN ,_, here_RB we_PRP use_VBP all_DT ###_CD shots_NNS with_IN three_CD different_JJ caliber_NN projectiles_NNS fired_VBD during_IN the_DT evaluation_NN ._.
+-LRB-_-LRB- During_IN the_DT evaluation_NN we_PRP used_VBD data_NNS obtained_VBN previously_RB using_VBG a_DT few_JJ practice_NN shots_NNS per_IN weapon_NN ._. -RRB-_-RRB-
+##_NN sensors_NNS -LRB-_-LRB- #_# microphones_NNS by_IN sensor_NN -RRB-_-RRB- measured_VBD the_DT shockwave_NN length_NN ._.
+For_IN each_DT sensor_NN ,_, we_PRP considered_VBD the_DT shockwave_NN length_NN estimation_NN valid_JJ if_IN at_IN least_JJS three_CD out_IN of_IN four_CD microphones_NNS agreed_VBD on_IN a_DT value_NN with_IN at_IN most_JJS #_# microsecond_NN variance_NN ._.
+This_DT filtering_VBG leads_VBZ to_TO a_DT 86_CD %_NN report_NN rate_NN per_IN sensor_NN and_CC gets_VBZ rid_JJ of_IN large_JJ measurement_NN errors_NNS ._.
+The_DT experimental_JJ data_NNS is_VBZ shown_VBN in_IN Figure_NNP #_# ._.
+Whitham_NNP ''_'' s_VBZ formula_NN suggests_VBZ that_IN the_DT shockwave_NN length_NN for_IN a_DT given_VBN caliber_NN can_MD be_VB approximated_VBN with_IN a_DT power_NN function_NN of_IN the_DT miss_VBP distance_NN -LRB-_-LRB- with_IN a_DT #_# /_: #_# exponent_NN -RRB-_-RRB- ._.
+Best_JJS fit_JJ functions_NNS on_IN our_PRP$ data_NNS are_VBP :_: ._.
+##_NN cal_NN :_: T_NN =_JJ ###_CD ._.
+75b0_NNS ._.
+####_NN 7_CD ._.
+##_NN mm_NN :_: T_NN =_JJ ###_CD ._.
+11b0_NN ._.
+####_CD 5_CD ._.
+##_NN mm_NN :_: T_NN =_JJ ###_CD ._.
+39b0_NN ._.
+####_CD To_TO evaluate_VB a_DT shot_NN ,_, we_PRP take_VBP the_DT caliber_NN whose_WP$ approximation_NN function_NN results_VBZ in_IN the_DT smallest_JJS RMS_NNP error_NN of_IN the_DT filtered_VBN sensor_NN readings_NNS ._.
+This_DT method_NN has_VBZ less_JJR than_IN #_# %_NN caliber_NN estimation_NN error_NN when_WRB an_DT accurate_JJ trajectory_JJ estimate_NN is_VBZ available_JJ ._.
+In_IN other_JJ words_NNS ,_, caliber_NN estimation_NN only_RB works_VBZ if_IN enough_JJ shockwave_NN detections_NNS are_VBP made_VBN by_IN the_DT system_NN to_TO compute_VB a_DT trajectory_NN ._.
+120_CD 6_CD ._.
+#_# Weapon_NNP estimation_NN We_PRP analyzed_VBD all_DT measured_VBN signal_NN characteristics_NNS to_TO find_VB weapon_NN specific_JJ information_NN ._.
+Unfortunately_RB ,_, we_PRP concluded_VBD that_IN the_DT observed_VBN muzzle_NN blast_NN signature_NN is_VBZ not_RB characteristic_JJ enough_NN of_IN the_DT weapon_NN for_IN classification_NN purposes_NNS ._.
+The_DT reflections_NNS of_IN the_DT high_JJ energy_NN muzzle_NN blast_NN from_IN the_DT environment_NN have_VBP much_RB higher_JJR impact_NN on_IN the_DT muzzle_NN blast_NN signal_NN shape_NN than_IN the_DT weapon_NN itself_PRP ._.
+Shooting_NN the_DT same_JJ weapon_NN from_IN different_JJ places_NNS caused_VBD larger_JJR differences_NNS on_IN the_DT recorded_JJ signal_NN than_IN shooting_VBG different_JJ weapons_NNS from_IN the_DT same_JJ place_NN ._.
+0_CD 100_CD 200_CD 300_CD 400_CD 500_CD 600_CD 700_CD 800_CD 900_CD 0_CD ###_CD ###_CD ###_CD ###_CD range_NN -LRB-_-LRB- m_NN -RRB-_-RRB- speed_NN -LRB-_-LRB- m_NN /_: s_NNS -RRB-_-RRB- AK-47_NNP M240_NNP Figure_NNP ##_NNP :_: AK47_NN and_CC M240_NN bullet_NN deceleration_NN measurements_NNS ._.
+Both_DT weapons_NNS have_VBP the_DT same_JJ caliber_NN ._.
+Data_NNS is_VBZ approximated_VBN using_VBG simple_JJ linear_JJ regression_NN ._.
+0_CD 100_CD 200_CD 300_CD 400_CD 500_CD 600_CD 700_CD 800_CD 900_CD 1000_CD 0_CD ##_CD ###_CD ###_CD ###_CD ###_CD ###_CD ###_CD range_NN -LRB-_-LRB- m_NN -RRB-_-RRB- speed_NN -LRB-_-LRB- m_NN /_: s_NNS -RRB-_-RRB- M16_NNP M249_NN M4_NN Figure_NN ##_CD :_: M16_NNP ,_, M249_NN and_CC M4_NN bullet_NN deceleration_NN measurements_NNS ._.
+All_DT weapons_NNS have_VBP the_DT same_JJ caliber_NN ._.
+Data_NNS is_VBZ approximated_VBN using_VBG simple_JJ linear_JJ regression_NN ._.
+However_RB ,_, the_DT measured_VBN speed_NN of_IN the_DT projectile_NN and_CC its_PRP$ caliber_NN showed_VBD good_JJ correlation_NN with_IN the_DT weapon_NN type_NN ._.
+This_DT is_VBZ because_IN for_IN a_DT given_VBN weapon_NN type_NN and_CC ammunition_NN pair_NN ,_, the_DT muzzle_NN velocity_NN is_VBZ nearly_RB constant_JJ ._.
+In_IN Figures_NNS ##_CD and_CC 11_CD we_PRP can_MD see_VB the_DT relationship_NN between_IN the_DT range_NN and_CC the_DT measured_VBN bullet_NN speed_NN for_IN different_JJ calibers_NNS and_CC weapons_NNS ._.
+In_IN the_DT supersonic_JJ speed_NN range_NN ,_, the_DT bullet_NN deceleration_NN can_MD be_VB approximated_VBN with_IN a_DT linear_JJ function_NN ._.
+In_IN case_NN of_IN the_DT 7_CD ._.
+##_NN mm_NN caliber_NN ,_, the_DT two_CD tested_VBN weapons_NNS -LRB-_-LRB- AK47_NN ,_, M240_NN -RRB-_-RRB- can_MD be_VB clearly_RB separated_VBN -LRB-_-LRB- Figure_NNP ##_CD -RRB-_-RRB- ._.
+Unfortunately_RB ,_, this_DT is_VBZ not_RB necessarily_RB true_JJ for_IN the_DT #_# ._.
+##_NN mm_NN caliber_NN ._.
+The_DT M16_NNP with_IN its_PRP$ higher_JJR muzzle_NN speed_NN can_MD still_RB be_VB well_RB classified_VBN ,_, but_CC the_DT M4_NN and_CC M249_NN weapons_NNS seem_VBP practically_RB undistinguishable_JJ -LRB-_-LRB- Figure_NN ##_NN -RRB-_-RRB- ._.
+However_RB ,_, this_DT may_MD be_VB partially_RB due_JJ to_TO the_DT limited_JJ number_NN of_IN practice_NN shots_NNS we_PRP were_VBD able_JJ to_TO take_VB before_IN the_DT actual_JJ testing_NN began_VBD ._.
+More_JJR training_NN data_NNS may_MD reveal_VB better_JJR separation_NN between_IN the_DT two_CD weapons_NNS since_IN their_PRP$ published_VBN muzzle_NN velocities_NNS do_VBP differ_VB somewhat_RB ._.
+The_DT system_NN carries_VBZ out_RP weapon_NN classification_NN in_IN the_DT following_VBG manner_NN ._.
+Once_RB the_DT trajectory_NN is_VBZ known_VBN ,_, the_DT speed_NN can_MD be_VB calculated_VBN for_IN each_DT sensor_NN based_VBN on_IN the_DT shockwave_NN geometry_NN ._.
+To_TO evaluate_VB a_DT shot_NN ,_, we_PRP choose_VBP the_DT weapon_NN type_NN whose_WP$ deceleration_NN function_NN results_VBZ in_IN the_DT smallest_JJS RMS_NNP error_NN of_IN the_DT estimated_VBN range-speed_NN pairs_NNS for_IN the_DT estimated_VBN caliber_NN class_NN ._.
+7_CD ._.
+RESULTS_NNS An_DT independent_JJ evaluation_NN of_IN the_DT system_NN was_VBD carried_VBN out_RP by_IN a_DT team_NN from_IN NIST_NNP at_IN the_DT US_NNP Army_NNP Aberdeen_NNP Test_NNP Center_NNP in_IN April_NNP ####_CD -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+The_DT experiment_NN was_VBD setup_NN on_IN a_DT shooting_JJ range_NN with_IN mock-up_JJ wooden_JJ buildings_NNS and_CC walls_NNS for_IN supporting_VBG elevated_JJ shooter_NN positions_NNS and_CC generating_VBG multipath_JJ effects_NNS ._.
+Figure_NNP ##_NN shows_VBZ the_DT user_NN interface_NN with_IN an_DT aerial_JJ photograph_NN of_IN the_DT site_NN ._.
+##_NN sensor_NN nodes_NNS were_VBD deployed_VBN on_IN surveyed_VBN points_NNS in_IN an_DT approximately_RB ####_RB m_NN area_NN ._.
+There_EX were_VBD five_CD fixed_VBN targets_NNS behind_IN the_DT sensor_NN network_NN ._.
+Several_JJ firing_NN positions_NNS were_VBD located_JJ at_IN each_DT of_IN the_DT firing_NN lines_NNS at_IN 50_CD ,_, ###_CD ,_, ###_CD and_CC ###_CD meters_NNS ._.
+These_DT positions_NNS were_VBD known_VBN to_TO the_DT evaluators_NNS ,_, but_CC not_RB to_TO the_DT operators_NNS of_IN the_DT system_NN ._.
+Six_CD different_JJ weapons_NNS were_VBD utilized_VBN :_: AK47_NN and_CC M240_NN firing_NN #_# ._.
+##_NN mm_NN projectiles_NNS ,_, M16_NNP ,_, M4_NN and_CC M249_NN with_IN #_# ._.
+56mm_JJ ammunition_NN and_CC the_DT ._.
+##_NN caliber_NN M107_NN ._.
+Note_VB that_IN the_DT sensors_NNS remained_VBD static_JJ during_IN the_DT test_NN ._.
+The_DT primary_JJ reason_NN for_IN this_DT is_VBZ that_IN nobody_NN is_VBZ allowed_VBN downrange_NN during_IN live_JJ fire_NN tests_NNS ._.
+Utilizing_VBG some_DT kind_NN of_IN remote_JJ control_NN platform_NN would_MD have_VB been_VBN too_RB involved_VBN for_IN the_DT limited_JJ time_NN the_DT range_NN was_VBD available_JJ for_IN the_DT test_NN ._.
+The_DT experiment_NN ,_, therefore_RB ,_, did_VBD not_RB test_VB the_DT mobility_NN aspect_NN of_IN the_DT system_NN ._.
+During_IN the_DT one_CD day_NN test_NN ,_, there_EX were_VBD ###_CD shots_NNS fired_VBD ._.
+The_DT results_NNS are_VBP summarized_VBN in_IN Table_NNP #_# ._.
+The_DT system_NN detected_VBD all_DT shots_NNS successfully_RB ._.
+Since_IN a_DT ballistic_JJ shockwave_NN is_VBZ a_DT unique_JJ acoustic_JJ phenomenon_NN ,_, it_PRP makes_VBZ the_DT detection_NN very_RB robust_JJ ._.
+There_EX were_VBD no_DT false_JJ positives_NNS for_IN shockwaves_NNS ,_, but_CC there_EX were_VBD a_DT handful_NN of_IN false_JJ muzzle_JJ blast_NN detections_NNS due_JJ to_TO parallel_VB tests_NNS of_IN artillery_NN at_IN a_DT nearby_JJ range_NN ._.
+Shooter_NNP Local_NNP -_: Caliber_NNP Trajectory_NNP Trajectory_NNP Distance_NNP No_NNP ._.
+Range_NNP ization_NN Accu_NNP -_: Azimuth_NNP Distance_NNP Error_NNP of_IN -LRB-_-LRB- m_NN -RRB-_-RRB- Rate_NN racy_JJ Error_NN -LRB-_-LRB- deg_NN -RRB-_-RRB- Error_NN -LRB-_-LRB- m_NN -RRB-_-RRB- -LRB-_-LRB- m_NN -RRB-_-RRB- Shots_VBZ 50_CD ##_CD %_NN ###_CD %_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+#_# ##_CD 100_CD ###_CD %_NN ###_CD %_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+#_# ##_CD 200_CD ##_CD %_NN ###_CD %_NN #_# ._.
+##_NN #_# ._.
+##_NN ##_CD ._.
+#_# ##_CD 300_CD ##_CD %_NN ##_CD %_NN #_# ._.
+##_NN #_# ._.
+##_NN ##_CD ._.
+#_# ##_CD All_DT ##_CD %_NN ##_CD ._.
+#_# %_NN #_# ._.
+##_NN #_# ._.
+##_NN ##_CD ._.
+#_# ###_CD Table_NNP #_# :_: Summary_NNP of_IN results_NNS fusing_VBG all_DT available_JJ sensor_NN observations_NNS ._.
+All_DT shots_NNS were_VBD successfully_RB detected_VBN ,_, so_IN the_DT detection_NN rate_NN is_VBZ omitted_VBN ._.
+Localization_NN rate_NN means_VBZ the_DT percentage_NN of_IN shots_NNS that_IN the_DT sensor_NN fusion_NN was_VBD able_JJ to_TO estimate_VB the_DT trajectory_NN of_IN ._.
+The_DT caliber_NN accuracy_NN rate_NN is_VBZ relative_JJ to_TO the_DT shots_NNS localized_JJ and_CC not_RB all_DT the_DT shots_NNS because_IN caliber_NN estimation_NN requires_VBZ the_DT trajectory_NN ._.
+The_DT trajectory_NN error_NN is_VBZ broken_VBN down_RP to_TO azimuth_VB in_IN degrees_NNS and_CC the_DT actual_JJ distance_NN of_IN the_DT shooter_NN from_IN the_DT trajectory_NN ._.
+The_DT distance_NN error_NN shows_VBZ the_DT distance_NN between_IN the_DT real_JJ shooter_NN position_NN and_CC the_DT estimated_VBN shooter_NN position_NN ._.
+As_IN such_JJ ,_, it_PRP includes_VBZ the_DT error_NN caused_VBN by_IN both_CC the_DT trajectory_NN and_CC that_IN of_IN the_DT range_NN estimation_NN ._.
+Note_VB that_IN the_DT traditional_JJ bearing_NN and_CC range_NN measures_NNS are_VBP not_RB good_JJ ones_NNS for_IN a_DT distributed_VBN system_NN such_JJ as_IN ours_JJ because_IN of_IN the_DT lack_NN of_IN a_DT single_JJ reference_NN point_NN ._.
+121_CD Figure_NNP ##_CD :_: The_DT user_NN interface_NN of_IN the_DT system_NN showing_VBG the_DT experimental_JJ setup_NN ._.
+The_DT ##_NN sensor_NN nodes_NNS are_VBP labeled_VBN by_IN their_PRP$ ID_NN and_CC marked_VBN by_IN dark_JJ circles_NNS ._.
+The_DT targets_NNS are_VBP black_JJ squares_NNS marked_JJ T-1_NN through_IN T-5_NN ._.
+The_DT long_JJ white_JJ arrows_NNS point_VBP to_TO the_DT shooter_NN position_NN estimated_VBN by_IN each_DT sensor_NN ._.
+Where_WRB it_PRP is_VBZ missing_VBG ,_, the_DT corresponding_JJ sensor_NN did_VBD not_RB have_VB enough_JJ detections_NNS to_TO measure_VB the_DT AoA_NN of_IN either_CC the_DT muzzle_NN blast_NN ,_, the_DT shockwave_NN or_CC both_DT ._.
+The_DT thick_JJ black_JJ line_NN and_CC large_JJ circle_NN indicate_VBP the_DT estimated_VBN trajectory_NN and_CC the_DT shooter_NN position_NN as_IN estimated_VBN by_IN fusing_VBG all_DT available_JJ detections_NNS from_IN the_DT network_NN ._.
+This_DT shot_NN from_IN the_DT 100-meter_JJ line_NN at_IN target_NN T-3_NN was_VBD localized_JJ almost_RB perfectly_RB by_IN the_DT sensor_NN network_NN ._.
+The_DT caliber_NN and_CC weapon_NN were_VBD also_RB identified_VBN correctly_RB ._.
+#_# out_IN of_IN 10_CD nodes_NNS were_VBD able_JJ to_TO estimate_VB the_DT location_NN alone_RB ._.
+Their_PRP$ bearing_NN accuracy_NN is_VBZ within_IN a_DT degree_NN ,_, while_IN the_DT range_NN is_VBZ off_RP by_IN less_JJR than_IN ##_CD %_NN in_IN the_DT worst_JJS case_NN ._.
+The_DT localization_NN rate_NN characterizes_VBZ the_DT system_NN ''_'' s_NNS ability_NN to_TO successfully_RB estimate_VB the_DT trajectory_NN of_IN shots_NNS ._.
+Since_IN caliber_NN estimation_NN and_CC weapon_NN classification_NN relies_VBZ on_IN the_DT trajectory_NN ,_, non-localized_JJ shots_NNS are_VBP not_RB classified_VBN either_CC ._.
+There_EX were_VBD #_# shots_NNS out_IN of_IN ###_NN that_WDT were_VBD not_RB localized_JJ ._.
+The_DT reason_NN for_IN missed_VBN shots_NNS is_VBZ the_DT trajectory_NN ambiguity_NN problem_NN that_WDT occurs_VBZ when_WRB the_DT projectile_NN passes_VBZ on_IN one_CD side_NN of_IN all_PDT the_DT sensors_NNS ._.
+In_IN this_DT case_NN ,_, two_CD significantly_RB different_JJ trajectories_NNS can_MD generate_VB the_DT same_JJ set_NN of_IN observations_NNS ._.
+Instead_RB of_IN estimating_VBG which_WDT one_CD is_VBZ more_RBR likely_JJ or_CC displaying_VBG both_DT possibilities_NNS ,_, we_PRP decided_VBD not_RB to_TO provide_VB a_DT trajectory_NN at_IN all_DT ._.
+It_PRP is_VBZ better_RBR not_RB to_TO give_VB an_DT answer_NN other_JJ than_IN a_DT shot_NN alarm_NN than_IN misleading_VBG the_DT soldier_NN ._.
+Localization_NN accuracy_NN is_VBZ broken_VBN down_RP to_TO trajectory_JJ accuracy_NN and_CC range_NN estimation_NN precision_NN ._.
+The_DT angle_NN of_IN the_DT estimated_VBN trajectory_NN was_VBD better_JJR than_IN #_# degree_NN except_IN for_IN the_DT 300_CD m_NN range_NN ._.
+Since_IN the_DT range_NN should_MD not_RB affect_VB trajectory_JJ estimation_NN as_RB long_RB as_IN the_DT projectile_NN passes_VBZ over_IN the_DT network_NN ,_, we_PRP suspect_VBP that_IN the_DT slightly_RB worse_JJR angle_NN precision_NN for_IN ###_CD m_NN is_VBZ due_JJ to_TO the_DT hurried_VBN shots_NNS we_PRP witnessed_VBD the_DT soldiers_NNS took_VBD near_IN the_DT end_NN of_IN the_DT day_NN ._.
+This_DT is_VBZ also_RB indicated_VBN by_IN another_DT datapoint_NN :_: the_DT estimated_VBN trajectory_NN distance_NN from_IN the_DT actual_JJ targets_NNS has_VBZ an_DT average_JJ error_NN of_IN #_# ._.
+#_# m_NN for_IN ###_CD m_NN shots_NNS ,_, 0_CD ._.
+##_NN m_NN for_IN ###_CD m_NN shots_NNS and_CC #_# ._.
+#_# m_NN for_IN all_DT but_CC ###_CD m_NN shots_NNS ._.
+As_IN the_DT distance_NN between_IN the_DT targets_NNS and_CC the_DT sensor_NN network_NN was_VBD fixed_VBN ,_, this_DT number_NN should_MD not_RB show_VB a_DT #_# improvement_NN just_RB because_IN the_DT shooter_NN is_VBZ closer_RBR ._.
+Since_IN the_DT angle_NN of_IN the_DT trajectory_NN itself_PRP does_VBZ not_RB characterize_VB the_DT overall_JJ error-there_NN can_MD be_VB a_DT translation_NN alsoTable_JJ #_# also_RB gives_VBZ the_DT distance_NN of_IN the_DT shooter_NN from_IN the_DT estimated_VBN trajectory_NN ._.
+These_DT indicate_VBP an_DT error_NN which_WDT is_VBZ about_IN 1-2_CD %_NN of_IN the_DT range_NN ._.
+To_TO put_VB this_DT into_IN perspective_NN ,_, a_DT trajectory_JJ estimate_NN for_IN a_DT ###_NN m_NN shot_NN will_MD very_RB likely_RB go_VB through_IN or_CC very_RB near_IN the_DT window_NN the_DT shooter_NN is_VBZ located_JJ at_IN ._.
+Again_RB ,_, we_PRP believe_VBP that_IN the_DT disproportionally_RB larger_JJR errors_NNS at_IN ###_CD m_NN are_VBP due_JJ to_TO human_JJ errors_NNS in_IN aiming_VBG ._.
+As_IN the_DT ground_NN truth_NN was_VBD obtained_VBN by_IN knowing_VBG the_DT precise_JJ location_NN of_IN the_DT shooter_NN and_CC the_DT target_NN ,_, any_DT inaccuracy_NN in_IN the_DT actual_JJ trajectory_NN directly_RB adds_VBZ to_TO the_DT perceived_VBN error_NN of_IN the_DT system_NN ._.
+We_PRP call_VBP the_DT estimation_NN of_IN the_DT shooter_NN ''_'' s_NNS position_NN on_IN the_DT calculated_VBN trajectory_NN range_NN estimation_NN due_JJ to_TO the_DT lack_NN of_IN a_DT better_JJR term_NN ._.
+The_DT range_NN estimates_NNS are_VBP better_JJR than_IN #_# %_NN accurate_JJ from_IN ##_CD m_NN and_CC ##_CD %_NN for_IN ###_CD m_NN ._.
+However_RB ,_, this_DT goes_VBZ to_TO ##_CD %_NN or_CC worse_JJR for_IN longer_JJR distances_NNS ._.
+We_PRP did_VBD not_RB have_VB a_DT facility_NN to_TO test_NN system_NN before_IN the_DT evaluation_NN for_IN ranges_NNS beyond_IN ###_CD m_NN ._.
+During_IN the_DT evaluation_NN ,_, we_PRP ran_VBD into_IN the_DT problem_NN of_IN mistaking_VBG shockwave_NN echoes_NNS for_IN muzzle_NN blasts_NNS ._.
+These_DT echoes_NNS reached_VBD the_DT sensors_NNS before_IN the_DT real_JJ muzzle_NN blast_NN for_IN long_JJ range_NN shots_NNS only_RB ,_, since_IN the_DT projectile_NN travels_VBZ 2-3_CD faster_JJR than_IN the_DT speed_NN of_IN sound_NN ,_, so_IN the_DT time_NN between_IN the_DT shockwave_NN -LRB-_-LRB- and_CC its_PRP$ possible_JJ echo_VBP from_IN nearby_JJ objects_NNS -RRB-_-RRB- and_CC the_DT muzzle_NN blast_NN increases_VBZ with_IN increasing_VBG ranges_NNS ._.
+This_DT resulted_VBD in_IN underestimating_VBG the_DT range_NN ,_, since_IN the_DT system_NN measured_VBN shorter_JJR times_NNS than_IN the_DT real_JJ ones_NNS ._.
+Since_IN the_DT evaluation_NN we_PRP finetuned_VBD the_DT muzzle_JJ blast_NN detection_NN algorithm_NN to_TO avoid_VB this_DT problem_NN ._.
+Distance_NNP M16_NNP AK47_NN M240_NN M107_NN M4_NN M249_NN M4-M249_NN 50m_CD ###_CD %_NN ###_CD %_NN ###_CD %_NN ###_CD %_NN ##_CD %_NN ##_CD %_NN ##_CD %_NN 100m_CD ###_CD %_NN ###_CD %_NN ###_CD %_NN ###_CD %_NN ##_CD %_NN ##_CD %_NN ###_CD %_NN 200m_CD ###_CD %_NN ###_CD %_NN ###_CD %_NN ###_CD %_NN ##_CD %_NN ##_CD %_NN ###_CD %_NN 300m_CD ##_CD %_NN ###_CD %_NN ##_CD %_NN ###_CD %_NN ##_CD %_NN #_# %_NN ##_CD %_NN All_DT ##_CD %_NN ###_CD %_NN ##_CD %_NN ###_CD %_NN ##_CD %_NN ##_CD %_NN ##_CD %_NN Table_NNP #_# :_: Weapon_NNP classification_NN results_VBZ ._.
+The_DT percentages_NNS are_VBP relative_JJ to_TO the_DT number_NN of_IN shots_NNS localized_JJ and_CC not_RB all_DT shots_NNS ,_, as_IN the_DT classification_NN algorithm_NN needs_VBZ to_TO know_VB the_DT trajectory_NN and_CC the_DT range_NN ._.
+Note_VB that_IN the_DT difference_NN is_VBZ small_JJ ;_: there_EX were_VBD ###_CD shots_NNS localized_VBD out_IN of_IN the_DT total_JJ ###_CD ._.
+The_DT caliber_NN and_CC weapon_NN estimation_NN accuracy_NN rates_NNS are_VBP based_VBN on_IN the_DT ###_CD shots_NNS that_WDT were_VBD successfully_RB localized_JJ ._.
+Note_VB that_IN there_EX was_VBD a_DT single_JJ shot_NN that_WDT was_VBD falsely_RB classified_VBN by_IN the_DT caliber_NN estimator_NN ._.
+The_DT ##_CD %_NN overall_JJ weapon_NN classification_NN accuracy_NN does_VBZ not_RB seem_VB impressive_JJ ._.
+But_CC if_IN we_PRP break_VBP it_PRP down_RP to_TO the_DT six_CD different_JJ weapons_NNS tested_VBN ,_, the_DT picture_NN changes_NNS dramatically_RB as_IN shown_VBN in_IN Table_NNP #_# ._.
+For_IN four_CD of_IN the_DT weapons_NNS -LRB-_-LRB- AK14_NN ,_, M16_NNP ,_, M240_NN and_CC M107_NN -RRB-_-RRB- ,_, the_DT classification_NN rate_NN is_VBZ almost_RB ###_CD %_NN ._.
+There_EX were_VBD only_RB two_CD shots_NNS out_IN of_IN approximately_RB 140_CD that_WDT were_VBD missed_VBN ._.
+The_DT M4_NN and_CC M249_NN proved_VBD to_TO be_VB too_RB similar_JJ and_CC they_PRP were_VBD mistaken_VBN for_IN each_DT other_JJ most_JJS of_IN the_DT time_NN ._.
+One_CD possible_JJ explanation_NN is_VBZ that_IN we_PRP had_VBD only_RB a_DT limited_JJ number_NN of_IN test_NN shots_NNS taken_VBN with_IN these_DT weapons_NNS right_NN before_IN the_DT evaluation_NN and_CC used_VBD the_DT wrong_JJ deceleration_NN approximation_NN function_NN ._.
+Either_CC this_DT or_CC a_DT similar_JJ mistake_NN was_VBD made_VBN 122_CD since_IN if_IN we_PRP simply_RB used_VBD the_DT opposite_NN of_IN the_DT system_NN ''_'' s_NNS answer_VB where_WRB one_CD of_IN these_DT weapons_NNS were_VBD indicated_VBN ,_, the_DT accuracy_NN would_MD have_VB improved_VBN 3x_NN ._.
+If_IN we_PRP consider_VBP these_DT two_CD weapons_NNS a_DT single_JJ weapon_NN class_NN ,_, then_RB the_DT classification_NN accuracy_NN for_IN it_PRP becomes_VBZ ##_CD %_NN ._.
+Note_VB that_IN the_DT AK47_NN and_CC M240_NN have_VBP the_DT same_JJ caliber_NN -LRB-_-LRB- #_# ._.
+##_NN mm_NN -RRB-_-RRB- ,_, just_RB as_IN the_DT M16_NNP ,_, M4_NN and_CC M249_NN do_VBP -LRB-_-LRB- #_# ._.
+##_NN mm_NN -RRB-_-RRB- ._.
+That_DT is_VBZ ,_, the_DT system_NN is_VBZ able_JJ to_TO differentiate_VB between_IN weapons_NNS of_IN the_DT same_JJ caliber_NN ._.
+We_PRP are_VBP not_RB aware_JJ of_IN any_DT system_NN that_WDT classifies_VBZ weapons_NNS this_DT accurately_RB ._.
+7_CD ._.
+#_# Single_JJ sensor_NN performance_NN As_IN was_VBD shown_VBN previously_RB ,_, a_DT single_JJ sensor_NN alone_RB is_VBZ able_JJ to_TO localize_VB the_DT shooter_NN if_IN it_PRP can_MD determine_VB both_CC the_DT muzzle_NN blast_NN and_CC the_DT shockwave_NN AoA_NN ,_, that_WDT is_VBZ ,_, it_PRP needs_VBZ to_TO measure_VB the_DT ToA_NN of_IN both_DT on_IN at_IN least_JJS three_CD acoustic_JJ channels_NNS ._.
+While_IN shockwave_NN detection_NN is_VBZ independent_JJ of_IN the_DT range-unless_JJ the_DT projectile_NN becomes_VBZ subsonic_JJ -_: ,_, the_DT likelihood_NN of_IN muzzle_JJ blast_NN detection_NN beyond_IN ###_CD meters_NNS is_VBZ not_RB enough_RB for_IN consistently_RB getting_VBG at_IN least_JJS three_CD per_IN sensor_NN node_NN for_IN AoA_NN estimation_NN ._.
+Hence_RB ,_, we_PRP only_RB evaluate_VBP the_DT single_JJ sensor_NN performance_NN for_IN the_DT ###_CD shots_NNS that_WDT were_VBD taken_VBN from_IN ##_CD and_CC ###_CD m_NN ._.
+Note_VB that_IN we_PRP use_VBP the_DT same_JJ test_NN data_NNS as_IN in_IN the_DT previous_JJ section_NN ,_, but_CC we_PRP evaluate_VBP individually_RB for_IN each_DT sensor_NN ._.
+Table_NNP #_# summarizes_VBZ the_DT results_NNS broken_VBN down_RP by_IN the_DT ten_CD sensors_NNS utilized_VBN ._.
+Since_IN this_DT is_VBZ now_RB not_RB a_DT distributed_VBN system_NN ,_, the_DT results_NNS are_VBP given_VBN relative_JJ to_TO the_DT position_NN of_IN the_DT given_VBN sensor_NN ,_, that_WDT is_VBZ ,_, a_DT bearing_NN and_CC range_NN estimate_NN is_VBZ provided_VBN ._.
+Note_VB that_DT many_JJ of_IN the_DT common_JJ error_NN sources_NNS of_IN the_DT networked_JJ system_NN do_VBP not_RB play_VB a_DT role_NN here_RB ._.
+Time_NNP synchronization_NN is_VBZ not_RB applicable_JJ ._.
+The_DT sensor_NN ''_'' s_NNS absolute_JJ location_NN is_VBZ irrelevant_JJ -LRB-_-LRB- just_RB as_IN the_DT relative_JJ location_NN of_IN multiple_JJ sensors_NNS -RRB-_-RRB- ._.
+The_DT sensor_NN ''_'' s_NNS orientation_NN is_VBZ still_RB important_JJ though_IN ._.
+There_EX are_VBP several_JJ disadvantages_NNS of_IN the_DT single_JJ sensor_NN case_NN compared_VBN to_TO the_DT networked_JJ system_NN :_: there_EX is_VBZ no_DT redundancy_NN to_TO compensate_VB for_IN other_JJ errors_NNS and_CC to_TO perform_VB outlier_NN rejection_NN ,_, the_DT localization_NN rate_NN is_VBZ markedly_RB lower_JJR ,_, and_CC a_DT single_JJ sensor_NN alone_RB is_VBZ not_RB able_JJ to_TO estimate_VB the_DT caliber_NN or_CC classify_VB the_DT weapon_NN ._.
+Sensor_NN id_NN #_# #_# #_# #_# #_# #_# #_# ##_CD ##_CD ##_CD Loc_NN ._.
+rate_NN ##_CD %_NN ##_CD %_NN ##_CD %_NN ##_CD %_NN ##_CD %_NN ##_CD %_NN ##_CD %_NN ##_CD %_NN ##_CD %_NN ##_CD %_NN Bearing_NN -LRB-_-LRB- deg_NN -RRB-_-RRB- #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN #_# ._.
+##_NN Range_NNP -LRB-_-LRB- m_NN -RRB-_-RRB- #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# #_# ._.
+#_# Table_NNP #_# :_: Single_JJ sensor_NN accuracy_NN for_IN ###_CD shots_NNS fired_VBD from_IN ##_CD and_CC ###_CD meters_NNS ._.
+Localization_NN rate_NN refers_VBZ to_TO the_DT percentage_NN of_IN shots_NNS the_DT given_VBN sensor_NN alone_RB was_VBD able_JJ to_TO localize_VB ._.
+The_DT bearing_NN and_CC range_NN values_NNS are_VBP average_JJ errors_NNS ._.
+They_PRP characterize_VBP the_DT accuracy_NN of_IN localization_NN from_IN the_DT given_VBN sensor_NN ''_'' s_NNS perspective_NN ._.
+The_DT data_NNS indicates_VBZ that_IN the_DT performance_NN of_IN the_DT sensors_NNS varied_VBD significantly_RB especially_RB considering_VBG the_DT localization_NN rate_NN ._.
+One_CD factor_NN has_VBZ to_TO be_VB the_DT location_NN of_IN the_DT given_VBN sensor_NN including_VBG how_WRB far_RB it_PRP was_VBD from_IN the_DT firing_NN lines_NNS and_CC how_WRB obstructed_VBD its_PRP$ view_NN was_VBD ._.
+Also_RB ,_, the_DT sensors_NNS were_VBD hand-built_JJ prototypes_NNS utilizing_VBG nowhere_RB near_IN production_NN quality_NN packaging_NN /_: mounting_VBG ._.
+In_IN light_NN of_IN these_DT factors_NNS ,_, the_DT overall_JJ average_JJ bearing_NN error_NN of_IN #_# ._.
+#_# degrees_NNS and_CC range_NN error_NN of_IN #_# m_NN with_IN a_DT microphone_NN spacing_NN of_IN less_JJR than_IN ##_CD cm_NN are_VBP excellent_JJ ._.
+We_PRP believe_VBP that_IN professional_JJ manufacturing_NN and_CC better_JJR microphones_NNS could_MD easily_RB achieve_VB better_JJR performance_NN than_IN the_DT best_JJS sensor_NN in_IN our_PRP$ experiment_NN -LRB-_-LRB- >_JJR ##_CD %_NN localization_NN rate_NN and_CC 3_CD m_NN range_NN error_NN -RRB-_-RRB- ._.
+Interestingly_RB ,_, the_DT largest_JJS error_NN in_IN range_NN was_VBD a_DT huge_JJ ##_NN m_NN clearly_RB due_JJ to_TO some_DT erroneous_JJ detection_NN ,_, yet_RB the_DT largest_JJS bearing_NN error_NN was_VBD less_JJR than_IN ##_CD degrees_NNS which_WDT is_VBZ still_RB a_DT good_JJ indication_NN for_IN the_DT soldier_NN where_WRB to_TO look_VB ._.
+The_DT overall_JJ localization_NN rate_NN over_IN all_DT single_JJ sensors_NNS was_VBD 42_CD %_NN ,_, while_IN for_IN ##_CD m_NN shots_NNS only_RB ,_, this_DT jumped_VBD to_TO ##_CD %_NN ._.
+Note_VB that_IN the_DT firing_NN range_NN was_VBD prepared_VBN to_TO simulate_VB an_DT urban_JJ area_NN to_TO some_DT extent_NN :_: there_EX were_VBD a_DT few_JJ single_JJ -_: and_CC two-storey_JJ wooden_JJ structures_NNS built_VBD both_CC in_IN and_CC around_IN the_DT sensor_NN deployment_NN area_NN and_CC the_DT firing_NN lines_NNS ._.
+Hence_RB ,_, not_RB all_DT sensors_NNS had_VBD line-of-sight_NN to_TO all_DT shooting_JJ positions_NNS ._.
+We_PRP estimate_VBP that_IN ##_CD %_NN of_IN the_DT sensors_NNS had_VBD obstructed_VBN view_NN to_TO the_DT shooter_NN on_IN average_NN ._.
+Hence_RB ,_, we_PRP can_MD claim_VB that_IN a_DT given_VBN sensor_NN had_VBD about_IN ##_CD %_NN chance_NN of_IN localizing_VBG a_DT shot_NN within_IN ###_CD m_NN ._.
+-LRB-_-LRB- Since_IN the_DT sensor_NN deployment_NN area_NN was_VBD ##_CD m_NN deep_RB ,_, ###_CD m_NN shots_NNS correspond_VBP to_TO actual_JJ distances_NNS between_IN ###_CD and_CC ###_CD m_NN ._. -RRB-_-RRB-
+Again_RB ,_, we_PRP emphasize_VBP that_IN localization_NN needs_VBZ at_IN least_JJS three_CD muzzle_JJ blast_NN and_CC three_CD shockwave_NN detections_NNS out_IN of_IN a_DT possible_JJ four_CD for_IN each_DT per_IN sensor_NN ._.
+The_DT detection_NN rate_NN for_IN single_JJ sensors-corresponding_NN to_TO at_IN least_JJS one_CD shockwave_NN detection_NN per_IN sensor-was_NN practically_RB ###_CD %_NN ._.
+0_CD %_NN 10_CD %_NN 20_CD %_NN 30_CD %_NN 40_CD %_NN 50_CD %_NN 60_CD %_NN 70_CD %_NN 80_CD %_NN 90_CD %_NN 100_CD %_NN 0_CD #_# #_# #_# #_# #_# #_# #_# #_# #_# ##_CD number_NN of_IN sensors_NNS percentageofshots_VBZ Figure_NNP ##_NNP :_: Histogram_NNP showing_VBG what_WP fraction_NN of_IN the_DT 104_CD shots_NNS taken_VBN from_IN ##_CD and_CC ###_CD meters_NNS were_VBD localized_VBN by_IN at_IN most_JJS how_WRB many_JJ individual_JJ sensors_NNS alone_RB ._.
+13_CD %_NN of_IN the_DT shots_NNS were_VBD missed_VBN by_IN every_DT single_JJ sensor_NN ,_, i_FW ._.
+e_LS ._.
+,_, none_NN of_IN them_PRP had_VBD both_DT muzzle_JJ blast_NN and_CC shockwave_NN AoA_NN detections_NNS ._.
+Note_VB that_DT almost_RB all_DT of_IN these_DT shots_NNS were_VBD still_RB accurately_RB localized_JJ by_IN the_DT networked_JJ system_NN ,_, i_FW ._.
+e_LS ._.
+the_DT sensor_NN fusion_NN using_VBG all_DT available_JJ observations_NNS in_IN the_DT sensor_NN network_NN ._.
+It_PRP would_MD be_VB misleading_VBG to_TO interpret_VB these_DT results_NNS as_IN the_DT system_NN missing_VBG half_PDT the_DT shots_NNS ._.
+As_IN soldiers_NNS never_RB work_VBP alone_RB and_CC the_DT sensor_NN node_NN is_VBZ relatively_RB cheap_JJ to_TO afford_VB having_VBG every_DT soldier_NN equipped_VBN with_IN one_CD ,_, we_PRP also_RB need_VBP to_TO look_VB at_IN the_DT overall_JJ detection_NN rates_NNS for_IN every_DT shot_NN ._.
+Figure_NNP ##_NN shows_VBZ the_DT histogram_NN of_IN the_DT percentage_NN of_IN shots_NNS vs_CC ._.
+the_DT number_NN of_IN individual_JJ sensors_NNS that_WDT localized_VBD it_PRP ._.
+##_CD %_NN of_IN shots_NNS were_VBD not_RB localized_JJ by_IN any_DT sensor_NN alone_RB ,_, but_CC ##_CD %_NN was_VBD localized_VBN by_IN at_IN least_JJS one_CD sensor_NN out_IN of_IN ten_CD ._.
+7_CD ._.
+#_# Error_NN sources_NNS In_IN this_DT section_NN ,_, we_PRP analyze_VBP the_DT most_RBS significant_JJ sources_NNS of_IN error_NN that_WDT affect_VBP the_DT performance_NN of_IN the_DT networked_JJ shooter_NN localization_NN and_CC weapon_NN classification_NN system_NN ._.
+In_IN order_NN to_TO correlate_VB the_DT distributed_VBN observations_NNS of_IN the_DT acoustic_JJ events_NNS ,_, the_DT nodes_NNS need_VBP to_TO have_VB a_DT common_JJ time_NN and_CC space_NN reference_NN ._.
+Hence_RB ,_, errors_NNS in_IN the_DT time_NN synchronization_NN ,_, node_NN localization_NN and_CC node_NN orientation_NN all_DT degrade_VB the_DT overall_JJ accuracy_NN of_IN the_DT system_NN ._.
+123_CD Our_PRP$ time_NN synchronization_NN approach_NN yields_NNS errors_NNS significantly_RB less_JJR than_IN ###_CD microseconds_NNS ._.
+As_IN the_DT sound_JJ travels_NNS about_IN #_# cm_NN in_IN that_DT time_NN ,_, time_NN synchronization_NN errors_NNS have_VBP a_DT negligible_JJ effect_NN on_IN the_DT system_NN ._.
+On_IN the_DT other_JJ hand_NN ,_, node_NN location_NN and_CC orientation_NN can_MD have_VB a_DT direct_JJ effect_NN on_IN the_DT overall_JJ system_NN performance_NN ._.
+Notice_NNP that_IN to_TO analyze_VB this_DT ,_, we_PRP do_VBP not_RB have_VB to_TO resort_VB to_TO simulation_NN ,_, instead_RB we_PRP can_MD utilize_VB the_DT real_JJ test_NN data_NNS gathered_VBN at_IN Aberdeen_NNP ._.
+But_CC instead_RB of_IN using_VBG the_DT real_JJ sensor_NN locations_NNS known_VBN very_RB accurately_RB and_CC the_DT measured_VBN and_CC calibrated_VBN almost_RB perfect_JJ node_NN orientations_NNS ,_, we_PRP can_MD add_VB error_NN terms_NNS to_TO them_PRP and_CC run_VB the_DT sensor_NN fusion_NN ._.
+This_DT exactly_RB replicates_VBZ how_WRB the_DT system_NN would_MD have_VB performed_VBN during_IN the_DT test_NN using_VBG the_DT imprecisely_RB known_VBN locations_NNS and_CC orientations_NNS ._.
+Another_DT aspect_NN of_IN the_DT system_NN performance_NN that_WDT can_MD be_VB evaluated_VBN this_DT way_NN is_VBZ the_DT effect_NN of_IN the_DT number_NN of_IN available_JJ sensors_NNS ._.
+Instead_RB of_IN using_VBG all_DT ten_CD sensors_NNS in_IN the_DT data_NNS fusion_NN ,_, we_PRP can_MD pick_VB any_DT subset_NN of_IN the_DT nodes_NNS to_TO see_VB how_WRB the_DT accuracy_NN degrades_VBZ as_IN we_PRP decrease_VBP the_DT number_NN of_IN nodes_NNS ._.
+The_DT following_VBG experiment_NN was_VBD carried_VBN out_RP ._.
+The_DT number_NN of_IN sensors_NNS were_VBD varied_VBN from_IN #_# to_TO ##_VB in_IN increments_NNS of_IN #_# ._.
+Each_DT run_NN picked_VBD the_DT sensors_NNS randomly_RB using_VBG a_DT uniform_JJ distribution_NN ._.
+At_IN each_DT run_NN each_DT node_NN was_VBD randomly_RB moved_VBN to_TO a_DT new_JJ location_NN within_IN a_DT circle_NN around_IN its_PRP$ true_JJ position_NN with_IN a_DT radius_NN determined_VBN by_IN a_DT zero-mean_JJ Gaussian_JJ distribution_NN ._.
+Finally_RB ,_, the_DT node_NN orientations_NNS were_VBD perturbed_VBN using_VBG a_DT zeromean_NN Gaussian_JJ distribution_NN ._.
+Each_DT combination_NN of_IN parameters_NNS were_VBD generated_VBN ###_CD times_NNS and_CC utilized_VBN for_IN all_DT ###_CD shots_NNS ._.
+The_DT results_NNS are_VBP summarized_VBN in_IN Figure_NNP ##_NNP ._.
+There_EX is_VBZ one_CD 3D_NN barchart_NN for_IN each_DT of_IN the_DT experiment_NN sets_VBZ with_IN the_DT given_VBN fixed_JJ number_NN of_IN sensors_NNS ._.
+The_DT x-axis_NN shows_VBZ the_DT node_NN location_NN error_NN ,_, that_WDT is_VBZ ,_, the_DT standard_JJ deviation_NN of_IN the_DT corresponding_JJ Gaussian_JJ distribution_NN that_WDT was_VBD varied_VBN between_IN #_# and_CC #_# meters_NNS ._.
+The_DT y-axis_NN shows_VBZ the_DT standard_JJ deviation_NN of_IN the_DT node_NN orientation_NN error_NN that_WDT was_VBD varied_VBN between_IN #_# and_CC #_# degrees_NNS ._.
+The_DT z-axis_NN is_VBZ the_DT resulting_VBG trajectory_NN azimuth_NN error_NN ._.
+Note_VB that_IN the_DT elevation_NN angles_NNS showed_VBD somewhat_RB larger_JJR errors_NNS than_IN the_DT azimuth_NN ._.
+Since_IN all_PDT the_DT sensors_NNS were_VBD in_IN approximately_RB a_DT horizontal_JJ plane_NN and_CC only_RB a_DT few_JJ shooter_NN positions_NNS were_VBD out_IN of_IN the_DT same_JJ plane_NN and_CC only_RB by_IN #_# m_NN or_CC so_RB ,_, the_DT test_NN was_VBD not_RB sufficient_JJ to_TO evaluate_VB this_DT aspect_NN of_IN the_DT system_NN ._.
+There_EX are_VBP many_JJ interesting_JJ observation_NN one_NN can_MD make_VB by_IN analyzing_VBG these_DT charts_NNS ._.
+Node_NN location_NN errors_NNS in_IN this_DT range_NN have_VBP a_DT small_JJ effect_NN on_IN accuracy_NN ._.
+Node_NN orientation_NN errors_NNS ,_, on_IN the_DT other_JJ hand_NN ,_, noticeably_RB degrade_VB the_DT performance_NN ._.
+Still_RB the_DT largest_JJS errors_NNS in_IN this_DT experiment_NN of_IN #_# ._.
+#_# degrees_NNS for_IN #_# sensors_NNS and_CC #_# degrees_NNS for_IN #_# sensors_NNS are_VBP still_RB very_RB good_JJ ._.
+Note_VB that_DT as_IN the_DT location_NN and_CC orientation_NN errors_NNS increase_VBP and_CC the_DT number_NN of_IN sensors_NNS decrease_VBP ,_, the_DT most_RBS significantly_RB affected_VBN performance_NN metric_NN is_VBZ the_DT localization_NN rate_NN ._.
+See_VB Table_NNP #_# for_IN a_DT summary_NN ._.
+Successful_JJ localization_NN goes_VBZ down_RB from_IN almost_RB ###_CD %_NN to_TO ##_CD %_NN when_WRB we_PRP go_VBP from_IN ##_CD sensors_NNS to_TO 2_CD even_RB without_IN additional_JJ errors_NNS ._.
+This_DT is_VBZ primarily_RB caused_VBN by_IN geometry_NN :_: for_IN a_DT successful_JJ localization_NN ,_, the_DT bullet_NN needs_VBZ to_TO pass_VB over_RP the_DT sensor_NN network_NN ,_, that_WDT is_VBZ ,_, at_IN least_JJS one_CD sensor_NN should_MD be_VB on_IN the_DT side_NN of_IN the_DT trajectory_NN other_JJ than_IN the_DT rest_NN of_IN the_DT nodes_NNS ._.
+-LRB-_-LRB- This_DT is_VBZ a_DT simplification_NN for_IN illustrative_JJ purposes_NNS ._.
+If_IN all_PDT the_DT sensors_NNS and_CC the_DT trajectory_NN are_VBP not_RB coplanar_JJ ,_, localization_NN may_MD be_VB successful_JJ even_RB if_IN the_DT projectile_NN passes_VBZ on_IN one_CD side_NN of_IN the_DT network_NN ._.
+See_VB Section_NNP #_# ._.
+#_# ._. -RRB-_-RRB-
+As_IN the_DT numbers_NNS of_IN sensors_NNS decreased_VBN in_IN the_DT experiment_NN by_IN randomly_RB selecting_VBG a_DT subset_NN ,_, the_DT probability_NN of_IN trajectories_NNS abiding_VBG by_IN this_DT rule_NN decreased_VBD ._.
+This_DT also_RB means_VBZ that_IN even_RB if_IN there_EX are_VBP 0_CD 2_CD 4_CD 6_CD 0_CD 2_CD 4_CD 6_CD 0_CD 1_CD 2_CD 3_CD 4_CD 5_CD 6_CD azimutherror_NN -LRB-_-LRB- degree_NN -RRB-_-RRB- position_NN error_NN -LRB-_-LRB- m_NN -RRB-_-RRB- orientation_NN error_NN -LRB-_-LRB- degree_NN -RRB-_-RRB- 2_CD sensors_NNS 0_CD 2_CD 4_CD 6_CD 0_CD 2_CD 4_CD 6_CD 0_CD 1_CD 2_CD 3_CD 4_CD 5_CD 6_CD azimutherror_NN -LRB-_-LRB- degree_NN -RRB-_-RRB- position_NN error_NN -LRB-_-LRB- m_NN -RRB-_-RRB- orientation_NN error_NN -LRB-_-LRB- degree_NN -RRB-_-RRB- 4_CD sensors_NNS 0_CD 2_CD 4_CD 6_CD 0_CD 2_CD 4_CD 6_CD 0_CD 1_CD 2_CD 3_CD 4_CD 5_CD 6_CD azimutherror_NN -LRB-_-LRB- degree_NN -RRB-_-RRB- position_NN error_NN -LRB-_-LRB- m_NN -RRB-_-RRB- orientation_NN error_NN -LRB-_-LRB- degree_NN -RRB-_-RRB- 6_CD sensors_NNS 0_CD 2_CD 4_CD 6_CD 0_CD 2_CD 4_CD 6_CD 0_CD 1_CD 2_CD 3_CD 4_CD 5_CD 6_CD azimutherror_NN -LRB-_-LRB- degree_NN -RRB-_-RRB- position_NN error_NN -LRB-_-LRB- m_NN -RRB-_-RRB- orientation_NN error_NN -LRB-_-LRB- degree_NN -RRB-_-RRB- 8_CD sensors_NNS Figure_NNP ##_CD :_: The_DT effect_NN of_IN node_NN localization_NN and_CC orientation_NN errors_NNS on_IN azimuth_NN accuracy_NN with_IN #_# ,_, #_# ,_, #_# and_CC 8_CD nodes_NNS ._.
+Note_VB that_IN the_DT chart_NN for_IN ##_CD nodes_NNS is_VBZ almost_RB identical_JJ for_IN the_DT 8-node_JJ case_NN ,_, hence_RB ,_, it_PRP is_VBZ omitted_VBN ._.
+124_CD many_JJ sensors_NNS -LRB-_-LRB- i_FW ._.
+e_LS ._.
+soldiers_NNS -RRB-_-RRB- ,_, but_CC all_DT of_IN them_PRP are_VBP right_JJ next_JJ to_TO each_DT other_JJ ,_, the_DT localization_NN rate_NN will_MD suffer_VB ._.
+However_RB ,_, when_WRB the_DT sensor_NN fusion_NN does_VBZ provide_VB a_DT result_NN ,_, it_PRP is_VBZ still_RB accurate_JJ even_RB with_IN few_JJ available_JJ sensors_NNS and_CC relatively_RB large_JJ individual_JJ errors_NNS ._.
+A_DT very_RB few_JJ consistent_JJ observation_NN lead_NN to_TO good_JJ accuracy_NN as_IN the_DT inconsistent_JJ ones_NNS are_VBP discarded_VBN by_IN the_DT algorithm_NN ._.
+This_DT is_VBZ also_RB supported_VBN by_IN the_DT observation_NN that_IN for_IN the_DT cases_NNS with_IN the_DT higher_JJR number_NN of_IN sensors_NNS -LRB-_-LRB- #_# or_CC ##_NN -RRB-_-RRB- ,_, the_DT localization_NN rate_NN is_VBZ hardly_RB affected_VBN by_IN even_RB large_JJ errors_NNS ._.
+Errors_NNS /_: Sensors_NNS #_# #_# #_# #_# ##_CD 0_CD m_NN ,_, #_# deg_FW ##_CD %_NN ##_CD %_NN ##_CD %_NN ##_CD %_NN ##_CD %_NN 2_CD m_NN ,_, #_# deg_FW ##_CD %_NN ##_CD %_NN ##_CD %_NN ##_CD %_NN ##_CD %_NN 6_CD m_NN ,_, #_# deg_FW ##_CD %_NN ##_CD %_NN ##_CD %_NN ##_CD %_NN ##_CD %_NN 0_CD m_NN ,_, #_# deg_FW ##_CD %_NN ##_CD %_NN ##_CD %_NN ##_CD %_NN ##_CD %_NN 6_CD m_NN ,_, #_# deg_FW ##_CD %_NN ##_CD %_NN ##_CD %_NN ##_CD %_NN ##_CD %_NN Table_NNP #_# :_: Localization_NN rate_NN as_IN a_DT function_NN of_IN the_DT number_NN of_IN sensors_NNS used_VBN ,_, the_DT sensor_NN node_NN location_NN and_CC orientation_NN errors_NNS ._.
+One_CD of_IN the_DT most_RBS significant_JJ observations_NNS on_IN Figure_NN ##_NN and_CC Table_NNP #_# is_VBZ that_IN there_EX is_VBZ hardly_RB any_DT difference_NN in_IN the_DT data_NNS for_IN 6_CD ,_, #_# and_CC ##_CD sensors_NNS ._.
+This_DT means_VBZ that_IN there_EX is_VBZ little_JJ advantage_NN of_IN adding_VBG more_JJR nodes_NNS beyond_IN #_# sensors_NNS as_IN far_RB as_IN the_DT accuracy_NN is_VBZ concerned_VBN ._.
+The_DT speed_NN of_IN sound_NN depends_VBZ on_IN the_DT ambient_JJ temperature_NN ._.
+The_DT current_JJ prototype_NN considers_VBZ it_PRP constant_JJ that_DT is_VBZ typically_RB set_VBN before_IN a_DT test_NN ._.
+It_PRP would_MD be_VB straightforward_JJ to_TO employ_VB a_DT temperature_NN sensor_NN to_TO update_VB the_DT value_NN of_IN the_DT speed_NN of_IN sound_JJ periodically_RB during_IN operation_NN ._.
+Note_VB also_RB that_IN wind_NN may_MD adversely_RB affect_VB the_DT accuracy_NN of_IN the_DT system_NN ._.
+The_DT sensor_NN fusion_NN ,_, however_RB ,_, could_MD incorporate_VB wind_NN speed_NN into_IN its_PRP$ calculations_NNS ._.
+It_PRP would_MD be_VB more_RBR complicated_JJ than_IN temperature_NN compensation_NN ,_, but_CC could_MD be_VB done_VBN ._.
+Other_JJ practical_JJ issues_NNS also_RB need_VBP to_TO be_VB looked_VBN at_IN before_IN a_DT real_JJ world_NN deployment_NN ._.
+Silencers_NNS reduce_VBP the_DT muzzle_JJ blast_NN energy_NN and_CC hence_RB ,_, the_DT effective_JJ range_NN the_DT system_NN can_MD detect_VB it_PRP at_IN ._.
+However_RB ,_, silencers_NNS do_VBP not_RB effect_VB the_DT shockwave_NN and_CC the_DT system_NN would_MD still_RB detect_VB the_DT trajectory_NN and_CC caliber_NN accurately_RB ._.
+The_DT range_NN and_CC weapon_NN type_NN could_MD not_RB be_VB estimated_VBN without_IN muzzle_JJ blast_NN detections_NNS ._.
+Subsonic_NNP weapons_NNS do_VBP not_RB produce_VB a_DT shockwave_NN ._.
+However_RB ,_, this_DT is_VBZ not_RB of_IN great_JJ significance_NN ,_, since_IN they_PRP have_VBP shorter_JJR range_NN ,_, lower_JJR accuracy_NN and_CC much_RB less_JJR lethality_NN ._.
+Hence_RB ,_, their_PRP$ use_NN is_VBZ not_RB widespread_JJ and_CC they_PRP pose_VBP less_JJR danger_NN in_IN any_DT case_NN ._.
+Another_DT issue_NN is_VBZ the_DT type_NN of_IN ammunition_NN used_VBN ._.
+Irregular_JJ armies_NNS may_MD use_VB substandard_NN ,_, even_RB hand_NN manufactured_VBD bullets_NNS ._.
+This_DT effects_NNS the_DT muzzle_NN velocity_NN of_IN the_DT weapon_NN ._.
+For_IN weapon_NN classification_NN to_TO work_VB accurately_RB ,_, the_DT system_NN would_MD need_VB to_TO be_VB calibrated_VBN with_IN the_DT typical_JJ ammunition_NN used_VBN by_IN the_DT given_VBN adversary_NN ._.
+8_CD ._.
+RELATED_JJ WORK_VBP Acoustic_JJ detection_NN and_CC recognition_NN has_VBZ been_VBN under_IN research_NN since_IN the_DT early_JJ fifties_NNS ._.
+The_DT area_NN has_VBZ a_DT close_JJ relevance_NN to_TO the_DT topic_NN of_IN supersonic_JJ flow_NN mechanics_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+Fansler_NN analyzed_VBD the_DT complex_JJ near-field_JJ pressure_NN waves_NNS that_WDT occur_VBP within_IN a_DT foot_NN of_IN the_DT muzzle_NN blast_NN ._.
+Fansler_NNP ''_'' s_VBZ work_NN gives_VBZ a_DT good_JJ idea_NN of_IN the_DT ideal_JJ muzzle_NN blast_NN pressure_NN wave_NN without_IN contamination_NN from_IN echoes_NNS or_CC propagation_NN effects_NNS -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+Experiments_NNS with_IN greater_JJR distances_NNS from_IN the_DT muzzle_NN were_VBD conducted_VBN by_IN Stoughton_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+The_DT measurements_NNS of_IN the_DT ballistic_JJ shockwaves_NNS using_VBG calibrated_VBN pressure_NN transducers_NNS at_IN known_JJ locations_NNS ,_, measured_VBN bullet_NN speeds_NNS ,_, and_CC miss_VBP distances_NNS of_IN 355_CD meters_NNS for_IN #_# ._.
+##_NN mm_NN and_CC #_# ._.
+##_NN mm_NN projectiles_NNS were_VBD made_VBN ._.
+Results_NNS indicate_VBP that_IN ground_NN interaction_NN becomes_VBZ a_DT problem_NN for_IN miss_VBP distances_NNS of_IN ##_CD meters_NNS or_CC larger_JJR ._.
+Another_DT area_NN of_IN research_NN is_VBZ the_DT signal_NN processing_NN of_IN gunfire_NN acoustics_NNS ._.
+The_DT focus_NN is_VBZ on_IN the_DT robust_JJ detection_NN and_CC length_NN estimation_NN of_IN small_JJ caliber_NN acoustic_JJ shockwaves_NNS and_CC muzzle_NN blasts_NNS ._.
+Possible_JJ techniques_NNS for_IN classifying_VBG signals_NNS as_IN either_DT shockwaves_NNS or_CC muzzle_NN blasts_NNS includes_VBZ short-time_JJ Fourier_NN Transform_NN -LRB-_-LRB- STFT_NN -RRB-_-RRB- ,_, the_DT Smoothed_NNP Pseudo_NNP Wigner-Ville_NNP distribution_NN -LRB-_-LRB- SPWVD_NN -RRB-_-RRB- ,_, and_CC a_DT discrete_JJ wavelet_NN transformation_NN -LRB-_-LRB- DWT_NN -RRB-_-RRB- ._.
+Joint_NNP time-frequency_NN -LRB-_-LRB- JTF_NN -RRB-_-RRB- spectrograms_NNS are_VBP used_VBN to_TO analyze_VB the_DT typical_JJ separation_NN of_IN the_DT shockwave_NN and_CC muzzle_NN blast_NN transients_NNS in_IN both_DT time_NN and_CC frequency_NN ._.
+Mays_NNP concludes_VBZ that_IN the_DT DWT_NNP is_VBZ the_DT best_JJS method_NN for_IN classifying_VBG signals_NNS as_IN either_DT shockwaves_NNS or_CC muzzle_NN blasts_NNS because_IN it_PRP works_VBZ well_RB and_CC is_VBZ less_RBR expensive_JJ to_TO compute_VB than_IN the_DT SPWVD_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+The_DT edges_NNS of_IN the_DT shockwave_NN are_VBP typically_RB well_RB defined_VBN and_CC the_DT shockwave_NN length_NN is_VBZ directly_RB related_JJ to_TO the_DT bullet_NN characteristics_NNS ._.
+A_DT paper_NN by_IN Sadler_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- compares_VBZ two_CD shockwave_NN edge_NN detection_NN methods_NNS :_: a_DT simple_JJ gradient-based_JJ detector_NN ,_, and_CC a_DT multi-scale_JJ wavelet_NN detector_NN ._.
+It_PRP also_RB demonstrates_VBZ how_WRB the_DT length_NN of_IN the_DT shockwave_NN ,_, as_IN determined_VBN by_IN the_DT edge_NN detectors_NNS ,_, can_MD be_VB used_VBN along_IN with_IN Whithams_JJ equations_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- to_TO estimate_VB the_DT caliber_NN of_IN a_DT projectile_NN ._.
+Note_VB that_IN the_DT available_JJ computational_JJ performance_NN on_IN the_DT sensor_NN nodes_NNS ,_, the_DT limited_JJ wireless_JJ bandwidth_NN and_CC real-time_JJ requirements_NNS render_VBP these_DT approaches_NNS infeasible_JJ on_IN our_PRP$ platform_NN ._.
+A_DT related_JJ topic_NN is_VBZ the_DT research_NN and_CC development_NN of_IN experimental_JJ and_CC prototype_NN shooter_NN location_NN systems_NNS ._.
+Researchers_NNS at_IN BBN_NNP have_VBP developed_VBN the_DT Bullet_NNP Ears_NNS system_NN -LSB-_-LRB- #_# -RSB-_-RRB- which_WDT has_VBZ the_DT capability_NN to_TO be_VB installed_VBN in_IN a_DT fixed_JJ position_NN or_CC worn_VBN by_IN soldiers_NNS ._.
+The_DT fixed_JJ system_NN has_VBZ tetrahedron_NN shaped_JJ microphone_NN arrays_NNS with_IN #_# ._.
+#_# meter_NN spacing_NN ._.
+The_DT overall_JJ system_NN consists_VBZ of_IN two_CD to_TO three_CD of_IN these_DT arrays_NNS spaced_VBD ##_CD to_TO ###_CD meters_NNS from_IN each_DT other_JJ ._.
+The_DT soldier-worn_JJ system_NN has_VBZ ##_CD microphones_NNS as_RB well_RB as_IN a_DT GPS_NN antenna_NN and_CC orientation_NN sensors_NNS mounted_VBD on_IN a_DT helmet_NN ._.
+There_EX is_VBZ a_DT low_JJ speed_NN RF_NN connection_NN from_IN the_DT helmet_NN to_TO the_DT processing_NN body_NN ._.
+An_DT extensive_JJ test_NN has_VBZ been_VBN conducted_VBN to_TO measure_VB the_DT performance_NN of_IN both_CC type_NN of_IN systems_NNS ._.
+The_DT fixed_VBN systems_NNS performance_NN was_VBD one_CD order_NN of_IN magnitude_NN better_RBR in_IN the_DT angle_NN calculations_NNS while_IN their_PRP$ range_NN performance_NN where_WRB matched_VBN ._.
+The_DT angle_NN accuracy_NN of_IN the_DT fixed_JJ system_NN was_VBD dominantly_RB less_JJR than_IN one_CD degree_NN while_IN it_PRP was_VBD around_IN five_CD degrees_NNS for_IN the_DT helmet_NN mounted_VBD one_CD ._.
+The_DT range_NN accuracy_NN was_VBD around_IN #_# percent_NN for_IN both_DT of_IN the_DT systems_NNS ._.
+The_DT problem_NN with_IN this_DT and_CC similar_JJ centralized_JJ systems_NNS is_VBZ the_DT need_NN of_IN the_DT one_CD or_CC handful_NN of_IN microphone_NN arrays_NNS to_TO be_VB in_IN line-of-sight_NN of_IN the_DT shooter_NN ._.
+A_DT sensor_NN networked_VBD based_VBN solution_NN has_VBZ the_DT advantage_NN of_IN widely_RB distributed_VBN sensing_VBG for_IN better_JJR coverage_NN ,_, multipath_JJ effect_NN compensation_NN and_CC multiple_JJ simultaneous_JJ shot_NN resolution_NN -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+This_DT is_VBZ especially_RB important_JJ for_IN operation_NN in_IN acoustically_RB reverberant_JJ urban_JJ areas_NNS ._.
+Note_VB that_DT BBN_NNP ''_'' s_VBZ current_JJ vehicle-mounted_JJ system_NN called_VBN BOOMERANG_NNP ,_, a_DT modified_VBN version_NN of_IN Bullet_NNP Ears_NNP ,_, is_VBZ currently_RB used_VBN in_IN Iraq_NNP -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+The_DT company_NN ShotSpotter_NNP specializes_VBZ in_IN law_NN enforcement_NN systems_NNS that_WDT report_VBP the_DT location_NN of_IN gunfire_NN to_TO police_NN within_IN seconds_NNS ._.
+The_DT goal_NN of_IN the_DT system_NN is_VBZ significantly_RB different_JJ than_IN that_DT of_IN military_JJ systems_NNS ._.
+Shotspotter_NNP reports_VBZ ##_NN m_NN typical_JJ accuracy_NN which_WDT is_VBZ more_RBR than_IN enough_RB for_IN police_NN to_TO 125_CD respond_NN ._.
+They_PRP are_VBP also_RB manufacturing_VBG experimental_JJ soldier_NN wearable_JJ and_CC UAV_NN mounted_VBD systems_NNS for_IN military_JJ use_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, but_CC no_DT specifications_NNS or_CC evaluation_NN results_NNS are_VBP publicly_RB available_JJ ._.
+9_CD ._.
+CONCLUSIONS_NNS The_DT main_JJ contribution_NN of_IN this_DT work_NN is_VBZ twofold_RB ._.
+First_RB ,_, the_DT performance_NN of_IN the_DT overall_JJ distributed_VBN networked_JJ system_NN is_VBZ excellent_JJ ._.
+Most_JJS noteworthy_JJ are_VBP the_DT trajectory_JJ accuracy_NN of_IN one_CD degree_NN ,_, the_DT correct_JJ caliber_NN estimation_NN rate_NN of_IN well_RB over_IN 90_CD %_NN and_CC the_DT close_NN to_TO ###_CD %_NN weapon_NN classification_NN rate_NN for_IN #_# of_IN the_DT #_# weapons_NNS tested_VBN ._.
+The_DT system_NN proved_VBD to_TO be_VB very_RB robust_JJ when_WRB increasing_VBG the_DT node_NN location_NN and_CC orientation_NN errors_NNS and_CC decreasing_VBG the_DT number_NN of_IN available_JJ sensors_NNS all_PDT the_DT way_NN down_IN to_TO a_DT couple_NN ._.
+The_DT key_JJ factor_NN behind_IN this_DT is_VBZ the_DT sensor_NN fusion_NN algorithm_NN ''_'' s_NNS ability_NN to_TO reject_VB erroneous_JJ measurements_NNS ._.
+It_PRP is_VBZ also_RB worth_JJ mentioning_VBG that_IN the_DT results_NNS presented_VBN here_RB correspond_VBP to_TO the_DT first_JJ and_CC only_RB test_NN of_IN the_DT system_NN beyond_IN ###_CD m_NN and_CC with_IN six_CD different_JJ weapons_NNS ._.
+We_PRP believe_VBP that_IN with_IN the_DT lessons_NNS learned_VBD in_IN the_DT test_NN ,_, a_DT consecutive_JJ field_NN experiment_NN could_MD have_VB showed_VBD significantly_RB improved_VBN results_NNS especially_RB in_IN range_NN estimation_NN beyond_IN ###_CD m_NN and_CC weapon_NN classification_NN for_IN the_DT remaining_VBG two_CD weapons_NNS that_WDT were_VBD mistaken_VBN for_IN each_DT other_JJ the_DT majority_NN of_IN the_DT times_NNS during_IN the_DT test_NN ._.
+Second_RB ,_, the_DT performance_NN of_IN the_DT system_NN when_WRB used_VBN in_IN standalone_JJ mode_NN ,_, that_WDT is_VBZ ,_, when_WRB single_JJ sensors_NNS alone_RB provided_VBD localization_NN ,_, was_VBD also_RB very_RB good_JJ ._.
+While_IN the_DT overall_JJ localization_NN rate_NN of_IN ##_CD %_NN per_IN sensor_NN for_IN shots_NNS up_IN to_TO ###_CD m_NN could_MD be_VB improved_VBN ,_, the_DT bearing_NN accuracy_NN of_IN less_JJR than_IN a_DT degree_NN and_CC the_DT average_JJ #_# %_NN range_NN error_NN are_VBP remarkable_JJ using_VBG the_DT handmade_JJ prototypes_NNS of_IN the_DT low-cost_JJ nodes_NNS ._.
+Note_VB that_DT ##_CD %_NN of_IN the_DT shots_NNS were_VBD successfully_RB localized_VBN by_IN at_IN least_JJS one_CD of_IN the_DT ten_CD sensors_NNS utilized_VBN in_IN standalone_JJ mode_NN ._.
+We_PRP believe_VBP that_IN the_DT technology_NN is_VBZ mature_JJ enough_RB that_IN a_DT next_JJ revision_NN of_IN the_DT system_NN could_MD be_VB a_DT commercial_JJ one_CD ._.
+However_RB ,_, important_JJ aspects_NNS of_IN the_DT system_NN would_MD still_RB need_VB to_TO be_VB worked_VBN on_IN ._.
+We_PRP have_VBP not_RB addresses_NNS power_NN management_NN yet_RB ._.
+A_DT current_JJ node_NN runs_VBZ on_IN #_# AA_NN batteries_NNS for_IN about_RB 12_CD hours_NNS of_IN continuous_JJ operation_NN ._.
+A_DT deployable_JJ version_NN of_IN the_DT sensor_NN node_NN would_MD need_VB to_TO be_VB asleep_RB during_IN normal_JJ operation_NN and_CC only_RB wake_VBP up_RP when_WRB an_DT interesting_JJ event_NN occurs_VBZ ._.
+An_DT analog_NN trigger_NN circuit_NN could_MD solve_VB this_DT problem_NN ,_, however_RB ,_, the_DT system_NN would_MD miss_VB the_DT first_JJ shot_NN ._.
+Instead_RB ,_, the_DT acoustic_JJ channels_NNS would_MD need_VB to_TO be_VB sampled_VBN and_CC stored_VBN in_IN a_DT circular_JJ buffer_NN ._.
+The_DT rest_NN of_IN the_DT board_NN could_MD be_VB turned_VBN off_RP ._.
+When_WRB a_DT trigger_NN wakes_VBZ up_RP the_DT board_NN ,_, the_DT acoustic_JJ data_NNS would_MD be_VB immediately_RB available_JJ ._.
+Experiments_NNS with_IN a_DT previous_JJ generation_NN sensor_NN board_NN indicated_VBD that_IN this_DT could_MD provide_VB a_DT 10x_JJ increase_NN in_IN battery_NN life_NN ._.
+Other_JJ outstanding_JJ issues_NNS include_VBP weatherproof_JJ packaging_NN and_CC ruggedization_NN ,_, as_RB well_RB as_IN integration_NN with_IN current_JJ military_JJ infrastructure_NN ._.
+10_CD ._.
+REFERENCES_NNS -LSB-_-LRB- #_# -RSB-_-RRB- BBN_NNP technologies_NNS website_NN ._.
+http_NN :_: /_: /_: www_NN ._.
+bbn_NN ._.
+com_NN ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- E_NN ._.
+Danicki_NNP ._.
+Acoustic_JJ sniper_NN localization_NN ._.
+Archives_NNS of_IN Acoustics_NNS ,_, ##_NN -LRB-_-LRB- #_# -RRB-_-RRB- :_: 233-245_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- G_NN ._.
+L_NN ._.
+Duckworth_NNP et_FW al_FW ._.
+Fixed_VBN and_CC wearable_JJ acoustic_JJ counter-sniper_NN systems_NNS for_IN law_NN enforcement_NN ._.
+In_IN E_NN ._.
+M_NN ._.
+Carapezza_NNP and_CC D_NNP ._.
+B_NN ._.
+Law_NN ,_, editors_NNS ,_, Proc_NNP ._.
+SPIE_NNP Vol_NNP ._.
+3577_CD ,_, p_NN ._.
+210-230_CD ,_, pages_NNS 210-230_CD ,_, Jan_NNP ._.
+####_NN ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- K_NNP ._.
+Fansler_NNP ._.
+Description_NN of_IN muzzle_JJ blast_NN by_IN modified_VBN scaling_NN models_NNS ._.
+Shock_NN and_CC Vibration_NN ,_, #_# -LRB-_-LRB- #_# -RRB-_-RRB- :_: 1-12_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- D_NN ._.
+Gay_NNS ,_, P_NN ._.
+Levis_NNP ,_, R_NN ._.
+von_NN Behren_NNP ,_, M_NN ._.
+Welsh_NNP ,_, E_NNP ._.
+Brewer_NNP ,_, and_CC D_NN ._.
+Culler_NNP ._.
+The_DT nesC_NN language_NN :_: a_DT holistic_JJ approach_NN to_TO networked_JJ embedded_JJ systems_NNS ._.
+Proceedings_NNP of_IN Programming_NNP Language_NNP Design_NNP and_CC Implementation_NNP -LRB-_-LRB- PLDI_NNP -RRB-_-RRB- ,_, June_NNP ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- J_NN ._.
+Hill_NNP ,_, R_NN ._.
+Szewczyk_NNP ,_, A_NNP ._.
+Woo_NNP ,_, S_NN ._.
+Hollar_NNP ,_, D_NNP ._.
+Culler_NNP ,_, and_CC K_NN ._.
+Pister_NNP ._.
+System_NNP architecture_NN directions_NNS for_IN networked_JJ sensors_NNS ._.
+in_IN Proc_NNP ._.
+of_IN ASPLOS_NNP ####_CD ,_, Nov_NNP ._.
+####_NN ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- B_NN ._.
+Kusy_NNP ,_, G_NNP ._.
+Balogh_NNP ,_, P_NN ._.
+Volgyesi_NNP ,_, J_NNP ._.
+Sallai_FW ,_, A_DT ._.
+Nadas_NNP ,_, A_NNP ._.
+Ledeczi_NNP ,_, M_NN ._.
+Maroti_NNP ,_, and_CC L_NN ._.
+Meertens_NNS ._.
+Node-density_JJ independent_JJ localization_NN ._.
+Information_NNP Processing_NNP in_IN Sensor_NNP Networks_NNP -LRB-_-LRB- IPSN_NNP ##_CD -RRB-_-RRB- SPOTS_NNS Track_NNP ,_, Apr_NNP ._.
+####_NN ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- A_DT ._.
+Ledeczi_NNP ,_, A_NNP ._.
+Nadas_NNP ,_, P_NN ._.
+Volgyesi_NNP ,_, G_NNP ._.
+Balogh_NNP ,_, B_NN ._.
+Kusy_NNP ,_, J_NNP ._.
+Sallai_FW ,_, G_NN ._.
+Pap_NN ,_, S_NN ._.
+Dora_NNP ,_, K_NNP ._.
+Molnar_NNP ,_, M_NN ._.
+Maroti_NNP ,_, and_CC G_NN ._.
+Simon_NNP ._.
+Countersniper_NN system_NN for_IN urban_JJ warfare_NN ._.
+ACM_NNP Transactions_NNS on_IN Sensor_NNP Networks_NNP ,_, #_# -LRB-_-LRB- #_# -RRB-_-RRB- :_: 153-177_CD ,_, Nov_NNP ._.
+####_NN ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- M_NN ._.
+Maroti_NNP ._.
+Directed_NNP flood-routing_JJ framework_NN for_IN wireless_JJ sensor_NN networks_NNS ._.
+In_IN Proceedings_NNP of_IN the_DT 5th_JJ ACM_NN /_: IFIP_NN /_: USENIX_NNP International_NNP Conference_NNP on_IN Middleware_NNP ,_, pages_NNS 99-114_CD ,_, New_NNP York_NNP ,_, NY_NNP ,_, USA_NNP ,_, ####_CD ._.
+Springer-Verlag_NNP New_NNP York_NNP ,_, Inc_NNP ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- B_NN ._.
+Mays_NNP ._.
+Shockwave_NNP and_CC muzzle_JJ blast_NN classification_NN via_IN joint_JJ time_NN frequency_NN and_CC wavelet_NN analysis_NN ._.
+Technical_NNP report_NN ,_, Army_NNP Research_NNP Lab_NNP Adelphi_NNP MD_NNP 20783-1197_CD ,_, Sept_NNP ._.
+####_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- TinyOS_VBZ Hardware_NNP Platforms_NNPS ._.
+http_NN :_: /_: /_: tinyos_NNS ._.
+net_JJ /_: scoop_VB /_: special_JJ /_: hardware_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Crossbow_NN MICAz_NN -LRB-_-LRB- MPR2400_NN -RRB-_-RRB- Radio_NN Module_NNP ._.
+http_NN :_: /_: /_: www_NN ._.
+xbow_NN ._.
+com_NN /_: Products_NNP /_: productsdetails_NNS ._.
+aspx_NN ?_.
+sid_NN =_JJ ###_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- PicoBlaze_NNP User_NN Resources_NNP ._.
+http_NN :_: /_: /_: www_NN ._.
+xilinx_NN ._.
+com_NN /_: ipcenter_NN /_: processor_NN __CD central_JJ /_: picoblaze_NN /_: picoblaze_NN __CD user_NN __NN resources_NNS ._.
+htm_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- B_NN ._.
+M_NN ._.
+Sadler_NNP ,_, T_NN ._.
+Pham_NNP ,_, and_CC L_NN ._.
+C_NN ._.
+Sadler_NNP ._.
+Optimal_JJ and_CC wavelet-based_JJ shock_NN wave_NN detection_NN and_CC estimation_NN ._.
+Acoustical_NNP Society_NNP of_IN America_NNP Journal_NNP ,_, 104_CD :_: 955-963_CD ,_, Aug_NNP ._.
+####_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+Sallai_FW ,_, B_NN ._.
+Kusy_NNP ,_, A_NNP ._.
+Ledeczi_NNP ,_, and_CC P_NN ._.
+Dutta_NNP ._.
+On_IN the_DT scalability_NN of_IN routing-integrated_JJ time_NN synchronization_NN ._.
+3rd_JJ European_JJ Workshop_NNP on_IN Wireless_NNP Sensor_NNP Networks_NNP -LRB-_-LRB- EWSN_NNP ####_CD -RRB-_-RRB- ,_, Feb_NNP ._.
+####_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- ShotSpotter_NNP website_NN ._.
+http_NN :_: /_: /_: www_NN ._.
+shotspotter_NN ._.
+com_NN /_: products_NNS /_: military_JJ ._.
+html_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- G_NN ._.
+Simon_NNP ,_, M_NN ._.
+Maroti_NNP ,_, A_NNP ._.
+Ledeczi_NNP ,_, G_NNP ._.
+Balogh_NNP ,_, B_NN ._.
+Kusy_NNP ,_, A_NNP ._.
+Nadas_NNP ,_, G_NNP ._.
+Pap_NN ,_, J_NN ._.
+Sallai_FW ,_, and_CC K_NN ._.
+Frampton_NNP ._.
+Sensor_NN network-based_JJ countersniper_NN system_NN ._.
+In_IN SenSys_NNS ''_'' ##_CD :_: Proceedings_NNP of_IN the_DT 2nd_JJ international_JJ conference_NN on_IN Embedded_VBN networked_JJ sensor_NN systems_NNS ,_, pages_NNS 1-12_CD ,_, New_NNP York_NNP ,_, NY_NNP ,_, USA_NNP ,_, ####_CD ._.
+ACM_NNP Press_NNP ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- R_NN ._.
+Stoughton_NNP ._.
+Measurements_NNS of_IN small-caliber_JJ ballistic_JJ shock_NN waves_NNS in_IN air_NN ._.
+Acoustical_NNP Society_NNP of_IN America_NNP Journal_NNP ,_, ###_CD :_: 781-787_CD ,_, Aug_NNP ._.
+####_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- B_NN ._.
+A_DT ._.
+Weiss_NNP ,_, C_NNP ._.
+Schlenoff_NNP ,_, M_NN ._.
+Shneier_NNP ,_, and_CC A_NN ._.
+Virts_NNP ._.
+Technology_NNP evaluations_NNS and_CC performance_NN metrics_NNS for_IN soldier-worn_JJ sensors_NNS for_IN assist_VB ._.
+In_IN Performance_NNP Metrics_NNPS for_IN Intelligent_NNP Systems_NNPS Workshop_NNP ,_, Aug_NNP ._.
+####_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- G_NN ._.
+Whitham_NNP ._.
+Flow_NN pattern_NN of_IN a_DT supersonic_JJ projectile_NN ._.
+Communications_NNPS on_IN pure_JJ and_CC applied_VBD mathematics_NNS ,_, 5_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: ###_CD ,_, ####_CD ._.
+126_CD

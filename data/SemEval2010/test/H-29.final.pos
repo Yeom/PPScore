@@ -1,0 +1,651 @@
+Estimation_NN and_CC Use_NN of_IN Uncertainty_NN in_IN Pseudo-relevance_NN Feedback_NNP Kevyn_NNP Collins-Thompson_NNP and_CC Jamie_NNP Callan_NNP Language_NNP Technologies_NNP Institute_NNP School_NNP of_IN Computer_NNP Science_NNP Carnegie_NNP Mellon_NNP University_NNP Pittsburgh_NNP ,_, PA_NN 15213-8213_CD U_NNP ._.
+S_NN ._.
+A_DT ._.
+-LCB-_-LRB- kct_NN |_CD callan_NN -RCB-_-RRB- @_SYM cs_NNS ._.
+cmu_NN ._.
+edu_NN ABSTRACT_NN Existing_VBG pseudo-relevance_JJ feedback_NN methods_NNS typically_RB perform_VBP averaging_VBG over_IN the_DT top-retrieved_JJ documents_NNS ,_, but_CC ignore_VBP an_DT important_JJ statistical_JJ dimension_NN :_: the_DT risk_NN or_CC variance_NN associated_VBN with_IN either_CC the_DT individual_JJ document_NN models_NNS ,_, or_CC their_PRP$ combination_NN ._.
+Treating_VBG the_DT baseline_NN feedback_NN method_NN as_IN a_DT black_JJ box_NN ,_, and_CC the_DT output_NN feedback_NN model_NN as_IN a_DT random_JJ variable_NN ,_, we_PRP estimate_VBP a_DT posterior_JJ distribution_NN for_IN the_DT feedback_NN model_NN by_IN resampling_VBG a_DT given_VBN query_NN ''_'' s_NNS top-retrieved_JJ documents_NNS ,_, using_VBG the_DT posterior_JJ mean_NN or_CC mode_NN as_IN the_DT enhanced_VBN feedback_NN model_NN ._.
+We_PRP then_RB perform_VBP model_NN combination_NN over_IN several_JJ enhanced_VBN models_NNS ,_, each_DT based_VBN on_IN a_DT slightly_RB modified_VBN query_NN sampled_VBN from_IN the_DT original_JJ query_NN ._.
+We_PRP find_VBP that_IN resampling_VBG documents_NNS helps_VBZ increase_VB individual_JJ feedback_NN model_NN precision_NN by_IN removing_VBG noise_NN terms_NNS ,_, while_IN sampling_NN from_IN the_DT query_NN improves_VBZ robustness_NN -LRB-_-LRB- worst-case_JJ performance_NN -RRB-_-RRB- by_IN emphasizing_VBG terms_NNS related_VBN to_TO multiple_JJ query_NN aspects_NNS ._.
+The_DT result_NN is_VBZ a_DT meta-feedback_JJ algorithm_NN that_WDT is_VBZ both_DT more_JJR robust_JJ and_CC more_RBR precise_JJ than_IN the_DT original_JJ strong_JJ baseline_NN method_NN ._.
+Categories_NNS and_CC Subject_NNP Descriptors_NNPS :_: H_NN ._.
+#_# ._.
+#_# -LSB-_-LRB- Information_NNP Retrieval_NNP -RSB-_-RRB- :_: Retrieval_NNP Models_NNS General_NNP Terms_NNS :_: Algorithms_NNS ,_, Experimentation_NN 1_CD ._.
+INTRODUCTION_NN Uncertainty_NN is_VBZ an_DT inherent_JJ feature_NN of_IN information_NN retrieval_NN ._.
+Not_RB only_RB do_VB we_PRP not_RB know_VB the_DT queries_NNS that_WDT will_MD be_VB presented_VBN to_TO our_PRP$ retrieval_NN algorithm_NN ahead_RB of_IN time_NN ,_, but_CC the_DT user_NN ''_'' s_NNS information_NN need_NN may_MD be_VB vague_JJ or_CC incompletely_RB specified_VBN by_IN these_DT queries_NNS ._.
+Even_RB if_IN the_DT query_NN were_VBD perfectly_RB specified_VBN ,_, language_NN in_IN the_DT collection_NN documents_NNS is_VBZ inherently_RB complex_JJ and_CC ambiguous_JJ and_CC matching_VBG such_JJ language_NN effectively_RB is_VBZ a_DT formidable_JJ problem_NN by_IN itself_PRP ._.
+With_IN this_DT in_IN mind_NN ,_, we_PRP wish_VBP to_TO treat_VB many_JJ important_JJ quantities_NNS calculated_VBN by_IN the_DT retrieval_NN system_NN ,_, whether_IN a_DT relevance_NN score_NN for_IN a_DT document_NN ,_, or_CC a_DT weight_NN for_IN a_DT query_NN expansion_NN term_NN ,_, as_IN random_JJ variables_NNS whose_WP$ true_JJ value_NN is_VBZ uncertain_JJ but_CC where_WRB the_DT uncertainty_NN about_IN the_DT true_JJ value_NN may_MD be_VB quantified_VBN by_IN replacing_VBG the_DT fixed_VBN value_NN with_IN a_DT probability_NN distribution_NN over_IN possible_JJ values_NNS ._.
+In_IN this_DT way_NN ,_, retrieval_NN algorithms_NNS may_MD attempt_VB to_TO quantify_VB the_DT risk_NN or_CC uncertainty_NN associated_VBN with_IN their_PRP$ output_NN rankings_NNS ,_, or_CC improve_VB the_DT stability_NN or_CC precision_NN of_IN their_PRP$ internal_JJ calculations_NNS ._.
+Current_JJ algorithms_NNS for_IN pseudo-relevance_NN feedback_NN -LRB-_-LRB- PRF_NN -RRB-_-RRB- tend_VBP to_TO follow_VB the_DT same_JJ basic_JJ method_NN whether_IN we_PRP use_VBP vector_NN space-based_JJ algorithms_NNS such_JJ as_IN Rocchio_NNP ''_'' s_VBZ formula_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, or_CC more_RBR recent_JJ language_NN modeling_NN approaches_NNS such_JJ as_IN Relevance_NNP Models_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+First_RB ,_, a_DT set_NN of_IN top-retrieved_JJ documents_NNS is_VBZ obtained_VBN from_IN an_DT initial_JJ query_NN and_CC assumed_VBD to_TO approximate_JJ a_DT set_NN of_IN relevant_JJ documents_NNS ._.
+Next_RB ,_, a_DT single_JJ feedback_NN model_NN vector_NN is_VBZ computed_VBN according_VBG to_TO some_DT sort_NN of_IN average_NN ,_, centroid_NN ,_, or_CC expectation_NN over_IN the_DT set_NN of_IN possibly-relevant_JJ document_NN models_NNS ._.
+For_IN example_NN ,_, the_DT document_NN vectors_NNS may_MD be_VB combined_VBN with_IN equal_JJ weighting_NN ,_, as_IN in_IN Rocchio_NNP ,_, or_CC by_IN query_NN likelihood_NN ,_, as_IN may_MD be_VB done_VBN using_VBG the_DT Relevance_NN Model1_NN ._.
+The_DT use_NN of_IN an_DT expectation_NN is_VBZ reasonable_JJ for_IN practical_JJ and_CC theoretical_JJ reasons_NNS ,_, but_CC by_IN itself_PRP ignores_VBZ potentially_RB valuable_JJ information_NN about_IN the_DT risk_NN of_IN the_DT feedback_NN model_NN ._.
+Our_PRP$ main_JJ hypothesis_NN in_IN this_DT paper_NN is_VBZ that_IN estimating_VBG the_DT uncertainty_NN in_IN feedback_NN is_VBZ useful_JJ and_CC leads_VBZ to_TO better_JJR individual_JJ feedback_NN models_NNS and_CC more_JJR robust_JJ combined_VBN models_NNS ._.
+Therefore_RB ,_, we_PRP propose_VBP a_DT method_NN for_IN estimating_VBG uncertainty_NN associated_VBN with_IN an_DT individual_JJ feedback_NN model_NN in_IN terms_NNS of_IN a_DT posterior_JJ distribution_NN over_IN language_NN models_NNS ._.
+To_TO do_VB this_DT ,_, we_PRP systematically_RB vary_VBP the_DT inputs_NNS to_TO the_DT baseline_NN feedback_NN method_NN and_CC fit_VB a_DT Dirichlet_JJ distribution_NN to_TO the_DT output_NN ._.
+We_PRP use_VBP the_DT posterior_JJ mean_NN or_CC mode_NN as_IN the_DT improved_VBN feedback_NN model_NN estimate_NN ._.
+This_DT process_NN is_VBZ shown_VBN in_IN Figure_NNP #_# ._.
+As_IN we_PRP show_VBP later_RB ,_, the_DT mean_NN and_CC mode_NN may_MD vary_VB significantly_RB from_IN the_DT single_JJ feedback_NN model_NN proposed_VBN by_IN the_DT baseline_NN method_NN ._.
+We_PRP also_RB perform_VBP model_NN combination_NN using_VBG several_JJ improved_VBN feedback_NN language_NN models_NNS obtained_VBN by_IN a_DT small_JJ number_NN of_IN new_JJ queries_NNS sampled_VBN from_IN the_DT original_JJ query_NN ._.
+A_DT model_NN ''_'' s_NNS weight_NN combines_VBZ two_CD complementary_JJ factors_NNS :_: the_DT model_NN ''_'' s_NNS probability_NN of_IN generating_VBG the_DT query_NN ,_, and_CC the_DT variance_NN of_IN the_DT model_NN ,_, with_IN high-variance_JJ models_NNS getting_VBG lower_JJR weight_NN ._.
+1_CD For_IN example_NN ,_, an_DT expected_VBN parameter_NN vector_NN conditioned_VBN on_IN the_DT query_NN observation_NN is_VBZ formed_VBN from_IN top-retrieved_JJ documents_NNS ,_, which_WDT are_VBP treated_VBN as_IN training_NN strings_NNS ._.
+Figure_NNP #_# :_: Estimating_VBG the_DT uncertainty_NN of_IN the_DT feedback_NN model_NN for_IN a_DT single_JJ query_NN ._.
+2_LS ._.
+SAMPLING-BASED_JJ FEEDBACK_NN In_IN Sections_NNS #_# ._.
+1-2_CD ._.
+#_# we_PRP describe_VBP a_DT general_JJ method_NN for_IN estimating_VBG a_DT probability_NN distribution_NN over_IN the_DT set_NN of_IN possible_JJ language_NN models_NNS ._.
+In_IN Sections_NNS #_# ._.
+#_# and_CC #_# ._.
+#_# we_PRP summarize_VBP how_WRB different_JJ query_NN samples_NNS are_VBP used_VBN to_TO generate_VB multiple_JJ feedback_NN models_NNS ,_, which_WDT are_VBP then_RB combined_VBN ._.
+2_LS ._.
+#_# Modeling_VBG Feedback_NN Uncertainty_NN Given_VBN a_DT query_NN Q_NNP and_CC a_DT collection_NN C_NN ,_, we_PRP assume_VBP a_DT probabilistic_JJ retrieval_NN system_NN that_WDT assigns_VBZ a_DT real-valued_JJ document_NN score_NN f_FW -LRB-_-LRB- D_NN ,_, Q_NNP -RRB-_-RRB- to_TO each_DT document_NN D_NN in_IN C_NN ,_, such_JJ that_IN the_DT score_NN is_VBZ proportional_JJ to_TO the_DT estimated_VBN probability_NN of_IN relevance_NN ._.
+We_PRP make_VBP no_DT other_JJ assumptions_NNS about_IN f_FW -LRB-_-LRB- D_NN ,_, Q_NNP -RRB-_-RRB- ._.
+The_DT nature_NN of_IN f_FW -LRB-_-LRB- D_NN ,_, Q_NNP -RRB-_-RRB- may_MD be_VB complex_NN :_: for_IN example_NN ,_, if_IN the_DT retrieval_NN system_NN supports_VBZ structured_JJ query_NN languages_NNS -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, then_RB f_FW -LRB-_-LRB- D_NN ,_, Q_NNP -RRB-_-RRB- may_MD represent_VB the_DT output_NN of_IN an_DT arbitrarily_RB complex_JJ inference_NN network_NN defined_VBN by_IN the_DT structured_JJ query_NN operators_NNS ._.
+In_IN theory_NN ,_, the_DT scoring_VBG function_NN can_MD vary_VB from_IN query_NN to_TO query_NN ,_, although_IN in_IN this_DT study_NN for_IN simplicity_NN we_PRP keep_VBP the_DT scoring_VBG function_NN the_DT same_JJ for_IN all_DT queries_NNS ._.
+Our_PRP$ specific_JJ query_NN method_NN is_VBZ given_VBN in_IN Section_NN #_# ._.
+We_PRP treat_VBP the_DT feedback_NN algorithm_NN as_IN a_DT black_JJ box_NN and_CC assume_VB that_IN the_DT inputs_NNS to_TO the_DT feedback_NN algorithm_NN are_VBP the_DT original_JJ query_NN and_CC the_DT corresponding_JJ top-retrieved_JJ documents_NNS ,_, with_IN a_DT score_NN being_VBG given_VBN to_TO each_DT document_NN ._.
+We_PRP assume_VBP that_IN the_DT output_NN of_IN the_DT feedback_NN algorithm_NN is_VBZ a_DT vector_NN of_IN term_NN weights_NNS to_TO be_VB used_VBN to_TO add_VB or_CC reweight_VB the_DT terms_NNS in_IN the_DT representation_NN of_IN the_DT original_JJ query_NN ,_, with_IN the_DT vector_NN normalized_VBD to_TO form_VB a_DT probability_NN distribution_NN ._.
+We_PRP view_VBP the_DT the_DT inputs_NNS to_TO the_DT feedback_NN black_JJ box_NN as_IN random_JJ variables_NNS ,_, and_CC analyze_VBP the_DT feedback_NN model_NN as_IN a_DT random_JJ variable_NN that_WDT changes_VBZ in_IN response_NN to_TO changes_NNS in_IN the_DT inputs_NNS ._.
+Like_IN the_DT document_NN scoring_VBG function_NN f_FW -LRB-_-LRB- D_NN ,_, Q_NNP -RRB-_-RRB- ,_, the_DT feedback_NN algorithm_NN may_MD implement_VB a_DT complex_NN ,_, non-linear_JJ scoring_VBG formula_NN ,_, and_CC so_RB as_IN its_PRP$ inputs_NNS vary_VBP ,_, the_DT resulting_VBG feedback_NN models_NNS may_MD have_VB a_DT complex_JJ distribution_NN over_IN the_DT space_NN of_IN feedback_NN models_NNS -LRB-_-LRB- the_DT sample_NN space_NN -RRB-_-RRB- ._.
+Because_IN of_IN this_DT potential_JJ complexity_NN ,_, we_PRP do_VBP not_RB attempt_VB to_TO derive_VB a_DT posterior_JJ distribution_NN in_IN closed_JJ form_NN ,_, but_CC instead_RB use_VB simulation_NN ._.
+We_PRP call_VBP this_DT distribution_NN over_IN possible_JJ feedback_NN models_NNS the_DT feedback_NN model_NN distribution_NN ._.
+Our_PRP$ goal_NN in_IN this_DT section_NN is_VBZ to_TO estimate_VB a_DT useful_JJ approximation_NN to_TO the_DT feedback_NN model_NN distribution_NN ._.
+For_IN a_DT specific_JJ framework_NN for_IN experiments_NNS ,_, we_PRP use_VBP the_DT language_NN modeling_NN -LRB-_-LRB- LM_NN -RRB-_-RRB- approach_NN for_IN information_NN retrieval_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+The_DT score_NN of_IN a_DT document_NN D_NN with_IN respect_NN to_TO a_DT query_NN Q_NNP and_CC collection_NN C_NN is_VBZ given_VBN by_IN p_NN -LRB-_-LRB- Q_NNP |_NN D_NN -RRB-_-RRB- with_IN respect_NN to_TO language_NN models_NNS Q_NNP and_CC D_NNP estimated_VBN for_IN the_DT query_NN and_CC document_NN respectively_RB ._.
+We_PRP denote_VBP the_DT set_NN of_IN k_NN top-retrieved_JJ documents_NNS from_IN collection_NN C_NN in_IN response_NN to_TO Q_NNP by_IN DQ_NN -LRB-_-LRB- k_NN ,_, C_NN -RRB-_-RRB- ._.
+For_IN simplicity_NN ,_, we_PRP assume_VBP that_IN queries_NNS and_CC documents_NNS are_VBP generated_VBN by_IN multinomial_JJ distributions_NNS whose_WP$ parameters_NNS are_VBP represented_VBN by_IN unigram_JJ language_NN models_NNS ._.
+To_TO incorporate_VB feedback_NN in_IN the_DT LM_NNP approach_NN ,_, we_PRP assume_VBP a_DT model-based_JJ scheme_NN in_IN which_WDT our_PRP$ goal_NN is_VBZ take_VB the_DT query_NN and_CC resulting_VBG ranked_VBD documents_NNS DQ_NN -LRB-_-LRB- k_NN ,_, C_NN -RRB-_-RRB- as_IN input_NN ,_, and_CC output_NN an_DT expansion_NN language_NN model_NN E_NN ,_, which_WDT is_VBZ then_RB interpolated_VBN with_IN the_DT original_JJ query_NN model_NN Q_NNP :_: New_NNP =_JJ -LRB-_-LRB- #_# -RRB-_-RRB- Q_NNP +_CC E_NN -LRB-_-LRB- #_# -RRB-_-RRB- This_DT includes_VBZ the_DT possibility_NN of_IN =_JJ #_# where_WRB the_DT original_JJ query_NN mode_NN is_VBZ completely_RB replaced_VBN by_IN the_DT feedback_NN model_NN ._.
+Our_PRP$ sample_NN space_NN is_VBZ the_DT set_NN of_IN all_DT possible_JJ language_NN models_NNS LF_NN that_WDT may_MD be_VB output_NN as_IN feedback_NN models_NNS ._.
+Our_PRP$ approach_NN is_VBZ to_TO take_VB samples_NNS from_IN this_DT space_NN and_CC then_RB fit_VB a_DT distribution_NN to_TO the_DT samples_NNS using_VBG maximum_NN likelihood_NN ._.
+For_IN simplicity_NN ,_, we_PRP start_VBP by_IN assuming_VBG the_DT latent_JJ feedback_NN distribution_NN has_VBZ the_DT form_NN of_IN a_DT Dirichlet_JJ distribution_NN ._.
+Although_IN the_DT Dirichlet_NNP is_VBZ a_DT unimodal_JJ distribution_NN ,_, and_CC in_IN general_JJ quite_RB limited_JJ in_IN its_PRP$ expressiveness_NN in_IN the_DT sample_NN space_NN ,_, it_PRP is_VBZ a_DT natural_JJ match_NN for_IN the_DT multinomial_JJ language_NN model_NN ,_, can_MD be_VB estimated_VBN quickly_RB ,_, and_CC can_MD capture_VB the_DT most_RBS salient_JJ features_NNS of_IN confident_JJ and_CC uncertain_JJ feedback_NN models_NNS ,_, such_JJ as_IN the_DT overall_JJ spread_NN of_IN the_DT distibution_NN ._.
+2_LS ._.
+#_# Resampling_VBG document_NN models_NNS We_PRP would_MD like_VB an_DT approximation_NN to_TO the_DT posterior_JJ distribution_NN of_IN the_DT feedback_NN model_NN LF_NN ._.
+To_TO accomplish_VB this_DT ,_, we_PRP apply_VBP a_DT widely-used_JJ simulation_NN technique_NN called_VBN bootstrap_JJ sampling_NN -LRB-_-LRB- -LSB-_-LRB- #_# -RSB-_-RRB- ,_, p_NN ._.
+###_NN -RRB-_-RRB- on_IN the_DT input_NN parameters_NNS ,_, namely_RB ,_, the_DT set_NN of_IN top-retrieved_JJ documents_NNS ._.
+Bootstrap_NNP sampling_NN allows_VBZ us_PRP to_TO simulate_VB the_DT approximate_JJ effect_NN of_IN perturbing_VBG the_DT parameters_NNS within_IN the_DT black_JJ box_NN feedback_NN algorithm_NN by_IN perturbing_VBG the_DT inputs_NNS to_TO that_DT algorithm_NN in_IN a_DT systematic_JJ way_NN ,_, while_IN making_VBG no_DT assumptions_NNS about_IN the_DT nature_NN of_IN the_DT feedback_NN algorithm_NN ._.
+Specifically_RB ,_, we_PRP sample_NN k_NN documents_NNS with_IN replacement_NN from_IN DQ_NN -LRB-_-LRB- k_NN ,_, C_NN -RRB-_-RRB- ,_, and_CC calculate_VB an_DT expansion_NN language_NN model_NN b_NN using_VBG the_DT black_JJ box_NN feedback_NN method_NN ._.
+We_PRP repeat_VBP this_DT process_NN B_NN times_NNS to_TO obtain_VB a_DT set_NN of_IN B_NN feedback_NN language_NN models_NNS ,_, to_TO which_WDT we_PRP then_RB fit_VBP a_DT Dirichlet_JJ distribution_NN ._.
+Typically_RB B_NN is_VBZ in_IN the_DT range_NN of_IN ##_CD to_TO ##_CD samples_NNS ,_, with_IN performance_NN being_VBG relatively_RB stable_JJ in_IN this_DT range_NN ._.
+Note_VB that_DT instead_RB of_IN treating_VBG each_DT top_JJ document_NN as_IN equally_RB likely_JJ ,_, we_PRP sample_NN according_VBG to_TO the_DT estimated_VBN probabilities_NNS of_IN relevance_NN of_IN each_DT document_NN in_IN DQ_NN -LRB-_-LRB- k_NN ,_, C_NN -RRB-_-RRB- ._.
+Thus_RB ,_, a_DT document_NN is_VBZ more_RBR likely_JJ to_TO be_VB chosen_VBN the_DT higher_JJR it_PRP is_VBZ in_IN the_DT ranking_NN ._.
+2_LS ._.
+#_# Justification_NN for_IN a_DT sampling_NN approach_NN The_DT rationale_NN for_IN our_PRP$ sampling_NN approach_NN has_VBZ two_CD parts_NNS ._.
+First_RB ,_, we_PRP want_VBP to_TO improve_VB the_DT quality_NN of_IN individual_JJ feedback_NN models_NNS by_IN smoothing_VBG out_RP variation_NN when_WRB the_DT baseline_NN feedback_NN model_NN is_VBZ unstable_JJ ._.
+In_IN this_DT respect_NN ,_, our_PRP$ approach_NN resembles_VBZ bagging_VBG -LSB-_-LRB- #_# -RSB-_-RRB- ,_, an_DT ensemble_NN approach_NN which_WDT generates_VBZ multiple_JJ versions_NNS of_IN a_DT predictor_NN by_IN making_VBG bootstrap_JJ copies_NNS of_IN the_DT training_NN set_NN ,_, and_CC then_RB averages_NNS the_DT -LRB-_-LRB- numerical_JJ -RRB-_-RRB- predictors_NNS ._.
+In_IN our_PRP$ application_NN ,_, top-retrieved_JJ documents_NNS can_MD be_VB seen_VBN as_IN a_DT kind_NN of_IN noisy_JJ training_NN set_VBN for_IN relevance_NN ._.
+Second_RB ,_, sampling_NN is_VBZ an_DT effective_JJ way_NN to_TO estimate_VB basic_JJ properties_NNS of_IN the_DT feedback_NN posterior_JJ distribution_NN ,_, which_WDT can_MD then_RB be_VB used_VBN for_IN improved_VBN model_NN combination_NN ._.
+For_IN example_NN ,_, a_DT model_NN may_MD be_VB weighted_VBN by_IN its_PRP$ prediction_NN confidence_NN ,_, estimated_VBN as_IN a_DT function_NN of_IN the_DT variability_NN of_IN the_DT posterior_NN around_IN the_DT model_NN ._.
+foo2-401_NN ._.
+map-Dim_NNP :_: ####_CD ,_, Size_NN :_: ##_CD *_SYM 12units_NNS ,_, gaussianneighborhood_NN -LRB-_-LRB- a_DT -RRB-_-RRB- Topic_NNP ###_NNP Foreign_NNP minorities_NNS ,_, Germany_NNP foo2-402_NN ._.
+map-Dim_NNP :_: ####_CD ,_, Size_NN :_: ##_CD *_SYM 12units_NNS ,_, gaussianneighborhood_NN -LRB-_-LRB- b_NN -RRB-_-RRB- Topic_NN ###_CD Behavioral_JJ genetics_NNS foo2-459_NN ._.
+map-Dim_NNP :_: ####_CD ,_, Size_NN :_: ##_CD *_SYM 12units_NNS ,_, gaussianneighborhood_NN -LRB-_-LRB- c_NN -RRB-_-RRB- Topic_NN ###_CD When_WRB can_MD a_DT lender_NN foreclose_NN on_IN property_NN Figure_NN #_# :_: Visualization_NN of_IN expansion_NN language_NN model_NN variance_NN using_VBG self-organizing_JJ maps_NNS ,_, showing_VBG the_DT distribution_NN of_IN language_NN models_NNS that_WDT results_VBZ from_IN resampling_VBG the_DT inputs_NNS to_TO the_DT baseline_NN expansion_NN method_NN ._.
+The_DT language_NN model_NN that_WDT would_MD have_VB been_VBN chosen_VBN by_IN the_DT baseline_NN expansion_NN is_VBZ at_IN the_DT center_NN of_IN each_DT map_NN ._.
+The_DT similarity_NN function_NN is_VBZ JensenShannon_NNP divergence_NN ._.
+2_LS ._.
+#_# Visualizing_VBG feedback_NN distributions_NNS Before_IN describing_VBG how_WRB we_PRP fit_VBP and_CC use_VBP the_DT Dirichlet_JJ distribution_NN over_IN feedback_NN models_NNS ,_, it_PRP is_VBZ instructive_JJ to_TO view_VB some_DT examples_NNS of_IN actual_JJ feedback_NN model_NN distributions_NNS that_WDT result_VBP from_IN bootstrap_JJ sampling_NN the_DT top-retrieved_JJ documents_NNS from_IN different_JJ TREC_NN topics_NNS ._.
+Each_DT point_NN in_IN our_PRP$ sample_NN space_NN is_VBZ a_DT language_NN model_NN ,_, which_WDT typically_RB has_VBZ several_JJ thousand_CD dimensions_NNS ._.
+To_TO help_VB analyze_VB the_DT behavior_NN of_IN our_PRP$ method_NN we_PRP used_VBD a_DT Self-Organizing_JJ Map_NN -LRB-_-LRB- via_IN the_DT SOM-PAK_NNP package_NN -LSB-_-LRB- #_# -RSB-_-RRB- -RRB-_-RRB- ,_, to_TO flatten_VB ''_'' and_CC visualize_VB the_DT high-dimensional_JJ density_NN function2_NN ._.
+The_DT density_NN maps_NNS for_IN three_CD TREC_NN topics_NNS are_VBP shown_VBN in_IN Figure_NNP #_# above_IN ._.
+The_DT dark_JJ areas_NNS represent_VBP regions_NNS of_IN high_JJ similarity_NN between_IN language_NN models_NNS ._.
+The_DT light_JJ areas_NNS represent_VBP regions_NNS of_IN low_JJ similarity_NN -_: the_DT valleys_NNS ''_'' between_IN clusters_NNS ._.
+Each_DT diagram_NN is_VBZ centered_VBN on_IN the_DT language_NN model_NN that_WDT would_MD have_VB been_VBN chosen_VBN by_IN the_DT baseline_NN expansion_NN ._.
+A_DT single_JJ peak_NN -LRB-_-LRB- mode_NN -RRB-_-RRB- is_VBZ evident_JJ in_IN some_DT examples_NNS ,_, but_CC more_RBR complex_JJ structure_NN appears_VBZ in_IN others_NNS ._.
+Also_RB ,_, while_IN the_DT distribution_NN is_VBZ usually_RB close_JJ to_TO the_DT baseline_NN feedback_NN model_NN ,_, for_IN some_DT topics_NNS they_PRP are_VBP a_DT significant_JJ distance_NN apart_RB -LRB-_-LRB- as_IN measured_VBN by_IN JensenShannon_NNP divergence_NN -RRB-_-RRB- ,_, as_IN in_IN Subfigure_NN 2c_NN ._.
+In_IN such_JJ cases_NNS ,_, the_DT mode_NN or_CC mean_NN of_IN the_DT feedback_NN distribution_NN often_RB performs_VBZ significantly_RB better_JJR than_IN the_DT baseline_NN -LRB-_-LRB- and_CC in_IN a_DT smaller_JJR proportion_NN of_IN cases_NNS ,_, significantly_RB worse_JJR -RRB-_-RRB- ._.
+2_LS ._.
+#_# Fitting_VBG a_DT posterior_JJ feedback_NN distribution_NN After_IN obtaining_VBG feedback_NN model_NN samples_NNS by_IN resampling_VBG the_DT feedback_NN model_NN inputs_NNS ,_, we_PRP estimate_VBP the_DT feedback_NN distribution_NN ._.
+We_PRP assume_VBP that_IN the_DT multinomial_JJ feedback_NN models_NNS -LCB-_-LRB- #_# ,_, ..._: ,_, B_NN -RCB-_-RRB- were_VBD generated_VBN by_IN a_DT latent_JJ Dirichlet_JJ distribution_NN with_IN parameters_NNS -LCB-_-LRB- #_# ,_, ..._: ,_, N_NN -RCB-_-RRB- ._.
+To_TO estimate_VB the_DT -LCB-_-LRB- #_# ,_, ..._: ,_, N_NN -RCB-_-RRB- ,_, we_PRP fit_VBP the_DT Dirichlet_NNP parameters_NNS to_TO the_DT B_NN language_NN model_NN samples_NNS according_VBG to_TO maximum_NN likelihood_NN using_VBG a_DT generalized_VBN Newton_NNP procedure_NN ,_, details_NNS of_IN which_WDT are_VBP given_VBN in_IN Minka_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+We_PRP assume_VBP a_DT simple_JJ Dirichlet_NNP prior_RB over_IN the_DT -LCB-_-LRB- #_# ,_, ..._: ,_, N_NN -RCB-_-RRB- ,_, setting_VBG each_DT to_TO i_FW =_JJ p_NN -LRB-_-LRB- wi_NN |_NN C_NN -RRB-_-RRB- ,_, where_WRB is_VBZ a_DT parameter_NN and_CC p_NN -LRB-_-LRB- |_CD C_NN -RRB-_-RRB- is_VBZ the_DT collection_NN language_NN model_NN estimated_VBN from_IN a_DT set_NN of_IN documents_NNS from_IN collection_NN C_NN ._.
+The_DT parameter_NN fitting_JJ converges_VBZ very_RB quickly_RB -_: typically_RB just_RB #_# or_CC 2_CD Because_IN our_PRP$ points_NNS are_VBP language_NN models_NNS in_IN the_DT multinomial_JJ simplex_NN ,_, we_PRP extended_VBD SOM-PAK_NNP to_TO support_VB JensenShannon_NNP divergence_NN ,_, a_DT widely-used_JJ similarity_NN measure_NN between_IN probability_NN distributions_NNS ._.
+3_CD iterations_NNS are_VBP enough_JJ -_: so_RB that_IN it_PRP is_VBZ practical_JJ to_TO apply_VB at_IN query-time_NN when_WRB computational_JJ overhead_NN must_MD be_VB small_JJ ._.
+In_IN practice_NN ,_, we_PRP can_MD restrict_VB the_DT calculation_NN to_TO the_DT vocabulary_NN of_IN the_DT top-retrieved_JJ documents_NNS ,_, instead_RB of_IN the_DT entire_JJ collection_NN ._.
+Note_VB that_DT for_IN this_DT step_NN we_PRP are_VBP re-using_VBG the_DT existing_VBG retrieved_VBN documents_NNS and_CC not_RB performing_VBG additional_JJ queries_NNS ._.
+Given_VBN the_DT parameters_NNS of_IN an_DT N-dimensional_JJ Dirichlet_JJ distribution_NN Dir_NN -LRB-_-LRB- -RRB-_-RRB- the_DT mean_NN and_CC mode_NN x_NN vectors_NNS are_VBP easy_JJ to_TO calculate_VB and_CC are_VBP given_VBN respectively_RB by_IN i_FW =_JJ iP_NN i_FW -LRB-_-LRB- #_# -RRB-_-RRB- and_CC xi_NN =_JJ i1P_NN iN_NN ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- We_PRP can_MD then_RB choose_VB the_DT language_NN model_NN at_IN the_DT mean_NN or_CC the_DT mode_NN of_IN the_DT posterior_NN as_IN the_DT final_JJ enhanced_VBN feedback_NN model_NN ._.
+-LRB-_-LRB- We_PRP found_VBD the_DT mode_NN to_TO give_VB slightly_RB better_JJR performance_NN ._. -RRB-_-RRB-
+For_IN information_NN retrieval_NN ,_, the_DT number_NN of_IN samples_NNS we_PRP will_MD have_VB available_JJ is_VBZ likely_JJ to_TO be_VB quite_RB small_JJ for_IN performance_NN reasons_NNS -_: usually_RB less_JJR than_IN ten_CD ._.
+Moreover_RB ,_, while_IN random_JJ sampling_NN is_VBZ useful_JJ in_IN certain_JJ cases_NNS ,_, it_PRP is_VBZ perfectly_RB acceptable_JJ to_TO allow_VB deterministic_JJ sampling_NN distributions_NNS ,_, but_CC these_DT must_MD be_VB designed_VBN carefully_RB in_IN order_NN to_TO approximate_JJ an_DT accurate_JJ output_NN variance_NN ._.
+We_PRP leave_VBP this_DT for_IN future_JJ study_NN ._.
+2_LS ._.
+#_# Query_NNP variants_NNS We_PRP use_VBP the_DT following_VBG methods_NNS for_IN generating_VBG variants_NNS of_IN the_DT original_JJ query_NN ._.
+Each_DT variant_JJ corresponds_VBZ to_TO a_DT different_JJ assumption_NN about_IN which_WDT aspects_NNS of_IN the_DT original_JJ query_NN may_MD be_VB important_JJ ._.
+This_DT is_VBZ a_DT form_NN of_IN deterministic_JJ sampling_NN ._.
+We_PRP selected_VBD three_CD simple_JJ methods_NNS that_WDT cover_VBP complimentary_JJ assumptions_NNS about_IN the_DT query_NN ._.
+No-expansion_JJ Use_NN only_RB the_DT original_JJ query_NN ._.
+The_DT assumption_NN is_VBZ that_IN the_DT given_VBN terms_NNS are_VBP a_DT complete_JJ description_NN of_IN the_DT information_NN need_NN ._.
+Leave-one-out_NN A_NN single_JJ term_NN is_VBZ left_VBN out_IN of_IN the_DT original_JJ query_NN ._.
+The_DT assumption_NN is_VBZ that_IN one_CD of_IN the_DT query_NN terms_NNS is_VBZ a_DT noise_NN term_NN ._.
+Single-term_JJ A_NN single_JJ term_NN is_VBZ chosen_VBN from_IN the_DT original_JJ query_NN ._.
+This_DT assumes_VBZ that_IN only_RB one_CD aspect_NN of_IN the_DT query_NN ,_, namely_RB ,_, that_IN represented_VBN by_IN the_DT term_NN ,_, is_VBZ most_RBS important_JJ ._.
+After_IN generating_VBG a_DT variant_NN of_IN the_DT original_JJ query_NN ,_, we_PRP combine_VBP it_PRP with_IN the_DT original_JJ query_NN using_VBG a_DT weight_NN SUB_NN so_IN that_IN we_PRP do_VBP not_RB stray_JJ too_RB far_RB ''_'' ._.
+In_IN this_DT study_NN ,_, we_PRP set_VBD SUB_NN =_JJ #_# ._.
+#_# ._.
+For_IN example_NN ,_, using_VBG the_DT Indri_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- query_NN language_NN ,_, a_DT leave-oneout_JJ variant_NN of_IN the_DT initial_JJ query_NN that_WDT omits_VBZ the_DT term_NN ireland_NN ''_'' for_IN TREC_NN topic_NN ###_CD is_VBZ :_: #_# weight_NN -LRB-_-LRB- #_# ._.
+#_# #_# combine_VBP -LRB-_-LRB- ireland_JJ peace_NN talks_NNS -RRB-_-RRB- 0_CD ._.
+#_# #_# combine_VBP -LRB-_-LRB- peace_NN talks_NNS -RRB-_-RRB- -RRB-_-RRB- 2_CD ._.
+#_# Combining_VBG enhanced_VBN feedback_NN models_NNS from_IN multiple_JJ query_NN variants_NNS When_WRB using_VBG multiple_JJ query_NN variants_NNS ,_, the_DT resulting_VBG enhanced_VBN feedback_NN models_NNS are_VBP combined_VBN using_VBG Bayesian_JJ model_NN combination_NN ._.
+To_TO do_VB this_DT ,_, we_PRP treat_VBP each_DT word_NN as_IN an_DT item_NN to_TO be_VB classified_VBN as_IN belonging_VBG to_TO a_DT relevant_JJ or_CC non-relevant_JJ class_NN ,_, and_CC derive_VB a_DT class_NN probability_NN for_IN each_DT word_NN by_IN combining_VBG the_DT scores_NNS from_IN each_DT query_NN variant_NN ._.
+Each_DT score_NN is_VBZ given_VBN by_IN that_DT term_NN ''_'' s_NNS probability_NN in_IN the_DT Dirichlet_JJ distribution_NN ._.
+The_DT term_NN scores_NNS are_VBP weighted_VBN by_IN the_DT inverse_NN of_IN the_DT variance_NN of_IN the_DT term_NN in_IN the_DT enhanced_VBN feedback_NN model_NN ''_'' s_NNS Dirichlet_JJ distribution_NN ._.
+The_DT prior_JJ probability_NN of_IN a_DT word_NN ''_'' s_NNS membership_NN in_IN the_DT relevant_JJ class_NN is_VBZ given_VBN by_IN the_DT probability_NN of_IN the_DT original_JJ query_NN in_IN the_DT entire_JJ enhanced_VBN expansion_NN model_NN ._.
+3_LS ._.
+EVALUATION_NN In_IN this_DT section_NN we_PRP present_VBP results_NNS confirming_VBG the_DT usefulness_NN of_IN estimating_VBG a_DT feedback_NN model_NN distribution_NN from_IN weighted_JJ resampling_NN of_IN top-ranked_JJ documents_NNS ,_, and_CC of_IN combining_VBG the_DT feedback_NN models_NNS obtained_VBN from_IN different_JJ small_JJ changes_NNS in_IN the_DT original_JJ query_NN ._.
+3_LS ._.
+#_# General_NNP method_NN We_PRP evaluated_VBD performance_NN on_IN a_DT total_NN of_IN ###_CD queries_NNS derived_VBN from_IN four_CD sets_NNS of_IN TREC_NN topics_NNS :_: 51-200_CD -LRB-_-LRB- TREC-1_NN &_CC #_# -RRB-_-RRB- ,_, 351-400_CD -LRB-_-LRB- TREC-7_NN -RRB-_-RRB- ,_, 401-450_CD -LRB-_-LRB- TREC-8_NN -RRB-_-RRB- ,_, and_CC 451-550_CD -LRB-_-LRB- wt10g_NN ,_, TREC-9_NN &_CC ##_NN -RRB-_-RRB- ._.
+We_PRP chose_VBD these_DT for_IN their_PRP$ varied_JJ content_NN and_CC document_NN properties_NNS ._.
+For_IN example_NN ,_, wt10g_NN documents_NNS are_VBP Web_NN pages_NNS with_IN a_DT wide_JJ variety_NN of_IN subjects_NNS and_CC styles_NNS while_IN TREC-1_NN &_CC #_# documents_NNS are_VBP more_RBR homogeneous_JJ news_NN articles_NNS ._.
+Indexing_NN and_CC retrieval_NN was_VBD performed_VBN using_VBG the_DT Indri_NNP system_NN in_IN the_DT Lemur_NNP toolkit_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- -LSB-_-LRB- #_# -RSB-_-RRB- ._.
+Our_PRP$ queries_NNS were_VBD derived_VBN from_IN the_DT words_NNS in_IN the_DT title_NN field_NN of_IN the_DT TREC_NN topics_NNS ._.
+Phrases_NNS were_VBD not_RB used_VBN ._.
+To_TO generate_VB the_DT baseline_NN queries_NNS passed_VBD to_TO Indri_NNP ,_, we_PRP wrapped_VBD the_DT query_NN terms_NNS with_IN Indri_NNP ''_'' s_VBZ #_# combine_VBP operator_NN ._.
+For_IN example_NN ,_, the_DT initial_JJ query_NN for_IN topic_NN ###_CD is_VBZ :_: #_# combine_VBP -LRB-_-LRB- ireland_JJ peace_NN talks_NNS -RRB-_-RRB- We_PRP performed_VBD Krovetz_NNP stemming_VBG for_IN all_DT experiments_NNS ._.
+Because_IN we_PRP found_VBD that_IN the_DT baseline_NN -LRB-_-LRB- Indri_NN -RRB-_-RRB- expansion_NN method_NN performed_VBN better_JJR using_VBG a_DT stopword_NN list_NN with_IN the_DT feedback_NN model_NN ,_, all_DT experiments_NNS used_VBD a_DT stoplist_NN of_IN ###_CD common_JJ English_NNP words_NNS ._.
+However_RB ,_, an_DT interesting_JJ side-effect_NN of_IN our_PRP$ resampling_VBG approach_NN is_VBZ that_IN it_PRP tends_VBZ to_TO remove_VB many_JJ stopwords_NNS from_IN the_DT feedback_NN model_NN ,_, making_VBG a_DT stoplist_NN less_RBR critical_JJ ._.
+This_DT is_VBZ discussed_VBN further_RB in_IN Section_NN #_# ._.
+#_# ._.
+3_LS ._.
+#_# Baseline_NNP feedback_NN method_NN For_IN our_PRP$ baseline_NN expansion_NN method_NN ,_, we_PRP use_VBP an_DT algorithm_NN included_VBD in_IN Indri_NNP #_# ._.
+#_# as_IN the_DT default_NN expansion_NN method_NN ._.
+This_DT method_NN first_RB selects_VBZ terms_NNS using_VBG a_DT log-odds_JJ calculation_NN described_VBN by_IN Ponte_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- ,_, but_CC assigns_VBZ final_JJ term_NN weights_NNS using_VBG Lavrenko_NNP ''_'' s_VBZ relevance_NN model_NN -LSB-_-LRB- ##_CD -RSB-_-RRB- ._.
+We_PRP chose_VBD the_DT Indri_NNP method_NN because_IN it_PRP gives_VBZ a_DT consistently_RB strong_JJ baseline_NN ,_, is_VBZ based_VBN on_IN a_DT language_NN modeling_NN approach_NN ,_, and_CC is_VBZ simple_JJ to_TO experiment_NN with_IN ._.
+In_IN a_DT TREC_NN evaluation_NN using_VBG the_DT GOV2_NN corpus_NN -LSB-_-LRB- #_# -RSB-_-RRB- ,_, the_DT method_NN was_VBD one_CD of_IN the_DT topperforming_JJ runs_NNS ,_, achieving_VBG a_DT ##_NN ._.
+#_# %_NN gain_NN in_IN MAP_NN compared_VBN to_TO using_VBG unexpanded_JJ queries_NNS ._.
+In_IN this_DT study_NN ,_, it_PRP achieves_VBZ an_DT average_JJ gain_NN in_IN MAP_NN of_IN ##_NN ._.
+##_CD %_NN over_IN the_DT four_CD collections_NNS ._.
+Indri_NNP ''_'' s_VBZ expansion_NN method_NN first_RB calculates_VBZ a_DT log-odds_JJ ratio_NN o_NN -LRB-_-LRB- v_LS -RRB-_-RRB- for_IN each_DT potential_JJ expansion_NN term_NN v_LS given_VBN by_IN o_NN -LRB-_-LRB- v_LS -RRB-_-RRB- =_JJ X_NN D_NN log_NN p_NN -LRB-_-LRB- v_LS |_NN D_NN -RRB-_-RRB- p_NN -LRB-_-LRB- v_LS |_CD C_NN -RRB-_-RRB- -LRB-_-LRB- #_# -RRB-_-RRB- over_IN all_DT documents_NNS D_NN containing_VBG v_LS ,_, in_IN collection_NN C_NN ._.
+Then_RB ,_, the_DT expansion_NN term_NN candidates_NNS are_VBP sorted_VBN by_IN descending_VBG o_NN -LRB-_-LRB- v_LS -RRB-_-RRB- ,_, and_CC the_DT top_JJ m_NN are_VBP chosen_VBN ._.
+Finally_RB ,_, the_DT term_NN weights_NNS r_NN -LRB-_-LRB- v_LS -RRB-_-RRB- used_VBN in_IN the_DT expanded_VBN query_NN are_VBP calculated_VBN based_VBN on_IN the_DT relevance_NN model_NN r_NN -LRB-_-LRB- v_LS -RRB-_-RRB- =_JJ X_NN D_NN p_NN -LRB-_-LRB- q_JJ |_NN D_NN -RRB-_-RRB- p_NN -LRB-_-LRB- v_LS |_NN D_NN -RRB-_-RRB- p_NN -LRB-_-LRB- v_LS -RRB-_-RRB- p_NN -LRB-_-LRB- D_NN -RRB-_-RRB- -LRB-_-LRB- #_# -RRB-_-RRB- The_DT quantity_NN p_NN -LRB-_-LRB- q_JJ |_NN D_NN -RRB-_-RRB- is_VBZ the_DT probability_NN score_NN assigned_VBN to_TO the_DT document_NN in_IN the_DT initial_JJ retrieval_NN ._.
+We_PRP use_VBP Dirichlet_JJ smoothing_NN of_IN p_NN -LRB-_-LRB- v_LS |_NN D_NN -RRB-_-RRB- with_IN =_JJ ####_CD ._.
+This_DT relevance_NN model_NN is_VBZ then_RB combined_VBN with_IN the_DT original_JJ query_NN using_VBG linear_JJ interpolation_NN ,_, weighted_VBN by_IN a_DT parameter_NN ._.
+By_IN default_NN we_PRP used_VBD the_DT top_JJ ##_CD documents_NNS for_IN feedback_NN and_CC the_DT top_JJ ##_NN expansion_NN terms_NNS ,_, with_IN the_DT feedback_NN interpolation_NN parameter_NN =_JJ #_# ._.
+#_# unless_IN otherwise_RB stated_VBN ._.
+For_IN example_NN ,_, the_DT baseline_NN expanded_VBD query_NN for_IN topic_NN ###_CD is_VBZ :_: #_# weight_NN -LRB-_-LRB- #_# ._.
+#_# #_# combine_VBP -LRB-_-LRB- ireland_JJ peace_NN talks_NNS -RRB-_-RRB- #_# ._.
+#_# #_# weight_NN -LRB-_-LRB- #_# ._.
+##_NN ireland_NN #_# ._.
+##_NN peace_NN #_# ._.
+##_NN northern_JJ ..._: -RRB-_-RRB- 3_CD ._.
+#_# Expansion_NN performance_NN We_PRP measure_VB our_PRP$ feedback_NN algorithm_NN ''_'' s_NNS effectiveness_NN by_IN two_CD main_JJ criteria_NNS :_: precision_NN ,_, and_CC robustness_NN ._.
+Robustness_NNP ,_, and_CC the_DT tradeoff_NN between_IN precision_NN and_CC robustness_NN ,_, is_VBZ analyzed_VBN in_IN Section_NN #_# ._.
+#_# ._.
+In_IN this_DT section_NN ,_, we_PRP examine_VBP average_JJ precision_NN and_CC precision_NN in_IN the_DT top_JJ ##_CD documents_NNS -LRB-_-LRB- P10_NN -RRB-_-RRB- ._.
+We_PRP also_RB include_VBP recall_NN at_IN #_# ,_, ###_CD documents_NNS ._.
+For_IN each_DT query_NN ,_, we_PRP obtained_VBD a_DT set_NN of_IN B_NN feedback_NN models_NNS using_VBG the_DT Indri_NNP baseline_NN ._.
+Each_DT feedback_NN model_NN was_VBD obtained_VBN from_IN a_DT random_JJ sample_NN of_IN the_DT top_JJ k_NN documents_NNS taken_VBN with_IN replacement_NN ._.
+For_IN these_DT experiments_NNS ,_, B_NN =_JJ ##_NN and_CC k_NN =_JJ ##_CD ._.
+Each_DT feedback_NN model_NN contained_VBD ##_CD terms_NNS ._.
+On_IN the_DT query_JJ side_NN ,_, we_PRP used_VBD leave-one-out_NN -LRB-_-LRB- LOO_NN -RRB-_-RRB- sampling_NN to_TO create_VB the_DT query_NN variants_NNS ._.
+Single-term_JJ query_NN sampling_NN had_VBD consistently_RB worse_JJR performance_NN across_IN all_DT collections_NNS and_CC so_RB our_PRP$ results_NNS here_RB focus_VBP on_IN LOO_NN sampling_NN ._.
+We_PRP used_VBD the_DT methods_NNS described_VBN in_IN Section_NN #_# to_TO estimate_VB an_DT enhanced_VBN feedback_NN model_NN from_IN the_DT Dirichlet_JJ posterior_JJ distribution_NN for_IN each_DT query_NN variant_NN ,_, and_CC to_TO combine_VB the_DT feedback_NN models_NNS from_IN all_PDT the_DT query_NN variants_NNS ._.
+We_PRP call_VBP our_PRP$ method_NN resampling_NN expansion_NN ''_'' and_CC denote_VB it_PRP as_IN RS-FB_NN here_RB ._.
+We_PRP denote_VBP the_DT Indri_NNP baseline_NN feedback_NN method_NN as_IN Base-FB_NN ._.
+Results_NNS from_IN applying_VBG both_CC the_DT baseline_NN expansion_NN method_NN -LRB-_-LRB- Base-FB_NN -RRB-_-RRB- and_CC resampling_VBG expansion_NN -LRB-_-LRB- RS-FB_NN -RRB-_-RRB- are_VBP shown_VBN in_IN Table_NNP #_# ._.
+We_PRP observe_VBP several_JJ trends_NNS in_IN this_DT table_NN ._.
+First_RB ,_, the_DT average_JJ precision_NN of_IN RS-FB_NN was_VBD comparable_JJ to_TO Base-FB_NN ,_, achieving_VBG an_DT average_JJ gain_NN of_IN ##_NN ._.
+#_# %_NN compared_VBN to_TO using_VBG no_DT expansion_NN across_IN the_DT four_CD collections_NNS ._.
+The_DT Indri_NNP baseline_NN expansion_NN gain_NN was_VBD ##_CD ._.
+##_CD %_NN ._.
+Also_RB ,_, the_DT RS-FB_NN method_NN achieved_VBN consistent_JJ improvements_NNS in_IN P10_NN over_IN Base-FB_NN for_IN every_DT topic_NN set_NN ,_, with_IN an_DT average_JJ improvement_NN of_IN #_# ._.
+##_CD %_NN over_IN Base-FB_NN for_IN all_DT 350_CD topics_NNS ._.
+The_DT lowest_JJS P10_NN gain_NN over_IN Base-FB_NN was_VBD +_CC #_# ._.
+##_CD %_NN for_IN TREC-7_NN and_CC the_DT highest_JJS was_VBD +_CC ##_CD ._.
+##_CD %_NN for_IN wt10g_NN ._.
+Finally_RB ,_, both_DT Base-FB_NN and_CC RS-FB_NN also_RB consistently_RB improved_VBN recall_NN over_IN using_VBG no_DT expansion_NN ,_, with_IN Base-FB_NN achieving_VBG better_JJR recall_NN than_IN RS-FB_NN for_IN all_DT topic_NN sets_NNS ._.
+3_LS ._.
+#_# Retrieval_NNP robustness_NN We_PRP use_VBP the_DT term_NN robustness_NN to_TO mean_VB the_DT worst-case_JJ average_JJ precision_NN performance_NN of_IN a_DT feedback_NN algorithm_NN ._.
+Ideally_RB ,_, a_DT robust_JJ feedback_NN method_NN would_MD never_RB perform_VB worse_JJR than_IN using_VBG the_DT original_JJ query_NN ,_, while_IN often_RB performing_VBG better_JJR using_VBG the_DT expansion_NN ._.
+To_TO evaluate_VB robustness_NN in_IN this_DT study_NN ,_, we_PRP use_VBP a_DT very_RB simple_JJ measure_NN called_VBD the_DT robustness_NN index_NN -LRB-_-LRB- RI_NN -RRB-_-RRB- #_# ._.
+For_IN a_DT set_NN of_IN queries_NNS Q_NNP ,_, the_DT RI_NN measure_NN is_VBZ defined_VBN as_IN :_: RI_NN -LRB-_-LRB- Q_NNP -RRB-_-RRB- =_JJ n_NN +_CC n_NN |_CD Q_NNP |_NN -LRB-_-LRB- #_# -RRB-_-RRB- where_WRB n_NN +_CC is_VBZ the_DT number_NN of_IN queries_NNS helped_VBN by_IN the_DT feedback_NN method_NN and_CC n_NN is_VBZ the_DT number_NN of_IN queries_NNS hurt_VBN ._.
+Here_RB ,_, by_IN helped_VBN ''_'' we_PRP mean_VBP obtaining_VBG a_DT higher_JJR average_JJ precision_NN as_IN a_DT result_NN of_IN feedback_NN ._.
+The_DT value_NN of_IN RI_NN ranges_NNS from_IN a_DT minimum_JJ 3_CD This_DT is_VBZ sometimes_RB also_RB called_VBD the_DT reliability_NN of_IN improvement_NN index_NN and_CC was_VBD used_VBN in_IN Sakai_NNP et_FW al_FW ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- ._.
+Collection_NN NoExp_NN Base-FB_NN RS-FB_NN TREC_NN 1_CD &_CC #_# AvgP_NN #_# ._.
+####_NN #_# ._.
+####_NN -LRB-_-LRB- +_CC ##_CD ._.
+##_CD %_NN -RRB-_-RRB- #_# ._.
+####_NN -LRB-_-LRB- +_CC ##_CD ._.
+##_CD %_NN -RRB-_-RRB- P10_NN #_# ._.
+####_NN #_# ._.
+####_NN -LRB-_-LRB- +_CC ##_CD ._.
+##_CD %_NN -RRB-_-RRB- #_# ._.
+####_NN -LRB-_-LRB- +_CC ##_CD ._.
+##_CD %_NN -RRB-_-RRB- Recall_VBP #####_CD /_: #####_CD #####_CD /_: #####_CD #####_CD /_: #####_CD TREC_NN #_# AvgP_NN #_# ._.
+####_NN #_# ._.
+####_NN -LRB-_-LRB- +_CC ##_CD ._.
+##_CD %_NN -RRB-_-RRB- #_# ._.
+####_NN -LRB-_-LRB- +_CC ##_CD ._.
+##_CD %_NN -RRB-_-RRB- P10_NN #_# ._.
+####_NN #_# ._.
+####_NN -LRB-_-LRB- +_CC #_# ._.
+##_CD %_NN -RRB-_-RRB- #_# ._.
+####_NN -LRB-_-LRB- +_CC #_# ._.
+##_CD %_NN -RRB-_-RRB- Recall_VBP ####_CD /_: ####_CD ####_CD /_: ####_CD ####_CD /_: ####_CD TREC_NN #_# AvgP_NN #_# ._.
+####_NN #_# ._.
+####_NN -LRB-_-LRB- +_CC ##_CD ._.
+##_CD %_NN -RRB-_-RRB- #_# ._.
+####_NN -LRB-_-LRB- +_CC ##_CD ._.
+##_CD %_NN -RRB-_-RRB- P10_NN #_# ._.
+####_NN #_# ._.
+####_NN -LRB-_-LRB- +_CC #_# ._.
+##_CD %_NN -RRB-_-RRB- #_# ._.
+####_NN -LRB-_-LRB- +_CC #_# ._.
+##_CD %_NN -RRB-_-RRB- Recall_VBP ####_CD /_: ####_CD ####_CD /_: ####_CD ####_CD /_: ####_CD wt10g_NN AvgP_NN #_# ._.
+####_NN #_# ._.
+####_NN -LRB-_-LRB- +_CC #_# ._.
+##_CD %_NN -RRB-_-RRB- #_# ._.
+####_NN -LRB-_-LRB- +_CC ##_CD ._.
+##_CD %_NN -RRB-_-RRB- P10_NN #_# ._.
+####_NN #_# ._.
+####_NN -LRB-_-LRB- -_: #_# ._.
+##_CD %_NN -RRB-_-RRB- #_# ._.
+####_NN -LRB-_-LRB- +_CC #_# ._.
+##_CD %_NN -RRB-_-RRB- Recall_VBP ####_CD /_: ####_CD ####_CD /_: ####_CD ####_CD /_: ####_CD Table_NNP #_# :_: Comparison_NN of_IN baseline_NN -LRB-_-LRB- Base-FB_NN -RRB-_-RRB- feedback_NN and_CC feedback_NN using_VBG re-sampling_NN -LRB-_-LRB- RS-FB_NN -RRB-_-RRB- ._.
+Improvement_NN shown_VBN for_IN BaseFB_NN and_CC RS-FB_NN is_VBZ relative_JJ to_TO using_VBG no_DT expansion_NN ._.
+-LRB-_-LRB- a_DT -RRB-_-RRB- TREC_NN #_# &_CC #_# -LRB-_-LRB- upper_JJ curve_NN -RRB-_-RRB- ;_: TREC_NN #_# -LRB-_-LRB- lower_JJR curve_NN -RRB-_-RRB- -LRB-_-LRB- b_NN -RRB-_-RRB- TREC_NN #_# -LRB-_-LRB- upper_JJ curve_NN -RRB-_-RRB- ;_: wt10g_NN -LRB-_-LRB- lower_JJR curve_NN -RRB-_-RRB- Figure_NN #_# :_: The_DT trade-off_NN between_IN robustness_NN and_CC average_JJ precision_NN for_IN different_JJ corpora_NN ._.
+The_DT x-axis_NN gives_VBZ the_DT change_NN in_IN MAP_NN over_IN using_VBG baseline_NN expansion_NN with_IN =_JJ #_# ._.
+#_# ._.
+The_DT yaxis_NN gives_VBZ the_DT Robustness_NNP Index_NNP -LRB-_-LRB- RI_NN -RRB-_-RRB- ._.
+Each_DT curve_NN through_IN uncircled_JJ points_NNS shows_VBZ the_DT RI_NN /_: MAP_NN tradeoff_NN using_VBG the_DT simple_JJ small_JJ -_: strategy_NN as_IN decreases_NNS from_IN #_# ._.
+#_# to_TO zero_CD in_IN the_DT direction_NN of_IN the_DT arrow_NN ._.
+Circled_VBN points_NNS represent_VBP the_DT tradeoffs_NNS obtained_VBN by_IN resampling_VBG feedback_NN for_IN =_JJ #_# ._.
+#_# ._.
+Collection_NN N_NN Base-FB_NN RS-FB_NN n_NN RI_NN n_NN RI_NN TREC_NN #_# &_CC #_# ###_CD ##_NN +_CC #_# ._.
+###_CD ##_NN +_CC #_# ._.
+###_CD TREC_NN #_# ##_CD ##_NN +_CC #_# ._.
+###_CD ##_NN +_CC #_# ._.
+###_CD TREC_NN #_# ##_CD ##_NN +_CC #_# ._.
+###_CD ##_NN +_CC #_# ._.
+###_NN wt10g_NN ##_CD ##_SYM -_: #_# ._.
+###_CD ##_NN +_CC #_# ._.
+###_NNP Combined_NNP ###_CD ###_CD +_CC #_# ._.
+###_CD ##_NN +_CC #_# ._.
+###_RB Table_NNP #_# :_: Comparison_NN of_IN robustness_NN index_NN -LRB-_-LRB- RI_NN -RRB-_-RRB- for_IN baseline_NN feedback_NN -LRB-_-LRB- Base-FB_NN -RRB-_-RRB- vs_CC ._.
+resampling_VBG feedback_NN -LRB-_-LRB- RS-FB_NN -RRB-_-RRB- ._.
+Also_RB shown_VBN are_VBP the_DT actual_JJ number_NN of_IN queries_NNS hurt_VBN by_IN feedback_NN -LRB-_-LRB- n_NN -RRB-_-RRB- for_IN each_DT method_NN and_CC collection_NN ._.
+Queries_NNS for_IN which_WDT initial_JJ average_JJ precision_NN was_VBD negligible_JJ -LRB-_-LRB- #_# ._.
+##_NN -RRB-_-RRB- were_VBD ignored_VBN ,_, giving_VBG the_DT remaining_VBG query_NN count_NN in_IN column_NN N_NN ._.
+of_IN #_# ._.
+#_# ,_, when_WRB all_DT queries_NNS are_VBP hurt_VBN by_IN the_DT feedback_NN method_NN ,_, to_TO +_CC #_# ._.
+#_# when_WRB all_DT queries_NNS are_VBP helped_VBN ._.
+The_DT RI_NN measure_NN does_VBZ not_RB take_VB into_IN account_NN the_DT magnitude_NN or_CC distribution_NN of_IN the_DT amount_NN of_IN change_NN across_IN the_DT set_VBN Q_NNP ._.
+However_RB ,_, it_PRP is_VBZ easy_JJ to_TO understand_VB as_IN a_DT general_JJ indication_NN of_IN robustness_NN ._.
+One_CD obvious_JJ way_NN to_TO improve_VB the_DT worst-case_JJ performance_NN of_IN feedback_NN is_VBZ simply_RB to_TO use_VB a_DT smaller_JJR fixed_VBN interpolation_NN parameter_NN ,_, such_JJ as_IN =_JJ #_# ._.
+#_# ,_, placing_VBG less_JJR weight_NN on_IN the_DT -LRB-_-LRB- possibly_RB risky_JJ -RRB-_-RRB- feedback_NN model_NN and_CC more_JJR on_IN the_DT original_JJ query_NN ._.
+We_PRP call_VBP this_DT the_DT small_JJ -_: ''_'' strategy_NN ._.
+Since_IN we_PRP are_VBP also_RB reducing_VBG the_DT potential_JJ gains_NNS when_WRB the_DT feedback_NN model_NN is_VBZ right_JJ ''_'' ,_, however_RB ,_, we_PRP would_MD expect_VB some_DT trade-off_NN between_IN average_JJ precision_NN and_CC robustness_NN ._.
+We_PRP therefore_RB compared_VBD the_DT precision_NN /_: robustness_NN trade-off_NN between_IN our_PRP$ resampling_VBG feedback_NN algorithm_NN ,_, and_CC the_DT simple_JJ small_JJ -_: method_NN ._.
+The_DT results_NNS are_VBP summarized_VBN in_IN Figure_NNP #_# ._.
+In_IN the_DT figure_NN ,_, the_DT curve_NN for_IN each_DT topic_NN set_VBN interpolates_NNS between_IN trade-off_NN points_NNS ,_, beginning_VBG at_IN x_NN =_JJ #_# ,_, where_WRB =_JJ #_# ._.
+#_# ,_, and_CC continuing_VBG in_IN the_DT direction_NN of_IN the_DT arrow_NN as_IN decreases_NNS and_CC the_DT original_JJ query_NN is_VBZ given_VBN more_JJR and_CC more_JJR weight_NN ._.
+As_IN expected_VBN ,_, robustness_NN continuously_RB increases_VBZ as_IN we_PRP move_VBP along_IN the_DT curve_NN ,_, but_CC mean_VB average_JJ precision_NN generally_RB drops_VBZ as_IN the_DT gains_NNS from_IN feedback_NN are_VBP eliminated_VBN ._.
+For_IN comparison_NN ,_, the_DT performance_NN of_IN resampling_VBG feedback_NN at_IN =_JJ #_# ._.
+#_# is_VBZ shown_VBN for_IN each_DT collection_NN as_IN the_DT circled_VBN point_NN ._.
+Higher_JJR and_CC to_TO the_DT right_NN is_VBZ better_RBR ._.
+This_DT figure_NN shows_VBZ that_IN resampling_VBG feedback_NN gives_VBZ a_DT somewhat_RB better_JJR trade-off_NN than_IN the_DT small_JJ -_: approach_NN for_IN #_# of_IN the_DT #_# collections_NNS ._.
+Figure_NNP #_# :_: Histogram_NNP showing_VBG improved_JJ robustness_NN of_IN resampling_VBG feedback_NN -LRB-_-LRB- RS-FB_NN -RRB-_-RRB- over_IN baseline_NN feedback_NN -LRB-_-LRB- Base-FB_NN -RRB-_-RRB- for_IN all_DT datasets_NNS combined_VBN ._.
+Queries_NNS are_VBP binned_VBN by_IN %_NN change_NN in_IN AP_NN compared_VBN to_TO the_DT unexpanded_JJ query_NN ._.
+Collection_NN DS_NN +_CC QV_NN DS_NN +_CC No_DT QV_NN TREC_NN 1_CD &_CC #_# AvgP_NN #_# ._.
+####_NN #_# ._.
+####_NN -LRB-_-LRB- +_CC #_# ._.
+##_CD %_NN -RRB-_-RRB- P10_NN #_# ._.
+####_NN #_# ._.
+####_NN -LRB-_-LRB- +_CC #_# ._.
+##_CD %_NN -RRB-_-RRB- RI_NN #_# ._.
+####_NN #_# ._.
+####_NN -LRB-_-LRB- -_: #_# ._.
+####_NN -RRB-_-RRB- TREC_NN #_# AvgP_NN #_# ._.
+####_NN #_# ._.
+####_NN -LRB-_-LRB- +_CC #_# ._.
+##_CD %_NN -RRB-_-RRB- P10_NN #_# ._.
+####_NN #_# ._.
+####_NN -LRB-_-LRB- -_: #_# ._.
+##_CD %_NN -RRB-_-RRB- RI_NN #_# ._.
+####_NN #_# ._.
+####_NN -LRB-_-LRB- -_: #_# ._.
+####_NN -RRB-_-RRB- TREC_NN #_# AvgP_NN #_# ._.
+####_NN #_# ._.
+####_NN -LRB-_-LRB- -_: #_# ._.
+##_CD %_NN -RRB-_-RRB- P10_NN #_# ._.
+####_NN #_# ._.
+####_NN -LRB-_-LRB- -_: #_# ._.
+##_CD %_NN -RRB-_-RRB- RI_NN #_# ._.
+####_NN #_# ._.
+####_NN -LRB-_-LRB- -_: #_# ._.
+####_NN -RRB-_-RRB- wt10g_NN AvgP_NN #_# ._.
+####_NN #_# ._.
+####_NN -LRB-_-LRB- -_: #_# ._.
+##_CD %_NN -RRB-_-RRB- P10_NN #_# ._.
+####_NN #_# ._.
+####_NN -LRB-_-LRB- -_: #_# ._.
+##_CD %_NN -RRB-_-RRB- RI_NN #_# ._.
+####_NN #_# ._.
+####_NN -LRB-_-LRB- -_: #_# ._.
+####_NN -RRB-_-RRB- Table_NNP #_# :_: Comparison_NN of_IN resampling_VBG feedback_NN using_VBG document_NN sampling_NN -LRB-_-LRB- DS_NN -RRB-_-RRB- with_IN -LRB-_-LRB- QV_NN -RRB-_-RRB- and_CC without_IN -LRB-_-LRB- No_DT QV_NN -RRB-_-RRB- combining_VBG feedback_NN models_NNS from_IN multiple_JJ query_NN variants_NNS ._.
+Table_NNP #_# gives_VBZ the_DT Robustness_NNP Index_NNP scores_NNS for_IN Base-FB_NN and_CC RS-FB_NN ._.
+The_DT RS-FB_NN feedback_NN method_NN obtained_VBN higher_JJR robustness_NN than_IN Base-FB_NN on_IN three_CD of_IN the_DT four_CD topic_NN sets_NNS ,_, with_IN only_RB slightly_RB worse_JJR performance_NN on_IN TREC-8_NN ._.
+A_DT more_JJR detailed_JJ view_NN showing_VBG the_DT distribution_NN over_IN relative_JJ changes_NNS in_IN AP_NN is_VBZ given_VBN by_IN the_DT histogram_NN in_IN Figure_NNP #_# ._.
+Compared_VBN to_TO Base-FB_NN ,_, the_DT RS-FB_NN method_NN achieves_VBZ a_DT noticable_JJ reduction_NN in_IN the_DT number_NN of_IN queries_NNS significantly_RB hurt_VBN by_IN expansion_NN -LRB-_-LRB- i_FW ._.
+e_LS ._.
+where_WRB AP_NNP is_VBZ hurt_VBN by_IN ##_CD %_NN or_CC more_JJR -RRB-_-RRB- ,_, while_IN preserving_VBG positive_JJ gains_NNS in_IN AP_NN ._.
+3_LS ._.
+#_# Effect_NN of_IN query_NN and_CC document_NN sampling_NN methods_NNS Given_VBN our_PRP$ algorithm_NN ''_'' s_NNS improved_VBD robustness_NN seen_VBN in_IN Section_NN #_# ._.
+#_# ,_, an_DT important_JJ question_NN is_VBZ what_WP component_NN of_IN our_PRP$ system_NN is_VBZ responsible_JJ ._.
+Is_VBZ it_PRP the_DT use_NN of_IN document_NN re-sampling_NN ,_, the_DT use_NN of_IN multiple_JJ query_NN variants_NNS ,_, or_CC some_DT other_JJ factor_NN ?_.
+The_DT results_NNS in_IN Table_NNP #_# suggest_VBP that_IN the_DT model_NN combination_NN based_VBN on_IN query_NN variants_NNS may_MD be_VB largely_RB account_NN for_IN the_DT improved_VBN robustness_NN ._.
+When_WRB query_JJ variants_NNS are_VBP turned_VBN off_RP and_CC the_DT original_JJ query_NN is_VBZ used_VBN by_IN itself_PRP with_IN document_NN sampling_NN ,_, there_EX is_VBZ little_JJ net_JJ change_NN in_IN average_JJ precision_NN ,_, a_DT small_JJ decrease_NN in_IN P10_NN for_IN #_# out_IN of_IN the_DT #_# topic_NN sets_NNS ,_, but_CC a_DT significant_JJ drop_NN in_IN robustness_NN for_IN all_DT topic_NN sets_NNS ._.
+In_IN two_CD cases_NNS ,_, the_DT RI_NN measure_NN drops_NNS by_IN more_JJR than_IN ##_CD %_NN ._.
+We_PRP also_RB examined_VBD the_DT effect_NN of_IN the_DT document_NN sampling_NN method_NN on_IN retrieval_NN effectiveness_NN ,_, using_VBG two_CD different_JJ strategies_NNS ._.
+The_DT uniform_JJ weighting_NN ''_'' strategy_NN ignored_VBD the_DT relevance_NN scores_NNS from_IN the_DT initial_JJ retrieval_NN and_CC gave_VBD each_DT document_NN in_IN the_DT top_JJ k_NN the_DT same_JJ probability_NN of_IN selection_NN ._.
+In_IN contrast_NN ,_, the_DT relevance-score_NN weighting_NN ''_'' strategy_NN chose_VBD documents_NNS with_IN probability_NN proportional_JJ to_TO their_PRP$ relevance_NN scores_NNS ._.
+In_IN this_DT way_NN ,_, documents_NNS that_WDT were_VBD more_RBR highly_RB ranked_VBN were_VBD more_RBR likely_JJ to_TO be_VB selected_VBN ._.
+Results_NNS are_VBP shown_VBN in_IN Table_NNP #_# ._.
+The_DT relevance-score_NN weighting_NN strategy_NN performs_VBZ better_JJR overall_JJ ,_, with_IN significantly_RB higher_JJR RI_NN and_CC P10_NN scores_NNS on_IN #_# of_IN the_DT #_# topic_NN sets_NNS ._.
+The_DT difference_NN in_IN average_JJ precision_NN between_IN the_DT methods_NNS ,_, however_RB ,_, is_VBZ less_RBR marked_JJ ._.
+This_DT suggests_VBZ that_IN uniform_JJ weighting_NN acts_VBZ to_TO increase_VB variance_NN in_IN retrieval_NN results_NNS :_: when_WRB initial_JJ average_JJ precision_NN is_VBZ high_JJ ,_, there_EX are_VBP many_JJ relevant_JJ documents_NNS in_IN the_DT top_JJ k_NN and_CC uniform_JJ sampling_NN may_MD give_VB a_DT more_RBR representative_JJ relevance_NN model_NN than_IN focusing_VBG on_IN the_DT highly-ranked_JJ items_NNS ._.
+On_IN the_DT other_JJ hand_NN ,_, when_WRB initial_JJ precision_NN is_VBZ low_JJ ,_, there_EX are_VBP few_JJ relevant_JJ documents_NNS in_IN the_DT bottom_JJ ranks_NNS and_CC uniform_JJ sampling_NN mixes_VBZ in_IN more_JJR of_IN the_DT non-relevant_JJ documents_NNS ._.
+For_IN space_NN reasons_NNS we_PRP only_RB summarize_VBP our_PRP$ findings_NNS on_IN sample_NN size_NN here_RB ._.
+The_DT number_NN of_IN samples_NNS has_VBZ some_DT effect_NN on_IN precision_NN when_WRB less_JJR than_IN ##_CD ,_, but_CC performance_NN stabilizes_VBZ at_IN around_IN ##_CD to_TO ##_CD samples_NNS ._.
+We_PRP used_VBD ##_CD samples_NNS for_IN our_PRP$ experiments_NNS ._.
+Much_JJ beyond_IN this_DT level_NN ,_, the_DT additional_JJ benefits_NNS of_IN more_JJR samples_NNS decrease_VBP as_IN the_DT initial_JJ score_NN distribution_NN is_VBZ more_RBR closely_RB fit_JJ and_CC the_DT processing_NN time_NN increases_NNS ._.
+3_LS ._.
+#_# The_DT effect_NN of_IN resampling_VBG on_IN expansion_NN term_NN quality_NN Ideally_RB ,_, a_DT retrieval_NN model_NN should_MD not_RB require_VB a_DT stopword_NN list_NN when_WRB estimating_VBG a_DT model_NN of_IN relevance_NN :_: a_DT robust_JJ statistical_JJ model_NN should_MD down-weight_VB stopwords_NNS automatically_RB depending_VBG on_IN context_NN ._.
+Stopwords_NNP can_MD harm_VB feedback_NN if_IN selected_VBN as_IN feedback_NN terms_NNS ,_, because_IN they_PRP are_VBP typically_RB poor_JJ discriminators_NNS and_CC waste_NN valuable_JJ term_NN slots_NNS ._.
+In_IN practice_NN ,_, however_RB ,_, because_IN most_JJS term_NN selection_NN methods_NNS resemble_VBP a_DT tf_NN idf_NN type_NN of_IN weighting_NN ,_, terms_NNS with_IN low_JJ idf_NN but_CC very_RB high_JJ tf_NN can_MD sometimes_RB be_VB selected_VBN as_IN expansion_NN term_NN candidates_NNS ._.
+This_DT happens_VBZ ,_, for_IN example_NN ,_, even_RB with_IN the_DT Relevance_NNP Model_NNP approach_NN that_WDT is_VBZ part_NN of_IN our_PRP$ baseline_NN feedback_NN ._.
+To_TO ensure_VB as_IN strong_JJ a_DT baseline_NN as_IN possible_JJ ,_, we_PRP use_VBP a_DT stoplist_NN for_IN all_DT experiments_NNS reported_VBN here_RB ._.
+If_IN we_PRP turn_VBP off_RP the_DT stopword_NN list_NN ,_, however_RB ,_, we_PRP obtain_VBP results_NNS such_JJ as_IN those_DT shown_VBN in_IN Table_NNP #_# where_WRB four_CD of_IN the_DT top_JJ ten_CD baseline_NN feedback_NN terms_NNS for_IN TREC_NN topic_NN ##_NN -LRB-_-LRB- said_VBD ,_, but_CC ,_, their_PRP$ ,_, not_RB -RRB-_-RRB- are_VBP stopwords_NNS using_VBG the_DT BaseFB_NN method_NN ._.
+-LRB-_-LRB- The_DT top_JJ ###_CD expansion_NN terms_NNS were_VBD selected_VBN to_TO generate_VB this_DT example_NN ._. -RRB-_-RRB-
+Indri_NNP ''_'' s_VBZ method_NN attempts_NNS to_TO address_VB the_DT stopword_NN problem_NN by_IN applying_VBG an_DT initial_JJ step_NN based_VBN on_IN Ponte_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- to_TO select_VB less-common_JJ terms_NNS that_WDT have_VBP high_JJ log-odds_NNS of_IN being_VBG in_IN the_DT top-ranked_JJ documents_NNS compared_VBN to_TO the_DT whole_JJ collection_NN ._.
+Nevertheless_RB ,_, this_DT does_VBZ not_RB overcome_VB the_DT stopword_NN problem_NN completely_RB ,_, especially_RB as_IN the_DT number_NN of_IN feedback_NN terms_NNS grows_VBZ ._.
+Using_VBG resampling_JJ feedback_NN ,_, however_RB ,_, appears_VBZ to_TO mitigate_VB Collection_NNP QV_NNP +_CC Uniform_NNP QV_NNP +_CC Relevance-score_JJ weighting_NN weighting_NN TREC_NN 1_CD &_CC #_# AvgP_NN #_# ._.
+####_NN #_# ._.
+####_NN -LRB-_-LRB- -_: #_# ._.
+##_CD %_NN -RRB-_-RRB- P10_NN #_# ._.
+####_NN #_# ._.
+####_NN -LRB-_-LRB- -_: #_# ._.
+##_CD %_NN -RRB-_-RRB- RI_NN #_# ._.
+####_NN #_# ._.
+####_NN -LRB-_-LRB- +_CC ##_CD ._.
+##_CD %_NN -RRB-_-RRB- TREC_NN #_# AvgP_NN #_# ._.
+####_NN #_# ._.
+####_NN -LRB-_-LRB- -_: #_# ._.
+##_CD %_NN -RRB-_-RRB- P10_NN #_# ._.
+####_NN #_# ._.
+####_NN -LRB-_-LRB- +_CC #_# ._.
+##_CD %_NN -RRB-_-RRB- RI_NN #_# ._.
+####_NN #_# ._.
+####_NN -LRB-_-LRB- +_CC ##_CD ._.
+##_CD %_NN -RRB-_-RRB- TREC_NN #_# AvgP_NN #_# ._.
+####_NN #_# ._.
+####_NN -LRB-_-LRB- +_CC #_# ._.
+##_CD %_NN -RRB-_-RRB- P10_NN #_# ._.
+####_NN #_# ._.
+####_NN -LRB-_-LRB- +_CC #_# ._.
+##_CD %_NN -RRB-_-RRB- RI_NN #_# ._.
+####_NN #_# ._.
+####_NN -LRB-_-LRB- +_CC #_# ._.
+##_CD %_NN -RRB-_-RRB- wt10g_NN AvgP_NN #_# ._.
+####_NN #_# ._.
+####_NN -LRB-_-LRB- +_CC #_# ._.
+##_CD %_NN -RRB-_-RRB- P10_NN #_# ._.
+####_NN #_# ._.
+####_NN -LRB-_-LRB- +_CC ##_CD ._.
+##_CD %_NN -RRB-_-RRB- RI_NN #_# ._.
+####_NN #_# ._.
+####_NN -LRB-_-LRB- +_CC ###_CD ._.
+#_# %_NN -RRB-_-RRB- Table_NNP #_# :_: Comparison_NN of_IN uniform_NN and_CC relevance-weighted_JJ document_NN sampling_NN ._.
+The_DT percentage_NN change_NN compared_VBN to_TO uniform_JJ sampling_NN is_VBZ shown_VBN in_IN parentheses_NNS ._.
+QV_NNP indicates_VBZ that_IN query_NN variants_NNS were_VBD used_VBN in_IN both_DT runs_NNS ._.
+Baseline_NN FB_NN p_NN -LRB-_-LRB- wi_NN |_CD R_NN -RRB-_-RRB- Resampling_NN FB_NN p_NN -LRB-_-LRB- wi_NN |_CD R_NN -RRB-_-RRB- said_VBD #_# ._.
+###_NN court_NN #_# ._.
+###_NN court_NN #_# ._.
+###_CD pay_NN #_# ._.
+###_CD pay_NN #_# ._.
+###_CD federal_JJ #_# ._.
+###_NN but_CC #_# ._.
+###_NN education_NN #_# ._.
+###_CD employees_NNS #_# ._.
+###_NN teachers_NNS #_# ._.
+###_VB their_PRP$ #_# ._.
+###_CD employees_NNS #_# ._.
+###_NN not_RB #_# ._.
+###_RB case_NN #_# ._.
+###_CD federal_JJ #_# ._.
+###_VB their_PRP$ #_# ._.
+###_CD workers_NNS #_# ._.
+###_NN appeals_NNS #_# ._.
+###_NN education_NN #_# ._.
+###_NN union_NN #_# ._.
+###_RB Table_NNP #_# :_: Feedback_NN term_NN quality_NN when_WRB a_DT stoplist_NN is_VBZ not_RB used_VBN ._.
+Feedback_NN terms_NNS for_IN TREC_NN topic_NN ##_CD :_: merit_NN pay_NN vs_CC seniority_NN ._.
+the_DT effect_NN of_IN stopwords_NNS automatically_RB ._.
+In_IN the_DT example_NN of_IN Table_NNP #_# ,_, resampling_VBG feedback_NN leaves_VBZ only_RB one_CD stopword_NN -LRB-_-LRB- their_PRP$ -RRB-_-RRB- in_IN the_DT top_JJ ten_CD ._.
+We_PRP observed_VBD similar_JJ feedback_NN term_NN behavior_NN across_IN many_JJ other_JJ topics_NNS ._.
+The_DT reason_NN for_IN this_DT effect_NN appears_VBZ to_TO be_VB the_DT interaction_NN of_IN the_DT term_NN selection_NN score_NN with_IN the_DT top-m_JJ term_NN cutoff_NN ._.
+While_IN the_DT presence_NN and_CC even_RB proportion_NN of_IN particular_JJ stopwords_NNS is_VBZ fairly_RB stable_JJ across_IN different_JJ document_NN samples_NNS ,_, their_PRP$ relative_JJ position_NN in_IN the_DT top-m_JJ list_NN is_VBZ not_RB ,_, as_IN sets_NNS of_IN documents_NNS with_IN varying_VBG numbers_NNS of_IN better_JJR ,_, lower-frequency_NN term_NN candidates_NNS are_VBP examined_VBN for_IN each_DT sample_NN ._.
+As_IN a_DT result_NN ,_, while_IN some_DT number_NN of_IN stopwords_NNS may_MD appear_VB in_IN each_DT sampled_VBN document_NN set_NN ,_, any_DT given_VBN stopword_NN tends_VBZ to_TO fall_VB below_IN the_DT cutoff_NN for_IN multiple_JJ samples_NNS ,_, leading_VBG to_TO its_PRP$ classification_NN as_IN a_DT high-variance_NN ,_, low-weight_JJ feature_NN ._.
+4_LS ._.
+RELATED_JJ WORK_VBP Our_PRP$ approach_NN is_VBZ related_VBN to_TO previous_JJ work_NN from_IN several_JJ areas_NNS of_IN information_NN retrieval_NN and_CC machine_NN learning_NN ._.
+Our_PRP$ use_NN of_IN query_NN variation_NN was_VBD inspired_VBN by_IN the_DT work_NN of_IN YomTov_NNP et_FW al_FW ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- ,_, Carpineto_NNP et_FW al_FW ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- ,_, and_CC Amati_NNP et_FW al_FW ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- ,_, among_IN others_NNS ._.
+These_DT studies_NNS use_VBP the_DT idea_NN of_IN creating_VBG multiple_JJ subqueries_NNS and_CC then_RB examining_VBG the_DT nature_NN of_IN the_DT overlap_VBP in_IN the_DT documents_NNS and_CC /_: or_CC expansion_NN terms_NNS that_WDT result_VBP from_IN each_DT subquery_NN ._.
+Model_NNP combination_NN is_VBZ performed_VBN using_VBG heuristics_NNS ._.
+In_IN particular_JJ ,_, the_DT studies_NNS of_IN Amati_NNP et_FW al_FW ._.
+and_CC Carpineto_NNP et_FW al_FW ._.
+investigated_VBN combining_VBG terms_NNS from_IN individual_JJ distributional_JJ methods_NNS using_VBG a_DT term-reranking_JJ combination_NN heuristic_NN ._.
+In_IN a_DT set_NN of_IN TREC_NN topics_NNS they_PRP found_VBD wide_JJ average_JJ variation_NN in_IN the_DT rank-distance_NN of_IN terms_NNS from_IN different_JJ expansion_NN methods_NNS ._.
+Their_PRP$ combination_NN method_NN gave_VBD modest_JJ positive_JJ improvements_NNS in_IN average_JJ precision_NN ._.
+The_DT idea_NN of_IN examining_VBG the_DT overlap_VBP between_IN lists_NNS of_IN suggested_VBN terms_NNS has_VBZ also_RB been_VBN used_VBN in_IN early_JJ query_NN expansion_NN approaches_NNS ._.
+Xu_NN and_CC Croft_NN ''_'' s_NNS method_NN of_IN Local_JJ Context_NNP Analysis_NN -LRB-_-LRB- LCA_NN -RRB-_-RRB- -LSB-_-LRB- ##_CD -RSB-_-RRB- includes_VBZ a_DT factor_NN in_IN the_DT empirically-derived_JJ weighting_NN formula_NN that_WDT causes_VBZ expansion_NN terms_NNS to_TO be_VB preferred_VBN that_WDT have_VBP connections_NNS to_TO multiple_JJ query_NN terms_NNS ._.
+On_IN the_DT document_NN side_NN ,_, recent_JJ work_NN by_IN Zhou_NNP &_CC Croft_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- explored_VBD the_DT idea_NN of_IN adding_VBG noise_NN to_TO documents_NNS ,_, re-scoring_VBG them_PRP ,_, and_CC using_VBG the_DT stability_NN of_IN the_DT resulting_VBG rankings_NNS as_IN an_DT estimate_NN of_IN query_NN difficulty_NN ._.
+This_DT is_VBZ related_JJ to_TO our_PRP$ use_NN of_IN document_NN sampling_NN to_TO estimate_VB the_DT risk_NN of_IN the_DT feedback_NN model_NN built_VBN from_IN the_DT different_JJ sets_NNS of_IN top-retrieved_JJ documents_NNS ._.
+Sakai_NNP et_FW al_FW ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- proposed_VBD an_DT approach_NN to_TO improving_VBG the_DT robustness_NN of_IN pseudo-relevance_NN feedback_NN using_VBG a_DT method_NN they_PRP call_VBP selective_JJ sampling_NN ._.
+The_DT essence_NN of_IN their_PRP$ method_NN is_VBZ that_IN they_PRP allow_VBP skipping_VBG of_IN some_DT top-ranked_JJ documents_NNS ,_, based_VBN on_IN a_DT clustering_NN criterion_NN ,_, in_IN order_NN to_TO select_VB a_DT more_RBR varied_JJ and_CC novel_JJ set_NN of_IN documents_NNS later_RB in_IN the_DT ranking_NN for_IN use_NN by_IN a_DT traditional_JJ pseudo-feedback_NN method_NN ._.
+Their_PRP$ study_NN did_VBD not_RB find_VB significant_JJ improvements_NNS in_IN either_CC robustness_NN -LRB-_-LRB- RI_NN -RRB-_-RRB- or_CC MAP_NN on_IN their_PRP$ corpora_NN ._.
+Greiff_NNP ,_, Morgan_NNP and_CC Ponte_NNP -LSB-_-LRB- #_# -RSB-_-RRB- explored_VBD the_DT role_NN of_IN variance_NN in_IN term_NN weighting_NN ._.
+In_IN a_DT series_NN of_IN simulations_NNS that_WDT simplified_VBD the_DT problem_NN to_TO 2-feature_JJ documents_NNS ,_, they_PRP found_VBD that_IN average_JJ precision_NN degrades_VBZ as_IN term_NN frequency_NN variance_NN -_: high_JJ noiseincreases_NNS ._.
+Downweighting_VBG terms_NNS with_IN high_JJ variance_NN resulted_VBD in_IN improved_VBN average_JJ precision_NN ._.
+This_DT seems_VBZ in_IN accord_NN with_IN our_PRP$ own_JJ findings_NNS for_IN individual_JJ feedback_NN models_NNS ._.
+Estimates_NNS of_IN output_NN variance_NN have_VBP recently_RB been_VBN used_VBN for_IN improved_VBN text_NN classification_NN ._.
+Lee_NNP et_FW al_FW ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- used_VBD queryspecific_JJ variance_NN estimates_NNS of_IN classifier_NN outputs_NNS to_TO perform_VB improved_JJ model_NN combination_NN ._.
+Instead_RB of_IN using_VBG sampling_NN ,_, they_PRP were_VBD able_JJ to_TO derive_VB closed-form_JJ expressions_NNS for_IN classifier_NN variance_NN by_IN assuming_VBG base_NN classifiers_NNS using_VBG simple_JJ types_NNS of_IN inference_NN networks_NNS ._.
+Ando_NNP and_CC Zhang_NNP proposed_VBD a_DT method_NN that_IN they_PRP call_VBP structural_JJ feedback_NN -LSB-_-LRB- #_# -RSB-_-RRB- and_CC showed_VBD how_WRB to_TO apply_VB it_PRP to_TO query_VB expansion_NN for_IN the_DT TREC_NNP Genomics_NNPS Track_NNP ._.
+They_PRP used_VBD r_NN query_NN variations_NNS to_TO obtain_VB R_NN different_JJ sets_NNS Sr_NNP of_IN top-ranked_JJ documents_NNS that_WDT have_VBP been_VBN intersected_VBN with_IN the_DT top-ranked_JJ documents_NNS obtained_VBN from_IN the_DT original_JJ query_NN qorig_NN ._.
+For_IN each_DT Si_NNP ,_, the_DT normalized_VBN centroid_NN vector_NN wi_NN of_IN the_DT documents_NNS is_VBZ calculated_VBN ._.
+Principal_NN component_NN analysis_NN -LRB-_-LRB- PCA_NN -RRB-_-RRB- is_VBZ then_RB applied_VBN to_TO the_DT wi_NN to_TO obtain_VB the_DT matrix_NN of_IN H_NN left_VBD singular_JJ vectors_NNS h_NN that_WDT are_VBP used_VBN to_TO obtain_VB the_DT new_JJ ,_, expanded_VBN query_NN qexp_NN =_JJ qorig_NN +_CC T_NN qorig_NN ._.
+-LRB-_-LRB- #_# -RRB-_-RRB- In_IN the_DT case_NN H_NN =_JJ #_# ,_, we_PRP have_VBP a_DT single_JJ left_JJ singular_JJ vector_NN :_: qexp_NN =_JJ qorig_NN +_CC -LRB-_-LRB- T_NN qorig_NN -RRB-_-RRB- so_IN that_IN the_DT dot_NN product_NN T_NN qorig_NN is_VBZ a_DT type_NN of_IN dynamic_JJ weight_NN on_IN the_DT expanded_VBN query_NN that_WDT is_VBZ based_VBN on_IN the_DT similarity_NN of_IN the_DT original_JJ query_NN to_TO the_DT expanded_VBN query_NN ._.
+The_DT use_NN of_IN variance_NN as_IN a_DT feedback_NN model_NN quality_NN measure_NN occurs_VBZ indirectly_RB through_IN the_DT application_NN of_IN PCA_NNP ._.
+It_PRP would_MD be_VB interesting_JJ to_TO study_VB the_DT connections_NNS between_IN this_DT approach_NN and_CC our_PRP$ own_JJ modelfitting_NN method_NN ._.
+Finally_RB ,_, in_IN language_NN modeling_NN approaches_VBZ to_TO feedback_NN ,_, Tao_NNP and_CC Zhai_NNP -LSB-_-LRB- ##_CD -RSB-_-RRB- describe_VBP a_DT method_NN for_IN more_JJR robust_JJ feedback_NN that_WDT allows_VBZ each_DT document_NN to_TO have_VB a_DT different_JJ feedback_NN ._.
+The_DT feedback_NN weights_NNS are_VBP derived_VBN automatically_RB using_VBG regularized_VBN EM_NNP ._.
+A_DT roughly_RB equal_JJ balance_NN of_IN query_NN and_CC expansion_NN model_NN is_VBZ implied_VBN by_IN their_PRP$ EM_NNP stopping_VBG condition_NN ._.
+They_PRP propose_VBP tailoring_VBG the_DT stopping_VBG parameter_NN based_VBN on_IN a_DT function_NN of_IN some_DT quality_NN measure_NN of_IN feedback_NN documents_NNS ._.
+5_CD ._.
+CONCLUSIONS_NNS We_PRP have_VBP presented_VBN a_DT new_JJ approach_NN to_TO pseudo-relevance_NN feedback_NN based_VBN on_IN document_NN and_CC query_NN sampling_NN ._.
+The_DT use_NN of_IN sampling_NN is_VBZ a_DT very_RB flexible_JJ and_CC powerful_JJ device_NN and_CC is_VBZ motivated_VBN by_IN our_PRP$ general_JJ desire_NN to_TO extend_VB current_JJ models_NNS of_IN retrieval_NN by_IN estimating_VBG the_DT risk_NN or_CC variance_NN associated_VBN with_IN the_DT parameters_NNS or_CC output_NN of_IN retrieval_NN processes_NNS ._.
+Such_JJ variance_NN estimates_NNS ,_, for_IN example_NN ,_, may_MD be_VB naturally_RB used_VBN in_IN a_DT Bayesian_JJ framework_NN for_IN improved_VBN model_NN estimation_NN and_CC combination_NN ._.
+Applications_NNS such_JJ as_IN selective_JJ expansion_NN may_MD then_RB be_VB implemented_VBN in_IN a_DT principled_JJ way_NN ._.
+While_IN our_PRP$ study_NN uses_VBZ the_DT language_NN modeling_NN approach_NN as_IN a_DT framework_NN for_IN experiments_NNS ,_, we_PRP make_VBP few_JJ assumptions_NNS about_IN the_DT actual_JJ workings_NNS of_IN the_DT feedback_NN algorithm_NN ._.
+We_PRP believe_VBP it_PRP is_VBZ likely_JJ that_IN any_DT reasonably_RB effective_JJ baseline_NN feedback_NN algorithm_NN would_MD benefit_VB from_IN our_PRP$ approach_NN ._.
+Our_PRP$ results_NNS on_IN standard_JJ TREC_NN collections_NNS show_VBP that_IN our_PRP$ framework_NN improves_VBZ the_DT robustness_NN of_IN a_DT strong_JJ baseline_NN feedback_NN method_NN across_IN a_DT variety_NN of_IN collections_NNS ,_, without_IN sacrificing_VBG average_JJ precision_NN ._.
+It_PRP also_RB gives_VBZ small_JJ but_CC consistent_JJ gains_NNS in_IN top10_NN precision_NN ._.
+In_IN future_JJ work_NN ,_, we_PRP envision_VBP an_DT investigation_NN into_IN how_WRB varying_VBG the_DT set_NN of_IN sampling_NN methods_NNS used_VBN and_CC the_DT number_NN of_IN samples_NNS controls_VBZ the_DT trade-off_NN between_IN robustness_NN ,_, accuracy_NN ,_, and_CC efficiency_NN ._.
+Acknowledgements_NNS We_PRP thank_VBP Paul_NNP Bennett_NNP for_IN valuable_JJ discussions_NNS related_VBN to_TO this_DT work_NN ,_, which_WDT was_VBD supported_VBN by_IN NSF_NNP grants_NNS #_# IIS-0534345_NN and_CC #_# CNS-0454018_NN ,_, and_CC U_NNP ._.
+S_NN ._.
+Dept_NNP ._.
+of_IN Education_NNP grant_NN #_# R305G03123_NN ._.
+Any_DT opinions_NNS ,_, findings_NNS ,_, and_CC conclusions_NNS or_CC recommendations_NNS expressed_VBN in_IN this_DT material_NN are_VBP the_DT authors_NNS ._.
+and_CC do_VBP not_RB necessarily_RB reflect_VB those_DT of_IN the_DT sponsors_NNS ._.
+6_CD ._.
+REFERENCES_NNS -LSB-_-LRB- #_# -RSB-_-RRB- The_DT Lemur_NNP toolkit_NN for_IN language_NN modeling_NN and_CC retrieval_NN ._.
+http_NN :_: /_: /_: www_NN ._.
+lemurproject_NN ._.
+org_NN ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- G_NN ._.
+Amati_NNP ,_, C_NNP ._.
+Carpineto_NNP ,_, and_CC G_NN ._.
+Romano_NNP ._.
+Query_NNP difficulty_NN ,_, robustness_NN ,_, and_CC selective_JJ application_NN of_IN query_NN expansion_NN ._.
+In_IN Proc_NNP ._.
+of_IN the_DT 25th_JJ European_JJ Conf_NNP ._.
+on_IN Information_NNP Retrieval_NNP -LRB-_-LRB- ECIR_NNP ####_CD -RRB-_-RRB- ,_, pages_NNS 127-137_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- R_NN ._.
+K_NN ._.
+Ando_NNP and_CC T_NN ._.
+Zhang_NNP ._.
+A_DT high-performance_JJ semi-supervised_JJ learning_NN method_NN for_IN text_NN chunking_NN ._.
+In_IN Proc_NNP ._.
+of_IN the_DT 43rd_JJ Annual_JJ Meeting_VBG of_IN the_DT ACL_NN ,_, pages_NNS 1-9_CD ,_, June_NNP ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- L_NN ._.
+Breiman_NNP ._.
+Bagging_VBG predictors_NNS ._.
+Machine_NN Learning_NNP ,_, 24_CD -LRB-_-LRB- #_# -RRB-_-RRB- :_: 123-140_CD ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- C_NN ._.
+Carpineto_NNP ,_, G_NNP ._.
+Romano_NNP ,_, and_CC V_NN ._.
+Giannini_NNP ._.
+Improving_NN retrieval_NN feedback_NN with_IN multiple_JJ term-ranking_JJ function_NN combination_NN ._.
+ACM_NNP Trans_NNP ._.
+Info_NN ._.
+Systems_NNPS ,_, ##_NN -LRB-_-LRB- #_# -RRB-_-RRB- :_: ###_SYM -_: ###_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- K_NNP ._.
+Collins-Thompson_NNP ,_, P_NN ._.
+Ogilvie_NNP ,_, and_CC J_NN ._.
+Callan_NNP ._.
+Initial_JJ results_NNS with_IN structured_JJ queries_NNS and_CC language_NN models_NNS on_IN half_PDT a_DT terabyte_NN of_IN text_NN ._.
+In_IN Proc_NNP ._.
+of_IN ####_CD Text_VBP REtrieval_NNP Conference_NNP ._.
+NIST_NNP Special_JJ Publication_NN ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- R_NN ._.
+O_NN ._.
+Duda_NNP ,_, P_NN ._.
+E_NN ._.
+Hart_NNP ,_, and_CC D_NN ._.
+G_NN ._.
+Stork_NNP ._.
+Pattern_NN Classification_NN ._.
+Wiley_NNP and_CC Sons_NNPS ,_, 2nd_JJ edition_NN ,_, ####_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- W_NN ._.
+R_NN ._.
+Greiff_NNP ,_, W_NNP ._.
+T_NN ._.
+Morgan_NNP ,_, and_CC J_NN ._.
+M_NN ._.
+Ponte_NNP ._.
+The_DT role_NN of_IN variance_NN in_IN term_NN weighting_NN for_IN probabilistic_JJ information_NN retrieval_NN ._.
+In_IN Proc_NNP ._.
+of_IN the_DT 11th_JJ Intl_NNP ._.
+Conf_NNP ._.
+on_IN Info_NNP ._.
+and_CC Knowledge_NNP Mgmt_NNP ._.
+-LRB-_-LRB- CIKM_NN ####_CD -RRB-_-RRB- ,_, pages_NNS 252-259_CD ._.
+-LSB-_-LRB- #_# -RSB-_-RRB- T_NN ._.
+Kohonen_NNP ,_, J_NNP ._.
+Hynninen_NNP ,_, J_NNP ._.
+Kangas_NNP ,_, and_CC J_NN ._.
+Laaksonen_NNP ._.
+SOMPAK_NNP :_: The_DT self-organizing_JJ map_NN program_NN package_NN ._.
+Technical_NNP Report_NNP A31_NNP ,_, Helsinki_NNP University_NNP of_IN Technology_NNP ,_, ####_CD ._.
+http_NN :_: /_: /_: www_NN ._.
+cis_NN ._.
+hut_NN ._.
+fi_NN /_: research_NN /_: papers_NNS /_: som_NN tr96_NN ._.
+ps_NNS ._.
+Z_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- V_NN ._.
+Lavrenko_NNP ._.
+A_DT Generative_NNP Theory_NNP of_IN Relevance_NNP ._.
+PhD_NN thesis_NN ,_, University_NNP of_IN Massachusetts_NNP ,_, Amherst_NNP ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- C_NN ._.
+-_: H_NN ._.
+Lee_NNP ,_, R_NN ._.
+Greiner_NNP ,_, and_CC S_NN ._.
+Wang_NNP ._.
+Using_VBG query-specific_JJ variance_NN estimates_VBZ to_TO combine_VB Bayesian_JJ classifiers_NNS ._.
+In_IN Proc_NNP ._.
+of_IN the_DT 23rd_JJ Intl_NNP ._.
+Conf_NNP ._.
+on_IN Machine_NN Learning_NNP -LRB-_-LRB- ICML_NNP ####_CD -RRB-_-RRB- ,_, pages_NNS 529-536_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- D_NN ._.
+Metzler_NNP and_CC W_NNP ._.
+B_NN ._.
+Croft_NNP ._.
+Combining_VBG the_DT language_NN model_NN and_CC inference_NN network_NN approaches_VBZ to_TO retrieval_NN ._.
+Info_NN ._.
+Processing_NN and_CC Mgmt_NN ._.
+,_, ##_NN -LRB-_-LRB- #_# -RRB-_-RRB- :_: 735-750_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- T_NN ._.
+Minka_NNP ._.
+Estimating_VBG a_DT Dirichlet_JJ distribution_NN ._.
+Technical_NNP report_NN ,_, 2000_CD ._.
+http_NN :_: /_: /_: research_NN ._.
+microsoft_NN ._.
+com_NN /_: minka_FW /_: papers_NNS /_: dirichlet_NN ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+Ponte_NNP ._.
+Advances_NNS in_IN Information_NNP Retrieval_NNP ,_, chapter_NN Language_NN models_NNS for_IN relevance_NN feedback_NN ,_, pages_NNS 73-96_CD ._.
+####_NN ._.
+W_NN ._.
+B_NN ._.
+Croft_NNP ,_, ed_VBD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+M_NN ._.
+Ponte_NNP and_CC W_NNP ._.
+B_NN ._.
+Croft_NNP ._.
+A_DT language_NN modeling_NN approach_NN to_TO information_NN retrieval_NN ._.
+In_IN Proc_NNP ._.
+of_IN the_DT ####_CD ACM_NNP SIGIR_NNP Conference_NNP on_IN Research_NNP and_CC Development_NNP in_IN Information_NNP Retrieval_NNP ,_, pages_NNS 275-281_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+Rocchio_NNP ._.
+The_DT SMART_NNP Retrieval_NNP System_NNP ,_, chapter_NN Relevance_NN Feedback_NN in_IN Information_NNP Retrieval_NNP ,_, pages_NNS 313-323_CD ._.
+Prentice-Hall_NNP ,_, ####_CD ._.
+G_NN ._.
+Salton_NNP ,_, ed_VBD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- T_NN ._.
+Sakai_NNP ,_, T_NN ._.
+Manabe_NNP ,_, and_CC M_NN ._.
+Koyama_NNP ._.
+Flexible_JJ pseudo-relevance_NN feedback_NN via_IN selective_JJ sampling_NN ._.
+ACM_NNP Transactions_NNS on_IN Asian_JJ Language_NN Information_NN Processing_NN -LRB-_-LRB- TALIP_NN -RRB-_-RRB- ,_, #_# -LRB-_-LRB- #_# -RRB-_-RRB- :_: 111-135_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- T_NN ._.
+Tao_NNP and_CC C_NNP ._.
+Zhai_NNP ._.
+Regularized_VBN estimation_NN of_IN mixture_NN models_NNS for_IN robust_JJ pseudo-relevance_NN feedback_NN ._.
+In_IN Proc_NNP ._.
+of_IN the_DT ####_CD ACM_NNP SIGIR_NNP Conference_NNP on_IN Research_NNP and_CC Development_NNP in_IN Information_NNP Retrieval_NNP ,_, pages_NNS 162-169_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- J_NN ._.
+Xu_NN and_CC W_NN ._.
+B_NN ._.
+Croft_NNP ._.
+Improving_NN the_DT effectiveness_NN of_IN information_NN retrieval_NN with_IN local_JJ context_NN analysis_NN ._.
+ACM_NNP Trans_NNP ._.
+Inf_NNP ._.
+Syst_NNP ._.
+,_, ##_NN -LRB-_-LRB- #_# -RRB-_-RRB- :_: 79-112_CD ,_, ####_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- E_NN ._.
+YomTov_NNP ,_, S_NN ._.
+Fine_NNP ,_, D_NNP ._.
+Carmel_NNP ,_, and_CC A_NN ._.
+Darlow_NNP ._.
+Learning_VBG to_TO estimate_VB query_NN difficulty_NN ._.
+In_IN Proc_NNP ._.
+of_IN the_DT ####_CD ACM_NNP SIGIR_NNP Conf_NNP ._.
+on_IN Research_NNP and_CC Development_NNP in_IN Information_NNP Retrieval_NNP ,_, pages_NNS 512-519_CD ._.
+-LSB-_-LRB- ##_NN -RSB-_-RRB- Y_NN ._.
+Zhou_NNP and_CC W_NNP ._.
+B_NN ._.
+Croft_NNP ._.
+Ranking_JJ robustness_NN :_: a_DT novel_JJ framework_NN to_TO predict_VB query_NN performance_NN ._.
+In_IN Proc_NNP ._.
+of_IN the_DT 15th_JJ ACM_NNP Intl_NNP ._.
+Conf_NNP ._.
+on_IN Information_NN and_CC Knowledge_NNP Mgmt_NNP ._.
+-LRB-_-LRB- CIKM_NN ####_CD -RRB-_-RRB- ,_, pages_NNS 567-574_CD ._.
